@@ -1,0 +1,293 @@
+{
+    "expected": [
+        {
+            "@timestamp": "2026-08-05T08:00:00.000Z",
+            "aws": {
+                "cloudwatch": {
+                    "account_id": "123456789012",
+                    "log_group": "/aws/eks/prod-cluster/cluster",
+                    "log_stream": "kube-apiserver-audit-123",
+                    "region": "us-east-1"
+                },
+                "eks": {
+                    "audit": {
+                        "annotations": {
+                            "authorization_k8s_io/decision": "allow",
+                            "authorization_k8s_io/reason": "RBAC decision"
+                        },
+                        "apiVersion": "audit.k8s.io/v1",
+                        "auditID": "allowed-secret",
+                        "kind": "Event",
+                        "level": "RequestResponse",
+                        "objectRef": {
+                            "name": "app-secret",
+                            "namespace": "default",
+                            "resource": "secrets"
+                        },
+                        "requestReceivedTimestamp": "2026-08-05T08:00:00Z",
+                        "requestURI": "/api/v1/secrets",
+                        "responseStatus": {
+                            "code": 200
+                        },
+                        "sourceIPs": [
+                            "198.51.100.10"
+                        ],
+                        "stage": "ResponseComplete",
+                        "stageTimestamp": "2026-08-05T08:00:01Z",
+                        "user": {
+                            "groups": [
+                                "system:authenticated"
+                            ],
+                            "uid": "aws-iam-authenticator:123456789012:alice",
+                            "username": "arn:aws:iam::123456789012:user/alice"
+                        },
+                        "userAgent": "kubectl/v1.31.0",
+                        "verb": "get"
+                    },
+                    "cluster": {
+                        "name": "prod-cluster"
+                    },
+                    "component": "kube-apiserver",
+                    "log_type": "audit"
+                }
+            },
+            "client": {
+                "ip": [
+                    "198.51.100.10"
+                ]
+            },
+            "cloud": {
+                "account": {
+                    "id": "123456789012"
+                },
+                "provider": "aws",
+                "region": "us-east-1"
+            },
+            "ecs": {
+                "version": "8.11.0"
+            },
+            "event": {
+                "action": "get",
+                "category": [
+                    "configuration"
+                ],
+                "dataset": "aws.eks_audit",
+                "end": "2026-08-05T08:00:01.000Z",
+                "id": "allowed-secret",
+                "kind": "event",
+                "original": "{\"apiVersion\":\"audit.k8s.io/v1\",\"kind\":\"Event\",\"level\":\"RequestResponse\",\"stage\":\"ResponseComplete\",\"requestReceivedTimestamp\":\"2026-08-05T08:00:00Z\",\"stageTimestamp\":\"2026-08-05T08:00:01Z\",\"sourceIPs\":[\"198.51.100.10\"],\"userAgent\":\"kubectl/v1.31.0\",\"user\":{\"username\":\"arn:aws:iam::123456789012:user/alice\",\"uid\":\"aws-iam-authenticator:123456789012:alice\",\"groups\":[\"system:authenticated\"]},\"auditID\":\"allowed-secret\",\"verb\":\"get\",\"requestURI\":\"/api/v1/secrets\",\"objectRef\":{\"resource\":\"secrets\",\"namespace\":\"default\",\"name\":\"app-secret\"},\"responseStatus\":{\"code\":200},\"annotations\":{\"authorization.k8s.io/decision\":\"allow\",\"authorization.k8s.io/reason\":\"RBAC decision\"}}",
+                "outcome": "success",
+                "type": [
+                    "access"
+                ]
+            },
+            "input": {
+                "type": "aws-cloudwatch"
+            },
+            "orchestrator": {
+                "api_version": "audit.k8s.io/v1",
+                "cluster": {
+                    "name": "prod-cluster"
+                },
+                "namespace": "default",
+                "resource": {
+                    "name": "app-secret",
+                    "type": "secrets"
+                },
+                "type": "kubernetes"
+            },
+            "related": {
+                "ip": [
+                    "198.51.100.10"
+                ],
+                "user": [
+                    "aws-iam-authenticator:123456789012:alice",
+                    "arn:aws:iam::123456789012:user/alice"
+                ]
+            },
+            "source": {
+                "ip": [
+                    "198.51.100.10"
+                ]
+            },
+            "user": {
+                "group": {
+                    "name": [
+                        "system:authenticated"
+                    ]
+                },
+                "id": "aws-iam-authenticator:123456789012:alice",
+                "name": "arn:aws:iam::123456789012:user/alice"
+            },
+            "user_agent": {
+                "original": "kubectl/v1.31.0"
+            }
+        },
+        {
+            "@timestamp": "2026-08-05T08:00:00.000Z",
+            "aws": {
+                "cloudwatch": {
+                    "account_id": "123456789012",
+                    "log_group": "/aws/eks/prod-cluster/cluster",
+                    "log_stream": "kube-apiserver-audit-123",
+                    "region": "us-east-1"
+                },
+                "eks": {
+                    "audit": {
+                        "apiVersion": "audit.k8s.io/v1",
+                        "auditID": "secret-redaction",
+                        "kind": "Event",
+                        "level": "RequestResponse",
+                        "objectRef": {
+                            "name": "app-secret",
+                            "namespace": "default",
+                            "resource": "secrets"
+                        },
+                        "requestReceivedTimestamp": "2026-08-05T08:00:00Z",
+                        "requestURI": "/api/v1/namespaces/default/secrets/app-secret",
+                        "responseStatus": {
+                            "code": 201
+                        },
+                        "stage": "ResponseComplete",
+                        "stageTimestamp": "2026-08-05T08:00:01Z",
+                        "verb": "create"
+                    },
+                    "cluster": {
+                        "name": "prod-cluster"
+                    },
+                    "component": "kube-apiserver",
+                    "log_type": "audit"
+                }
+            },
+            "cloud": {
+                "account": {
+                    "id": "123456789012"
+                },
+                "provider": "aws",
+                "region": "us-east-1"
+            },
+            "ecs": {
+                "version": "8.11.0"
+            },
+            "event": {
+                "action": "create",
+                "category": [
+                    "configuration"
+                ],
+                "dataset": "aws.eks_audit",
+                "end": "2026-08-05T08:00:01.000Z",
+                "id": "secret-redaction",
+                "kind": "event",
+                "original": "{\"apiVersion\":\"audit.k8s.io/v1\",\"kind\":\"Event\",\"level\":\"RequestResponse\",\"stage\":\"ResponseComplete\",\"requestReceivedTimestamp\":\"2026-08-05T08:00:00Z\",\"stageTimestamp\":\"2026-08-05T08:00:01Z\",\"auditID\":\"secret-redaction\",\"verb\":\"create\",\"requestURI\":\"/api/v1/namespaces/default/secrets/app-secret\",\"objectRef\":{\"resource\":\"secrets\",\"namespace\":\"default\",\"name\":\"app-secret\"},\"responseStatus\":{\"code\":201},\"requestObject\":{\"data\":{\"password\":\"cmVxdWVzdC1zZWNyZXQ=\"},\"stringData\":{\"token\":\"request-token\"}},\"responseObject\":{\"data\":{\"password\":\"cmVzcG9uc2Utc2VjcmV0\"},\"stringData\":{\"token\":\"response-token\"}}}",
+                "outcome": "success",
+                "type": [
+                    "creation"
+                ]
+            },
+            "input": {
+                "type": "aws-cloudwatch"
+            },
+            "orchestrator": {
+                "api_version": "audit.k8s.io/v1",
+                "cluster": {
+                    "name": "prod-cluster"
+                },
+                "namespace": "default",
+                "resource": {
+                    "name": "app-secret",
+                    "type": "secrets"
+                },
+                "type": "kubernetes"
+            }
+        },
+        {
+            "@timestamp": "2026-08-05T08:00:00.000Z",
+            "aws": {
+                "cloudwatch": {
+                    "account_id": "123456789012",
+                    "log_group": "/aws/eks/prod-cluster/cluster",
+                    "log_stream": "kube-apiserver-audit-123",
+                    "region": "us-east-1"
+                },
+                "eks": {
+                    "audit": {
+                        "apiVersion": "audit.k8s.io/v1",
+                        "auditID": "secret-list-redaction",
+                        "kind": "Event",
+                        "level": "RequestResponse",
+                        "objectRef": {
+                            "namespace": "default",
+                            "resource": "secrets"
+                        },
+                        "requestReceivedTimestamp": "2026-08-05T08:00:00Z",
+                        "requestURI": "/api/v1/namespaces/default/secrets?watch=true",
+                        "responseObject": {
+                            "items": [
+                                {
+                                    "metadata": {
+                                        "name": "first"
+                                    }
+                                },
+                                {
+                                    "metadata": {
+                                        "name": "second"
+                                    }
+                                }
+                            ]
+                        },
+                        "responseStatus": {
+                            "code": 200
+                        },
+                        "stage": "ResponseComplete",
+                        "stageTimestamp": "2026-08-05T08:00:01Z",
+                        "verb": "list"
+                    },
+                    "cluster": {
+                        "name": "prod-cluster"
+                    },
+                    "component": "kube-apiserver",
+                    "log_type": "audit"
+                }
+            },
+            "cloud": {
+                "account": {
+                    "id": "123456789012"
+                },
+                "provider": "aws",
+                "region": "us-east-1"
+            },
+            "ecs": {
+                "version": "8.11.0"
+            },
+            "event": {
+                "action": "list",
+                "category": [
+                    "configuration"
+                ],
+                "dataset": "aws.eks_audit",
+                "end": "2026-08-05T08:00:01.000Z",
+                "id": "secret-list-redaction",
+                "kind": "event",
+                "original": "{\"apiVersion\":\"audit.k8s.io/v1\",\"kind\":\"Event\",\"level\":\"RequestResponse\",\"stage\":\"ResponseComplete\",\"requestReceivedTimestamp\":\"2026-08-05T08:00:00Z\",\"stageTimestamp\":\"2026-08-05T08:00:01Z\",\"auditID\":\"secret-list-redaction\",\"verb\":\"list\",\"requestURI\":\"/api/v1/namespaces/default/secrets?watch=true\",\"objectRef\":{\"resource\":\"secrets\",\"namespace\":\"default\"},\"responseStatus\":{\"code\":200},\"responseObject\":{\"items\":[{\"metadata\":{\"name\":\"first\",\"annotations\":{\"kubectl.kubernetes.io/last-applied-configuration\":\"{\\\"apiVersion\\\":\\\"v1\\\",\\\"kind\\\":\\\"Secret\\\",\\\"metadata\\\":{\\\"name\\\":\\\"first\\\"},\\\"data\\\":{\\\"password\\\":\\\"c2Vuc2l0aXZl\\\"}}\"}},\"data\":{\"password\":\"Zmlyc3Q=\"},\"stringData\":{\"token\":\"first-token\"}},{\"metadata\":{\"name\":\"second\"},\"data\":{\"password\":\"c2Vjb25k\"},\"stringData\":{\"token\":\"second-token\"}}]}}",
+                "outcome": "success",
+                "type": [
+                    "access"
+                ]
+            },
+            "input": {
+                "type": "aws-cloudwatch"
+            },
+            "orchestrator": {
+                "api_version": "audit.k8s.io/v1",
+                "cluster": {
+                    "name": "prod-cluster"
+                },
+                "namespace": "default",
+                "resource": {
+                    "type": "secrets"
+                },
+                "type": "kubernetes"
+            }
+        }
+    ]
+}
