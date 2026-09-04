@@ -1,0 +1,69 @@
+# Use of "*" to use all namespaces defined.
+source:
+  index:
+    - "logs-kolide.people-*"
+  query:
+    bool:
+      filter:
+        # kolide.people is populated only by the REST API poll, which produces full
+        # person snapshots (event.kind: state). The filter is retained so that any
+        # future event-shaped documents routed into this dataset cannot overwrite a
+        # complete snapshot, since a latest transform replaces the whole document.
+        - term:
+            event.kind: state
+      must_not:
+        - exists:
+            field: error.message
+        # The initial run scans the whole source index pattern, so without this
+        # guard it would read documents out of searchable-snapshot storage.
+        - terms:
+            _tier:
+              - data_frozen
+              - data_cold
+dest:
+  # The version suffix on the dest.index should be incremented if a breaking
+  # change is made to the index mapping or settings (for example index.mode).
+  # You must also bump the fleet_transform_version for any change to this
+  # transform configuration to take effect. The old destination index is not
+  # automatically removed. We are dependent on
+  # https://github.com/elastic/package-spec/issues/523 to give us that ability
+  # in order to prevent having duplicate data and prevent query time field type
+  # conflicts.
+  index: "logs-kolide_latest.dest_people-1"
+  aliases:
+    - alias: "logs-kolide_latest.people"
+      move_on_creation: true
+latest:
+  # user.id is the Kolide person identifier and is stable across email and username
+  # changes. user.email and user.name are retained as plain fields on the destination
+  # documents so they stay available as match fields for lookups and enrichment.
+  unique_key:
+    - event.dataset
+    - user.id
+  sort: "@timestamp"
+description: >-
+  Latest people from Kolide. As people get updated, this transform stores only the latest state of each person inside the destination index. Thus the transform's destination index contains only the latest state of the person.
+frequency: 30s
+settings:
+  # This is required to prevent the transform from clobbering the Fleet-managed mappings.
+  deduce_mappings: false
+  unattended: true
+sync:
+  time:
+    field: "event.ingested"
+    # Updated to 120s because of refresh delay in Serverless. With default 60s,
+    # sometimes transform wouldn't process all documents.
+    delay: 120s
+# No retention_policy by design. The people ingest pipeline assigns a content
+# fingerprint _id (over event.original minus last_authenticated_at), and this is a
+# logs data stream, so re-polling an unchanged person collides on that _id and the
+# write is dropped rather than merged. @timestamp and event.ingested on a person's
+# newest source document therefore track the last time its content changed, not the
+# last time it was seen. A time-based retention policy would evict people who are
+# still active in Kolide but whose record has not changed within max_age.
+_meta:
+  managed: false
+  # Bump this version to delete, reinstall, and restart the transform during
+  # package installation.
+  fleet_transform_version: 0.1.0
+  run_as_kibana_system: false

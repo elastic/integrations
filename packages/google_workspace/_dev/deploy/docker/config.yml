@@ -15,6 +15,37 @@ rules:
         body: |
           {"access_token": "1/fFAGRNJru1FTz70BzhT3Zg","expires_in": 3920,"token_type": "Bearer",
           "scope": "https://www.googleapis.com/auth/admin.reports.audit.readonly","refresh_token": "1//xEoDL4iW3cxlI7yDbSRFYNG01kVKM2C-259HOF2aQbI"}
+  # Chunked-window endpoint shared by the Reports API data streams' test-chunked
+  # system tests, which point application_name_for_url at "chunked_<app>".
+  # The response echoes the requested startTime as the event time with a fixed
+  # uniqueQualifier, so the fingerprinted _id only changes when the requested
+  # window start changes. With chunk_duration set, every interval advances
+  # startTime by one chunk and produces a new document. Without it, the next
+  # startTime is derived from the returned event time, which equals the previous
+  # startTime, so the same document is re-sent and only one is indexed.
+  # An empty window (startTime == endTime) is answered with an error body and
+  # no items, mirroring the API's rejection of such requests.
+  - path: /admin/reports/v1/activity/users/all/applications/chunked_{app}
+    methods: [GET]
+    query_params:
+      startTime: "{startTime:.*}"
+      endTime: "{endTime:.*}"
+    request_headers:
+      Accept:
+        - "application/json"
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |
+          {{- if eq .request.vars.startTime .request.vars.endTime }}
+          {"error":{"code":400,"message":"Start time must be before end time.","status":"INVALID_ARGUMENT"}}
+          {{- else }}
+          {"kind":"admin#reports#activities","etag":"\"chunked\"","items":[{"kind":"admin#reports#activity","id":{"time":"{{.request.vars.startTime}}","uniqueQualifier":1,"applicationName":"{{.request.vars.app}}","customerId":"C03az79cb"},"etag":"\"chunk\"","actor":{"callerType":"USER","email":"user@example.com","profileId":"114511147312345678901"},"ownerDomain":"example.com","ipAddress":"192.0.2.10","events":[{"type":"chunk_test","name":"chunk_window"}]}]}
+          {{- end }}
   - path: /v1beta1/alerts
     methods: [GET]
     query_params:
@@ -369,6 +400,406 @@ rules:
                         "name": "VIRTUAL_DEVICE_ID",
                         "value": "3d69c5a5-0afc-474b-a1a3-d3dc617e2a60"
                       }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+  - path: /admin/reports/v1/activity/users/all/applications/gmail
+    methods: ['GET']
+    query_params:
+      maxResults: 1
+      pageToken: null
+    request_headers:
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {
+            "kind": "admin#reports#activities",
+            "nextPageToken": "page-2",
+            "etag": "\"D3eVYP-htSyObw0LSef_OWddNBN36m10z6d49o1_SA8/WS-Mf9vICAvzKDNCCz3ms9ShPWg\"",
+            "items": [
+              {
+                "kind": "admin#reports#activity",
+                "id": {
+                  "time": "2026-08-11T03:04:01.312Z",
+                  "uniqueQualifier": "1193008247809429026",
+                  "applicationName": "gmail",
+                  "customerId": "C00yte8g0"
+                },
+                "etag": "\"D3eVYP-htSyObw0LSef_OWddNBN36m10z6d49o1_SA8/WS-Mf9vICAvzKDNCCz3ms9ShPWg\"",
+                "actor": {
+                  "callerType": "USER",
+                  "email": "user1@example.com",
+                  "profileId": "109107487136189420589"
+                },
+                "ipAddress": "81.2.69.142",
+                "isAgenticAction": false,
+                "networkInfo": {
+                  "ipAsn": [
+                    0,
+                    15169
+                  ],
+                  "regionCode": "US",
+                  "subdivisionCode": ""
+                },
+                "resourceDetails": [
+                  {
+                    "id": "<000000000000f8bdf50658bcb834@mail.example.com>",
+                    "title": "[ACTION REQUIRED] Cloud Logging sink configuration error in example-project-123456",
+                    "type": "EMAIL",
+                    "relation": "GMAIL_PRIMARY",
+                    "ownerDetails": {
+                      "ownerType": "USER",
+                      "ownerIdentity": [
+                        {
+                          "userIdentity": {
+                            "id": "0z337ya2lr9by9",
+                            "userEmail": "user1@example.com"
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ],
+                "events": [
+                  {
+                    "type": "delivery_type",
+                    "name": "delivery",
+                    "parameters": [
+                      {
+                        "name": "event_info",
+                        "messageValue": {
+                          "parameter": [
+                            {
+                              "name": "timestamp_usec",
+                              "intValue": "1786417441312628"
+                            },
+                            {
+                              "name": "elapsed_time_usec",
+                              "intValue": "1645948"
+                            },
+                            {
+                              "name": "success",
+                              "boolValue": true
+                            },
+                            {
+                              "name": "mail_event_type",
+                              "intValue": "2"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "name": "message_info",
+                        "messageValue": {
+                          "parameter": [
+                            {
+                              "name": "action_type",
+                              "intValue": "3"
+                            },
+                            {
+                              "name": "rfc2822_message_id",
+                              "value": "<000000000000f8bdf50658bcb834@mail.example.com>"
+                            },
+                            {
+                              "name": "subject",
+                              "value": "[ACTION REQUIRED] Cloud Logging sink configuration error in example-project-123456"
+                            },
+                            {
+                              "name": "payload_size",
+                              "intValue": "12179"
+                            },
+                            {
+                              "name": "flattened_destinations",
+                              "value": "gmail-ui::user1@example.com"
+                            },
+                            {
+                              "name": "description",
+                              "value": ""
+                            },
+                            {
+                              "name": "is_spam",
+                              "boolValue": false
+                            },
+                            {
+                              "name": "is_policy_check_for_sender",
+                              "boolValue": false
+                            },
+                            {
+                              "name": "num_message_attachments",
+                              "intValue": "0"
+                            },
+                            {
+                              "name": "smime_content_type",
+                              "intValue": "0"
+                            },
+                            {
+                              "name": "link_domain",
+                              "multiValue": [
+                                "example.com",
+                                "example.net"
+                              ]
+                            }
+                          ]
+                        }
+                      }
+                    ],
+                    "resourceIds": [
+                      "<000000000000f8bdf50658bcb834@mail.example.com>"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+  - path: /admin/reports/v1/activity/users/all/applications/gmail
+    methods: ['GET']
+    query_params:
+      maxResults: 1
+      pageToken: page-2
+    request_headers:
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {
+            "kind": "admin#reports#activities",
+            "etag": "\"D3eVYP-htSyObw0LSef_OWddNBN36m10z6d49o1_SA8/WS-Mf9vICAvzKDNCCz3ms9ShPWg\"",
+            "items": [
+              {
+                "kind": "admin#reports#activity",
+                "id": {
+                  "time": "2026-08-11T05:12:44.001Z",
+                  "uniqueQualifier": "-4471002316937498211",
+                  "applicationName": "gmail",
+                  "customerId": "C00yte8g0"
+                },
+                "etag": "\"aB3eVYP-htSyObw0LSef_OWddNBN36m10z6d49o1_SA8/QQ-Mf9vICAvzKDNCCz3ms9ShPWg\"",
+                "actor": {
+                  "callerType": "USER",
+                  "email": "user2@example.com",
+                  "profileId": "109107487136189420590"
+                },
+                "ipAddress": "216.160.83.56",
+                "events": [
+                  {
+                    "type": "message_info_type",
+                    "name": "smtp_out_connection",
+                    "parameters": [
+                      {
+                        "name": "event_info",
+                        "messageValue": {
+                          "parameter": [
+                            {
+                              "name": "timestamp_usec",
+                              "intValue": "1786425164001000"
+                            },
+                            {
+                              "name": "elapsed_time_usec",
+                              "intValue": "678440"
+                            },
+                            {
+                              "name": "success",
+                              "boolValue": false
+                            },
+                            {
+                              "name": "mail_event_type",
+                              "intValue": "0"
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "name": "message_info",
+                        "messageValue": {
+                          "parameter": [
+                            {
+                              "name": "rfc2822_message_id",
+                              "value": "<12345627134207078908@example.com>"
+                            },
+                            {
+                              "name": "subject",
+                              "value": "Quarterly invoice"
+                            },
+                            {
+                              "name": "payload_size",
+                              "intValue": "84213"
+                            },
+                            {
+                              "name": "num_message_attachments",
+                              "intValue": "1"
+                            },
+                            {
+                              "name": "smime_content_type",
+                              "intValue": "2"
+                            },
+                            {
+                              "name": "smtp_relay_error",
+                              "value": "SMTP_RELAY_UNAUTHORIZED_SENDER"
+                            },
+                            {
+                              "name": "source",
+                              "messageValue": {
+                                "parameter": [
+                                  {
+                                    "name": "address",
+                                    "value": "billing@example.com"
+                                  },
+                                  {
+                                    "name": "service",
+                                    "value": "smtp_in"
+                                  },
+                                  {
+                                    "name": "from_header_address",
+                                    "value": "billing@example.com"
+                                  }
+                                ]
+                              }
+                            },
+                            {
+                              "name": "destination",
+                              "multiMessageValue": [
+                                {
+                                  "parameter": [
+                                    {
+                                      "name": "address",
+                                      "value": "finance@example.com"
+                                    },
+                                    {
+                                      "name": "service",
+                                      "value": "gmail-ui"
+                                    },
+                                    {
+                                      "name": "selector",
+                                      "value": "1"
+                                    }
+                                  ]
+                                }
+                              ]
+                            },
+                            {
+                              "name": "flattened_destinations",
+                              "value": "gmail-ui:1:finance@example.com"
+                            },
+                            {
+                              "name": "attachment",
+                              "messageValue": {
+                                "parameter": [
+                                  {
+                                    "name": "file_name",
+                                    "value": "invoice.pdf"
+                                  },
+                                  {
+                                    "name": "file_extension_type",
+                                    "value": "pdf"
+                                  },
+                                  {
+                                    "name": "sha256",
+                                    "value": "2c26b46b68ffc68ff99b453c1d30413413422d706483bfa0f98a5e886266e7ae"
+                                  }
+                                ]
+                              }
+                            },
+                            {
+                              "name": "connection_info",
+                              "messageValue": {
+                                "parameter": [
+                                  {
+                                    "name": "client_ip",
+                                    "value": "216.160.83.56"
+                                  },
+                                  {
+                                    "name": "smtp_out_connect_ip",
+                                    "value": "81.2.69.142"
+                                  },
+                                  {
+                                    "name": "smtp_out_remote_host",
+                                    "value": "mx.example.com"
+                                  },
+                                  {
+                                    "name": "smtp_reply_code",
+                                    "intValue": "550"
+                                  },
+                                  {
+                                    "name": "smtp_tls_cipher",
+                                    "value": "ECDHE-RSA-AES128-GCM-SHA256"
+                                  },
+                                  {
+                                    "name": "smtp_tls_version",
+                                    "value": "TLSv1.3"
+                                  },
+                                  {
+                                    "name": "spf_pass",
+                                    "boolValue": true
+                                  },
+                                  {
+                                    "name": "dkim_pass",
+                                    "boolValue": false
+                                  },
+                                  {
+                                    "name": "is_internal",
+                                    "boolValue": false
+                                  }
+                                ]
+                              }
+                            },
+                            {
+                              "name": "spam_info",
+                              "messageValue": {
+                                "parameter": [
+                                  {
+                                    "name": "classification_timestamp_usec",
+                                    "intValue": "1786425163000000"
+                                  },
+                                  {
+                                    "name": "disposition",
+                                    "value": "SPAM"
+                                  },
+                                  {
+                                    "name": "classification_reason",
+                                    "value": "PHISHING"
+                                  }
+                                ]
+                              }
+                            },
+                            {
+                              "name": "triggered_rule_info",
+                              "multiMessageValue": [
+                                {
+                                  "parameter": [
+                                    {
+                                      "name": "rule_name",
+                                      "value": "Block external invoices"
+                                    },
+                                    {
+                                      "name": "policy_holder_address",
+                                      "value": "admin@example.com"
+                                    },
+                                    {
+                                      "name": "rule_type",
+                                      "value": "ATTACHMENT_POLICY"
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      }
+                    ],
+                    "resourceIds": [
+                      "<12345627134207078908@example.com>"
                     ]
                   }
                 ]

@@ -18,10 +18,8 @@ state:
   user: {{username}}
   password: {{password}}
   batch_size: {{batch_size}}
-  total_rows: 0
   time_amount: {{time_amount}}
   time_unit: {{time_unit}}
-  want_more: false
   # Re-authenticate before the Prisma Cloud CSPM JWT expires (~10m TTL).
   token_ttl: "9m"
 redact:
@@ -42,98 +40,63 @@ program: |
     :
       {}
     ).as(state, state.with(
-      request("GET", state.url + "/v2/alert?timeType=relative&detailed=true&limit=" + string(state.batch_size) + "&timeAmount=" +
+      request("POST", state.url + "/v2/alert",
         (
-          has(state.want_more) && !(state.want_more) ?
-          (
-            has(state.cursor) && has(state.cursor.last_time_amount) &&
-            state.cursor.last_time_amount != null ?
-             string((now - timestamp(int(timestamp(0)+duration(string(int(state.cursor.last_time_amount))+"ms")))).getMinutes() + 1) + "&timeUnit=minute"
+          state.?page_token.orValue("") != "" ?
+            {"pageToken": state.page_token}
           :
-             string(state.time_amount) + "&timeUnit=" + state.time_unit
-          )
-        :
-          (
-            has(state.cursor) && has(state.cursor.first_time_amount) && state.cursor.first_time_amount != null ?
-              string((now - timestamp(int(timestamp(0)+duration(string(int(state.cursor.first_time_amount))+"ms")))).getMinutes() + 1) + "&timeUnit=minute"
-            :
-              string(state.time_amount) + "&timeUnit=" + state.time_unit
-          ) + (has(state.page_token) ? "&pageToken=" + state.page_token : "")
-        )
+            {
+              "detailed": true,
+              "limit": int(state.batch_size),
+              "timeRange": {
+                "type": "relative",
+                "value": state.?cursor.last_time_amount.orValue(null) != null ?
+                  {"amount": (now - timestamp(int(timestamp(0)+duration(string(int(state.cursor.last_time_amount))+"ms")))).getMinutes() + 1, "unit": "minute"}
+                :
+                  {"amount": int(state.time_amount), "unit": state.time_unit},
+              },
+            }
+        ).encode_json()
       ).with({
-         "Header":{
-           "x-redlock-auth": [state.access_token],
-         }
+        "Header": {
+          "Content-Type": ["application/json"],
+          "x-redlock-auth": [state.access_token],
+        }
       }).do_request().as(resp, (resp.StatusCode == 200) ?
         resp.Body.decode_json().as(inner_body,
           is_error(inner_body) ?
             {"events": []}
           :
             {
-              "events": inner_body.items.map(e, {
+              "events": inner_body.?items.orValue([]).map(e, {
                 "message": e.encode_json(),
               }),
               "url": state.url,
-              "page_token": has(inner_body.nextPageToken) ? inner_body.nextPageToken : "",
+              "page_token": inner_body.?nextPageToken.orValue(""),
               "cursor": {
-                "last_time_amount": (
-                  has(inner_body.items) && inner_body.items.size() > 0 ?
-                    (
-                      has(state.cursor) && has(state.cursor.last_time_amount) &&
-                      inner_body.items.map(e, e.lastUpdated).max() < state.cursor.last_time_amount ?
-                        state.cursor.last_time_amount
-                      :
-                        inner_body.items.map(e, e.lastUpdated).max()
-                    )
-                  :
-                    (
-                      has(state.cursor) && has(state.cursor.last_time_amount) ?
-                        state.cursor.last_time_amount
-                      :
-                        null
-                    )
-                  ),
-                  "first_time_amount": (
-                     has(state.cursor) && has(state.cursor.first_time_amount) &&
-                     state.cursor.first_time_amount != null && has(inner_body.items) ?
-                       (
-                         ((int(state.total_rows) + size(inner_body.items)) < inner_body.totalRows) && state.want_more ?
-                           state.cursor.first_time_amount
-                         :
-                           state.cursor.last_time_amount
-                       )
-                     :
-                       int(timestamp(now)-duration(string(
-                         state.time_unit == "year" ?
-                           int(state.time_amount)*365*24*60
-                         : state.time_unit == "month" ?
-                           int(state.time_amount)*30*24*60
-                         : state.time_unit == "week" ?
-                           int(state.time_amount)*7*24*60
-                         : state.time_unit == "day" ?
-                           int(state.time_amount)*24*60
-                         : state.time_unit == "hour" ?
-                           int(state.time_amount)*60
-                         : int(state.time_amount)
-                       )+"m"))*1000
-                  ),
-                },
-                "want_more": (int(state.total_rows) + size(inner_body.items)) < inner_body.totalRows,
-                "user": state.user,
-                "password": state.password,
-                "batch_size": string(state.batch_size),
-                "time_amount": string(state.time_amount),
-                "time_unit": state.time_unit,
-                "total_rows": (int(state.total_rows) + size(inner_body.items)) < inner_body.totalRows ?
-                  int(state.total_rows) + size(inner_body.items)
+                "last_time_amount": inner_body.?items.orValue([]).size() > 0 ?
+                  inner_body.items.map(e, e.lastUpdated).max().as(max_updated,
+                    state.?cursor.last_time_amount.orValue(null) != null &&
+                    state.cursor.last_time_amount > max_updated ?
+                      state.cursor.last_time_amount
+                    :
+                      max_updated
+                  )
                 :
-                  0,
+                  state.?cursor.last_time_amount.orValue(null),
+              },
+              "want_more": inner_body.?nextPageToken.orValue("") != "",
+              "user": state.user,
+              "password": state.password,
+              "batch_size": string(state.batch_size),
+              "time_amount": string(state.time_amount),
+              "time_unit": state.time_unit,
             })
         :
-          {"events": [], "access_token": ""}
+          {"events": [], "access_token": "", "page_token": ""}
       )
-    )
-  ))
+    ))
+  )
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event

@@ -322,6 +322,9 @@
                 - name: observation_type
                   type: keyword
                   description: The type of analysis methodology used to detect the anomaly.
+                - name: observed_pattern
+                  type: keyword
+                  description: The specific pattern identified within the observation type.
                 - name: observations
                   type: group
                   fields:
@@ -901,6 +904,171 @@
         - name: count
           type: long
           description: The number of times that events in the same logical group occurred during the event Start Time to End Time period.
+        - name: databucket
+          type: group
+          description: Describes details about the S3 bucket associated to the activity that triggered the detection.
+          fields:
+            - name: cloud_partition
+              type: keyword
+              description: The canonical cloud partition name to which the region is assigned.
+            - name: created_time
+              type: date
+              description: The time when the bucket was created.
+            - name: created_time_dt
+              type: date
+              description: The time when the bucket was created.
+            - name: data
+              type: flattened
+              description: Additional data about the bucket, such as S3-specific metadata.
+            - name: encryption_details
+              type: group
+              fields:
+                - name: algorithm
+                  type: keyword
+                  description: The encryption algorithm used.
+                - name: algorithm_id
+                  type: keyword
+                  description: The normalized identifier of the encryption algorithm.
+                - name: key_length
+                  type: long
+                  description: The length of the encryption key in bits.
+                - name: type
+                  type: keyword
+                  description: The type of encryption applied.
+            - name: file
+              type: group
+              fields:
+                - name: data_classifications
+                  type: group
+                  description: The data classifications of the file.
+                  fields:
+                    - name: category
+                      type: keyword
+                      description: The name of the data classification category.
+                    - name: category_id
+                      type: keyword
+                      description: The normalized identifier of the data classification category.
+                    - name: classifier_details
+                      type: flattened
+                      description: Details about the classifier used for data classification.
+                    - name: discovery_details
+                      type: nested
+                      description: Details about the data discovered by the classification job.
+                      fields:
+                        - name: count
+                          type: long
+                          description: The count of items discovered.
+                        - name: type
+                          type: keyword
+                          description: The type of sensitive data discovered.
+                    - name: size
+                      type: long
+                      description: Size of the data classified.
+                    - name: src_url
+                      type: keyword
+                      description: The source URL pointing towards the full classification job details.
+                    - name: status
+                      type: keyword
+                      description: The resultant status of the classification job.
+                    - name: status_id
+                      type: keyword
+                      description: The normalized status identifier of the classification job.
+                    - name: total
+                      type: long
+                      description: The total count of discovered entities.
+                - name: encryption_details
+                  type: group
+                  fields:
+                    - name: algorithm
+                      type: keyword
+                      description: The encryption algorithm used.
+                    - name: algorithm_id
+                      type: keyword
+                      description: The normalized identifier of the encryption algorithm.
+                    - name: key_length
+                      type: long
+                      description: The length of the encryption key in bits.
+                    - name: type
+                      type: keyword
+                      description: The type of encryption applied.
+                - name: ext
+                  type: keyword
+                  description: The file extension.
+                - name: is_encrypted
+                  type: boolean
+                  description: Indicates whether the file is encrypted.
+                - name: is_public
+                  type: boolean
+                  description: Indicates whether the file is publicly accessible.
+                - name: mime_type
+                  type: keyword
+                  description: The MIME type of the file.
+                - name: modified_time
+                  type: date
+                  description: The time when the file was last modified.
+                - name: modified_time_dt
+                  type: date
+                  description: The time when the file was last modified.
+                - name: name
+                  type: keyword
+                  description: The name of the file.
+                - name: path
+                  type: keyword
+                  description: The full path of the file.
+                - name: size
+                  type: long
+                  description: The size of the file in bytes.
+                - name: storage_class
+                  type: keyword
+                  description: The storage class of the file.
+                - name: type
+                  type: keyword
+                  description: The type of the file.
+                - name: type_id
+                  type: keyword
+                  description: The normalized identifier of the file type.
+                - name: version
+                  type: keyword
+                  description: The version of the file.
+                - name: xattributes
+                  type: flattened
+                  description: An unordered collection of extended file attributes.
+            - name: is_encrypted
+              type: boolean
+              description: Indicates whether the bucket is encrypted.
+            - name: is_public
+              type: boolean
+              description: Indicates whether the bucket is publicly accessible.
+            - name: name
+              type: keyword
+              description: The name of the bucket.
+            - name: owner
+              type: group
+              fields:
+                - name: name
+                  type: keyword
+                  description: The name of the bucket owner.
+                - name: uid
+                  type: keyword
+                  description: The unique identifier of the bucket owner.
+            - name: region
+              type: keyword
+              description: The cloud region of the bucket.
+            - name: tags.*
+              type: object
+              description: The list of tags associated with the bucket.
+              object_type: keyword
+              subobjects: false
+              object_type_mapping_type: '*'
+            - name: type
+              type: keyword
+              description: The type of the bucket.
+            - name: type_id
+              type: keyword
+              description: The normalized identifier of the bucket type.
+            - name: uid
+              type: keyword
+              description: The unique identifier of the bucket.
         - name: device
           type: group
           fields:
@@ -4017,6 +4185,171 @@
                 - name: uid
                   type: keyword
                   description: The unique identifier of the classification job.
+            - name: databucket
+              type: group
+              description: Describes details about the S3 bucket associated with the resource.
+              fields:
+                - name: cloud_partition
+                  type: keyword
+                  description: The canonical cloud partition name to which the region is assigned.
+                - name: created_time
+                  type: date
+                  description: The time when the bucket was created.
+                - name: created_time_dt
+                  type: date
+                  description: The time when the bucket was created.
+                - name: data
+                  type: flattened
+                  description: Additional data about the bucket, such as S3-specific metadata.
+                - name: encryption_details
+                  type: group
+                  fields:
+                    - name: algorithm
+                      type: keyword
+                      description: The encryption algorithm used.
+                    - name: algorithm_id
+                      type: keyword
+                      description: The normalized identifier of the encryption algorithm.
+                    - name: key_length
+                      type: long
+                      description: The length of the encryption key in bits.
+                    - name: type
+                      type: keyword
+                      description: The type of encryption applied.
+                - name: file
+                  type: group
+                  fields:
+                    - name: data_classifications
+                      type: group
+                      description: The data classifications of the file.
+                      fields:
+                        - name: category
+                          type: keyword
+                          description: The name of the data classification category.
+                        - name: category_id
+                          type: keyword
+                          description: The normalized identifier of the data classification category.
+                        - name: classifier_details
+                          type: flattened
+                          description: Details about the classifier used for data classification.
+                        - name: discovery_details
+                          type: nested
+                          description: Details about the data discovered by the classification job.
+                          fields:
+                            - name: count
+                              type: long
+                              description: The count of items discovered.
+                            - name: type
+                              type: keyword
+                              description: The type of sensitive data discovered.
+                        - name: size
+                          type: long
+                          description: Size of the data classified.
+                        - name: src_url
+                          type: keyword
+                          description: The source URL pointing towards the full classification job details.
+                        - name: status
+                          type: keyword
+                          description: The resultant status of the classification job.
+                        - name: status_id
+                          type: keyword
+                          description: The normalized status identifier of the classification job.
+                        - name: total
+                          type: long
+                          description: The total count of discovered entities.
+                    - name: encryption_details
+                      type: group
+                      fields:
+                        - name: algorithm
+                          type: keyword
+                          description: The encryption algorithm used.
+                        - name: algorithm_id
+                          type: keyword
+                          description: The normalized identifier of the encryption algorithm.
+                        - name: key_length
+                          type: long
+                          description: The length of the encryption key in bits.
+                        - name: type
+                          type: keyword
+                          description: The type of encryption applied.
+                    - name: ext
+                      type: keyword
+                      description: The file extension.
+                    - name: is_encrypted
+                      type: boolean
+                      description: Indicates whether the file is encrypted.
+                    - name: is_public
+                      type: boolean
+                      description: Indicates whether the file is publicly accessible.
+                    - name: mime_type
+                      type: keyword
+                      description: The MIME type of the file.
+                    - name: modified_time
+                      type: date
+                      description: The time when the file was last modified.
+                    - name: modified_time_dt
+                      type: date
+                      description: The time when the file was last modified.
+                    - name: name
+                      type: keyword
+                      description: The name of the file.
+                    - name: path
+                      type: keyword
+                      description: The full path of the file.
+                    - name: size
+                      type: long
+                      description: The size of the file in bytes.
+                    - name: storage_class
+                      type: keyword
+                      description: The storage class of the file.
+                    - name: type
+                      type: keyword
+                      description: The type of the file.
+                    - name: type_id
+                      type: keyword
+                      description: The normalized identifier of the file type.
+                    - name: version
+                      type: keyword
+                      description: The version of the file.
+                    - name: xattributes
+                      type: flattened
+                      description: An unordered collection of extended file attributes.
+                - name: is_encrypted
+                  type: boolean
+                  description: Indicates whether the bucket is encrypted.
+                - name: is_public
+                  type: boolean
+                  description: Indicates whether the bucket is publicly accessible.
+                - name: name
+                  type: keyword
+                  description: The name of the bucket.
+                - name: owner
+                  type: group
+                  fields:
+                    - name: name
+                      type: keyword
+                      description: The name of the bucket owner.
+                    - name: uid
+                      type: keyword
+                      description: The unique identifier of the bucket owner.
+                - name: region
+                  type: keyword
+                  description: The cloud region of the bucket.
+                - name: tags.*
+                  type: object
+                  description: The list of tags.
+                  object_type: keyword
+                  subobjects: false
+                  object_type_mapping_type: '*'
+                - name: type
+                  type: keyword
+                  description: The type of the bucket.
+                - name: type_id
+                  type: keyword
+                  description: The normalized identifier of the bucket type.
+                - name: uid
+                  type: keyword
+                  description: The unique identifier of the bucket.
             - name: group
               type: group
               fields:
@@ -4041,6 +4374,52 @@
             - name: hostname
               type: keyword
               description: The fully qualified name of the resource.
+            - name: image
+              type: group
+              description: The container image associated with the resource.
+              fields:
+                - name: architecture
+                  type: keyword
+                  description: The image architecture.
+                - name: created_time
+                  type: date
+                  description: The time when the image was created.
+                - name: created_time_dt
+                  type: date
+                  description: The time when the image was created.
+                - name: hash
+                  type: group
+                  fields:
+                    - name: algorithm
+                      type: keyword
+                      description: The algorithm used to create the hash.
+                    - name: algorithm_id
+                      type: keyword
+                      description: The normalized identifier of the hash algorithm.
+                    - name: value
+                      type: keyword
+                      description: The hash value.
+                - name: modified_time
+                  type: date
+                  description: The time when the image was last modified.
+                - name: modified_time_dt
+                  type: date
+                  description: The time when the image was last modified.
+                - name: name
+                  type: keyword
+                  description: The image name.
+                - name: registry_uid
+                  type: keyword
+                  description: The unique identifier of the image registry.
+                - name: repository_name
+                  type: keyword
+                  description: The name of the image repository.
+                - name: tag
+                  type: keyword
+                  description: The tag of the image.
+                - name: uid
+                  type: keyword
+                  description: The unique identifier of the image.
             - name: ip
               type: ip
               description: The IP address of the resource, in either IPv4 or IPv6 format.
@@ -4125,6 +4504,9 @@
                 - name: uid_alt
                   type: keyword
                   description: The alternate user identifier.
+            - name: provider
+              type: keyword
+              description: The provider of the cloud resource.
             - name: region
               type: keyword
               description: The cloud region of the resource.
@@ -4158,6 +4540,12 @@
                 - name: uid
                   type: keyword
                   description: Unique identifier of the graph - a unique ID to reference this specific graph.
+            - name: role
+              type: keyword
+              description: The role of the resource in the context of the finding.
+            - name: role_id
+              type: keyword
+              description: The normalized identifier of the resource role.
             - name: tags.*
               type: object
               description: The list of tags.
@@ -4173,6 +4561,29 @@
             - name: uid_alt
               type: keyword
               description: The alternative unique identifier of the resource.
+            - name: user
+              type: group
+              description: The user associated with the resource.
+              fields:
+                - name: name
+                  type: keyword
+                  description: The username.
+                - name: programmatic_credentials
+                  type: nested
+                  description: Programmatic credentials associated with the user.
+                  fields:
+                    - name: uid
+                      type: keyword
+                      description: The unique identifier of the credential.
+                - name: type
+                  type: keyword
+                  description: The type of the user.
+                - name: type_id
+                  type: keyword
+                  description: The normalized account type identifier.
+                - name: uid_alt
+                  type: keyword
+                  description: The alternate user identifier.
             - name: version
               type: keyword
               description: The version of the resource.

@@ -1,0 +1,241 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies creation of a \":changelist\" NTFS alternate data stream or a Windows service Args registry value pointing to a \":changelist\" path. Microsoft Defender's Boot-Time Removal (BTR.sys) driver reads an RC4-encrypted transaction blob from a driver ADS named \":changelist\", referenced by HKLM\\SYSTEM\\*ControlSet*\\Services\\*\\Args. Adversaries can reproduce this staging outside Defender to abuse BTR.sys as a signed kernel primitive for arbitrary file and registry operations. This rule focuses on non-System writers and excludes Microsoft-signed MRT.exe running as SYSTEM, which may perform related remediation staging.",
+        "from": "now-9m",
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "host.id",
+                "host.name",
+                "user.id",
+                "user.name",
+                "process.pid",
+                "process.name",
+                "process.executable",
+                "process.code_signature.subject_name",
+                "event.category",
+                "file.path",
+                "file.name",
+                "file.size",
+                "registry.path",
+                "registry.value",
+                "registry.data.strings"
+            ]
+        },
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Potential Evasion via Boot Time Removal Tool",
+        "note": "## Triage and analysis\n\n### Investigating Potential Evasion via Boot Time Removal Tool\n\nWindows Defender's Boot-Time Removal driver (`BTR.sys`) is instructed via an encrypted configuration stored in an\nAlternate Data Stream named `:changelist` on a `.sys` image. The service `Args` value under\n`HKLM\\SYSTEM\\*ControlSet*\\Services\\<name>\\Args` points at that ADS path. Check Point Research (BTR Reforged)\nshowed that the same staging can be performed by non-Defender tooling (for example BTR_CLI) to drive Ring-0 file and\nregistry actions, including neutralization of security products during early boot.\n\n#### Possible investigation steps\n\n- Identify whether the alert is a file ADS creation or a service `Args` registry write using `event.category`,\n  `file.name` / `file.path`, and `registry.path` / `registry.data.strings`.\n- Review `process.executable`, `process.name`, `process.pid`, `process.parent.executable`, and `user.id` to determine\n  whether a Defender component, MRT, or an unexpected user-mode binary staged the `:changelist` artifact.\n- For file events, inspect the base `.sys` path (strip `:changelist`), size, hash, and code signature. Confirm whether\n  the driver was recently dropped under a user-writable path (Downloads, Temp, Desktop) versus a Defender-managed path.\n- For registry events, note the service key name under `Services\\*` and check sibling values (`ImagePath`, `Type`,\n  `Group`). Abuse tooling often sets `Group` to `Boot Bus Extender` and may create the service via direct registry\n  writes / `NtLoadDriver` without a corresponding SCM service-install event (7045).\n- Hunt on the same `host.id` for related activity: creation of `*.sys:*.dat` feedback ADS, load of a Microsoft-signed\n  driver matching BTR, creation/deletion of `\\\\SystemRoot\\\\Temp\\\\BootClean.log` by PID 4, and deletions of security\n  binaries attributed to System.\n- Correlate with other alerts for the same `user.id` and `host.id` in the prior 48 hours for privilege escalation,\n  driver load, or Defender tampering.\n\n### False positive analysis\n\n- Legitimate Defender or MRT reboot remediation may create `:changelist` ADS and related service Args values. This rule\n  excludes PID 4 and Microsoft-signed `MRT.exe` as SYSTEM; unsigned or differently signed `MRT.exe` still alerts. Rare\n  Defender paths (for example `MsMpEng.exe`) may still match and should be validated before exceptioning.\n- Security research labs intentionally exercising BTR_CLI or similar PoCs will generate true-positive-looking events;\n  confirm host cohort and change windows.\n\n### Response and remediation\n\n- If activity is unexplained: isolate the host, preserve the `.sys` file and `:changelist` stream, export the service\n  registry key, and capture the staging process tree before cleanup.\n- Search the estate for the same `file.name` / ADS pattern, service `Args` values containing `:changelist`, and related\n  driver hashes.\n- Remove unauthorized service keys and staged drivers, restore any deleted security components from known-good media,\n  and rotate credentials for accounts that held `SeLoadDriverPrivilege` on the host.\n- Restrict and monitor assignment/use of `SeLoadDriverPrivilege`; treat signed remediation drivers as LOLDrivers that\n  require lineage and ADS context monitoring, not signature blocking alone.\n",
+        "query": "from logs-endpoint.events.file-*, logs-endpoint.events.registry-* metadata _id, _version, _index\n| where host.os.type == \"windows\"\n  and process.pid != 4\n  and not (\n    user.id == \"S-1-5-18\"\n    and to_lower(process.executable) like \"\"\"?:\\\\windows\\\\system32\\\\mrt.exe\"\"\"\n    and process.code_signature.subject_name in (\"Microsoft Windows\", \"Microsoft Corporation\") \n    and process.code_signature.trusted == true\n  )\n  and (\n    (\n      event.category == \"file\"\n      and event.type == \"creation\"\n      and ends_with(to_lower(file.name), \":changelist\")\n    )\n    or (\n      event.category == \"registry\"\n      and event.type == \"change\"\n      and to_lower(registry.path) like \"\"\"*\\\\system\\\\*controlset*\\\\services\\\\*\\\\args\"\"\"\n      and to_lower(registry.data.strings) like \"*:changelist\"\n    )\n  )\n| keep\n    @timestamp,\n    host.id,\n    host.name,\n    user.id,\n    user.name,\n    process.pid,\n    process.name,\n    process.executable,\n    process.code_signature.subject_name,\n    event.category,\n    event.type,\n    file.path,\n    file.name,\n    file.size,\n    registry.path,\n    registry.value,\n    registry.data.strings,\n    data_stream.namespace,\n    _id,\n    _version,\n    _index\n| limit 100\n",
+        "references": [
+            "https://research.checkpoint.com/2026/btr-reforged-weaponizing-defenders-remediation-driver-as-a-kernel-operation-primitive/",
+            "https://github.com/Dump-GUY/BTR_CLI"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": ">=9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "@timestamp",
+                "type": "date"
+            },
+            {
+                "ecs": false,
+                "name": "_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "_index",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "_version",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.namespace",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "file.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "file.path",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "file.size",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.code_signature.subject_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.pid",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "registry.data.strings",
+                "type": "wildcard"
+            },
+            {
+                "ecs": true,
+                "name": "registry.path",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "registry.value",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "942c8f59-f01c-4dc0-a05f-2f5bba836ad8",
+        "setup": "## Setup\n\nThis rule is designed for data generated by [Elastic Defend](https://www.elastic.co/security/endpoint-security), which provides native endpoint detection and response, along with event enrichments designed to work with our detection rules.\n\nSetup instructions: https://ela.st/install-elastic-defend\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Persistence",
+            "Resources: Investigation Guide",
+            "Data Source: Elastic Defend",
+            "Tactic: Defense Impairment",
+            "Tactic: Stealth"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Stealth",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1564",
+                        "name": "Hide Artifacts",
+                        "reference": "https://attack.mitre.org/techniques/T1564/",
+                        "subtechnique": [
+                            {
+                                "id": "T1564.004",
+                                "name": "NTFS File Attributes",
+                                "reference": "https://attack.mitre.org/techniques/T1564/004/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0112",
+                    "name": "Defense Impairment",
+                    "reference": "https://attack.mitre.org/tactics/TA0112/"
+                },
+                "technique": [
+                    {
+                        "id": "T1112",
+                        "name": "Modify Registry",
+                        "reference": "https://attack.mitre.org/techniques/T1112/"
+                    },
+                    {
+                        "id": "T1685",
+                        "name": "Disable or Modify Tools",
+                        "reference": "https://attack.mitre.org/techniques/T1685/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1112",
+                        "name": "Modify Registry",
+                        "reference": "https://attack.mitre.org/techniques/T1112/"
+                    },
+                    {
+                        "id": "T1543",
+                        "name": "Create or Modify System Process",
+                        "reference": "https://attack.mitre.org/techniques/T1543/",
+                        "subtechnique": [
+                            {
+                                "id": "T1543.003",
+                                "name": "Windows Service",
+                                "reference": "https://attack.mitre.org/techniques/T1543/003/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 2
+    },
+    "id": "942c8f59-f01c-4dc0-a05f-2f5bba836ad8_2",
+    "type": "security-rule"
+}
