@@ -22,7 +22,7 @@ if running_on_buildkite; then
 fi
 
 SERVERLESS_PROJECT=${SERVERLESS_PROJECT:-"observability"}
-echo "Running packages on Serverles project type: ${SERVERLESS_PROJECT}"
+echo "Running packages on Serverless project type: ${SERVERLESS_PROJECT}"
 if running_on_buildkite; then
     buildkite-agent annotate "Serverless Project: ${SERVERLESS_PROJECT}" --context "ctx-info-${SERVERLESS_PROJECT}" --style "info"
 fi
@@ -64,48 +64,48 @@ echo "Done."
 echo "--- Get from and to changesets"
 from="$(get_from_changeset)"
 if [[ "${from}" == "" ]]; then
-    echo "Missing \"from\" changset".
+    echo "Missing \"from\" changeset".
     exit 1
 fi
 to="$(get_to_changeset)"
 if [[ "${to}" == "" ]]; then
-    echo "Missing \"to\" changset".
+    echo "Missing \"to\" changeset".
     exit 1
 fi
 echo "Checking with commits: from: '${from}' to: '${to}'"
 
 any_package_failing=0
 
-pushd packages > /dev/null
-for package in $(list_all_directories); do
-    echo "--- [$package] check if it is required to be tested"
-    pushd "${package}" > /dev/null
-    skip_package=false
-    failure=false
-    if ! reason=$(is_pr_affected "${package}" "${from}" "${to}") ; then
-        skip_package=true
-        if [[ "${reason}" == "${FATAL_ERROR}" ]]; then
-            failure=true
-        fi
-    fi
-    popd > /dev/null
-    if [[ "${failure}" == "true" ]]; then
-        echo "Unexpected failure checking ${package}"
-        exit 1
-    fi
+echo "--- Compute affected packages from git diff"
+COMMIT_MERGE=$(git merge-base "${from}" "${to}")
+export COMMIT_MERGE
+changed_files=$(git diff --name-only "${COMMIT_MERGE}" "${to}")
 
-    echo "${reason}"
+if [[ "${FORCE_CHECK_ALL}" == "true" ]] || echo "${changed_files}" | pr_has_package_related_files; then
+    echo "Non-package files changed or FORCE_CHECK_ALL set: scanning all packages"
+    PACKAGE_LIST=$(list_all_directories)
+else
+    PACKAGE_LIST=$(
+        {
+            echo "${changed_files}" | grep -oE '^packages/[^/]+' | sort -u || true
+            echo "${changed_files}" | grep -oE '^\.buildkite/scripts/packages/[^/]+\.sh' \
+                | sed 's|^\.buildkite/scripts/||; s|\.sh$||' || true
+        } | sort -u | grep -v '^$' || true
+    )
+    echo "Packages affected by diff: $(echo "${PACKAGE_LIST}" | tr '\n' ' ')"
+fi
 
-    if [[ "${skip_package}" == "true" ]]; then
-        echo "- ${reason}" >> "${SKIPPED_PACKAGES_FILE_PATH}"
+for package_path in ${PACKAGE_LIST}; do
+    echo "--- [$package_path] check if it is required to be tested"
+    if ! should_test_package "${package_path}" "${from}" "${to}"; then
+        echo "- ${package_path}" >> "${SKIPPED_PACKAGES_FILE_PATH}"
         continue
     fi
 
-    if ! process_package "${package}" "${FAILED_PACKAGES_FILE_PATH}" ; then
+    if ! process_package "${package_path}" "${FAILED_PACKAGES_FILE_PATH}" ; then
         any_package_failing=1
     fi
 done
-popd > /dev/null
 
 if running_on_buildkite ; then
     if [ -f "${SKIPPED_PACKAGES_FILE_PATH}" ]; then

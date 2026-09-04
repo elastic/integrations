@@ -9,10 +9,6 @@ add_bin_path
 with_yq
 with_mage
 
-pushd packages > /dev/null
-PACKAGE_LIST=$(list_all_directories)
-popd > /dev/null
-
 PIPELINE_FILE="packages_pipeline.yml"
 touch packages_pipeline.yml
 
@@ -28,12 +24,12 @@ EOF
 echo "--- Get from and to changesets"
 from="$(get_from_changeset)"
 if [[ "${from}" == "" ]]; then
-    echo "Missing \"from\" changset".
+    echo "Missing \"from\" changeset".
     exit 1
 fi
 to="$(get_to_changeset)"
 if [[ "${to}" == "" ]]; then
-    echo "Missing \"to\" changset".
+    echo "Missing \"to\" changeset".
     exit 1
 fi
 
@@ -49,36 +45,44 @@ if [[ "${BUILDKITE_PIPELINE_SLUG}" == "integrations-test-stack" && "${GITHUB_PR_
     echo "Use Elastic stack version from Github comment: ${STACK_VERSION}"
 fi
 
+echo "--- Compute affected packages from git diff"
+COMMIT_MERGE=$(git merge-base "${from}" "${to}")
+export COMMIT_MERGE
+changed_files=$(git diff --name-only "${COMMIT_MERGE}" "${to}")
+
+if [[ "${FORCE_CHECK_ALL}" == "true" ]] || echo "${changed_files}" | pr_has_package_related_files; then
+    echo "Non-package files changed or FORCE_CHECK_ALL set: scanning all packages"
+    PACKAGE_LIST=$(list_all_directories)
+else
+    PACKAGE_LIST=$(
+        {
+            echo "${changed_files}" | grep -oE '^packages/[^/]+' | sort -u || true
+            echo "${changed_files}" | grep -oE '^\.buildkite/scripts/packages/[^/]+\.sh' \
+                | sed 's|^\.buildkite/scripts/||; s|\.sh$||' || true
+        } | sort -u | grep -v '^$' || true
+    )
+    echo "Packages affected by diff: $(echo "${PACKAGE_LIST}" | tr '\n' ' ')"
+fi
+
 packages_to_test=0
 
-for package in ${PACKAGE_LIST}; do
+for package_path in ${PACKAGE_LIST}; do
     # check if needed to create an step for this package
-    echo "--- [$package] check if it is required to be tested"
-    pushd "packages/${package}" > /dev/null
-    skip_package="false"
-    failure="false"
-    if ! reason=$(is_pr_affected "${package}" "${from}" "${to}") ; then
-        skip_package="true"
-        if [[ "${reason}" == "${FATAL_ERROR}" ]]; then
-            failure=true
-        fi
-    fi
-    popd > /dev/null
-    if [[ "${failure}" == "true" ]]; then
-        echo "Unexpected failure checking ${package}"
-        exit 1
-    fi
-
-    echoerr "${reason}"
-    if [[ "${skip_package}" == "true" ]] ; then
+    echo "--- [$package_path] check if it is required to be tested"
+    if ! should_test_package "${package_path}" "${from}" "${to}"; then
         continue
     fi
 
+    # package names (manifest.yml) are unique, so it can be used as key for the step
+    pushd "${package_path}" > /dev/null
+    package_name=$(package_name_manifest)
+    popd > /dev/null
+
     packages_to_test=$((packages_to_test+1))
     cat << EOF >> ${PIPELINE_FILE}
-    - label: "Check integrations ${package}"
-      key: "test-integrations-${package}"
-      command: ".buildkite/scripts/test_one_package.sh ${package} ${from} ${to}"
+    - label: "Check integrations ${package_name}"
+      key: "test-integrations-${package_name}"
+      command: ".buildkite/scripts/test_one_package.sh ${package_path} ${from} ${to}"
       timeout_in_minutes: 300
       agents:
         provider: gcp
