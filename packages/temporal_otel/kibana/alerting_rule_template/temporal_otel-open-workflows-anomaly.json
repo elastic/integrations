@@ -1,0 +1,53 @@
+{
+  "id": "temporal_otel-open-workflows-anomaly",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when the number of open (in-flight) workflow executions in a namespace exceeds a high threshold, indicating potential workflow accumulation. Sustained growth in open workflows without proportional throughput growth suggests workflows are not completing — either stuck waiting on tasks, blocked by failed activities, or running indefinitely due to a bug. This is a namespace-level saturation signal.",
+    "name": "[Temporal OTel] Namespace Open Workflow Count Anomaly",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "temporal",
+      "temporal-cloud"
+    ],
+    "schedule": {
+      "interval": "15m"
+    },
+    "alertDelay": {
+      "active": 3
+    },
+    "flapping": {
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    },
+    "artifacts": {
+      "investigation_guide": {
+        "blob": "## Namespace Open Workflow Count Anomaly\n\nThis alert fires when `namespace_open_workflows` — the count of currently in-flight workflow executions — exceeds 10,000 for a namespace. A high number of open workflows is not inherently a problem (long-running workflows are expected), but a rapidly growing count that is not matched by throughput growth indicates workflows are accumulating without completing.\n\n### When Is This Normal?\n\nSome workloads legitimately maintain many concurrent open workflows:\n- Human-in-the-loop workflows that wait for days or weeks\n- Scheduled workflows that are long-lived by design\n- Workflows waiting on external events via signals\n\nBefore acting on this alert, establish the baseline for your namespace. Tune the threshold (currently 10,000) to reflect the normal steady-state for your workload.\n\n### When Is This a Problem?\n\n- Open workflows growing but `workflow_success_count` is flat or declining\n- Open workflows growing during an incident with backlog and timeout alerts also firing\n- Open workflows not draining after a worker outage is resolved\n\n### Triage Steps\n\n1. **Compare with throughput**: Check whether `workflow_success_count` is keeping pace with the open workflow count. If completions are normal but open workflows are growing, new workflows are being started faster than old ones finish.\n\n2. **Check for stuck workflows**:\n   - Look at `approximate_backlog_count` — a growing backlog alongside growing open workflows confirms workers are not processing tasks.\n   - Check `workflow_timeout_count` — timeouts clear open workflows; if timeouts are zero but open count is growing, the workflows are still running (not just stuck).\n\n3. **Check for runaway workflow scheduling**: Some bugs cause workflows to spawn child workflows recursively. Examine `workflow_schedule_to_close_latency_p99` — extremely high values indicate workflows running for unexpectedly long times.\n\n4. **Review namespace limits**: Open workflow counts approaching Temporal Cloud's per-namespace workflow limit will cause new workflow starts to fail. Check with Temporal Cloud support if you are near the documented limit.\n\n5. **Check the `operations_count` vs `operations_limit` ratio**: Very high concurrent open workflows generate more internal operations (timer scans, heartbeat checks) — this may push you toward the operations limit.\n\n### Threshold Guidance\n\nThe default threshold of 10,000 open workflows is based on observed data in this cluster. Adjust this to approximately 2x your normal steady-state value to catch genuine anomalies while avoiding false positives from expected load growth."
+      },
+      "dashboards": [
+        {
+          "id": "temporal_otel-5e3e5a3c-5eaf-4556-af1e-72a001264380"
+        }
+      ]
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "TS metrics-temporal.cloud_metrics.otel-*\n// namespace_open_workflows is a value gauge; MAX captures the peak within the window\n| STATS open_workflows = MAX(AVG_OVER_TIME(metrics.temporal_cloud_v1_namespace_open_workflows)),\n        success_rate = SUM(AVG_OVER_TIME(metrics.temporal_cloud_v1_workflow_success_count))\n    BY attributes.temporal_namespace\n| WHERE open_workflows IS NOT NULL\n// Alert when open workflows exceed 10,000; tune this threshold to your normal steady-state\n| WHERE open_workflows > 10000\n| SORT open_workflows DESC\n| LIMIT 10"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "attributes.temporal_namespace",
+      "termSize": 10,
+      "excludeHitsFromPreviousRun": true
+    }
+  }
+}

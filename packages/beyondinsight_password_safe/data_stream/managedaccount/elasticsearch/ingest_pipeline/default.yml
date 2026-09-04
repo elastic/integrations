@@ -2,13 +2,15 @@
 description: Pipeline for processing BeyondTrust Password Safe Managed Accounts.
 processors:
   - set:
+      tag: set_ecs_version_c157feff
       field: ecs.version
       value: '9.1.0'
   - terminate:
-      tag: data_collection_error
+      tag: data_collection_error_35d11e6e
       if: ctx.error?.message != null && ctx.event?.original == null
       description: error message set and no data to process.
   - fingerprint:
+      tag: fingerprint_to_id_881e9d82
       description: >-
         This API does does not have a cursor.
         The integration collects all assets on each execution.
@@ -18,9 +20,10 @@ processors:
       target_field: _id
   - json:
       field: event.original
-      tag: json_event_original
+      tag: json_event_original_65f79583
       target_field: beyondinsight_password_safe.managedaccount
   - script:
+      tag: script_remove_null_values_empty_strings_af6f2213
       description: Remove null values and empty strings from beyondinsight_password_safe.managedaccount.
       lang: painless
       source: |
@@ -29,7 +32,7 @@ processors:
           (entry.getValue() instanceof String && entry.getValue().isEmpty())
         );
   - script:
-      tag: script_numeric_id_to_string
+      tag: script_numeric_id_to_string_b0cfdbd6
       description: Convert numeric ID fields to strings.
       params:
         numeric_ids:
@@ -47,7 +50,7 @@ processors:
           }
         }
   - script:
-      tag: script_camel_to_snake_naming
+      tag: script_camel_to_snake_naming_4d68b466
       description: Rename CapitalCamelCase-ish fields to lower_snake_case.
       params:
         field_mappings:
@@ -83,57 +86,69 @@ processors:
         }
         ctx.beyondinsight_password_safe.managedaccount = renamedFields;
   - date:
+      tag: date_beyondinsight_password_safe_managedaccount_last_change_date_to_beyondinsight_password_safe_managedaccount_last_change_date_5f501705
       if: ctx.beyondinsight_password_safe?.managedaccount?.last_change_date != null
       field: beyondinsight_password_safe.managedaccount.last_change_date
       target_field: beyondinsight_password_safe.managedaccount.last_change_date
       formats:
         - ISO8601
   - set:
+      tag: set_timestamp_d5aab5b2
       field: '@timestamp'
       copy_from: beyondinsight_password_safe.managedaccount.last_change_date
       ignore_empty_value: true
   - date:
+      tag: date_beyondinsight_password_safe_managedaccount_next_change_date_to_beyondinsight_password_safe_managedaccount_next_change_date_528aac48
       if: ctx.beyondinsight_password_safe?.managedaccount?.next_change_date != null
       field: beyondinsight_password_safe.managedaccount.next_change_date
       target_field: beyondinsight_password_safe.managedaccount.next_change_date
       formats:
         - ISO8601
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - append:
+      tag: append_event_category_576de059
       field: event.category
       value: iam
   - append:
+      tag: append_event_type_8a66ccaa
       field: event.type
       value: info
   - set:
+      tag: set_host_id_edb0bd2a
       field: host.id
       copy_from: beyondinsight_password_safe.managedaccount.system_id
       ignore_empty_value: true
   - set:
+      tag: set_host_hostname_8df10c74
       field: host.hostname
       copy_from: beyondinsight_password_safe.managedaccount.system_name
       ignore_empty_value: true
   - set:
+      tag: set_host_domain_08fde8d2
       field: host.domain
       copy_from: beyondinsight_password_safe.managedaccount.domain_name
       ignore_empty_value: true
   - set:
+      tag: set_user_id_b079a5f9
       field: user.id
       copy_from: beyondinsight_password_safe.managedaccount.account_id
       ignore_empty_value: true
   - set:
+      tag: set_user_name_0e9973bd
       field: user.name
       copy_from: beyondinsight_password_safe.managedaccount.account_name
       ignore_empty_value: true
   - set:
+      tag: set_user_email_d7ae984b
       field: user.email
       copy_from: beyondinsight_password_safe.managedaccount.user_principal_name
       ignore_empty_value: true
   - script:
       description: Convert ChangeState numeric values to human-readable format.
-      tag: script_change_state_strings
+      tag: script_change_state_strings_a41a6ccc
       lang: painless
       params:
         descriptions:
@@ -147,37 +162,49 @@ processors:
           ctx.beyondinsight_password_safe.managedaccount.change_state = description;
         }
   - append:
+      tag: append_related_hosts_0f2e7fa0
       if: ctx.beyondinsight_password_safe?.managedaccount?.system_id != null
       field: related.hosts
       value: '{{{beyondinsight_password_safe.managedaccount.system_id}}}'
       allow_duplicates: false
   - append:
+      tag: append_related_hosts_6c09c59c
       if: ctx.beyondinsight_password_safe?.managedaccount?.system_name != null
       field: related.hosts
       value: '{{{beyondinsight_password_safe.managedaccount.system_name}}}'
       allow_duplicates: false
   - append:
+      tag: append_related_user_a0f52e14
       if: ctx.beyondinsight_password_safe?.managedaccount?.account_id != null
       field: related.user
       value: '{{{beyondinsight_password_safe.managedaccount.account_id}}}'
       allow_duplicates: false
   - append:
+      tag: append_related_user_a922f9c0
       if: ctx.beyondinsight_password_safe?.managedaccount?.account_name != null
       field: related.user
       value: '{{{beyondinsight_password_safe.managedaccount.account_name}}}'
       allow_duplicates: false
   - append:
+      tag: append_related_user_d34db5ca
       if: ctx.beyondinsight_password_safe?.managedaccount?.user_principal_name != null
       field: related.user
       value: '{{{beyondinsight_password_safe.managedaccount.user_principal_name}}}'
       allow_duplicates: false
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_error_message_d916120d
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
         {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
         {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      tag: append_tags_279d5a5c
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

@@ -3,54 +3,64 @@ description: Pipeline for Google Cloud audit logs
 
 processors:
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
       if: 'ctx.event?.original == null'
   - json:
+      tag: json_event_original_to_json_da2067de
       field: event.original
       target_field: json
       if: ctx.event?.original != null
       on_failure:
         # Parse cluster notification on failure
         - set:
+            tag: set_gcp_audit_notification_232db967
             field: gcp.audit.notification
             copy_from: event.original
             ignore_empty_value: true
   - set:
+      tag: set_gcp_audit_type_c033c617
       field: gcp.audit.type
       copy_from: "json.protoPayload.@type"
       ignore_failure: true
-##
-# https://cloud.google.com/logging/docs/reference/v2/rest/v2/LogEntry
-# protoPayload @type must be type.googleapis.com/google.cloud.audit.AuditLog
-##
+  ##
+  # https://cloud.google.com/logging/docs/reference/v2/rest/v2/LogEntry
+  # protoPayload @type must be type.googleapis.com/google.cloud.audit.AuditLog
+  ##
   - drop:
+      tag: drop_document_not_auditlog_type_10e9b810
       description: Drop the document if it is not of AuditLog type
       if: ctx.gcp?.audit?.type != null && ctx.gcp?.audit?.type != 'type.googleapis.com/google.cloud.audit.AuditLog'
-# .insertId
+  # .insertId
   - set:
+      tag: set_event_id_008e62b2
       field: event.id
       copy_from: json.insertId
       if: ctx.json?.insertId != null
-# .logName
+  # .logName
   - rename:
+      tag: rename_json_logName_to_log_logger_73f0a6eb
       field: json.logName
       target_field: log.logger
       ignore_missing: true
-# .severity
+  # .severity
   - rename:
+      tag: rename_json_severity_to_log_level_db5923df
       field: json.severity
       target_field: log.level
       ignore_missing: true
-##
-# Extract the type of audit logging data from logName to event.provider
-# https://cloud.google.com/pubsub/docs/audit-logging#log_name
-##
+  ##
+  # Extract the type of audit logging data from logName to event.provider
+  # https://cloud.google.com/pubsub/docs/audit-logging#log_name
+  ##
   - dissect:
+      tag: dissect_log_logger_c8ea0152
       field: log.logger
       pattern: "%{}%2F%{event.provider}"
       ignore_missing: true
@@ -58,55 +68,65 @@ processors:
       ignore_failure: true
 
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - set:
+      tag: set_cloud_provider_62c5e42e
       field: cloud.provider
       value: gcp
   - date:
+      tag: date_json_timestamp_7a63aef5
       field: json.timestamp
       timezone: UTC
       formats:
         - ISO8601
       if: ctx.json?.timestamp != null && ctx.json.timestamp != ''
 
-##
-# MonitoredResource
-# .resource
-# MonitoredResource https://cloud.google.com/logging/docs/reference/v2/rest/v2/MonitoredResource
-##
+  ##
+  # MonitoredResource
+  # .resource
+  # MonitoredResource https://cloud.google.com/logging/docs/reference/v2/rest/v2/MonitoredResource
+  ##
   - set:
+      tag: set_cloud_project_id_121ba626
       field: cloud.project.id
       copy_from: json.resource.labels.project_id
       if: ctx.json?.resource?.labels?.project_id != null
   - set:
+      tag: set_cloud_instance_id_e0be3fd4
       field: cloud.instance.id
       copy_from: json.resource.labels.instance_id
       if: ctx.json?.resource?.labels?.instance_id != null
   - set:
+      tag: set_cloud_availability_zone_24b38f5a
       field: cloud.availability_zone
       copy_from: json.resource.labels.location
       ignore_empty_value: true
-##
-# MonitoredResourceDescriptor type
-# https://cloud.google.com/logging/docs/reference/v2/rest/v2/monitoredResourceDescriptors/list#MonitoredResourceDescriptor
-# resource list values https://cloud.google.com/logging/docs/api/v2/resource-list
-##
+  ##
+  # MonitoredResourceDescriptor type
+  # https://cloud.google.com/logging/docs/reference/v2/rest/v2/monitoredResourceDescriptors/list#MonitoredResourceDescriptor
+  # resource list values https://cloud.google.com/logging/docs/api/v2/resource-list
+  ##
   - set:
+      tag: set_orchestrator_type_757229a9
       field: orchestrator.type
       value: kubernetes
       if: ctx.json?.resource?.type != null && (ctx.json?.resource?.type == 'k8s_cluster' || ctx.json?.resource?.type == 'gke_cluster')
   - set:
+      tag: set_orchestrator_cluster_name_83531fb4
       field: orchestrator.cluster.name
       copy_from: json.resource.labels.cluster_name
       ignore_empty_value: true
       if: ctx.json?.resource?.type != null && (ctx.json?.resource?.type == 'k8s_cluster' || ctx.json?.resource?.type == 'gke_cluster')
   - set:
+      tag: set__temp_type_3c87c5ae
       field: _temp.type
       copy_from: json.protoPayload.resourceName
       ignore_empty_value: true
       if: ctx.json?.resource?.type != null && ctx.json?.resource?.type == 'k8s_cluster'
   - grok:
+      tag: grok__temp_type_4273d731
       field: _temp.type
       patterns:
         - '%{DATA}/%{API_VERSION:orchestrator.api_version}/namespaces/%{DATA:orchestrator.namespace}/%{RESOURCE_TYPE:orchestrator.resource.type}(/%{HOSTNAME:orchestrator.resource.name})?'
@@ -119,13 +139,18 @@ processors:
         RESOURCE_TYPE: ([a-z]+((\.[a-z0-9]+)+)?)
       ignore_missing: true
   - script:
+      tag: script_appends_relevant_entity_to_related_13bc28fc
       description: Appends any relevant entity to `related.entity` for all events
       lang: painless
       on_failure:
-        - set:
-            description: Adds error reason to the document
+        - append:
+            tag: append_error_message_bd55f3fe
             field: error.message
-            value: "{{{ _ingest.on_failure_message }}}"
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+            allow_duplicates: false
       source: |
         void addValue(Set entities, def value) {
           if (value != null && value != "") {
@@ -209,36 +234,45 @@ processors:
           ctx.related.entity = entities;
         }
 
-##
-# Extract origin, target, and related entity IDs
-##
+  ##
+  # Extract origin, target, and related entity IDs
+  ##
   - append:
+      tag: append_actor_entity_id_8c5df9c1
       field: actor.entity.id
       value: "{{{json.protoPayload.authenticationInfo.principalSubject}}}"
       if: ctx.json?.protoPayload?.authenticationInfo?.principalSubject != null
   - append:
+      tag: append_actor_entity_id_5873a061
       field: actor.entity.id
       value: "{{{json.protoPayload.authenticationInfo.principalEmail}}}"
       if: ctx.json?.protoPayload?.authenticationInfo?.principalEmail != null
   - append:
+      tag: append_target_entity_id_a8c26482
       field: target.entity.id
       value: "{{{json.protoPayload.resourceName}}}"
       if: ctx.json?.resource?.type != 'k8s_cluster' && ctx.json?.protoPayload?.resourceName != null
   - append:
+      tag: append_target_entity_id_e0955b84
       field: target.entity.id
       value: "{{{json.resource.disk_id}}}"
       if: ctx.json?.resouce?.disk_id != null
-##
-# Classify actor and target entities by type for enhanced graph visualization
-##
+  ##
+  # Classify actor and target entities by type for enhanced graph visualization
+  ##
   - script:
+      tag: script_classify_actor_target_entities_0b5ddf1c
       description: Classify actor and target entities into type-specific fields
       lang: painless
       on_failure:
-        - set:
-            description: Adds error reason to the document
+        - append:
+            tag: append_error_message_47a05ef0
             field: error.message
-            value: "{{{ _ingest.on_failure_message }}}"
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+            allow_duplicates: false
       source: |
         void addNestedValue(def currentCtx, String path, def value) {
           if (value == null || value == "") {
@@ -348,123 +382,39 @@ processors:
             }
           }
         }
-  - script:
-      description: Appends any relevant entity to `related.entity` for all events
-      lang: painless
-      on_failure:
-        - set:
-            description: Adds error reason to the document
-            field: error.message
-            value: "{{{ _ingest.on_failure_message }}}"
-      source: |
-        void addValue(Set entities, def value) {
-          if (value != null && value != "") {
-            entities.add(value);
-          }
-        }
 
-        boolean isKubernetes = false;
-        if (ctx.json?.resource?.type != null) {
-          String typ = ctx.json.resource.type;
-          isKubernetes = (typ == "k8s_cluster" || typ == "gke_cluster" || typ == "kubernetes");
-        }
-
-        // Using tree set to ensure a sorting is kept (testing purposes)
-        TreeSet entities = new TreeSet();
-
-        addValue(entities, ctx.json?.protoPayload?.request?.parent);
-        if (!isKubernetes) {
-          addValue(entities, ctx.json?.protoPayload?.resourceName);
-          addValue(entities, ctx.json?.protoPayload?.response?.user);
-        }
-
-        HashMap authInfo = ctx.json?.protoPayload?.authenticationInfo ?: new HashMap();
-        if (!isKubernetes) {
-          addValue(entities, authInfo.principalEmail);
-        }
-        addValue(entities, authInfo.principalSubject);
-        addValue(entities, authInfo.serviceAccountKeyName);
-        if (authInfo.serviceAccountDelegationInfo instanceof List) {
-          for (def i: authInfo.serviceAccountDelegationInfo) {
-            addValue(entities, i.principalSubject);
-            addValue(entities, i.firstPartyPrincipal?.principalEmail);
-            addValue(entities, i.thirdPartyPrincipal?.principalEmail);
-          }
-        }
-
-        String serviceName = ctx.json?.protoPayload?.serviceName ?: '';
-        if (serviceName == "compute.googleapis.com") {
-          if (ctx.json?.protoPayload?.request?.networkInterfaces instanceof List) {
-            for (def e: ctx.json.protoPayload.request.networkInterfaces) {
-              addValue(entities, e.network);
-            }
-          }
-          if (ctx.json?.protoPayload?.request?.serviceAccounts instanceof List) {
-            for (def e: ctx.json.protoPayload.request.serviceAccounts) {
-              addValue(entities, e.email);
-            }
-          }
-          if (ctx.json?.protoPayload?.request?.disks instanceof List) {
-            for (def e: ctx.json.protoPayload.request.disks) {
-              addValue(entities, e.source);
-            }
-          }
-        } else if (serviceName == "cloudresourcemanager.googleapis.com") {
-          if (ctx.json?.protoPayload?.request?.policy?.bindings instanceof List) {
-            for (def e: ctx.json.protoPayload.request.policy.bindings) {
-              addValue(entities, e.role);
-              for (def m: e.members) {
-                addValue(entities, m);
-              }
-            }
-          }
-          if (ctx.json?.protoPayload?.response?.bindings instanceof List) {
-            for (def e: ctx.json.protoPayload.response.bindings) {
-              addValue(entities, e.role);
-              for (def m: e.members) {
-                addValue(entities, m);
-              }
-            }
-          }
-        } else if (serviceName == "iamcredentials.googleapis.com") {
-          if (ctx.json?.protoPayload?.metadata?.identityDelegationChain instanceof List) {
-            for (def e: ctx.json.protoPayload.metadata.identityDelegationChain) {
-              addValue(entities, e);
-            }
-          }
-        }
-
-        if (entities.size() > 0) {
-          ctx.related = ctx.related ?: [:];
-          ctx.related.entity = entities;
-        }
-
-##
-# AuthenticationInfo
-# .protoPayload.authenticationInfo
-# https://cloud.google.com/logging/docs/reference/audit/auditlog/rest/Shared.Types/AuditLog#AuthenticationInfo
-##
+  ##
+  # AuthenticationInfo
+  # .protoPayload.authenticationInfo
+  # https://cloud.google.com/logging/docs/reference/audit/auditlog/rest/Shared.Types/AuditLog#AuthenticationInfo
+  ##
   - rename:
+      tag: rename_json_protoPayload_authenticationInfo_authoritySelector_to_gcp_audit_authentication_info_authority_selector_8503f1a1
       field: json.protoPayload.authenticationInfo.authoritySelector
       target_field: gcp.audit.authentication_info.authority_selector
       ignore_failure: true
   - rename:
+      tag: rename_json_protoPayload_authenticationInfo_principalEmail_to_gcp_audit_authentication_info_principal_email_9739641b
       field: json.protoPayload.authenticationInfo.principalEmail
       target_field: gcp.audit.authentication_info.principal_email
       ignore_failure: true
   - rename:
+      tag: rename_json_protoPayload_authenticationInfo_principalSubject_to_gcp_audit_authentication_info_principal_subject_0d76993b
       field: json.protoPayload.authenticationInfo.principalSubject
       target_field: gcp.audit.authentication_info.principal_subject
       ignore_failure: true
   - rename:
+      tag: rename_json_protoPayload_authenticationInfo_serviceAccountKeyName_to_gcp_audit_authentication_info_service_account_key_name_dfd8d4d3
       field: json.protoPayload.authenticationInfo.serviceAccountKeyName
       target_field: gcp.audit.authentication_info.service_account_key_name
       ignore_failure: true
   - rename:
+      tag: rename_json_protoPayload_authenticationInfo_serviceAccountDelegationInfo_to_gcp_audit_authentication_info_service_account_delegation_info_883b4747
       field: json.protoPayload.authenticationInfo.serviceAccountDelegationInfo
       target_field: gcp.audit.authentication_info.service_account_delegation_info
       ignore_failure: true
   - rename:
+      tag: rename_json_protoPayload_authenticationInfo_thirdPartyPrincipal_to_gcp_audit_authentication_info_third_party_principal_19aae662
       field: json.protoPayload.authenticationInfo.thirdPartyPrincipal
       target_field: gcp.audit.authentication_info.third_party_principal
       ignore_failure: true
@@ -472,6 +422,7 @@ processors:
   # email address of authenticated user (redacted) or service account
   # principal_email -> client.user.email
   - rename:
+      tag: rename_gcp_audit_authentication_info_principal_email_to_client_user_email_d32fc7d2
       field: gcp.audit.authentication_info.principal_email
       target_field: client.user.email
       if: ctx.client?.user?.email == null
@@ -479,143 +430,157 @@ processors:
   # identity of requesting first or third party
   # principal_subject -> client.user.id
   - rename:
+      tag: rename_gcp_audit_authentication_info_principal_subject_to_client_user_id_603af332
       field: gcp.audit.authentication_info.principal_subject
       target_field: client.user.id
       if: ctx.client?.user?.id == null
       ignore_missing: true
 
-##
-# AuthorizationInfo
-# .protoPayload.authorizationInfo
-# https://cloud.google.com/logging/docs/reference/audit/auditlog/rest/Shared.Types/AuditLog#authorizationinfo
-##
+  ##
+  # AuthorizationInfo
+  # .protoPayload.authorizationInfo
+  # https://cloud.google.com/logging/docs/reference/audit/auditlog/rest/Shared.Types/AuditLog#authorizationinfo
+  ##
   - set:
+      tag: set_gcp_audit_authorization_info_54848940
       field: gcp.audit.authorization_info
       copy_from: json.protoPayload.authorizationInfo
       ignore_failure: true
   - foreach:
+      tag: foreach_gcp_audit_authorization_info_4f513c47
       field: gcp.audit.authorization_info
       ignore_missing: true
       ignore_failure: true
       processor:
         rename:
+          tag: rename_ingest_value_resourceAttributes_to_ingest_value_resource_attributes_bbc0899f
           field: _ingest._value.resourceAttributes
           target_field: _ingest._value.resource_attributes
       if: ctx?.gcp?.audit?.authorization_info != null && ctx?.gcp?.audit?.authorization_info instanceof List
 
-##
-# Labels
-# .labels
-##
+  ##
+  # Labels
+  # .labels
+  ##
   - set:
+      tag: set_gcp_audit_labels_a7884819
       field: gcp.audit.labels
       copy_from: json.labels
       if: ctx.json?.labels != null
   - json:
       field: labels.payload
-      tag: json_labels_payload
+      tag: json_labels_payload_b1520995
       if: ctx.labels?.payload != null
       on_failure:
         - append:
+            tag: append_error_message_c858cf42
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: cloud.project.id
-      tag: set_cloud_project_id_from_labels_project_id
+      tag: set_cloud_project_id_from_labels_project_id_a4bfff4c
       copy_from: labels.project_id
       override: false
       ignore_empty_value: true
       if: ctx.cloud?.project?.id == null && ctx.labels?.project_id != null
   - set:
       field: orchestrator.type
-      tag: set_orchestrator_type
+      tag: set_orchestrator_type_cadb6677
       value: kubernetes
       override: false
       if: ctx.orchestrator?.type == null && ctx.labels?.cluster_name != null
   - set:
       field: orchestrator.cluster.name
-      tag: set_orchestrator_cluster_name_from_labels_cluster_name
+      tag: set_orchestrator_cluster_name_from_labels_cluster_name_c2a18138
       copy_from: labels.cluster_name
       ignore_empty_value: true
       override: false
       if: ctx.orchestrator?.cluster?.name == null && ctx.labels?.cluster_name != null
   - set:
       field: orchestrator.resource.type
-      tag: set_orchestrator_resource_type_from_labels_payload_resourceType
+      tag: set_orchestrator_resource_type_from_labels_payload_resourceType_da704339
       copy_from: labels.payload.resourceType
       ignore_empty_value: true
       override: false
       if: ctx.orchestrator?.resource?.type == null && ctx.labels?.payload?.resourceType != null
   - set:
       field: orchestrator.resource.name
-      tag: set_orchestrator_resource_name_from_labels_payload_resource
+      tag: set_orchestrator_resource_name_from_labels_payload_resource_4da70f86
       copy_from: labels.payload.resource
       ignore_empty_value: true
       override: false
       if: ctx.orchestrator?.resource?.name == null && ctx.labels?.payload?.resource != null
 
-##
-# RequestMetadata
-# .protoPayload.requestMetadata
-# https://cloud.google.com/logging/docs/reference/audit/auditlog/rest/Shared.Types/AuditLog#requestmetadata
-##
+  ##
+  # RequestMetadata
+  # .protoPayload.requestMetadata
+  # https://cloud.google.com/logging/docs/reference/audit/auditlog/rest/Shared.Types/AuditLog#requestmetadata
+  ##
   - convert:
+      tag: convert_json_protoPayload_requestMetadata_callerIp_to_source_ip_f3f594de
       if: ctx.json?.protoPayload?.requestMetadata?.callerIp != null && ctx.json?.protoPayload?.requestMetadata?.callerIp != "gce-internal-ip"  && ctx.json?.protoPayload?.requestMetadata?.callerIp != "private"
       type: ip
       field: json.protoPayload.requestMetadata.callerIp
       target_field: source.ip
       ignore_missing: true
   - set:
+      tag: set_user_agent_original_553976c5
       field: user_agent.original
       copy_from: json.protoPayload.requestMetadata.callerSuppliedUserAgent
       ignore_failure: true
 
-##
-# Metadata
-# .protoPayload.metadata
-# https://cloud.google.com/logging/docs/reference/audit/auditlog/rest/Shared.Types/AuditLog
-##
+  ##
+  # Metadata
+  # .protoPayload.metadata
+  # https://cloud.google.com/logging/docs/reference/audit/auditlog/rest/Shared.Types/AuditLog
+  ##
   - set:
+      tag: set_gcp_audit_metadata_bd142044
       field: gcp.audit.metadata
       copy_from: json.protoPayload.metadata
       if: ctx.json?.protoPayload?.metadata != null
 
-##
-# PolicyViolationInfo
-# .protoPayload.orgPolicyViolationInfo
-# https://cloud.google.com/logging/docs/reference/audit/auditlog/rest/Shared.Types/AuditLog#policyviolationinfo
-##
+  ##
+  # PolicyViolationInfo
+  # .protoPayload.orgPolicyViolationInfo
+  # https://cloud.google.com/logging/docs/reference/audit/auditlog/rest/Shared.Types/AuditLog#policyviolationinfo
+  ##
   - set:
+      tag: set_gcp_audit_policy_violation_info_violations_f6f04e9b
       field: gcp.audit.policy_violation_info.violations
       copy_from: json.protoPayload.policyViolationInfo.orgPolicyViolationInfo.violationInfo
       ignore_failure: true
   - rename:
+      tag: rename_json_protoPayload_policyViolationInfo_orgPolicyViolationInfo_payload_to_gcp_audit_policy_violation_info_payload_5791a15c
       field: json.protoPayload.policyViolationInfo.orgPolicyViolationInfo.payload
       target_field: gcp.audit.policy_violation_info.payload
       ignore_failure: true
   - rename:
+      tag: rename_json_protoPayload_policyViolationInfo_orgPolicyViolationInfo_resourceType_to_gcp_audit_policy_violation_info_resource_type_bec412c9
       field: json.protoPayload.policyViolationInfo.orgPolicyViolationInfo.resourceType
       target_field: gcp.audit.policy_violation_info.resource_type
       ignore_failure: true
   - rename:
+      tag: rename_json_protoPayload_policyViolationInfo_orgPolicyViolationInfo_resourceTags_to_gcp_audit_policy_violation_info_resource_tags_5d197073
       field: json.protoPayload.policyViolationInfo.orgPolicyViolationInfo.resourceTags
       target_field: gcp.audit.policy_violation_info.resource_tags
       ignore_failure: true
 
-##
-# LogEntryOperation
-# .operation
-# https://cloud.google.com/logging/docs/reference/v2/rest/v2/LogEntry#logentryoperation
-##
-# set only if it is not the same as insertId
+  ##
+  # LogEntryOperation
+  # .operation
+  # https://cloud.google.com/logging/docs/reference/v2/rest/v2/LogEntry#logentryoperation
+  ##
+  # set only if it is not the same as insertId
   - set:
+      tag: set_gcp_audit_logentry_operation_id_162dd8d0
       field: gcp.audit.logentry_operation.id
       copy_from: json.operation.id
       if: ctx.json?.operation?.id != null && ctx.event?.id != null && ctx.event?.id != ctx.json?.operation?.id
   - script:
       lang: painless
       description: set event.category and type for long running operation
-      tag: set-event-type-for-long-operations
+      tag: set_event_type_for_long_operations_9e495b64
       if: ctx.json?.operation != null
       source: |
         def first = (ctx.json.operation.first == null) ? false : ctx.json.operation.first;
@@ -637,277 +602,334 @@ processors:
           ctx.event.type.add('end');
         }
 
-##
-# BindingDelta
-# protPayload.serviceData.policyDelta.bindingDeltas
-# https://docs.cloud.google.com/iam/docs/reference/rpc/google.iam.v1#google.iam.v1.BindingDelta
-##
+  ##
+  # BindingDelta
+  # protPayload.serviceData.policyDelta.bindingDeltas
+  # https://docs.cloud.google.com/iam/docs/reference/rpc/google.iam.v1#google.iam.v1.BindingDelta
+  ##
   - set:
+      tag: set_gcp_audit_service_data_policy_delta_binding_deltas_9a07e6ba
       field: gcp.audit.service_data.policy_delta.binding_deltas
       copy_from: json.protoPayload.serviceData.policyDelta.bindingDeltas
       if: ctx.json?.protoPayload?.serviceData?.policyDelta?.bindingDeltas != null && !ctx.json.protoPayload.serviceData.policyDelta.bindingDeltas.isEmpty()
 
-# TODO remove duplicate protoPayload.methodName
+  # TODO remove duplicate protoPayload.methodName
   - set:
+      tag: set_event_action_88429a42
       field: event.action
       copy_from: json.protoPayload.methodName
       ignore_failure: true
   - convert:
+      tag: convert_json_protoPayload_numResponseItems_to_gcp_audit_num_response_items_7293b658
       field: json.protoPayload.numResponseItems
       target_field: gcp.audit.num_response_items
       type: long
       ignore_missing: true
   - set:
+      tag: set_gcp_audit_request_8473ca70
       field: gcp.audit.request
       copy_from: json.protoPayload.request
       if: ctx.json?.protoPayload?.request != null
   - remove:
+      tag: remove_gcp_audit_request_policy_ec3e5101
       field: gcp.audit.request.policy
       ignore_missing: true
       if: ctx.json?.protoPayload?.request?.policy != null && !(ctx.json?.protoPayload?.request.policy instanceof Map)
   - set:
+      tag: set_gcp_audit_request_policy_value_27b9f5c0
       field: gcp.audit.request.policy_value
       copy_from: json.protoPayload.request.policy
       ignore_failure: true
       if: ctx.json?.protoPayload?.request?.policy != null && !(ctx.json?.protoPayload?.request.policy instanceof Map)
   - set:
+      tag: set_gcp_audit_response_9970acba
       field: gcp.audit.response
       copy_from: json.protoPayload.response
       if: ctx.json?.protoPayload?.response != null
   - remove:
+      tag: remove_gcp_audit_response_status_b64de13d
       field: gcp.audit.response.status
       ignore_missing: true
       if: ctx.json?.protoPayload?.response?.status != null && !(ctx.json?.protoPayload?.response.status instanceof Map)
   - set:
+      tag: set_gcp_audit_response_status_value_141d9fd6
       field: gcp.audit.response.status_value
       copy_from: json.protoPayload.response.status
       ignore_failure: true
       if: ctx.json?.protoPayload?.response?.status != null && !(ctx.json?.protoPayload?.response.status instanceof Map)
   - set:
+      tag: set_gcp_audit_resource_name_9ff21a1e
       field: gcp.audit.resource_name
       copy_from: json.protoPayload.resourceName
       ignore_failure: true
   - set:
+      tag: set_gcp_audit_resource_location_current_locations_26959615
       field: gcp.audit.resource_location.current_locations
       copy_from: json.protoPayload.resourceLocation.currentLocations
       ignore_failure: true
   - set:
+      tag: set_gcp_audit_resource_labels_resource_container_6146614e
       field: gcp.audit.resource.labels.resource_container
       copy_from: json.resource.labels.resource_container
       ignore_empty_value: true
   - set:
+      tag: set_gcp_audit_resource_type_db73d47a
       field: gcp.audit.resource.type
       copy_from: json.resource.type
       ignore_empty_value: true
   - set:
+      tag: set_gcp_audit_service_name_791764ca
       field: gcp.audit.service_name
       copy_from: json.protoPayload.serviceName
       ignore_failure: true
   - rename:
+      tag: rename_gcp_audit_service_name_to_service_name_2a1af9c2
       field: gcp.audit.service_name
       target_field: service.name
       if: ctx.service?.name == null
       ignore_missing: true
 
-# Handle JsonPayload Fields
+  # Handle JsonPayload Fields
   - date:
+      tag: date_json_receiveTimestamp_to_gcp_audit_receive_timestamp_8772c0b0
       field: json.receiveTimestamp
       target_field: gcp.audit.receive_timestamp
       formats:
         - ISO8601
       if: ctx.json?.receiveTimestamp != null && ctx.json.receiveTimestamp != ''
   - convert:
+      tag: convert_json_jsonPayload_access_callerIp_to_source_ip_3af84c77
       if: ctx.json?.jsonPayload?.access?.callerIp != ''
       field: json.jsonPayload.access.callerIp
       target_field: source.ip
       type: ip
       ignore_missing: true
   - rename:
+      tag: rename_json_jsonPayload_access_callerIpGeo_regionCode_to_gcp_audit_access_caller_ip_geo_region_code_416da0b6
       field: json.jsonPayload.access.callerIpGeo.regionCode
       target_field: gcp.audit.access.caller_ip_geo.region_code
       ignore_missing: true
   - rename:
+      tag: rename_json_jsonPayload_access_methodName_to_gcp_audit_access_method_name_67af4c66
       field: json.jsonPayload.access.methodName
       target_field: gcp.audit.access.method_name
       ignore_missing: true
   - set:
+      tag: set_event_action_8d52ad52
       field: event.action
       copy_from: gcp.audit.access.method_name
       override: false
       ignore_empty_value: true
   - rename:
+      tag: rename_json_jsonPayload_access_principalEmail_to_gcp_audit_access_principal_email_16efa92a
       field: json.jsonPayload.access.principalEmail
       target_field: gcp.audit.access.principal_email
       ignore_missing: true
   - set:
+      tag: set_client_user_email_4f97db12
       field: client.user.email
       copy_from: gcp.audit.access.principal_email
       override: false
       ignore_empty_value: true
   - rename:
+      tag: rename_json_jsonPayload_access_principalSubject_to_gcp_audit_access_principal_subject_622208c2
       field: json.jsonPayload.access.principalSubject
       target_field: gcp.audit.access.principal_subject
       ignore_missing: true
   - rename:
+      tag: rename_json_jsonPayload_access_serviceName_to_gcp_audit_access_service_name_68e858ce
       field: json.jsonPayload.access.serviceName
       target_field: gcp.audit.access.service_name
       ignore_missing: true
   - set:
+      tag: set_service_name_6cd2eeb4
       field: service.name
       copy_from: gcp.audit.access.service_name
       override: false
       ignore_empty_value: true
   - rename:
+      tag: rename_json_jsonPayload_access_userAgent_to_gcp_audit_access_user_agent_a407d9d4
       field: json.jsonPayload.access.userAgent
       target_field: gcp.audit.access.user_agent
       ignore_missing: true
   - set:
+      tag: set_user_agent_original_7c37584a
       field: user_agent.original
       copy_from: gcp.audit.access.user_agent
       override: false
       ignore_empty_value: true
   - user_agent:
+      tag: user_agent_user_agent_original_b5325863
       field: user_agent.original
       ignore_missing: true
   - date:
+      tag: date_json_jsonPayload_actionTime_to_gcp_audit_action_time_be349749
       field: json.jsonPayload.actionTime
       target_field: gcp.audit.action_time
       formats:
         - ISO8601
       if: ctx.json?.jsonPayload?.actionTime != null && ctx.json.jsonPayload.actionTime != ''
   - rename:
+      tag: rename_json_jsonPayload_actionType_to_gcp_audit_action_type_75969e80
       field: json.jsonPayload.actionType
       target_field: gcp.audit.action_type
       ignore_missing: true
   - rename:
+      tag: rename_json_jsonPayload_affectedResources_to_gcp_audit_affected_resources_76dba6aa
       field: json.jsonPayload.affectedResources
       target_field: gcp.audit.affected_resources
       ignore_missing: true
   - rename:
+      tag: rename_json_jsonPayload_learnMoreUri_to_gcp_audit_learn_more_uri_a9f88959
       field: json.jsonPayload.learnMoreUri
       target_field: gcp.audit.learn_more_uri
       ignore_missing: true
   - rename:
+      tag: rename_json_jsonPayload_sourceLogIds_to_gcp_audit_source_log_ids_05815a31
       field: json.jsonPayload.sourceLogIds
       target_field: gcp.audit.source_log_ids
       ignore_missing: true
   - foreach:
+      tag: foreach_gcp_audit_source_log_ids_7b722f0a
       field: gcp.audit.source_log_ids
       if: ctx.gcp?.audit?.source_log_ids instanceof List
       ignore_missing: true
       processor:
         rename:
+          tag: rename_ingest_value_insertId_to_ingest_value_insert_id_7d2df7a7
           field: _ingest._value.insertId
           target_field: _ingest._value.insert_id
           ignore_missing: true
   - foreach:
+      tag: foreach_gcp_audit_source_log_ids_3120fb56
       field: gcp.audit.source_log_ids
       if: ctx.gcp?.audit?.source_log_ids instanceof List
       ignore_missing: true
       processor:
         rename:
+          tag: rename_ingest_value_queryUri_to_ingest_value_query_uri_e60f58d4
           field: _ingest._value.queryUri
           target_field: _ingest._value.query_uri
           ignore_missing: true
   - foreach:
+      tag: foreach_gcp_audit_source_log_ids_a6c73328
       field: gcp.audit.source_log_ids
       if: ctx.gcp?.audit?.source_log_ids instanceof List
       ignore_missing: true
       processor:
         rename:
+          tag: rename_ingest_value_resourceContainer_to_ingest_value_resource_container_7e5e2726
           field: _ingest._value.resourceContainer
           target_field: _ingest._value.resource_container
           ignore_missing: true
   - foreach:
+      tag: foreach_gcp_audit_source_log_ids_fec43cee
       field: gcp.audit.source_log_ids
       if: ctx.gcp?.audit?.source_log_ids instanceof List
       ignore_missing: true
       processor:
         date:
+          tag: date_ingest_value_logTime_to_ingest_value_log_time_3dec6fc5
           field: _ingest._value.logTime
           target_field: _ingest._value.log_time
-          formats: 
+          formats:
             - ISO8601
           on_failure:
             - remove:
+                tag: remove_ingest_value_logTime_d8041736
                 field: _ingest._value.logTime
                 ignore_missing: true
   - foreach:
+      tag: foreach_gcp_audit_source_log_ids_c49308d5
       field: gcp.audit.source_log_ids
       if: ctx.gcp?.audit?.source_log_ids instanceof List
       ignore_missing: true
       processor:
         remove:
+          tag: remove_ingest_value_logTime_cb35d53a
           field: _ingest._value.logTime
           ignore_missing: true
-##
-# .protoPayload.Status
-# https://cloud.google.com/logging/docs/reference/audit/auditlog/rest/Shared.Types/AuditLog#Status
-# google.rpc.Code referred in Status can have the following values
-# https://github.com/googleapis/googleapis/blob/master/google/rpc/code.proto
-##
+  ##
+  # .protoPayload.Status
+  # https://cloud.google.com/logging/docs/reference/audit/auditlog/rest/Shared.Types/AuditLog#Status
+  # google.rpc.Code referred in Status can have the following values
+  # https://github.com/googleapis/googleapis/blob/master/google/rpc/code.proto
+  ##
   - convert:
+      tag: convert_json_protoPayload_status_code_to_gcp_audit_status_code_0ad56d96
       field: json.protoPayload.status.code
       target_field: gcp.audit.status.code
       type: long
       ignore_missing: true
   - set:
+      tag: set_gcp_audit_status_message_904fe43f
       field: gcp.audit.status.message
       copy_from: json.protoPayload.status.message
       ignore_failure: true
   - set:
+      tag: set_gcp_audit_status_details_9e97d7cc
       field: gcp.audit.status.details
       copy_from: json.protoPayload.status.details
       ignore_empty_value: true
   - set:
+      tag: set_event_outcome_ac53d779
       field: event.outcome
       value: success
       if: ctx.gcp?.audit?.status?.code != null && ctx.gcp?.audit?.status?.code == 0
   - set:
+      tag: set_event_outcome_d883f0c2
       field: event.outcome
       value: failure
       if: ctx?.gcp?.audit?.status?.code != null && ctx?.gcp?.audit?.status?.code != 0
   - set:
+      tag: set_event_outcome_2ceef6ae
       field: event.outcome
       value: success
       if: ctx?.gcp?.audit?.status?.code == null && ctx?.gcp?.audit?.authorization_info != null && ctx?.gcp?.audit?.authorization_info instanceof List && ctx?.gcp?.audit?.authorization_info.size() == 1 && ctx?.gcp?.audit?.authorization_info[0]?.granted == true
   - set:
+      tag: set_event_outcome_d1bb2700
       field: event.outcome
       value: failure
       if: ctx?.gcp?.audit?.status?.code == null && ctx?.gcp?.audit?.authorization_info != null && ctx?.gcp?.audit?.authorization_info instanceof List && ctx?.gcp?.audit?.authorization_info.size() == 1 && ctx?.gcp?.audit?.authorization_info[0]?.granted == false
   - set:
+      tag: set_event_outcome_2820f2e9
       field: event.outcome
       value: unknown
       override: false
 
-##
-# if gcp.audit.authorization_info.[0].granted is true then
-# set event.category [network, configuration] and event.type to [access, allowed];
-# Caveat
-# 1. protoPayload.resourceName is a single value while authorization_info[].resource
-# is a list.
-# 2. as per test data authorization_info may not be as per spec.
-##
+  ##
+  # if gcp.audit.authorization_info.[0].granted is true then
+  # set event.category [network, configuration] and event.type to [access, allowed];
+  # Caveat
+  # 1. protoPayload.resourceName is a single value while authorization_info[].resource
+  # is a list.
+  # 2. as per test data authorization_info may not be as per spec.
+  ##
   - append:
+      tag: append_event_category_0236568c
       field: event.category
       value: ['network', 'configuration']
       if: ctx?.gcp?.audit?.authorization_info != null && ctx?.gcp?.audit?.authorization_info instanceof List && ctx?.gcp?.audit?.authorization_info.size() == 1
   - append:
+      tag: append_event_type_f6ee9b9b
       field: event.type
       value: ['access', 'allowed']
       if: ctx?.gcp?.audit?.authorization_info != null && ctx?.gcp?.audit?.authorization_info instanceof List && ctx?.gcp?.audit?.authorization_info.size() == 1 && ctx?.gcp?.audit?.authorization_info[0]?.granted != null && ctx?.gcp?.audit?.authorization_info[0]?.granted
   - append:
+      tag: append_event_type_c3c30df1
       field: event.type
       value: ['access', 'denied']
       if: ctx?.gcp?.audit?.authorization_info != null && ctx?.gcp?.audit?.authorization_info instanceof List && ctx?.gcp?.audit?.authorization_info.size() == 1 && ctx?.gcp?.audit?.authorization_info[0]?.granted != null && !ctx?.gcp?.audit?.authorization_info[0]?.granted
 
   # IP Geolocation Lookup
   - geoip:
+      tag: geoip_source_ip_to_source_geo_da2e41b2
       field: source.ip
       target_field: source.geo
       ignore_missing: true
   # IP Autonomous System (AS) Lookup
   - geoip:
+      tag: geoip_source_ip_to_source_as_28d69883
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
       target_field: source.as
@@ -916,49 +938,58 @@ processors:
         - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_source_as_asn_to_source_as_number_a917047d
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
   - rename:
+      tag: rename_source_as_organization_name_to_source_as_organization_name_f1362d0b
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
 
-# Populate user.email from client.user.email
+  # Populate user.email from client.user.email
   - set:
+      tag: set_user_email_53a16970
       field: user.email
       copy_from: client.user.email
       ignore_empty_value: true
-# Populate user.id from client.user.id
+  # Populate user.id from client.user.id
   - set:
+      tag: set_user_id_89112192
       field: user.id
       copy_from: client.user.id
       ignore_empty_value: true
 
-# Related fields
+  # Related fields
   - append:
+      tag: append_related_ip_feeba47d
       field: related.ip
       value: "{{{source.ip}}}"
       allow_duplicates: false
   - append:
+      tag: append_related_user_fd6114de
       field: related.user
       value: "{{{client.user.email}}}"
       if: ctx.client?.user?.email != null
       allow_duplicates: false
-##
-# clean-up
-##
+  ##
+  # clean-up
+  ##
   - rename:
+      tag: rename_json_to_gcp_audit_flattened_2f590e53
       field: json
       target_field: gcp.audit.flattened
       if: ctx.json != null && ctx._conf?.keep_json == true
   - remove:
+      tag: remove_d60b84b0
       field:
         - _conf
         - _temp
         - json
       ignore_missing: true
   - script:
+      tag: script_drops_null_empty_values_dotted_0d92a93d
       description: Drops null and empty values and dotted keys recursively
       lang: painless
       source: |
@@ -988,8 +1019,18 @@ processors:
         drop(ctx);
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_error_message_206bb8ac
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      tag: append_tags_279d5a5c
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

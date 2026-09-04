@@ -1,9 +1,9 @@
-format_version: "3.0.2"
+format_version: 3.6.4
 name: aws_bedrock
 title: Amazon Bedrock
 description: Collect Amazon Bedrock model invocation logs and runtime metrics with Elastic Agent.
 type: integration
-version: "1.6.0"
+version: 2.0.1
 categories:
   - aws
   - cloud
@@ -11,23 +11,52 @@ categories:
   - security
 conditions:
   kibana:
-    version: "^8.16.5 || ^9.0.0"
+    version: "^9.6.0"
   elastic:
     subscription: basic
+  # auth.aws + libbeat cloud connectors on the current ExternalID contract ship in Elastic Agent 9.4.0 (elastic/beats#47260, #47587, #48956).
+  agent:
+    version: "^9.4.0"
 policy_templates:
   - name: aws_bedrock
     title: Amazon Bedrock
     description: Collect Amazon Bedrock model invocation logs with Elastic Agent.
+    deployment_modes:
+      default:
+        enabled: true
+      agentless:
+        enabled: true
+        release: beta
+        organization: security
+        division: engineering
+        team: security-service-integrations
     inputs:
       - type: aws-s3
         title: Collect Logs from S3 Bucket
         description: Collect bedrock logs from S3 bucket with Elastic Agent.
+        deployment_modes: ["default"]
       - type: aws-cloudwatch
         title: Collect Logs from CloudWatch
         description: Collect bedrock logs from CloudWatch with Elastic Agent.
+        provider_permissions:
+          - provider: aws
+            description: CloudWatch Logs read access for Amazon Bedrock invocation log collection.
+            permissions:
+              - name: logs:DescribeLogGroups
+              - name: logs:DescribeLogStreams
+              - name: logs:FilterLogEvents
+              - name: logs:GetLogEvents
+              - name: logs:GetLogGroupFields
       - type: aws/metrics
         title: Collect Amazon Bedrock metrics
         description: Collect Amazon Bedrock metrics using AWS CloudWatch.
+        provider_permissions:
+          - provider: aws
+            description: CloudWatch metrics read access for Amazon Bedrock monitoring.
+            permissions:
+              - name: cloudwatch:GetMetricData
+              - name: cloudwatch:ListMetrics
+              - name: tag:GetResources
 screenshots:
   - src: /img/aws_bedrock_invocation.png
     title: Runtime metrics
@@ -93,6 +122,12 @@ vars:
     multi: false
     required: false
     show_user: false
+  - name: supports_identity_federation
+    type: bool
+    title: Supports Identity Federation
+    multi: false
+    required: false
+    show_user: false
   - name: endpoint
     type: text
     title: Endpoint
@@ -116,6 +151,33 @@ vars:
     required: false
     show_user: false
     description: URL to proxy connections in the form of http\[s\]://<user>:<password>@<server name/ip>:<port>
+var_groups:
+  - name: credential_type
+    required: true
+    title: Setup Access
+    selector_title: Preferred method
+    options:
+      - name: identity_federation
+        title: Identity Federation
+        vars: [role_arn, supports_identity_federation]
+        hide_in_deployment_modes: [default]
+        provider: aws
+        iac_template_url: https://console.aws.amazon.com/cloudformation/home#/stacks/quickcreate?templateURL=https://elastic-cspm-cft.s3.eu-central-1.amazonaws.com/cloudformation-federated-identity-aws-9.6.0.yml
+      - name: direct_access_key
+        title: Direct Access Keys
+        vars: [access_key_id, secret_access_key]
+      - name: temporary_access_key
+        title: Temporary Access Keys
+        vars: [access_key_id, secret_access_key, session_token]
+        hide_in_deployment_modes: [agentless]
+      - name: assume_role
+        title: Assume Role
+        vars: [role_arn]
+        hide_in_deployment_modes: [agentless]
+      - name: shared_credentials
+        title: Shared Credentials
+        vars: [shared_credential_file, credential_profile_name]
+        hide_in_deployment_modes: [agentless]
 owner:
   github: elastic/security-service-integrations
   type: elastic
