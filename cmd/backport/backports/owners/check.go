@@ -27,7 +27,7 @@ type Mismatch struct {
 
 // CheckPackages reports owner mismatches for each named package against
 // remoteRef (e.g. "origin/main"). pkgDirs maps package name to its directory
-// relative to workDir (e.g. from dev/backports/changelog.BuildPackageIndex);
+// relative to workDir (e.g. from cmd/backport/backports/changelog.BuildPackageIndex);
 // a name absent from pkgDirs (the package was removed in this PR) is
 // silently skipped, same as a package Compare reports as not found on
 // remoteRef.

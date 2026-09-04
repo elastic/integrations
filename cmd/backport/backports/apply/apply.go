@@ -62,7 +62,7 @@ type Result struct {
 	OwnerSyncWarning string   `json:"owner_sync_warning,omitempty"` // non-empty when owner sync was skipped
 }
 
-// branchRE matches valid backport branch names (mirrors dev/backports/inventory.go).
+// branchRE matches valid backport branch names (mirrors cmd/backport/backports/inventory.go).
 var branchRE = regexp.MustCompile(`^backport-[a-zA-Z0-9_]+-[0-9][0-9.]*x?$`)
 
 // applier holds the shared git context used by the apply pipeline steps.
