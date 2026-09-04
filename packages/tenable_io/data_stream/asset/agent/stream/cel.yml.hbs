@@ -39,12 +39,14 @@ program: |-
   // next interval instead of silently skipping its window.
   //
   // Phases, selected in this order: "create" when there is no active export,
-  // which requests a new export since the cursor; "cancel" when the active
-  // export is past export_status_timeout, which cancels and drops it so the
-  // next interval starts afresh; "download" when the active export has chunks
-  // left to fetch; otherwise "status", which polls the export job. QUEUED and
-  // PROCESSING wait export_status_poll_interval before the next poll, while
-  // CANCELLED and ERROR are terminal and reported as errors.
+  // which requests a new export since the cursor; "download" when the active
+  // export has chunks left to fetch, so an interrupted download resumes while
+  // Tenable still has the chunks; "cancel" when the active export is still
+  // being built past export_status_timeout, which cancels and drops it so the
+  // next interval starts afresh; otherwise "status", which polls the export
+  // job. QUEUED and PROCESSING wait export_status_poll_interval before the
+  // next poll, while CANCELLED and ERROR are
+  // terminal and reported as errors.
   {
     "X-ApiKeys": ["accessKey=" + state.access_key + ";secretKey=" + state.secret_key],
     "User-Agent": ["Integration/1.0 (Elastic; Tenable.io; Build/3.0.0)"],
@@ -52,10 +54,10 @@ program: |-
     (
       !has(state.?export.uuid) ?
         "create"
-      : (int(now) > int(state.export.expires)) ?
-        "cancel"
       : (size(state.?chunks.orValue([])) > 0) ?
         "download"
+      : (int(now) > int(state.export.expires)) ?
+        "cancel"
       :
         "status"
     ).as(phase,
@@ -148,9 +150,14 @@ program: |-
                 )
               )
             :
-              // Keep the export and chunk position so the next interval
-              // resumes the download (or cancels once it has expired).
+              // The chunk is gone (Tenable expires chunks after 24h) or keeps
+              // failing after the client's own retries: drop the export. The
+              // cursor is untouched, so the next interval creates a fresh export
+              // from the same point.
               {
+                "export": {},
+                "chunks": [],
+                "next": 0,
                 "events": {
                   "error": {
                     "code": string(resp.StatusCode),
