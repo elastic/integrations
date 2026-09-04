@@ -56,6 +56,11 @@ if [[ "${FORCE_CHECK_ALL}" == "true" ]] || echo "${changed_files}" | pr_has_pack
 else
     PACKAGE_LIST=$(
         {
+            # Use list_all_directories (mage listPackages) instead of grepping ^packages/[^/]+
+            # directly from the diff output: the regex would only capture the first path segment
+            # and break for nested packages (e.g. packages/technology/foo → packages/technology,
+            # which has no manifest.yml). mage listPackages discovers valid package roots at any
+            # depth via WalkDir, so we cross-reference its output against the changed files.
             all_pkgs=$(list_all_directories)
             while IFS= read -r pkg_path; do
                 if echo "${changed_files}" | grep -q "^${pkg_path}/"; then
