@@ -6,24 +6,32 @@ processors:
       value: dns
   - grok:
       field: message
+      tag: grok_dns_message
+      # Ordering is load-bearing: grok stops at the first matching alternative, so the
+      # high-volume client query/response shapes are listed before the lower-volume
+      # administrative events. Patterns anchored on the literal `client` come before the
+      # timestamp-prefixed ones, which start with GREEDYDATA and are costlier to reject.
+      # Keep the relative order within each overlapping group when editing this list.
       patterns:
-        - "^zone %{DATA:dns.question.name}/%{DATA:dns.question.class}: notify from %{IP:client.ip}#%{NUMBER:client.port:long}:? %{GREEDYDATA:infoblox_nios.log.dns.message}$"
-        - "^transfer of '%{DATA:dns.question.name}/%{DATA:dns.question.class}' from %{IP:client.ip}#%{NUMBER:client.port:long}:? %{GREEDYDATA:infoblox_nios.log.dns.message}$"
-        - "^validating %{DATA:dns.question.name}/%{WORD:dns.question.type}: %{GREEDYDATA:infoblox_nios.log.dns.message}$"
+        - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*%{CLIENT} \\(%{DATA}\\): %{VIEW}?query: %{DATA:dns.question.name} %{DATA:dns.question.class} %{WORD:dns.question.type} %{DATA:infoblox_nios.log.dns.header_flags} \\(%{IP:server.ip}\\)(?:\\s*%{ECS_CLIENT_SUBNET})?$"
+        - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*%{CLIENT} %{DATA:network.transport}: %{VIEW}?query: %{DATA:dns.question.name} %{DATA:dns.question.class} %{WORD:dns.question.type} response: %{DATA:dns.response_code} %{DATA:infoblox_nios.log.dns.header_flags}$"
+        - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*%{GREEDYDATA:_tmp.timestamp} %{CLIENT} %{DATA:network.transport}: %{VIEW}?query: %{DATA:dns.question.name} %{DATA:dns.question.class} %{WORD:dns.question.type} response: %{DATA:dns.response_code} %{DATA:infoblox_nios.log.dns.header_flags} %{GREEDYDATA:repeat_message}$"
+        - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*%{GREEDYDATA:_tmp.timestamp} %{CLIENT} %{DATA:network.transport}: %{VIEW}?query: %{DATA:dns.question.name} %{DATA:dns.question.class} %{WORD:dns.question.type} response: %{DATA:dns.response_code} %{DATA:infoblox_nios.log.dns.header_flags}$"
+        - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*zone %{DATA:dns.question.name}/%{WORD:dns.question.class}(?:/%{NOTSPACE:infoblox_nios.log.view})?: notify from %{IP:client.ip}#%{NUMBER:client.port:long}:? %{GREEDYDATA:infoblox_nios.log.dns.message}$"
+        - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*zone %{DATA:dns.question.name}/%{WORD:dns.question.class}(?:/%{NOTSPACE:infoblox_nios.log.view})?: %{GREEDYDATA:infoblox_nios.log.dns.message}$"
+        - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*transfer of '%{DATA:dns.question.name}/%{WORD:dns.question.class}(?:/%{NOTSPACE:infoblox_nios.log.view})?' from %{IP:client.ip}#%{NUMBER:client.port:long}:? %{GREEDYDATA:infoblox_nios.log.dns.message}$"
+        - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*validating %{DATA:dns.question.name}/%{WORD:dns.question.type}: %{GREEDYDATA:infoblox_nios.log.dns.message}$"
         - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*%{CLIENT} updating zone '%{DATA:dns.question.name}/%{DATA:dns.question.class}': %{GREEDYDATA:infoblox_nios.log.dns.message}$"
         - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*%{CLIENT} \\(%{DATA}\\): %{VIEW}?query failed %{GREEDYDATA:infoblox_nios.log.dns.message}$"
         - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*%{CLIENT} \\(%{DATA:infoblox_nios.log.dns.before_query}\\): rewriting query name %{DATA} to '%{DATA:infoblox_nios.log.dns.after_query}', type %{DATA:dns.question.type}$"
-        - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*%{CLIENT} \\(%{DATA}\\): %{VIEW}?query: %{DATA:dns.question.name} %{DATA:dns.question.class} %{WORD:dns.question.type} %{DATA:infoblox_nios.log.dns.header_flags} \\(%{IP:server.ip}\\)$"
-        - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*%{CLIENT} %{DATA:network.transport}: %{VIEW}?query: %{DATA:dns.question.name} %{DATA:dns.question.class} %{WORD:dns.question.type} response: %{DATA:dns.response_code} %{DATA:infoblox_nios.log.dns.header_flags}$"
-        - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*%{CLIENT} \\(%{DATA}\\): transfer of '%{DATA:dns.question.name}/%{DATA:dns.question.class}': %{GREEDYDATA:infoblox_nios.log.dns.message}$"
+        - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*%{CLIENT} \\(%{DATA}\\): transfer of '%{DATA:dns.question.name}/%{WORD:dns.question.class}(?:/%{NOTSPACE:infoblox_nios.log.view})?': %{GREEDYDATA:infoblox_nios.log.dns.message}$"
         - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*CEF:0\\|Infoblox\\|NIOS\\|%{GREEDYDATA:infoblox_nios.log.dns.version}\\|RPZ-%{DATA:dns.answers.type}\\|%{DATA:infoblox_nios.log.dns.answers_policy}\\|\\d+\\|app=DNS dst=%{IP:server.ip} src=%{IP:client.ip} spt=%{NUMBER:client.port:long} view=%{DATA:infoblox_nios.log.dns.view_name} qtype=%{WORD:dns.question.type} msg=%{GREEDYDATA:infoblox_nios.log.dns.message}$"
-        - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*%{GREEDYDATA:_tmp.timestamp} %{CLIENT} %{DATA:network.transport}: %{VIEW}?query: %{DATA:dns.question.name} %{DATA:dns.question.class} %{WORD:dns.question.type} response: %{DATA:dns.response_code} %{DATA:infoblox_nios.log.dns.header_flags} %{GREEDYDATA:repeat_message}$"
-        - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*%{GREEDYDATA:_tmp.timestamp} %{CLIENT} %{DATA:network.transport}: %{VIEW}?query: %{DATA:dns.question.name} %{DATA:dns.question.class} %{WORD:dns.question.type} response: %{DATA:dns.response_code} %{DATA:infoblox_nios.log.dns.header_flags}$"
         - "^(%{NOTSPACE:infoblox_nios.log.dns.category}:)?\\s*%{CLIENT} %{GREEDYDATA:infoblox_nios.log.dns.message}$"
         - "^%{GREEDYDATA:infoblox_nios.log.dns.message}$"
       pattern_definitions:
         CLIENT: 'client (?:%{DATA} )?%{IP:client.ip}#%{NUMBER:client.port:long}:?'
         VIEW: 'view %{DATA:infoblox_nios.log.view}: '
+        ECS_CLIENT_SUBNET: '\[ECS(?: %{IP:infoblox_nios.log.dns.ecs_client_subnet.ip}(?:/%{NUMBER:infoblox_nios.log.dns.ecs_client_subnet.prefix_length:long}(?:/%{NUMBER:infoblox_nios.log.dns.ecs_client_subnet.scope_prefix_length:long})?)?)?\]'
   - date:
       field: _tmp.timestamp
       target_field: _tmp.timestamp
@@ -121,9 +129,58 @@ processors:
       if: ctx.infoblox_nios?.log?.dns?.message != null
   - dissect:
       field: infoblox_nios.log.dns.message
+      tag: dissect_rpz_message
       pattern: 'rpz %{infoblox_nios.log.dns.rpz.rule_type} %{infoblox_nios.log.dns.rpz.query_class} %{infoblox_nios.log.dns.rpz.action} %{infoblox_nios.log.dns.rpz.domain} %{infoblox_nios.log.dns.rpz.query_class_rewrite} via %{infoblox_nios.log.dns.rpz.domain_rewrite} CAT=%{infoblox_nios.log.dns.rpz.type}'
       ignore_failure: true
-      if: ctx.infoblox_nios?.log?.dns?.message != null
+      # Only RPZ messages can satisfy this dissect pattern. Without the prefix test the
+      # processor also runs for every other branch that populates dns.message and fails,
+      # which is silent because of ignore_failure but wastes CPU on the hot path.
+      # The test depends on the preceding gsub: in CEF RPZ records dns.message still
+      # starts with a double quote before the quotes are stripped, so this condition must
+      # stay after that gsub, and the gsub must keep running for non-RPZ messages too.
+      if: ctx.infoblox_nios?.log?.dns?.message != null && ctx.infoblox_nios.log.dns.message.startsWith('rpz ')
+  - grok:
+      field: infoblox_nios.log.dns.message
+      tag: grok_dns_query_error_message
+      patterns:
+        - "^\\(%{DATA:infoblox_nios.log.dns.failure_reason}\\) for %{NOTSPACE:dns.question.name}/%{DATA:dns.question.class}/%{WORD:dns.question.type} at %{GREEDYDATA}$"
+      if: >-
+        ctx.infoblox_nios?.log?.dns?.message != null &&
+        ctx.infoblox_nios.log.dns.message.startsWith('(') && ctx.infoblox_nios.log.dns.message.contains(') for ')
+      ignore_failure: true
+  - grok:
+      field: infoblox_nios.log.dns.message
+      tag: grok_dns_security_message
+      patterns:
+        - "^\\(%{DATA}\\): %{VIEW}?query (?:\\(%{DATA:infoblox_nios.log.dns.query_context}\\) )?'%{NOTSPACE:dns.question.name}/%{WORD:dns.question.type}/%{DATA:dns.question.class}' %{WORD:infoblox_nios.log.dns.action}$"
+      pattern_definitions:
+        VIEW: 'view %{DATA:infoblox_nios.log.view}: '
+      if: >-
+        ctx.infoblox_nios?.log?.dns?.message != null &&
+        (ctx.infoblox_nios.log.dns.message.endsWith(' denied') || ctx.infoblox_nios.log.dns.message.endsWith(' approved'))
+      ignore_failure: true
+  - grok:
+      field: infoblox_nios.log.dns.message
+      tag: grok_dns_transfer_message
+      patterns:
+        - "^Transfer status: %{GREEDYDATA:infoblox_nios.log.dns.transfer.status}$"
+        - "^Transfer %{WORD:infoblox_nios.log.dns.transfer.status}:%{GREEDYDATA}$"
+        - "^%{DATA:infoblox_nios.log.dns.transfer.stage} while receiving responses: %{GREEDYDATA:infoblox_nios.log.dns.transfer.status}$"
+      if: >-
+        ctx.infoblox_nios?.log?.dns?.message != null &&
+        (ctx.infoblox_nios.log.dns.message.startsWith('Transfer ') || ctx.infoblox_nios.log.dns.message.contains(' while receiving responses: '))
+      ignore_failure: true
+  - grok:
+      field: infoblox_nios.log.dns.message
+      tag: grok_dns_received_notify_message
+      patterns:
+        - "^received notify for zone '%{DATA:dns.question.name}'$"
+      if: ctx.infoblox_nios?.log?.dns?.message != null && ctx.infoblox_nios.log.dns.message.startsWith('received notify for zone ')
+      ignore_failure: true
+  - lowercase:
+      field: dns.question.name
+      tag: lowercase_dns_question_name
+      ignore_missing: true
   - convert:
       field: dns.answers.ttl
       type: long
@@ -215,6 +272,28 @@ processors:
       if: ctx.server?.ip != null
       allow_duplicates: false
       ignore_failure: true
+  - convert:
+      field: infoblox_nios.log.dns.ecs_client_subnet.ip
+      tag: convert_ecs_client_subnet_ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: infoblox_nios.log.dns.ecs_client_subnet.ip
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: related.ip
+      tag: append_ecs_client_subnet_ip_to_related
+      value: '{{{infoblox_nios.log.dns.ecs_client_subnet.ip}}}'
+      if: ctx.infoblox_nios?.log?.dns?.ecs_client_subnet?.ip != null
+      allow_duplicates: false
+      ignore_failure: true
   - foreach:
       field: dns.answers.name
       if: ctx.dns?.answers?.name != null
@@ -262,6 +341,84 @@ processors:
           ctx.put('dns', hm);
         }
         ctx.dns.put('header_flags', hf);
+  - set:
+      field: event.outcome
+      value: failure
+      tag: set_event_outcome_query_failed
+      if: ctx.infoblox_nios?.log?.dns?.failure_reason != null
+  - set:
+      field: event.outcome
+      value: failure
+      tag: set_event_outcome_denied
+      if: ctx.infoblox_nios?.log?.dns?.action == 'denied'
+  - set:
+      field: event.outcome
+      value: success
+      tag: set_event_outcome_approved
+      if: ctx.infoblox_nios?.log?.dns?.action == 'approved'
+  - script:
+      lang: painless
+      tag: script_event_outcome_transfer
+      description: Derive an ECS-valid event.outcome from the raw BIND zone-transfer status.
+      if: ctx.infoblox_nios?.log?.dns?.transfer?.status != null
+      source: |
+        def status = ctx.infoblox_nios.log.dns.transfer.status.toLowerCase();
+        def ok = status == 'success' || status == 'completed';
+        if (ctx.event == null) {
+          ctx.event = new HashMap();
+        }
+        ctx.event.outcome = ok ? 'success' : 'failure';
+  - script:
+      lang: painless
+      tag: script_dns_response_code_from_failure
+      description: >-
+        Promote the raw BIND failure token to dns.response_code, but only when it really is
+        a DNS RCODE. BIND also reports internal results such as `timed out` or `failure`,
+        which must not leak into dns.response_code.
+      if: >-
+        ctx.dns?.response_code == null &&
+        (ctx.infoblox_nios?.log?.dns?.failure_reason != null || ctx.infoblox_nios?.log?.dns?.transfer?.status != null)
+      params:
+        rcodes:
+          - NOERROR
+          - FORMERR
+          - SERVFAIL
+          - NXDOMAIN
+          - NOTIMP
+          - REFUSED
+          - YXDOMAIN
+          - YXRRSET
+          - NXRRSET
+          - NOTAUTH
+          - NOTZONE
+          - BADVERS
+          - BADKEY
+          - BADTIME
+          - BADMODE
+          - BADNAME
+          - BADALG
+          - BADTRUNC
+          - BADCOOKIE
+      source: |
+        def dnsLog = ctx.infoblox_nios?.log?.dns;
+        if (dnsLog == null) {
+          return;
+        }
+        def candidate = dnsLog.failure_reason;
+        if (candidate == null && dnsLog.transfer != null) {
+          candidate = dnsLog.transfer.status;
+        }
+        if (candidate == null) {
+          return;
+        }
+        candidate = candidate.toUpperCase();
+        if (!params.rcodes.contains(candidate)) {
+          return;
+        }
+        if (ctx.dns == null) {
+          ctx.dns = new HashMap();
+        }
+        ctx.dns.response_code = candidate;
   - registered_domain:
       field: "dns.question.name"
       target_field: "dns.question"

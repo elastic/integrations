@@ -1,0 +1,49 @@
+# Verify that documents ingested via the alerts_events_v2 data stream are
+# correctly routed to the alerts_v2 and events_v2 data streams via routing rules.
+#
+# The GCS mock provides two pre-loaded files in alerts-events-bucket:
+#   - alert.json  (alert == "yes")  → netskope.alerts_v2
+#   - event.json  (alert == "no")   → netskope.events_v2
+
+[!external_stack] skip 'Skipping external stack test.'
+[!exec:jq] skip 'Skipping test requiring absent jq command'
+
+# Connect to the running stack.
+use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+
+# Install an agent.
+install_agent -profile ${CONFIG_PROFILES}/${PROFILE} -network_name NETWORK_NAME
+
+# Start the GCS mock. The mock pre-loads data from the manifest so it is ready
+# to serve immediately when the healthcheck passes and docker_up returns.
+exec ln -s ${DATA_STREAM_ROOT}/_dev/deploy/docker netskope-gcs-mock
+docker_up -profile ${CONFIG_PROFILES}/${PROFILE} -network ${NETWORK_NAME} netskope-gcs-mock
+
+# Add the package resources.
+add_package -profile ${CONFIG_PROFILES}/${PROFILE}
+
+# Add the data stream policy pointing the GCS input at the mock.
+add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config.yaml ALERTS_EVENTS_DS
+
+# Wait for the alert document to be routed to the alerts_v2 data stream.
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -timeout 1m logs-netskope.alerts_v2-*
+
+# Verify the event document was routed to the events_v2 data stream.
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -timeout 1m logs-netskope.events_v2-*
+
+# Clean up.
+remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${ALERTS_EVENTS_DS}
+uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 1m
+docker_down netskope-gcs-mock
+
+-- test_config.yaml --
+input: gcs
+data_stream:
+  vars:
+    project_id: fake-gcs-project
+    alternative_host: "http://svc-netskope-gcs-mock:4443"
+    service_account_key: '{"type":"service_account","project_id":"fake-gcs-project"}'
+    buckets: |
+      - name: alerts-events-bucket
+    poll: true
+    poll_interval: 15s

@@ -1,0 +1,56 @@
+{
+    "id": "supabase_otel-filesystem-nearly-full",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "description": "Fires when a filesystem on the project node is running out of space. The data volume filling up stops database writes; the root volume filling up breaks the platform. WAL accumulation and pinned replication slots are the usual non-obvious causes.",
+        "name": "[Supabase OTel] Filesystem nearly full",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "supabase",
+            "host",
+            "saturation"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 2
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "artifacts": {
+            "dashboards": [
+                {
+                    "id": "supabase_otel-7c6a2004-c517-4b50-b70a-2682b7a79228"
+                },
+                {
+                    "id": "supabase_otel-591c7a1f-6ac7-43cb-8ade-9c5684d47f5b"
+                }
+            ],
+            "investigation_guide": {
+                "blob": "## Filesystem Nearly Full\n\nRunning out of disk is terminal for writes and is one of the few Supabase failure modes with no graceful degradation. Mountpoints are not equivalent — read the `attributes.mountpoint` value on the alert before deciding urgency.\n\n### Triage Steps\n1. Identify what is consuming the space. Check database size per database (`pg_database_size_bytes` by `attributes.datname`) and WAL size (`pg_wal_size_mb`).\n2. Check for a pinned replication slot. An inactive slot retains WAL indefinitely and will fill the volume regardless of how much data the tables hold: `TS metrics-supabase.metrics.otel-* | STATS slot_lag = MAX(LAST_OVER_TIME(replication_slots_max_lag_bytes)) BY resource.attributes.supabase_project_ref`\n3. Check the WAL archive backlog (`pg_ls_archive_statusdir_wal_pending_count`). Segments that cannot be archived are not recycled.\n4. Check temp file spill (`pg_stat_database_temp_bytes_total`), which indicates queries exceeding `work_mem` and writing to disk.\n5. Watch for the filesystem flipping read-only, which is the next stage of this failure and has its own rule.\n\n### Tuning\nThe rule uses `node_filesystem_avail_bytes` rather than `free_bytes` because available space excludes the root-reserved blocks that PostgreSQL cannot use. Tighten the 85% threshold on small volumes where 15% headroom is only a few hundred megabytes, and uncomment the `fstype` filter if your collector reports ephemeral mounts."
+            }
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "TS metrics-supabase.metrics.otel-*\n// Uncomment to ignore ephemeral mounts if your collector reports them.\n// | WHERE attributes.fstype NOT IN (\"tmpfs\", \"devtmpfs\", \"overlay\", \"squashfs\")\n// avail_bytes (not free_bytes) is the space actually usable by PostgreSQL, since it\n// excludes root-reserved blocks. MIN()/MAX() take the worst-case headroom against the\n// largest reported capacity for the mountpoint.\n| STATS\n    `Available Bytes` = MIN(LAST_OVER_TIME(node_filesystem_avail_bytes)),\n    `Size Bytes` = MAX(LAST_OVER_TIME(node_filesystem_size_bytes))\n  BY resource.attributes.supabase_project_ref, attributes.mountpoint, attributes.device\n| WHERE `Size Bytes` > 0\n| EVAL `Used %` = ROUND((1 - `Available Bytes` / `Size Bytes`) * 100, 1)\n| EVAL `Available GB` = ROUND(`Available Bytes` / POW(1024, 3), 2)\n// Tighten to 80 on small volumes, where 15% headroom is only a few hundred megabytes.\n| WHERE `Used %` >= 85\n// One row per mounted filesystem, so the alert instance key includes it.\n| EVAL alert_instance = CONCAT(resource.attributes.supabase_project_ref, \" / \", attributes.mountpoint, \" / \", attributes.device)\n| SORT `Used %` DESC"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 10,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "alert_instance",
+            "termSize": 50
+        }
+    }
+}

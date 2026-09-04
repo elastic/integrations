@@ -264,7 +264,7 @@ processors:
       tag: script_parse_av_pairs
       lang: painless
       source: |
-        if (ctx.cisco_ise.log.log_details.get("cisco-av-pair") == null) {
+        if (ctx.cisco_ise?.log?.log_details?.get("cisco-av-pair") == null) {
           return;
         }
         if (ctx.cisco_ise.log.log_details.get("cisco-av-pair") instanceof String) {
@@ -346,21 +346,6 @@ processors:
         - remove:
             tag: remove_cisco_ise_log_cisco_av_pair_coa-push_19d8e2e6
             field: cisco_ise.log.cisco_av_pair.coa-push
-  - convert:
-      tag: convert_cisco_ise_log_cisco-av-pair_cts-environment-version_to_cisco_ise_log_cisco-av-pair_cts-environment-version_0f389da9
-      field: cisco_ise.log.cisco-av-pair.cts-environment-version
-      target_field: cisco_ise.log.cisco-av-pair.cts-environment-version
-      type: long
-      ignore_missing: true
-      on_failure:
-        - append:
-            tag: append_error_message_dc791e7c
-            field: error.message
-            value: '{{{_ingest.on_failure_message}}}'
-        - remove:
-            tag: remove_cisco_ise_log_cisco_av_pair_cts-environment-version_bca00b12
-            field: cisco_ise.log.cisco_av_pair.cts-environment-version
-            ignore_missing: true
   - convert:
       tag: convert_cisco_ise_log_log_details_ClientLatency_to_cisco_ise_log_client_latency_108a319b
       field: cisco_ise.log.log_details.ClientLatency

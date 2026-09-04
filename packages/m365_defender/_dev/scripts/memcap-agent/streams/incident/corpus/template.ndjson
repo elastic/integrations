@@ -1,0 +1,50 @@
+{{- /*
+  Corpus-generator template for the incident memory harness. Renders ONE synthetic
+  `incidents` record expanded with an `alerts[]` array of __ALERTS_PER_INCIDENT__
+  full alerts. bin/run.sh substitutes the __ALERTS_PER_INCIDENT__
+  marker before generation, and -t <N> controls how many incidents fill the page, so
+  the page sweeps as incidents x alerts. alerts[] has no server-side cap, which is
+  why it is the unbounded axis in the ORR sizing.
+
+  Shape calibrated against a real tenant response: 21-key incident base (real mean 987 B)
+  and embedded alerts that mirror ../../alert/corpus/template.ndjson - same 36 keys, same
+  ~24-entry additionalData, same evidence[] type cycle and count. A page of 50 incidents
+  at 100 alerts each lands within 0.4% of the same page built directly from the real
+  records. Keep the embedded alert body below in step with the standalone alert template;
+  the generator has no include mechanism, so the two are deliberate duplicates. See
+  "Record shapes" in ../../README.md for the statistics both are matched against.
+
+  This is a JSON *fragment*: mock-config.yml splices the generated blob into the
+  `value` array of an incidents response, between `{"value":[` and a final
+  hard-coded record that closes the array. Each record ends with a trailing comma
+  "}," and the template has NO trailing newline (the generator appends one).
+*/ -}}
+{{- $id := generate "id" -}}
+{{- $tenantId := generate "tenantId" -}}
+{{- $displayName := generate "displayName" -}}
+{{- $status := generate "status" -}}
+{{- $severity := generate "severity" -}}
+{{- $created := generate "createdDateTime" | date "2006-01-02T15:04:05.0000000Z07:00" -}}
+{{- $updated := generate "lastUpdateDateTime" | date "2006-01-02T15:04:05.0000000Z07:00" -}}
+{"id":"{{$id}}","incidentWebUrl":"https://security.microsoft.com/incidents/{{$id}}?tid={{$tenantId}}","redirectIncidentId":null,"tenantId":"{{$tenantId}}","displayName":"{{ repeat 13 (generate "displayName") }}","createdDateTime":"{{$created}}","lastUpdateDateTime":"{{$updated}}","assignedTo":null,"classification":"unknown","determination":"unknown","status":"{{$status}}","severity":"{{$severity}}","customTags":[],"comments":[],"systemTags":[],"description":"{{ generate "description" }}","lastModifiedBy":"{{ generate "lastModifiedBy" }}","resolvingComment":null,"summary":null,"priorityScore":null,"alerts":[
+{{- range $a := until __ALERTS_PER_INCIDENT__ -}}{{- if $a }},{{ end -}}
+{{- $alertId := generate "alert.id" -}}
+{{- $alertCreated := generate "alert.createdDateTime" | date "2006-01-02T15:04:05.0000000Z07:00" -}}
+{{- $alertUpdated := generate "alert.lastUpdateDateTime" | date "2006-01-02T15:04:05.0000000Z07:00" -}}
+{{- $alertCategory := generate "alert.category" -}}
+{"id":"{{$alertId}}","providerAlertId":"{{ generate "alert.providerAlertId" }}","incidentId":"{{$id}}","status":"{{ generate "alert.status" }}","severity":"{{ generate "alert.severity" }}","classification":null,"determination":null,"serviceSource":"microsoftDefenderForCloud","detectionSource":"microsoftDefenderForCloud","productName":"Microsoft Defender for Cloud","detectorId":"{{ generate "alert.detectorId" }}","tenantId":"{{$tenantId}}","title":"{{ repeat 6 (generate "alert.title") }}","description":"{{ repeat 69 (generate "alert.description") }}","recommendedActions":"{{ repeat 50 (generate "alert.recommendedActions") }}","category":"{{$alertCategory}}","categories":["{{$alertCategory}}"],"assignedTo":null,"alertWebUrl":"https://security.microsoft.com/alerts/{{$alertId}}?tid={{$tenantId}}","incidentWebUrl":"https://security.microsoft.com/incidents/{{$id}}?tid={{$tenantId}}","actorDisplayName":null,"threatDisplayName":null,"threatFamilyName":null,"mitreTechniques":["T1059.001","T1059.003","T1204.002"],"createdDateTime":"{{$alertCreated}}","lastUpdateDateTime":"{{$alertUpdated}}","resolvedDateTime":null,"firstActivityDateTime":"{{$alertCreated}}","lastActivityDateTime":"{{$alertUpdated}}","systemTags":[],"alertPolicyId":null,"investigationState":"{{ generate "alert.investigationState" }}","comments":[],"customDetails":{"AlertSourceId":"{{ generate "alert.custom.sourceId" }}","SubscriptionId":"{{ generate "alert.custom.subscriptionId" }}","ResourceGroup":"{{ generate "alert.custom.resourceGroup" }}","WorkspaceId":"{{ generate "alert.custom.workspaceId" }}"},"additionalData":{"OriginalAlertProductName":"{{ generate "alert.additional.productName" }}","OriginalAlertProviderName":"{{ generate "alert.additional.providerName" }}","AlertUri":"https://portal.azure.com/#alert/{{ repeat 3 (generate "alert.additional.uri") }}","TimeGenerated":"{{$alertCreated}}","ProcessingEndTime":"{{$alertUpdated}}","Intent@odata.type":"#Int64","Intent":"5","Compromised Host":"{{ repeat 2 (generate "alert.additional.host") }}","Suspicious Process Id":"{{ generate "alert.additional.processId" }}","Suspicious Command Line":"{{ repeat 24 (generate "alert.additional.commandLine") }}","Suspicious Process":"C:\\Windows\\System32\\{{ repeat 2 (generate "alert.additional.process") }}.exe","Parent Process":"C:\\Windows\\System32\\{{ repeat 2 (generate "alert.additional.parentProcess") }}.exe","Account Session Id":"{{ repeat 2 (generate "alert.additional.sessionId") }}","User Name":"{{ repeat 2 (generate "alert.additional.userName") }}","resourceType":"Virtual Machine","killChainIntent":"Execution","ResourceIdentifiers@odata.type":"#Collection","AzureResourceId":"{{ generate "alert.additional.resourceId" }}","Alert Id":"{{ generate "alert.additional.alertId" }}","Detected Time":"{{$alertCreated}}","Suspicious Account":"{{ generate "alert.additional.userName" }}","Source Address":"{{ generate "alert.additional.sourceAddress" }}","Client Principal Name":"{{ generate "alert.additional.principalName" }}","Client Application":"{{ generate "alert.additional.clientApplication" }}"},"evidence":[
+{{- range $e := until 4 -}}{{- if $e }},{{ end -}}
+{{- $evCreated := generate "alert.evidence.createdDateTime" | date "2006-01-02T15:04:05.0000000Z07:00" -}}
+{{- $verdict := generate "alert.evidence.verdict" -}}
+{{- if eq (mod $e 4) 0 -}}
+{"@odata.type":"#microsoft.graph.security.azureResourceEvidence","createdDateTime":"{{$evCreated}}","verdict":"{{$verdict}}","remediationStatus":"none","remediationStatusDetails":null,"roles":["Impacted"],"detailedRoles":[],"tags":[],"resourceType":"{{ generate "alert.evidence.resourceType" }}","resourceName":"{{ generate "alert.evidence.resourceName" }}","resourceId":"/subscriptions/{{ generate "alert.evidence.resourceId" }}/resourceGroups/rg/providers/Microsoft.Compute/virtualMachines/{{ generate "alert.evidence.resourceName" }}"}
+{{- else if eq (mod $e 4) 1 -}}
+{"@odata.type":"#microsoft.graph.security.ipEvidence","createdDateTime":"{{$evCreated}}","verdict":"{{$verdict}}","remediationStatus":"none","remediationStatusDetails":null,"roles":["Attacker"],"detailedRoles":[],"tags":[],"ipAddress":"{{ generate "alert.evidence.ipAddress" }}","countryLetterCode":"{{ generate "alert.evidence.countryLetterCode" }}","stream":null,"location":{"city":"{{ generate "alert.evidence.city" }}","state":"{{ generate "alert.evidence.state" }}","countryLetterCode":"{{ generate "alert.evidence.countryLetterCode" }}"}}
+{{- else if eq (mod $e 4) 2 -}}
+{"@odata.type":"#microsoft.graph.security.networkConnectionEvidence","createdDateTime":"{{$evCreated}}","verdict":"{{$verdict}}","remediationStatus":"none","remediationStatusDetails":null,"roles":["Related"],"detailedRoles":[],"tags":[],"sourcePort":{{ generate "alert.evidence.port" }},"destinationPort":{{ generate "alert.evidence.port" }},"protocol":"{{ generate "alert.evidence.protocol" }}","destinationAddress":{"@odata.type":"#microsoft.graph.security.ipEvidence","ipAddress":"{{ generate "alert.evidence.ipAddress" }}"},"sourceAddress":{"@odata.type":"#microsoft.graph.security.ipEvidence","ipAddress":"{{ generate "alert.evidence.ipAddress" }}"}}
+{{- else -}}
+{"@odata.type":"#microsoft.graph.security.userEvidence","createdDateTime":"{{$evCreated}}","verdict":"{{$verdict}}","remediationStatus":"none","remediationStatusDetails":null,"roles":["Attacker"],"detailedRoles":[],"tags":[],"stream":null,"userAccount":{"accountName":"{{ generate "alert.evidence.accountName" }}","domainName":"{{ generate "alert.evidence.domainName" }}","userSid":"{{ generate "alert.evidence.userSid" }}","azureAdUserId":null,"userPrincipalName":"{{ generate "alert.evidence.userPrincipalName" }}","displayName":"{{ generate "alert.evidence.accountName" }}"}}
+{{- end -}}
+{{- end -}}
+]}{{- end -}}
+]},

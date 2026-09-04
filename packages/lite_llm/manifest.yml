@@ -1,0 +1,236 @@
+format_version: '3.3.2'
+name: lite_llm
+title: 'LiteLLM'
+version: 0.1.0
+description: 'Collect logs from LiteLLM AI gateway with Elastic Agent.'
+type: integration
+categories:
+  - security
+  - network_security
+conditions:
+  kibana:
+    version: '^8.19.0 || ^9.1.0'
+  elastic:
+    subscription: 'basic'
+screenshots:
+  - src: /img/lite_llm-spend_tracking-dashboard.png
+    title: Spend Tracking Dashboard
+    size: 600x600
+    type: image/png
+  - src: /img/lite_llm-audit-dashboard.png
+    title: Audit Dashboard
+    size: 600x600
+    type: image/png
+icons:
+  - src: /img/lite_llm-logo.svg
+    title: LiteLLM logo
+    size: 32x32
+    type: image/svg+xml
+policy_templates:
+  - name: lite_llm
+    title: LiteLLM
+    description: Collect LiteLLM logs.
+    deployment_modes:
+      default:
+        enabled: true
+      agentless:
+        enabled: true
+        organization: security
+        division: engineering
+        team: security-service-integrations
+    inputs:
+      - type: aws-s3
+        title: Collect LiteLLM logs via AWS S3
+        description: Collect LiteLLM logs via AWS S3.
+        vars:
+          - name: collect_s3_logs
+            type: bool
+            title: Collect logs via S3 Bucket
+            description: To collect logs via S3 bucket enable the toggle switch. By default, it will collect logs via SQS Queue.
+            multi: false
+            required: true
+            show_user: true
+            default: false
+            secret: false
+          - name: access_key_id
+            type: password
+            title: Access Key ID
+            description: First part of access key. Required if not using shared_credential_file.
+            multi: false
+            required: false
+            show_user: true
+            secret: true
+          - name: secret_access_key
+            type: password
+            title: Secret Access Key
+            description: Second part of access key. Required if not using shared_credential_file.
+            multi: false
+            secret: true
+            required: false
+            show_user: true
+          - name: session_token
+            type: password
+            title: Session Token
+            description: Required when using temporary security credentials.
+            multi: false
+            secret: true
+            required: false
+            show_user: true
+          - name: shared_credential_file
+            type: text
+            title: Shared Credential File
+            description: Directory of the shared credentials file. Required if not providing access_key_id and secret_access_key.
+            multi: false
+            required: false
+            show_user: false
+            secret: false
+          - name: credential_profile_name
+            type: text
+            title: Credential Profile Name
+            description: Profile name in shared credentials file.
+            multi: false
+            required: false
+            show_user: false
+            secret: false
+          - name: role_arn
+            type: text
+            title: Role ARN
+            description: AWS IAM Role to assume.
+            multi: false
+            required: false
+            show_user: false
+            secret: false
+          - name: region
+            type: text
+            title: '[SQS] Region'
+            description: The name of the AWS region of the end point. Takes precedence over the region obtained from queue_url.
+            multi: false
+            required: false
+            show_user: true
+            secret: false
+          - name: default_region
+            type: text
+            title: Default Region
+            description: Default region to query if no other region is set.
+            multi: false
+            required: false
+            show_user: false
+            secret: false
+          - name: endpoint
+            type: text
+            title: Endpoint
+            description: URL of the entry point for an AWS web service.
+            multi: false
+            required: false
+            show_user: false
+            secret: false
+          - name: fips_enabled
+            type: bool
+            title: FIPS Enabled
+            description: Enabling this option changes the service name from s3 to s3-fips for connecting to the correct service endpoint.
+            multi: false
+            required: false
+            show_user: false
+            default: false
+            secret: false
+          - name: proxy_url
+            type: text
+            title: Proxy URL
+            description: URL to proxy connections in the form of http[s]://<user>:<password>@<server name/ip>:<port>. Please ensure your username and password are in URL encoded format.
+            multi: false
+            required: false
+            show_user: false
+            secret: false
+          - name: ssl
+            type: yaml
+            title: SSL Configuration
+            description: SSL configuration options. Set verification_mode to none for self-signed certificates.
+            multi: false
+            required: false
+            show_user: false
+            secret: false
+            default: |
+              #certificate_authorities:
+              #  - |
+              #    -----BEGIN CERTIFICATE-----
+              #    MIIDCjCCAfKgAwIBAgITJ706Mu2wJlKckpIvkWxEHvEyijANBgkqhkiG9w0BAQsF
+              #    ADAUMRIwEAYDVQQDDAlsb2NhbGhvc3QwIBcNMTkwNzIyMTkyOTA0WhgPMjExOTA2
+              #    MjgxOTI5MDRaMBQxEjAQBgNVBAMMCWxvY2FsaG9zdDCCASIwDQYJKoZIhvcNAQEB
+              #    BQADggEPADCCAQoCggEBANce58Y/JykI58iyOXpxGfw0/gMvF0hUQAcUrSMxEO6n
+              #    fZRA49b4OV4SwWmA3395uL2eB2NB8y8qdQ9muXUdPBWE4l9rMZ6gmfu90N5B5uEl
+              #    94NcfBfYOKi1fJQ9i7WKhTjlRkMCgBkWPkUokvBZFRt8RtF7zI77BSEorHGQCk9t
+              #    /D7BS0GJyfVEhftbWcFEAG3VRcoMhF7kUzYwp+qESoriFRYLeDWv68ZOvG7eoWnP
+              #    PsvZStEVEimjvK5NSESEQa9xWyJOmlOKXhkdymtcUd/nXnx6UTCFgnkgzSdTWV41
+              #    CI6B6aJ9svCTI2QuoIq2HxX/ix7OvW1huVmcyHVxyUECAwEAAaNTMFEwHQYDVR0O
+              #    BBYEFPwN1OceFGm9v6ux8G+DZ3TUDYxqMB8GA1UdIwQYMBaAFPwN1OceFGm9v6ux
+              #    8G+DZ3TUDYxqMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQELBQADggEBAG5D
+              #    874A4YI7YUwOVsVAdbWtgp1d0zKcPRR+r2OdSbTAV5/gcS3jgBJ3i1BN34JuDVFw
+              #    3DeJSYT3nxy2Y56lLnxDeF8CUTUtVQx3CuGkRg1ouGAHpO/6OqOhwLLorEmxi7tA
+              #    H2O8mtT0poX5AnOAhzVy7QW0D/k4WaoLyckM5hUa6RtvgvLxOwA0U+VGurCDoctu
+              #    8F4QOgTAWyh8EZIwaKCliFRSynDpv3JTUwtfZkxo6K6nce1RhCWFAsMvDZL8Dgc0
+              #    yvgJ38BRsFOtkRuAGSf6ZUwTO8JJRRIFnpUzXflAnGivK9M13D5GEQMmIl6U9Pvk
+              #    sxSmbIUfc2SGJGCJD4I=
+              #    -----END CERTIFICATE-----
+              # verification_mode: none
+      - type: cel
+        title: Collect LiteLLM logs via API (CEL polling)
+        description: Collect LiteLLM logs by polling the LiteLLM tracking REST API directly with the CEL input.
+        vars:
+          - name: url
+            type: text
+            title: LiteLLM API URL
+            description: URL of the LiteLLM API endpoint (e.g., https://api.example.com).
+            multi: false
+            required: true
+            show_user: true
+            secret: false
+          - name: api_key
+            type: password
+            title: LiteLLM API Key
+            description: API key for authenticating with the LiteLLM API.
+            multi: false
+            required: true
+            show_user: true
+            secret: true
+          - name: proxy_url
+            type: text
+            title: Proxy URL
+            description: URL to proxy connections in the form of http[s]://<user>:<password>@<server name/ip>:<port>. Please ensure your username and password are in URL encoded format.
+            multi: false
+            required: false
+            show_user: false
+            secret: false
+          - name: ssl
+            type: yaml
+            title: SSL Configuration
+            description: SSL configuration options. Set verification_mode to none for self-signed certificates.
+            multi: false
+            required: false
+            show_user: false
+            secret: false
+            default: |
+              #certificate_authorities:
+              #  - |
+              #    -----BEGIN CERTIFICATE-----
+              #    MIIDCjCCAfKgAwIBAgITJ706Mu2wJlKckpIvkWxEHvEyijANBgkqhkiG9w0BAQsF
+              #    ADAUMRIwEAYDVQQDDAlsb2NhbGhvc3QwIBcNMTkwNzIyMTkyOTA0WhgPMjExOTA2
+              #    MjgxOTI5MDRaMBQxEjAQBgNVBAMMCWxvY2FsaG9zdDCCASIwDQYJKoZIhvcNAQEB
+              #    BQADggEPADCCAQoCggEBANce58Y/JykI58iyOXpxGfw0/gMvF0hUQAcUrSMxEO6n
+              #    fZRA49b4OV4SwWmA3395uL2eB2NB8y8qdQ9muXUdPBWE4l9rMZ6gmfu90N5B5uEl
+              #    94NcfBfYOKi1fJQ9i7WKhTjlRkMCgBkWPkUokvBZFRt8RtF7zI77BSEorHGQCk9t
+              #    /D7BS0GJyfVEhftbWcFEAG3VRcoMhF7kUzYwp+qESoriFRYLeDWv68ZOvG7eoWnP
+              #    PsvZStEVEimjvK5NSESEQa9xWyJOmlOKXhkdymtcUd/nXnx6UTCFgnkgzSdTWV41
+              #    CI6B6aJ9svCTI2QuoIq2HxX/ix7OvW1huVmcyHVxyUECAwEAAaNTMFEwHQYDVR0O
+              #    BBYEFPwN1OceFGm9v6ux8G+DZ3TUDYxqMB8GA1UdIwQYMBaAFPwN1OceFGm9v6ux
+              #    8G+DZ3TUDYxqMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQELBQADggEBAG5D
+              #    874A4YI7YUwOVsVAdbWtgp1d0zKcPRR+r2OdSbTAV5/gcS3jgBJ3i1BN34JuDVFw
+              #    3DeJSYT3nxy2Y56lLnxDeF8CUTUtVQx3CuGkRg1ouGAHpO/6OqOhwLLorEmxi7tA
+              #    H2O8mtT0poX5AnOAhzVy7QW0D/k4WaoLyckM5hUa6RtvgvLxOwA0U+VGurCDoctu
+              #    8F4QOgTAWyh8EZIwaKCliFRSynDpv3JTUwtfZkxo6K6nce1RhCWFAsMvDZL8Dgc0
+              #    yvgJ38BRsFOtkRuAGSf6ZUwTO8JJRRIFnpUzXflAnGivK9M13D5GEQMmIl6U9Pvk
+              #    sxSmbIUfc2SGJGCJD4I=
+              #    -----END CERTIFICATE-----
+              # verification_mode: none
+owner:
+  github: elastic/security-service-integrations
+  type: elastic
