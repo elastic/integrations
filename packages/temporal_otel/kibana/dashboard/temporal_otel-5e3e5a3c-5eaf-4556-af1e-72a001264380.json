@@ -4977,9 +4977,9 @@
                                                 {
                                                     "columnId": "datatable_accessor_metric_2",
                                                     "customLabel": true,
-                                                    "fieldName": "Success /s",
+                                                    "fieldName": "Success %",
                                                     "inMetricDimension": true,
-                                                    "label": "Success /s",
+                                                    "label": "Success %",
                                                     "meta": {
                                                         "type": "number"
                                                     },
@@ -4987,7 +4987,8 @@
                                                         "format": {
                                                             "id": "number",
                                                             "params": {
-                                                                "decimals": 3
+                                                                "decimals": 2,
+                                                                "suffix": "%"
                                                             }
                                                         }
                                                     }
@@ -4995,9 +4996,9 @@
                                                 {
                                                     "columnId": "datatable_accessor_metric_3",
                                                     "customLabel": true,
-                                                    "fieldName": "Failed /s",
+                                                    "fieldName": "Failure %",
                                                     "inMetricDimension": true,
-                                                    "label": "Failed /s",
+                                                    "label": "Failure %",
                                                     "meta": {
                                                         "type": "number"
                                                     },
@@ -5005,7 +5006,8 @@
                                                         "format": {
                                                             "id": "number",
                                                             "params": {
-                                                                "decimals": 3
+                                                                "decimals": 2,
+                                                                "suffix": "%"
                                                             }
                                                         }
                                                     }
@@ -5013,9 +5015,9 @@
                                                 {
                                                     "columnId": "datatable_accessor_metric_4",
                                                     "customLabel": true,
-                                                    "fieldName": "Timed Out /s",
+                                                    "fieldName": "Timed Out %",
                                                     "inMetricDimension": true,
-                                                    "label": "Timed Out /s",
+                                                    "label": "Timed Out %",
                                                     "meta": {
                                                         "type": "number"
                                                     },
@@ -5023,7 +5025,8 @@
                                                         "format": {
                                                             "id": "number",
                                                             "params": {
-                                                                "decimals": 3
+                                                                "decimals": 2,
+                                                                "suffix": "%"
                                                             }
                                                         }
                                                     }
@@ -5031,27 +5034,9 @@
                                                 {
                                                     "columnId": "datatable_accessor_metric_5",
                                                     "customLabel": true,
-                                                    "fieldName": "Terminated /s",
+                                                    "fieldName": "Terminated %",
                                                     "inMetricDimension": true,
-                                                    "label": "Terminated /s",
-                                                    "meta": {
-                                                        "type": "number"
-                                                    },
-                                                    "params": {
-                                                        "format": {
-                                                            "id": "number",
-                                                            "params": {
-                                                                "decimals": 3
-                                                            }
-                                                        }
-                                                    }
-                                                },
-                                                {
-                                                    "columnId": "datatable_accessor_metric_6",
-                                                    "customLabel": true,
-                                                    "fieldName": "Success %",
-                                                    "inMetricDimension": true,
-                                                    "label": "Success %",
+                                                    "label": "Terminated %",
                                                     "meta": {
                                                         "type": "number"
                                                     },
@@ -5069,7 +5054,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-temporal.cloud_metrics.otel-*-ffc22a9d429c166151994579ab3b0367b11a8c980dddea38512a7605ffdedf41",
                                             "query": {
-                                                "esql": "TS metrics-temporal.cloud_metrics.otel-*\n| STATS Succeeded = SUM(AVG_OVER_TIME(metrics.temporal_cloud_v1_workflow_success_count)), Failed = SUM(AVG_OVER_TIME(metrics.temporal_cloud_v1_workflow_failed_count)), `Timed Out` = SUM(AVG_OVER_TIME(metrics.temporal_cloud_v1_workflow_timeout_count)), Terminated = SUM(AVG_OVER_TIME(metrics.temporal_cloud_v1_workflow_terminate_count)) BY `Workflow Type` = attributes.temporal_workflow_type, Namespace = attributes.temporal_namespace\n| EVAL s = CASE(Succeeded IS NOT NULL, Succeeded, 0.0), f = CASE(Failed IS NOT NULL, Failed, 0.0), t = CASE(`Timed Out` IS NOT NULL, `Timed Out`, 0.0), x = CASE(Terminated IS NOT NULL, Terminated, 0.0)\n| WHERE s + f + t + x > 0\n| EVAL `Success %` = ROUND(100 * s / (s + f + t + x), 2), `Success /s` = ROUND(s,3), `Failed /s` = ROUND(f,3), `Timed Out /s` = ROUND(t,3), `Terminated /s` = ROUND(x,3)\n| KEEP Namespace, `Workflow Type`, `Success /s`, `Failed /s`, `Timed Out /s`, `Terminated /s`, `Success %`\n| SORT `Success %` ASC, `Failed /s` DESC\n| LIMIT 50"
+                                                "esql": "TS metrics-temporal.cloud_metrics.otel-*\n| STATS Succeeded = SUM(AVG_OVER_TIME(metrics.temporal_cloud_v1_workflow_success_count)), Failed = SUM(AVG_OVER_TIME(metrics.temporal_cloud_v1_workflow_failed_count)), `Timed Out` = SUM(AVG_OVER_TIME(metrics.temporal_cloud_v1_workflow_timeout_count)), Terminated = SUM(AVG_OVER_TIME(metrics.temporal_cloud_v1_workflow_terminate_count)) BY `Workflow Type` = attributes.temporal_workflow_type, Namespace = attributes.temporal_namespace\n| EVAL s = CASE(Succeeded IS NOT NULL, Succeeded, 0.0), f = CASE(Failed IS NOT NULL, Failed, 0.0), t = CASE(`Timed Out` IS NOT NULL, `Timed Out`, 0.0), x = CASE(Terminated IS NOT NULL, Terminated, 0.0)\n| WHERE s + f + t + x > 0\n| EVAL total = s + f + t + x\n| EVAL `Success %` = ROUND(100 * s / total, 2), `Failure %` = ROUND(100 * f / total, 2), `Timed Out %` = ROUND(100 * t / total, 2)\n| EVAL `Terminated %` = ROUND(100 - `Success %` - `Failure %` - `Timed Out %`, 2)\n| KEEP Namespace, `Workflow Type`, `Success %`, `Failure %`, `Timed Out %`, `Terminated %`\n| SORT `Success %` ASC, `Failure %` DESC\n| LIMIT 50"
                                             }
                                         }
                                     }
@@ -5084,7 +5069,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-temporal.cloud_metrics.otel-*\n| STATS Succeeded = SUM(AVG_OVER_TIME(metrics.temporal_cloud_v1_workflow_success_count)), Failed = SUM(AVG_OVER_TIME(metrics.temporal_cloud_v1_workflow_failed_count)), `Timed Out` = SUM(AVG_OVER_TIME(metrics.temporal_cloud_v1_workflow_timeout_count)), Terminated = SUM(AVG_OVER_TIME(metrics.temporal_cloud_v1_workflow_terminate_count)) BY `Workflow Type` = attributes.temporal_workflow_type, Namespace = attributes.temporal_namespace\n| EVAL s = CASE(Succeeded IS NOT NULL, Succeeded, 0.0), f = CASE(Failed IS NOT NULL, Failed, 0.0), t = CASE(`Timed Out` IS NOT NULL, `Timed Out`, 0.0), x = CASE(Terminated IS NOT NULL, Terminated, 0.0)\n| WHERE s + f + t + x > 0\n| EVAL `Success %` = ROUND(100 * s / (s + f + t + x), 2), `Success /s` = ROUND(s,3), `Failed /s` = ROUND(f,3), `Timed Out /s` = ROUND(t,3), `Terminated /s` = ROUND(x,3)\n| KEEP Namespace, `Workflow Type`, `Success /s`, `Failed /s`, `Timed Out /s`, `Terminated /s`, `Success %`\n| SORT `Success %` ASC, `Failed /s` DESC\n| LIMIT 50"
+                                "esql": "TS metrics-temporal.cloud_metrics.otel-*\n| STATS Succeeded = SUM(AVG_OVER_TIME(metrics.temporal_cloud_v1_workflow_success_count)), Failed = SUM(AVG_OVER_TIME(metrics.temporal_cloud_v1_workflow_failed_count)), `Timed Out` = SUM(AVG_OVER_TIME(metrics.temporal_cloud_v1_workflow_timeout_count)), Terminated = SUM(AVG_OVER_TIME(metrics.temporal_cloud_v1_workflow_terminate_count)) BY `Workflow Type` = attributes.temporal_workflow_type, Namespace = attributes.temporal_namespace\n| EVAL s = CASE(Succeeded IS NOT NULL, Succeeded, 0.0), f = CASE(Failed IS NOT NULL, Failed, 0.0), t = CASE(`Timed Out` IS NOT NULL, `Timed Out`, 0.0), x = CASE(Terminated IS NOT NULL, Terminated, 0.0)\n| WHERE s + f + t + x > 0\n| EVAL total = s + f + t + x\n| EVAL `Success %` = ROUND(100 * s / total, 2), `Failure %` = ROUND(100 * f / total, 2), `Timed Out %` = ROUND(100 * t / total, 2)\n| EVAL `Terminated %` = ROUND(100 - `Success %` - `Failure %` - `Timed Out %`, 2)\n| KEEP Namespace, `Workflow Type`, `Success %`, `Failure %`, `Timed Out %`, `Terminated %`\n| SORT `Success %` ASC, `Failure %` DESC\n| LIMIT 50"
                             },
                             "visualization": {
                                 "columns": [
@@ -5115,11 +5100,6 @@
                                     },
                                     {
                                         "columnId": "datatable_accessor_metric_5",
-                                        "isMetric": true,
-                                        "isTransposed": false
-                                    },
-                                    {
-                                        "columnId": "datatable_accessor_metric_6",
                                         "isMetric": true,
                                         "isTransposed": false
                                     }
