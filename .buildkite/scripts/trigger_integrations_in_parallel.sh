@@ -4,12 +4,10 @@ source .buildkite/scripts/common.sh
 
 set -euo pipefail
 
+echo "--- Install requirements"
 add_bin_path
 with_yq
-
-pushd packages > /dev/null
-PACKAGE_LIST=$(list_all_directories)
-popd > /dev/null
+with_mage
 
 PIPELINE_FILE="packages_pipeline.yml"
 touch packages_pipeline.yml
@@ -22,12 +20,20 @@ steps:
 EOF
 
 # Get from and to changesets to avoid repeating the same queries for each package
-
 # setting range of changesets to check differences
+echo "--- Get from and to changesets"
 from="$(get_from_changeset)"
+if [[ "${from}" == "" ]]; then
+    echo "Missing \"from\" changeset".
+    exit 1
+fi
 to="$(get_to_changeset)"
+if [[ "${to}" == "" ]]; then
+    echo "Missing \"to\" changeset".
+    exit 1
+fi
 
-echo "[DEBUG] Checking with commits: from: '${from}' to: '${to}'"
+echo "Checking with commits: from: '${from}' to: '${to}'"
 
 # This variable does not exist in builds triggered automatically
 GITHUB_PR_TRIGGER_COMMENT="${GITHUB_PR_TRIGGER_COMMENT:-""}"
@@ -39,28 +45,45 @@ if [[ "${BUILDKITE_PIPELINE_SLUG}" == "integrations-test-stack" && "${GITHUB_PR_
     echo "Use Elastic stack version from Github comment: ${STACK_VERSION}"
 fi
 
+echo "--- Compute affected packages from git diff"
+COMMIT_MERGE=$(git merge-base "${from}" "${to}")
+export COMMIT_MERGE
+changed_files=$(git diff --name-only "${COMMIT_MERGE}" "${to}")
+
+if [[ "${FORCE_CHECK_ALL}" == "true" ]] || echo "${changed_files}" | pr_has_package_related_files; then
+    echo "Non-package files changed or FORCE_CHECK_ALL set: scanning all packages"
+    PACKAGE_LIST=$(list_all_directories)
+else
+    PACKAGE_LIST=$(
+        {
+            echo "${changed_files}" | grep -oE '^packages/[^/]+' | sort -u || true
+            echo "${changed_files}" | grep -oE '^\.buildkite/scripts/packages/[^/]+\.sh' \
+                | sed 's|^\.buildkite/scripts/||; s|\.sh$||' || true
+        } | sort -u | grep -v '^$' || true
+    )
+    echo "Packages affected by diff: $(echo "${PACKAGE_LIST}" | tr '\n' ' ')"
+fi
+
 packages_to_test=0
 
-for package in ${PACKAGE_LIST}; do
+for package_path in ${PACKAGE_LIST}; do
     # check if needed to create an step for this package
-    pushd "packages/${package}" > /dev/null
-    skip_package="false"
-    if ! reason=$(is_pr_affected "${package}" "${from}" "${to}") ; then
-        skip_package="true"
-    fi
-    echoerr "${reason}"
-    popd > /dev/null
-
-    if [[ "$skip_package" == "true" ]] ; then
+    echo "--- [$package_path] check if it is required to be tested"
+    if ! should_test_package "${package_path}" "${from}" "${to}"; then
         continue
     fi
 
+    # package names (manifest.yml) are unique, so it can be used as key for the step
+    pushd "${package_path}" > /dev/null
+    package_name=$(package_name_manifest)
+    popd > /dev/null
+
     packages_to_test=$((packages_to_test+1))
     cat << EOF >> ${PIPELINE_FILE}
-    - label: "Check integrations ${package}"
-      key: "test-integrations-${package}"
-      command: ".buildkite/scripts/test_one_package.sh ${package} ${from} ${to}"
-      timeout_in_minutes: 240
+    - label: "Check integrations ${package_name}"
+      key: "test-integrations-${package_name}"
+      command: ".buildkite/scripts/test_one_package.sh ${package_path} ${from} ${to}"
+      timeout_in_minutes: 300
       agents:
         provider: gcp
         image: ${IMAGE_UBUNTU_X86_64}
@@ -73,11 +96,11 @@ for package in ${PACKAGE_LIST}; do
         # See https://github.com/elastic/oblt-infra/blob/main/conf/resources/repos/integrations/01-aws-buildkite-oidc.tf
         # This plugin creates the environment variables required by the service deployer (AWS_SECRET_ACCESS_KEY and AWS_SECRET_KEY_ID)
         - elastic/oblt-aws-auth#v0.1.0:
-            duration: 10800 # seconds
+            duration: 18000 # seconds
         # See https://github.com/elastic/oblt-infra/blob/main/conf/resources/repos/integrations/01-gcp-buildkite-oidc.tf
         # This plugin authenticates to Google Cloud using the OIDC token.
         - elastic/oblt-google-auth#v1.3.0:
-            lifetime: 10800 # seconds
+            lifetime: 18000 # seconds
             project-id: "elastic-observability-ci"
             project-number: "911195782929"
       artifact_paths:
@@ -90,8 +113,10 @@ EOF
 done
 
 if [ ${packages_to_test} -eq 0 ]; then
+    echo "--- Create Buildkite annotation no packages to be tested"
     buildkite-agent annotate "No packages to be tested" --context "ctx-no-packages" --style "warning"
     exit 0
 fi
 
+echo "--- Upload Buildkite pipeline"
 cat ${PIPELINE_FILE} | buildkite-agent pipeline upload
