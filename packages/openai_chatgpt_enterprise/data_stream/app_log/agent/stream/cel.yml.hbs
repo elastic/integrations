@@ -16,7 +16,7 @@ resource.url: {{url}}
 state:
   admin_token: {{admin_token}}
   scope: {{scope}}
-  resource_id: {{resource_id}}
+  resource_id: {{escape_string resource_id}}
   initial_interval: {{initial_interval}}
   batch_size: {{batch_size}}
 redact:
@@ -33,7 +33,7 @@ program: |-
         state.with(
           request(
             "GET",
-            state.url.trim_right("/") + "/v1/compliance/" + ((state.scope == "organization") ? "organizations" : "workspaces") + "/" + string(state.resource_id) + "/logs?" + {
+            state.url.trim_right("/") + "/v1/compliance/" + ((state.scope == "organization") ? "organizations" : "workspaces") + "/" + state.resource_id + "/logs?" + {
               "event_type": ["APP_LOG"],
               "after": [after],
               "limit": [string(int(state.batch_size))],
@@ -97,7 +97,7 @@ program: |-
       state.with(
         request(
           "GET",
-          state.url.trim_right("/") + "/v1/compliance/" + ((state.scope == "organization") ? "organizations" : "workspaces") + "/" + string(state.resource_id) + "/logs/" + string(state.cursor.worklist[0].id)
+          state.url.trim_right("/") + "/v1/compliance/" + ((state.scope == "organization") ? "organizations" : "workspaces") + "/" + state.resource_id + "/logs/" + state.cursor.worklist[0].id
         ).with(
           {
             "Header": {
@@ -106,9 +106,9 @@ program: |-
           }
         ).do_request().as(resp, (resp.StatusCode == 200) ?
           {
-            "events": string(resp.Body).split("\n").map(l, l.trim_space()).map(l, l != "",
+            "events": string(resp.Body).split("\n").map(l, l.trim_space() != "",
               {
-                "message": l,
+                "message": l.trim_space(),
               }
             ),
             // Shallow-merge into the existing cursor so last_end_time and
@@ -124,7 +124,7 @@ program: |-
               "error": {
                 "code": string(resp.StatusCode),
                 "id": resp.Status,
-                "message": "GET " + state.url.trim_right("/") + "/v1/compliance/logs/" + string(state.cursor.worklist[0].id) + ": " + (
+                "message": "GET " + state.url.trim_right("/") + "/v1/compliance/logs/" + state.cursor.worklist[0].id + ": " + (
                   (size(resp.Body) != 0) ?
                     string(resp.Body)
                   :
