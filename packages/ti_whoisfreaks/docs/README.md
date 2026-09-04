@@ -489,7 +489,6 @@ The `threat_feed_malware` data stream provides WhoisFreaks malware domain indica
 | threat.indicator.provider | The name of the indicator's provider. | keyword |
 | threat.indicator.reference | Reference URL linking to additional information about this indicator. | keyword |
 | threat.indicator.type | Type of indicator as represented by Cyber Observable in STIX 2.0. | keyword |
-| threat.indicator.url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
 | whoisfreaks.threat_feed.confidence | Numeric confidence score from the threat feed. | float |
 | whoisfreaks.threat_feed.no_of_threat_matched_pivots | Number of matched pivots for the threat indicator. | integer |
 
@@ -566,7 +565,6 @@ The `threat_feed_spam` data stream provides WhoisFreaks spam domain indicators.
 | threat.indicator.provider | The name of the indicator's provider. | keyword |
 | threat.indicator.reference | Reference URL linking to additional information about this indicator. | keyword |
 | threat.indicator.type | Type of indicator as represented by Cyber Observable in STIX 2.0. | keyword |
-| threat.indicator.url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
 | whoisfreaks.threat_feed.confidence | Numeric confidence score from the threat feed. | float |
 | whoisfreaks.threat_feed.no_of_threat_matched_pivots | Number of matched pivots for the threat indicator. | integer |
 
@@ -643,7 +641,6 @@ The `threat_feed_phishing` data stream provides WhoisFreaks phishing domain indi
 | threat.indicator.provider | The name of the indicator's provider. | keyword |
 | threat.indicator.reference | Reference URL linking to additional information about this indicator. | keyword |
 | threat.indicator.type | Type of indicator as represented by Cyber Observable in STIX 2.0. | keyword |
-| threat.indicator.url.domain | Domain of the url, such as "www.elastic.co". In some cases a URL may refer to an IP and/or port directly, without a domain name. In this case, the IP address would go to the `domain` field. If the URL contains a literal IPv6 address enclosed by `[` and `]` (IETF RFC 2732), the `[` and `]` characters should also be captured in the `domain` field. | keyword |
 | whoisfreaks.threat_feed.confidence | Numeric confidence score from the threat feed. | float |
 | whoisfreaks.threat_feed.no_of_threat_matched_pivots | Number of matched pivots for the threat indicator. | integer |
 
