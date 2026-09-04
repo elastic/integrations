@@ -2,7 +2,7 @@
 
 Temporal Cloud is a fully managed Temporal service that provides durable workflow execution, task scheduling, and activity orchestration as a cloud platform. Customer applications connect to Temporal Cloud via gRPC and deploy their own worker processes, which poll Temporal Cloud for tasks and execute workflow and activity code.
 
-This content pack provides dashboards, alert rules, and SLO templates for Temporal Cloud metrics and SDK worker metrics collected via the **[Temporal](https://www.elastic.co/docs/reference/integrations/temporal)** integration package.
+This content pack provides dashboards, alert rules, and SLO templates for Temporal Cloud metrics collected via the **[Temporal](https://www.elastic.co/docs/reference/integrations/temporal)** integration package.
 
 ## Requirements
 
