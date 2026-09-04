@@ -1779,7 +1779,7 @@ An example event for `firewall_event` looks as following:
             "number": 15169
         },
         "geo": {
-            "country_iso_code": "us"
+            "country_iso_code": "US"
         },
         "ip": "175.16.199.0"
     },
@@ -3017,7 +3017,7 @@ An example event for `http_request` looks as following:
             "number": 43766
         },
         "geo": {
-            "country_iso_code": "sa"
+            "country_iso_code": "SA"
         },
         "ip": "175.16.199.0",
         "port": 0
@@ -4627,7 +4627,7 @@ An example event for `spectrum_event` looks as following:
         },
         "bytes": 0,
         "geo": {
-            "country_iso_code": "bg"
+            "country_iso_code": "BG"
         },
         "ip": "67.43.156.0",
         "port": 40456

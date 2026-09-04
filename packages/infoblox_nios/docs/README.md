@@ -281,13 +281,19 @@ An example event for `log` looks as following:
 | infoblox_nios.log.dhcp.trans_id |  | keyword |
 | infoblox_nios.log.dhcp.uid |  | keyword |
 | infoblox_nios.log.dhcp.validation_second |  | long |
+| infoblox_nios.log.dns.action | Decision BIND logged for the query under the security category, for example `denied` or `approved`. | keyword |
 | infoblox_nios.log.dns.after_query |  | text |
 | infoblox_nios.log.dns.answers_policy |  | text |
 | infoblox_nios.log.dns.before_query |  | text |
 | infoblox_nios.log.dns.category |  | text |
+| infoblox_nios.log.dns.ecs_client_subnet.ip | Client subnet address carried in the EDNS Client Subnet option. | ip |
+| infoblox_nios.log.dns.ecs_client_subnet.prefix_length | Source prefix length of the EDNS Client Subnet option, in bits. | long |
+| infoblox_nios.log.dns.ecs_client_subnet.scope_prefix_length | Scope prefix length of the EDNS Client Subnet option, in bits. | long |
 | infoblox_nios.log.dns.failed_message |  | text |
+| infoblox_nios.log.dns.failure_reason | Reason BIND reported for a failed query, verbatim. Usually a DNS RCODE such as `REFUSED`, but can be an internal result such as `timed out` or `failure`. | keyword |
 | infoblox_nios.log.dns.header_flags |  | keyword |
 | infoblox_nios.log.dns.message |  | text |
+| infoblox_nios.log.dns.query_context | Source BIND answered the query from when logging a security decision, for example `cache`. | keyword |
 | infoblox_nios.log.dns.rpz.action |  | keyword |
 | infoblox_nios.log.dns.rpz.domain |  | keyword |
 | infoblox_nios.log.dns.rpz.domain_rewrite |  | keyword |
@@ -295,6 +301,8 @@ An example event for `log` looks as following:
 | infoblox_nios.log.dns.rpz.query_class_rewrite |  | keyword |
 | infoblox_nios.log.dns.rpz.rule_type |  | keyword |
 | infoblox_nios.log.dns.rpz.type |  | keyword |
+| infoblox_nios.log.dns.transfer.stage | Stage of the zone transfer that BIND reported a failure in, for example `failed` in `failed while receiving responses`. | keyword |
+| infoblox_nios.log.dns.transfer.status | Status BIND reported for the zone transfer, verbatim, for example `success`, `completed`, `IXFR failed` or `REFUSED`. | keyword |
 | infoblox_nios.log.dns.version |  | text |
 | infoblox_nios.log.dns.view_name |  | text |
 | infoblox_nios.log.service_name |  | keyword |
