@@ -8,6 +8,8 @@ This integration scrapes Temporal Cloud OpenMetrics using the [Prometheus (OTel)
 
 Metrics are stored with native OTel schema — no field renaming or custom mapping is applied.
 
+Once data starts flowing, the **[Temporal OpenTelemetry Assets](https://www.elastic.co/docs/reference/integrations/temporal_otel)** package provides a Cloud Metrics dashboard, alerting rule templates, and SLO templates.
+
 ## Prerequisites
 
 | Requirement | Details |
@@ -16,6 +18,7 @@ Metrics are stored with native OTel schema — no field renaming or custom mappi
 | **API key role** | Service Account with **Metrics Read-Only** account-level role |
 | **Elastic Stack** | 9.5.0+ |
 | **Input package** | `prometheus_input_otel` (installed automatically as a dependency) |
+| **Content package** | `temporal_otel` (installed automatically as a dependency) |
 
 ## Setup
 
