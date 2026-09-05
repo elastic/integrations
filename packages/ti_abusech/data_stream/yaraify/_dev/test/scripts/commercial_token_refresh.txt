@@ -1,0 +1,144 @@
+# Verify that an expired commercial JWT token triggers a fresh login request
+# before collecting YARAify rule metadata on the next polling interval.
+#
+# The mock login endpoint returns two responses in rolling sequence:
+#   1. A short-lived token (expires: 1, always stale on the next interval)
+#   2. A refreshed token (expires: 4102444800)
+# The rules endpoint returns a different rule on each request so we can verify
+# both collection rounds succeeded after token refresh.
+
+[!external_stack] skip 'Skipping external stack test.'
+[!exec:jq] skip 'Skipping test requiring absent jq command'
+
+use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+install_agent -profile ${CONFIG_PROFILES}/${PROFILE} -network_name NETWORK_NAME
+docker_up -profile ${CONFIG_PROFILES}/${PROFILE} -network ${NETWORK_NAME} abusech-mock
+add_package -profile ${CONFIG_PROFILES}/${PROFILE}
+add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config.yaml DATA_STREAM_NAME
+
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 2 -confirm 15s -timeout 5m ${DATA_STREAM_NAME}
+cp stdout got_docs.json
+
+exec jq '([.hits.hits[]._source | select(.abusech.yaraify != null)] | length) >= 2' got_docs.json
+stdout '^true$'
+
+exec jq '[.hits.hits[]._source | select(.error != null)] | length' got_docs.json
+stdout '^0$'
+
+exec jq '([.hits.hits[]._source.threat.indicator.name] | unique | length) >= 2' got_docs.json
+stdout '^true$'
+
+exec jq -c '[.hits.hits[]._source.threat.indicator.name] | unique | sort' got_docs.json
+stdout '^\["win_after_refresh","win_before_refresh"\]$'
+
+remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_NAME}
+uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 1m
+docker_down abusech-mock
+
+-- test_config.yaml --
+input: cel
+vars:
+  enable_request_tracer: false
+  api_type: commercial
+  username: test@example.com
+  password: test-password
+  commercial_url: http://abusech-mock:8080
+data_stream:
+  vars:
+    interval: 30s
+    initial_interval: 72h
+    page_size: 100
+    preserve_original_event: true
+    ioc_expiration_duration: 5d
+-- abusech-mock/docker-compose.yml --
+version: '2.3'
+services:
+  abusech-mock:
+    image: docker.elastic.co/observability/stream:v0.20.0
+    hostname: abusech-mock
+    ports:
+      - 8080
+    environment:
+      PORT: "8080"
+    volumes:
+      - ./config.yml:/config.yml
+    command:
+      - http-server
+      - --addr=:8080
+      - --config=/config.yml
+-- abusech-mock/config.yml --
+rules:
+  - path: /v1/login
+    methods: [POST]
+    request_headers:
+      Content-Type:
+        - "application/json"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"code":200,"token":"token-short-lived","expires":1}
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"code":200,"token":"token-refreshed","expires":4102444800}
+  - path: /yaraify/v1/rules
+    methods: [GET]
+    query_params:
+      since: ["{since:.*}"]
+      page_size: ["{page_size:.*}"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {
+            "items": [
+              {
+                "author": "Example Author",
+                "date_written": "2024-01-10",
+                "description": "detects ExampleBot",
+                "first_seen": "2024-01-15T11:16:44Z",
+                "malpedia_family": "win.examplebot",
+                "rule_name": "win_before_refresh",
+                "yarahub_license": "CC BY-SA 4.0",
+                "yarahub_rule_matching_tlp": "TLP:WHITE",
+                "yarahub_rule_sharing_tlp": "TLP:WHITE",
+                "yarahub_uuid": "11111111-1111-4111-8111-111111111111"
+              }
+            ],
+            "meta": {
+              "page_size": 100,
+              "total_items": 1
+            }
+          }
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {
+            "items": [
+              {
+                "author": "Second Author",
+                "date_written": "2024-01-09",
+                "description": "detects OtherMalware",
+                "first_seen": "2024-01-15T11:16:42Z",
+                "malpedia_family": "win.othermw",
+                "rule_name": "win_after_refresh",
+                "yarahub_license": "CC0 1.0",
+                "yarahub_rule_matching_tlp": "TLP:WHITE",
+                "yarahub_rule_sharing_tlp": "TLP:GREEN",
+                "yarahub_uuid": "22222222-2222-4222-8222-222222222222"
+              }
+            ],
+            "meta": {
+              "page_size": 100,
+              "total_items": 1
+            }
+          }
