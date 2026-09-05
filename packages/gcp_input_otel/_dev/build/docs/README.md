@@ -1,0 +1,94 @@
+{{- generatedHeader }}
+# Google Cloud Monitoring (OpenTelemetry)
+
+## Overview
+
+The Google Cloud Monitoring OpenTelemetry Input collects Google Cloud Monitoring metrics using the [Google Cloud Monitoring receiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/googlecloudmonitoringreceiver) from the OpenTelemetry Collector.
+
+This is a generic input package: you provide a GCP project ID and either an explicit list of Cloud Monitoring metric type names or filter expressions to select metric descriptors dynamically. It does not ship any per-service (Compute Engine, Memorystore, etc.) configuration or dashboards — those are expected to live in separate, composable integration packages built on top of this input, the same way `supabase` builds on `prometheus_input_otel`.
+
+## How it works
+
+This integration configures the Google Cloud Monitoring receiver in the EDOT (Elastic Distribution of OpenTelemetry) Collector, which:
+
+1. Authenticates to Google Cloud using Application Default Credentials (ADC) found on the host running the collector.
+2. Looks up the metric descriptor for each metric name you configure.
+3. Polls the Cloud Monitoring API on a regular interval and retrieves the time series data for each configured metric.
+4. Forwards the metrics to Elastic Agent, which ships them to Elasticsearch for indexing and visualization.
+
+## Requirements
+
+- A GCP project with the Cloud Monitoring API enabled.
+- Application Default Credentials available to the collector process (see [Authentication](#authentication) below).
+- The specific Cloud Monitoring metric type names you want to collect (for example, `compute.googleapis.com/instance/cpu/utilization`). Browse available metrics with the [Metrics Explorer](https://cloud.google.com/monitoring/charts/metrics-selector) or the [`projects.metricDescriptors.list`](https://cloud.google.com/monitoring/api/ref_v3/rest/v3/projects.metricDescriptors/list) API.
+
+## Configuration
+
+### Core settings
+
+| Setting | Description | Default |
+|---|---|---|
+| GCP Project ID | The GCP project ID to query Cloud Monitoring metrics from. | — |
+| Metrics List | The Cloud Monitoring metric type names to collect. One time series query is issued per metric. | — |
+| Collection Interval | How often the receiver polls Cloud Monitoring. | `300s` |
+
+### Advanced settings
+
+| Setting | Description | Default |
+|---|---|---|
+| Metric Descriptor Filters | Alternative to Metrics List: filter expressions used to look up metric descriptors dynamically instead of naming exact metric types. | — |
+| Initial Delay | How long the receiver waits before starting. | `1s` |
+| Timeout | Timeout for requests against the GCP Monitoring REST API. | `1m` |
+| API Endpoint | Overrides the default `monitoring.googleapis.com:443` endpoint. Only needed for non-standard universe domains. | `monitoring.googleapis.com:443` |
+| Universe Domain | The Google Cloud universe domain. Only needed for Sovereign Cloud regions. | `googleapis.com` |
+
+Guidance:
+
+- The receiver enforces a hard minimum **Collection Interval** of `60s`; lower values are rejected at startup. Be mindful of [Cloud Monitoring API quotas and costs](https://cloud.google.com/stackdriver/pricing#monitoring-costs) when choosing a low interval.
+- At least one entry is required across **Metrics List** and **Metric Descriptor Filters** combined; the receiver rejects a configuration with neither.
+- Each entry in **Metrics List** must be an exact Cloud Monitoring metric type name (for example, `compute.googleapis.com/instance/cpu/utilization`).
+- Each entry in **Metric Descriptor Filters** (advanced) is a [metric descriptor filter expression](https://cloud.google.com/monitoring/api/v3/filters#metric-descriptor-filter) supporting only the `project` and `metric.type` filter objects (for example, `metric.type = starts_with("compute.googleapis.com/instance/")`). An entry cannot combine both a metric name and a filter.
+
+## Authentication
+
+This receiver has no built-in credential configuration of its own — it always resolves [Application Default Credentials (ADC)](https://cloud.google.com/docs/authentication/application-default-credentials) from the environment the collector process runs in. There is no username/password, API key, or service-account field to fill in in Fleet.
+
+Provide ADC to the host running Elastic Agent using one of the following, in order of preference:
+
+- **Workload identity** (GKE, Cloud Run, or another GCP compute service running the agent): credentials are supplied automatically; no extra configuration is needed.
+- **A pre-provisioned service account key file**: set the `GOOGLE_APPLICATION_CREDENTIALS` environment variable on the Elastic Agent host to the path of a service-account JSON key file before the agent starts.
+- **`gcloud auth application-default login`**: useful for development and testing, not recommended for production.
+
+The credentials must be authorized to call the Cloud Monitoring API, at minimum with the `roles/monitoring.viewer` IAM role (or an equivalent custom role granting `monitoring.timeSeries.list` and `monitoring.metricDescriptors.list`).
+
+## Known limitations
+
+- **Requires a Google Cloud Monitoring receiver in the Elastic Agent OpenTelemetry Collector.** As of this package's initial release, `googlecloudmonitoringreceiver` is not yet bundled in the Elastic Agent / EDOT Collector distribution. Until an Elastic Agent release adds it, applying this input's policy to a standard Elastic Agent will fail at collector startup with an unrecognized-component error for `googlecloudmonitoring`. This package can be built, installed, and configured ahead of that work, but metrics will not flow until the receiver ships in Elastic Agent (or you run a custom-built EDOT Collector that includes it).
+- **No credential fields.** Because the upstream receiver has no credentials configuration surface at all (unlike, for example, the AWS CloudWatch receiver's `credentials_provider` extension hook), this input cannot offer credential vars in Fleet. Ambient Application Default Credentials on the agent host are the only supported authentication path, upstream and here.
+- **No live system tests.** This package ships policy tests (verifying the rendered agent policy end to end) but not system tests. `googlecloudmonitoringreceiver` always resolves ADC and talks to the real Cloud Monitoring gRPC API over TLS with no receiver-level option to redirect it to a local mock without also trusting a custom CA at the collector-process level, and — per the point above — no stock Elastic Agent build can run this receiver at all yet. Once the receiver ships in Elastic Agent, system tests can be revisited against a real (or emulated) GCP project.
+
+## Metrics reference
+
+For the full metric catalog, see the [Google Cloud Monitoring metrics list](https://cloud.google.com/monitoring/api/metrics).
+
+## Troubleshooting
+
+### No metrics appear
+
+1. Confirm the collector process can resolve Application Default Credentials — check the Elastic Agent logs for `failed to find default credentials`.
+2. Confirm the credentials have the `roles/monitoring.viewer` IAM role (or equivalent) on the configured project.
+3. Confirm each entry under Metrics List is an exact, existing Cloud Monitoring metric type name (or each entry under Metric Descriptor Filters is a valid filter expression) — a typo results in an empty (not erroring) result for that metric.
+4. Allow time for the first collection cycle; Cloud Monitoring metrics can have several minutes of ingest delay depending on the metric.
+
+### Startup errors
+
+1. `"collection_interval" must be not lower than...`: raise the Collection Interval to at least `60s`.
+2. `missing required field "metrics_list" or its value is empty`: add at least one entry to Metrics List or Metric Descriptor Filters.
+3. `fields "metric_name" and "metric_descriptor_filter" cannot both have value` / `cannot both be empty`: this points to a bug in this package's variable rendering rather than a configuration mistake — each line in Metrics List or Metric Descriptor Filters always renders as exactly one selector type; please [open an issue](https://github.com/elastic/integrations/issues/new) if you see this.
+4. `failed to find default credentials`: see [Authentication](#authentication).
+
+## Further reading
+
+- [Google Cloud Monitoring documentation](https://cloud.google.com/monitoring/docs)
+- [Google Cloud Monitoring receiver documentation](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/googlecloudmonitoringreceiver)
+- [OpenTelemetry Collector documentation](https://opentelemetry.io/docs/collector/)
