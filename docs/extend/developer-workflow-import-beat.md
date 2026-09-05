@@ -34,7 +34,7 @@ The import procedure heavily uses on the *import-beats* script. If you are inter
 
 3. Use the `elastic-package stack up -v -d` command to boot up required dependencies:
 
-    1. Elasticseach instance:
+    1. Elasticsearch instance:
 
         * Kibana’s dependency
 
