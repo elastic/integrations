@@ -18,7 +18,7 @@ COPY entrypoint.d/simulate_queue_connection.py entrypoint.d/entrypoint.sh entryp
 RUN /usr/local/bin/fix_debian_stretch_apt.sh
 
 # Install Python 3 and pika for consumer simulation
-RUN apt-get update && apt-get install -y python3 python3-pika
+RUN apt-get -o Acquire::Retries=3 update && apt-get install -y python3 python3-pika
 
 # Set entrypoint
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
