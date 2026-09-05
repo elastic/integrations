@@ -1,0 +1,218 @@
+---
+description: Pipeline for BloodHound Enterprise attack path findings.
+processors:
+  - set:
+      field: ecs.version
+      value: "9.3.0"
+  - json:
+      field: message
+      target_field: json
+      ignore_failure: true
+  - set:
+      field: event.kind
+      value: alert
+  - set:
+      field: event.category
+      value:
+        - configuration
+        - iam
+  - set:
+      field: event.type
+      value:
+        - info
+  - rename:
+      field: json.id
+      target_field: event.id
+      ignore_missing: true
+  - rename:
+      field: json.Finding
+      target_field: event.action
+      ignore_missing: true
+  - rename:
+      field: json.status
+      target_field: event.action
+      ignore_missing: true
+  - set:
+      field: message
+      value: "{{json.title}}"
+      override: true
+      ignore_empty_value: true
+  - rename:
+      field: json.finding_type
+      target_field: bloodhound_enterprise.finding_type
+      ignore_missing: true
+  - rename:
+      field: json.category
+      target_field: bloodhound_enterprise.category
+      ignore_missing: true
+  - rename:
+      field: json.severity
+      target_field: log.level
+      ignore_missing: true
+  - rename:
+      field: json.Severity
+      target_field: log.level
+      ignore_missing: true
+  - script:
+      description: Normalize severity labels and set ECS numeric event.severity
+      lang: painless
+      source: |
+        if (ctx.log != null && ctx.log.level != null) {
+          def lvl = ctx.log.level.toString().toLowerCase();
+          if (lvl == 'moderate') { lvl = 'medium'; ctx.log.level = 'medium'; }
+          if (lvl == 'critical') { ctx.event.severity = 4; }
+          else if (lvl == 'high') { ctx.event.severity = 3; }
+          else if (lvl == 'medium') { ctx.event.severity = 2; }
+          else if (lvl == 'low') { ctx.event.severity = 1; }
+          else { ctx.event.severity = 0; }
+        }
+  - set:
+      field: source.domain
+      copy_from: json.domain_name
+      ignore_empty_value: true
+      if: ctx.source?.domain == null
+  - set:
+      field: source.domain
+      copy_from: json.Environment
+      ignore_empty_value: true
+      if: ctx.source?.domain == null
+  - set:
+      field: source.domain
+      copy_from: json.FromEnvironmentID
+      ignore_empty_value: true
+      if: ctx.source?.domain == null
+  - set:
+      field: source.domain
+      copy_from: json.DomainSID
+      ignore_empty_value: true
+      if: ctx.source?.domain == null
+  - set:
+      field: user.domain
+      copy_from: json.Environment
+      ignore_empty_value: true
+  - set:
+      field: event.url
+      copy_from: json.graph_url
+      ignore_empty_value: true
+  - set:
+      field: event.url
+      copy_from: json.GraphURL
+      ignore_empty_value: true
+      if: ctx.event?.url == null
+  - rename:
+      field: json.principal.name
+      target_field: user.name
+      ignore_missing: true
+  - rename:
+      field: json.FromPrincipalName
+      target_field: user.name
+      ignore_missing: true
+  - rename:
+      field: json.FromPrincipal
+      target_field: user.id
+      ignore_missing: true
+  - rename:
+      field: json.FromPrincipalKind
+      target_field: user.type
+      ignore_missing: true
+  - rename:
+      field: json.target.name
+      target_field: destination.user.name
+      ignore_missing: true
+  - rename:
+      field: json.ToPrincipalName
+      target_field: destination.user.name
+      ignore_missing: true
+  - rename:
+      field: json.ToPrincipal
+      target_field: destination.user.id
+      ignore_missing: true
+  - rename:
+      field: json.ToPrincipalKind
+      target_field: destination.user.type
+      ignore_missing: true
+  - rename:
+      field: json.remediation.summary
+      target_field: bloodhound_enterprise.remediation
+      ignore_missing: true
+  - rename:
+      field: json.remediation.documentation_url
+      target_field: rule.reference
+      ignore_missing: true
+  - rename:
+      field: json.impact_score
+      target_field: bloodhound_enterprise.impact_score
+      ignore_missing: true
+  - rename:
+      field: json.ImpactPercentage
+      target_field: bloodhound_enterprise.impact_percentage
+      ignore_missing: true
+  - rename:
+      field: json.ImpactCount
+      target_field: bloodhound_enterprise.impact_count
+      ignore_missing: true
+  - rename:
+      field: json.ExposurePercentage
+      target_field: bloodhound_enterprise.exposure_percentage
+      ignore_missing: true
+  - rename:
+      field: json.ExposureCount
+      target_field: bloodhound_enterprise.exposure_count
+      ignore_missing: true
+  - rename:
+      field: json.AssetGroupTagID
+      target_field: bloodhound_enterprise.asset_group_tag_id
+      ignore_missing: true
+  - rename:
+      field: json.PrincipalHash
+      target_field: bloodhound_enterprise.principal_hash
+      ignore_missing: true
+  - rename:
+      field: json.Accepted
+      target_field: bloodhound_enterprise.accepted
+      ignore_missing: true
+  - rename:
+      field: json.IsInherited
+      target_field: bloodhound_enterprise.is_inherited
+      ignore_missing: true
+  - rename:
+      field: json.FromPrincipalProps.operatingsystem
+      target_field: host.os.full
+      ignore_missing: true
+  - rename:
+      field: json.attack_path_details.path_length
+      target_field: bloodhound_enterprise.attack_path.length
+      ignore_missing: true
+  - rename:
+      field: json.attack_path_details.relationships
+      target_field: bloodhound_enterprise.attack_path.relationships
+      ignore_missing: true
+  # Keep @timestamp as agent ingest/collection time so dashboards show when
+  # data was collected. Persist BloodHound's finding creation time on event.created.
+  - date:
+      field: json.created_at
+      target_field: event.created
+      formats:
+        - ISO8601
+      ignore_failure: true
+  - rename:
+      field: json.remediation
+      target_field: bloodhound_enterprise.remediation
+      ignore_missing: true
+  - set:
+      field: message
+      value: "BloodHound Finding: {{event.action}} (From {{user.name}} to {{destination.user.name}})"
+      override: true
+      ignore_empty_value: true
+  - set:
+      field: rule.name
+      value: "{{message}}"
+      override: true
+      ignore_empty_value: true
+  - remove:
+      field: json
+      ignore_missing: true
+on_failure:
+  - set:
+      field: error.message
+      value: "{{ _ingest.on_failure_message }}"
