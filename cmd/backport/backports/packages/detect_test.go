@@ -57,7 +57,7 @@ func TestDetectPackages(t *testing.T) {
 
 		result, err := DetectPackages([]string{
 			".buildkite/scripts/common.sh",
-			"dev/backports/inventory.go",
+			"cmd/backports/inventory.go",
 		}, pkgs)
 		require.NoError(t, err)
 		assert.Empty(t, result)
@@ -129,7 +129,7 @@ func TestDetectPackages(t *testing.T) {
 		result, err := DetectPackages([]string{
 			".github/workflows/test.yml",
 			filepath.Join(pkgs, "aws", "changelog.yml"),
-			"dev/backports/inventory.go",
+			"cmd/backports/inventory.go",
 		}, pkgs)
 		require.NoError(t, err)
 		assert.Equal(t, []string{"aws"}, result)
