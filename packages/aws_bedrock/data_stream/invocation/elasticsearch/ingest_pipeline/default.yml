@@ -478,6 +478,13 @@ processors:
       type: float
       ignore_failure: true
   - convert:
+      tag: convert_additional_model_request_fields_top_k_to_gen_ai_request_top_k_4e8a1c2b
+      if: ctx.gen_ai?.request?.top_k == null && ctx.aws_bedrock?.invocation?.input?.input_body_json?.additionalModelRequestFields?.top_k != null
+      field: aws_bedrock.invocation.input.input_body_json.additionalModelRequestFields.top_k
+      target_field: gen_ai.request.top_k
+      type: float
+      ignore_failure: true
+  - convert:
       tag: convert_aws_bedrock_invocation_input_input_body_json_top_p_to_gen_ai_request_top_p_81358d30
       if: ctx.aws_bedrock?.invocation?.input?.input_body_json?.top_p != null
       field: aws_bedrock.invocation.input.input_body_json.top_p
@@ -492,12 +499,37 @@ processors:
       type: float
       ignore_failure: true
   - convert:
+      tag: convert_inference_config_temperature_to_gen_ai_request_temperature_6c2f9a4d
+      if: ctx.gen_ai?.request?.temperature == null && ctx.aws_bedrock?.invocation?.input?.input_body_json?.inferenceConfig?.temperature != null
+      field: aws_bedrock.invocation.input.input_body_json.inferenceConfig.temperature
+      target_field: gen_ai.request.temperature
+      type: float
+      ignore_failure: true
+  - convert:
       tag: convert_aws_bedrock_invocation_input_input_body_json_max_tokens_to_gen_ai_request_max_tokens_59419985
       if: ctx.aws_bedrock?.invocation?.input?.input_body_json?.max_tokens != null
       field: aws_bedrock.invocation.input.input_body_json.max_tokens
       target_field: gen_ai.request.max_tokens
       type: long
       ignore_failure: true
+  - set:
+      tag: set_gen_ai_input_messages_from_input_body_json_messages_2d9f4c7e
+      if: ctx.aws_bedrock?.invocation?.input?.input_body_json?.messages instanceof List
+      field: gen_ai.input.messages
+      copy_from: aws_bedrock.invocation.input.input_body_json.messages
+      ignore_empty_value: true
+  - script:
+      tag: set_gen_ai_output_messages_from_output_message_8e1b6a3f
+      if: '!(ctx.aws_bedrock?.invocation?.output?.output_body_json instanceof List) && ctx.aws_bedrock?.invocation?.output?.output_body_json?.output?.message != null'
+      lang: painless
+      source: |
+        if (ctx.gen_ai == null) {
+          ctx.gen_ai = new HashMap();
+        }
+        if (ctx.gen_ai.output == null) {
+          ctx.gen_ai.output = new HashMap();
+        }
+        ctx.gen_ai.output.messages = [ctx.aws_bedrock.invocation.output.output_body_json.output.message];
   - convert:
       tag: convert_aws_bedrock_invocation_output_output_token_count_to_gen_ai_usage_completion_tokens_1c488a64
       if: ctx.aws_bedrock?.invocation?.output?.output_token_count != null
