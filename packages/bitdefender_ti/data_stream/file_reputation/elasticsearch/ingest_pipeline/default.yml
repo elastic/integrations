@@ -1,0 +1,221 @@
+---
+description: Pipeline for processing Bitdefender File reputation threat indicators
+processors:
+  # ------------------------------------------------------------------
+  # Core event metadata (REQUIRED for TI integrations)
+  # ------------------------------------------------------------------
+  - set:
+      field: event.kind
+      value: enrichment
+
+  - set:
+      field: event.category
+      value: [threat]
+
+  - set:
+      field: event.type
+      value: [indicator]
+
+  - set:
+      field: threat.feed.vendor
+      value: Bitdefender
+
+  - set:
+      field: threat.feed.name
+      value: file-feed
+
+  - set:
+      field: threat.indicator.provider
+      value: Bitdefender
+
+  # ------------------------------------------------------------------
+  # Timestamps
+  # ------------------------------------------------------------------
+  - date:
+      field: timestamp
+      target_field: '@timestamp'
+      formats: [UNIX, ISO8601]
+      if: ctx.timestamp != null
+
+  - date:
+      field: first_seen
+      target_field: threat.indicator.first_seen
+      formats: [UNIX, ISO8601]
+      if: ctx.first_seen != null
+      ignore_failure: true
+
+  - date:
+      field: timestamp
+      target_field: threat.indicator.last_seen
+      formats: [UNIX, ISO8601]
+      if: ctx.timestamp != null
+
+  # ------------------------------------------------------------------
+  # Revoked indicators (future-proof)
+  # ------------------------------------------------------------------
+  - drop:
+      if: ctx.revoked == true
+
+  # ------------------------------------------------------------------
+  # Indicator core fields (hashes)
+  # ------------------------------------------------------------------
+  - rename:
+      field: sha256
+      target_field: threat.indicator.file.hash.sha256
+      ignore_missing: true
+
+  - rename:
+      field: sha1
+      target_field: threat.indicator.file.hash.sha1
+      ignore_missing: true
+
+  - rename:
+      field: md5
+      target_field: threat.indicator.file.hash.md5
+      ignore_missing: true
+
+  - set:
+      field: threat.indicator.type
+      value: file
+
+  - rename:
+      field: confidence
+      target_field: bitdefender.confidence_score
+      ignore_missing: true
+
+  - script:
+      if: ctx.bitdefender?.confidence_score != null
+      lang: painless
+      source: |
+        def raw = ctx.bitdefender.confidence_score;
+        double score;
+        if (raw instanceof Number) {
+          score = ((Number) raw).doubleValue();
+        } else {
+          try {
+            score = Double.parseDouble(raw.toString());
+          } catch (Exception e) {
+            if (ctx.threat == null) ctx.threat = new HashMap();
+            if (ctx.threat.indicator == null) ctx.threat.indicator = new HashMap();
+            ctx.threat.indicator.confidence = raw.toString();
+            return;
+          }
+        }
+
+        if (ctx.threat == null) ctx.threat = new HashMap();
+        if (ctx.threat.indicator == null) ctx.threat.indicator = new HashMap();
+        ctx.threat.indicator.confidence = score >= 67 ? "high" : (score >= 34 ? "medium" : "low");
+
+  # ------------------------------------------------------------------
+  # Vendor context mapped into ECS-friendly fields
+  # ------------------------------------------------------------------
+  - rename:
+      field: threat_name
+      target_field: threat.indicator.name
+      ignore_missing: true
+
+  - rename:
+      field: threat_family
+      target_field: threat.indicator.family
+      ignore_missing: true
+
+  # ------------------------------------------------------------------
+  # File metadata
+  # ------------------------------------------------------------------
+  - rename:
+      field: file_size
+      target_field: threat.indicator.file.size
+      ignore_missing: true
+
+  # Keep file_format as vendor string (we map it into a safe ECS field)
+  - rename:
+      field: file_format
+      target_field: threat.indicator.file.mime_type
+      ignore_missing: true
+
+  # file_names is array -> keep as keyword array in ECS-ish place
+  - rename:
+      field: file_names
+      target_field: threat.indicator.file.name
+      ignore_missing: true
+
+  - script:
+      if: ctx.threat?.indicator != null
+      lang: painless
+      source: |
+        def parts = new ArrayList();
+        if (ctx.threat?.indicator?.family != null) {
+          parts.add("family=" + ctx.threat.indicator.family);
+        }
+        if (ctx.threat?.indicator?.file?.mime_type != null) {
+          parts.add("format=" + ctx.threat.indicator.file.mime_type);
+        }
+        if (ctx.threat_label != null) {
+          parts.add("label=" + ctx.threat_label);
+        }
+        if (!parts.isEmpty()) {
+          ctx.threat.indicator.description = String.join("; ", parts);
+        }
+
+        if (ctx.threat?.indicator?.file?.hash?.sha256 != null) {
+          ctx.threat.indicator.reference = "bitdefender-ti:file:sha256:" + ctx.threat.indicator.file.hash.sha256;
+        } else if (ctx.threat?.indicator?.file?.hash?.sha1 != null) {
+          ctx.threat.indicator.reference = "bitdefender-ti:file:sha1:" + ctx.threat.indicator.file.hash.sha1;
+        } else if (ctx.threat?.indicator?.file?.hash?.md5 != null) {
+          ctx.threat.indicator.reference = "bitdefender-ti:file:md5:" + ctx.threat.indicator.file.hash.md5;
+        }
+
+  # ------------------------------------------------------------------
+  # Correlation helpers
+  # ------------------------------------------------------------------
+  - set:
+      field: related.hash
+      copy_from: threat.indicator.file.hash.sha256
+      ignore_empty_value: true
+
+  - append:
+      field: related.hash
+      value: "{{{threat.indicator.file.hash.sha1}}}"
+      if: ctx.threat?.indicator?.file?.hash?.sha1 != null
+
+  - append:
+      field: related.hash
+      value: "{{{threat.indicator.file.hash.md5}}}"
+      if: ctx.threat?.indicator?.file?.hash?.md5 != null
+
+  # ------------------------------------------------------------------
+  # Stable indicator identity
+  # ------------------------------------------------------------------
+  - fingerprint:
+      fields:
+        - threat.feed.name
+        - threat.indicator.type
+        - threat.indicator.file.hash.sha256
+        - threat.indicator.file.hash.sha1
+        - threat.indicator.file.hash.md5
+      target_field: threat.indicator.id
+
+  - set:
+      field: _id
+      copy_from: threat.indicator.id
+      ignore_empty_value: true
+
+  # ------------------------------------------------------------------
+  # Dataset metadata
+  # ------------------------------------------------------------------
+  - set:
+      field: event.dataset
+      value: bitdefender_ti.file_reputation
+
+  - set:
+      field: event.module
+      value: bitdefender_ti
+
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+
+  - append:
+      field: error.message
+      value: "Processor failure: {{{_ingest.on_failure_message}}}"
