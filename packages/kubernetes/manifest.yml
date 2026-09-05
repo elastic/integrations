@@ -1,7 +1,7 @@
-format_version: 3.1.2
+format_version: 3.6.4
 name: kubernetes
 title: Kubernetes
-version: 1.85.3
+version: "2.0.0"
 description: Collect logs and metrics from Kubernetes clusters with Elastic Agent.
 type: integration
 categories:
@@ -10,7 +10,10 @@ categories:
   - kubernetes
 conditions:
   kibana:
-    version: "~9.1.10 || ~9.2.4 || ^9.3.0"
+    version: "^9.6.0"
+  # auth.aws.use_cloud_connectors (Identity Federation) requires Elastic Agent 9.6.0+.
+  agent:
+    version: "^9.6.0"
 screenshots:
   - src: /img/metricbeat_kubernetes_overview.png
     title: Metricbeat Kubernetes Overview
@@ -250,21 +253,42 @@ policy_templates:
   - name: audit-logs
     title: Kubernetes Audit Logs
     description: Collect audit logs from Kubernetes nodes with Elastic Agent.
+    deployment_modes:
+      default:
+        enabled: true
+      agentless:
+        enabled: true
+        release: beta
+        organization: observability
+        division: engineering
+        team: obs-ds-hosted-services
     data_streams:
       - audit_logs
     inputs:
       - type: filestream
         title: Collect Kubernetes audit logs from local files
         description: Collect Kubernetes audit logs from local nodes with Elastic Agent.
+        deployment_modes: ["default"]
       - type: aws-cloudwatch
         title: Collect Kubernetes audit logs from AWS CloudWatch
         description: Collect Kubernetes audit logs from AWS EKS with Elastic Agent.
+        provider_permissions:
+          - provider: aws
+            description: CloudWatch Logs read access for EKS audit log collection.
+            permissions:
+              - name: logs:DescribeLogGroups
+              - name: logs:DescribeLogStreams
+              - name: logs:FilterLogEvents
+              - name: logs:GetLogEvents
+              - name: logs:GetLogGroupFields
       - type: azure-eventhub
         title: Collect Kubernetes audit logs from Azure Event Hub
-        description: Collect Kubernetes audit logs from Azure AKS withElastic Agent.
+        description: Collect Kubernetes audit logs from Azure AKS with Elastic Agent.
+        deployment_modes: ["default"]
       - type: gcp-pubsub
         title: Collect Kubernetes audit logs from Google Cloud Pub/Sub
         description: Collecting Kubernetes audit logs from Google Cloud GKE with Elastic Agent.
+        deployment_modes: ["default"]
     icons:
       - src: /img/logo_kubernetes.svg
         title: Logo Kubernetes
@@ -275,6 +299,81 @@ policy_templates:
         title: Metricbeat Kubernetes Overview
         size: 1896x961
         type: image/png
+vars:
+  - name: role_arn
+    type: text
+    title: Role ARN
+    multi: false
+    required: false
+    show_user: false
+    description: ARN of the IAM role to assume when collecting logs.
+  - name: supports_identity_federation
+    type: bool
+    title: Supports Identity Federation
+    multi: false
+    required: false
+    show_user: false
+  - name: access_key_id
+    type: password
+    title: Access Key ID
+    secret: true
+    multi: false
+    required: false
+    show_user: true
+  - name: secret_access_key
+    type: password
+    title: Secret Access Key
+    secret: true
+    multi: false
+    required: false
+    show_user: true
+  - name: session_token
+    type: password
+    title: Session Token
+    secret: true
+    multi: false
+    required: false
+    show_user: true
+  - name: shared_credential_file
+    type: text
+    title: Shared Credential File
+    multi: false
+    required: false
+    show_user: false
+    description: Directory of the shared credentials file
+  - name: credential_profile_name
+    type: text
+    title: Credential Profile Name
+    multi: false
+    required: false
+    show_user: false
+var_groups:
+  - name: credential_type
+    required: true
+    title: AWS Setup Access
+    selector_title: Preferred method
+    options:
+      - name: identity_federation
+        title: Identity Federation
+        vars: [role_arn, supports_identity_federation]
+        hide_in_deployment_modes: [default]
+        provider: aws
+        iac_template_url: https://console.aws.amazon.com/cloudformation/home#/stacks/quickcreate?templateURL=https://elastic-cspm-cft.s3.eu-central-1.amazonaws.com/cloudformation-federated-identity-aws-9.6.0.yml
+      - name: assume_role
+        title: Assume Role
+        vars: [role_arn]
+        hide_in_deployment_modes: [agentless]
+      - name: direct_access_key
+        title: Direct Access Keys
+        vars: [access_key_id, secret_access_key]
+      - name: temporary_access_key
+        title: Temporary Access Keys
+        vars: [access_key_id, secret_access_key, session_token]
+        hide_in_deployment_modes: [agentless]
+      - name: shared_credentials
+        title: Shared Credentials
+        vars: [shared_credential_file, credential_profile_name]
+        hide_in_deployment_modes: [agentless]
 owner:
   github: elastic/obs-ds-hosted-services
   type: elastic

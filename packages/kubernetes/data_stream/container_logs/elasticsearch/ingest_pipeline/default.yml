@@ -2,22 +2,30 @@
 description: Pipeline for Kubernetes container logs
 processors:
   - set:
+      tag: set_service_name
       field: service.name
       copy_from: kubernetes.labels.app_kubernetes_io/name
       ignore_empty_value: true
   - set:
+      tag: set_service_name_from_container
       field: service.name
       copy_from: kubernetes.container.name
       override: false
       ignore_empty_value: true
   - set:
+      tag: set_service_version
       field: service.version
       copy_from: kubernetes.labels.app_kubernetes_io/version
       ignore_empty_value: true
 on_failure:
   - set:
+      tag: set_event_kind_pipeline_error
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_error_message
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}' failed with message '{{{ _ingest.on_failure_message }}}'

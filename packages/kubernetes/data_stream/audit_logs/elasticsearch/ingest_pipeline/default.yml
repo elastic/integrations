@@ -2,15 +2,18 @@
 description: Pipeline for processing Kubernetes audit logs.
 processors:
   - rename:
+      tag: rename_message_to_event_original
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
   - json:
+      tag: json_event_original_to_audit
       field: event.original
       target_field: kubernetes.audit
       if: ctx.event?.original != null && ctx.kubernetes?.audit == null
   - remove:
+      tag: remove_message
       field: message
       if: ctx.event?.original != null
       ignore_missing: true
@@ -36,6 +39,7 @@ processors:
       if: ctx.tmp?.aks_audit?.properties?.log != null && ctx.kubernetes?.audit == null
       tag: rename_azure_aks_audit_log
   - remove:
+      tag: remove_aks_audit_log_field
       field: tmp.aks_audit.properties.log
       ignore_missing: true
   - rename:
@@ -82,17 +86,21 @@ processors:
 
   # General processors
   - remove:
+      tag: remove_response_object_metadata
       if: "ctx.kubernetes?.audit?.responseObject != null"
       field: ["kubernetes.audit.responseObject.metadata"]
       ignore_missing: true
   - remove:
+      tag: remove_request_object_metadata
       if: "ctx.kubernetes?.audit?.requestObject != null"
       field: ["kubernetes.audit.requestObject.metadata"]
       ignore_missing: true
   - set:
+      tag: set_event_kind
       field: event.kind
       value: event
   - set:
+      tag: set_event_action
       if: ctx.kubernetes?.audit?.verb != null
       field: event.action
       copy_from: kubernetes.audit.verb
@@ -128,6 +136,7 @@ processors:
       if: ctx.kubernetes?.audit?.annotations == null
       tag: rename_labels
   - script:
+      tag: script_process_annotations
       lang: painless
       if: ctx.kubernetes?.audit?.annotations != null
       source: >-
@@ -145,21 +154,25 @@ processors:
         }
         ctx['kubernetes']['audit']['annotations'] = updatedAnnotation
   - set:
+      tag: set_user_name
       if: ctx.kubernetes?.audit?.user?.username != null
       field: user.name
       copy_from: kubernetes.audit.user.username
       ignore_empty_value: true
   - set:
+      tag: set_user_id
       if: ctx.kubernetes?.audit?.user?.uid != null
       field: user.id
       copy_from: kubernetes.audit.user.uid
       ignore_empty_value: true
   - set:
+      tag: set_user_agent_original
       if: ctx.kubernetes?.audit?.userAgent != null
       field: user_agent.original
       copy_from: kubernetes.audit.userAgent
       ignore_empty_value: true
   - convert:
+      tag: convert_source_ips
       if: ctx.kubernetes?.audit?.sourceIPs != null
       field: kubernetes.audit.sourceIPs
       target_field: source.ip
@@ -167,6 +180,7 @@ processors:
       ignore_failure: true
       ignore_missing: true
   - set:
+      tag: set_client_ip
       if: ctx.source?.ip != null
       field: client.ip
       copy_from: source.ip
@@ -174,47 +188,56 @@ processors:
 
   # Orchestrator fields
   - set:
+      tag: set_orchestrator_type
       field: orchestrator.type
       value: kubernetes
   # For EKS and AKS logs
   - set:
+      tag: set_orchestrator_api_version
       if: ctx.kubernetes?.audit?.apiVersion != null
       field: orchestrator.api_version
       copy_from: kubernetes.audit.apiVersion
       ignore_empty_value: true
   - set:
+      tag: set_orchestrator_resource_type
       if: ctx.kubernetes?.audit?.objectRef?.resource != null
       field: orchestrator.resource.type
       copy_from: kubernetes.audit.objectRef.resource
       ignore_empty_value: true
   - set:
+      tag: set_orchestrator_namespace
       if: ctx.kubernetes?.audit?.objectRef?.namespace != null
       field: orchestrator.namespace
       copy_from: kubernetes.audit.objectRef.namespace
       ignore_empty_value: true
   - set:
+      tag: set_orchestrator_resource_name
       if: ctx.kubernetes?.audit?.objectRef?.name != null
       field: orchestrator.resource.name
       copy_from: kubernetes.audit.objectRef.name
       ignore_empty_value: true
   # For GKE logs
   - set:
+      tag: set_orchestrator_resource_name_gke
       if: ctx.kubernetes?.audit?.protoPayload?.resourceName != null
       field: orchestrator.resource.name
       copy_from: kubernetes.audit.protoPayload.resourceName
       ignore_empty_value: true
       override: false
   - set:
+      tag: set_orchestrator_resource_type_gke
       if: ctx.kubernetes?.audit?.resource?.type != null
       field: orchestrator.resource.type
       copy_from: kubernetes.audit.resource.type
       ignore_empty_value: true
   - set:
+      tag: set_orchestrator_cluster_name
       if: ctx.kubernetes?.audit?.resource?.labels?.cluster_name != null
       field: orchestrator.cluster.name
       copy_from: kubernetes.audit.resource.labels.cluster_name
       ignore_empty_value: true
   - set:
+      tag: set_orchestrator_cluster_id
       if: ctx.kubernetes?.audit?.resource?.labels?.project_id != null
       field: orchestrator.cluster.id
       copy_from: kubernetes.audit.resource.labels.project_id
@@ -222,14 +245,17 @@ processors:
 
   # Cloud fields
   - set:
+      tag: set_cloud_provider_aws
       field: cloud.provider
       value: aws
       if: ctx.input?.type == "aws-cloudwatch"
   - set:
+      tag: set_cloud_provider_azure
       field: cloud.provider
       value: azure
       if: ctx.input?.type == "azure-eventhub"
   - set:
+      tag: set_cloud_provider_gcp
       field: cloud.provider
       value: gcp
       if: ctx.input?.type == "gcp-pubsub"
@@ -247,6 +273,7 @@ processors:
       allow_duplicates: false
       if: ctx.kubernetes?.audit?.user?.username != null
   - foreach:
+      tag: foreach_append_related_ip
       field: source.ip
       if: ctx.source?.ip != null && ctx.source.ip instanceof List
       processor:
@@ -285,15 +312,18 @@ processors:
         handleMap(ctx);
 on_failure:
   - set:
+      tag: set_event_kind_pipeline_error
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_preserve_original_event_tag
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
         {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
-        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}
+        {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}' failed with message '{{{ _ingest.on_failure_message }}}'
