@@ -1,6 +1,6 @@
-# Temporal (OpenTelemetry)
+# Temporal OpenTelemetry Integration
 
-Collect operational metrics from [Temporal Cloud](https://temporal.io/cloud/) using the Temporal (OpenTelemetry) integration.
+Collect operational metrics from [Temporal Cloud](https://temporal.io/cloud/) using the Temporal OpenTelemetry Integration.
 
 ## Overview
 
@@ -28,8 +28,8 @@ Once data starts flowing, the **[Temporal OpenTelemetry Assets](https://www.elas
    - Generate an API key for that Service Account and store it securely
 
 2. **Add the integration in Kibana**:
-   - Go to **Management** → **Integrations** → search for "Temporal (OpenTelemetry)"
-   - Click **Add Temporal (OpenTelemetry)**
+   - Go to **Management** → **Integrations** → search for "Temporal OpenTelemetry Integration"
+   - Click **Add Temporal OpenTelemetry Integration**
    - Fill in:
      - **Temporal Cloud Metrics Endpoint**: `metrics.temporal.io:443` (default)
      - **Metrics Path**: `/v1/metrics` (optionally append `?namespaces=<namespace>` to filter)
