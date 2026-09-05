@@ -23,24 +23,49 @@ processors:
       value: event
   - set:
       field: event.category
-      value: database
+      value: ["database"]
   - set:
-      if: "ctx?.elasticsearch?.audit?.event_type != null"
+      if: ctx.elasticsearch?.audit?.layer == 'security_config_change'
+      field: event.category
+      value: ["iam"]
+  - set:
+      if: ctx.elasticsearch?.audit?.layer != null && ctx.elasticsearch.audit.layer != 'security_config_change'
       field: event.type
-      value: access
+      value: ["access"]
+  - set:
+      if: ctx.elasticsearch?.audit?.layer == 'security_config_change'
+      field: event.type
+      value: ["change"]
+  # Elasticsearch does not emit event.outcome. Map it from event.action / audit
+  # layer. Do not default to failure: unknown actions must stay unknown.
+  # security_config_change is authorization-shaped success (the change was
+  # recorded), not a confirmed HTTP 200.
   - script:
       lang: painless
-      source: >-
-        def successEvents = ['authentication_success', 'access_granted', 'run_as_granted', 'connection_granted'];
-        if (ctx?.elasticsearch?.audit?.event_type != null && successEvents.contains(ctx.elasticsearch.audit.event_type)) {
+      source: |
+        def failureActions = [
+          'authentication_failed',
+          'access_denied',
+          'anonymous_access_denied',
+          'realm_authentication_failed',
+          'run_as_denied',
+          'connection_denied',
+          'tampered_request'
+        ];
+        def successActions = [
+          'authentication_success',
+          'access_granted',
+          'run_as_granted',
+          'connection_granted'
+        ];
+        def action = ctx.event?.action;
+        def layer = ctx.elasticsearch?.audit?.layer;
+        if (action != null && failureActions.contains(action)) {
+          ctx.event.outcome = 'failure';
+        } else if ((action != null && successActions.contains(action)) || layer == 'security_config_change') {
           ctx.event.outcome = 'success';
         } else {
-          ctx.event.outcome = 'failure';
-        }
-        if (ctx?.event.action != null && successEvents.contains(ctx.event.action)) {
-          ctx.event.outcome = 'success';
-        } else {
-          ctx.event.outcome = 'failure';
+          ctx.event.outcome = 'unknown';
         }
   - set:
       field: host.id
@@ -53,11 +78,18 @@ processors:
   - append:
       field: related.user
       value: "{{user.name}}"
-      if: "ctx?.user?.name != null"
+      if: ctx?.user?.name != null
+      allow_duplicates: false
   - append:
       field: related.user
       value: "{{user.effective.name}}"
-      if: "ctx?.user?.effective?.name != null"
+      if: ctx?.user?.effective?.name != null
+      allow_duplicates: false
+  - append:
+      field: related.user
+      value: "{{destination.user.name}}"
+      if: ctx?.destination?.user?.name != null
+      allow_duplicates: false
   - remove:
       field: elasticsearch.audit.@timestamp
   - remove:
