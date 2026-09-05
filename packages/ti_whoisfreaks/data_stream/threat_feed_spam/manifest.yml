@@ -1,0 +1,51 @@
+title: "Threat Feed Spam"
+type: logs
+streams:
+  - input: cel
+    title: "Spam Domain Feed"
+    description: |-
+      The Spam Domain Feed delivers a daily CSV file of domains sending unsolicited bulk email or feeding spam link networks. Verified spam seed domains are expanded through shared infrastructure pivots to reveal the wider sending networks behind each campaign, giving mail filters far more coverage than a single reported domain. Feeding the list into mail filters blocks unwanted messages surfaced through shared sending infrastructure.
+    template_path: cel.yml.hbs
+    vars:
+      - name: resource_url
+        type: text
+        title: "Resource URL"
+        description: URL of the WhoisFreaks spam threat feed endpoint.
+        required: true
+        show_user: false
+        default: https://files.whoisfreaks.com/v3.4/stream/threat-feed/spam
+      - name: resource_interval
+        type: text
+        title: "Resource Interval"
+        description: |-
+          WhoisFreaks threat feeds are published as daily CSV snapshots. Re-fetching
+          them every hour creates unnecessary API load and quota waste. The
+          recommended production default is 24h; increase only if your API plan or
+          vendor policy requires a slower cadence.
+        required: true
+        show_user: true
+        default: 24h
+      - name: page_limit
+        type: integer
+        title: "Page Size"
+        description: |-
+          Number of records requested per page (the `page_limit` sent to the feed
+          endpoint). The feed is paged with a dynamic `offset` until a page comes
+          back short, so this only controls memory and request count per poll, not
+          how much data is ingested. Larger pages mean fewer requests but more
+          memory per request. 5000 is a safe default; lower it on small agents.
+        required: true
+        show_user: true
+        default: 5000
+      - name: resource_timeout
+        type: text
+        title: "Resource Timeout"
+        description: |-
+          The maximum time to wait for a response from the spam feed endpoint.
+        required: false
+        show_user: false
+        default: 5m
+elasticsearch:
+  index_template:
+    mappings:
+      subobjects: false

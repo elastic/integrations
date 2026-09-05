@@ -1,0 +1,51 @@
+title: "Threat Feed Phishing"
+type: logs
+streams:
+  - input: cel
+    title: "Phishing Domain Feed"
+    description: |-
+      The Phishing Domain Feed delivers a daily CSV file of domains observed hosting credential theft pages or impersonating trusted brands. Each feed begins with verified phishing seed domains, from which the pipeline extracts shared attributes such as registrant email, phone, organization, NS, MX, and CNAME records. These pivots are then matched across the WhoisFreaks domain database to surface related domains, often before they are reported on public blocklists. Security teams load the feed into mail gateways and SIEMs to block or investigate domains built for credential theft
+    template_path: cel.yml.hbs
+    vars:
+      - name: resource_url
+        type: text
+        title: "Resource URL"
+        description: URL of the WhoisFreaks phishing threat feed endpoint.
+        required: true
+        show_user: false
+        default: https://files.whoisfreaks.com/v3.4/stream/threat-feed/phishing
+      - name: resource_interval
+        type: text
+        title: "Resource Interval"
+        description: |-
+          WhoisFreaks threat feeds are published as daily CSV snapshots. Re-fetching
+          them every hour creates unnecessary API load and quota waste. The
+          recommended production default is 24h; increase only if your API plan or
+          vendor policy requires a slower cadence.
+        required: true
+        show_user: true
+        default: 24h
+      - name: page_limit
+        type: integer
+        title: "Page Size"
+        description: |-
+          Number of records requested per page (the `page_limit` sent to the feed
+          endpoint). The feed is paged with a dynamic `offset` until a page comes
+          back short, so this only controls memory and request count per poll, not
+          how much data is ingested. Larger pages mean fewer requests but more
+          memory per request. 5000 is a safe default; lower it on small agents.
+        required: true
+        show_user: true
+        default: 5000
+      - name: resource_timeout
+        type: text
+        title: "Resource Timeout"
+        description: |-
+          The maximum time to wait for a response from the phishing feed endpoint.
+        required: false
+        show_user: false
+        default: 5m
+elasticsearch:
+  index_template:
+    mappings:
+      subobjects: false

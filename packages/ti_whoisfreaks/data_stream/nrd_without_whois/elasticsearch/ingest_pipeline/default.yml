@@ -1,0 +1,115 @@
+---
+description: Pipeline for processing WhoisFreaks newly registered domains without WHOIS enrichment
+processors:
+  - pipeline:
+      tag: pipeline_logs_ti_whoisfreaks_nrd_without_whois_custom
+      name: logs-ti_whoisfreaks.nrd_without_whois@custom
+      ignore_missing_pipeline: true
+      ignore_failure: true
+  - set:
+      tag: set_event_kind_error
+      field: event.kind
+      value: pipeline_error
+      if: "ctx.error != null"
+  - set:
+      tag: set_event_kind_default
+      field: event.kind
+      value: enrichment
+      if: "ctx.error == null"
+  - set:
+      tag: set_event_category
+      field: event.category
+      value:
+        - threat
+        - network
+      if: "ctx.error == null"
+  - set:
+      tag: set_event_type
+      field: event.type
+      value:
+        - indicator
+      if: "ctx.error == null"
+  - set:
+      tag: set_event_dataset
+      field: event.dataset
+      value: ti_whoisfreaks.nrd_without_whois
+  - set:
+      tag: set_ecs_version
+      field: ecs.version
+      value: '8.11.0'
+  - set:
+      tag: set_tld_type
+      field: whoisfreaks.tld_type
+      copy_from: _tld
+      ignore_empty_value: true
+  - remove:
+      tag: remove_tmp_tld
+      field: _tld
+      ignore_missing: true
+  - date:
+      tag: parse_query_time
+      field: whoisfreaks.query_time
+      target_field: "@timestamp"
+      formats:
+        - "yyyy-MM-dd HH:mm:ss"
+        - "ISO8601"
+      if: "ctx.whoisfreaks?.query_time != null && ctx.whoisfreaks.query_time != ''"
+      ignore_failure: true
+  - set:
+      tag: set_ecs_domain
+      field: domain.registered_domain
+      copy_from: whoisfreaks.domain_name
+      ignore_empty_value: true
+  - set:
+      tag: set_threat_indicator_type
+      field: threat.indicator.type
+      value: domain-name
+      if: "ctx.error == null && ctx.whoisfreaks?.domain_name != null"
+  - set:
+      tag: set_threat_indicator_domain
+      field: threat.indicator.domain
+      copy_from: whoisfreaks.domain_name
+      ignore_empty_value: true
+      if: "ctx.error == null"
+  - set:
+      tag: set_threat_feed_name
+      field: threat.feed.name
+      value: WhoisFreaks
+      if: "ctx.error == null"
+  - set:
+      tag: set_threat_feed_dashboard_id
+      field: threat.feed.dashboard_id
+      value: ti_whoisfreaks-383060b6-e437-4bac-9578-612a44ed8150
+      if: "ctx.error == null"
+  - set:
+      tag: set_threat_indicator_provider
+      field: threat.indicator.provider
+      value: WhoisFreaks
+      if: "ctx.error == null"
+  - set:
+      tag: set_threat_indicator_reference
+      field: threat.indicator.reference
+      value: https://whoisfreaks.com/
+      if: "ctx.error == null"
+  - fingerprint:
+      tag: fingerprint_for_dedup
+      fields:
+        - whoisfreaks.tld_type
+        - whoisfreaks.domain_name
+        - whoisfreaks.query_time
+      target_field: _id
+      if: "ctx.whoisfreaks?.domain_name != null && ctx.whoisfreaks?.query_time != null"
+      ignore_missing: true
+
+on_failure:
+  - set:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error

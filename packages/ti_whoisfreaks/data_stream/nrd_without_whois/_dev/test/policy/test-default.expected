@@ -1,0 +1,272 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: ti_whoisfreaks
+      name: test-default-ti_whoisfreaks
+      streams:
+        - data_stream:
+            dataset: ti_whoisfreaks.nrd_without_whois
+          interval: 24h
+          program: |
+            (has(state.cursor) ? state.cursor : {}).as(c,
+            (has(c.phase) ? c.phase : "").as(phase,
+            (has(c.cur_offset) ? int(c.cur_offset) : 0).as(cur_offset,
+            (has(c.gtld_date) ? c.gtld_date : "").as(gtld_date,
+            (has(c.cctld_date) ? c.cctld_date : "").as(cctld_date,
+            (has(c.last_gtld_date) ? c.last_gtld_date : "").as(last_gtld_date,
+            (has(c.last_cctld_date) ? c.last_cctld_date : "").as(last_cctld_date,
+
+            phase == "gtld" ?
+                request("GET", state.url + "/gtld?" + {
+                    "apiKey": [state.api_key],
+                    "whois": ["false"],
+                    "date": [gtld_date],
+                    "limit": [string(int(state.page_limit))],
+                    "offset": [string(cur_offset)],
+                }.format_query()).do_request().as(resp,
+                    resp.StatusCode != 200 ?
+                        {
+                            "events": [{"error": {
+                                "code": string(resp.StatusCode),
+                                "message": "WhoisFreaks gtld stream failed at offset " + string(cur_offset) +
+                                    " for date " + gtld_date + ": status " + string(resp.StatusCode) + " " + string(resp.Body),
+                            }}],
+                            "url": state.url,
+                            "status_url": state.status_url,
+                            "api_key": state.api_key,
+                            "page_limit": state.page_limit,
+                            "pinned_date": state.pinned_date,
+                            "cursor": {
+                                "phase": cctld_date != "" ? "cctld" : "idle",
+                                "cur_offset": 0,
+                                "gtld_date": "",
+                                "cctld_date": cctld_date,
+                                "last_gtld_date": last_gtld_date,
+                                "last_cctld_date": last_cctld_date,
+                            },
+                            "want_more": cctld_date != "",
+                        }
+                    :
+                        string(resp.Body).split("\n").filter(l, l != "").as(domains,
+                            size(domains) < int(state.page_limit) ?
+                                {
+                                    "events": domains.map(d, {
+                                        "whoisfreaks": {
+                                            "domain_name": d,
+                                            "query_time": gtld_date + " 00:00:00",
+                                        },
+                                        "_tld": "gtld",
+                                    }),
+                                    "url": state.url,
+                                    "status_url": state.status_url,
+                                    "api_key": state.api_key,
+                                    "page_limit": state.page_limit,
+                                    "pinned_date": state.pinned_date,
+                                    "cursor": {
+                                        "phase": cctld_date != "" ? "cctld" : "idle",
+                                        "cur_offset": 0,
+                                        "gtld_date": "",
+                                        "cctld_date": cctld_date,
+                                        "last_gtld_date": gtld_date,
+                                        "last_cctld_date": last_cctld_date,
+                                    },
+                                    "want_more": cctld_date != "",
+                                }
+                            :
+                                {
+                                    "events": domains.map(d, {
+                                        "whoisfreaks": {
+                                            "domain_name": d,
+                                            "query_time": gtld_date + " 00:00:00",
+                                        },
+                                        "_tld": "gtld",
+                                    }),
+                                    "url": state.url,
+                                    "status_url": state.status_url,
+                                    "api_key": state.api_key,
+                                    "page_limit": state.page_limit,
+                                    "pinned_date": state.pinned_date,
+                                    "cursor": {
+                                        "phase": "gtld",
+                                        "cur_offset": cur_offset + int(state.page_limit),
+                                        "gtld_date": gtld_date,
+                                        "cctld_date": cctld_date,
+                                        "last_gtld_date": last_gtld_date,
+                                        "last_cctld_date": last_cctld_date,
+                                    },
+                                    "want_more": true,
+                                }
+                        )
+                )
+            : phase == "cctld" ?
+                request("GET", state.url + "/cctld?" + {
+                    "apiKey": [state.api_key],
+                    "whois": ["false"],
+                    "date": [cctld_date],
+                    "limit": [string(int(state.page_limit))],
+                    "offset": [string(cur_offset)],
+                }.format_query()).do_request().as(resp,
+                    resp.StatusCode != 200 ?
+                        {
+                            "events": [{"error": {
+                                "code": string(resp.StatusCode),
+                                "message": "WhoisFreaks cctld stream failed at offset " + string(cur_offset) +
+                                    " for date " + cctld_date + ": status " + string(resp.StatusCode) + " " + string(resp.Body),
+                            }}],
+                            "url": state.url,
+                            "status_url": state.status_url,
+                            "api_key": state.api_key,
+                            "page_limit": state.page_limit,
+                            "pinned_date": state.pinned_date,
+                            "cursor": {
+                                "phase": "idle",
+                                "cur_offset": 0,
+                                "gtld_date": "",
+                                "cctld_date": "",
+                                "last_gtld_date": last_gtld_date,
+                                "last_cctld_date": last_cctld_date,
+                            },
+                            "want_more": false,
+                        }
+                    :
+                        string(resp.Body).split("\n").filter(l, l != "").as(domains,
+                            size(domains) < int(state.page_limit) ?
+                                {
+                                    "events": domains.map(d, {
+                                        "whoisfreaks": {
+                                            "domain_name": d,
+                                            "query_time": cctld_date + " 00:00:00",
+                                        },
+                                        "_tld": "cctld",
+                                    }),
+                                    "url": state.url,
+                                    "status_url": state.status_url,
+                                    "api_key": state.api_key,
+                                    "page_limit": state.page_limit,
+                                    "pinned_date": state.pinned_date,
+                                    "cursor": {
+                                        "phase": "idle",
+                                        "cur_offset": 0,
+                                        "gtld_date": "",
+                                        "cctld_date": "",
+                                        "last_gtld_date": last_gtld_date,
+                                        "last_cctld_date": cctld_date,
+                                    },
+                                    "want_more": false,
+                                }
+                            :
+                                {
+                                    "events": domains.map(d, {
+                                        "whoisfreaks": {
+                                            "domain_name": d,
+                                            "query_time": cctld_date + " 00:00:00",
+                                        },
+                                        "_tld": "cctld",
+                                    }),
+                                    "url": state.url,
+                                    "status_url": state.status_url,
+                                    "api_key": state.api_key,
+                                    "page_limit": state.page_limit,
+                                    "pinned_date": state.pinned_date,
+                                    "cursor": {
+                                        "phase": "cctld",
+                                        "cur_offset": cur_offset + int(state.page_limit),
+                                        "gtld_date": gtld_date,
+                                        "cctld_date": cctld_date,
+                                        "last_gtld_date": last_gtld_date,
+                                        "last_cctld_date": last_cctld_date,
+                                    },
+                                    "want_more": true,
+                                }
+                        )
+                )
+            :
+                request("GET", state.status_url).do_request().as(statusResp,
+                    statusResp.StatusCode != 200 ?
+                        {
+                            "events": [{"error": {
+                                "code": string(statusResp.StatusCode),
+                                "message": "WhoisFreaks status request failed with status " +
+                                    string(statusResp.StatusCode) + ": " + string(statusResp.Body),
+                            }}],
+                            "url": state.url,
+                            "status_url": state.status_url,
+                            "api_key": state.api_key,
+                            "page_limit": state.page_limit,
+                            "pinned_date": state.pinned_date,
+                            "cursor": {
+                                "phase": "idle",
+                                "cur_offset": 0,
+                                "gtld_date": "",
+                                "cctld_date": "",
+                                "last_gtld_date": last_gtld_date,
+                                "last_cctld_date": last_cctld_date,
+                            },
+                            "want_more": false,
+                        }
+                    :
+                        statusResp.Body.decode_json().as(status,
+                            (has(status.newly) && has(status.newly.gtld) && has(status.newly.gtld.last_update) ? string(status.newly.gtld.last_update) : "").as(gtldLatest,
+                            (has(status.newly) && has(status.newly.cctld) && has(status.newly.cctld.last_update) ? string(status.newly.cctld.last_update) : "").as(cctldLatest,
+                            (state.pinned_date != "" ? state.pinned_date : gtldLatest).as(gtldT,
+                            (state.pinned_date != "" ? state.pinned_date : cctldLatest).as(cctldT,
+                            (gtldT != "" && gtldT != last_gtld_date).as(gtldNeed,
+                            (cctldT != "" && cctldT != last_cctld_date).as(cctldNeed,
+                                {
+                                    "events": [],
+                                    "url": state.url,
+                                    "status_url": state.status_url,
+                                    "api_key": state.api_key,
+                                    "page_limit": state.page_limit,
+                                    "pinned_date": state.pinned_date,
+                                    "cursor": {
+                                        "phase": gtldNeed ? "gtld" : (cctldNeed ? "cctld" : "idle"),
+                                        "cur_offset": 0,
+                                        "gtld_date": gtldNeed ? gtldT : "",
+                                        "cctld_date": cctldNeed ? cctldT : "",
+                                        "last_gtld_date": last_gtld_date,
+                                        "last_cctld_date": last_cctld_date,
+                                    },
+                                    "want_more": gtldNeed || cctldNeed,
+                                }
+                            ))))))
+                        )
+                )
+            )))))))
+          redact:
+            fields:
+                - api_key
+          resource.timeout: 10m
+          resource.url: https://files.whoisfreaks.com/v3.3/stream/domainer
+          state:
+            api_key: ${SECRET_0}
+            cursor:
+                cctld_date: ""
+                cur_offset: 0
+                gtld_date: ""
+                last_cctld_date: ""
+                last_gtld_date: ""
+                phase: ""
+            page_limit: "5000"
+            pinned_date: ""
+            status_url: https://files.whoisfreaks.com/v3.3/status
+      type: cel
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-ti_whoisfreaks.nrd_without_whois-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references:
+    - {}
