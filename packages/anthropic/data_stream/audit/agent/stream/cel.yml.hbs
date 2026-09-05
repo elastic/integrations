@@ -92,7 +92,9 @@ program: |-
                 }
               :
                 {
-                  ?"first_id": state.?cursor.run_first_id.hasValue() ?
+                  ?"first_id": state.?cursor.first_id.hasValue() ?
+                    (has(body.first_id) ? optional.of(body.first_id) : state.?cursor.first_id)
+                  : state.?cursor.run_first_id.hasValue() ?
                     state.?cursor.run_first_id
                   : (!state.?cursor.page_id.hasValue() && has(body.first_id)) ?
                     optional.of(body.first_id)
