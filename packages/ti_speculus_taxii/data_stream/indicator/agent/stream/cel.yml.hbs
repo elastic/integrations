@@ -1,0 +1,151 @@
+config_version: 2
+interval: {{interval}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+resource.url: {{base_url}}
+
+fields_under_root: true
+fields:
+  _conf:
+{{#if ioc_expiration_duration}}
+    ioc_expiration_duration: {{ioc_expiration_duration}}
+{{/if}}
+
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+  maxsize: 5
+
+state:
+  base_url: {{base_url}}
+  api_root: {{api_root}}
+  collection_id: {{collection_id}}
+  api_key: {{api_key}}
+  accept_header: application/taxii+json;version=2.1
+{{#if initial_interval}}
+  initial_interval: {{initial_interval}}
+{{/if}}
+{{#if limit}}
+  limit: {{limit}}
+{{/if}}
+  next_url: ""
+  checkpoint: ""
+  sweep_started_at: ""
+
+redact:
+  fields:
+    - api_key
+
+# CEL program — single-collection TAXII 2.1 poller for the Speculus feed.
+# Each interval tick either continues pagination (if a previous tick left a
+# `next` cursor) or starts a fresh incremental sweep using `added_after`.
+# `checkpoint` holds the start time of the last completed sweep; the next
+# sweep asks the server for everything modified at-or-after it. Boundary
+# re-fetches are harmless — the ingest pipeline dedupes on stix.id + modified.
+program: |-
+  (
+    (state.?next_url.orValue("") != "") ?
+      {
+        "url": state.next_url,
+        "sweep_started_at": state.?sweep_started_at.orValue(now().format(time_layout.RFC3339)),
+      }
+    :
+      {
+        "url": state.base_url.trim_right("/") + "/" + state.api_root + "/collections/" + state.collection_id + "/objects/?" + {
+          ?"added_after": (state.?checkpoint.orValue("") != "") ?
+            optional.of([state.checkpoint])
+          : state.?initial_interval.optMap(i, [(now() - duration(i)).format(time_layout.RFC3339)]),
+          ?"limit": state.?limit.optMap(l, [string(int(l))]),
+        }.format_query(),
+        "sweep_started_at": now().format(time_layout.RFC3339),
+      }
+  ).as(req,
+    request("GET", req.url).with(
+      {
+        "Header": {
+          "Accept": [state.accept_header],
+          "Authorization": ["Bearer " + state.api_key],
+        },
+      }
+    ).do_request().as(resp,
+      (resp.StatusCode == 200 || resp.StatusCode == 206) ?
+        resp.Body.decode_json().as(body,
+          (has(body.more) && body.more == true && has(body.next) && body.next != null && body.next != "").as(has_more,
+            {
+              "events": (has(body.objects) && type(body.objects) == list) ?
+                body.objects.map(e, {"message": e.encode_json()})
+              :
+                [],
+              "want_more": has_more,
+              "next_url": has_more ?
+                (state.base_url.trim_right("/") + "/" + state.api_root + "/collections/" + state.collection_id + "/objects/?" + {
+                  "next": [body.next],
+                  ?"limit": state.?limit.optMap(l, [string(int(l))]),
+                }.format_query())
+              :
+                "",
+              "checkpoint": has_more ?
+                state.?checkpoint.orValue("")
+              :
+                req.sweep_started_at,
+              "sweep_started_at": req.sweep_started_at,
+              "base_url": state.base_url,
+              "api_root": state.api_root,
+              "collection_id": state.collection_id,
+              "api_key": state.api_key,
+              "accept_header": state.accept_header,
+              ?"initial_interval": state.?initial_interval,
+              ?"limit": state.?limit,
+            }
+          )
+        )
+      :
+        {
+          "events": {
+            "error": {
+              "code": string(resp.StatusCode),
+              "id": string(resp.Status),
+              "message": "GET " + req.url + ": " + (
+                (size(resp.Body) != 0) ?
+                  string(resp.Body)
+                :
+                  string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+              ),
+            },
+          },
+          "want_more": false,
+          "next_url": "",
+          "checkpoint": state.?checkpoint.orValue(""),
+          "sweep_started_at": "",
+          "base_url": state.base_url,
+          "api_root": state.api_root,
+          "collection_id": state.collection_id,
+          "api_key": state.api_key,
+          "accept_header": state.accept_header,
+          ?"initial_interval": state.?initial_interval,
+          ?"limit": state.?limit,
+        }
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
