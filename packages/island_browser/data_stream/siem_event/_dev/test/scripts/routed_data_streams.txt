@@ -1,0 +1,106 @@
+# Verify SIEM v1 collection and routing from siem_event to audit and admin_actions.
+#
+# The mock SIEM API returns one batch with two NDJSON events (1 BrowserAudit,
+# 1 AdminAction), then an empty batch. The CEL program GETs the batch, POSTs
+# the pageId ack, and on the next in-cycle GET receives count=0.
+#
+# Expected: 1 document in island_browser.audit and 1 in island_browser.admin_actions.
+# The siem_event collector stream should retain no routed documents.
+
+[!external_stack] skip 'Skipping external stack test.'
+[!exec:jq] skip 'Skipping test requiring absent jq command'
+
+use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+install_agent -profile ${CONFIG_PROFILES}/${PROFILE} -network_name NETWORK_NAME
+docker_up -profile ${CONFIG_PROFILES}/${PROFILE} -network ${NETWORK_NAME} island-siem-mock
+add_package -profile ${CONFIG_PROFILES}/${PROFILE}
+add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config.yaml DATA_STREAM_NAME
+
+# Wait for both routed destination streams to receive exactly one document each.
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -confirm 15s -timeout 5m logs-island_browser.audit-*
+cp stdout audit_docs.json
+exec jq '[.hits.hits[]._source | select(.island_browser.audit != null)] | length' audit_docs.json
+stdout '^1$'
+exec jq -r '[.hits.hits[]._source.island_browser.audit.source] | unique[]' audit_docs.json
+stdout 'BrowserAudit'
+exec jq -r '[.hits.hits[]._source.event.id] | unique[]' audit_docs.json
+stdout '0554e3ab-618a-4171-a5d7-33555ac4476b'
+
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -confirm 15s -timeout 5m logs-island_browser.admin_actions-*
+cp stdout admin_docs.json
+exec jq '[.hits.hits[]._source | select(.island_browser.admin_actions != null)] | length' admin_docs.json
+stdout '^1$'
+exec jq -r '[.hits.hits[]._source.island_browser.admin_actions.source] | unique[]' admin_docs.json
+stdout 'AdminAction'
+exec jq -r '[.hits.hits[]._source.event.id] | unique[]' admin_docs.json
+stdout 'b2f2209f-756f-4065-8cfb-d6d1878bfa2e'
+
+# Combined count across both destination data streams.
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 2 -confirm 15s -timeout 5m logs-island_browser.audit-*,logs-island_browser.admin_actions-*
+cp stdout all_docs.json
+exec jq '.hits.total.value' all_docs.json
+stdout '^2$'
+
+remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_NAME}
+uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 1m
+docker_down island-siem-mock
+
+-- test_config.yaml --
+input: cel
+vars:
+  url: http://island-siem-mock:8080
+  api_key: xxxx
+data_stream:
+  vars:
+    audit_id: d89d0b41-97f2-4757-a7b4-729b8f30d3e9
+    interval: 30s
+    preserve_original_event: true
+    enable_request_tracer: false
+-- island-siem-mock/docker-compose.yml --
+version: '2.3'
+services:
+  island-siem-mock:
+    image: docker.elastic.co/observability/stream:v0.20.0
+    hostname: island-siem-mock
+    ports:
+      - 8080
+    environment:
+      PORT: "8080"
+    volumes:
+      - ./config.yml:/config.yml
+    command:
+      - http-server
+      - --addr=:8080
+      - --config=/config.yml
+-- island-siem-mock/config.yml --
+rules:
+  - path: /services/siem/api/v1/Audits/d89d0b41-97f2-4757-a7b4-729b8f30d3e9
+    methods: [GET]
+    request_headers:
+      Authorization:
+        - "Bearer xxxx"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"audits":"{\"tenant_id\":\"elastic-testing\",\"id\":\"0554e3ab-618a-4171-a5d7-33555ac4476b\",\"timestamp\":\"2025-09-09T13:29:38.000Z\",\"email\":\"john.doe@example.com\",\"user_id\":\"auth0|cbbf1398-e567-4e6f-8929-5a786ffc2486\",\"user_name\":\"John Doe\",\"type\":\"Navigation\",\"verdict\":\"Allowed\",\"processed_date\":\"2025-09-09T13:29:39.123456Z\",\"client_event_id\":\"d14e7489-e627-4cf8-bf89-daeb6c4b6a55\",\"source\":\"BrowserAudit\",\"data_target\":\"BrowserAudit\",\"version\":2,\"top_level_url\":\"https://example.com\",\"source_ip\":\"10.50.6.126\",\"public_ip\":\"81.2.69.142\",\"machine_name\":\"ub22-50-6-126.manage.local\"}\n{\"tenant_id\":\"elastic-testing\",\"id\":\"b2f2209f-756f-4065-8cfb-d6d1878bfa2e\",\"timestamp\":\"2025-08-28T11:04:18.985019Z\",\"email\":\"API|Testing API Key\",\"user_id\":\"auth0|1e396c45-b365-4207-ae78-b35b10c06aaf\",\"entity_id\":\"auth0|30e45685-6701-4c92-bcdd-49e53c7853bd\",\"entity_name\":\"john.rich+16690@example.com\",\"entity_type\":\"User\",\"action\":\"Create\",\"audit_type\":\"AdminAction\",\"source\":\"AdminAction\"}","pageId":"mock-page-1","count":2,"lastAuditTimestamp":"2025-09-09T13:29:38.000Z"}
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"audits":"","pageId":"mock-page-empty","count":0,"lastAuditTimestamp":"2025-09-09T13:29:38.000Z"}
+  - path: /services/siem/api/v1/Audits/d89d0b41-97f2-4757-a7b4-729b8f30d3e9
+    methods: [POST]
+    request_headers:
+      Authorization:
+        - "Bearer xxxx"
+      Content-Type:
+        - "application/json"
+    responses:
+      - status_code: 204
+        body: ""
+      - status_code: 204
+        body: ""
