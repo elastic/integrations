@@ -23,7 +23,7 @@
                             "by": "_count",
                             "direction": "desc"
                         },
-                        "title": "Responder Port (id_resp_p)"
+                        "title": "Responder Port (dest_port)"
                     },
                     "grow": true,
                     "order": 1,
@@ -69,7 +69,7 @@
             },
             "showApplySelections": false
         },
-        "description": "",
+        "description": "Summary of Corelight network connection activity and trends.",
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
                 "filter": [
@@ -100,20 +100,16 @@
                             "store": "appState"
                         },
                         "meta": {
-                            "alias": null,
+                            "alias": "event.dataset: dns*",
                             "disabled": false,
-                            "field": "event.dataset",
                             "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
-                            "key": "event.dataset",
+                            "key": "query",
                             "negate": false,
-                            "params": {
-                                "query": "dns"
-                            },
-                            "type": "phrase"
+                            "type": "custom"
                         },
                         "query": {
-                            "match_phrase": {
-                                "event.dataset": "dns"
+                            "wildcard": {
+                                "event.dataset": "dns*"
                             }
                         }
                     },
@@ -122,17 +118,20 @@
                             "store": "appState"
                         },
                         "meta": {
-                            "alias": null,
+                            "alias": "Aggregation",
                             "disabled": false,
-                            "field": "observer.hostname",
+                            "field": "event.dataset",
                             "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[2].meta.index",
-                            "key": "observer.hostname",
-                            "negate": false,
-                            "type": "exists"
+                            "key": "event.dataset",
+                            "negate": true,
+                            "params": {
+                                "query": "dns_agg"
+                            },
+                            "type": "phrase"
                         },
                         "query": {
-                            "exists": {
-                                "field": "observer.hostname"
+                            "match_phrase": {
+                                "event.dataset": "dns_agg"
                             }
                         }
                     }
@@ -183,7 +182,7 @@
                     }
                 },
                 "gridData": {
-                    "h": 32,
+                    "h": 38,
                     "i": "41390c4e-8a11-45f8-9e82-20aeb22dd457",
                     "w": 12,
                     "x": 0,
@@ -199,7 +198,7 @@
                         "references": [
                             {
                                 "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-8d61793d-b09e-4753-9178-efc0b6f492ae",
+                                "name": "indexpattern-datasource-layer-4beab937-e3c5-44db-90b8-d899847a1f9b",
                                 "type": "index-pattern"
                             }
                         ],
@@ -209,13 +208,658 @@
                                 "formBased": {
                                     "currentIndexPatternId": "logs-*",
                                     "layers": {
-                                        "8d61793d-b09e-4753-9178-efc0b6f492ae": {
+                                        "4beab937-e3c5-44db-90b8-d899847a1f9b": {
                                             "columnOrder": [
-                                                "3cee9e5b-a64b-48f6-8522-f49eb159635e",
-                                                "57e9812b-3e07-477f-bb08-f96ae75106df"
+                                                "11b102d6-d7ee-495e-8738-e1bbdf7a78d1"
                                             ],
                                             "columns": {
-                                                "3cee9e5b-a64b-48f6-8522-f49eb159635e": {
+                                                "11b102d6-d7ee-495e-8738-e1bbdf7a78d1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Total DNS Requests",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": false,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "dns.question.name"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "logs-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "observer.vendor",
+                                        "index": "afac6375-ef4f-497c-bb5c-d202008cd916",
+                                        "key": "observer.vendor",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "Corelight"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "observer.vendor": "Corelight"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "observer.hostname",
+                                        "index": "bf6cf0cc-7397-447d-9bde-0d9ecde66e46",
+                                        "key": "observer.hostname",
+                                        "negate": false,
+                                        "type": "exists",
+                                        "value": "exists"
+                                    },
+                                    "query": {
+                                        "exists": {
+                                            "field": "observer.hostname"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": "NOT is_broadcast: true",
+                                        "disabled": false,
+                                        "index": "c4fceb1a-b9b9-4a5e-92c7-4aa2b4f1115e",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "source.ip",
+                                                    "index": "logs-*",
+                                                    "key": "source.ip",
+                                                    "negate": true,
+                                                    "params": [
+                                                        "0.0.0.0",
+                                                        "255.255.255.255"
+                                                    ],
+                                                    "type": "phrases",
+                                                    "value": [
+                                                        "0.0.0.0",
+                                                        "255.255.255.255"
+                                                    ]
+                                                },
+                                                "query": {
+                                                    "bool": {
+                                                        "minimum_should_match": 1,
+                                                        "should": [
+                                                            {
+                                                                "match_phrase": {
+                                                                    "source.ip": "0.0.0.0"
+                                                                }
+                                                            },
+                                                            {
+                                                                "match_phrase": {
+                                                                    "source.ip": "255.255.255.255"
+                                                                }
+                                                            }
+                                                        ]
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "destination.ip",
+                                                    "index": "logs-*",
+                                                    "key": "destination.ip",
+                                                    "negate": true,
+                                                    "params": [
+                                                        "0.0.0.0",
+                                                        "255.255.255.255"
+                                                    ],
+                                                    "type": "phrases",
+                                                    "value": [
+                                                        "0.0.0.0",
+                                                        "255.255.255.255"
+                                                    ]
+                                                },
+                                                "query": {
+                                                    "bool": {
+                                                        "minimum_should_match": 1,
+                                                        "should": [
+                                                            {
+                                                                "match_phrase": {
+                                                                    "destination.ip": "0.0.0.0"
+                                                                }
+                                                            },
+                                                            {
+                                                                "match_phrase": {
+                                                                    "destination.ip": "255.255.255.255"
+                                                                }
+                                                            }
+                                                        ]
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
+                                    },
+                                    "query": {}
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "color": "#6092C0",
+                                "layerId": "4beab937-e3c5-44db-90b8-d899847a1f9b",
+                                "layerType": "data",
+                                "metricAccessor": "11b102d6-d7ee-495e-8738-e1bbdf7a78d1"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": true
+                },
+                "gridData": {
+                    "h": 6,
+                    "i": "88d8cfed-e967-45ea-96aa-ab87c43d6e8b",
+                    "w": 9,
+                    "x": 12,
+                    "y": 0
+                },
+                "panelIndex": "88d8cfed-e967-45ea-96aa-ab87c43d6e8b",
+                "title": "Total DNS Requests",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-4beab937-e3c5-44db-90b8-d899847a1f9b",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "fd3486d4-28fc-469a-9b91-1b1fcc10d9ef",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "ad01b2e0-7bcd-4e88-9309-0cee883b6710",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "4beab937-e3c5-44db-90b8-d899847a1f9b": {
+                                            "columnOrder": [
+                                                "11b102d6-d7ee-495e-8738-e1bbdf7a78d1"
+                                            ],
+                                            "columns": {
+                                                "11b102d6-d7ee-495e-8738-e1bbdf7a78d1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Total DNS Response",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": false,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "dns.question.name"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "dns.answers.name",
+                                        "index": "fd3486d4-28fc-469a-9b91-1b1fcc10d9ef",
+                                        "key": "dns.answers.name",
+                                        "negate": false,
+                                        "type": "exists",
+                                        "value": "exists"
+                                    },
+                                    "query": {
+                                        "exists": {
+                                            "field": "dns.answers.name"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "dns.question.type",
+                                        "index": "ad01b2e0-7bcd-4e88-9309-0cee883b6710",
+                                        "key": "dns.question.type",
+                                        "negate": false,
+                                        "type": "exists",
+                                        "value": "exists"
+                                    },
+                                    "query": {
+                                        "exists": {
+                                            "field": "dns.question.type"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "observer.vendor",
+                                        "index": "afac6375-ef4f-497c-bb5c-d202008cd916",
+                                        "key": "observer.vendor",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "Corelight"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "observer.vendor": "Corelight"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "observer.hostname",
+                                        "index": "bf6cf0cc-7397-447d-9bde-0d9ecde66e46",
+                                        "key": "observer.hostname",
+                                        "negate": false,
+                                        "type": "exists"
+                                    },
+                                    "query": {
+                                        "exists": {
+                                            "field": "observer.hostname"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": "NOT is_broadcast: true",
+                                        "disabled": false,
+                                        "index": "742b8f76-0e46-403f-89f5-db6f1a1d7a70",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "source.ip",
+                                                    "index": "logs-*",
+                                                    "key": "source.ip",
+                                                    "negate": true,
+                                                    "params": [
+                                                        "0.0.0.0",
+                                                        "255.255.255.255"
+                                                    ],
+                                                    "type": "phrases",
+                                                    "value": [
+                                                        "0.0.0.0",
+                                                        "255.255.255.255"
+                                                    ]
+                                                },
+                                                "query": {
+                                                    "bool": {
+                                                        "minimum_should_match": 1,
+                                                        "should": [
+                                                            {
+                                                                "match_phrase": {
+                                                                    "source.ip": "0.0.0.0"
+                                                                }
+                                                            },
+                                                            {
+                                                                "match_phrase": {
+                                                                    "source.ip": "255.255.255.255"
+                                                                }
+                                                            }
+                                                        ]
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "destination.ip",
+                                                    "index": "logs-*",
+                                                    "key": "destination.ip",
+                                                    "negate": true,
+                                                    "params": [
+                                                        "0.0.0.0",
+                                                        "255.255.255.255"
+                                                    ],
+                                                    "type": "phrases",
+                                                    "value": [
+                                                        "0.0.0.0",
+                                                        "255.255.255.255"
+                                                    ]
+                                                },
+                                                "query": {
+                                                    "bool": {
+                                                        "minimum_should_match": 1,
+                                                        "should": [
+                                                            {
+                                                                "match_phrase": {
+                                                                    "destination.ip": "0.0.0.0"
+                                                                }
+                                                            },
+                                                            {
+                                                                "match_phrase": {
+                                                                    "destination.ip": "255.255.255.255"
+                                                                }
+                                                            }
+                                                        ]
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
+                                    },
+                                    "query": {}
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "color": "#6092C0",
+                                "layerId": "4beab937-e3c5-44db-90b8-d899847a1f9b",
+                                "layerType": "data",
+                                "metricAccessor": "11b102d6-d7ee-495e-8738-e1bbdf7a78d1"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {},
+                    "hidePanelTitles": true
+                },
+                "gridData": {
+                    "h": 6,
+                    "i": "777810ab-fa79-438c-81d5-429b97465e43",
+                    "w": 9,
+                    "x": 21,
+                    "y": 0
+                },
+                "panelIndex": "777810ab-fa79-438c-81d5-429b97465e43",
+                "title": "Total DNS Response",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "a38513451b31bef37a02d6388a528d0f89a52d6d0a351159461db643ba67a7f2": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "a38513451b31bef37a02d6388a528d0f89a52d6d0a351159461db643ba67a7f2",
+                                    "name": "logs-corelight.dns*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "logs-corelight.dns*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "a38513451b31bef37a02d6388a528d0f89a52d6d0a351159461db643ba67a7f2",
+                                            "timeField": "@timestamp",
+                                            "title": "logs-corelight.dns*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "340a9813-7a9f-4040-8a33-95096b7cfc15": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "Top Non-Existent Domains",
+                                                    "fieldName": "Top Non-Existent Domains",
+                                                    "inMetricDimension": true,
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "a38513451b31bef37a02d6388a528d0f89a52d6d0a351159461db643ba67a7f2",
+                                            "query": {
+                                                "esql": "FROM logs-corelight.dns*\r\n| WHERE observer.vendor==\"Corelight\" \r\n    AND observer.hostname IS NOT NULL\r\n    AND event.dataset LIKE \"dns*\"\r\n    AND NOT (COALESCE(source.ip IN (\"0.0.0.0\",\"255.255.255.255\"), false) OR COALESCE(destination.ip IN (\"0.0.0.0\",\"255.255.255.255\"), false)\r\n)\r\n    AND dns.response_code == \"NXDOMAIN\"\r\n    AND dns.response_code IS NOT NULL\r\n| STATS `Top Non-Existent Domains` = COUNT()\r\n| KEEP `Top Non-Existent Domains`\r\n\r\n"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "esql": "FROM logs-corelight.dns*\r\n| WHERE observer.vendor==\"Corelight\" \r\n    AND observer.hostname IS NOT NULL\r\n    AND event.dataset LIKE \"dns*\"\r\n    AND NOT (COALESCE(source.ip IN (\"0.0.0.0\",\"255.255.255.255\"), false) OR COALESCE(destination.ip IN (\"0.0.0.0\",\"255.255.255.255\"), false)\r\n)\r\n    AND dns.response_code == \"NXDOMAIN\"\r\n    AND dns.response_code IS NOT NULL\r\n| STATS `Top Non-Existent Domains` = COUNT()\r\n| KEEP `Top Non-Existent Domains`\r\n\r\n"
+                            },
+                            "visualization": {
+                                "color": "#6092C0",
+                                "layerId": "340a9813-7a9f-4040-8a33-95096b7cfc15",
+                                "layerType": "data",
+                                "metricAccessor": "Top Non-Existent Domains"
+                            }
+                        },
+                        "title": "Metric",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "disabledActions": [
+                        "OPEN_FLYOUT_ADD_DRILLDOWN"
+                    ],
+                    "enhancements": {},
+                    "hidePanelTitles": true
+                },
+                "gridData": {
+                    "h": 6,
+                    "i": "755b1080-64c8-46db-beaf-df866c81ffda",
+                    "w": 9,
+                    "x": 30,
+                    "y": 0
+                },
+                "panelIndex": "755b1080-64c8-46db-beaf-df866c81ffda",
+                "title": "Top Non-Existent Domains",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "a38513451b31bef37a02d6388a528d0f89a52d6d0a351159461db643ba67a7f2": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "a38513451b31bef37a02d6388a528d0f89a52d6d0a351159461db643ba67a7f2",
+                                    "name": "logs-corelight.dns*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "logs-corelight.dns*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "a38513451b31bef37a02d6388a528d0f89a52d6d0a351159461db643ba67a7f2",
+                                            "timeField": "@timestamp",
+                                            "title": "logs-corelight.dns*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "7e6cd594-0360-425e-8fb5-88f89d811383": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "DNS Aggregation",
+                                                    "fieldName": "DNS Aggregation",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "a38513451b31bef37a02d6388a528d0f89a52d6d0a351159461db643ba67a7f2",
+                                            "query": {
+                                                "esql": "FROM logs-corelight.dns*\r\n| WHERE event.dataset  == \"dns_agg\"\r\n| STATS count = COUNT()\r\n| EVAL `DNS Aggregation` = CASE(count \u003e 0, \"DNS Agg Logs Available\", \"No DNS Agg Logs\"),\r\n    status = CASE(count \u003e 0, 1, 0)\r\n| KEEP `DNS Aggregation`, status"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "esql": "FROM logs-corelight.dns*\r\n| WHERE event.dataset  == \"dns_agg\"\r\n| STATS count = COUNT()\r\n| EVAL `DNS Aggregation` = CASE(count \u003e 0, \"DNS Agg Logs Available\", \"No DNS Agg Logs\"),\r\n    status = CASE(count \u003e 0, 1, 0)\r\n| KEEP `DNS Aggregation`, status"
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "DNS Aggregation"
+                                    }
+                                ],
+                                "layerId": "7e6cd594-0360-425e-8fb5-88f89d811383",
+                                "layerType": "data"
+                            }
+                        },
+                        "title": "Bar vertical stacked",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "disabledActions": [
+                        "OPEN_FLYOUT_ADD_DRILLDOWN"
+                    ],
+                    "enhancements": {},
+                    "hidePanelTitles": true
+                },
+                "gridData": {
+                    "h": 6,
+                    "i": "07abb188-7033-4f5e-95cb-a66cc3817767",
+                    "w": 9,
+                    "x": 39,
+                    "y": 0
+                },
+                "panelIndex": "07abb188-7033-4f5e-95cb-a66cc3817767",
+                "title": "DNS Aggregation",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-c5c7446a-f512-48dd-87cb-5a2958b34dca",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "logs-*",
+                                    "layers": {
+                                        "c5c7446a-f512-48dd-87cb-5a2958b34dca": {
+                                            "columnOrder": [
+                                                "be18c230-e126-49aa-b56e-4a4b08e9be63",
+                                                "fa6cad12-4cbe-40a4-a16e-4512dce84450"
+                                            ],
+                                            "columns": {
+                                                "be18c230-e126-49aa-b56e-4a4b08e9be63": {
                                                     "customLabel": true,
                                                     "dataType": "string",
                                                     "isBucketed": true,
@@ -228,7 +872,7 @@
                                                         "includeIsRegex": false,
                                                         "missingBucket": false,
                                                         "orderBy": {
-                                                            "columnId": "57e9812b-3e07-477f-bb08-f96ae75106df",
+                                                            "columnId": "fa6cad12-4cbe-40a4-a16e-4512dce84450",
                                                             "type": "column"
                                                         },
                                                         "orderDirection": "desc",
@@ -236,13 +880,12 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
-                                                        "secondaryFields": [],
                                                         "size": 10
                                                     },
                                                     "scale": "ordinal",
                                                     "sourceField": "dns.question.type"
                                                 },
-                                                "57e9812b-3e07-477f-bb08-f96ae75106df": {
+                                                "fa6cad12-4cbe-40a4-a16e-4512dce84450": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
@@ -281,9 +924,51 @@
                                         "store": "appState"
                                     },
                                     "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "observer.vendor",
+                                        "index": "639d5e72-0f5a-4052-8893-0a48bcf0b617",
+                                        "key": "observer.vendor",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "Corelight"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "observer.vendor": "Corelight"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "observer.hostname",
+                                        "index": "5887bfdc-c8d6-4c27-94e0-37dab1ba075f",
+                                        "key": "observer.hostname",
+                                        "negate": false,
+                                        "type": "exists",
+                                        "value": "exists"
+                                    },
+                                    "query": {
+                                        "exists": {
+                                            "field": "observer.hostname"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
                                         "alias": "NOT is_broadcast: true",
                                         "disabled": false,
-                                        "index": "f5457800-6d5c-4a8f-b130-6d56936acc98",
+                                        "index": "1ffbe57c-2cbd-4bd9-98f5-bbd76b6753eb",
                                         "negate": false,
                                         "params": [
                                             {
@@ -359,7 +1044,7 @@
                                                 }
                                             }
                                         ],
-                                        "relation": "OR",
+                                        "relation": "AND",
                                         "type": "combined"
                                     },
                                     "query": {}
@@ -372,10 +1057,11 @@
                                         "alias": null,
                                         "disabled": false,
                                         "field": "dns.question.type",
-                                        "index": "5b1a7d3e-64e1-4c38-be1b-d548d1c0ef23",
+                                        "index": "25b1bb9e-ff1d-406f-b4d4-a6a6a381a142",
                                         "key": "dns.question.type",
                                         "negate": false,
-                                        "type": "exists"
+                                        "type": "exists",
+                                        "value": "exists"
                                     },
                                     "query": {
                                         "exists": {
@@ -411,18 +1097,17 @@
                                                 }
                                             ]
                                         },
-                                        "layerId": "8d61793d-b09e-4753-9178-efc0b6f492ae",
+                                        "layerId": "c5c7446a-f512-48dd-87cb-5a2958b34dca",
                                         "layerType": "data",
-                                        "legendDisplay": "show",
+                                        "legendDisplay": "default",
                                         "metrics": [
-                                            "57e9812b-3e07-477f-bb08-f96ae75106df"
+                                            "fa6cad12-4cbe-40a4-a16e-4512dce84450"
                                         ],
                                         "nestedLegend": false,
                                         "numberDisplay": "percent",
                                         "primaryGroups": [
-                                            "3cee9e5b-a64b-48f6-8522-f49eb159635e"
-                                        ],
-                                        "truncateLegend": false
+                                            "be18c230-e126-49aa-b56e-4a4b08e9be63"
+                                        ]
                                     }
                                 ],
                                 "shape": "pie"
@@ -432,137 +1117,17 @@
                         "type": "lens",
                         "visualizationType": "lnsPie"
                     },
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
-                    },
-                    "filters": [
-                        {
-                            "$state": {
-                                "store": "appState"
-                            },
-                            "meta": {
-                                "alias": "NOT is_broadcast: true",
-                                "disabled": false,
-                                "index": "f5457800-6d5c-4a8f-b130-6d56936acc98",
-                                "negate": false,
-                                "params": [
-                                    {
-                                        "meta": {
-                                            "alias": null,
-                                            "disabled": false,
-                                            "field": "source.ip",
-                                            "index": "logs-*",
-                                            "key": "source.ip",
-                                            "negate": true,
-                                            "params": [
-                                                "0.0.0.0",
-                                                "255.255.255.255"
-                                            ],
-                                            "type": "phrases",
-                                            "value": [
-                                                "0.0.0.0",
-                                                "255.255.255.255"
-                                            ]
-                                        },
-                                        "query": {
-                                            "bool": {
-                                                "minimum_should_match": 1,
-                                                "should": [
-                                                    {
-                                                        "match_phrase": {
-                                                            "source.ip": "0.0.0.0"
-                                                        }
-                                                    },
-                                                    {
-                                                        "match_phrase": {
-                                                            "source.ip": "255.255.255.255"
-                                                        }
-                                                    }
-                                                ]
-                                            }
-                                        }
-                                    },
-                                    {
-                                        "meta": {
-                                            "alias": null,
-                                            "disabled": false,
-                                            "field": "destination.ip",
-                                            "index": "logs-*",
-                                            "key": "destination.ip",
-                                            "negate": true,
-                                            "params": [
-                                                "0.0.0.0",
-                                                "255.255.255.255"
-                                            ],
-                                            "type": "phrases",
-                                            "value": [
-                                                "0.0.0.0",
-                                                "255.255.255.255"
-                                            ]
-                                        },
-                                        "query": {
-                                            "bool": {
-                                                "minimum_should_match": 1,
-                                                "should": [
-                                                    {
-                                                        "match_phrase": {
-                                                            "destination.ip": "0.0.0.0"
-                                                        }
-                                                    },
-                                                    {
-                                                        "match_phrase": {
-                                                            "destination.ip": "255.255.255.255"
-                                                        }
-                                                    }
-                                                ]
-                                            }
-                                        }
-                                    }
-                                ],
-                                "relation": "OR",
-                                "type": "combined"
-                            },
-                            "query": {}
-                        },
-                        {
-                            "$state": {
-                                "store": "appState"
-                            },
-                            "meta": {
-                                "alias": null,
-                                "disabled": false,
-                                "field": "dns.question.type",
-                                "index": "5b1a7d3e-64e1-4c38-be1b-d548d1c0ef23",
-                                "key": "dns.question.type",
-                                "negate": false,
-                                "type": "exists"
-                            },
-                            "query": {
-                                "exists": {
-                                    "field": "dns.question.type"
-                                }
-                            }
-                        }
-                    ],
-                    "query": {
-                        "language": "kuery",
-                        "query": ""
-                    },
-                    "syncColors": false,
-                    "syncCursor": true,
-                    "syncTooltips": false
+                    "enhancements": {}
                 },
                 "gridData": {
                     "h": 16,
-                    "i": "198a30fc-31cb-416d-a087-42d3d1905705",
+                    "i": "df9bfc1a-b21d-4ff3-8a77-201a75a364e8",
                     "w": 16,
                     "x": 12,
-                    "y": 0
+                    "y": 6
                 },
-                "panelIndex": "198a30fc-31cb-416d-a087-42d3d1905705",
-                "title": "Top Query Types [Logs Corelight]",
+                "panelIndex": "df9bfc1a-b21d-4ff3-8a77-201a75a364e8",
+                "title": "Top Query Types",
                 "type": "lens"
             },
             {
@@ -594,7 +1159,7 @@
                                         }
                                     ],
                                     "layers": {
-                                        "2e981f47-df96-43db-b5f9-fbf631d48e9f": {
+                                        "debcf745-075f-45e4-9cda-0a291a025829": {
                                             "columns": [
                                                 {
                                                     "columnId": "Query",
@@ -616,7 +1181,7 @@
                                             ],
                                             "index": "a38513451b31bef37a02d6388a528d0f89a52d6d0a351159461db643ba67a7f2",
                                             "query": {
-                                                "esql": "from logs-corelight.dns*\r\n| limit 10000\r\n| where event.dataset == \"dns\" and observer.hostname is not null and (source.ip not in (\"0.0.0.0\",\"255.255.255.255\") or destination.ip not in (\"0.0.0.0\",\"255.255.255.255\")) and dns.question.type is not null and dns.question.type != \"PTR\"\r\n| stats COUNT() by source.ip, dns.response_code, destination.domain, dns.question.type \r\n| stats COUNT() by destination.domain  \r\n| rename destination.domain as Query,`COUNT()` as Count\r\n| sort Count desc\r\n| limit 10\r\n| keep Query, Count"
+                                                "esql": "from logs-corelight.dns*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\"\r\n    and event.dataset LIKE \"dns*\"\r\n    and observer.hostname is not null \r\n    and not (COALESCE(source.ip IN (\"0.0.0.0\",\"255.255.255.255\"), false) OR COALESCE(destination.ip in (\"0.0.0.0\",\"255.255.255.255\"), false)\r\n)\r\n    and dns.question.type is not null and dns.question.type != \"PTR\"\r\n| stats COUNT() by source.ip, dns.status_code, destination.domain, dns.question.type\r\n| stats COUNT() by destination.domain  \r\n| rename destination.domain as Query,`COUNT()` as Count\r\n| sort Count desc\r\n| limit 10\r\n| keep Query, Count"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -625,7 +1190,7 @@
                             },
                             "filters": [],
                             "query": {
-                                "esql": "from logs-corelight.dns*\r\n| limit 10000\r\n| where event.dataset == \"dns\" and observer.hostname is not null and (source.ip not in (\"0.0.0.0\",\"255.255.255.255\") or destination.ip not in (\"0.0.0.0\",\"255.255.255.255\")) and dns.question.type is not null and dns.question.type != \"PTR\"\r\n| stats COUNT() by source.ip, dns.response_code, destination.domain, dns.question.type \r\n| stats COUNT() by destination.domain  \r\n| rename destination.domain as Query,`COUNT()` as Count\r\n| sort Count desc\r\n| limit 10\r\n| keep Query, Count"
+                                "esql": "from logs-corelight.dns*\r\n| limit 10000\r\n| where observer.vendor == \"Corelight\"\r\n    and event.dataset LIKE \"dns*\"\r\n    and observer.hostname is not null \r\n    and not (COALESCE(source.ip IN (\"0.0.0.0\",\"255.255.255.255\"), false) OR COALESCE(destination.ip in (\"0.0.0.0\",\"255.255.255.255\"), false)\r\n)\r\n    and dns.question.type is not null and dns.question.type != \"PTR\"\r\n| stats COUNT() by source.ip, dns.status_code, destination.domain, dns.question.type\r\n| stats COUNT() by destination.domain  \r\n| rename destination.domain as Query,`COUNT()` as Count\r\n| sort Count desc\r\n| limit 10\r\n| keep Query, Count"
                             },
                             "visualization": {
                                 "columns": [
@@ -636,7 +1201,7 @@
                                         "columnId": "Count"
                                     }
                                 ],
-                                "layerId": "2e981f47-df96-43db-b5f9-fbf631d48e9f",
+                                "layerId": "debcf745-075f-45e4-9cda-0a291a025829",
                                 "layerType": "data"
                             }
                         },
@@ -647,28 +1212,17 @@
                     "disabledActions": [
                         "OPEN_FLYOUT_ADD_DRILLDOWN"
                     ],
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
-                    },
-                    "filters": [],
-                    "query": {
-                        "esql": "from logs-corelight.dns*\r\n| limit 10000\r\n| where event.dataset == \"dns\" and observer.hostname is not null and (source.ip not in (\"0.0.0.0\",\"255.255.255.255\") or destination.ip not in (\"0.0.0.0\",\"255.255.255.255\")) and dns.question.type is not null and dns.question.type != \"PTR\"\r\n| stats COUNT() by source.ip, dns.response_code, destination.domain, dns.question.type \r\n| stats COUNT() by destination.domain  \r\n| rename destination.domain as Query,`COUNT()` as Count\r\n| sort Count desc\r\n| limit 10\r\n| keep Query, Count"
-                    },
-                    "syncColors": false,
-                    "syncCursor": true,
-                    "syncTooltips": false
+                    "enhancements": {}
                 },
                 "gridData": {
                     "h": 16,
-                    "i": "2470f545-009a-49f0-8d86-ab7186507ee4",
+                    "i": "5c278bbc-2030-4822-b9fb-ae8649cf696c",
                     "w": 20,
                     "x": 28,
-                    "y": 0
+                    "y": 6
                 },
-                "panelIndex": "2470f545-009a-49f0-8d86-ab7186507ee4",
-                "title": "Top 10 Queries by Count [Logs Corelight]",
+                "panelIndex": "5c278bbc-2030-4822-b9fb-ae8649cf696c",
+                "title": "Top 10 Queries by Count",
                 "type": "lens"
             },
             {
@@ -700,7 +1254,7 @@
                                         }
                                     ],
                                     "layers": {
-                                        "99d2b11e-4dfd-4ae4-aa07-5c1a7c0df652": {
+                                        "2484eab0-e946-40b8-8531-4959b5fdbf27": {
                                             "columns": [
                                                 {
                                                     "columnId": "Query",
@@ -722,7 +1276,7 @@
                                             ],
                                             "index": "a38513451b31bef37a02d6388a528d0f89a52d6d0a351159461db643ba67a7f2",
                                             "query": {
-                                                "esql": "from logs-corelight.dns*\r\n| limit 10000\r\n| where event.dataset == \"dns\" and observer.hostname is not null and (source.ip not in (\"0.0.0.0\",\"255.255.255.255\") or destination.ip not in (\"0.0.0.0\",\"255.255.255.255\")) and dns.question.type is not null and dns.question.type != \"PTR\" and dns.response_code == \"NXDOMAIN\"\r\n| stats COUNT() by source.ip, dns.response_code, destination.domain, dns.question.type \r\n| stats COUNT() by destination.domain  \r\n| rename destination.domain as Query,`COUNT()` as Count\r\n| sort Count desc\r\n| limit 10\r\n| keep Query, Count"
+                                                "esql": "FROM logs-corelight.dns*\r\n| WHERE observer.vendor==\"Corelight\" \r\n    AND event.dataset LIKE \"dns*\"\r\n    AND observer.hostname IS NOT NULL\r\n    AND NOT (COALESCE(source.ip IN (\"0.0.0.0\",\"255.255.255.255\"), false) OR COALESCE(destination.ip IN (\"0.0.0.0\",\"255.255.255.255\"), false)\r\n)\r\n    AND dns.question.type is not null\r\n    AND dns.question.type != \"PTR\" \r\n    AND dns.response_code == \"NXDOMAIN\"\r\n| stats COUNT() by source.ip, dns.status_code, destination.domain, dns.question.type\r\n| stats COUNT() by destination.domain  \r\n| rename destination.domain as Query,`COUNT()` as Count\r\n| sort Count desc\r\n| limit 10\r\n| keep Query, Count"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -731,7 +1285,7 @@
                             },
                             "filters": [],
                             "query": {
-                                "esql": "from logs-corelight.dns*\r\n| limit 10000\r\n| where event.dataset == \"dns\" and observer.hostname is not null and (source.ip not in (\"0.0.0.0\",\"255.255.255.255\") or destination.ip not in (\"0.0.0.0\",\"255.255.255.255\")) and dns.question.type is not null and dns.question.type != \"PTR\" and dns.response_code == \"NXDOMAIN\"\r\n| stats COUNT() by source.ip, dns.response_code, destination.domain, dns.question.type \r\n| stats COUNT() by destination.domain  \r\n| rename destination.domain as Query,`COUNT()` as Count\r\n| sort Count desc\r\n| limit 10\r\n| keep Query, Count"
+                                "esql": "FROM logs-corelight.dns*\r\n| WHERE observer.vendor==\"Corelight\" \r\n    AND event.dataset LIKE \"dns*\"\r\n    AND observer.hostname IS NOT NULL\r\n    AND NOT (COALESCE(source.ip IN (\"0.0.0.0\",\"255.255.255.255\"), false) OR COALESCE(destination.ip IN (\"0.0.0.0\",\"255.255.255.255\"), false)\r\n)\r\n    AND dns.question.type is not null\r\n    AND dns.question.type != \"PTR\" \r\n    AND dns.response_code == \"NXDOMAIN\"\r\n| stats COUNT() by source.ip, dns.status_code, destination.domain, dns.question.type\r\n| stats COUNT() by destination.domain  \r\n| rename destination.domain as Query,`COUNT()` as Count\r\n| sort Count desc\r\n| limit 10\r\n| keep Query, Count"
                             },
                             "visualization": {
                                 "columns": [
@@ -742,7 +1296,7 @@
                                         "columnId": "Count"
                                     }
                                 ],
-                                "layerId": "99d2b11e-4dfd-4ae4-aa07-5c1a7c0df652",
+                                "layerId": "2484eab0-e946-40b8-8531-4959b5fdbf27",
                                 "layerType": "data"
                             }
                         },
@@ -753,28 +1307,17 @@
                     "disabledActions": [
                         "OPEN_FLYOUT_ADD_DRILLDOWN"
                     ],
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
-                    },
-                    "filters": [],
-                    "query": {
-                        "esql": "from logs-corelight.dns*\r\n| limit 10000\r\n| where event.dataset == \"dns\" and observer.hostname is not null and (source.ip not in (\"0.0.0.0\",\"255.255.255.255\") or destination.ip not in (\"0.0.0.0\",\"255.255.255.255\")) and dns.question.type is not null and dns.question.type != \"PTR\" and dns.response_code == \"NXDOMAIN\"\r\n| stats COUNT() by source.ip, dns.response_code, destination.domain, dns.question.type \r\n| stats COUNT() by destination.domain  \r\n| rename destination.domain as Query,`COUNT()` as Count\r\n| sort Count desc\r\n| limit 10\r\n| keep Query, Count"
-                    },
-                    "syncColors": false,
-                    "syncCursor": true,
-                    "syncTooltips": false
+                    "enhancements": {}
                 },
                 "gridData": {
                     "h": 16,
-                    "i": "721496d0-cd0e-45d7-bde1-4e38df936ade",
+                    "i": "bccaa371-d587-4cbf-a223-ba99e34148af",
                     "w": 18,
                     "x": 12,
-                    "y": 16
+                    "y": 22
                 },
-                "panelIndex": "721496d0-cd0e-45d7-bde1-4e38df936ade",
-                "title": "Top 10 Queries by Count to Non-Existent Domains [Logs Corelight]",
+                "panelIndex": "bccaa371-d587-4cbf-a223-ba99e34148af",
+                "title": "Top 10 Queries by Count to Non-Existent Domains",
                 "type": "lens"
             },
             {
@@ -783,7 +1326,7 @@
                         "references": [
                             {
                                 "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-3f134d5e-ac9c-4b86-b0bf-137369691a82",
+                                "name": "indexpattern-datasource-layer-c5c7446a-f512-48dd-87cb-5a2958b34dca",
                                 "type": "index-pattern"
                             }
                         ],
@@ -791,15 +1334,41 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
-                                    "currentIndexPatternId": "logs-*",
                                     "layers": {
-                                        "3f134d5e-ac9c-4b86-b0bf-137369691a82": {
+                                        "c5c7446a-f512-48dd-87cb-5a2958b34dca": {
                                             "columnOrder": [
-                                                "d2d53912-8cf8-4fa2-a38d-532d5eaefe44",
-                                                "86d3fbb3-b146-4709-8e6c-0368c08133ba"
+                                                "be18c230-e126-49aa-b56e-4a4b08e9be63",
+                                                "fa6cad12-4cbe-40a4-a16e-4512dce84450"
                                             ],
                                             "columns": {
-                                                "86d3fbb3-b146-4709-8e6c-0368c08133ba": {
+                                                "be18c230-e126-49aa-b56e-4a4b08e9be63": {
+                                                    "customLabel": true,
+                                                    "dataType": "ip",
+                                                    "isBucketed": true,
+                                                    "label": "Source IP",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "fa6cad12-4cbe-40a4-a16e-4512dce84450",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "secondaryFields": [],
+                                                        "size": 10
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "source.ip"
+                                                },
+                                                "fa6cad12-4cbe-40a4-a16e-4512dce84450": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
@@ -815,39 +1384,11 @@
                                                         }
                                                     },
                                                     "scale": "ratio",
-                                                    "sourceField": "source.ip"
-                                                },
-                                                "d2d53912-8cf8-4fa2-a38d-532d5eaefe44": {
-                                                    "customLabel": true,
-                                                    "dataType": "ip",
-                                                    "isBucketed": true,
-                                                    "label": "Source IP",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "exclude": [],
-                                                        "excludeIsRegex": false,
-                                                        "include": [],
-                                                        "includeIsRegex": false,
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "86d3fbb3-b146-4709-8e6c-0368c08133ba",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": false,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "secondaryFields": [],
-                                                        "size": 10
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "source.ip"
+                                                    "sourceField": "___records___"
                                                 }
                                             },
                                             "ignoreGlobalFilters": false,
                                             "incompleteColumns": {},
-                                            "indexPatternId": "logs-*",
                                             "sampling": 1
                                         }
                                     }
@@ -865,9 +1406,50 @@
                                         "store": "appState"
                                     },
                                     "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "observer.vendor",
+                                        "index": "639d5e72-0f5a-4052-8893-0a48bcf0b617",
+                                        "key": "observer.vendor",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "Corelight"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "observer.vendor": "Corelight"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "observer.hostname",
+                                        "index": "5887bfdc-c8d6-4c27-94e0-37dab1ba075f",
+                                        "key": "observer.hostname",
+                                        "negate": false,
+                                        "type": "exists"
+                                    },
+                                    "query": {
+                                        "exists": {
+                                            "field": "observer.hostname"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
                                         "alias": "NOT is_broadcast: true",
                                         "disabled": false,
-                                        "index": "284c4fe0-79f1-4138-a21f-7012a1e303c1",
+                                        "index": "1ffbe57c-2cbd-4bd9-98f5-bbd76b6753eb",
                                         "negate": false,
                                         "params": [
                                             {
@@ -943,7 +1525,540 @@
                                                 }
                                             }
                                         ],
-                                        "relation": "OR",
+                                        "relation": "AND",
+                                        "type": "combined"
+                                    },
+                                    "query": {}
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "be18c230-e126-49aa-b56e-4a4b08e9be63"
+                                    },
+                                    {
+                                        "columnId": "fa6cad12-4cbe-40a4-a16e-4512dce84450"
+                                    }
+                                ],
+                                "layerId": "c5c7446a-f512-48dd-87cb-5a2958b34dca",
+                                "layerType": "data"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 16,
+                    "i": "68d83d4a-8c09-41e5-b7ff-2811728654c4",
+                    "w": 18,
+                    "x": 30,
+                    "y": 22
+                },
+                "panelIndex": "68d83d4a-8c09-41e5-b7ff-2811728654c4",
+                "title": "Top Originators by Count",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-c5c7446a-f512-48dd-87cb-5a2958b34dca",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "logs-*",
+                                    "layers": {
+                                        "c5c7446a-f512-48dd-87cb-5a2958b34dca": {
+                                            "columnOrder": [
+                                                "be18c230-e126-49aa-b56e-4a4b08e9be63",
+                                                "fa6cad12-4cbe-40a4-a16e-4512dce84450"
+                                            ],
+                                            "columns": {
+                                                "be18c230-e126-49aa-b56e-4a4b08e9be63": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Query",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "fa6cad12-4cbe-40a4-a16e-4512dce84450",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "secondaryFields": [],
+                                                        "size": 20
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "dns.question.name"
+                                                },
+                                                "fa6cad12-4cbe-40a4-a16e-4512dce84450": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": false,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "logs-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "dns.response_code",
+                                        "index": "49f7e628-8600-4e66-b577-4915f2d66bbe",
+                                        "key": "dns.response_code",
+                                        "negate": false,
+                                        "params": [
+                                            "NOERROR",
+                                            "No Error"
+                                        ],
+                                        "type": "phrases",
+                                        "value": [
+                                            "NOERROR",
+                                            "No Error"
+                                        ]
+                                    },
+                                    "query": {
+                                        "bool": {
+                                            "minimum_should_match": 1,
+                                            "should": [
+                                                {
+                                                    "match_phrase": {
+                                                        "dns.response_code": "NOERROR"
+                                                    }
+                                                },
+                                                {
+                                                    "match_phrase": {
+                                                        "dns.response_code": "No Error"
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "dns.question.type",
+                                        "index": "74b63672-2adb-4cba-94a3-b7be3e60c8ff",
+                                        "key": "dns.question.type",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "PTR"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "dns.question.type": "PTR"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "observer.vendor",
+                                        "index": "639d5e72-0f5a-4052-8893-0a48bcf0b617",
+                                        "key": "observer.vendor",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "Corelight"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "observer.vendor": "Corelight"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "observer.hostname",
+                                        "index": "5887bfdc-c8d6-4c27-94e0-37dab1ba075f",
+                                        "key": "observer.hostname",
+                                        "negate": false,
+                                        "type": "exists"
+                                    },
+                                    "query": {
+                                        "exists": {
+                                            "field": "observer.hostname"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": "NOT is_broadcast: true",
+                                        "disabled": false,
+                                        "index": "1ffbe57c-2cbd-4bd9-98f5-bbd76b6753eb",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "source.ip",
+                                                    "index": "logs-*",
+                                                    "key": "source.ip",
+                                                    "negate": true,
+                                                    "params": [
+                                                        "0.0.0.0",
+                                                        "255.255.255.255"
+                                                    ],
+                                                    "type": "phrases",
+                                                    "value": [
+                                                        "0.0.0.0",
+                                                        "255.255.255.255"
+                                                    ]
+                                                },
+                                                "query": {
+                                                    "bool": {
+                                                        "minimum_should_match": 1,
+                                                        "should": [
+                                                            {
+                                                                "match_phrase": {
+                                                                    "source.ip": "0.0.0.0"
+                                                                }
+                                                            },
+                                                            {
+                                                                "match_phrase": {
+                                                                    "source.ip": "255.255.255.255"
+                                                                }
+                                                            }
+                                                        ]
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "destination.ip",
+                                                    "index": "logs-*",
+                                                    "key": "destination.ip",
+                                                    "negate": true,
+                                                    "params": [
+                                                        "0.0.0.0",
+                                                        "255.255.255.255"
+                                                    ],
+                                                    "type": "phrases",
+                                                    "value": [
+                                                        "0.0.0.0",
+                                                        "255.255.255.255"
+                                                    ]
+                                                },
+                                                "query": {
+                                                    "bool": {
+                                                        "minimum_should_match": 1,
+                                                        "should": [
+                                                            {
+                                                                "match_phrase": {
+                                                                    "destination.ip": "0.0.0.0"
+                                                                }
+                                                            },
+                                                            {
+                                                                "match_phrase": {
+                                                                    "destination.ip": "255.255.255.255"
+                                                                }
+                                                            }
+                                                        ]
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
+                                        "type": "combined"
+                                    },
+                                    "query": {}
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "be18c230-e126-49aa-b56e-4a4b08e9be63"
+                                    },
+                                    {
+                                        "columnId": "fa6cad12-4cbe-40a4-a16e-4512dce84450"
+                                    }
+                                ],
+                                "layerId": "c5c7446a-f512-48dd-87cb-5a2958b34dca",
+                                "layerType": "data",
+                                "paging": {
+                                    "enabled": true,
+                                    "size": 10
+                                }
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "enhancements": {}
+                },
+                "gridData": {
+                    "h": 18,
+                    "i": "41a2df0a-bb06-4384-8d36-d94e807a51b8",
+                    "w": 24,
+                    "x": 0,
+                    "y": 38
+                },
+                "panelIndex": "41a2df0a-bb06-4384-8d36-d94e807a51b8",
+                "title": "Top Successful Reverse Queries by Count",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-c5c7446a-f512-48dd-87cb-5a2958b34dca",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "aae37c61-93e5-473f-a334-6c4ddb2ea4a1",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "6f86b4bb-9f8b-4565-8760-fd9a29563f98",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "c453c6ba-b87c-41d1-9c97-714b91278eca",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "c5c7446a-f512-48dd-87cb-5a2958b34dca": {
+                                            "columnOrder": [
+                                                "be18c230-e126-49aa-b56e-4a4b08e9be63",
+                                                "fa6cad12-4cbe-40a4-a16e-4512dce84450"
+                                            ],
+                                            "columns": {
+                                                "be18c230-e126-49aa-b56e-4a4b08e9be63": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Query",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "fa6cad12-4cbe-40a4-a16e-4512dce84450",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "secondaryFields": [],
+                                                        "size": 20
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "dns.question.name"
+                                                },
+                                                "fa6cad12-4cbe-40a4-a16e-4512dce84450": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": false,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": "NOT is_broadcast: true",
+                                        "disabled": false,
+                                        "index": "aae37c61-93e5-473f-a334-6c4ddb2ea4a1",
+                                        "negate": false,
+                                        "params": [
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "source.ip",
+                                                    "index": "logs-*",
+                                                    "key": "source.ip",
+                                                    "negate": true,
+                                                    "params": [
+                                                        "0.0.0.0",
+                                                        "255.255.255.255"
+                                                    ],
+                                                    "type": "phrases",
+                                                    "value": [
+                                                        "0.0.0.0",
+                                                        "255.255.255.255"
+                                                    ]
+                                                },
+                                                "query": {
+                                                    "bool": {
+                                                        "minimum_should_match": 1,
+                                                        "should": [
+                                                            {
+                                                                "match_phrase": {
+                                                                    "source.ip": "0.0.0.0"
+                                                                }
+                                                            },
+                                                            {
+                                                                "match_phrase": {
+                                                                    "source.ip": "255.255.255.255"
+                                                                }
+                                                            }
+                                                        ]
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "meta": {
+                                                    "alias": null,
+                                                    "disabled": false,
+                                                    "field": "destination.ip",
+                                                    "index": "logs-*",
+                                                    "key": "destination.ip",
+                                                    "negate": true,
+                                                    "params": [
+                                                        "0.0.0.0",
+                                                        "255.255.255.255"
+                                                    ],
+                                                    "type": "phrases",
+                                                    "value": [
+                                                        "0.0.0.0",
+                                                        "255.255.255.255"
+                                                    ]
+                                                },
+                                                "query": {
+                                                    "bool": {
+                                                        "minimum_should_match": 1,
+                                                        "should": [
+                                                            {
+                                                                "match_phrase": {
+                                                                    "destination.ip": "0.0.0.0"
+                                                                }
+                                                            },
+                                                            {
+                                                                "match_phrase": {
+                                                                    "destination.ip": "255.255.255.255"
+                                                                }
+                                                            }
+                                                        ]
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "relation": "AND",
                                         "type": "combined"
                                     },
                                     "query": {}
@@ -955,11 +2070,34 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
+                                        "field": "dns.response_code",
+                                        "index": "6f86b4bb-9f8b-4565-8760-fd9a29563f98",
+                                        "key": "dns.response_code",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "NXDOMAIN"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "dns.response_code": "NXDOMAIN"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
                                         "field": "dns.question.type",
-                                        "index": "ae4a9a4f-363b-4b35-8da9-b5e6f2ff695c",
+                                        "index": "c453c6ba-b87c-41d1-9c97-714b91278eca",
                                         "key": "dns.question.type",
                                         "negate": false,
-                                        "type": "exists"
+                                        "type": "exists",
+                                        "value": "exists"
                                     },
                                     "query": {
                                         "exists": {
@@ -974,373 +2112,39 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "field": "dns.question.name",
-                                        "index": "f4802908-31ff-43b2-afe5-41f66abb27c6",
-                                        "key": "dns.question.name",
-                                        "negate": true,
+                                        "field": "observer.vendor",
+                                        "index": "639d5e72-0f5a-4052-8893-0a48bcf0b617",
+                                        "key": "observer.vendor",
+                                        "negate": false,
                                         "params": {
-                                            "query": "PTR"
+                                            "query": "Corelight"
                                         },
                                         "type": "phrase"
                                     },
                                     "query": {
                                         "match_phrase": {
-                                            "dns.question.name": "PTR"
-                                        }
-                                    }
-                                }
-                            ],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "columns": [
-                                    {
-                                        "columnId": "d2d53912-8cf8-4fa2-a38d-532d5eaefe44",
-                                        "isMetric": false,
-                                        "isTransposed": false
-                                    },
-                                    {
-                                        "columnId": "86d3fbb3-b146-4709-8e6c-0368c08133ba",
-                                        "isMetric": true,
-                                        "isTransposed": false
-                                    }
-                                ],
-                                "layerId": "3f134d5e-ac9c-4b86-b0bf-137369691a82",
-                                "layerType": "data"
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsDatatable"
-                    },
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
-                    },
-                    "filters": [
-                        {
-                            "$state": {
-                                "store": "appState"
-                            },
-                            "meta": {
-                                "alias": "NOT is_broadcast: true",
-                                "disabled": false,
-                                "index": "284c4fe0-79f1-4138-a21f-7012a1e303c1",
-                                "negate": false,
-                                "params": [
-                                    {
-                                        "meta": {
-                                            "alias": null,
-                                            "disabled": false,
-                                            "field": "source.ip",
-                                            "index": "logs-*",
-                                            "key": "source.ip",
-                                            "negate": true,
-                                            "params": [
-                                                "0.0.0.0",
-                                                "255.255.255.255"
-                                            ],
-                                            "type": "phrases",
-                                            "value": [
-                                                "0.0.0.0",
-                                                "255.255.255.255"
-                                            ]
-                                        },
-                                        "query": {
-                                            "bool": {
-                                                "minimum_should_match": 1,
-                                                "should": [
-                                                    {
-                                                        "match_phrase": {
-                                                            "source.ip": "0.0.0.0"
-                                                        }
-                                                    },
-                                                    {
-                                                        "match_phrase": {
-                                                            "source.ip": "255.255.255.255"
-                                                        }
-                                                    }
-                                                ]
-                                            }
-                                        }
-                                    },
-                                    {
-                                        "meta": {
-                                            "alias": null,
-                                            "disabled": false,
-                                            "field": "destination.ip",
-                                            "index": "logs-*",
-                                            "key": "destination.ip",
-                                            "negate": true,
-                                            "params": [
-                                                "0.0.0.0",
-                                                "255.255.255.255"
-                                            ],
-                                            "type": "phrases",
-                                            "value": [
-                                                "0.0.0.0",
-                                                "255.255.255.255"
-                                            ]
-                                        },
-                                        "query": {
-                                            "bool": {
-                                                "minimum_should_match": 1,
-                                                "should": [
-                                                    {
-                                                        "match_phrase": {
-                                                            "destination.ip": "0.0.0.0"
-                                                        }
-                                                    },
-                                                    {
-                                                        "match_phrase": {
-                                                            "destination.ip": "255.255.255.255"
-                                                        }
-                                                    }
-                                                ]
-                                            }
-                                        }
-                                    }
-                                ],
-                                "relation": "OR",
-                                "type": "combined"
-                            },
-                            "query": {}
-                        },
-                        {
-                            "$state": {
-                                "store": "appState"
-                            },
-                            "meta": {
-                                "alias": null,
-                                "disabled": false,
-                                "field": "dns.question.type",
-                                "index": "ae4a9a4f-363b-4b35-8da9-b5e6f2ff695c",
-                                "key": "dns.question.type",
-                                "negate": false,
-                                "type": "exists"
-                            },
-                            "query": {
-                                "exists": {
-                                    "field": "dns.question.type"
-                                }
-                            }
-                        },
-                        {
-                            "$state": {
-                                "store": "appState"
-                            },
-                            "meta": {
-                                "alias": null,
-                                "disabled": false,
-                                "field": "dns.question.name",
-                                "index": "f4802908-31ff-43b2-afe5-41f66abb27c6",
-                                "key": "dns.question.name",
-                                "negate": true,
-                                "params": {
-                                    "query": "PTR"
-                                },
-                                "type": "phrase"
-                            },
-                            "query": {
-                                "match_phrase": {
-                                    "dns.question.name": "PTR"
-                                }
-                            }
-                        }
-                    ],
-                    "query": {
-                        "language": "kuery",
-                        "query": ""
-                    },
-                    "syncColors": false,
-                    "syncCursor": true,
-                    "syncTooltips": false
-                },
-                "gridData": {
-                    "h": 16,
-                    "i": "3e25700f-0903-43b1-96cd-07c24b1df42b",
-                    "w": 18,
-                    "x": 30,
-                    "y": 16
-                },
-                "panelIndex": "3e25700f-0903-43b1-96cd-07c24b1df42b",
-                "title": "Top Originators by Count [Logs Corelight]",
-                "type": "lens"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-3f134d5e-ac9c-4b86-b0bf-137369691a82",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "formBased": {
-                                    "currentIndexPatternId": "logs-*",
-                                    "layers": {
-                                        "3f134d5e-ac9c-4b86-b0bf-137369691a82": {
-                                            "columnOrder": [
-                                                "d2d53912-8cf8-4fa2-a38d-532d5eaefe44",
-                                                "86d3fbb3-b146-4709-8e6c-0368c08133ba"
-                                            ],
-                                            "columns": {
-                                                "86d3fbb3-b146-4709-8e6c-0368c08133ba": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Count",
-                                                    "operationType": "count",
-                                                    "params": {
-                                                        "emptyAsNull": false,
-                                                        "format": {
-                                                            "id": "number",
-                                                            "params": {
-                                                                "decimals": 0
-                                                            }
-                                                        }
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "source.ip"
-                                                },
-                                                "d2d53912-8cf8-4fa2-a38d-532d5eaefe44": {
-                                                    "customLabel": true,
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "Query",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "exclude": [],
-                                                        "excludeIsRegex": false,
-                                                        "include": [],
-                                                        "includeIsRegex": false,
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "86d3fbb3-b146-4709-8e6c-0368c08133ba",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": false,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "secondaryFields": [],
-                                                        "size": 10
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "dns.question.name"
-                                                }
-                                            },
-                                            "ignoreGlobalFilters": false,
-                                            "incompleteColumns": {},
-                                            "indexPatternId": "logs-*",
-                                            "sampling": 1
+                                            "observer.vendor": "Corelight"
                                         }
                                     }
                                 },
-                                "indexpattern": {
-                                    "layers": {}
-                                },
-                                "textBased": {
-                                    "layers": {}
-                                }
-                            },
-                            "filters": [
                                 {
                                     "$state": {
                                         "store": "appState"
                                     },
                                     "meta": {
-                                        "alias": "NOT is_broadcast: true",
+                                        "alias": null,
                                         "disabled": false,
-                                        "index": "010d86aa-2f1d-4fde-b3c3-9998ca5c7873",
+                                        "field": "observer.hostname",
+                                        "index": "5887bfdc-c8d6-4c27-94e0-37dab1ba075f",
+                                        "key": "observer.hostname",
                                         "negate": false,
-                                        "params": [
-                                            {
-                                                "meta": {
-                                                    "alias": null,
-                                                    "disabled": false,
-                                                    "field": "source.ip",
-                                                    "index": "logs-*",
-                                                    "key": "source.ip",
-                                                    "negate": true,
-                                                    "params": [
-                                                        "0.0.0.0",
-                                                        "255.255.255.255"
-                                                    ],
-                                                    "type": "phrases",
-                                                    "value": [
-                                                        "0.0.0.0",
-                                                        "255.255.255.255"
-                                                    ]
-                                                },
-                                                "query": {
-                                                    "bool": {
-                                                        "minimum_should_match": 1,
-                                                        "should": [
-                                                            {
-                                                                "match_phrase": {
-                                                                    "source.ip": "0.0.0.0"
-                                                                }
-                                                            },
-                                                            {
-                                                                "match_phrase": {
-                                                                    "source.ip": "255.255.255.255"
-                                                                }
-                                                            }
-                                                        ]
-                                                    }
-                                                }
-                                            },
-                                            {
-                                                "meta": {
-                                                    "alias": null,
-                                                    "disabled": false,
-                                                    "field": "destination.ip",
-                                                    "index": "logs-*",
-                                                    "key": "destination.ip",
-                                                    "negate": true,
-                                                    "params": [
-                                                        "0.0.0.0",
-                                                        "255.255.255.255"
-                                                    ],
-                                                    "type": "phrases",
-                                                    "value": [
-                                                        "0.0.0.0",
-                                                        "255.255.255.255"
-                                                    ]
-                                                },
-                                                "query": {
-                                                    "bool": {
-                                                        "minimum_should_match": 1,
-                                                        "should": [
-                                                            {
-                                                                "match_phrase": {
-                                                                    "destination.ip": "0.0.0.0"
-                                                                }
-                                                            },
-                                                            {
-                                                                "match_phrase": {
-                                                                    "destination.ip": "255.255.255.255"
-                                                                }
-                                                            }
-                                                        ]
-                                                    }
-                                                }
-                                            }
-                                        ],
-                                        "relation": "OR",
-                                        "type": "combined"
+                                        "type": "exists"
                                     },
-                                    "query": {}
+                                    "query": {
+                                        "exists": {
+                                            "field": "observer.hostname"
+                                        }
+                                    }
                                 },
                                 {
                                     "$state": {
@@ -1350,7 +2154,7 @@
                                         "alias": null,
                                         "disabled": false,
                                         "field": "dns.question.type",
-                                        "index": "deba2c9a-1a51-45e7-8a51-f1258e7537a0",
+                                        "index": "74b63672-2adb-4cba-94a3-b7be3e60c8ff",
                                         "key": "dns.question.type",
                                         "negate": false,
                                         "params": {
@@ -1363,28 +2167,6 @@
                                             "dns.question.type": "PTR"
                                         }
                                     }
-                                },
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "field": "dns.response_code",
-                                        "index": "fe7d2e6a-abff-483c-910f-da812c762118",
-                                        "key": "dns.response_code",
-                                        "negate": false,
-                                        "params": {
-                                            "query": "NOERROR"
-                                        },
-                                        "type": "phrase"
-                                    },
-                                    "query": {
-                                        "match_phrase": {
-                                            "dns.response_code": "NOERROR"
-                                        }
-                                    }
                                 }
                             ],
                             "internalReferences": [],
@@ -1395,404 +2177,35 @@
                             "visualization": {
                                 "columns": [
                                     {
-                                        "columnId": "d2d53912-8cf8-4fa2-a38d-532d5eaefe44",
-                                        "isMetric": false,
-                                        "isTransposed": false
+                                        "columnId": "be18c230-e126-49aa-b56e-4a4b08e9be63"
                                     },
                                     {
-                                        "columnId": "86d3fbb3-b146-4709-8e6c-0368c08133ba",
-                                        "isMetric": true,
-                                        "isTransposed": false
+                                        "columnId": "fa6cad12-4cbe-40a4-a16e-4512dce84450"
                                     }
                                 ],
-                                "layerId": "3f134d5e-ac9c-4b86-b0bf-137369691a82",
-                                "layerType": "data"
+                                "layerId": "c5c7446a-f512-48dd-87cb-5a2958b34dca",
+                                "layerType": "data",
+                                "paging": {
+                                    "enabled": true,
+                                    "size": 10
+                                }
                             }
                         },
                         "title": "",
                         "type": "lens",
                         "visualizationType": "lnsDatatable"
                     },
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
-                    },
-                    "filters": [
-                        {
-                            "$state": {
-                                "store": "appState"
-                            },
-                            "meta": {
-                                "alias": "NOT is_broadcast: true",
-                                "disabled": false,
-                                "index": "010d86aa-2f1d-4fde-b3c3-9998ca5c7873",
-                                "negate": false,
-                                "params": [
-                                    {
-                                        "meta": {
-                                            "alias": null,
-                                            "disabled": false,
-                                            "field": "source.ip",
-                                            "index": "logs-*",
-                                            "key": "source.ip",
-                                            "negate": true,
-                                            "params": [
-                                                "0.0.0.0",
-                                                "255.255.255.255"
-                                            ],
-                                            "type": "phrases",
-                                            "value": [
-                                                "0.0.0.0",
-                                                "255.255.255.255"
-                                            ]
-                                        },
-                                        "query": {
-                                            "bool": {
-                                                "minimum_should_match": 1,
-                                                "should": [
-                                                    {
-                                                        "match_phrase": {
-                                                            "source.ip": "0.0.0.0"
-                                                        }
-                                                    },
-                                                    {
-                                                        "match_phrase": {
-                                                            "source.ip": "255.255.255.255"
-                                                        }
-                                                    }
-                                                ]
-                                            }
-                                        }
-                                    },
-                                    {
-                                        "meta": {
-                                            "alias": null,
-                                            "disabled": false,
-                                            "field": "destination.ip",
-                                            "index": "logs-*",
-                                            "key": "destination.ip",
-                                            "negate": true,
-                                            "params": [
-                                                "0.0.0.0",
-                                                "255.255.255.255"
-                                            ],
-                                            "type": "phrases",
-                                            "value": [
-                                                "0.0.0.0",
-                                                "255.255.255.255"
-                                            ]
-                                        },
-                                        "query": {
-                                            "bool": {
-                                                "minimum_should_match": 1,
-                                                "should": [
-                                                    {
-                                                        "match_phrase": {
-                                                            "destination.ip": "0.0.0.0"
-                                                        }
-                                                    },
-                                                    {
-                                                        "match_phrase": {
-                                                            "destination.ip": "255.255.255.255"
-                                                        }
-                                                    }
-                                                ]
-                                            }
-                                        }
-                                    }
-                                ],
-                                "relation": "OR",
-                                "type": "combined"
-                            },
-                            "query": {}
-                        },
-                        {
-                            "$state": {
-                                "store": "appState"
-                            },
-                            "meta": {
-                                "alias": null,
-                                "disabled": false,
-                                "field": "dns.question.type",
-                                "index": "deba2c9a-1a51-45e7-8a51-f1258e7537a0",
-                                "key": "dns.question.type",
-                                "negate": false,
-                                "params": {
-                                    "query": "PTR"
-                                },
-                                "type": "phrase"
-                            },
-                            "query": {
-                                "match_phrase": {
-                                    "dns.question.type": "PTR"
-                                }
-                            }
-                        },
-                        {
-                            "$state": {
-                                "store": "appState"
-                            },
-                            "meta": {
-                                "alias": null,
-                                "disabled": false,
-                                "field": "dns.response_code",
-                                "index": "fe7d2e6a-abff-483c-910f-da812c762118",
-                                "key": "dns.response_code",
-                                "negate": false,
-                                "params": {
-                                    "query": "NOERROR"
-                                },
-                                "type": "phrase"
-                            },
-                            "query": {
-                                "match_phrase": {
-                                    "dns.response_code": "NOERROR"
-                                }
-                            }
-                        }
-                    ],
-                    "query": {
-                        "language": "kuery",
-                        "query": ""
-                    },
-                    "syncColors": false,
-                    "syncCursor": true,
-                    "syncTooltips": false
+                    "enhancements": {}
                 },
                 "gridData": {
-                    "h": 16,
-                    "i": "c290adec-d4e0-45ae-b345-435c5e533b96",
-                    "w": 24,
-                    "x": 0,
-                    "y": 32
-                },
-                "panelIndex": "c290adec-d4e0-45ae-b345-435c5e533b96",
-                "title": "Top Successful Reverse Queries by Count [Logs Corelight]",
-                "type": "lens"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-3f134d5e-ac9c-4b86-b0bf-137369691a82",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "formBased": {
-                                    "currentIndexPatternId": "logs-*",
-                                    "layers": {
-                                        "3f134d5e-ac9c-4b86-b0bf-137369691a82": {
-                                            "columnOrder": [
-                                                "d2d53912-8cf8-4fa2-a38d-532d5eaefe44",
-                                                "86d3fbb3-b146-4709-8e6c-0368c08133ba"
-                                            ],
-                                            "columns": {
-                                                "86d3fbb3-b146-4709-8e6c-0368c08133ba": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Count",
-                                                    "operationType": "count",
-                                                    "params": {
-                                                        "emptyAsNull": false,
-                                                        "format": {
-                                                            "id": "number",
-                                                            "params": {
-                                                                "decimals": 0
-                                                            }
-                                                        }
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "source.ip"
-                                                },
-                                                "d2d53912-8cf8-4fa2-a38d-532d5eaefe44": {
-                                                    "customLabel": true,
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "Query",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "exclude": [],
-                                                        "excludeIsRegex": false,
-                                                        "include": [],
-                                                        "includeIsRegex": false,
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "86d3fbb3-b146-4709-8e6c-0368c08133ba",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": false,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "secondaryFields": [],
-                                                        "size": 10
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "dns.question.name"
-                                                }
-                                            },
-                                            "ignoreGlobalFilters": false,
-                                            "incompleteColumns": {},
-                                            "indexPatternId": "logs-*",
-                                            "sampling": 1
-                                        }
-                                    }
-                                },
-                                "indexpattern": {
-                                    "layers": {}
-                                },
-                                "textBased": {
-                                    "layers": {}
-                                }
-                            },
-                            "filters": [
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "field": "dns.question.type",
-                                        "index": "58502378-aee5-46fc-900c-d5f7e3d8b2b1",
-                                        "key": "dns.question.type",
-                                        "negate": false,
-                                        "params": {
-                                            "query": "PTR"
-                                        },
-                                        "type": "phrase"
-                                    },
-                                    "query": {
-                                        "match_phrase": {
-                                            "dns.question.type": "PTR"
-                                        }
-                                    }
-                                },
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "field": "dns.response_code",
-                                        "index": "da32798d-4816-4197-989d-24fc24721ebc",
-                                        "key": "dns.response_code",
-                                        "negate": false,
-                                        "params": {
-                                            "query": "NXDOMAIN"
-                                        },
-                                        "type": "phrase"
-                                    },
-                                    "query": {
-                                        "match_phrase": {
-                                            "dns.response_code": "NXDOMAIN"
-                                        }
-                                    }
-                                }
-                            ],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "columns": [
-                                    {
-                                        "columnId": "d2d53912-8cf8-4fa2-a38d-532d5eaefe44",
-                                        "isMetric": false,
-                                        "isTransposed": false
-                                    },
-                                    {
-                                        "columnId": "86d3fbb3-b146-4709-8e6c-0368c08133ba",
-                                        "isMetric": true,
-                                        "isTransposed": false
-                                    }
-                                ],
-                                "layerId": "3f134d5e-ac9c-4b86-b0bf-137369691a82",
-                                "layerType": "data"
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsDatatable"
-                    },
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
-                    },
-                    "filters": [
-                        {
-                            "$state": {
-                                "store": "appState"
-                            },
-                            "meta": {
-                                "alias": null,
-                                "disabled": false,
-                                "field": "dns.question.type",
-                                "index": "58502378-aee5-46fc-900c-d5f7e3d8b2b1",
-                                "key": "dns.question.type",
-                                "negate": false,
-                                "params": {
-                                    "query": "PTR"
-                                },
-                                "type": "phrase"
-                            },
-                            "query": {
-                                "match_phrase": {
-                                    "dns.question.type": "PTR"
-                                }
-                            }
-                        },
-                        {
-                            "$state": {
-                                "store": "appState"
-                            },
-                            "meta": {
-                                "alias": null,
-                                "disabled": false,
-                                "field": "dns.response_code",
-                                "index": "da32798d-4816-4197-989d-24fc24721ebc",
-                                "key": "dns.response_code",
-                                "negate": false,
-                                "params": {
-                                    "query": "NXDOMAIN"
-                                },
-                                "type": "phrase"
-                            },
-                            "query": {
-                                "match_phrase": {
-                                    "dns.response_code": "NXDOMAIN"
-                                }
-                            }
-                        }
-                    ],
-                    "query": {
-                        "language": "kuery",
-                        "query": ""
-                    },
-                    "syncColors": false,
-                    "syncCursor": true,
-                    "syncTooltips": false
-                },
-                "gridData": {
-                    "h": 16,
-                    "i": "ca0e5213-8767-40d1-8757-da72ba1b4bf6",
+                    "h": 18,
+                    "i": "8e482549-6c69-4f90-ae3e-cfe57463b4df",
                     "w": 24,
                     "x": 24,
-                    "y": 32
+                    "y": 38
                 },
-                "panelIndex": "ca0e5213-8767-40d1-8757-da72ba1b4bf6",
-                "title": "Top Reverse Queries by Count to Non-Existent Domains [Logs Corelight]",
+                "panelIndex": "8e482549-6c69-4f90-ae3e-cfe57463b4df",
+                "title": "Top Reverse Queries by Count to Non-Existent Domains",
                 "type": "lens"
             }
         ],
@@ -1801,7 +2214,7 @@
         "version": 2
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2026-05-11T11:23:54.890Z",
+    "created_at": "2026-08-22T14:34:26.683Z",
     "id": "corelight-58885f47-95e1-4242-a1ee-783de69ace17",
     "references": [
         {
@@ -1821,22 +2234,57 @@
         },
         {
             "id": "logs-*",
-            "name": "198a30fc-31cb-416d-a087-42d3d1905705:indexpattern-datasource-layer-8d61793d-b09e-4753-9178-efc0b6f492ae",
+            "name": "88d8cfed-e967-45ea-96aa-ab87c43d6e8b:indexpattern-datasource-layer-4beab937-e3c5-44db-90b8-d899847a1f9b",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "3e25700f-0903-43b1-96cd-07c24b1df42b:indexpattern-datasource-layer-3f134d5e-ac9c-4b86-b0bf-137369691a82",
+            "name": "777810ab-fa79-438c-81d5-429b97465e43:indexpattern-datasource-layer-4beab937-e3c5-44db-90b8-d899847a1f9b",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "c290adec-d4e0-45ae-b345-435c5e533b96:indexpattern-datasource-layer-3f134d5e-ac9c-4b86-b0bf-137369691a82",
+            "name": "777810ab-fa79-438c-81d5-429b97465e43:fd3486d4-28fc-469a-9b91-1b1fcc10d9ef",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "ca0e5213-8767-40d1-8757-da72ba1b4bf6:indexpattern-datasource-layer-3f134d5e-ac9c-4b86-b0bf-137369691a82",
+            "name": "777810ab-fa79-438c-81d5-429b97465e43:ad01b2e0-7bcd-4e88-9309-0cee883b6710",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "df9bfc1a-b21d-4ff3-8a77-201a75a364e8:indexpattern-datasource-layer-c5c7446a-f512-48dd-87cb-5a2958b34dca",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "68d83d4a-8c09-41e5-b7ff-2811728654c4:indexpattern-datasource-layer-c5c7446a-f512-48dd-87cb-5a2958b34dca",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "41a2df0a-bb06-4384-8d36-d94e807a51b8:indexpattern-datasource-layer-c5c7446a-f512-48dd-87cb-5a2958b34dca",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "8e482549-6c69-4f90-ae3e-cfe57463b4df:indexpattern-datasource-layer-c5c7446a-f512-48dd-87cb-5a2958b34dca",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "8e482549-6c69-4f90-ae3e-cfe57463b4df:aae37c61-93e5-473f-a334-6c4ddb2ea4a1",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "8e482549-6c69-4f90-ae3e-cfe57463b4df:6f86b4bb-9f8b-4565-8760-fd9a29563f98",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "8e482549-6c69-4f90-ae3e-cfe57463b4df:c453c6ba-b87c-41d1-9c97-714b91278eca",
             "type": "index-pattern"
         },
         {
@@ -1856,6 +2304,5 @@
         }
     ],
     "type": "dashboard",
-    "typeMigrationVersion": "10.2.0",
-    "updated_by": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0"
+    "typeMigrationVersion": "10.2.0"
 }
