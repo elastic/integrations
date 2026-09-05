@@ -250,6 +250,43 @@ processors:
                 tag: remove_ingest_value_published_056ab9b2
                 field: _ingest._value.published
                 ignore_missing: true
+  - foreach:
+      field: recordedfuture.playbook_alert.panel_evidence_summary.evidence
+      if: ctx.recordedfuture?.playbook_alert?.panel_evidence_summary?.evidence instanceof List
+      tag: foreach_panel_evidence_summary_evidence
+      processor:
+        date:
+          field: _ingest._value.published
+          tag: date_panel_evidence_summary_evidence_published
+          target_field: _ingest._value.published
+          formats:
+            - ISO8601
+          on_failure:
+            - remove:
+                tag: remove_ingest_value_published_panel_evidence_summary_evidence
+                field: _ingest._value.published
+                ignore_missing: true
+  - foreach:
+      field: recordedfuture.playbook_alert.panel_evidence_summary.evidence
+      if: ctx.recordedfuture?.playbook_alert?.panel_evidence_summary?.evidence instanceof List
+      tag: foreach_panel_evidence_summary_evidence_targets
+      processor:
+        foreach:
+          field: _ingest._value.targets
+          ignore_failure: true
+          tag: foreach_ingest_value_evidence_targets
+          processor:
+            append:
+              field: related.hosts
+              tag: append_evidence_target_name_into_related_hosts
+              value: '{{{_ingest._value.name}}}'
+              allow_duplicates: false
+  - append:
+      field: related.user
+      tag: append_repository_owner_name_into_related_user
+      value: '{{{recordedfuture.playbook_alert.panel_evidence_summary.repository.owner.name}}}'
+      allow_duplicates: false
+      if: ctx.recordedfuture?.playbook_alert?.panel_evidence_summary?.repository?.owner?.name != null
   - append:
       field: threat.indicator.id
       tag: append_recordedfuture_playbook_alert_panel_evidence_summary_malware_family_id_into_threat_indicator_id_d479218e
@@ -488,6 +525,11 @@ processors:
       tag: set_rule_id_from_playbook_alert_panel_status_case_rule_id_fb2e9bd5
       copy_from: recordedfuture.playbook_alert.panel_status.case_rule_id
       ignore_empty_value: true
+  - set:
+      field: rule.name
+      tag: set_rule_name_from_playbook_alert_panel_status_alert_rule_name
+      copy_from: recordedfuture.playbook_alert.panel_status.alert_rule.name
+      ignore_empty_value: true
   - date:
       field: recordedfuture.playbook_alert.panel_status.created
       tag: date_panel_status_created_82aa043e
@@ -542,6 +584,16 @@ processors:
       value: '{{{user.name}}}'
       allow_duplicates: false
       if: ctx.user?.name != null
+  - set:
+      field: organization.name
+      tag: set_organization_name_from_playbook_alert_panel_status_organisation_name_886d2181
+      copy_from: recordedfuture.playbook_alert.panel_status.organisation_name
+      ignore_empty_value: true
+  - set:
+      field: organization.id
+      tag: set_organization_id_from_playbook_alert_panel_status_organisation_id_886d2182
+      copy_from: recordedfuture.playbook_alert.panel_status.organisation_id
+      ignore_empty_value: true
   - script:
       lang: painless
       description: Script to set event.severity.
@@ -552,7 +604,7 @@ processors:
         String name = ctx.recordedfuture.playbook_alert.panel_status.priority;
         if (name.equalsIgnoreCase("low") || name.equalsIgnoreCase("informational")) {
           ctx.event.severity = 21;
-        } else if (name.equalsIgnoreCase("medium")) {
+        } else if (name.equalsIgnoreCase("medium") || name.equalsIgnoreCase("moderate")) {
           ctx.event.severity = 47;
         } else if (name.equalsIgnoreCase("high")) {
           ctx.event.severity = 73;
@@ -624,6 +676,9 @@ processors:
         - recordedfuture.playbook_alert.panel_evidence_summary.compromised_host.os
         - recordedfuture.playbook_alert.panel_evidence_summary.malware_family.id
         - recordedfuture.playbook_alert.panel_evidence_summary.malware_family.name
+        - recordedfuture.playbook_alert.panel_status.organisation_id
+        - recordedfuture.playbook_alert.panel_status.organisation_name
+        - recordedfuture.playbook_alert.panel_status.alert_rule.name
         - recordedfuture.playbook_alert.panel_status.case_rule_id
         - recordedfuture.playbook_alert.panel_status.created
         - recordedfuture.playbook_alert.panel_status.creator_id
