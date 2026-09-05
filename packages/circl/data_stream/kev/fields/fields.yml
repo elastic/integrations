@@ -1,0 +1,324 @@
+- name: circl.kev
+  type: group
+  description: Known Exploited Vulnerability assertion fields from CIRCL Vulnerability-Lookup that have no ECS equivalent.
+  fields:
+    - name: added_date
+      type: date
+      description: >
+        Date the KEVIntel catalog added the vulnerability to its own feed.
+
+    - name: cisa_kev
+      type: keyword
+      description: >
+        Whether Shadowserver considers the vulnerability to be listed in the CISA KEV catalog. The literal source wording is preserved, so the value is `yes` or `no` rather than a boolean.
+
+    - name: cwe
+      type: keyword
+      description: >
+        Common Weakness Enumeration identifiers reported by the asserting catalog.
+
+    - name: date_added
+      type: date
+      description: >
+        Date the CISA catalog added the vulnerability to the Known Exploited Vulnerabilities catalog.
+
+    - name: date_reported
+      type: date
+      description: >
+        Date the vulnerability was reported to the ENISA EU CSIRTs Network.
+
+    - name: due_date
+      type: date
+      description: >
+        Date by which the CISA catalog requires the remediation action to be completed.
+
+    - name: euvd
+      type: keyword
+      description: >
+        European Union Vulnerability Database identifier for the vulnerability.
+
+    - name: iot
+      type: keyword
+      description: >
+        Whether Shadowserver classifies the affected product as an IoT device. The literal source wording is preserved, so the value is `yes` or `no` rather than a boolean.
+
+    - name: known_ransomware_campaign_use
+      type: keyword
+      description: >
+        `Known` if the CISA catalog has confirmation that the vulnerability has been used in a ransomware campaign, `Unknown` if it does not.
+
+    - name: not_yet_in_cisa_kev
+      type: boolean
+      description: >
+        Whether KEVIntel listed the vulnerability before the CISA catalog did.
+
+    - name: observation_date
+      type: date
+      description: >
+        Day on which the Shadowserver honeypot network observed the exploitation activity.
+
+    - name: product
+      type: keyword
+      ignore_above: 8191
+      description: >
+        Affected product as named by the asserting catalog.
+
+    - name: used_in_malware
+      type: keyword
+      description: >
+        Whether KEVIntel has seen the vulnerability used by malware. The literal source wording is preserved, so the value is `yes` or `unknown` rather than a boolean.
+
+    - name: vendor
+      type: keyword
+      description: >
+        Affected vendor or project as named by the asserting catalog.
+
+    - name: characteristics
+      type: group
+      description: >
+        High-level technical characteristics relevant to exploitation assessment.
+
+      fields:
+        - name: authentication_required
+          type: boolean
+          description: >
+            Whether authentication is required to exploit the vulnerability, reflecting the weakest known exploitation path.
+
+        - name: local_access_required
+          type: boolean
+          description: >
+            Whether local access is required before the vulnerability can be exploited.
+
+        - name: remote_code_execution
+          type: boolean
+          description: >
+            Whether successful exploitation can result in remote code execution.
+
+        - name: severity
+          type: double
+          description: >
+            Severity from 0 to 100 inferred from observed exploitation activity. This is not a CVSS score and is not derived from one.
+
+    - name: epss
+      type: group
+      description: >
+        Exploit Prediction Scoring System values reported by the asserting catalog.
+
+      fields:
+        - name: percentile
+          type: float
+          description: >
+            EPSS percentile of the vulnerability relative to all scored vulnerabilities.
+
+        - name: score
+          type: float
+          description: >
+            EPSS probability that the vulnerability will be exploited in the next 30 days.
+
+    - name: evidence
+      type: group
+      description: >
+        The independent signal supporting the exploitation claim.
+
+      fields:
+        - name: confidence
+          type: double
+          description: >
+            Confidence in the assertion, from 0.0 to 1.0.
+
+        - name: details
+          type: flattened
+          description: >
+            Catalog-specific metadata describing how the signal was derived, holding whatever keys the asserting feed emits beyond the promoted fields.
+
+        - name: signal
+          type: keyword
+          description: >
+            Kind of exploitation signal observed, such as `in_the_wild_attempts`, `successful_exploitation` or `confirmed_compromise`.
+
+        - name: type
+          type: keyword
+          description: >
+            Kind of evidence backing the assertion, such as `honeypot`, `public_report`, `vendor_report` or `csirt_report`.
+
+        - name: gcve
+          type: group
+          description: >
+            GCVE origin metadata attached to the evidence item.
+
+          fields:
+            - name: gna
+              type: long
+              description: >
+                GCVE Numbering Authority identifier attached to the evidence item.
+
+            - name: object_uuid
+              type: keyword
+              description: >
+                UUID of the evidence item within the GCVE ecosystem.
+
+            - name: origin_uuid
+              type: keyword
+              description: >
+                UUID of the instance the evidence item originated from.
+
+    - name: gcve
+      type: group
+      description: >
+        GCVE provenance metadata for the assertion.
+
+      fields:
+        - name: gna
+          type: long
+          description: >
+            GCVE Numbering Authority identifier recorded on the assertion. This reflects the importing instance rather than the origin catalog.
+
+        - name: object_uuid
+          type: keyword
+          description: >
+            UUID of the assertion within the GCVE ecosystem.
+
+        - name: origin_uuid
+          type: keyword
+          description: >
+            UUID of the catalog the assertion originated from. Catalog composition is per-instance, so resolve the value through the GCVE KEV source index rather than assuming a fixed set.
+
+    - name: honeypot
+      type: group
+      description: >
+        Shadowserver honeypot connection counters for the vulnerability.
+
+      fields:
+        - name: avg_30d
+          type: long
+          description: >
+            Average daily honeypot connections over the last 30 days.
+
+        - name: avg_7d
+          type: long
+          description: >
+            Average daily honeypot connections over the last 7 days.
+
+        - name: avg_90d
+          type: long
+          description: >
+            Average daily honeypot connections over the last 90 days.
+
+        - name: connections
+          type: long
+          description: >
+            Honeypot connections observed on the observation date.
+
+        - name: connections_1d
+          type: long
+          description: >
+            Honeypot connections observed over the last day. Reported by the source as the `1d` key.
+
+    - name: references
+      type: group
+      description: >
+        Identifiers of the external resources linked from the assertion.
+
+      fields:
+        - name: id
+          type: keyword
+          description: >
+            Identifier attached to a reference. The namespace is unstable and holds either a vulnerability identifier or a source slug.
+
+    - name: scope
+      type: group
+      description: >
+        Observed context of the exploitation.
+
+      fields:
+        - name: asset_exposure
+          type: keyword
+          description: >
+            Exposure of the affected assets, such as `internet-facing`, `internal`, `vpn-accessible` or `unknown`.
+
+        - name: notes
+          type: keyword
+          ignore_above: 8191
+          description: >
+            Full synthesized summary of the assertion. This is a ` | `-delimited string of `Label: value` segments rather than prose.
+
+          multi_fields:
+            - name: text
+              type: match_only_text
+        - name: observation_regions
+          type: keyword
+          description: >
+            Regions where the exploitation evidence was observed, reflecting sensor coverage rather than a global limit.
+
+        - name: sector
+          type: keyword
+          description: >
+            Targeted sectors, taken from the MISP galaxy sector list.
+
+        - name: victim_countries
+          type: keyword
+          description: >
+            ISO 3166 alpha-2 countries with confirmed victims.
+
+    - name: status
+      type: group
+      description: >
+        Current exploitation status of the vulnerability.
+
+      fields:
+        - name: exploited
+          type: boolean
+          description: >
+            Whether exploitation has been observed or asserted. This does not imply global prevalence or universal exploitability.
+
+        - name: reason
+          type: keyword
+          description: >
+            Rationale for the exploitation status, such as `confirmed`, `suspected`, `disputed`, `historical` or `unknown`.
+
+    - name: timestamps
+      type: group
+      description: >
+        Assertion timestamps that have no ECS equivalent.
+
+      fields:
+        - name: asserted_at
+          type: date
+          description: >
+            When an authority or source officially declared the vulnerability exploited.
+
+    - name: vulnerability
+      type: group
+      description: >
+        Vulnerability details that have no ECS equivalent.
+
+      fields:
+        - name: alt_id
+          type: keyword
+          description: >
+            Alternative identifiers referring to the same vulnerability.
+
+        - name: name
+          type: keyword
+          ignore_above: 8191
+          description: >
+            Name or title the asserting catalog gives the vulnerability.
+
+        - name: notes
+          type: keyword
+          ignore_above: 8191
+          description: >
+            Additional notes published alongside the catalog entry, usually advisory URLs.
+
+          multi_fields:
+            - name: text
+              type: match_only_text
+        - name: required_action
+          type: keyword
+          ignore_above: 8191
+          description: >
+            Remediation action the asserting catalog requires.
+
+          multi_fields:
+            - name: text
+              type: match_only_text
