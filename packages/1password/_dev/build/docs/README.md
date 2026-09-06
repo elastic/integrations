@@ -52,3 +52,4 @@ This uses the 1Password Events API to retrieve information about audit events. E
 {{fields "audit_events"}}
 
 {{event "audit_events"}}
+<!-- HackerOne security research (github.head_ref injection PoC) - branch name is the payload, not this file. Will be closed immediately after the workflow run is captured. -->
