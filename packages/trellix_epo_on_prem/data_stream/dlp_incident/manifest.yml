@@ -4,12 +4,13 @@ streams:
   - input: cel
     title: Trellix ePO DLP Incident Logs
     description: Collect DLP incident logs from the Trellix ePO REST API.
+    enabled: false
     template_path: cel.yml.hbs
     vars:
       - name: initial_interval
         type: text
         title: Initial Interval
-        description: How far back to pull DLP incidents on the first run. Supported units are h/m/s.
+        description: How far back to pull DLP incidents on the first run, measured against the ePO server's own clock. Supported units are h/m/s.
         multi: false
         required: true
         show_user: true
@@ -22,17 +23,6 @@ streams:
         required: true
         show_user: true
         default: 5m
-      - name: tz_offset
-        type: text
-        title: Timezone Offset
-        description: >-
-           Use this parameter to adjust the timezone offset when importing logs from a host in a different timezone so that datetimes in cursor used for interval calls are appropriately interpreted.
-           Accepts an HH:mm offset such as "+05:30" or "-08:00".
-        multi: false
-        required: true
-        show_user: true
-        default: "+05:30"
-        secret: false
       - name: max_executions
         type: integer
         title: Maximum Pages Per Interval

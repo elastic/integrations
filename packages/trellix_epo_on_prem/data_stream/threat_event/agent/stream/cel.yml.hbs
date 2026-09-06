@@ -110,8 +110,9 @@ program: |
           // (top N) keyset page ordered by the unique AutoID.
           "select": ['(select (top ' + string(int(state.page_size)) + ') ' + state.columns + ')'],
           "where": ['(where (gt EPOEvents.AutoID ' + state.event_auto_id + '))'],
-          "order": ["(order (asc EPOEvents.AutoID))"]
-        }.format_query() + "&:output=json"
+          "order": ["(order (asc EPOEvents.AutoID))"],
+          ":output": ["json"]
+        }.format_query()
       ).as(resp,
         resp.StatusCode == 200 ?
           string(resp.Body).trim_space().trim_prefix("OK:").decode_json().as(rows,
@@ -139,7 +140,7 @@ program: |
                   size(resp.Body) != 0 ?
                     string(resp.Body)
                   :
-                    resp.Status + ' (' + string(resp.StatusCode) + ')'
+                    resp.Status + " (" + string(resp.StatusCode) + ")"
                 )
               }
             },

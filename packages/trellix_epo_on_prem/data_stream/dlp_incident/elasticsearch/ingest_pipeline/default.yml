@@ -135,6 +135,15 @@ processors:
       copy_from: trellix_epo_on_prem.dlp_incident.UDLP_EPD_Incidents.ViolationTimezone
       ignore_empty_value: true
       tag: set_event_timezone_from_violation_timezone
+  # ePO appends the ePO server's own UTC offset to every datetime column, so this
+  # one arrives as "2026-08-17T11:48:58+05:30" even though 11:48:58 is already the
+  # UTC instant. Parsing that offset would shift the value by the server's offset.
+  - gsub:
+      field: trellix_epo_on_prem.dlp_incident.UDLP_EPD_Incidents.ViolationUTCTime
+      pattern: '[+-]\d{2}:\d{2}$'
+      replacement: 'Z'
+      ignore_missing: true
+      tag: gsub_violation_utc_time_server_offset
   - date:
       field: trellix_epo_on_prem.dlp_incident.UDLP_EPD_Incidents.ViolationUTCTime
       target_field: trellix_epo_on_prem.dlp_incident.UDLP_EPD_Incidents.ViolationUTCTime

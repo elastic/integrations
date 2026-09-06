@@ -100,7 +100,6 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
         * Set **Username** for the ePO user account with `UDLP_EPD_Incidents` query permissions.
         * Set **Password** for the ePO user account.
         * Set **Initial Interval** to the lookback period used for the first API request. The default is `24h`.
-        * Set **Timezone Offset** to the UTC offset the ePO server returns in `LastUpdateTimestamp`, as an `HH:mm` value such as `+05:30` or `-08:00`. The cursor is converted to UTC using this offset, so a mismatch causes incidents to be skipped or re-read on every poll.
         * Set **Interval** to the polling frequency. The default is `5m`.
         * Set **Page Size** to the number of DLP incident records to retrieve per API request. The default is `500`.
         * Optionally adjust **HTTP Client Timeout**, proxy, and SSL settings.
@@ -129,7 +128,6 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 * **Network connectivity issues**: Verify firewall rules allow outbound HTTPS traffic from the Elastic Agent host to the Trellix ePO server on the configured port.
 * **Missing historical incidents**: Increase **Initial Interval** so that the first DLP incident request covers the required lookback period.
 * **Missing historical threat events**: Lower **Initial Event Auto ID** so that the first request starts from an earlier `EPOEvents.AutoID`.
-* **DLP incidents skipped or repeatedly re-read**: Confirm **Timezone Offset** matches the UTC offset the ePO server returns in `LastUpdateTimestamp`.
 
 For help with Elastic ingest tools, check [Common problems](https://www.elastic.co/docs/troubleshoot/ingest/fleet/common-problems).
 
