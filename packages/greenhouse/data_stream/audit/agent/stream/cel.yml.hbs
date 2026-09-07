@@ -247,9 +247,9 @@ program: |-
                             (rr_resp.StatusCode == 200) ?
                               {"id": id, "val": rr_resp.Body.decode_json()}
                             :
-                              {"id": id}
+                              {"id": id, "error": "rejection_reason fetch failed: HTTP " + string(rr_resp.StatusCode)}
                           )
-                        ).transformMapEntry(_, r, has(r.val), {r.id: r.val})
+                        ).transformMapEntry(_, r, {r.id: has(r.val) ? r.val : {"_error": r.error}})
                       :
                         {}
                     ),
@@ -261,7 +261,7 @@ program: |-
                         ).with(pg.harvest_hdr).do_request().as(n_resp,
                           n_resp.StatusCode == 200 ?
                             n_resp.Body.decode_json().transformMapEntry(_, note, {string(int(note.id)): note.?body.orValue("")})
-                          : {}
+                          : {"_error": "notes fetch failed: HTTP " + string(n_resp.StatusCode)}
                         )
                       : {}
                     ),
@@ -335,6 +335,8 @@ program: |-
                                       "notes_text": rd.?rejection_note_id.orValue(null).as(rn_id,
                                         (rn_id != null) ? lookups.note_map[?string(int(rn_id))].orValue("") : ""
                                       ),
+                                      // Non-empty when the batch notes fetch returned non-200.
+                                      "note_error": lookups.note_map[?"_error"].orValue(""),
                                     }.as(enrich,
                                       e.with(
                                         {
@@ -346,24 +348,29 @@ program: |-
                                                   optional.none()
                                                 :
                                                   optional.of(string(int(rd.candidate_id))),
-                                                ?"reason": (enrich.reason != null) ?
+                                                ?"reason": (enrich.reason == null) ?
+                                                  // No rejection_reason_id on the record; try the legacy notes fallback.
+                                                  enrich.notes_text.startsWith("Reason: ") ?
+                                                    optional.of(
+                                                      {
+                                                        "name": enrich.notes_text.split("\n")[0].substring(8),
+                                                        "type": "",
+                                                      }
+                                                    )
+                                                  : optional.none()
+                                                : ("_error" in enrich.reason) ?
+                                                  // Reason lookup failed; surface the error so it's diagnosable.
+                                                  optional.of({"error": enrich.reason["_error"]})
+                                                :
                                                   optional.of(
                                                     {
                                                       "id": string(int(enrich.reason.id)),
                                                       "name": enrich.reason.name,
                                                       "type": enrich.reason.?type.?name.orValue(""),
                                                     }
-                                                  )
-                                                : enrich.notes_text.startsWith("Reason: ") ?
-                                                  optional.of(
-                                                    {
-                                                      "name": enrich.notes_text.split("\n")[0].substring(8),
-                                                      "type": "",
-                                                    }
-                                                  )
-                                                :
-                                                  optional.none(),
+                                                  ),
                                                 ?"notes": (enrich.notes_text == "") ? optional.none() : optional.of(enrich.notes_text),
+                                                ?"notes_error": (enrich.note_error == "") ? optional.none() : optional.of(enrich.note_error),
                                                 ?"rejected_at": rd.?rejected_at,
                                               },
                                             }
