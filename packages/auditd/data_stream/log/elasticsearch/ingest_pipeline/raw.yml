@@ -64,49 +64,75 @@ processors:
         - '%{AUDIT_PREFIX}\s*$'
         - '%{AUDIT_TYPE} %{AUDIT_KEY_VALUES}'
   - gsub:
+      tag: gsub_auditd_log_sub_kv_d17a8a4a
       field: auditd.log.sub_kv
       pattern: '(res=[a-z]+)([A-Z][A-Za-z_]+=)'
       replacement: '$1 $2'
       ignore_missing: true
       ignore_failure: true
   - gsub:
+      tag: gsub_auditd_log_kv_d66bfe3f
       field: auditd.log.kv
       pattern: '(res=[a-z]+)([A-Z][A-Za-z_]+=)'
       replacement: '$1 $2'
       ignore_missing: true
       ignore_failure: true
   - kv:
+      tag: kv_auditd_log_kv_into_auditd_log_fa7ccfa2
       if: ctx.auditd?.log?.kv != null
       field: auditd.log.kv
       field_split: '(?:\s+|\x1d)(?=[^\s\x1d]+=)'
       value_split: '(?<!\\)='
       target_field: auditd.log
   - kv:
+      tag: kv_auditd_log_sub_kv_into_auditd_log_03d79d68
       field: auditd.log.sub_kv
       field_split: '\s+(?=[^\s]+=)'
       value_split: '='
       target_field: auditd.log
       ignore_missing: true
   - kv:
+      tag: kv_auditd_log_sub_kv_enriched_into_auditd_log_d80ffcbd
       field: auditd.log.sub_kv_enriched
       field_split: '\s+(?=[^\s]+=)'
       value_split: '='
       target_field: auditd.log
       ignore_missing: true
   - date:
+      tag: date_auditd_log_epoch_into_@timestamp_459c0b1a
       field: auditd.log.epoch
       target_field: "@timestamp"
       formats:
         - UNIX
       ignore_failure: true
   - lowercase:
+      tag: lowercase_auditd_log_original_field_cf857b97
       field: auditd.log.original_field
       ignore_missing: true
   - rename:
+      tag: rename_auditd_log_old-auid_to_auditd_log_old_auid_d30b8a28
       ignore_failure: true
       field: auditd.log.old-auid
       target_field: auditd.log.old_auid
   - rename:
+      tag: rename_auditd_log_old-ses_to_auditd_log_old_ses_128f83d6
       ignore_failure: true
       field: auditd.log.old-ses
       target_field: auditd.log.old_ses
+on_failure:
+  - set:
+      tag: set_event_kind_72b1902f
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_14080786
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}' failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      tag: append_tags_279d5a5c
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
