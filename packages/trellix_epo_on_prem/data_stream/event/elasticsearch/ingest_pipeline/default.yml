@@ -1,5 +1,5 @@
 ---
-description: Parse Trellix ePO On-Premises event logs.
+description: Parse Trellix ePO On-Prem event logs.
 processors:
   - set:
       field: ecs.version
@@ -26,22 +26,6 @@ processors:
       field: event.kind
       tag: set_event_kind_event
       value: event
-  - append:
-      field: event.category
-      tag: append_event_category
-      value:
-        - intrusion_detection
-        - web
-        - file
-        - malware
-        - host
-        - authentication
-  - append:
-      field: event.type
-      tag: append_event_type
-      value:
-        - info
-        - start
   - script:
       lang: painless
       tag: normalize_mac_addresses
@@ -762,6 +746,25 @@ processors:
       field: event.action
       tag: lowercase_event_action
       ignore_missing: true
+  - split:
+      field: event.action
+      tag: split_event_action
+      separator: '_'
+      ignore_missing: true
+      if: ctx.event?.action != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - join:
+      field: event.action
+      tag: join_event_action
+      separator: '-'
+      if: ctx.event?.action != null && ctx.event.action != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: message
       tag: set_event_message
@@ -785,6 +788,119 @@ processors:
       copy_from: trellix_epo_on_prem.event.EPOEvent.SoftwareInfo.Event.EventID
       ignore_empty_value: true
       if: ctx.event?.code == null
+  - set:
+      field: event.kind
+      tag: set_event_kind_code_1278
+      value: alert
+      if: ctx.event?.code == '1278'
+  - set:
+      field: event.action
+      tag: set_event_action_code_1278
+      value: file-infected-no-cleaner-available-file-deleted-successfully
+      if: ctx.event?.code == '1278'
+  - append:
+      field: event.category
+      tag: append_event_category_code_1278
+      value:
+        - malware
+        - file
+      allow_duplicates: false
+      if: ctx.event?.code == '1278'
+  - append:
+      field: event.type
+      tag: append_event_type_code_1278
+      value:
+        - deletion
+      allow_duplicates: false
+      if: ctx.event?.code == '1278'
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_code_1278
+      value: success
+      if: ctx.event?.code == '1278'
+  - set:
+      field: event.severity
+      tag: set_event_severity_code_1278
+      value: 47
+      if: ctx.event?.code == '1278'
+  - set:
+      field: event.kind
+      tag: set_event_kind_code_1027
+      value: event
+      if: ctx.event?.code == '1027'
+  - set:
+      field: event.action
+      tag: set_event_action_code_1027
+      value: infected-file-deleted
+      if: ctx.event?.code == '1027'
+  - append:
+      field: event.category
+      tag: append_event_category_code_1027
+      value:
+        - malware
+        - file
+      allow_duplicates: false
+      if: ctx.event?.code == '1027'
+  - append:
+      field: event.type
+      tag: append_event_type_code_1027
+      value:
+        - deletion
+      allow_duplicates: false
+      if: ctx.event?.code == '1027'
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_code_1027
+      value: success
+      if: ctx.event?.code == '1027'
+  - set:
+      field: event.severity
+      tag: set_event_severity_code_1027
+      value: 47
+      if: ctx.event?.code == '1027'
+  - set:
+      field: _temp.threat_handled
+      tag: set_temp_threat_handled
+      copy_from: trellix_epo_on_prem.event.EPOEvent.ThreatHandled
+      ignore_empty_value: true
+  - set:
+      field: _temp.threat_handled
+      tag: set_temp_threat_handled_tvd
+      copy_from: trellix_epo_on_prem.event.EPOEvent.SoftwareInfo.Event.CommonFields.ThreatHandled
+      ignore_empty_value: true
+      if: ctx._temp?.threat_handled == null
+  - convert:
+      field: _temp.threat_handled
+      tag: convert_temp_threat_handled_to_string
+      type: string
+      if: ctx._temp?.threat_handled != ''
+      ignore_missing: true
+  - lowercase:
+      field: _temp.threat_handled
+      tag: lowercase_temp_threat_handled
+      ignore_missing: true
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_threat_handled_success
+      value: success
+      if: ctx.event?.outcome == null && (ctx._temp?.threat_handled == 'true' || ctx._temp?.threat_handled == '1')
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_threat_handled_failure
+      value: failure
+      if: ctx.event?.outcome == null && (ctx._temp?.threat_handled == 'false' || ctx._temp?.threat_handled == '0')
+  - set:
+      field: event.severity
+      tag: set_event_severity_threat_severity
+      copy_from: trellix_epo_on_prem.event.EPOEvent.ThreatSeverity
+      ignore_empty_value: true
+      if: ctx.event?.severity == null
+  - set:
+      field: event.severity
+      tag: set_event_severity_tvd_threat_severity
+      copy_from: trellix_epo_on_prem.event.EPOEvent.SoftwareInfo.Event.CommonFields.ThreatSeverity
+      ignore_empty_value: true
+      if: ctx.event?.severity == null
   - set:
       field: file.name
       tag: set_file_name_target
@@ -932,11 +1048,29 @@ processors:
       copy_from: trellix_epo_on_prem.event.EPOEvent.SourceFilePath
       ignore_empty_value: true
   - set:
-      field: file.path
-      tag: set_file_path_tvd
+      field: registry.path
+      tag: set_registry_path_target_path
+      copy_from: trellix_epo_on_prem.event.EPOEvent.TargetPath
+      ignore_empty_value: true
+      if: ctx.trellix_epo_on_prem?.event?.EPOEvent?.TargetPath != null && ctx.trellix_epo_on_prem.event.EPOEvent.TargetPath.startsWith('HK')
+  - set:
+      field: file.directory
+      tag: set_file_directory_target_path
+      copy_from: trellix_epo_on_prem.event.EPOEvent.TargetPath
+      ignore_empty_value: true
+      if: ctx.trellix_epo_on_prem?.event?.EPOEvent?.TargetPath != null && !ctx.trellix_epo_on_prem.event.EPOEvent.TargetPath.startsWith('HK')
+  - set:
+      field: registry.path
+      tag: set_registry_path_tvd_target_path
       copy_from: trellix_epo_on_prem.event.EPOEvent.SoftwareInfo.Event.CustomFields.TargetPath
       ignore_empty_value: true
-      if: ctx.file?.path == null
+      if: ctx.registry?.path == null && ctx.trellix_epo_on_prem?.event?.EPOEvent?.SoftwareInfo?.Event?.CustomFields?.TargetPath != null && ctx.trellix_epo_on_prem.event.EPOEvent.SoftwareInfo.Event.CustomFields.TargetPath.startsWith('HK')
+  - set:
+      field: file.directory
+      tag: set_file_directory_tvd_target_path
+      copy_from: trellix_epo_on_prem.event.EPOEvent.SoftwareInfo.Event.CustomFields.TargetPath
+      ignore_empty_value: true
+      if: ctx.file?.directory == null && ctx.trellix_epo_on_prem?.event?.EPOEvent?.SoftwareInfo?.Event?.CustomFields?.TargetPath != null && !ctx.trellix_epo_on_prem.event.EPOEvent.SoftwareInfo.Event.CustomFields.TargetPath.startsWith('HK')
   - set:
       field: file.size
       tag: set_file_size_target
@@ -1386,6 +1520,7 @@ processors:
       tag: remove_custom_fields_mapped_to_ecs
       ignore_missing: true
       field:
+        - _temp
         - trellix_epo_on_prem.event.EPOEvent.SourceUserName
         - trellix_epo_on_prem.event.EPOEvent.TargetUserName
         - trellix_epo_on_prem.event.EPOEvent.MachineInfo.UserName

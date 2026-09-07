@@ -101,98 +101,98 @@ The `event` data stream provides Trellix ePO On-Premises event logs.
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
 | observer.product | The product name of the observer. | constant_keyword |
 | observer.vendor | Vendor name of the observer. | constant_keyword |
-| trellix_epo_on_prem.event.EPOEvent.APIName | Inferred: API name reported in the 'EPOEvent' source section. | keyword |
-| trellix_epo_on_prem.event.EPOEvent.AccessRequested | Inferred: Access requested reported in the 'EPOEvent' source section. | keyword |
-| trellix_epo_on_prem.event.EPOEvent.ActionID | Inferred: Action id reported in the 'EPOEvent' source section. | keyword |
-| trellix_epo_on_prem.event.EPOEvent.AgentGUID | Inferred: Agent GUID reported in the 'EPOEvent.MachineInfo' source section. | keyword |
-| trellix_epo_on_prem.event.EPOEvent.Analyzer | Inferred: Analyzer reported in the 'EPOEvent.SoftwareInfo.CommonFields' source section. | keyword |
-| trellix_epo_on_prem.event.EPOEvent.AnalyzerDATVersion | Inferred: Analyzer DAT version reported in the 'EPOEvent.SoftwareInfo.CommonFields' source section. | keyword |
-| trellix_epo_on_prem.event.EPOEvent.AnalyzerDetectionMethod | Inferred: Analyzer detection method reported in the 'EPOEvent.SoftwareInfo.CommonFields' source section. | keyword |
-| trellix_epo_on_prem.event.EPOEvent.AnalyzerEngineVersion | Inferred: Analyzer engine version reported in the 'EPOEvent.SoftwareInfo.CommonFields' source section. | keyword |
-| trellix_epo_on_prem.event.EPOEvent.AnalyzerGTIQuery | Inferred: Analyzer GTI query reported in the 'EPOEvent' source section. | keyword |
-| trellix_epo_on_prem.event.EPOEvent.AnalyzerName | Inferred: Analyzer name reported in the 'EPOEvent.SoftwareInfo.CommonFields' source section. | keyword |
-| trellix_epo_on_prem.event.EPOEvent.AnalyzerVersion | Inferred: Analyzer version reported in the 'EPOEvent.SoftwareInfo.CommonFields' source section. | keyword |
-| trellix_epo_on_prem.event.EPOEvent.AttackVectorType | Inferred: Attack vector type reported in the 'EPOEvent' source section. | keyword |
-| trellix_epo_on_prem.event.EPOEvent.BadLinkRatingID | Inferred: Bad link rating id reported in the 'EPOEvent' source section. | keyword |
-| trellix_epo_on_prem.event.EPOEvent.BladeName | Inferred: Blade name reported in the 'EPOEvent.SoftwareInfo.Event.CustomFields' source section. | keyword |
-| trellix_epo_on_prem.event.EPOEvent.Cleanable | Inferred: Cleanable reported in the 'EPOEvent' source section. | long |
-| trellix_epo_on_prem.event.EPOEvent.ContentFuncGroup | Inferred: Content func group reported in the 'EPOEvent' source section. | keyword |
-| trellix_epo_on_prem.event.EPOEvent.ContentName | Inferred: Content name reported in the 'EPOEvent' source section. | keyword |
-| trellix_epo_on_prem.event.EPOEvent.ContentRiskGroup | Inferred: Content risk group reported in the 'EPOEvent' source section. | keyword |
-| trellix_epo_on_prem.event.EPOEvent.Count | Inferred: Count reported in the 'EPOEvent' source section. | long |
-| trellix_epo_on_prem.event.EPOEvent.DAT_Version | Inferred: DAT version reported in the 'EPOEvent' source section. | keyword |
-| trellix_epo_on_prem.event.EPOEvent.DetectedUTC | Inferred: Detected UTC reported in the 'EPOEvent.SoftwareInfo.Event.CommonFields' source section. | date |
-| trellix_epo_on_prem.event.EPOEvent.DetectionMethod | Inferred: Detection method reported in the 'EPOEvent' source section. | keyword |
-| trellix_epo_on_prem.event.EPOEvent.DownloadRatingID | Inferred: Download rating id reported in the 'EPOEvent' source section. | keyword |
-| trellix_epo_on_prem.event.EPOEvent.DurationBeforeDetection | Inferred: Duration before detection reported in the 'EPOEvent' source section. | long |
-| trellix_epo_on_prem.event.EPOEvent.EventType | Inferred: Event type reported in the 'EPOEvent' source section. | keyword |
-| trellix_epo_on_prem.event.EPOEvent.ExploitRatingID | Inferred: Exploit rating id reported in the 'EPOEvent' source section. | keyword |
-| trellix_epo_on_prem.event.EPOEvent.FirstActionStatus | Inferred: First action status reported in the 'EPOEvent' source section. | keyword |
-| trellix_epo_on_prem.event.EPOEvent.FirstAttemptedAction | Inferred: First attempted action reported in the 'EPOEvent' source section. | keyword |
-| trellix_epo_on_prem.event.EPOEvent.Hostname | Inferred: Hostname reported in the 'EPOEvent' source section. | keyword |
-| trellix_epo_on_prem.event.EPOEvent.ListID | Inferred: List id reported in the 'EPOEvent' source section. | keyword |
-| trellix_epo_on_prem.event.EPOEvent.ListType | Inferred: List type reported in the 'EPOEvent' source section. | keyword |
-| trellix_epo_on_prem.event.EPOEvent.MachineInfo.AgentGUID | Inferred: Agent GUID reported in the 'EPOEvent.MachineInfo' source section. | keyword |
-| trellix_epo_on_prem.event.EPOEvent.MachineInfo.TimeZoneBias | Inferred: Time zone bias reported in the 'EPOEvent.MachineInfo' source section. | long |
-| trellix_epo_on_prem.event.EPOEvent.ObserverMode | Inferred: Observer mode reported in the 'EPOEvent' source section. | keyword |
-| trellix_epo_on_prem.event.EPOEvent.PhishingRatingID | Inferred: Phishing rating id reported in the 'EPOEvent' source section. | keyword |
-| trellix_epo_on_prem.event.EPOEvent.PopupRatingID | Inferred: Popup rating id reported in the 'EPOEvent' source section. | keyword |
-| trellix_epo_on_prem.event.EPOEvent.Priority | Inferred: Priority reported in the 'EPOEvent' source section. | long |
-| trellix_epo_on_prem.event.EPOEvent.ProductFamily | Inferred: Product family reported in the 'EPOEvent.SoftwareInfo' source section. | keyword |
-| trellix_epo_on_prem.event.EPOEvent.Rating | Inferred: Rating reported in the 'EPOEvent' source section. | keyword |
-| trellix_epo_on_prem.event.EPOEvent.ReasonID | Inferred: Reason id reported in the 'EPOEvent' source section. | keyword |
-| trellix_epo_on_prem.event.EPOEvent.ReasonType | Inferred: Reason type reported in the 'EPOEvent' source section. | keyword |
-| trellix_epo_on_prem.event.EPOEvent.RegistryValue | Inferred: Registry value reported in the 'EPOEvent' source section. | keyword |
-| trellix_epo_on_prem.event.EPOEvent.SecondActionStatus | Inferred: Second action status reported in the 'EPOEvent' source section. | keyword |
-| trellix_epo_on_prem.event.EPOEvent.SecondAttemptedAction | Inferred: Second attempted action reported in the 'EPOEvent' source section. | keyword |
-| trellix_epo_on_prem.event.EPOEvent.ServerID | Inferred: Server id reported in the 'EPOEvent' source section. | keyword |
-| trellix_epo_on_prem.event.EPOEvent.SignatureName | Inferred: Signature name reported in the 'EPOEvent' source section. | keyword |
-| trellix_epo_on_prem.event.EPOEvent.SiteName | Inferred: Site name reported in the 'EPOEvent' source section. | keyword |
-| trellix_epo_on_prem.event.EPOEvent.SoftwareInfo.CommonFields.Analyzer | Inferred: Analyzer reported in the 'EPOEvent.SoftwareInfo.CommonFields' source section. | keyword |
-| trellix_epo_on_prem.event.EPOEvent.SoftwareInfo.CommonFields.AnalyzerDATVersion | Inferred: Analyzer DAT version reported in the 'EPOEvent.SoftwareInfo.CommonFields' source section. | keyword |
-| trellix_epo_on_prem.event.EPOEvent.SoftwareInfo.CommonFields.AnalyzerDetectionMethod | Inferred: Analyzer detection method reported in the 'EPOEvent.SoftwareInfo.CommonFields' source section. | keyword |
-| trellix_epo_on_prem.event.EPOEvent.SoftwareInfo.CommonFields.AnalyzerEngineVersion | Inferred: Analyzer engine version reported in the 'EPOEvent.SoftwareInfo.CommonFields' source section. | keyword |
-| trellix_epo_on_prem.event.EPOEvent.SoftwareInfo.CommonFields.AnalyzerName | Inferred: Analyzer name reported in the 'EPOEvent.SoftwareInfo.CommonFields' source section. | keyword |
-| trellix_epo_on_prem.event.EPOEvent.SoftwareInfo.CommonFields.AnalyzerVersion | Inferred: Analyzer version reported in the 'EPOEvent.SoftwareInfo.CommonFields' source section. | keyword |
-| trellix_epo_on_prem.event.EPOEvent.SoftwareInfo.Event.CommonFields.DetectedUTC | Inferred: Detected UTC reported in the 'EPOEvent.SoftwareInfo.Event.CommonFields' source section. | date |
-| trellix_epo_on_prem.event.EPOEvent.SoftwareInfo.Event.CommonFields.ThreatEventID | Inferred: Threat event id reported in the 'EPOEvent.SoftwareInfo.Event.CommonFields' source section. | keyword |
-| trellix_epo_on_prem.event.EPOEvent.SoftwareInfo.Event.CommonFields.ThreatHandled | Inferred: Threat handled reported in the 'EPOEvent.SoftwareInfo.Event.CommonFields' source section. | boolean |
-| trellix_epo_on_prem.event.EPOEvent.SoftwareInfo.Event.CommonFields.ThreatSeverity | Inferred: Threat severity reported in the 'EPOEvent.SoftwareInfo.Event.CommonFields' source section. | long |
-| trellix_epo_on_prem.event.EPOEvent.SoftwareInfo.Event.CommonFields.ThreatType | Inferred: Threat type reported in the 'EPOEvent.SoftwareInfo.Event.CommonFields' source section. | keyword |
-| trellix_epo_on_prem.event.EPOEvent.SoftwareInfo.Event.CustomFields.AnalyzerContentCreationDate | Inferred: Analyzer content creation date reported in the 'EPOEvent.SoftwareInfo.Event.CustomFields' source section. | date |
-| trellix_epo_on_prem.event.EPOEvent.SoftwareInfo.Event.CustomFields.BladeName | Inferred: Blade name reported in the 'EPOEvent.SoftwareInfo.Event.CustomFields' source section. | keyword |
-| trellix_epo_on_prem.event.EPOEvent.SoftwareInfo.Event.CustomFields.ThreatDetectedOnCreation | Inferred: Threat detected on creation reported in the 'EPOEvent.SoftwareInfo.Event.CustomFields' source section. | boolean |
-| trellix_epo_on_prem.event.EPOEvent.SoftwareInfo.Event.CustomFields.target | Inferred: Target reported in the 'EPOEvent.SoftwareInfo.Event.CustomFields' source section. | keyword |
-| trellix_epo_on_prem.event.EPOEvent.SoftwareInfo.Event.GMTTime | Inferred: GMT time reported in the 'EPOEvent.SoftwareInfo.Event' source section. | date |
-| trellix_epo_on_prem.event.EPOEvent.SoftwareInfo.Event.Severity | Inferred: Severity reported in the 'EPOEvent.SoftwareInfo.Event' source section. | long |
-| trellix_epo_on_prem.event.EPOEvent.SoftwareInfo.ProductFamily | Inferred: Product family reported in the 'EPOEvent.SoftwareInfo' source section. | keyword |
-| trellix_epo_on_prem.event.EPOEvent.SoftwareInfo.ProductName | Inferred: Product name reported in the 'EPOEvent.SoftwareInfo' source section. | keyword |
-| trellix_epo_on_prem.event.EPOEvent.SoftwareInfo.ProductVersion | Inferred: Product version reported in the 'EPOEvent.SoftwareInfo' source section. | keyword |
-| trellix_epo_on_prem.event.EPOEvent.SourceFileSize | Inferred: Source file size reported in the 'EPOEvent' source section. | double |
-| trellix_epo_on_prem.event.EPOEvent.SourceProcessName | Inferred: Source process name reported in the 'EPOEvent.SoftwareInfo.Event.CommonFields' source section. | keyword |
-| trellix_epo_on_prem.event.EPOEvent.SpamRatingID | Inferred: Spam rating id reported in the 'EPOEvent' source section. | keyword |
-| trellix_epo_on_prem.event.EPOEvent.Success | Inferred: Success reported in the 'EPOEvent' source section. | long |
-| trellix_epo_on_prem.event.EPOEvent.TVDSeverity | Inferred: TVD severity reported in the 'EPOEvent' source section. | long |
-| trellix_epo_on_prem.event.EPOEvent.TargetName | Inferred: Target name reported in the 'EPOEvent.SoftwareInfo.Event.CustomFields' source section. | keyword |
-| trellix_epo_on_prem.event.EPOEvent.TargetPath | Inferred: Target path reported in the 'EPOEvent.SoftwareInfo.Event.CustomFields' source section. | keyword |
-| trellix_epo_on_prem.event.EPOEvent.TaskName | Inferred: Task name reported in the 'EPOEvent' source section. | keyword |
-| trellix_epo_on_prem.event.EPOEvent.ThreatDetectedOnCreation | Inferred: Threat detected on creation reported in the 'EPOEvent.SoftwareInfo.Event.CustomFields' source section. | keyword |
-| trellix_epo_on_prem.event.EPOEvent.ThreatHandled | Inferred: Threat handled reported in the 'EPOEvent.SoftwareInfo.Event.CommonFields' source section. | keyword |
-| trellix_epo_on_prem.event.EPOEvent.ThreatSeverity | Inferred: Threat severity reported in the 'EPOEvent.SoftwareInfo.Event.CommonFields' source section. | long |
-| trellix_epo_on_prem.event.EPOEvent.ThreatType | Inferred: Threat type reported in the 'EPOEvent.SoftwareInfo.Event.CommonFields' source section. | keyword |
-| trellix_epo_on_prem.event.EPOEvent.USBSerialNumber | Inferred: USB serial number reported in the 'EPOEvent' source section. | keyword |
-| trellix_epo_on_prem.event.EPOEvent.Vendor | Inferred: Vendor reported in the 'EPOEvent' source section. | keyword |
-| trellix_epo_on_prem.event.EPOEvent.Version | Inferred: Version reported in the 'EPOEvent' source section. | keyword |
-| trellix_epo_on_prem.event.EPOEvent.agentGuid | Inferred: Agent GUID reported in the 'EPOEvent' source section. | keyword |
-| trellix_epo_on_prem.event.EPOEvent.detectionTime | Inferred: Detection time recorded for the file reputation event. | date |
-| trellix_epo_on_prem.event.EPOEvent.jtiObjectType | Inferred: JTI object type reported in the 'EPOEvent' source section. | keyword |
-| trellix_epo_on_prem.event.EPOEvent.jtiReputation | Inferred: JTI reputation reported in the 'EPOEvent' source section. | keyword |
-| trellix_epo_on_prem.event.EPOEvent.localReputation | Inferred: Local reputation reported in the 'EPOEvent' source section. | keyword |
-| trellix_epo_on_prem.event.EPOEvent.newReputations.trustLevel | Inferred: Trust level reported in the 'EPOEvent.newReputations' source section. | keyword |
-| trellix_epo_on_prem.event.EPOEvent.oldReputations.trustLevel | Inferred: Trust level reported in the 'EPOEvent.newReputations' source section. | keyword |
-| trellix_epo_on_prem.event.EPOEvent.remediationAction | Inferred: Remediation action reported in the 'EPOEvent' source section. | keyword |
-| trellix_epo_on_prem.event.EPOEvent.siem_last_time | Inferred: Siem last time reported in the 'EPOEvent' source section. | date |
-| trellix_epo_on_prem.event.EPOEvent.wpRating | Inferred: Wp rating reported in the 'EPOEvent' source section. | keyword |
+| trellix_epo_on_prem.event.EPOEvent.APIName | API name reported in the 'EPOEvent' source section. | keyword |
+| trellix_epo_on_prem.event.EPOEvent.AccessRequested | Access requested reported in the 'EPOEvent' source section. | keyword |
+| trellix_epo_on_prem.event.EPOEvent.ActionID | Action id reported in the 'EPOEvent' source section. | keyword |
+| trellix_epo_on_prem.event.EPOEvent.AgentGUID | Agent GUID reported in the 'EPOEvent.MachineInfo' source section. | keyword |
+| trellix_epo_on_prem.event.EPOEvent.Analyzer | Analyzer reported in the 'EPOEvent.SoftwareInfo.CommonFields' source section. | keyword |
+| trellix_epo_on_prem.event.EPOEvent.AnalyzerDATVersion | Analyzer DAT version reported in the 'EPOEvent.SoftwareInfo.CommonFields' source section. | keyword |
+| trellix_epo_on_prem.event.EPOEvent.AnalyzerDetectionMethod | Analyzer detection method reported in the 'EPOEvent.SoftwareInfo.CommonFields' source section. | keyword |
+| trellix_epo_on_prem.event.EPOEvent.AnalyzerEngineVersion | Analyzer engine version reported in the 'EPOEvent.SoftwareInfo.CommonFields' source section. | keyword |
+| trellix_epo_on_prem.event.EPOEvent.AnalyzerGTIQuery | Analyzer GTI query reported in the 'EPOEvent' source section. | keyword |
+| trellix_epo_on_prem.event.EPOEvent.AnalyzerName | Analyzer name reported in the 'EPOEvent.SoftwareInfo.CommonFields' source section. | keyword |
+| trellix_epo_on_prem.event.EPOEvent.AnalyzerVersion | Analyzer version reported in the 'EPOEvent.SoftwareInfo.CommonFields' source section. | keyword |
+| trellix_epo_on_prem.event.EPOEvent.AttackVectorType | Attack vector type reported in the 'EPOEvent' source section. | keyword |
+| trellix_epo_on_prem.event.EPOEvent.BadLinkRatingID | Bad link rating id reported in the 'EPOEvent' source section. | keyword |
+| trellix_epo_on_prem.event.EPOEvent.BladeName | Blade name reported in the 'EPOEvent.SoftwareInfo.Event.CustomFields' source section. | keyword |
+| trellix_epo_on_prem.event.EPOEvent.Cleanable | Cleanable reported in the 'EPOEvent' source section. | long |
+| trellix_epo_on_prem.event.EPOEvent.ContentFuncGroup | Content func group reported in the 'EPOEvent' source section. | keyword |
+| trellix_epo_on_prem.event.EPOEvent.ContentName | Content name reported in the 'EPOEvent' source section. | keyword |
+| trellix_epo_on_prem.event.EPOEvent.ContentRiskGroup | Content risk group reported in the 'EPOEvent' source section. | keyword |
+| trellix_epo_on_prem.event.EPOEvent.Count | Count reported in the 'EPOEvent' source section. | long |
+| trellix_epo_on_prem.event.EPOEvent.DAT_Version | DAT version reported in the 'EPOEvent' source section. | keyword |
+| trellix_epo_on_prem.event.EPOEvent.DetectedUTC | Detected UTC reported in the 'EPOEvent.SoftwareInfo.Event.CommonFields' source section. | date |
+| trellix_epo_on_prem.event.EPOEvent.DetectionMethod | Detection method reported in the 'EPOEvent' source section. | keyword |
+| trellix_epo_on_prem.event.EPOEvent.DownloadRatingID | Download rating id reported in the 'EPOEvent' source section. | keyword |
+| trellix_epo_on_prem.event.EPOEvent.DurationBeforeDetection | Duration before detection reported in the 'EPOEvent' source section. | long |
+| trellix_epo_on_prem.event.EPOEvent.EventType | Event type reported in the 'EPOEvent' source section. | keyword |
+| trellix_epo_on_prem.event.EPOEvent.ExploitRatingID | Exploit rating id reported in the 'EPOEvent' source section. | keyword |
+| trellix_epo_on_prem.event.EPOEvent.FirstActionStatus | First action status reported in the 'EPOEvent' source section. | keyword |
+| trellix_epo_on_prem.event.EPOEvent.FirstAttemptedAction | First attempted action reported in the 'EPOEvent' source section. | keyword |
+| trellix_epo_on_prem.event.EPOEvent.Hostname | Hostname reported in the 'EPOEvent' source section. | keyword |
+| trellix_epo_on_prem.event.EPOEvent.ListID | List id reported in the 'EPOEvent' source section. | keyword |
+| trellix_epo_on_prem.event.EPOEvent.ListType | List type reported in the 'EPOEvent' source section. | keyword |
+| trellix_epo_on_prem.event.EPOEvent.MachineInfo.AgentGUID | Agent GUID reported in the 'EPOEvent.MachineInfo' source section. | keyword |
+| trellix_epo_on_prem.event.EPOEvent.MachineInfo.TimeZoneBias | Time zone bias reported in the 'EPOEvent.MachineInfo' source section. | long |
+| trellix_epo_on_prem.event.EPOEvent.ObserverMode | Observer mode reported in the 'EPOEvent' source section. | keyword |
+| trellix_epo_on_prem.event.EPOEvent.PhishingRatingID | Phishing rating id reported in the 'EPOEvent' source section. | keyword |
+| trellix_epo_on_prem.event.EPOEvent.PopupRatingID | Popup rating id reported in the 'EPOEvent' source section. | keyword |
+| trellix_epo_on_prem.event.EPOEvent.Priority | Priority reported in the 'EPOEvent' source section. | long |
+| trellix_epo_on_prem.event.EPOEvent.ProductFamily | Product family reported in the 'EPOEvent.SoftwareInfo' source section. | keyword |
+| trellix_epo_on_prem.event.EPOEvent.Rating | Rating reported in the 'EPOEvent' source section. | keyword |
+| trellix_epo_on_prem.event.EPOEvent.ReasonID | Reason id reported in the 'EPOEvent' source section. | keyword |
+| trellix_epo_on_prem.event.EPOEvent.ReasonType | Reason type reported in the 'EPOEvent' source section. | keyword |
+| trellix_epo_on_prem.event.EPOEvent.RegistryValue | Registry value reported in the 'EPOEvent' source section. | keyword |
+| trellix_epo_on_prem.event.EPOEvent.SecondActionStatus | Second action status reported in the 'EPOEvent' source section. | keyword |
+| trellix_epo_on_prem.event.EPOEvent.SecondAttemptedAction | Second attempted action reported in the 'EPOEvent' source section. | keyword |
+| trellix_epo_on_prem.event.EPOEvent.ServerID | Server id reported in the 'EPOEvent' source section. | keyword |
+| trellix_epo_on_prem.event.EPOEvent.SignatureName | Signature name reported in the 'EPOEvent' source section. | keyword |
+| trellix_epo_on_prem.event.EPOEvent.SiteName | Site name reported in the 'EPOEvent' source section. | keyword |
+| trellix_epo_on_prem.event.EPOEvent.SoftwareInfo.CommonFields.Analyzer | Analyzer reported in the 'EPOEvent.SoftwareInfo.CommonFields' source section. | keyword |
+| trellix_epo_on_prem.event.EPOEvent.SoftwareInfo.CommonFields.AnalyzerDATVersion | Analyzer DAT version reported in the 'EPOEvent.SoftwareInfo.CommonFields' source section. | keyword |
+| trellix_epo_on_prem.event.EPOEvent.SoftwareInfo.CommonFields.AnalyzerDetectionMethod | Analyzer detection method reported in the 'EPOEvent.SoftwareInfo.CommonFields' source section. | keyword |
+| trellix_epo_on_prem.event.EPOEvent.SoftwareInfo.CommonFields.AnalyzerEngineVersion | Analyzer engine version reported in the 'EPOEvent.SoftwareInfo.CommonFields' source section. | keyword |
+| trellix_epo_on_prem.event.EPOEvent.SoftwareInfo.CommonFields.AnalyzerName | Analyzer name reported in the 'EPOEvent.SoftwareInfo.CommonFields' source section. | keyword |
+| trellix_epo_on_prem.event.EPOEvent.SoftwareInfo.CommonFields.AnalyzerVersion | Analyzer version reported in the 'EPOEvent.SoftwareInfo.CommonFields' source section. | keyword |
+| trellix_epo_on_prem.event.EPOEvent.SoftwareInfo.Event.CommonFields.DetectedUTC | Detected UTC reported in the 'EPOEvent.SoftwareInfo.Event.CommonFields' source section. | date |
+| trellix_epo_on_prem.event.EPOEvent.SoftwareInfo.Event.CommonFields.ThreatEventID | Threat event id reported in the 'EPOEvent.SoftwareInfo.Event.CommonFields' source section. | keyword |
+| trellix_epo_on_prem.event.EPOEvent.SoftwareInfo.Event.CommonFields.ThreatHandled | Threat handled reported in the 'EPOEvent.SoftwareInfo.Event.CommonFields' source section. | boolean |
+| trellix_epo_on_prem.event.EPOEvent.SoftwareInfo.Event.CommonFields.ThreatSeverity | Threat severity reported in the 'EPOEvent.SoftwareInfo.Event.CommonFields' source section. | long |
+| trellix_epo_on_prem.event.EPOEvent.SoftwareInfo.Event.CommonFields.ThreatType | Threat type reported in the 'EPOEvent.SoftwareInfo.Event.CommonFields' source section. | keyword |
+| trellix_epo_on_prem.event.EPOEvent.SoftwareInfo.Event.CustomFields.AnalyzerContentCreationDate | Analyzer content creation date reported in the 'EPOEvent.SoftwareInfo.Event.CustomFields' source section. | date |
+| trellix_epo_on_prem.event.EPOEvent.SoftwareInfo.Event.CustomFields.BladeName | Blade name reported in the 'EPOEvent.SoftwareInfo.Event.CustomFields' source section. | keyword |
+| trellix_epo_on_prem.event.EPOEvent.SoftwareInfo.Event.CustomFields.ThreatDetectedOnCreation | Threat detected on creation reported in the 'EPOEvent.SoftwareInfo.Event.CustomFields' source section. | boolean |
+| trellix_epo_on_prem.event.EPOEvent.SoftwareInfo.Event.CustomFields.target | Target reported in the 'EPOEvent.SoftwareInfo.Event.CustomFields' source section. | keyword |
+| trellix_epo_on_prem.event.EPOEvent.SoftwareInfo.Event.GMTTime | GMT time reported in the 'EPOEvent.SoftwareInfo.Event' source section. | date |
+| trellix_epo_on_prem.event.EPOEvent.SoftwareInfo.Event.Severity | Severity reported in the 'EPOEvent.SoftwareInfo.Event' source section. | long |
+| trellix_epo_on_prem.event.EPOEvent.SoftwareInfo.ProductFamily | Product family reported in the 'EPOEvent.SoftwareInfo' source section. | keyword |
+| trellix_epo_on_prem.event.EPOEvent.SoftwareInfo.ProductName | Product name reported in the 'EPOEvent.SoftwareInfo' source section. | keyword |
+| trellix_epo_on_prem.event.EPOEvent.SoftwareInfo.ProductVersion | Product version reported in the 'EPOEvent.SoftwareInfo' source section. | keyword |
+| trellix_epo_on_prem.event.EPOEvent.SourceFileSize | Source file size reported in the 'EPOEvent' source section. | double |
+| trellix_epo_on_prem.event.EPOEvent.SourceProcessName | Source process name reported in the 'EPOEvent.SoftwareInfo.Event.CommonFields' source section. | keyword |
+| trellix_epo_on_prem.event.EPOEvent.SpamRatingID | Spam rating id reported in the 'EPOEvent' source section. | keyword |
+| trellix_epo_on_prem.event.EPOEvent.Success | Success reported in the 'EPOEvent' source section. | long |
+| trellix_epo_on_prem.event.EPOEvent.TVDSeverity | TVD severity reported in the 'EPOEvent' source section. | long |
+| trellix_epo_on_prem.event.EPOEvent.TargetName | Target name reported in the 'EPOEvent.SoftwareInfo.Event.CustomFields' source section. | keyword |
+| trellix_epo_on_prem.event.EPOEvent.TargetPath | Target path reported in the 'EPOEvent.SoftwareInfo.Event.CustomFields' source section. | keyword |
+| trellix_epo_on_prem.event.EPOEvent.TaskName | Task name reported in the 'EPOEvent' source section. | keyword |
+| trellix_epo_on_prem.event.EPOEvent.ThreatDetectedOnCreation | Threat detected on creation reported in the 'EPOEvent.SoftwareInfo.Event.CustomFields' source section. | keyword |
+| trellix_epo_on_prem.event.EPOEvent.ThreatHandled | Threat handled reported in the 'EPOEvent.SoftwareInfo.Event.CommonFields' source section. | keyword |
+| trellix_epo_on_prem.event.EPOEvent.ThreatSeverity | Threat severity reported in the 'EPOEvent.SoftwareInfo.Event.CommonFields' source section. | long |
+| trellix_epo_on_prem.event.EPOEvent.ThreatType | Threat type reported in the 'EPOEvent.SoftwareInfo.Event.CommonFields' source section. | keyword |
+| trellix_epo_on_prem.event.EPOEvent.USBSerialNumber | USB serial number reported in the 'EPOEvent' source section. | keyword |
+| trellix_epo_on_prem.event.EPOEvent.Vendor | Vendor reported in the 'EPOEvent' source section. | keyword |
+| trellix_epo_on_prem.event.EPOEvent.Version | Version reported in the 'EPOEvent' source section. | keyword |
+| trellix_epo_on_prem.event.EPOEvent.agentGuid | Agent GUID reported in the 'EPOEvent' source section. | keyword |
+| trellix_epo_on_prem.event.EPOEvent.detectionTime | Detection time recorded for the file reputation event. | date |
+| trellix_epo_on_prem.event.EPOEvent.jtiObjectType | JTI object type reported in the 'EPOEvent' source section. | keyword |
+| trellix_epo_on_prem.event.EPOEvent.jtiReputation | JTI reputation reported in the 'EPOEvent' source section. | keyword |
+| trellix_epo_on_prem.event.EPOEvent.localReputation | Local reputation reported in the 'EPOEvent' source section. | keyword |
+| trellix_epo_on_prem.event.EPOEvent.newReputations.trustLevel | Trust level reported in the 'EPOEvent.newReputations' source section. | keyword |
+| trellix_epo_on_prem.event.EPOEvent.oldReputations.trustLevel | Trust level reported in the 'EPOEvent.newReputations' source section. | keyword |
+| trellix_epo_on_prem.event.EPOEvent.remediationAction | Remediation action reported in the 'EPOEvent' source section. | keyword |
+| trellix_epo_on_prem.event.EPOEvent.siem_last_time | Siem last time reported in the 'EPOEvent' source section. | date |
+| trellix_epo_on_prem.event.EPOEvent.wpRating | Wp rating reported in the 'EPOEvent' source section. | keyword |
 
 
 ### Example event
@@ -205,15 +205,15 @@ An example event for `event` looks as following:
 {
     "@timestamp": "2021-05-03T06:27:04.753Z",
     "agent": {
-        "ephemeral_id": "65449c36-6eda-4765-add1-3a87cda81043",
-        "id": "9f2b2284-996f-428e-8a24-c7be32f5e8ce",
-        "name": "elastic-agent-31545",
+        "ephemeral_id": "3cc56a96-7804-4a32-9e01-841198395023",
+        "id": "8ee8f26c-cd67-4672-a3ad-aafd550de929",
+        "name": "elastic-agent-48957",
         "type": "filebeat",
         "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "trellix_epo_on_prem.event",
-        "namespace": "80578",
+        "namespace": "69500",
         "type": "logs"
     },
     "destination": {
@@ -246,30 +246,21 @@ An example event for `event` looks as following:
         "version": "9.4.0"
     },
     "elastic_agent": {
-        "id": "9f2b2284-996f-428e-8a24-c7be32f5e8ce",
+        "id": "8ee8f26c-cd67-4672-a3ad-aafd550de929",
         "snapshot": false,
         "version": "8.19.0"
     },
     "event": {
-        "action": "ids_alert_act_tak_del",
+        "action": "ids-alert-act-tak-del",
         "agent_id_status": "verified",
-        "category": [
-            "intrusion_detection",
-            "web",
-            "file",
-            "malware",
-            "host",
-            "authentication"
-        ],
         "dataset": "trellix_epo_on_prem.event",
         "id": "01234567-ABCD-ABCD-ABCD-ABCD01234567",
-        "ingested": "2026-07-27T12:21:07Z",
+        "ingested": "2026-09-04T06:10:49Z",
         "kind": "event",
+        "original": "{\"EPOEvent\":{\"AnalyzerName\":\"Trellix EndpointSecurity\",\"APIName\":\"CreateFile\",\"Files\":\"C:\\\\temp\\\\file.exe\",\"HostName\":\"host-1.example.local\",\"TargetProtocol\":\"TCP\",\"Analyzer\":\"ENDP_AM_1120\",\"TargetFileSize\":\"68\",\"AnalyzerVersion\":\"198.51.100.10\",\"RegistryValue\":\"1\",\"TargetIPv6\":\"::ffff:198.51.100.10\",\"RemotePort\":\"443\",\"AnalyzerDetectionMethod\":\"On-Demand Scan\",\"ServerID\":\"epo-server-1.example.local\",\"DetectedUTC\":\"2021-05-03 06:26:21.0\",\"Direction\":\"inbound\",\"TaskName\":\"Host IPS protection\",\"ThreatCategory\":\"av.detect\",\"siem_last_time\":\"2021-05-03 06:27:04\",\"ReceivedUTC\":\"2021-05-03 06:27:04.753\",\"SourceHostName\":\"host-1.example.local\",\"Hash\":\"44d88612fea8a8f36de82e1278abb02f\",\"SecondAttemptedAction\":\"IDS_ALERT_THACT_ATT_DEL\",\"RegistryKey\":\"HKLM\\\\Software\\\\Test\\\\Key\",\"AnalyzerIPv6\":\"::ffff:198.51.100.10\",\"ThreatSeverity\":\"2\",\"SourceFilePath\":\"C:\\\\Temp\",\"TargetFileName\":\"eicar.com\",\"SignatureName\":\"Buffer Overflow Detected\",\"SourceMAC\":\"00005e005323\",\"TargetMAC\":\"00005e005324\",\"Subject\":\"Malware Detected\",\"SourceIPv4\":\"198.51.100.10\",\"Vendor\":\"Trellix\",\"ThreatDetectedOnCreation\":\"0\",\"SourceIPv6\":\"::ffff:198.51.100.10\",\"Cleanable\":\"0\",\"TargetHostName\":\"host-1.example.local\",\"BladeName\":\"IDS_BLADE_NAME_SPB\",\"AccessRequested\":\"read\",\"TargetIPv4\":\"198.51.100.10\",\"LocalPort\":\"12345\",\"AutoGUID\":\"01234567-ABCD-ABCD-ABCD-ABCD01234567\",\"TargetProcessName\":\"firefox.exe\",\"ThreatActionTaken\":\"IDS_ALERT_ACT_TAK_DEL\",\"SourceUserName\":\"EXAMPLE\\\\alice.johnson\",\"AnalyzerEngineVersion\":\"5800.7501\",\"AutoID\":\"17443183\",\"SourcePort\":\"12345\",\"SourceFileSize\":\"68\",\"TargetName\":\"eicar.com\",\"SourceProcessName\":\"On-Demand Scan\",\"ThreatHandled\":\"1\",\"AgentGUID\":\"01234567-ABCD-ABCD-ABCD-ABCD01234567\",\"AnalyzerIPv4\":\"198.51.100.10\",\"TargetUserName\":\"EXAMPLE\\\\alice.johnson\",\"AnalyzerGTIQuery\":\"0\",\"FirstAttemptedAction\":\"IDS_ALERT_THACT_ATT_CLE\",\"ProductFamily\":\"HOSTIPS\",\"ThreatType\":\"test\"}}",
+        "outcome": "success",
         "sequence": 17443183,
-        "type": [
-            "info",
-            "start"
-        ]
+        "severity": 2
     },
     "file": {
         "hash": {
@@ -283,11 +274,11 @@ An example event for `event` looks as following:
         "name": "host-1.example.local"
     },
     "input": {
-        "type": "udp"
+        "type": "tcp"
     },
     "log": {
         "source": {
-            "address": "192.168.242.3:44501"
+            "address": "192.168.247.3:51498"
         }
     },
     "message": "Malware Detected",
@@ -353,6 +344,7 @@ An example event for `event` looks as following:
         }
     },
     "tags": [
+        "preserve_original_event",
         "forwarded",
         "trellix_epo_on_prem-event"
     ],
