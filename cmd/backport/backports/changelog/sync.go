@@ -84,7 +84,12 @@ func CreateSyncPR(workDir, entriesTSV, workingBranch, backportPRNumber, backport
 	if err := git.RunToStderr("commit", "-m", commitMsg); err != nil {
 		return nil, fmt.Errorf("committing: %w", err)
 	}
-	if err := git.RunToStderr("push", "origin", workingBranch); err != nil {
+	// A previous failed run may have left this branch on the remote. Refresh the
+	// remote-tracking ref so --force-with-lease has something to compare against,
+	// then overwrite it — the branch is machine-owned and named after the PR.
+	_ = git.RunToStderr("fetch", "origin",
+		fmt.Sprintf("refs/heads/%s:refs/remotes/origin/%s", workingBranch, workingBranch))
+	if err := git.RunToStderr("push", "--force-with-lease", "origin", workingBranch); err != nil {
 		return nil, fmt.Errorf("pushing: %w", err)
 	}
 

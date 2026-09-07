@@ -104,6 +104,17 @@ func TestBuildComment(t *testing.T) {
 			wantContains: []string{"PRs will be created automatically on merge, or when you update this checklist after merge."},
 		},
 		{
+			title: "intro links to the backport guidance wiki",
+			pkgs: []PackageBranches{
+				{Package: "aws", Branches: []backports.ActiveResult{awsBranch("backport-aws-6.14")}},
+			},
+			checked: map[string]bool{},
+			wantContains: []string{
+				"Backport a change when it fixes behavior a branch already has",
+				"https://github.com/elastic/integrations/wiki/Package-Backports",
+			},
+		},
+		{
 			title: "multiple packages both rendered",
 			pkgs: []PackageBranches{
 				{Package: "aws", Branches: []backports.ActiveResult{awsBranch("backport-aws-6.14")}},
