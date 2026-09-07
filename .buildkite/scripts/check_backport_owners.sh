@@ -76,7 +76,7 @@ main() {
         add_bin_path
         with_jq         # containers do not have jq installed
         with_github_cli # to post comments in Pull Requests
-        with_mage       # to run the checkBackportOwners target
+        with_backport   # to run the check-owners subcommand
     fi
 
     local remote="origin"
@@ -89,7 +89,7 @@ main() {
 
     local mismatches_json=""
     if [[ "${check_exit}" -eq 0 ]]; then
-        mismatches_json="$(mage checkBackportOwners "${remote}" "${BACKPORT_OWNERS_SOURCE_BRANCH}" "${merge_base}" "${BUILDKITE_COMMIT}")" || check_exit=$?
+        mismatches_json="$(backport check-owners "${remote}" "${BACKPORT_OWNERS_SOURCE_BRANCH}" "${merge_base}" "${BUILDKITE_COMMIT}")" || check_exit=$?
     fi
 
     local comment
