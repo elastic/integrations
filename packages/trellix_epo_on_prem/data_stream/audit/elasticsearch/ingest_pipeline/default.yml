@@ -1,0 +1,383 @@
+---
+description: Pipeline for processing audit logs.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 9.4.0
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      tag: remove_agentless_tags
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      ignore_missing: true
+      description: Removes the fields added by Agentless as metadata, as they can collide with ECS fields.
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      if: ctx.event?.original == null
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message.
+  - remove:
+      field:
+        - message
+      tag: remove_message
+      if: ctx.event?.original != null
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: trellix_epo_on_prem.audit
+      if: ctx.event?.original != null
+  - dot_expander:
+      field: '*'
+      tag: dot_expander_audit
+      path: trellix_epo_on_prem.audit
+      if: ctx.trellix_epo_on_prem?.audit != null
+      description: Expands the dotted JSON keys (for example `OrionAuditLog.AutoId`) into nested objects.
+  - script:
+      description: >
+        Convert field names from camelCase to snake_case recursively.
+      tag: script_convert_camelcase_to_snake_case
+      lang: painless
+      source: |-
+        String camelToSnake(String str) {
+            def result = "";
+            for (int i = 0; i < str.length(); i++) {
+                char c = str.charAt(i);
+                if (Character.isUpperCase(c)) {
+                    if (i > 0 && Character.isLowerCase(str.charAt(i - 1))) {
+                        result += "_";
+                    }
+                    result += Character.toLowerCase(c);
+                } else {
+                    result += c;
+                }
+            }
+            return result;
+        }
+        def convertToSnakeCase(def obj) {
+          if (obj instanceof Map) {
+            def newObj = [:];
+            for (entry in obj.entrySet()) {
+              String newKey = camelToSnake(entry.getKey());
+              newObj[newKey] = convertToSnakeCase(entry.getValue());
+            }
+            return newObj;
+          } else if (obj instanceof List) {
+            def newList = [];
+            for (item in obj) {
+              newList.add(convertToSnakeCase(item));
+            }
+            return newList;
+          } else {
+            return obj;
+          }
+        }
+        if (ctx.trellix_epo_on_prem?.audit != null) {
+          ctx.trellix_epo_on_prem.audit = convertToSnakeCase(ctx.trellix_epo_on_prem.audit);
+        }
+      on_failure:
+        - append:
+            tag: append_script_convert_camelcase_to_snake_case_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: trellix_epo_on_prem.audit.orion_audit_log.auto_id
+      tag: convert_OrionAuditLog_AutoId_to_string
+      type: string
+      ignore_missing: true
+  - fingerprint:
+      fields:
+        - trellix_epo_on_prem.audit.orion_audit_log.auto_id
+      tag: fingerprint_with_id
+      target_field: _id
+      ignore_missing: true
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+  - set:
+      field: event.id
+      tag: set_event_id_from_audit_auto_id
+      copy_from: trellix_epo_on_prem.audit.orion_audit_log.auto_id
+      ignore_empty_value: true
+  - set:
+      field: event.action
+      tag: set_event_action_from_audit_cmd_name
+      copy_from: trellix_epo_on_prem.audit.orion_audit_log.cmd_name
+      ignore_empty_value: true
+  - lowercase:
+      field: event.action
+      tag: lowercase_event_action
+      ignore_missing: true
+  - split:
+      field: event.action
+      tag: split_event_action
+      if: ctx.event?.action != ''
+      separator: \s+
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - join:
+      field: event.action
+      tag: join_event_action
+      if: ctx.event?.action instanceof List && ctx.event.action.size() > 0
+      separator: '-'
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: event.category
+      tag: append_authentication_into_event_category
+      if: ctx.event?.action != null && ['user-log-on', 'user-log-off'].contains(ctx.event.action)
+      value: authentication
+      allow_duplicates: false
+  - append:
+      field: event.type
+      tag: append_start_into_event_type
+      if: ctx.event?.action == 'user-log-on'
+      value: start
+      allow_duplicates: false
+  - append:
+      field: event.type
+      tag: append_end_into_event_type
+      if: ctx.event?.action == 'user-log-off'
+      value: end
+      allow_duplicates: false
+  - append:
+      field: event.category
+      tag: append_iam_into_event_category
+      if: ctx.event?.action != null && ['create-user', 'delete-user', 'edit-user'].contains(ctx.event.action)
+      value: iam
+      allow_duplicates: false
+  - append:
+      field: event.type
+      tag: append_user_into_event_type
+      if: ctx.event?.category != null && ctx.event.category.contains('iam')
+      value: user
+      allow_duplicates: false
+  - append:
+      field: event.type
+      tag: append_creation_into_event_type
+      if: ctx.event?.action == 'create-user'
+      value: creation
+      allow_duplicates: false
+  - append:
+      field: event.type
+      tag: append_deletion_into_event_type
+      if: ctx.event?.action == 'delete-user'
+      value: deletion
+      allow_duplicates: false
+  - append:
+      field: event.type
+      tag: append_change_into_event_type_for_edit_user
+      if: ctx.event?.action == 'edit-user'
+      value: change
+      allow_duplicates: false
+  - append:
+      field: event.category
+      tag: append_configuration_into_event_category
+      if: ctx.event?.category == null || ctx.event.category.isEmpty()
+      value: configuration
+      allow_duplicates: false
+      description: Fall-back category for audit commands that are not matched by any of the specific categorization rules above.
+  - append:
+      field: event.type
+      tag: append_change_into_event_type
+      if: ctx.event?.type == null || ctx.event.type.isEmpty()
+      value: change
+      allow_duplicates: false
+      description: Fall-back event type for audit commands that are not matched by any of the specific categorization rules above.
+  - date:
+      field: trellix_epo_on_prem.audit.orion_audit_log.end_time
+      tag: date_OrionAuditLog_EndTime
+      if: ctx.trellix_epo_on_prem?.audit?.orion_audit_log?.end_time != null && ctx.trellix_epo_on_prem.audit.orion_audit_log.end_time != ''
+      formats:
+        - ISO8601
+      on_failure:
+        - remove:
+            tag: remove_end_time_on_date_failure
+            field: trellix_epo_on_prem.audit.orion_audit_log.end_time
+            ignore_missing: true
+        - append:
+            tag: append_date_end_time_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.end
+      tag: set_event_end_from_audit_end_time
+      copy_from: trellix_epo_on_prem.audit.orion_audit_log.end_time
+      ignore_empty_value: true
+  - set:
+      field: message
+      tag: set_message_from_audit_message
+      copy_from: trellix_epo_on_prem.audit.orion_audit_log.message
+      ignore_empty_value: true
+  - convert:
+      field: trellix_epo_on_prem.audit.orion_audit_log.priority
+      tag: convert_OrionAuditLog_Priority_to_long
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_priority_on_convert_failure
+            field: trellix_epo_on_prem.audit.orion_audit_log.priority
+            ignore_missing: true
+        - append:
+            tag: append_convert_priority_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: trellix_epo_on_prem.audit.orion_audit_log.start_time
+      tag: date_OrionAuditLog_StartTime
+      if: ctx.trellix_epo_on_prem?.audit?.orion_audit_log?.start_time != null && ctx.trellix_epo_on_prem.audit.orion_audit_log.start_time != ''
+      formats:
+        - ISO8601
+      on_failure:
+        - remove:
+            tag: remove_start_time_on_date_failure
+            field: trellix_epo_on_prem.audit.orion_audit_log.start_time
+            ignore_missing: true
+        - append:
+            tag: append_date_start_time_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      tag: set_@timestamp_from_audit_start_time
+      copy_from: trellix_epo_on_prem.audit.orion_audit_log.start_time
+      ignore_empty_value: true
+  - set:
+      field: event.start
+      tag: set_event_start_from_audit_start_time
+      copy_from: trellix_epo_on_prem.audit.orion_audit_log.start_time
+      ignore_empty_value: true
+  - convert:
+      field: trellix_epo_on_prem.audit.orion_audit_log.success
+      tag: convert_OrionAuditLog_Success_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_success_on_convert_failure
+            field: trellix_epo_on_prem.audit.orion_audit_log.success
+            ignore_missing: true
+        - append:
+            tag: append_convert_success_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_success
+      if: ctx.trellix_epo_on_prem?.audit?.orion_audit_log?.success == true
+      value: success
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_failure
+      if: ctx.trellix_epo_on_prem?.audit?.orion_audit_log?.success == false
+      value: failure
+  - convert:
+      field: trellix_epo_on_prem.audit.orion_audit_log.user_id
+      tag: convert_OrionAuditLog_UserId_to_long
+      type: string
+      ignore_missing: true
+  - set:
+      field: user.id
+      tag: set_user_id_from_audit_user_id
+      copy_from: trellix_epo_on_prem.audit.orion_audit_log.user_id
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_audit_user_id_into_related_user
+      if: ctx.trellix_epo_on_prem?.audit?.orion_audit_log?.user_id != null
+      value: '{{{trellix_epo_on_prem.audit.orion_audit_log.user_id}}}'
+      allow_duplicates: false
+  - set:
+      field: user.name
+      tag: set_user_name_from_audit_user_name
+      copy_from: trellix_epo_on_prem.audit.orion_audit_log.user_name
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_audit_user_name_into_related_user
+      if: ctx.trellix_epo_on_prem?.audit?.orion_audit_log?.user_name != null
+      value: '{{{trellix_epo_on_prem.audit.orion_audit_log.user_name}}}'
+      allow_duplicates: false
+  - remove:
+      field:
+        - trellix_epo_on_prem.audit.orion_audit_log.auto_id
+        - trellix_epo_on_prem.audit.orion_audit_log.cmd_name
+        - trellix_epo_on_prem.audit.orion_audit_log.end_time
+        - trellix_epo_on_prem.audit.orion_audit_log.message
+        - trellix_epo_on_prem.audit.orion_audit_log.start_time
+        - trellix_epo_on_prem.audit.orion_audit_log.success
+        - trellix_epo_on_prem.audit.orion_audit_log.user_id
+        - trellix_epo_on_prem.audit.orion_audit_log.user_name
+      tag: remove_fields_mapped_to_ecs
+      ignore_missing: true
+  - script:
+      tag: remove_null_values
+      lang: painless
+      description: Remove null or empty values from the document.
+      source: |-
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      if: ctx.error?.message != null
+      value: pipeline_error
+  - append:
+      field: tags
+      tag: append_tags
+      if: ctx.error?.message != null
+      value: preserve_original_event
+      allow_duplicates: false
+on_failure:
+  - append:
+      field: error.message
+      tag: append_pipeline_failure_message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      tag: append_preserve_original_event
+      value: preserve_original_event
+      allow_duplicates: false

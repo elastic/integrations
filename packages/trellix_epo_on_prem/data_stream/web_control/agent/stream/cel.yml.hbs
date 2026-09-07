@@ -1,0 +1,107 @@
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+{{#if max_executions}}
+max_executions: {{max_executions}}
+{{/if}}
+resource.url: {{url}}
+auth.basic:
+  user: {{username}}
+  password: {{password}}
+state:
+  # WP_EventInfo has no timestamp column. The first poll starts after this
+  # EventAutoID; subsequent polls resume from the persisted cursor.
+  initial_event_auto_id: "{{initial_event_auto_id}}"
+  page_size: {{page_size}}
+  columns: >-
+    WP_EventInfo.EventAutoID WP_EventInfo.UserName WP_EventInfo.URL
+    WP_EventInfo.ListID WP_EventInfo.ReasonID WP_EventInfo.ObserverMode
+    WP_EventInfo.Count WP_EventInfo.DomainName WP_EventInfo.ActionID
+    WP_EventInfo.RatingID WP_EventInfo.ContentID
+    WP_EventInfo.PhishingRatingID WP_EventInfo.DownloadRatingID
+    WP_EventInfo.SpamRatingID WP_EventInfo.PopupRatingID
+    WP_EventInfo.BadLinkRatingID WP_EventInfo.ExploitRatingID
+redact:
+  fields: ~
+program: |
+  (
+    state.?want_more.orValue(false) ?
+      state
+    :
+      state.with({
+        "event_auto_id": state.?cursor.last_event_auto_id.orValue(
+          string(state.initial_event_auto_id)
+        )
+      })
+  ).as(state,
+    state.with(
+      get(
+        state.url.trim_right("/") + "/remote/core.executeQuery?" +
+        {
+          "target": ["WP_EventInfo"],
+          // (top N) keyset page ordered by the unique EventAutoID.
+          "select": ['(select (top ' + string(int(state.page_size)) + ') ' + state.columns + ')'],
+          "where": ['(where (gt WP_EventInfo.EventAutoID ' + state.event_auto_id + '))'],
+          "order": ["(order (asc WP_EventInfo.EventAutoID))"]
+        }.format_query() + "&:output=json"
+      ).as(resp,
+        resp.StatusCode == 200 ?
+          string(resp.Body).trim_space().trim_prefix("OK:").decode_json().as(rows,
+            // Advance to the greatest EventAutoID returned by this page. The ID is
+            // routed through int() before string(): JSON numbers arrive as float64,
+            // and string() of a float64 >= 1e6 renders as scientific notation, which
+            // is not a valid operand for the (gt WP_EventInfo.EventAutoID ...) query.
+            string(int(
+              rows.last()["WP_EventInfo.EventAutoID"].orValue(state.event_auto_id)
+            )).as(new_event_auto_id, {
+              "events": rows.map(e, {"message": e.encode_json()}),
+              "event_auto_id": new_event_auto_id,
+              "cursor": {"last_event_auto_id": new_event_auto_id},
+              "want_more": size(rows) == int(state.page_size) &&
+                new_event_auto_id != state.event_auto_id
+            })
+          )
+        :
+          {
+            "events": {
+              "error": {
+                "code": string(resp.StatusCode),
+                "id": resp.Status,
+                "message": "GET " + state.url.trim_right("/") + "/remote/core.executeQuery: " + (
+                  size(resp.Body) != 0 ?
+                    string(resp.Body)
+                  :
+                    resp.Status + ' (' + string(resp.StatusCode) + ')'
+                )
+              }
+            },
+            "want_more": false
+          }
+      )
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
