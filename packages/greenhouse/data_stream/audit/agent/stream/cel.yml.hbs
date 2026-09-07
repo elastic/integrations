@@ -257,7 +257,7 @@ program: |-
                       note_ids.size() > 0 ?
                         request(
                           "GET",
-                          state.harvest_url.trim_right("/") + "/v3/notes?ids=" + note_ids.join(",")
+                          state.harvest_url.trim_right("/") + "/v3/notes?ids=" + note_ids.zip(note_ids).keys().join(",")
                         ).with(pg.harvest_hdr).do_request().as(n_resp,
                           n_resp.StatusCode == 200 ?
                             n_resp.Body.decode_json().transformMapEntry(_, note, {string(int(note.id)): note.?body.orValue("")})
