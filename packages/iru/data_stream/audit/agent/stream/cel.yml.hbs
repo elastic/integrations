@@ -1,0 +1,97 @@
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+state:
+  api_token: {{api_token}}
+  batch_size: {{batch_size}}
+  initial_interval: {{initial_interval}}
+redact:
+  fields:
+    - api_token
+program: |-
+  state.with(
+    request(
+      "GET",
+      state.?want_more.orValue(false) ?
+        state.next_url
+      :
+        state.url.trim_right("/") + "/api/v1/audit/events?" + {
+          "limit": [string(int(state.batch_size))],
+          "sort_by": ["occurred_at"],
+          "start_date": [state.?cursor.occurred_at.orValue(
+            string(now - duration(state.initial_interval))
+          )],
+        }.format_query()
+    ).with(
+      {
+        "Header": {
+          "Authorization": ["Bearer " + state.api_token],
+          "Accept": ["application/json"],
+        },
+      }
+    ).do_request().as(resp,resp.StatusCode == 200 ?
+      resp.Body.decode_json().as(body,
+        {
+          "events": has(body.results) ?
+            body.results.map(e, {"message": e.encode_json()})
+          :
+            [],
+          "want_more": has(body.next) && body.next != null && string(body.next) != "",
+          ?"next_url": has(body.next) && body.next != null && string(body.next) != "" ?
+            optional.of(string(body.next))
+          :
+            optional.none(),
+          "cursor": {
+            "occurred_at": (has(body.results) && size(body.results) > 0) ?
+              body.results.map(e, e.occurred_at).max()
+            :
+              state.?cursor.occurred_at.orValue(
+                string(now - duration(state.initial_interval))
+              ),
+          },
+        }
+      )
+    :
+      {
+        "events": {
+          "error": {
+            "code": string(resp.StatusCode),
+            "id": resp.Status,
+            "message": "GET " + state.url.trim_right("/") + "/api/v1/audit/events: " + (
+              size(resp.Body) != 0 ?
+                string(resp.Body)
+              :
+                resp.Status + ' (' + string(resp.StatusCode) + ')'
+            ),
+          },
+        },
+        "want_more": false,
+      }
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

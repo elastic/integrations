@@ -1,0 +1,84 @@
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+state:
+  api_token: {{api_token}}
+  batch_size: {{batch_size}}
+redact:
+  fields:
+    - api_token
+program: |-
+  state.with(
+    request(
+      "GET",
+      state.url.trim_right("/") + "/api/v1/devices?" + {
+        "limit": [string(int(state.batch_size))],
+        "offset": [string(int(
+          state.?want_more.orValue(false) ?
+            state.offset
+          :
+            0
+        ))],
+      }.format_query()
+    ).with(
+      {
+        "Header": {
+          "Authorization": ["Bearer " + state.api_token],
+          "Accept": ["application/json"],
+        },
+      }
+    ).do_request().as(resp, resp.StatusCode == 200 ?
+      resp.Body.decode_json().as(body,
+        {
+          "events": body.map(e, {"message": e.encode_json()}),
+          ?"offset": (size(body) > 0 && size(body) >= int(state.batch_size)) ?
+            optional.of(int(state.?offset.orValue(0)) + int(state.batch_size))
+          :
+            optional.none(),
+          "want_more": size(body) > 0 && size(body) >= int(state.batch_size),
+        }
+      )
+    :
+      {
+        "events": {
+          "error": {
+            "code": string(resp.StatusCode),
+            "id": resp.Status,
+            "message": "GET " + state.url.trim_right("/") + "/api/v1/devices: " + (
+              (size(resp.Body) != 0) ?
+                string(resp.Body)
+              :
+                resp.Status
+            ),
+          },
+        },
+        "want_more": false,
+      }
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

@@ -1,0 +1,209 @@
+---
+description: Parse Iru audit events.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: '9.3.0'
+
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
+
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+
+  - json:
+      field: event.original
+      target_field: json
+      tag: parse_json
+      if: ctx.event?.original != null
+  - fail:
+      if: ctx.json == null || !(ctx.json instanceof Map)
+      message: missing json object in input document
+      tag: validate_json_input
+
+  - rename:
+      field: json.id
+      target_field: event.id
+      ignore_missing: true
+      tag: rename_id_to_event_id
+  - rename:
+      field: json.action
+      target_field: event.action
+      ignore_missing: true
+      tag: rename_action_to_event_action
+  - gsub:
+      field: event.action
+      tag: gsub_event_action
+      pattern: '_'
+      replacement: '-'
+      ignore_missing: true
+      if: ctx.event?.action != null && ctx.event.action != ''
+  - date:
+      field: json.occurred_at
+      target_field: '@timestamp'
+      formats:
+        - ISO8601
+      tag: date_occurred_at
+      if: ctx.json?.occurred_at != null
+  - rename:
+      field: json.actor_id
+      target_field: user.id
+      ignore_missing: true
+      tag: rename_actor_id_to_user_id
+      if: ctx.json?.actor_type == 'user'
+  - rename:
+      field: json.actor_id
+      target_field: iru.audit.actor.id
+      ignore_missing: true
+      tag: rename_actor_id_to_vendor
+      if: ctx.json?.actor_type != 'user'
+  - rename:
+      field: json.actor_type
+      target_field: iru.audit.actor.type
+      ignore_missing: true
+      tag: rename_actor_type
+  - rename:
+      field: json.target_id
+      target_field: iru.audit.target.id
+      ignore_missing: true
+      tag: rename_target_id
+  - rename:
+      field: json.target_type
+      target_field: iru.audit.target.type
+      ignore_missing: true
+      tag: rename_target_type
+  - rename:
+      field: json.target_component
+      target_field: iru.audit.target.component
+      ignore_missing: true
+      tag: rename_target_component
+  - rename:
+      field: json.new_state
+      target_field: iru.audit.new_state
+      ignore_missing: true
+      tag: rename_new_state
+  - convert:
+      field: iru.audit.new_state.active
+      tag: convert_new_state_active
+      type: boolean
+      ignore_missing: true
+  - rename:
+      field: json.metadata
+      target_field: iru.audit.metadata
+      ignore_missing: true
+      tag: rename_metadata
+
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+  - script:
+      lang: painless
+      tag: set_ecs_categorization
+      description: Map official audit target type and action to ECS categorization fields.
+      if: ctx.iru?.audit?.target?.type != null && ctx.event?.action != null
+      params:
+        blueprint:
+          category: [configuration]
+          type:
+            create: [change, creation]
+            update: [change]
+        library_item:
+          category: [configuration]
+          type:
+            create: [change, creation]
+            update: [change]
+        api_token:
+          category: [iam]
+          type:
+            create: [admin, creation]
+            update: [admin, change]
+      source: |-
+        def mapping = params[ctx.iru.audit.target.type];
+        if (mapping == null) {
+          return;
+        }
+        ctx.event.category = mapping.category;
+        if (mapping.type.containsKey(ctx.event.action)) {
+          ctx.event.type = mapping.type[ctx.event.action];
+        }
+
+  - set:
+      field: observer.vendor
+      tag: set_observer_vendor
+      value: Iru
+  - set:
+      field: observer.product
+      tag: set_observer_product
+      value: Iru Endpoint
+
+  - append:
+      field: related.user
+      tag: append_user_id_to_related
+      value: '{{{user.id}}}'
+      allow_duplicates: false
+      if: ctx.user?.id != null
+
+  - script:
+      lang: painless
+      tag: drop_null_values
+      description: Remove null and empty-string values from vendor fields so they are not stored.
+      source: |-
+        void dropNulls(def obj) {
+          if (obj instanceof Map) {
+            Map map = (Map)obj;
+            map.values().removeIf(v -> v == null || v == '');
+            for (def v : map.values()) {
+              dropNulls(v);
+            }
+          } else if (obj instanceof List) {
+            for (def v : (List)obj) {
+              dropNulls(v);
+            }
+          }
+        }
+        if (ctx.iru?.audit instanceof Map) {
+          dropNulls(ctx.iru.audit);
+        }
+
+  - remove:
+      field: json
+      ignore_missing: true
+      tag: remove_json
+
+  - append:
+      field: tags
+      tag: append_preserve_original_event
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

@@ -1,0 +1,423 @@
+---
+description: Parse Iru device inventory events.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: '9.3.0'
+
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
+
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+
+  - json:
+      field: event.original
+      target_field: json
+      tag: parse_json
+      if: ctx.event?.original != null
+  - fail:
+      if: ctx.json == null || !(ctx.json instanceof Map)
+      message: missing json object in input document
+      tag: validate_json_input
+
+  # Assigned user is an object; unassigned is an empty string. Guard before dotted access.
+  - remove:
+      field: json.user
+      ignore_missing: true
+      tag: remove_unassigned_user
+      if: ctx.json?.user instanceof String
+
+  - rename:
+      field: json.device_id
+      target_field: iru.device.device_id
+      ignore_missing: true
+      tag: rename_device_id
+  - set:
+      field: host.id
+      copy_from: iru.device.device_id
+      tag: set_host_id
+      if: ctx.iru?.device?.device_id != null
+  - rename:
+      field: json.device_name
+      target_field: host.name
+      ignore_missing: true
+      tag: rename_device_name_to_host_name
+  - set:
+      field: host.hostname
+      copy_from: host.name
+      tag: set_host_hostname
+      if: ctx.host?.name != null
+  - rename:
+      field: json.serial_number
+      target_field: iru.device.serial_number
+      ignore_missing: true
+      tag: rename_serial_number
+  - set:
+      field: device.serial_number
+      copy_from: iru.device.serial_number
+      tag: set_device_serial_number
+      if: ctx.iru?.device?.serial_number != null
+  - rename:
+      field: json.model
+      target_field: iru.device.model
+      ignore_missing: true
+      tag: rename_model
+  - rename:
+      field: json.platform
+      target_field: iru.device.platform
+      ignore_missing: true
+      tag: rename_platform
+  - set:
+      field: host.os.platform
+      copy_from: iru.device.platform
+      tag: set_host_os_platform
+      if: ctx.iru?.device?.platform != null
+  - set:
+      field: host.os.type
+      tag: set_os_type_macos
+      value: macos
+      if: ctx.host?.os?.platform == 'Mac'
+  - set:
+      field: host.os.type
+      tag: set_os_type_ios
+      value: ios
+      if: ctx.host?.os?.platform == 'iPhone' || ctx.host?.os?.platform == 'iPad'
+  - set:
+      field: host.os.type
+      tag: set_os_type_windows
+      value: windows
+      if: ctx.host?.os?.platform == 'Windows'
+  - set:
+      field: host.os.type
+      tag: set_os_type_android
+      value: android
+      if: ctx.host?.os?.platform == 'Android'
+  - rename:
+      field: json.os_version
+      target_field: host.os.version
+      ignore_missing: true
+      tag: rename_os_version
+  - rename:
+      field: json.supplemental_build_version
+      target_field: iru.device.supplemental_build_version
+      ignore_missing: true
+      tag: rename_supplemental_build_version
+  - rename:
+      field: json.supplemental_os_version_extra
+      target_field: iru.device.supplemental_os_version_extra
+      ignore_missing: true
+      tag: rename_supplemental_os_version_extra
+
+  - date:
+      field: json.last_check_in
+      target_field: '@timestamp'
+      formats:
+        - ISO8601
+      tag: date_last_check_in
+      if: ctx.json?.last_check_in instanceof String && ctx.json.last_check_in != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: iru.device.last_check_in
+      copy_from: '@timestamp'
+      tag: set_vendor_last_check_in
+      if: ctx.json?.last_check_in instanceof String && ctx.json.last_check_in != ''
+  - date:
+      field: json.first_enrollment
+      target_field: iru.device.first_enrollment
+      formats:
+        - yyyy-MM-dd HH:mm:ss.SSSSSSXXX
+        - yyyy-MM-dd HH:mm:ss.SSSXXX
+        - ISO8601
+      tag: date_first_enrollment
+      if: ctx.json?.first_enrollment instanceof String && ctx.json.first_enrollment != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - date:
+      field: json.last_enrollment
+      target_field: iru.device.last_enrollment
+      formats:
+        - yyyy-MM-dd HH:mm:ss.SSSSSSXXX
+        - yyyy-MM-dd HH:mm:ss.SSSXXX
+        - ISO8601
+      tag: date_last_enrollment
+      if: ctx.json?.last_enrollment instanceof String && ctx.json.last_enrollment != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+
+  - rename:
+      field: json.user.id
+      target_field: user.id
+      ignore_missing: true
+      tag: rename_user_id
+      if: ctx.json?.user instanceof Map
+  - rename:
+      field: json.user.email
+      target_field: user.email
+      ignore_missing: true
+      tag: rename_user_email
+      if: ctx.json?.user instanceof Map
+  - rename:
+      field: json.user.name
+      target_field: user.name
+      ignore_missing: true
+      tag: rename_user_name
+      if: ctx.json?.user instanceof Map
+  - set:
+      field: user.full_name
+      copy_from: user.name
+      tag: set_user_full_name
+      if: ctx.user?.name != null
+  - rename:
+      field: json.user.is_archived
+      target_field: iru.device.user.is_archived
+      ignore_missing: true
+      tag: rename_user_is_archived
+      if: ctx.json?.user instanceof Map
+  - rename:
+      field: json.user.active
+      target_field: iru.device.user.active
+      ignore_missing: true
+      tag: rename_user_active
+      if: ctx.json?.user instanceof Map
+
+  - rename:
+      field: json.asset_tag
+      target_field: iru.device.asset_tag
+      ignore_missing: true
+      tag: rename_asset_tag
+  - rename:
+      field: json.blueprint_id
+      target_field: iru.device.blueprint.id
+      ignore_missing: true
+      tag: rename_blueprint_id
+  - rename:
+      field: json.blueprint_name
+      target_field: iru.device.blueprint.name
+      ignore_missing: true
+      tag: rename_blueprint_name
+  - rename:
+      field: json.mdm_enabled
+      target_field: iru.device.mdm_enabled
+      ignore_missing: true
+      tag: rename_mdm_enabled
+  - convert:
+      field: iru.device.mdm_enabled
+      tag: convert_mdm_enabled
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - rename:
+      field: json.agent_installed
+      target_field: iru.device.agent.installed
+      ignore_missing: true
+      tag: rename_agent_installed
+  - convert:
+      field: iru.device.agent.installed
+      tag: convert_agent_installed
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - rename:
+      field: json.agent_version
+      target_field: iru.device.agent.version
+      ignore_missing: true
+      tag: rename_agent_version
+  - rename:
+      field: json.is_missing
+      target_field: iru.device.is_missing
+      ignore_missing: true
+      tag: rename_is_missing
+  - convert:
+      field: iru.device.is_missing
+      tag: convert_is_missing
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - rename:
+      field: json.is_removed
+      target_field: iru.device.is_removed
+      ignore_missing: true
+      tag: rename_is_removed
+  - convert:
+      field: iru.device.is_removed
+      tag: convert_is_removed
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - rename:
+      field: json.lost_mode_status
+      target_field: iru.device.lost_mode_status
+      ignore_missing: true
+      tag: rename_lost_mode_status
+  - rename:
+      field: json.tags
+      target_field: iru.device.tags
+      ignore_missing: true
+      tag: rename_tags
+
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: asset
+  - append:
+      field: event.category
+      tag: append_event_category_host
+      value: host
+  - append:
+      field: event.type
+      tag: append_event_type_info
+      value: info
+
+  - set:
+      field: observer.vendor
+      tag: set_observer_vendor
+      value: Iru
+  - set:
+      field: observer.product
+      tag: set_observer_product
+      value: Iru Endpoint
+
+  - append:
+      field: related.hosts
+      tag: append_host_id_to_related
+      value: '{{{host.id}}}'
+      allow_duplicates: false
+      if: ctx.host?.id != null
+  - append:
+      field: related.hosts
+      tag: append_host_name_to_related
+      value: '{{{host.name}}}'
+      allow_duplicates: false
+      if: ctx.host?.name != null
+  - append:
+      field: related.hosts
+      tag: append_serial_to_related
+      value: '{{{device.serial_number}}}'
+      allow_duplicates: false
+      if: ctx.device?.serial_number != null
+  - append:
+      field: related.user
+      tag: append_user_id_to_related
+      value: '{{{user.id}}}'
+      allow_duplicates: false
+      if: ctx.user?.id != null
+  - append:
+      field: related.user
+      tag: append_user_email_to_related
+      value: '{{{user.email}}}'
+      allow_duplicates: false
+      if: ctx.user?.email != null
+  - append:
+      field: related.user
+      tag: append_user_name_to_related
+      value: '{{{user.name}}}'
+      allow_duplicates: false
+      if: ctx.user?.name != null
+
+  - script:
+      lang: painless
+      tag: drop_null_values
+      description: Remove null and empty-string values from vendor fields so they are not stored.
+      source: |-
+        void dropNulls(def obj) {
+          if (obj instanceof Map) {
+            Map map = (Map)obj;
+            map.values().removeIf(v -> v == null || v == '');
+            for (def v : map.values()) {
+              dropNulls(v);
+            }
+          } else if (obj instanceof List) {
+            for (def v : (List)obj) {
+              dropNulls(v);
+            }
+          }
+        }
+        if (ctx.iru?.device instanceof Map) {
+          dropNulls(ctx.iru.device);
+        }
+        if (ctx.user instanceof Map) {
+          dropNulls(ctx.user);
+        }
+
+  - remove:
+      field: json
+      ignore_missing: true
+      tag: remove_json
+
+  - append:
+      field: tags
+      tag: append_preserve_original_event
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
