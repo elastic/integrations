@@ -1,0 +1,95 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            agentVersion: ^9.4.0
+            name: aws
+      name: test-httpjson-agentless-cloud-connector-aws
+      streams:
+        - auth.aws:
+            default_region: us-east-1
+            role_arn: arn:aws:iam::123456789012:role/ElasticFederatedIdentity
+            service_name: securityhub
+            use_cloud_connectors: true
+          cel.max_executions: 10000
+          cel.program: |-
+            state.with(
+              request(
+                "POST",
+                state.url.trim_right("/"),
+                {
+                  "MaxResults": 100,
+                  "Filters": state.?filters.orValue({}),
+                }.with(
+                  (state.?next_token.orValue("") != "") ? {"NextToken": state.next_token} : {}
+                ).encode_json()
+              ).do_request().as(resp, (resp.StatusCode == 200) ?
+                resp.Body.decode_json().as(body,
+                  {
+                    "events": body.?Findings.orValue([]).map(e, {"message": e.encode_json()}),
+                    "next_token": body.?NextToken.orValue(""),
+                    "want_more": body.?NextToken.orValue("") != "",
+                  }
+                )
+              :
+                {
+                  "events": {
+                    "error": {
+                      "code": string(resp.StatusCode),
+                      "id": resp.Status,
+                      "message": "POST " + state.url.trim_right("/") + ": " + (
+                        (size(resp.Body) != 0) ?
+                          string(resp.Body)
+                        :
+                          resp.Status + " (" + string(resp.StatusCode) + ")"
+                      ),
+                    },
+                  },
+                  "next_token": "",
+                  "want_more": false,
+                }
+              )
+            )
+          cel.state:
+            filters:
+                RecordState:
+                    - Comparison: NOT_EQUALS
+                      Value: ARCHIVED
+                WorkflowStatus:
+                    - Comparison: NOT_EQUALS
+                      Value: SUPPRESSED
+          config_version: 2
+          data_stream:
+            dataset: aws.securityhub_findings_full_posture
+          interval: 24h
+          publisher_pipeline.disable_host: true
+          request.ssl: null
+          request.timeout: 2m
+          request.tracer:
+            enabled: null
+            filename: ../../logs/cel/http-request-trace-*.ndjson
+            maxbackups: 5
+          request.url: https://securityhub.us-east-1.amazonaws.com/findings
+          run_as_cel: true
+          tags:
+            - run_as_cel
+            - forwarded
+            - aws_securityhub_findings_full_posture
+      type: httpjson
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-aws.securityhub_findings_full_posture-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references: []

@@ -1,12 +1,14 @@
-# Temporal (OpenTelemetry)
+# Temporal OpenTelemetry Integration
 
-Collect operational metrics from [Temporal Cloud](https://temporal.io/cloud/) using the Temporal (OpenTelemetry) integration.
+Collect operational metrics from [Temporal Cloud](https://temporal.io/cloud/) using the Temporal OpenTelemetry Integration.
 
 ## Overview
 
 This integration scrapes Temporal Cloud OpenMetrics using the [Prometheus (OTel) Input Package](https://www.elastic.co/docs/reference/integrations/prometheus_input_otel) into the **Cloud Metrics** data stream (`temporal.cloud_metrics.otel`): workflow lifecycle, task queues and polling, service latency and errors, namespace limits and throttles, schedules, and replication lag.
 
 Metrics are stored with native OTel schema — no field renaming or custom mapping is applied.
+
+Once data starts flowing, the **[Temporal OpenTelemetry Assets](https://www.elastic.co/docs/reference/integrations/temporal_otel)** package provides a Cloud Metrics dashboard, alerting rule templates, and SLO templates.
 
 ## Prerequisites
 
@@ -16,6 +18,7 @@ Metrics are stored with native OTel schema — no field renaming or custom mappi
 | **API key role** | Service Account with **Metrics Read-Only** account-level role |
 | **Elastic Stack** | 9.5.0+ |
 | **Input package** | `prometheus_input_otel` (installed automatically as a dependency) |
+| **Content package** | `temporal_otel` (installed automatically as a dependency) |
 
 ## Setup
 
@@ -25,8 +28,8 @@ Metrics are stored with native OTel schema — no field renaming or custom mappi
    - Generate an API key for that Service Account and store it securely
 
 2. **Add the integration in Kibana**:
-   - Go to **Management** → **Integrations** → search for "Temporal (OpenTelemetry)"
-   - Click **Add Temporal (OpenTelemetry)**
+   - Go to **Management** → **Integrations** → search for "Temporal(OpenTelemetry) Integration"
+   - Click **Add Temporal(OpenTelemetry) Integration**
    - Fill in:
      - **Temporal Cloud Metrics Endpoint**: `metrics.temporal.io:443` (default)
      - **Metrics Path**: `/v1/metrics` (optionally append `?namespaces=<namespace>` to filter)
