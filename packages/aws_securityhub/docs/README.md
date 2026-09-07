@@ -198,6 +198,7 @@ For more information on architectures that can be used for scaling this integrat
 | aws_securityhub.finding.anomaly_analyses.baselines.observations.observed_pattern | The specific pattern identified within the observation type. | keyword |
 | aws_securityhub.finding.anomaly_analyses.baselines.observations.timespan | The time window when the value or event was first observed. | flattened |
 | aws_securityhub.finding.anomaly_analyses.baselines.observations.value | The specific value, event, indicator or data point that was observed and recorded. | keyword |
+| aws_securityhub.finding.anomaly_analyses.baselines.observed_pattern | The specific pattern identified within the observation type. | keyword |
 | aws_securityhub.finding.api.group.desc | The group description. | keyword |
 | aws_securityhub.finding.api.group.domain | The domain where the group is defined. | keyword |
 | aws_securityhub.finding.api.group.name | The group name. | keyword |
@@ -360,6 +361,52 @@ For more information on architectures that can be used for scaling this integrat
 | aws_securityhub.finding.confidence_id | The normalized confidence refers to the accuracy of the rule that created the finding. | keyword |
 | aws_securityhub.finding.confidence_score | The confidence score as reported by the event source. | long |
 | aws_securityhub.finding.count | The number of times that events in the same logical group occurred during the event Start Time to End Time period. | long |
+| aws_securityhub.finding.databucket.cloud_partition | The canonical cloud partition name to which the region is assigned. | keyword |
+| aws_securityhub.finding.databucket.created_time | The time when the bucket was created. | date |
+| aws_securityhub.finding.databucket.created_time_dt | The time when the bucket was created. | date |
+| aws_securityhub.finding.databucket.data | Additional data about the bucket, such as S3-specific metadata. | flattened |
+| aws_securityhub.finding.databucket.encryption_details.algorithm | The encryption algorithm used. | keyword |
+| aws_securityhub.finding.databucket.encryption_details.algorithm_id | The normalized identifier of the encryption algorithm. | keyword |
+| aws_securityhub.finding.databucket.encryption_details.key_length | The length of the encryption key in bits. | long |
+| aws_securityhub.finding.databucket.encryption_details.type | The type of encryption applied. | keyword |
+| aws_securityhub.finding.databucket.file.data_classifications.category | The name of the data classification category. | keyword |
+| aws_securityhub.finding.databucket.file.data_classifications.category_id | The normalized identifier of the data classification category. | keyword |
+| aws_securityhub.finding.databucket.file.data_classifications.classifier_details | Details about the classifier used for data classification. | flattened |
+| aws_securityhub.finding.databucket.file.data_classifications.discovery_details.count | The count of items discovered. | long |
+| aws_securityhub.finding.databucket.file.data_classifications.discovery_details.type | The type of sensitive data discovered. | keyword |
+| aws_securityhub.finding.databucket.file.data_classifications.size | Size of the data classified. | long |
+| aws_securityhub.finding.databucket.file.data_classifications.src_url | The source URL pointing towards the full classification job details. | keyword |
+| aws_securityhub.finding.databucket.file.data_classifications.status | The resultant status of the classification job. | keyword |
+| aws_securityhub.finding.databucket.file.data_classifications.status_id | The normalized status identifier of the classification job. | keyword |
+| aws_securityhub.finding.databucket.file.data_classifications.total | The total count of discovered entities. | long |
+| aws_securityhub.finding.databucket.file.encryption_details.algorithm | The encryption algorithm used. | keyword |
+| aws_securityhub.finding.databucket.file.encryption_details.algorithm_id | The normalized identifier of the encryption algorithm. | keyword |
+| aws_securityhub.finding.databucket.file.encryption_details.key_length | The length of the encryption key in bits. | long |
+| aws_securityhub.finding.databucket.file.encryption_details.type | The type of encryption applied. | keyword |
+| aws_securityhub.finding.databucket.file.ext | The file extension. | keyword |
+| aws_securityhub.finding.databucket.file.is_encrypted | Indicates whether the file is encrypted. | boolean |
+| aws_securityhub.finding.databucket.file.is_public | Indicates whether the file is publicly accessible. | boolean |
+| aws_securityhub.finding.databucket.file.mime_type | The MIME type of the file. | keyword |
+| aws_securityhub.finding.databucket.file.modified_time | The time when the file was last modified. | date |
+| aws_securityhub.finding.databucket.file.modified_time_dt | The time when the file was last modified. | date |
+| aws_securityhub.finding.databucket.file.name | The name of the file. | keyword |
+| aws_securityhub.finding.databucket.file.path | The full path of the file. | keyword |
+| aws_securityhub.finding.databucket.file.size | The size of the file in bytes. | long |
+| aws_securityhub.finding.databucket.file.storage_class | The storage class of the file. | keyword |
+| aws_securityhub.finding.databucket.file.type | The type of the file. | keyword |
+| aws_securityhub.finding.databucket.file.type_id | The normalized identifier of the file type. | keyword |
+| aws_securityhub.finding.databucket.file.version | The version of the file. | keyword |
+| aws_securityhub.finding.databucket.file.xattributes | An unordered collection of extended file attributes. | flattened |
+| aws_securityhub.finding.databucket.is_encrypted | Indicates whether the bucket is encrypted. | boolean |
+| aws_securityhub.finding.databucket.is_public | Indicates whether the bucket is publicly accessible. | boolean |
+| aws_securityhub.finding.databucket.name | The name of the bucket. | keyword |
+| aws_securityhub.finding.databucket.owner.name | The name of the bucket owner. | keyword |
+| aws_securityhub.finding.databucket.owner.uid | The unique identifier of the bucket owner. | keyword |
+| aws_securityhub.finding.databucket.region | The cloud region of the bucket. | keyword |
+| aws_securityhub.finding.databucket.tags.\* | The list of tags associated with the bucket. | object |
+| aws_securityhub.finding.databucket.type | The type of the bucket. | keyword |
+| aws_securityhub.finding.databucket.type_id | The normalized identifier of the bucket type. | keyword |
+| aws_securityhub.finding.databucket.uid | The unique identifier of the bucket. | keyword |
 | aws_securityhub.finding.device.agent_list.name | The name of the agent or sensor. | keyword |
 | aws_securityhub.finding.device.agent_list.policies | Describes the various policies that may be applied or enforced by an agent or sensor. | nested |
 | aws_securityhub.finding.device.agent_list.type | The normalized caption of the type_id value for the agent or sensor. | keyword |
@@ -1320,6 +1367,52 @@ For more information on architectures that can be used for scaling this integrat
 | aws_securityhub.finding.resources.data_classifications.status_id | The normalized status identifier of the classification job. | keyword |
 | aws_securityhub.finding.resources.data_classifications.total | The total count of discovered entities, by the classification job. | long |
 | aws_securityhub.finding.resources.data_classifications.uid | The unique identifier of the classification job. | keyword |
+| aws_securityhub.finding.resources.databucket.cloud_partition | The canonical cloud partition name to which the region is assigned. | keyword |
+| aws_securityhub.finding.resources.databucket.created_time | The time when the bucket was created. | date |
+| aws_securityhub.finding.resources.databucket.created_time_dt | The time when the bucket was created. | date |
+| aws_securityhub.finding.resources.databucket.data | Additional data about the bucket, such as S3-specific metadata. | flattened |
+| aws_securityhub.finding.resources.databucket.encryption_details.algorithm | The encryption algorithm used. | keyword |
+| aws_securityhub.finding.resources.databucket.encryption_details.algorithm_id | The normalized identifier of the encryption algorithm. | keyword |
+| aws_securityhub.finding.resources.databucket.encryption_details.key_length | The length of the encryption key in bits. | long |
+| aws_securityhub.finding.resources.databucket.encryption_details.type | The type of encryption applied. | keyword |
+| aws_securityhub.finding.resources.databucket.file.data_classifications.category | The name of the data classification category. | keyword |
+| aws_securityhub.finding.resources.databucket.file.data_classifications.category_id | The normalized identifier of the data classification category. | keyword |
+| aws_securityhub.finding.resources.databucket.file.data_classifications.classifier_details | Details about the classifier used for data classification. | flattened |
+| aws_securityhub.finding.resources.databucket.file.data_classifications.discovery_details.count | The count of items discovered. | long |
+| aws_securityhub.finding.resources.databucket.file.data_classifications.discovery_details.type | The type of sensitive data discovered. | keyword |
+| aws_securityhub.finding.resources.databucket.file.data_classifications.size | Size of the data classified. | long |
+| aws_securityhub.finding.resources.databucket.file.data_classifications.src_url | The source URL pointing towards the full classification job details. | keyword |
+| aws_securityhub.finding.resources.databucket.file.data_classifications.status | The resultant status of the classification job. | keyword |
+| aws_securityhub.finding.resources.databucket.file.data_classifications.status_id | The normalized status identifier of the classification job. | keyword |
+| aws_securityhub.finding.resources.databucket.file.data_classifications.total | The total count of discovered entities. | long |
+| aws_securityhub.finding.resources.databucket.file.encryption_details.algorithm | The encryption algorithm used. | keyword |
+| aws_securityhub.finding.resources.databucket.file.encryption_details.algorithm_id | The normalized identifier of the encryption algorithm. | keyword |
+| aws_securityhub.finding.resources.databucket.file.encryption_details.key_length | The length of the encryption key in bits. | long |
+| aws_securityhub.finding.resources.databucket.file.encryption_details.type | The type of encryption applied. | keyword |
+| aws_securityhub.finding.resources.databucket.file.ext | The file extension. | keyword |
+| aws_securityhub.finding.resources.databucket.file.is_encrypted | Indicates whether the file is encrypted. | boolean |
+| aws_securityhub.finding.resources.databucket.file.is_public | Indicates whether the file is publicly accessible. | boolean |
+| aws_securityhub.finding.resources.databucket.file.mime_type | The MIME type of the file. | keyword |
+| aws_securityhub.finding.resources.databucket.file.modified_time | The time when the file was last modified. | date |
+| aws_securityhub.finding.resources.databucket.file.modified_time_dt | The time when the file was last modified. | date |
+| aws_securityhub.finding.resources.databucket.file.name | The name of the file. | keyword |
+| aws_securityhub.finding.resources.databucket.file.path | The full path of the file. | keyword |
+| aws_securityhub.finding.resources.databucket.file.size | The size of the file in bytes. | long |
+| aws_securityhub.finding.resources.databucket.file.storage_class | The storage class of the file. | keyword |
+| aws_securityhub.finding.resources.databucket.file.type | The type of the file. | keyword |
+| aws_securityhub.finding.resources.databucket.file.type_id | The normalized identifier of the file type. | keyword |
+| aws_securityhub.finding.resources.databucket.file.version | The version of the file. | keyword |
+| aws_securityhub.finding.resources.databucket.file.xattributes | An unordered collection of extended file attributes. | flattened |
+| aws_securityhub.finding.resources.databucket.is_encrypted | Indicates whether the bucket is encrypted. | boolean |
+| aws_securityhub.finding.resources.databucket.is_public | Indicates whether the bucket is publicly accessible. | boolean |
+| aws_securityhub.finding.resources.databucket.name | The name of the bucket. | keyword |
+| aws_securityhub.finding.resources.databucket.owner.name | The name of the bucket owner. | keyword |
+| aws_securityhub.finding.resources.databucket.owner.uid | The unique identifier of the bucket owner. | keyword |
+| aws_securityhub.finding.resources.databucket.region | The cloud region of the bucket. | keyword |
+| aws_securityhub.finding.resources.databucket.tags.\* | The list of tags. | object |
+| aws_securityhub.finding.resources.databucket.type | The type of the bucket. | keyword |
+| aws_securityhub.finding.resources.databucket.type_id | The normalized identifier of the bucket type. | keyword |
+| aws_securityhub.finding.resources.databucket.uid | The unique identifier of the bucket. | keyword |
 | aws_securityhub.finding.resources.group.desc | The group description. | keyword |
 | aws_securityhub.finding.resources.group.domain | The domain where the group is defined. | keyword |
 | aws_securityhub.finding.resources.group.name | The group name. | keyword |
@@ -1327,6 +1420,19 @@ For more information on architectures that can be used for scaling this integrat
 | aws_securityhub.finding.resources.group.type | The type of the group or account. | keyword |
 | aws_securityhub.finding.resources.group.uid | The unique identifier of the group. | keyword |
 | aws_securityhub.finding.resources.hostname | The fully qualified name of the resource. | keyword |
+| aws_securityhub.finding.resources.image.architecture | The image architecture. | keyword |
+| aws_securityhub.finding.resources.image.created_time | The time when the image was created. | date |
+| aws_securityhub.finding.resources.image.created_time_dt | The time when the image was created. | date |
+| aws_securityhub.finding.resources.image.hash.algorithm | The algorithm used to create the hash. | keyword |
+| aws_securityhub.finding.resources.image.hash.algorithm_id | The normalized identifier of the hash algorithm. | keyword |
+| aws_securityhub.finding.resources.image.hash.value | The hash value. | keyword |
+| aws_securityhub.finding.resources.image.modified_time | The time when the image was last modified. | date |
+| aws_securityhub.finding.resources.image.modified_time_dt | The time when the image was last modified. | date |
+| aws_securityhub.finding.resources.image.name | The image name. | keyword |
+| aws_securityhub.finding.resources.image.registry_uid | The unique identifier of the image registry. | keyword |
+| aws_securityhub.finding.resources.image.repository_name | The name of the image repository. | keyword |
+| aws_securityhub.finding.resources.image.tag | The tag of the image. | keyword |
+| aws_securityhub.finding.resources.image.uid | The unique identifier of the image. | keyword |
 | aws_securityhub.finding.resources.ip | The IP address of the resource, in either IPv4 or IPv6 format. | ip |
 | aws_securityhub.finding.resources.is_backed_up | Indicates whether the device or resource has a backup enabled, such as an automated snapshot or a cloud backup. | boolean |
 | aws_securityhub.finding.resources.labels | The list of labels associated to the resource. | keyword |
@@ -1354,6 +1460,7 @@ For more information on architectures that can be used for scaling this integrat
 | aws_securityhub.finding.resources.owner.type_id | The account type identifier. | keyword |
 | aws_securityhub.finding.resources.owner.uid | The unique user identifier. | keyword |
 | aws_securityhub.finding.resources.owner.uid_alt | The alternate user identifier. | keyword |
+| aws_securityhub.finding.resources.provider | The provider of the cloud resource. | keyword |
 | aws_securityhub.finding.resources.region | The cloud region of the resource. | keyword |
 | aws_securityhub.finding.resources.resource_relationship.desc | The graph description - provides additional details about the graph's purpose and contents. | keyword |
 | aws_securityhub.finding.resources.resource_relationship.edges | The edges/connections between nodes in the graph - contains the collection of edge objects defining relationships between nodes. | nested |
@@ -1364,10 +1471,17 @@ For more information on architectures that can be used for scaling this integrat
 | aws_securityhub.finding.resources.resource_relationship.query_language_id | The normalized identifier of a graph query language that can be used to interact with the graph. | keyword |
 | aws_securityhub.finding.resources.resource_relationship.type | The graph type. Typically useful to represent the specifc type of graph that is used. | keyword |
 | aws_securityhub.finding.resources.resource_relationship.uid | Unique identifier of the graph - a unique ID to reference this specific graph. | keyword |
+| aws_securityhub.finding.resources.role | The role of the resource in the context of the finding. | keyword |
+| aws_securityhub.finding.resources.role_id | The normalized identifier of the resource role. | keyword |
 | aws_securityhub.finding.resources.tags.\* | The list of tags. | object |
 | aws_securityhub.finding.resources.type | The resource type as defined by the event source. | keyword |
 | aws_securityhub.finding.resources.uid | The unique identifier of the resource. | keyword |
 | aws_securityhub.finding.resources.uid_alt | The alternative unique identifier of the resource. | keyword |
+| aws_securityhub.finding.resources.user.name | The username. | keyword |
+| aws_securityhub.finding.resources.user.programmatic_credentials.uid | The unique identifier of the credential. | keyword |
+| aws_securityhub.finding.resources.user.type | The type of the user. | keyword |
+| aws_securityhub.finding.resources.user.type_id | The normalized account type identifier. | keyword |
+| aws_securityhub.finding.resources.user.uid_alt | The alternate user identifier. | keyword |
 | aws_securityhub.finding.resources.version | The version of the resource. | keyword |
 | aws_securityhub.finding.resources.zone | The specific availability zone within a cloud region where the resource is located. | keyword |
 | aws_securityhub.finding.risk_details | Describes the risk associated with the finding. | keyword |
