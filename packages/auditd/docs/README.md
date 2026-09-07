@@ -138,6 +138,7 @@ An example event for `log` looks as following:
 | auditd.log.direction |  | keyword |
 | auditd.log.dst_prefixlen |  | long |
 | auditd.log.entries |  | long |
+| auditd.log.exit | The exit field from a SYSCALL record. Contains a named errno symbol (e.g. EINPROGRESS) when the numeric exit code cannot be converted to process.exit_code. | keyword |
 | auditd.log.family |  | keyword |
 | auditd.log.fe |  | keyword |
 | auditd.log.fi |  | keyword |
@@ -174,6 +175,10 @@ An example event for `log` looks as following:
 | auditd.log.new_ses | For login events this is the new session ID. It can be used to tie a user to future events by session ID. | keyword |
 | auditd.log.node |  | keyword |
 | auditd.log.obj |  | keyword |
+| auditd.log.obj_domain |  | keyword |
+| auditd.log.obj_level |  | keyword |
+| auditd.log.obj_role |  | keyword |
+| auditd.log.obj_user |  | keyword |
 | auditd.log.objtype |  | keyword |
 | auditd.log.old |  | keyword |
 | auditd.log.old-level |  | keyword |
@@ -189,6 +194,7 @@ An example event for `log` looks as following:
 | auditd.log.peer |  | keyword |
 | auditd.log.permissive |  | keyword |
 | auditd.log.pfs |  | keyword |
+| auditd.log.port |  | keyword |
 | auditd.log.proctitle |  | keyword |
 | auditd.log.profile |  | keyword |
 | auditd.log.rdev |  | keyword |
@@ -204,6 +210,7 @@ An example event for `log` looks as following:
 | auditd.log.sauid |  | keyword |
 | auditd.log.scontext |  | keyword |
 | auditd.log.selected-context |  | keyword |
+| auditd.log.seperms |  | keyword |
 | auditd.log.sequence | The audit event sequence number. | long |
 | auditd.log.seresult |  | keyword |
 | auditd.log.ses |  | keyword |
@@ -211,6 +218,11 @@ An example event for `log` looks as following:
 | auditd.log.spid |  | keyword |
 | auditd.log.src_prefixlen |  | long |
 | auditd.log.subj |  | keyword |
+| auditd.log.subj_category |  | keyword |
+| auditd.log.subj_domain |  | keyword |
+| auditd.log.subj_level |  | keyword |
+| auditd.log.subj_role |  | keyword |
+| auditd.log.subj_user |  | keyword |
 | auditd.log.success |  | boolean |
 | auditd.log.sw |  | keyword |
 | auditd.log.sw_type |  | keyword |
@@ -273,6 +285,9 @@ An example event for `log` looks as following:
 | host.os.version | Operating system version as a raw string. | keyword |
 | host.type | Type of host. For Cloud providers this can be the machine type like `t2.medium`. If vm, this could be the container, for example, or other information meaningful in your environment. | keyword |
 | input.type | Input type | keyword |
+| log.file.device_id | Device Id of the log file this event came from. | keyword |
+| log.file.fingerprint | Fingerprint of the log file. | keyword |
+| log.file.inode | Inode number of the log file. | keyword |
 | log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
 | log.offset | Log offset | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
