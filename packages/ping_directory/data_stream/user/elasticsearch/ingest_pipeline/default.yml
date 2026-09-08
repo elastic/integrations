@@ -12,15 +12,6 @@ processors:
   - drop:
       tag: drop_retry_events
       if: ctx.message == 'retry'
-  - remove:
-      field:
-        - organization
-        - division
-        - team
-      tag: remove_agentless_tags
-      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
-      ignore_missing: true
-      description: Removes the fields added by Agentless as metadata, as they can collide with ECS fields.
   - rename:
       field: message
       tag: rename_message_to_event_original
