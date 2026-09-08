@@ -7,7 +7,7 @@ package packagenames
 import (
 	"fmt"
 	"path/filepath"
-	"slices"
+	"sort"
 	"strings"
 
 	"github.com/elastic/integrations/dev/citools"
@@ -49,7 +49,7 @@ func checkDuplicateNames(paths []string) error {
 	}
 
 	if len(duplicates) > 0 {
-		slices.Sort(duplicates)
+		sort.Strings(duplicates)
 		return fmt.Errorf("found duplicate package names:\n%s", strings.Join(duplicates, "\n"))
 	}
 	return nil
