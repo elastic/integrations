@@ -54,8 +54,8 @@ retry() {
 # corrupt file that later gets executed. Downloads to a temp file so a failed
 # attempt never leaves a partial file at the destination.
 download_file() {
-  local dest="${1:-}"
-  local url="${2:-}"
+  local dest="$1"
+  local url="$2"
   local tmp
 
   if [[ -z "${dest}" || -z "${url}" ]]; then
