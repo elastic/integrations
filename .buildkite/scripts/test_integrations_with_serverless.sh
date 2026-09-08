@@ -33,7 +33,7 @@ if [[ "$SERVERLESS_PROJECT" == "security" ]]; then
     kibana_url="https://raw.githubusercontent.com/elastic/kibana/main/config/serverless.security.yml"
 fi
 export KIBANA_CONFIG_FILE_PATH="${WORKSPACE}/kibana.serverless.config.yml"
-curl -sSL -o "${KIBANA_CONFIG_FILE_PATH}" "${kibana_url}"
+download_file "${KIBANA_CONFIG_FILE_PATH}" "${kibana_url}"
 
 if [ ! -d packages ]; then
     echo "Missing packages folder"
