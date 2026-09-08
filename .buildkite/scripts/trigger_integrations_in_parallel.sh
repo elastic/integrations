@@ -46,9 +46,11 @@ if [[ "${BUILDKITE_PIPELINE_SLUG}" == "integrations-test-stack" && "${GITHUB_PR_
 fi
 
 echo "--- Compute affected packages from git diff"
-COMMIT_MERGE=$(git merge-base "${from}" "${to}")
-export COMMIT_MERGE
-changed_files=$(git diff --name-only "${COMMIT_MERGE}" "${to}")
+if [[ "${FORCE_CHECK_ALL}" != "true" ]]; then
+    COMMIT_MERGE=$(git merge-base "${from}" "${to}")
+    export COMMIT_MERGE
+    changed_files=$(git diff --name-only "${COMMIT_MERGE}" "${to}")
+fi
 
 if [[ "${FORCE_CHECK_ALL}" == "true" ]] || echo "${changed_files}" | pr_has_package_related_files; then
     echo "Non-package files changed or FORCE_CHECK_ALL set: scanning all packages"
