@@ -54,17 +54,28 @@ retry() {
 # corrupt file that later gets executed. Downloads to a temp file so a failed
 # attempt never leaves a partial file at the destination.
 download_file() {
-  local dest=$1
-  local url=$2
+  local dest="${1:-}"
+  local url="${2:-}"
   local tmp
 
-  tmp="$(mktemp "$(dirname "${dest}")/tmp.XXXXXX")"
-  if ! retry 5 curl --fail --silent --show-error --location -o "${tmp}" "${url}"; then
+  if [[ -z "${dest}" || -z "${url}" ]]; then
+    >&2 echo "download_file: usage: download_file <dest> <url>"
+    return 2
+  fi
+
+  mkdir -p "$(dirname "${dest}")" || return 1
+
+  tmp="$(mktemp "$(dirname "${dest}")/tmp.XXXXXX")" || return 1
+
+  retry 5 curl --fail --silent --show-error --location -o "${tmp}" "${url}"
+  local exit=$?
+  if (( exit != 0 )); then
     rm -f "${tmp}"
     >&2 echo "Failed to download ${url}"
-    return 1
+    return "${exit}"
   fi
-  mv "${tmp}" "${dest}" || { rm -f "${tmp}"; return 1; }
+
+  mv "${tmp}" "${dest}" || { exit=$?; rm -f "${tmp}"; return "${exit}"; }
 }
 
 download_bin() {
