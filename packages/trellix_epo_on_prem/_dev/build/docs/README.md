@@ -50,7 +50,7 @@ To collect data via the REST / Web API, you need the following:
 1. **Trellix ePO server**: Trellix ePO On-Prem 5.10.0 or above with REST API / Web API enabled.
 2. **User account**: A Trellix ePO user account with:
    - **Query permissions** to the `OrionAuditLog` table (or `OrionAuditLogMT` for multitenant deployments), the `WP_EventInfo` table, the `EEFFDeviceAllEventsView` table, and/or the `EPOProductEvents` table.
-   - Sufficient role permissions to execute queries via the Web API.
+   - Sufficient role permissions to run queries via the Web API.
 3. **API credentials**: Username and password for basic authentication.
 4. **Server URL**: Base URL of the Trellix ePO server (default port: 8443, for example `https://epo.example.com:8443`).
 5. **Network access**: The Elastic Agent must have outbound HTTPS access to the ePO server.
@@ -88,7 +88,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
    - **Initial Event Auto ID** — cursor to begin querying from. Subsequent collections resume from the last persisted value. Set to `0` to start from the beginning (default: `0`).
    - **Interval** — polling frequency. The default is `24h`.
    - **Page Size** — records fetched per API request. The default is `500`.
-   - **Maximum Pages Per Interval** — applies to `device_event` and `product_event`. The default is `1000`.
+   - **Maximum Pages Per Interval** — the maximum number of pages collected in a single interval. The default is `1000`.
 
 7. Select **Save and continue** to save the integration.
 

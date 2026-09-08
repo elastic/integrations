@@ -21,7 +21,7 @@ rules:
               "OrionAuditLog.AutoId": 1943,
               "OrionAuditLog.CmdName": "Delete user",
               "OrionAuditLog.EndTime": "2026-07-16T13:45:05+05:30",
-              "OrionAuditLog.Message": "User \"tempuser\" deleted from system",
+              "OrionAuditLog.Message": "User \"bob.smith\" deleted from system",
               "OrionAuditLog.Priority": 3,
               "OrionAuditLog.StartTime": "2026-07-16T13:45:04+05:30",
               "OrionAuditLog.Success": true,
@@ -29,10 +29,8 @@ rules:
               "OrionAuditLog.UserName": "admin"
             }
           ]
-
   # web_control page 1: a full page (== page_size), so the program sets
   # want_more and pages again from the last EventAutoID it saw.
-
   - path: /remote/core.executeQuery
     methods: ['GET']
     query_params:
@@ -88,9 +86,7 @@ rules:
               "WP_EventInfo.UserName": null
             }
           ]
-
   # web_control page 2: a short page, which clears want_more and ends the cycle.
-
   - path: /remote/core.executeQuery
     methods: ['GET']
     query_params:
@@ -128,10 +124,8 @@ rules:
               "WP_EventInfo.UserName": null
             }
           ]
-
   # web_control catchall: any cursor beyond the seeded rows is exhausted, so a
   # later poll re-collects nothing and hit_count stays deterministic.
-
   - path: /remote/core.executeQuery
     methods: ['GET']
     query_params:
@@ -149,13 +143,14 @@ rules:
           Content-Type:
             - 'text/plain'
         body: 'OK: []'
-
+  # product_event page 1: a full page (== page_size), so the program sets
+  # want_more and pages again from the last AutoID it saw.
   - path: /remote/core.executeQuery
     methods: ['GET']
     query_params:
       target: 'EPOProductEvents'
       select: "{select:.*}"
-      where: "{where:.*}"
+      where: "(where (gt EPOProductEvents.AutoID 0))"
       order: "{order:.*}"
       ':output': 'json'
     request_headers:
@@ -174,7 +169,7 @@ rules:
               "EPOProductEvents.DetectedUTC": "2026-07-21T14:53:20+05:30",
               "EPOProductEvents.Error": 0,
               "EPOProductEvents.ExtraDATNames": null,
-              "EPOProductEvents.HostName": "DESKTOP-K3QM7XP",
+              "EPOProductEvents.HostName": "HOST-EXAMPLE-02",
               "EPOProductEvents.IPV6": "2001:DB8:85A3:0:8A2E:370:7334:1",
               "EPOProductEvents.InitiatorID": null,
               "EPOProductEvents.InitiatorType": "CommandLine",
@@ -189,9 +184,91 @@ rules:
               "EPOProductEvents.TenantId": 1,
               "EPOProductEvents.Type": "Install",
               "EPOProductEvents.UserName": "SYSTEM"
+            },
+            {
+              "EPOProductEvents.AgentGUID": "89A1D5C1-2B3E-4F67-8A9B-0C1D2E3F4A5B",
+              "EPOProductEvents.AutoID": 2,
+              "EPOProductEvents.DetectedUTC": "2026-07-21T14:55:50+05:30",
+              "EPOProductEvents.Error": 0,
+              "EPOProductEvents.ExtraDATNames": null,
+              "EPOProductEvents.HostName": "HOST-EXAMPLE-02",
+              "EPOProductEvents.IPV6": "0:0:0:0:0:FFFF:C633:6407",
+              "EPOProductEvents.InitiatorID": "EPOAGENT3000",
+              "EPOProductEvents.InitiatorType": "DeploymentTask",
+              "EPOProductEvents.Locale": 1033,
+              "EPOProductEvents.NodeID": 1,
+              "EPOProductEvents.ProductCode": "EEFF____5500",
+              "EPOProductEvents.ReceivedUTC": "2026-07-21T16:15:13+05:30",
+              "EPOProductEvents.SPHotFix": null,
+              "EPOProductEvents.SiteName": "EPO-SITE-EXAMPLE-02",
+              "EPOProductEvents.TVDEventID": 2411,
+              "EPOProductEvents.TVDSeverity": 0,
+              "EPOProductEvents.TenantId": 1,
+              "EPOProductEvents.Type": "Install",
+              "EPOProductEvents.UserName": "Administrator"
             }
           ]
-
+  # product_event page 2: a short page, which clears want_more and ends the cycle.
+  - path: /remote/core.executeQuery
+    methods: ['GET']
+    query_params:
+      target: 'EPOProductEvents'
+      select: "{select:.*}"
+      where: "(where (gt EPOProductEvents.AutoID 2))"
+      order: "{order:.*}"
+      ':output': 'json'
+    request_headers:
+      Authorization:
+        - "Basic dGVtcF91c2VyOnRlbXBfcGFzc3dvcmQ="
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'text/plain'
+        body: |-
+          OK: [
+            {
+              "EPOProductEvents.AgentGUID": "89A1D5C1-2B3E-4F67-8A9B-0C1D2E3F4A5B",
+              "EPOProductEvents.AutoID": 3,
+              "EPOProductEvents.DetectedUTC": "2026-07-21T16:18:27+05:30",
+              "EPOProductEvents.Error": 0,
+              "EPOProductEvents.ExtraDATNames": null,
+              "EPOProductEvents.HostName": "HOST-EXAMPLE-02",
+              "EPOProductEvents.IPV6": "0:0:0:0:0:FFFF:C633:6407",
+              "EPOProductEvents.InitiatorID": "EPOAGENT3000",
+              "EPOProductEvents.InitiatorType": "DeploymentTask",
+              "EPOProductEvents.Locale": 1033,
+              "EPOProductEvents.NodeID": 1,
+              "EPOProductEvents.ProductCode": "ENDPATP_1070",
+              "EPOProductEvents.ReceivedUTC": "2026-07-21T16:19:41+05:30",
+              "EPOProductEvents.SPHotFix": null,
+              "EPOProductEvents.SiteName": "EPO-SITE-EXAMPLE-02",
+              "EPOProductEvents.TVDEventID": 2412,
+              "EPOProductEvents.TVDSeverity": 4,
+              "EPOProductEvents.TenantId": 1,
+              "EPOProductEvents.Type": "Install",
+              "EPOProductEvents.UserName": "Administrator"
+            }
+          ]
+  # product_event guard: bounds the want_more chain if the cursor ever advances
+  # past the seeded rows, since any unseeded cursor returns an empty page.
+  - path: /remote/core.executeQuery
+    methods: ['GET']
+    query_params:
+      target: 'EPOProductEvents'
+      select: "{select:.*}"
+      where: "{where:.*}"
+      order: "{order:.*}"
+      ':output': 'json'
+    request_headers:
+      Authorization:
+        - "Basic dGVtcF91c2VyOnRlbXBfcGFzc3dvcmQ="
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'text/plain'
+        body: 'OK: []'
   # device_event page 1: a full page (== page_size), so the program sets
   # want_more and pages again from the last AutoID it saw.
   - path: /remote/core.executeQuery
@@ -265,7 +342,6 @@ rules:
               "EEFFDeviceAllEventsView.VendorName": "Example Vendor"
             }
           ]
-
   # device_event page 2: a short page, which clears want_more and ends the cycle.
   - path: /remote/core.executeQuery
     methods: ['GET']
@@ -312,7 +388,6 @@ rules:
               "EEFFDeviceAllEventsView.VendorName": "Example Vendor"
             }
           ]
-
   # device_event catchall: any cursor beyond the seeded rows is exhausted, so a
   # later poll re-collects nothing and hit_count stays deterministic.
   - path: /remote/core.executeQuery

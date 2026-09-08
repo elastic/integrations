@@ -64,7 +64,8 @@ program: |-
           "select": ["(select (top " + string(int(state.page_size)) + ") " + state.columns + ")"],
           "where": ["(where (gt EEFFDeviceAllEventsView.AutoID " + state.event_auto_id + "))"],
           "order": ["(order (asc EEFFDeviceAllEventsView.AutoID))"],
-        }.format_query() + "&:output=json"
+          ":output": ["json"],
+        }.format_query()
       ).as(resp,
         (resp.StatusCode == 200) ?
           string(resp.Body).trim_space().trim_prefix("OK:").decode_json().as(rows,
