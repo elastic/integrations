@@ -25,7 +25,10 @@ processors:
         USER_INFO: "User %{DATA:citrix_adc.log.user}"
         CLIENT_IP_OPT: "Client_ip (%{IP:citrix_adc.log.client_ip})?"
         XFF_IP_OPT: '(?:X-Forwarded-For_ip(?: +%{IP:citrix_adc.log.x_forwarded_for_ip})?(?:(?!\s-\s).)*%{SEP})?'
-        NAT_IP: "Nat_ip (%{IP:citrix_adc.log.nat.ip}|%{DATA})"
+        # Unquoted variant: LOGOUT has been seen with a bare, unquoted Nat_ip
+        # value. The final branch keeps that tolerance but is bounded so it
+        # cannot run past a separator and silently swallow a whole segment.
+        NAT_IP_UNQUOTED: 'Nat_ip (?:%{IP:citrix_adc.log.nat.ip}|"%{DATA}"|(?:(?!\s-\s).)+)'
         NAT_IP_ESCAPED: "Nat_ip (%{IP:citrix_adc.log.nat.ip}|\\\\?\"%{DATA}\\\\?\")"
         VSERVER_INFO: "Vserver %{IP:citrix_adc.log.vserver.ip}:%{INT:citrix_adc.log.vserver.port}"
         TIME_INFO: "Start_time \"%{DATA:_tmp.start_time}\"%{SEP}End_time \"%{DATA:_tmp.end_time}\"%{SEP}Duration %{NOTSPACE:citrix_adc.log.duration}"
@@ -40,7 +43,7 @@ processors:
         LOGOUT_GROUP_INFO: 'LogoutMethod "%{DATA:citrix_adc.log.logout_method}"%{SEP}Group\(s\) "%{DATA:citrix_adc.log.groups}"'
         LOGOUT_GROUP_INFO_ESCAPED: "LogoutMethod \\\\?\"%{DATA:citrix_adc.log.logout_method}\\\\?\"%{SEP}Group\\(s\\) \\\\?\"%{DATA:citrix_adc.log.groups}\\\\?\""
       patterns:
-        - '^%{USER_INFO}%{SEP}%{CLIENT_IP_OPT}%{SEP}%{XFF_IP_OPT}%{NAT_IP}%{SEP}%{VSERVER_INFO}%{SEP}%{TIME_INFO}%{SEP}%{HTTP_RESOURCES}%{SEP}%{NON_HTTP_SERVICES}%{CONNECTIONS}%{SEP}?%{POLICIES}%{SEP}%{BYTES_INFO}%{SEP}%{COMPRESSED_BYTES}%{SEP}%{COMPRESSION_RATIOS}%{SEP}%{LOGOUT_GROUP_INFO} ?$'
+        - '^%{USER_INFO}%{SEP}%{CLIENT_IP_OPT}%{SEP}%{XFF_IP_OPT}%{NAT_IP_UNQUOTED}%{SEP}%{VSERVER_INFO}%{SEP}%{TIME_INFO}%{SEP}%{HTTP_RESOURCES}%{SEP}%{NON_HTTP_SERVICES}%{CONNECTIONS}%{SEP}?%{POLICIES}%{SEP}%{BYTES_INFO}%{SEP}%{COMPRESSED_BYTES}%{SEP}%{COMPRESSION_RATIOS}%{SEP}%{LOGOUT_GROUP_INFO} ?$'
         - '^(Logout handler : )?Context %{DATA:citrix_adc.log.username}@%{IP}%{SEP}SessionId: %{NUMBER:citrix_adc.log.session_id}%{SEP}%{USER_INFO}%{SEP}%{CLIENT_IP_OPT}%{SEP}%{XFF_IP_OPT}%{NAT_IP_ESCAPED}%{SEP}%{VSERVER_INFO}%{SEP}%{TIME_INFO_ESCAPED}%{SEP}%{HTTP_RESOURCES}%{SEP}%{NON_HTTP_SERVICES}%{CONNECTIONS}%{SEP}%{POLICIES}%{SEP}%{BYTES_INFO}%{SEP}%{COMPRESSED_BYTES}%{SEP}%{COMPRESSION_RATIOS}%{SEP}%{LOGOUT_GROUP_INFO_ESCAPED} ?$'
 
   - grok:
