@@ -76,8 +76,35 @@ echo "Checking with commits: from: '${from}' to: '${to}'"
 
 any_package_failing=0
 
-echo "--- List all directories"
-PACKAGE_LIST=$(list_all_directories)
+echo "--- Compute affected packages from git diff"
+COMMIT_MERGE=$(git merge-base "${from}" "${to}")
+export COMMIT_MERGE
+changed_files=$(git diff --name-only "${COMMIT_MERGE}" "${to}")
+
+if [[ "${FORCE_CHECK_ALL}" == "true" ]] || echo "${changed_files}" | pr_has_package_related_files; then
+    echo "Non-package files changed or FORCE_CHECK_ALL set: scanning all packages"
+    PACKAGE_LIST=$(list_all_directories)
+else
+    PACKAGE_LIST=$(
+        {
+            # Use list_all_directories (mage listPackages) instead of grepping ^packages/[^/]+
+            # directly from the diff output: the regex would only capture the first path segment
+            # and break for nested packages (e.g. packages/technology/foo → packages/technology,
+            # which has no manifest.yml). mage listPackages discovers valid package roots at any
+            # depth via WalkDir, so we cross-reference its output against the changed files.
+            all_pkgs=$(list_all_directories)
+            while IFS= read -r pkg_path; do
+                if echo "${changed_files}" | grep -q "^${pkg_path}/"; then
+                    echo "${pkg_path}"
+                elif echo "${changed_files}" | grep -q "^\.buildkite/scripts/${pkg_path}\.sh$"; then
+                    echo "${pkg_path}"
+                fi
+            done <<< "${all_pkgs}"
+        } | sort -u | grep -v '^$' || true
+    )
+    echo "Packages affected by diff: $(echo "${PACKAGE_LIST}" | tr '\n' ' ')"
+fi
+
 for package_path in ${PACKAGE_LIST}; do
     echo "--- [$package_path] check if it is required to be tested"
     if ! should_test_package "${package_path}" "${from}" "${to}"; then

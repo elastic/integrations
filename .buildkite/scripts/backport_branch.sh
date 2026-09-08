@@ -151,12 +151,20 @@ updateBackportBranchContents() {
   # it with sed, which rewrites only that line and leaves blank lines intact — yq -i
   # rewrites the whole file and strips empty lines as a side effect.
   local pipeline_yml="${BUILDKITE_FOLDER_PATH}/pipeline.yml"
+  local pipeline_serverless_yml="${BUILDKITE_FOLDER_PATH}/pipeline.serverless.yml"
   local k8s_version_line=""
   local kind_version_line=""
+  local serverless_k8s_version_line=""
+  local serverless_kind_version_line=""
   if [ -f "${pipeline_yml}" ]; then
     k8s_version_line=$(grep -E '^\s*K8S_VERSION:' "${pipeline_yml}" || true)
     kind_version_line=$(grep -E '^\s*KIND_VERSION:' "${pipeline_yml}" || true)
-    echo "Preserving from backport branch: ${k8s_version_line}, ${kind_version_line}"
+    echo "Preserving from backport branch (pipeline.yml): ${k8s_version_line}, ${kind_version_line}"
+  fi
+  if [ -f "${pipeline_serverless_yml}" ]; then
+    serverless_k8s_version_line=$(grep -E '^\s*K8S_VERSION:' "${pipeline_serverless_yml}" || true)
+    serverless_kind_version_line=$(grep -E '^\s*KIND_VERSION:' "${pipeline_serverless_yml}" || true)
+    echo "Preserving from backport branch (pipeline.serverless.yml): ${serverless_k8s_version_line}, ${serverless_kind_version_line}"
   fi
 
   echo "--- Copying $BUILDKITE_FOLDER_PATH from $SOURCE_BRANCH..."
@@ -171,6 +179,14 @@ updateBackportBranchContents() {
   if [ -n "${kind_version_line}" ]; then
     echo "--- Restoring KIND_VERSION in ${pipeline_yml}..."
     sed -i "s|^\s*KIND_VERSION:.*|${kind_version_line}|" "${pipeline_yml}"
+  fi
+  if [ -n "${serverless_k8s_version_line}" ]; then
+    echo "--- Restoring K8S_VERSION in ${pipeline_serverless_yml}..."
+    sed -i "s|^\s*K8S_VERSION:.*|${serverless_k8s_version_line}|" "${pipeline_serverless_yml}"
+  fi
+  if [ -n "${serverless_kind_version_line}" ]; then
+    echo "--- Restoring KIND_VERSION in ${pipeline_serverless_yml}..."
+    sed -i "s|^\s*KIND_VERSION:.*|${serverless_kind_version_line}|" "${pipeline_serverless_yml}"
   fi
 
   git add $BUILDKITE_FOLDER_PATH
@@ -194,6 +210,7 @@ updateBackportBranchContents() {
     # Copy the standalone backport CLI tool so backport branches always use the
     # version from main (same reason as copying .buildkite/ and dev/).
     echo "--- Copying cmd/backport from $SOURCE_BRANCH..."
+    git rm -r --cached "cmd/backport" 2>/dev/null || true
     git checkout "$SOURCE_BRANCH" -- "cmd/backport"
     git add cmd/backport
 
@@ -227,6 +244,11 @@ updateBackportBranchContents() {
     git rm -r --cached ".github/workflows" 2>/dev/null || true
     git checkout "$SOURCE_BRANCH" -- ".github/workflows"
     git add .github/workflows
+
+    echo "--- Copying .github/actions from $SOURCE_BRANCH..."
+    git rm -r --cached ".github/actions" 2>/dev/null || true
+    git checkout "$SOURCE_BRANCH" -- ".github/actions"
+    git add .github/actions
 
     # Copy tools.go so we have the dev scripts dependencies required
     echo "--- Copying tools.go from $SOURCE_BRANCH..."
@@ -292,15 +314,15 @@ updateBackportBranchContents() {
   files_cached_num=$(git diff --name-only --cached | wc -l)
   if [ "${files_cached_num}" -gt 0 ]; then
     echo "--- Committing changes..."
-    git commit -m "Add $BUILDKITE_FOLDER_PATH and $JENKINS_FOLDER_PATH to backport branch: $BACKPORT_BRANCH_NAME from the $SOURCE_BRANCH branch"
+    git commit -m "[${BACKPORT_BRANCH_NAME}] Sync CI configuration with ${SOURCE_BRANCH} branch"
   else
     echo "+++ Nothing to commit, skip."
   fi
 
   if [ "$DRY_RUN" == "true" ];then
     echo "--- DRY_RUN mode, nothing will be pushed."
-    # Show just the relevant files diff (go.mod, go.sum, .buildkite, cmd/backport, dev, .github/CODEOWNERS and package to be backported)
-    git --no-pager diff "$SOURCE_BRANCH...$BACKPORT_BRANCH_NAME" .buildkite/ cmd/backport/ dev/ go.sum go.mod tools.go .gitignore .github/CODEOWNERS "${PACKAGE_PATH}"
+    # Show just the relevant files diff (go.mod, go.sum, .buildkite, cmd/backport, dev, .github/CODEOWNERS, .github/actions, .github/workflows and package to be backported)
+    git --no-pager diff "$SOURCE_BRANCH...$BACKPORT_BRANCH_NAME" .buildkite/ cmd/backport/ dev/ go.sum go.mod tools.go .gitignore .github/CODEOWNERS .github/actions/ .github/workflows/ "${PACKAGE_PATH}"
   else
     echo "--- Pushing..."
     git push origin "$BACKPORT_BRANCH_NAME"
@@ -318,6 +340,8 @@ add_bin_path
 
 with_yq
 with_backport
+# mage is still required to get the full packages list 
+with_mage
 
 echo "--- Validating custom backport branch name"
 if ! backport validate-branch-name "${PACKAGE_NAME}" "${BACKPORT_BRANCH_NAME}"; then
