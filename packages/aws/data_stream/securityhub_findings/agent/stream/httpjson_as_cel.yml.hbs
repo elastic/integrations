@@ -81,9 +81,8 @@ cel.program: |-
               "UpdatedAt": [{"Start": state.start, "End": "2099-01-01T00"}],
             }
           ),
-        }.with(
-          (state.?next_token.orValue("") != "") ? {"NextToken": state.next_token} : {}
-        ).encode_json()
+          ?"NextToken": (state.?next_token.orValue("") != "") ? optional.of(state.next_token) : optional.none(),
+        }.encode_json()
       ).do_request().as(resp, (resp.StatusCode == 200) ?
         resp.Body.decode_json().as(body,
           {
