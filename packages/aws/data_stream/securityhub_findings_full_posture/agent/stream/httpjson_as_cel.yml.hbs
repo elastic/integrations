@@ -58,15 +58,17 @@ cel.program: |-
       {
         "MaxResults": 100,
         "Filters": state.?filters.orValue({}),
-        ?"NextToken": (state.?next_token.orValue("") != "") ? optional.of(state.next_token) : optional.none(),
+        ?"NextToken": state.?page.next_token,
       }.encode_json()
     ).do_request().as(resp, (resp.StatusCode == 200) ?
       resp.Body.decode_json().as(body,
-        {
-          "events": body.?Findings.orValue([]).map(e, {"message": e.encode_json()}),
-          "next_token": body.?NextToken.orValue(""),
-          "want_more": body.?NextToken.orValue("") != "",
-        }
+        body.?NextToken.orValue("").as(next,
+          {
+            "events": body.?Findings.orValue([]).map(e, {"message": e.encode_json()}),
+            "page": (next == "") ? {} : {"next_token": next},
+            "want_more": next != "",
+          }
+        )
       )
     :
       {
@@ -82,7 +84,7 @@ cel.program: |-
             ),
           },
         },
-        "next_token": "",
+        "page": {},
         "want_more": false,
       }
     )
