@@ -602,7 +602,7 @@
                       ],
                       "index": "5e246ab8c057c8bab1240f05d26d0aaebafbb2b7a678fc2aaf34bb4311b1fcad",
                       "query": {
-                        "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.sqs.otel-*\n| WHERE QueueName IS NOT NULL AND QueueName != \"\"\n| STATS last_seen = MAX(@timestamp)\n  BY QueueName, cloud.region\n| INLINE STATS latest = MAX(last_seen)\n| WHERE DATE_DIFF(\"minutes\", last_seen, latest) <= 5\n| STATS total = COUNT(*)\n| KEEP total"
+                        "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.sqs.otel-*\n| WHERE QueueName IS NOT NULL AND QueueName != \"\" AND stat == \"Sum\"\n| STATS last_seen = MAX(@timestamp)\n  BY QueueName, cloud.region\n| INLINE STATS latest = MAX(last_seen)\n| WHERE DATE_DIFF(\"minutes\", last_seen, latest) <= 5\n| STATS total = COUNT(*)\n| KEEP total"
                       },
                       "timeField": "@timestamp"
                     }
@@ -612,7 +612,7 @@
               "filters": [],
               "needsRefresh": false,
               "query": {
-                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.sqs.otel-*\n| WHERE QueueName IS NOT NULL AND QueueName != \"\"\n| STATS last_seen = MAX(@timestamp)\n  BY QueueName, cloud.region\n| INLINE STATS latest = MAX(last_seen)\n| WHERE DATE_DIFF(\"minutes\", last_seen, latest) <= 5\n| STATS total = COUNT(*)\n| KEEP total"
+                "esql": "SET unmapped_fields = \"nullify\";\nTS metrics-aws.sqs.otel-*\n| WHERE QueueName IS NOT NULL AND QueueName != \"\" AND stat == \"Sum\"\n| STATS last_seen = MAX(@timestamp)\n  BY QueueName, cloud.region\n| INLINE STATS latest = MAX(last_seen)\n| WHERE DATE_DIFF(\"minutes\", last_seen, latest) <= 5\n| STATS total = COUNT(*)\n| KEEP total"
               },
               "visualization": {
                 "applyColorTo": "background",
