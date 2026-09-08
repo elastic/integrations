@@ -59,7 +59,7 @@ download_file() {
   local tmp
 
   if [[ -z "${dest}" || -z "${url}" ]]; then
-    >&2 echo "download_file: usage: download_file <dest> <url>"
+    echoerr "download_file: usage: download_file <dest> <url>"
     return 2
   fi
 
@@ -71,7 +71,7 @@ download_file() {
   local exit=$?
   if (( exit != 0 )); then
     rm -f "${tmp}"
-    >&2 echo "Failed to download ${url}"
+    echoerr "Failed to download ${url}"
     return "${exit}"
   fi
 
