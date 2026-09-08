@@ -807,7 +807,7 @@ is_pr_affected() {
         return 0
     fi
 
-    commit_merge=$(git merge-base "${from}" "${to}")
+    commit_merge="${COMMIT_MERGE:-$(git merge-base "${from}" "${to}")}"
     echoerr "[${package_name}] git-diff: check non-package files (${commit_merge}..${to})"
     # .github/CODEOWNERS must not be added to "skip_ci_on_only_changed" in ".buildkite/pull-requests.json".
     # When this file is updated, the Buildkite build must be triggered to run the "mage check" step.

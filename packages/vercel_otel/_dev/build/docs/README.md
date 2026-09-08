@@ -38,29 +38,21 @@ You need an Elastic Cloud Serverless project or an Elastic Cloud Hosted deployme
 
 #### Managed endpoint URL for Vercel
 
-Find your Elastic Cloud public endpoint:
-
-1. Log in to the [Elastic Cloud Console](https://cloud.elastic.co/).
-2. Open your project or deployment and select **Manage**.
-3. In **Application endpoints, cluster and component IDs**, select the Vercel endpoint, then copy the public endpoint value.
-
-The managed endpoint URL for Vercel is that public endpoint plus `/inputs/vercel/_default_`, which is the path that accepts Vercel drain payloads:
+In Kibana, go to **Add data** → **More** → **Vercel** and copy the **Vercel endpoint**. The URL follows this pattern:
 
 ```text
 https://<managed-endpoint>/inputs/vercel/_default_
 ```
 
-For example, if your public endpoint is `https://abc123.ingest.us-east-1.aws.elastic.cloud`, then the managed endpoint URL for Vercel is:
+For example:
 
 ```text
 https://abc123.ingest.us-east-1.aws.elastic.cloud/inputs/vercel/_default_
 ```
 
-Every project and deployment has its own host, so always build the managed endpoint URL for Vercel from the endpoint shown in your own Elastic Cloud project or deployment. Refer to [Find your endpoint](https://www.elastic.co/docs/reference/opentelemetry/managed-inputs/managed-otlp-endpoint#find-your-elastic-cloud-managed-otlp-endpoint) for more detail.
-
 #### API key
 
-Create an API key by following the [Send data to Elastic Cloud](https://www.elastic.co/docs/solutions/observability/get-started/quickstart-elastic-cloud-otel-endpoint) quickstart, then copy the encoded value. Vercel sends it in an `Authorization` header that must use the `ApiKey` scheme, as described in [Authentication](https://www.elastic.co/docs/reference/opentelemetry/managed-inputs/managed-otlp-endpoint#authentication).
+Create an API key next to the endpoint in the same **Add data** → **More** → **Vercel** view, then copy the encoded value. Vercel sends it in an `Authorization` header that must use the `ApiKey` scheme, as described in [Authentication](https://www.elastic.co/docs/reference/opentelemetry/managed-inputs/managed-otlp-endpoint#authentication).
 
 Alternatively, in your Elastic Cloud Serverless project, go to **Add data** → **Applications** → **OpenTelemetry**. That wizard shows the endpoint and generates a pre-configured API key for you.
 
