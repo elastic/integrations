@@ -1442,6 +1442,7 @@ Check this [reference document](https://www.elastic.co/guide/en/ecs/current/ecs-
 | citrix_adc.log.vserver.ip |  | ip |
 | citrix_adc.log.vserver.port |  | long |
 | citrix_adc.log.watch_id |  | keyword |
+| citrix_adc.log.x_forwarded_for_ip |  | ip |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
