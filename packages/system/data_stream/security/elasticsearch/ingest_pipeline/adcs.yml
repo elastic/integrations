@@ -1,0 +1,446 @@
+---
+# Keep this pipeline byte-identical in:
+# - packages/system/data_stream/security/elasticsearch/ingest_pipeline/adcs.yml
+# - packages/windows/data_stream/forwarded/elasticsearch/ingest_pipeline/security_adcs.yml
+description: Pipeline for normalizing Active Directory Certificate Services audit events.
+processors:
+  - remove:
+      field: winlog.adcs
+      ignore_missing: true
+  - set:
+      tag: initialize_adcs_rebuild
+      field: _temp_adcs
+      value:
+        request: {}
+        limits:
+          attributes_chars: 16384
+          physical_lines: 128
+          line_chars: 4096
+          key_chars: 128
+          values_per_key: 64
+          san_components: 64
+  - fail:
+      message: winlog.event_data must be an object
+      if: ctx.winlog?.event_data != null && !(ctx.winlog.event_data instanceof Map)
+  - grok:
+      tag: parse_adcs_request_id
+      field: winlog.event_data.RequestId
+      patterns:
+        - '\A%{ADCS_SIGNED_DECIMAL:_temp_adcs.request.id:long}\z'
+      pattern_definitions:
+        ADCS_SIGNED_DECIMAL: '[+-]?[0-9]+'
+      if: ctx.event?.code != null && ['4868', '4869', '4873', '4874', '4886', '4887', '4888', '4889'].contains(ctx.event.code)
+      ignore_missing: true
+      ignore_failure: true
+  - grok:
+      tag: parse_adcs_disposition_code
+      field: winlog.event_data.Disposition
+      patterns:
+        - '\A%{ADCS_SIGNED_DECIMAL:_temp_adcs.request.disposition.code:long}\z'
+      pattern_definitions:
+        ADCS_SIGNED_DECIMAL: '[+-]?[0-9]+'
+      if: ctx.event?.code != null && ['4887', '4888', '4889'].contains(ctx.event.code)
+      ignore_missing: true
+      ignore_failure: true
+  - script:
+      tag: decode_adcs_disposition_name
+      description: Resolve recognized Certificate Services dispositions and HRESULTs without changing the source code.
+      if: ctx._temp_adcs?.request?.disposition?.code != null
+      lang: painless
+      params:
+        # CERTSRV_E_* constants from Windows SDK 10.0.26100.7705.
+        # microsoft/win32metadata@1bfb76db1c360653bdcb56512af0fdf987aceab8
+        # generation/WinSDK/RecompiledIdlHeaders/shared/winerror.h
+        names:
+          # Common CR_DISP_* request dispositions.
+          '3': CR_DISP_ISSUED
+          '5': CR_DISP_UNDER_SUBMISSION
+          '2148089857': CERTSRV_E_BAD_REQUESTSUBJECT
+          '2148089858': CERTSRV_E_NO_REQUEST
+          '2148089859': CERTSRV_E_BAD_REQUESTSTATUS
+          '2148089860': CERTSRV_E_PROPERTY_EMPTY
+          '2148089861': CERTSRV_E_INVALID_CA_CERTIFICATE
+          '2148089862': CERTSRV_E_SERVER_SUSPENDED
+          '2148089863': CERTSRV_E_ENCODING_LENGTH
+          '2148089864': CERTSRV_E_ROLECONFLICT
+          '2148089865': CERTSRV_E_RESTRICTEDOFFICER
+          '2148089866': CERTSRV_E_KEY_ARCHIVAL_NOT_CONFIGURED
+          '2148089867': CERTSRV_E_NO_VALID_KRA
+          '2148089868': CERTSRV_E_BAD_REQUEST_KEY_ARCHIVAL
+          '2148089869': CERTSRV_E_NO_CAADMIN_DEFINED
+          '2148089870': CERTSRV_E_BAD_RENEWAL_CERT_ATTRIBUTE
+          '2148089871': CERTSRV_E_NO_DB_SESSIONS
+          '2148089872': CERTSRV_E_ALIGNMENT_FAULT
+          '2148089873': CERTSRV_E_ENROLL_DENIED
+          '2148089874': CERTSRV_E_TEMPLATE_DENIED
+          '2148089875': CERTSRV_E_DOWNLEVEL_DC_SSL_OR_UPGRADE
+          '2148089876': CERTSRV_E_ADMIN_DENIED_REQUEST
+          '2148089877': CERTSRV_E_NO_POLICY_SERVER
+          '2148089878': CERTSRV_E_WEAK_SIGNATURE_OR_KEY
+          '2148089879': CERTSRV_E_KEY_ATTESTATION_NOT_SUPPORTED
+          '2148089880': CERTSRV_E_ENCRYPTION_CERT_REQUIRED
+          '2148091904': CERTSRV_E_UNSUPPORTED_CERT_TYPE
+          '2148091905': CERTSRV_E_NO_CERT_TYPE
+          '2148091906': CERTSRV_E_TEMPLATE_CONFLICT
+          '2148091907': CERTSRV_E_SUBJECT_ALT_NAME_REQUIRED
+          '2148091908': CERTSRV_E_ARCHIVED_KEY_REQUIRED
+          '2148091909': CERTSRV_E_SMIME_REQUIRED
+          '2148091910': CERTSRV_E_BAD_RENEWAL_SUBJECT
+          '2148091911': CERTSRV_E_BAD_TEMPLATE_VERSION
+          '2148091912': CERTSRV_E_TEMPLATE_POLICY_REQUIRED
+          '2148091913': CERTSRV_E_SIGNATURE_POLICY_REQUIRED
+          '2148091914': CERTSRV_E_SIGNATURE_COUNT
+          '2148091915': CERTSRV_E_SIGNATURE_REJECTED
+          '2148091916': CERTSRV_E_ISSUANCE_POLICY_REQUIRED
+          '2148091917': CERTSRV_E_SUBJECT_UPN_REQUIRED
+          '2148091918': CERTSRV_E_SUBJECT_DIRECTORY_GUID_REQUIRED
+          '2148091919': CERTSRV_E_SUBJECT_DNS_REQUIRED
+          '2148091920': CERTSRV_E_ARCHIVED_KEY_UNEXPECTED
+          '2148091921': CERTSRV_E_KEY_LENGTH
+          '2148091922': CERTSRV_E_SUBJECT_EMAIL_REQUIRED
+          '2148091923': CERTSRV_E_UNKNOWN_CERT_TYPE
+          '2148091924': CERTSRV_E_CERT_TYPE_OVERLAP
+          '2148091925': CERTSRV_E_TOO_MANY_SIGNATURES
+          '2148091926': CERTSRV_E_RENEWAL_BAD_PUBLIC_KEY
+          '2148091927': CERTSRV_E_INVALID_EK
+          '2148091928': CERTSRV_E_INVALID_IDBINDING
+          '2148091929': CERTSRV_E_INVALID_ATTESTATION
+          '2148091930': CERTSRV_E_KEY_ATTESTATION
+          '2148091931': CERTSRV_E_CORRUPT_KEY_ATTESTATION
+          '2148091932': CERTSRV_E_EXPIRED_CHALLENGE
+          '2148091933': CERTSRV_E_INVALID_RESPONSE
+          '2148091934': CERTSRV_E_INVALID_REQUESTID
+          '2148091935': CERTSRV_E_REQUEST_PRECERTIFICATE_MISMATCH
+          '2148091936': CERTSRV_E_PENDING_CLIENT_RESPONSE
+          '2148091937': CERTSRV_E_SEC_EXT_DIRECTORY_SID_REQUIRED
+      source: |
+        long code = ctx._temp_adcs.request.disposition.code;
+        // Accept signed and unsigned 32-bit representations, without wrapping larger values.
+        if (code < -2147483648L || code > 4294967295L) {
+          return;
+        }
+        if (code < 0) {
+          code += 4294967296L;
+        }
+        def name = params.names.get(Long.toString(code));
+        if (name != null) {
+          ctx._temp_adcs.request.disposition.name = name;
+        }
+  - grok:
+      tag: parse_adcs_requester
+      field: winlog.event_data.Requester
+      patterns:
+        - '\A%{ADCS_REQUESTER_PART:_temp_adcs.requester.domain}\\%{ADCS_REQUESTER_PART:_temp_adcs.requester.name}\z'
+      pattern_definitions:
+        ADCS_REQUESTER_PART: '[^\x09-\x0D \\](?:[^\\]*[^\x09-\x0D \\])?'
+      if: ctx.event?.code != null && ['4886', '4887', '4888', '4889'].contains(ctx.event.code)
+      ignore_missing: true
+      ignore_failure: true
+  - set:
+      tag: set_adcs_requester_domain
+      field: _temp_adcs.request.requester.domain
+      copy_from: _temp_adcs.requester.domain
+      if: ctx._temp_adcs?.requester?.domain instanceof String && ctx._temp_adcs.requester.name instanceof String && ctx._temp_adcs.requester.domain.length() <= 8191 && ctx._temp_adcs.requester.name.length() <= 1024
+  - set:
+      tag: set_adcs_requester_name
+      field: _temp_adcs.request.requester.name
+      copy_from: _temp_adcs.requester.name
+      if: ctx._temp_adcs?.requester?.domain instanceof String && ctx._temp_adcs.requester.name instanceof String && ctx._temp_adcs.requester.domain.length() <= 8191 && ctx._temp_adcs.requester.name.length() <= 1024
+  # Bound the input before using the native line splitter; retain trailing blank lines for the line limit.
+  - split:
+      tag: split_adcs_attribute_lines
+      field: winlog.event_data.Attributes
+      target_field: _temp_adcs.attribute_lines
+      separator: '\n'
+      preserve_trailing: true
+      if: ctx.event?.code != null && ['4886', '4887', '4888', '4889'].contains(ctx.event.code) && ctx.winlog?.event_data?.Attributes instanceof String && ctx.winlog.event_data.Attributes.length() <= ctx._temp_adcs.limits.attributes_chars
+  # Parse bounded, allowlisted request attributes and SAN claims.
+  - script:
+      tag: parse_adcs_request_attributes
+      if: ctx.event?.code != null && ['4886', '4887', '4888', '4889'].contains(ctx.event.code) && ctx.winlog?.event_data?.Attributes != null
+      description: Parse only allowlisted AD CS request attributes within explicit resource limits.
+      lang: painless
+      params:
+        outer_keys:
+          certificatetemplate: certificate_template
+          requestclientinfo: request_client_info
+          cdc: cdc
+          rmd: rmd
+          ccm: ccm
+          san: san
+        microsoft_sid_uri_prefix: 'tag:microsoft.com,2022-09-14:sid:'
+      source: |
+        boolean edgeWhitespace(int character) {
+          return character == 32 || character == 9;
+        }
+
+        int trimmedStart(String text, int start, int end) {
+          while (start < end && edgeWhitespace(text.charAt(start))) {
+            start++;
+          }
+          return start;
+        }
+
+        int trimmedEnd(String text, int start, int end) {
+          while (end > start && edgeWhitespace(text.charAt(end - 1))) {
+            end--;
+          }
+          return end;
+        }
+
+        int firstCharacter(String text, int start, int end, int target) {
+          for (int index = start; index < end; index++) {
+            if (text.charAt(index) == target) {
+              return index;
+            }
+          }
+          return -1;
+        }
+
+        String normalizedKey(String text, int start, int end, boolean removeSeparators) {
+          StringBuilder builder = new StringBuilder();
+          for (int index = start; index < end; index++) {
+            int character = text.charAt(index);
+            if (removeSeparators && (character == 32 || character == 9 || character == 45)) {
+              continue;
+            }
+            if (character >= 65 && character <= 90) {
+              character += 32;
+            }
+            builder.append((char) character);
+          }
+          return builder.toString();
+        }
+
+        boolean asciiPrefix(String value, String prefix) {
+          if (value.length() < prefix.length()) {
+            return false;
+          }
+          for (int index = 0; index < prefix.length(); index++) {
+            int left = value.charAt(index);
+            int right = prefix.charAt(index);
+            if (left >= 65 && left <= 90) {
+              left += 32;
+            }
+            if (right >= 65 && right <= 90) {
+              right += 32;
+            }
+            if (left != right) {
+              return false;
+            }
+          }
+          return true;
+        }
+
+        void appendValue(HashMap values, String key, String value) {
+          def existing = values.get(key);
+          ArrayList output;
+          if (existing == null) {
+            output = new ArrayList();
+            values.put(key, output);
+          } else {
+            output = existing;
+          }
+          output.add(value);
+        }
+
+        HashMap parserResult(String status) {
+          HashMap result = new HashMap();
+          result.put('attributes', new HashMap());
+          result.put('subject_alt_name', new HashMap());
+          result.put('status', status);
+          return result;
+        }
+
+        HashMap parseAttributes(List lines, Map outerKeys, Map limits, String sidPrefix) {
+          if (lines.size() > limits.get('physical_lines')) {
+            return parserResult('skipped_limit');
+          }
+          HashMap result = parserResult(null);
+          HashMap attributes = result.get('attributes');
+          HashMap subjectAltName = result.get('subject_alt_name');
+          HashMap occurrenceCounts = new HashMap();
+          int componentCount = 0;
+
+          for (String rawLine : lines) {
+            String line = (rawLine.length() > 0 && rawLine.charAt(rawLine.length() - 1) == 13) ? rawLine.substring(0, rawLine.length() - 1) : rawLine;
+            if (line.length() > limits.get('line_chars')) {
+              return parserResult('skipped_limit');
+            }
+            int start = trimmedStart(line, 0, line.length());
+            int end = trimmedEnd(line, start, line.length());
+            int colon = firstCharacter(line, start, end, 58);
+            if (colon < 0) {
+              continue;
+            }
+            int keyStart = trimmedStart(line, start, colon);
+            int keyEnd = trimmedEnd(line, keyStart, colon);
+            if (keyEnd - keyStart > limits.get('key_chars')) {
+              return parserResult('skipped_limit');
+            }
+            String key = normalizedKey(line, keyStart, keyEnd, true);
+            if (!outerKeys.containsKey(key)) {
+              continue;
+            }
+            int count = occurrenceCounts.containsKey(key) ? occurrenceCounts.get(key) + 1 : 1;
+            occurrenceCounts.put(key, count);
+            if (count > limits.get('values_per_key')) {
+              return parserResult('skipped_limit');
+            }
+            int valueStart = trimmedStart(line, colon + 1, end);
+            int valueEnd = trimmedEnd(line, valueStart, end);
+            if (valueStart == valueEnd) {
+              continue;
+            }
+            String value = line.substring(valueStart, valueEnd);
+            appendValue(attributes, outerKeys.get(key), value);
+            if (!key.equals('san')) {
+              continue;
+            }
+
+            for (String component : value.splitOnToken('&')) {
+              int cleanStart = trimmedStart(component, 0, component.length());
+              int cleanEnd = trimmedEnd(component, cleanStart, component.length());
+              if (cleanStart == cleanEnd) {
+                continue;
+              }
+              componentCount++;
+              if (componentCount > limits.get('san_components')) {
+                return parserResult('skipped_limit');
+              }
+              int equals = firstCharacter(component, cleanStart, cleanEnd, 61);
+              if (equals < 0) {
+                continue;
+              }
+              int sanKeyStart = trimmedStart(component, cleanStart, equals);
+              int sanKeyEnd = trimmedEnd(component, sanKeyStart, equals);
+              if (sanKeyEnd - sanKeyStart > limits.get('key_chars')) {
+                return parserResult('skipped_limit');
+              }
+              String sanKey = normalizedKey(component, sanKeyStart, sanKeyEnd, false);
+              int sanValueStart = trimmedStart(component, equals + 1, cleanEnd);
+              int sanValueEnd = trimmedEnd(component, sanValueStart, cleanEnd);
+              if (sanValueStart == sanValueEnd) {
+                continue;
+              }
+              String sanValue = component.substring(sanValueStart, sanValueEnd);
+              if (sanKey.equals('upn')) {
+                appendValue(subjectAltName, 'upn', sanValue);
+              } else if (sanKey.equals('dns')) {
+                appendValue(subjectAltName, 'dns', sanValue);
+              } else if (sanKey.equals('url')) {
+                appendValue(subjectAltName, 'uri', sanValue);
+                if (asciiPrefix(sanValue, sidPrefix)) {
+                  String sid = sanValue.substring(sidPrefix.length());
+                  if (!sid.isEmpty()) {
+                    appendValue(subjectAltName, 'sid', sid);
+                  }
+                }
+              }
+            }
+          }
+          return result;
+        }
+
+        def rawAttributes = ctx.winlog.event_data.Attributes;
+        HashMap parsed;
+        if (!(rawAttributes instanceof String)) {
+          parsed = parserResult('error');
+        } else if (rawAttributes.length() > ctx._temp_adcs.limits.attributes_chars) {
+          parsed = parserResult('skipped_limit');
+        } else {
+          try {
+            parsed = parseAttributes(ctx._temp_adcs.attribute_lines, params.outer_keys,
+              ctx._temp_adcs.limits, params.microsoft_sid_uri_prefix);
+          } catch (Exception internalException) {
+            parsed = parserResult('error');
+          }
+        }
+        if (!parsed.attributes.isEmpty()) {
+          ctx._temp_adcs.request.put('attributes', parsed.attributes);
+        }
+        if (!parsed.subject_alt_name.isEmpty()) {
+          ctx._temp_adcs.request.put('subject_alt_name', parsed.subject_alt_name);
+        }
+        ctx._temp_adcs.put('status', parsed.get('status'));
+  - append:
+      description: Mark events when resource limits prevent AD CS request attribute parsing.
+      field: tags
+      value: adcs_attributes_skipped_limit
+      allow_duplicates: false
+      if: ctx._temp_adcs?.status == 'skipped_limit'
+  - append:
+      description: Mark errors caught within AD CS request attribute parsing.
+      field: tags
+      value: adcs_normalization_failed
+      allow_duplicates: false
+      if: ctx._temp_adcs?.status == 'error'
+  # Preserve nonblank names; recognize dotted-decimal identifiers without decoding values.
+  - grok:
+      tag: parse_adcs_extension_name
+      field: winlog.event_data.ExtensionName
+      patterns:
+        - '\A%{ADCS_EXTENSION_NAME:_temp_adcs.request.extension.name}\z'
+      pattern_definitions:
+        ADCS_EXTENSION_NAME: '(?=[\s\S]*[^\x09-\x0D ])[\s\S]+'
+      if: ctx.event?.code == '4873' && ctx.winlog?.event_data?.ExtensionName instanceof String && ctx.winlog.event_data.ExtensionName.length() <= 8191
+      ignore_missing: true
+      ignore_failure: true
+  - grok:
+      tag: parse_adcs_extension_oid
+      field: _temp_adcs.request.extension.name
+      patterns:
+        - '\A%{ADCS_EXTENSION_OID:_temp_adcs.request.extension.oid}\z'
+      pattern_definitions:
+        ADCS_EXTENSION_OID: '[0-9]+(?:\.[0-9]+)+'
+      ignore_missing: true
+      ignore_failure: true
+  - set:
+      tag: publish_adcs_overlay
+      description: Publish the rebuilt overlay once normalization has completed.
+      field: winlog.adcs.request
+      copy_from: _temp_adcs.request
+      if: ctx._temp_adcs?.request instanceof Map && !ctx._temp_adcs.request.isEmpty()
+  - set:
+      tag: identify_adcs_requester_user_fallback
+      description: Use the requester only when the request event has no root user identity.
+      field: _temp_adcs.requester_user_fallback
+      value: true
+      if: >-
+        ['4886', '4887', '4888', '4889'].contains(ctx.event?.code) &&
+        ctx.winlog?.adcs?.request?.requester?.name != null &&
+        ctx.winlog.adcs.request.requester.domain != null &&
+        ctx.user?.id == null && ctx.user?.name == null && ctx.user?.domain == null &&
+        ctx.user?.email == null && ctx.user?.full_name == null
+  - set:
+      tag: set_adcs_requester_user_name
+      field: user.name
+      copy_from: winlog.adcs.request.requester.name
+      if: ctx._temp_adcs?.requester_user_fallback == true
+  - set:
+      tag: set_adcs_requester_user_domain
+      field: user.domain
+      copy_from: winlog.adcs.request.requester.domain
+      if: ctx._temp_adcs?.requester_user_fallback == true
+  - append:
+      tag: append_adcs_requester_related_user
+      field: related.user
+      value: '{{{winlog.adcs.request.requester.name}}}'
+      allow_duplicates: false
+      if: ctx.winlog?.adcs?.request?.requester?.name instanceof String
+  - remove:
+      field: _temp_adcs
+      ignore_missing: true
+on_failure:
+  - remove:
+      field:
+        - winlog.adcs
+        - _temp_adcs
+      ignore_missing: true
+      ignore_failure: true
+  - append:
+      description: Mark events when AD CS normalization fails unexpectedly.
+      field: tags
+      value: adcs_normalization_failed
+      allow_duplicates: false
+      ignore_failure: true
