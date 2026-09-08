@@ -67,15 +67,14 @@ download_file() {
 
   tmp="$(mktemp "$(dirname "${dest}")/tmp.XXXXXX")" || return 1
 
-  retry 5 curl --fail --silent --show-error --location -o "${tmp}" "${url}"
-  local exit=$?
-  if (( exit != 0 )); then
+  retry 5 curl --fail --silent --show-error --location -o "${tmp}" "${url}" || {
+    local exit=$?
     rm -f "${tmp}"
     echoerr "Failed to download ${url}"
     return "${exit}"
-  fi
+  }
 
-  mv "${tmp}" "${dest}" || { exit=$?; rm -f "${tmp}"; return "${exit}"; }
+  mv "${tmp}" "${dest}" || { local exit=$?; rm -f "${tmp}"; return "${exit}"; }
 }
 
 download_bin() {
