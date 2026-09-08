@@ -58,7 +58,7 @@ download_file() {
   local url=$2
   local tmp
 
-  tmp="$(mktemp)"
+  tmp="$(mktemp "$(dirname "${dest}")/.tmp.XXXXXX")"
   if ! retry 5 curl --fail --silent --show-error --location -o "${tmp}" "${url}"; then
     rm -f "${tmp}"
     >&2 echo "Failed to download ${url}"
