@@ -80,7 +80,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 5. Enable and configure the collection methods you need:
 
     * For **audit** logs:
-        * Set the **URL** to the base URL of your Trellix ePO server (for example `https://epo.example.com:2400`).
+        * Set **Trellix ePO URL** to the base URL of your Trellix ePO server, for example `https://epo.example.com:8443`.
         * Set the **Username** for the ePO user account with audit log query permissions.
         * Set the **Password** for the ePO user account.
         * **Initial Interval**: The lookback period for the first API request (default: `24h`).

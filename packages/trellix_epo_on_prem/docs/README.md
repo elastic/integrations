@@ -80,7 +80,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 5. Enable and configure the collection methods you need:
 
     * For **audit** logs:
-        * Set the **URL** to the base URL of your Trellix ePO server (for example `https://epo.example.com:2400`).
+        * Set **Trellix ePO URL** to the base URL of your Trellix ePO server, for example `https://epo.example.com:8443`.
         * Set the **Username** for the ePO user account with audit log query permissions.
         * Set the **Password** for the ePO user account.
         * **Initial Interval**: The lookback period for the first API request (default: `24h`).
@@ -382,24 +382,25 @@ The `dlp_incident` data stream provides Trellix ePO On-Prem DLP incident records
 | input.type | Type of Filebeat input. | keyword |
 | observer.product | The product name of the observer. | constant_keyword |
 | observer.vendor | Vendor name of the observer. | constant_keyword |
-| trellix_epo_on_prem.dlp_incident.UDLP_EPD_Incidents.ActualAction | Numeric identifier of the action actually taken for the DLP incident. | long |
-| trellix_epo_on_prem.dlp_incident.UDLP_EPD_Incidents.ClassificationsToDisplay | Display label for the data classification associated with the DLP incident. | keyword |
-| trellix_epo_on_prem.dlp_incident.UDLP_EPD_Incidents.ConnectivityState | Numeric connectivity-state code associated with the DLP incident. | long |
-| trellix_epo_on_prem.dlp_incident.UDLP_EPD_Incidents.DlpAgentVersion | Version string of the DLP agent associated with the incident. | keyword |
-| trellix_epo_on_prem.dlp_incident.UDLP_EPD_Incidents.EvidenceCount | Number of evidence items associated with the DLP incident. | long |
-| trellix_epo_on_prem.dlp_incident.UDLP_EPD_Incidents.ExpectedAction | Numeric identifier of the action expected for the DLP incident. | long |
-| trellix_epo_on_prem.dlp_incident.UDLP_EPD_Incidents.FailureReason | Numeric failure-reason code associated with the DLP incident. | long |
-| trellix_epo_on_prem.dlp_incident.UDLP_EPD_Incidents.LastUpdateTimestamp | Date and time when the DLP incident record was last updated. | date |
-| trellix_epo_on_prem.dlp_incident.UDLP_EPD_Incidents.McAfeeAgentGuid | GUID identifying a McAfee agent associated with the DLP incident. | keyword |
-| trellix_epo_on_prem.dlp_incident.UDLP_EPD_Incidents.OriginalIncidentId | Numeric identifier of an original incident related to the current DLP incident. | long |
-| trellix_epo_on_prem.dlp_incident.UDLP_EPD_Incidents.ReportingProduct | Numeric identifier of the product that reported the DLP incident. | long |
-| trellix_epo_on_prem.dlp_incident.UDLP_EPD_Incidents.ResolutionId | Numeric identifier of the DLP incident resolution. | long |
-| trellix_epo_on_prem.dlp_incident.UDLP_EPD_Incidents.ShortMatchString | Short content excerpt associated with a DLP rule match. | keyword |
-| trellix_epo_on_prem.dlp_incident.UDLP_EPD_Incidents.StatusId | Numeric identifier of the DLP incident status. | long |
-| trellix_epo_on_prem.dlp_incident.UDLP_EPD_Incidents.TotalContentSize | Total content size recorded for the DLP incident. | long |
-| trellix_epo_on_prem.dlp_incident.UDLP_EPD_Incidents.TotalMatchCount | Total number of matches recorded for the DLP incident. | long |
-| trellix_epo_on_prem.dlp_incident.UDLP_EPD_Incidents.ViolationCustomTime | Custom date and time representation associated with the DLP violation. | date |
-| trellix_epo_on_prem.dlp_incident.UDLP_EPD_Incidents.ViolationLocalTime | Local date and time when the DLP violation occurred. | date |
+| trellix_epo_on_prem.dlp_incident.udlp_epd_incidents.actual_action | Code for the action the endpoint actually took for the DLP incident. | keyword |
+| trellix_epo_on_prem.dlp_incident.udlp_epd_incidents.classifications_to_display | Display label for the data classification associated with the DLP incident. | keyword |
+| trellix_epo_on_prem.dlp_incident.udlp_epd_incidents.connectivity_state | Connectivity-state code associated with the DLP incident. | keyword |
+| trellix_epo_on_prem.dlp_incident.udlp_epd_incidents.dlp_agent_version | Version string of the DLP agent associated with the incident. | keyword |
+| trellix_epo_on_prem.dlp_incident.udlp_epd_incidents.evidence_count | Number of evidence items associated with the DLP incident. | long |
+| trellix_epo_on_prem.dlp_incident.udlp_epd_incidents.expected_action | Code for the action DLP expected the endpoint to take for the incident. | keyword |
+| trellix_epo_on_prem.dlp_incident.udlp_epd_incidents.failure_reason | Failure-reason code for the DLP incident; 0 indicates that nothing failed. | keyword |
+| trellix_epo_on_prem.dlp_incident.udlp_epd_incidents.last_update_timestamp | Date and time when the DLP incident record was last updated. | date |
+| trellix_epo_on_prem.dlp_incident.udlp_epd_incidents.mc_afee_agent_guid | GUID identifying a McAfee agent associated with the DLP incident. | keyword |
+| trellix_epo_on_prem.dlp_incident.udlp_epd_incidents.original_incident_id | Identifier of an original incident related to the current DLP incident. | keyword |
+| trellix_epo_on_prem.dlp_incident.udlp_epd_incidents.reporting_product | Identifier of the product that reported the DLP incident. | keyword |
+| trellix_epo_on_prem.dlp_incident.udlp_epd_incidents.resolution_id | Identifier of the DLP incident resolution. | keyword |
+| trellix_epo_on_prem.dlp_incident.udlp_epd_incidents.short_match_string | Short content excerpt associated with a DLP rule match. | keyword |
+| trellix_epo_on_prem.dlp_incident.udlp_epd_incidents.status_id | Identifier of the DLP incident status. | keyword |
+| trellix_epo_on_prem.dlp_incident.udlp_epd_incidents.total_content_size | Total content size recorded for the DLP incident. | long |
+| trellix_epo_on_prem.dlp_incident.udlp_epd_incidents.total_match_count | Total number of matches recorded for the DLP incident. | long |
+| trellix_epo_on_prem.dlp_incident.udlp_epd_incidents.violation_custom_time | Custom date and time representation associated with the DLP violation. | date |
+| trellix_epo_on_prem.dlp_incident.udlp_epd_incidents.violation_local_time | Local date and time when the DLP violation occurred. | date |
+| trellix_epo_on_prem.dlp_incident.udlp_epd_incidents.violation_timezone | Windows time zone display name of the endpoint where the DLP violation occurred, for example `India Standard Time`. | keyword |
 
 
 ### Example event
@@ -412,35 +413,41 @@ An example event for `dlp_incident` looks as following:
 {
     "@timestamp": "2026-01-15T10:00:05.000Z",
     "agent": {
-        "ephemeral_id": "19d5ace0-7895-47aa-b60c-0455f1147378",
-        "id": "9d0dbed4-b47f-4a73-b0e5-56c2426e2929",
-        "name": "elastic-agent-34345",
+        "ephemeral_id": "2012af23-1dee-46bc-b280-00df5cfe082e",
+        "id": "1ff18c25-de5c-4f5d-bda1-52e1eac41a12",
+        "name": "elastic-agent-29673",
         "type": "filebeat",
         "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "trellix_epo_on_prem.dlp_incident",
-        "namespace": "78578",
+        "namespace": "72089",
         "type": "logs"
     },
     "ecs": {
         "version": "9.4.0"
     },
     "elastic_agent": {
-        "id": "9d0dbed4-b47f-4a73-b0e5-56c2426e2929",
+        "id": "1ff18c25-de5c-4f5d-bda1-52e1eac41a12",
         "snapshot": false,
         "version": "8.19.0"
     },
     "event": {
         "agent_id_status": "verified",
+        "category": [
+            "intrusion_detection"
+        ],
         "code": "1",
         "dataset": "trellix_epo_on_prem.dlp_incident",
         "id": "100006",
-        "ingested": "2026-09-04T06:12:13Z",
+        "ingested": "2026-09-08T18:02:45Z",
         "kind": "alert",
         "original": "{\"UDLP_EPD_Incidents.ActualAction\":2,\"UDLP_EPD_Incidents.ClassificationsToDisplay\":\"Restricted Data\",\"UDLP_EPD_Incidents.ConnectivityState\":1,\"UDLP_EPD_Incidents.DlpAgentVersion\":\"11.10.0.456\",\"UDLP_EPD_Incidents.EvidenceCount\":1,\"UDLP_EPD_Incidents.ExpectedAction\":2,\"UDLP_EPD_Incidents.FailureReason\":0,\"UDLP_EPD_Incidents.IncidentId\":100006,\"UDLP_EPD_Incidents.IncidentType\":1,\"UDLP_EPD_Incidents.LastUpdateTimestamp\":\"2026-01-15T15:30:05+05:30\",\"UDLP_EPD_Incidents.McAfeeAgentGuid\":\"89a1d5c1-2b3e-4f67-8a9b-0c1d2e3f4a5b\",\"UDLP_EPD_Incidents.OriginalIncidentId\":100005,\"UDLP_EPD_Incidents.ReportingProduct\":1,\"UDLP_EPD_Incidents.ResolutionId\":0,\"UDLP_EPD_Incidents.Reviewer\":\"reviewer@example.com\",\"UDLP_EPD_Incidents.RuleSetToDisplay\":\"Endpoint DLP Rules\",\"UDLP_EPD_Incidents.RulesToDisplay\":\"Block restricted upload\",\"UDLP_EPD_Incidents.Severity\":2,\"UDLP_EPD_Incidents.ShortMatchString\":\"Sample restricted identifier: ***-**-5678\",\"UDLP_EPD_Incidents.StatusId\":1,\"UDLP_EPD_Incidents.TotalContentSize\":2048,\"UDLP_EPD_Incidents.TotalMatchCount\":1,\"UDLP_EPD_Incidents.ViolationCustomTime\":\"2026-01-15T15:30:05+05:30\",\"UDLP_EPD_Incidents.ViolationLocalTime\":\"2026-01-15T15:30:05+05:30\",\"UDLP_EPD_Incidents.ViolationTimezone\":\"India Standard Time\",\"UDLP_EPD_Incidents.ViolationUTCTime\":\"2026-01-15T10:00:05+05:30\"}",
+        "outcome": "success",
         "severity": 2,
-        "timezone": "India Standard Time"
+        "type": [
+            "info"
+        ]
     },
     "input": {
         "type": "cel"
@@ -461,25 +468,26 @@ An example event for `dlp_incident` looks as following:
     ],
     "trellix_epo_on_prem": {
         "dlp_incident": {
-            "UDLP_EPD_Incidents": {
-                "ActualAction": 2,
-                "ClassificationsToDisplay": "Restricted Data",
-                "ConnectivityState": 1,
-                "DlpAgentVersion": "11.10.0.456",
-                "EvidenceCount": 1,
-                "ExpectedAction": 2,
-                "FailureReason": 0,
-                "LastUpdateTimestamp": "2026-01-15T10:00:05.000Z",
-                "McAfeeAgentGuid": "89a1d5c1-2b3e-4f67-8a9b-0c1d2e3f4a5b",
-                "OriginalIncidentId": 100005,
-                "ReportingProduct": 1,
-                "ResolutionId": 0,
-                "ShortMatchString": "Sample restricted identifier: ***-**-5678",
-                "StatusId": 1,
-                "TotalContentSize": 2048,
-                "TotalMatchCount": 1,
-                "ViolationCustomTime": "2026-01-15T10:00:05.000Z",
-                "ViolationLocalTime": "2026-01-15T10:00:05.000Z"
+            "udlp_epd_incidents": {
+                "actual_action": "2",
+                "classifications_to_display": "Restricted Data",
+                "connectivity_state": "1",
+                "dlp_agent_version": "11.10.0.456",
+                "evidence_count": 1,
+                "expected_action": "2",
+                "failure_reason": "0",
+                "last_update_timestamp": "2026-01-15T10:00:05.000Z",
+                "mc_afee_agent_guid": "89a1d5c1-2b3e-4f67-8a9b-0c1d2e3f4a5b",
+                "original_incident_id": "100005",
+                "reporting_product": "1",
+                "resolution_id": "0",
+                "short_match_string": "Sample restricted identifier: ***-**-5678",
+                "status_id": "1",
+                "total_content_size": 2048,
+                "total_match_count": 1,
+                "violation_custom_time": "2026-01-15T10:00:05.000Z",
+                "violation_local_time": "2026-01-15T10:00:05.000Z",
+                "violation_timezone": "India Standard Time"
             }
         }
     },
@@ -508,65 +516,65 @@ The `threat_event` data stream provides Trellix ePO On-Prem threat event records
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | input.type | Type of filebeat input. | keyword |
-| observer.vendor | Vendor name of the observer that generated the event. | constant_keyword |
-| trellix_epo_on_prem.threat_event.EPExtendedEvent.AMCoreContentVersion | AM Core Content Version value recorded in the extended threat-event details. | keyword |
-| trellix_epo_on_prem.threat_event.EPExtendedEvent.APIName | API Name value recorded in the extended threat-event details. | keyword |
-| trellix_epo_on_prem.threat_event.EPExtendedEvent.AccessRequested | Access Requested value recorded in the extended threat-event details. | keyword |
-| trellix_epo_on_prem.threat_event.EPExtendedEvent.AnalyzerContentCreationDate | Analyzer Content Creation Date value recorded in the extended threat-event details. | date |
-| trellix_epo_on_prem.threat_event.EPExtendedEvent.AnalyzerGTIQuery | Analyzer GTI Query value recorded in the extended threat-event details. | boolean |
-| trellix_epo_on_prem.threat_event.EPExtendedEvent.AnalyzerRegInfo | Analyzer Reg Info value recorded in the extended threat-event details. | keyword |
-| trellix_epo_on_prem.threat_event.EPExtendedEvent.AnalyzerTechnologyVersion | Analyzer Technology Version value recorded in the extended threat-event details. | keyword |
-| trellix_epo_on_prem.threat_event.EPExtendedEvent.AttackVectorType | Attack Vector Type value recorded in the extended threat-event details. | long |
-| trellix_epo_on_prem.threat_event.EPExtendedEvent.BladeName | Blade Name value recorded in the extended threat-event details. | keyword |
-| trellix_epo_on_prem.threat_event.EPExtendedEvent.Cleanable | Cleanable value recorded in the extended threat-event details. | boolean |
-| trellix_epo_on_prem.threat_event.EPExtendedEvent.Direction | Direction value recorded in the extended threat-event details. | long |
-| trellix_epo_on_prem.threat_event.EPExtendedEvent.DurationBeforeDetection | Duration Before Detection value recorded in the extended threat-event details. | long |
-| trellix_epo_on_prem.threat_event.EPExtendedEvent.EventAutoID | Event Auto ID value recorded in the extended threat-event details. | keyword |
-| trellix_epo_on_prem.threat_event.EPExtendedEvent.FirstActionStatus | First Action Status value recorded in the extended threat-event details. | boolean |
-| trellix_epo_on_prem.threat_event.EPExtendedEvent.FirstAttemptedAction | First Attempted Action value recorded in the extended threat-event details. | keyword |
-| trellix_epo_on_prem.threat_event.EPExtendedEvent.Location | Location value recorded in the extended threat-event details. | keyword |
-| trellix_epo_on_prem.threat_event.EPExtendedEvent.SecondActionStatus | Second Action Status value recorded in the extended threat-event details. | boolean |
-| trellix_epo_on_prem.threat_event.EPExtendedEvent.SecondAttemptedAction | Second Attempted Action value recorded in the extended threat-event details. | keyword |
-| trellix_epo_on_prem.threat_event.EPExtendedEvent.SourceDescription | Source Description value recorded in the extended threat-event details. | keyword |
-| trellix_epo_on_prem.threat_event.EPExtendedEvent.SourceDevicePID | Source Device PID value recorded in the extended threat-event details. | keyword |
-| trellix_epo_on_prem.threat_event.EPExtendedEvent.SourceDeviceSerialNumber | Source Device Serial Number value recorded in the extended threat-event details. | keyword |
-| trellix_epo_on_prem.threat_event.EPExtendedEvent.SourceDeviceVID | Source Device VID value recorded in the extended threat-event details. | keyword |
-| trellix_epo_on_prem.threat_event.EPExtendedEvent.SourceHash | Source Hash value recorded in the extended threat-event details. | keyword |
-| trellix_epo_on_prem.threat_event.EPExtendedEvent.SourceShareName | Source Share Name value recorded in the extended threat-event details. | keyword |
-| trellix_epo_on_prem.threat_event.EPExtendedEvent.SourceURLRatingCode | Source URL Rating Code value recorded in the extended threat-event details. | keyword |
-| trellix_epo_on_prem.threat_event.EPExtendedEvent.SourceURLWebCategory | Source URL Web Category value recorded in the extended threat-event details. | keyword |
-| trellix_epo_on_prem.threat_event.EPExtendedEvent.TargetCreateTime | Target Create Time value recorded in the extended threat-event details. | date |
-| trellix_epo_on_prem.threat_event.EPExtendedEvent.TargetDescription | Target Description value recorded in the extended threat-event details. | keyword |
-| trellix_epo_on_prem.threat_event.EPExtendedEvent.TargetDeviceDisplayName | Target Device Display Name value recorded in the extended threat-event details. | keyword |
-| trellix_epo_on_prem.threat_event.EPExtendedEvent.TargetDevicePID | Target Device PID value recorded in the extended threat-event details. | keyword |
-| trellix_epo_on_prem.threat_event.EPExtendedEvent.TargetDeviceSerialNumber | Target Device Serial Number value recorded in the extended threat-event details. | keyword |
-| trellix_epo_on_prem.threat_event.EPExtendedEvent.TargetDeviceVID | Target Device VID value recorded in the extended threat-event details. | keyword |
-| trellix_epo_on_prem.threat_event.EPExtendedEvent.TargetModifyTime | Target Modify Time value recorded in the extended threat-event details. | date |
-| trellix_epo_on_prem.threat_event.EPExtendedEvent.TargetParentProcessHash | Target Parent Process Hash value recorded in the extended threat-event details. | keyword |
-| trellix_epo_on_prem.threat_event.EPExtendedEvent.TargetParentProcessName | Target Parent Process Name value recorded in the extended threat-event details. | keyword |
-| trellix_epo_on_prem.threat_event.EPExtendedEvent.TargetParentProcessSigned | Target Parent Process Signed value recorded in the extended threat-event details. | boolean |
-| trellix_epo_on_prem.threat_event.EPExtendedEvent.TargetParentProcessSigner | Target Parent Process Signer value recorded in the extended threat-event details. | keyword |
-| trellix_epo_on_prem.threat_event.EPExtendedEvent.TargetShareName | Target Share Name value recorded in the extended threat-event details. | keyword |
-| trellix_epo_on_prem.threat_event.EPExtendedEvent.TargetURL | Target URL value recorded in the extended threat-event details. | keyword |
-| trellix_epo_on_prem.threat_event.EPExtendedEvent.TaskName | Task Name value recorded in the extended threat-event details. | keyword |
-| trellix_epo_on_prem.threat_event.EPExtendedEvent.ThreatDetectedOnCreation | Threat Detected On Creation value recorded in the extended threat-event details. | boolean |
-| trellix_epo_on_prem.threat_event.EPExtendedEvent.ThreatImpact | Threat Impact value recorded in the extended threat-event details. | keyword |
-| trellix_epo_on_prem.threat_event.EPExtendedEvent.Topic | Topic value recorded in the extended threat-event details. | keyword |
-| trellix_epo_on_prem.threat_event.EPOEvents.AgentGUID | Agent GUID value recorded in the ePO threat event. | keyword |
-| trellix_epo_on_prem.threat_event.EPOEvents.Analyzer | Analyzer value recorded in the ePO threat event. | keyword |
-| trellix_epo_on_prem.threat_event.EPOEvents.AnalyzerDATVersion | Analyzer DAT Version value recorded in the ePO threat event. | keyword |
-| trellix_epo_on_prem.threat_event.EPOEvents.AnalyzerEngineVersion | Analyzer Engine Version value recorded in the ePO threat event. | keyword |
-| trellix_epo_on_prem.threat_event.EPOEvents.DetectedUTC | Detection time recorded in the ePO threat event. | date |
-| trellix_epo_on_prem.threat_event.EPOEvents.EventTimeLocal | Event Time Local value recorded in the ePO threat event. | date |
-| trellix_epo_on_prem.threat_event.EPOEvents.ServerID | Server ID value recorded in the ePO threat event. | keyword |
-| trellix_epo_on_prem.threat_event.EPOEvents.SourceHostName | Source Host Name value recorded in the ePO threat event. | keyword |
-| trellix_epo_on_prem.threat_event.EPOEvents.SourceURL | Source URL value recorded in the ePO threat event. | keyword |
-| trellix_epo_on_prem.threat_event.EPOEvents.TargetProcessName | Target Process Name value recorded in the ePO threat event. | keyword |
-| trellix_epo_on_prem.threat_event.EPOEvents.TenantId | Tenant ID value recorded in the ePO threat event. | keyword |
-| trellix_epo_on_prem.threat_event.EPOEvents.ThreatActionTaken | Threat Action Taken value recorded in the ePO threat event. | keyword |
-| trellix_epo_on_prem.threat_event.EPOEvents.ThreatCategory | Trellix threat-category identifier used to classify the event variant. | keyword |
-| trellix_epo_on_prem.threat_event.EPOEvents.ThreatHandled | Threat Handled value recorded in the ePO threat event. | boolean |
-| trellix_epo_on_prem.threat_event.EPOEvents.ThreatType | Trellix threat-type identifier used as the primary event variant discriminator. | keyword |
+| observer.vendor | Vendor name of the observer. | constant_keyword |
+| trellix_epo_on_prem.threat_event.epextended_event.access_requested | Access Requested value recorded in the extended threat-event details. | keyword |
+| trellix_epo_on_prem.threat_event.epextended_event.amcore_content_version | AM Core Content Version value recorded in the extended threat-event details. | keyword |
+| trellix_epo_on_prem.threat_event.epextended_event.analyzer_content_creation_date | Analyzer Content Creation Date value recorded in the extended threat-event details. | date |
+| trellix_epo_on_prem.threat_event.epextended_event.analyzer_gtiquery | Analyzer GTI Query value recorded in the extended threat-event details. | boolean |
+| trellix_epo_on_prem.threat_event.epextended_event.analyzer_reg_info | Analyzer Reg Info value recorded in the extended threat-event details. | keyword |
+| trellix_epo_on_prem.threat_event.epextended_event.analyzer_technology_version | Analyzer Technology Version value recorded in the extended threat-event details. | keyword |
+| trellix_epo_on_prem.threat_event.epextended_event.apiname | API Name value recorded in the extended threat-event details. | keyword |
+| trellix_epo_on_prem.threat_event.epextended_event.attack_vector_type | Attack Vector Type value recorded in the extended threat-event details. | keyword |
+| trellix_epo_on_prem.threat_event.epextended_event.blade_name | Blade Name value recorded in the extended threat-event details. | keyword |
+| trellix_epo_on_prem.threat_event.epextended_event.cleanable | Cleanable value recorded in the extended threat-event details. | boolean |
+| trellix_epo_on_prem.threat_event.epextended_event.direction | Direction value recorded in the extended threat-event details. | keyword |
+| trellix_epo_on_prem.threat_event.epextended_event.duration_before_detection | Duration Before Detection value recorded in the extended threat-event details. | long |
+| trellix_epo_on_prem.threat_event.epextended_event.event_auto_id | Event Auto ID value recorded in the extended threat-event details. | keyword |
+| trellix_epo_on_prem.threat_event.epextended_event.first_action_status | First Action Status value recorded in the extended threat-event details. | boolean |
+| trellix_epo_on_prem.threat_event.epextended_event.first_attempted_action | First Attempted Action value recorded in the extended threat-event details. | keyword |
+| trellix_epo_on_prem.threat_event.epextended_event.location | Location value recorded in the extended threat-event details. | keyword |
+| trellix_epo_on_prem.threat_event.epextended_event.second_action_status | Second Action Status value recorded in the extended threat-event details. | boolean |
+| trellix_epo_on_prem.threat_event.epextended_event.second_attempted_action | Second Attempted Action value recorded in the extended threat-event details. | keyword |
+| trellix_epo_on_prem.threat_event.epextended_event.source_description | Source Description value recorded in the extended threat-event details. | keyword |
+| trellix_epo_on_prem.threat_event.epextended_event.source_device_pid | Source Device PID value recorded in the extended threat-event details. | keyword |
+| trellix_epo_on_prem.threat_event.epextended_event.source_device_serial_number | Source Device Serial Number value recorded in the extended threat-event details. | keyword |
+| trellix_epo_on_prem.threat_event.epextended_event.source_device_vid | Source Device VID value recorded in the extended threat-event details. | keyword |
+| trellix_epo_on_prem.threat_event.epextended_event.source_hash | Source Hash value recorded in the extended threat-event details. | keyword |
+| trellix_epo_on_prem.threat_event.epextended_event.source_share_name | Source Share Name value recorded in the extended threat-event details. | keyword |
+| trellix_epo_on_prem.threat_event.epextended_event.source_urlrating_code | Source URL Rating Code value recorded in the extended threat-event details. | keyword |
+| trellix_epo_on_prem.threat_event.epextended_event.source_urlweb_category | Source URL Web Category value recorded in the extended threat-event details. | keyword |
+| trellix_epo_on_prem.threat_event.epextended_event.target_create_time | Target Create Time value recorded in the extended threat-event details. | date |
+| trellix_epo_on_prem.threat_event.epextended_event.target_description | Target Description value recorded in the extended threat-event details. | keyword |
+| trellix_epo_on_prem.threat_event.epextended_event.target_device_display_name | Target Device Display Name value recorded in the extended threat-event details. | keyword |
+| trellix_epo_on_prem.threat_event.epextended_event.target_device_pid | Target Device PID value recorded in the extended threat-event details. | keyword |
+| trellix_epo_on_prem.threat_event.epextended_event.target_device_serial_number | Target Device Serial Number value recorded in the extended threat-event details. | keyword |
+| trellix_epo_on_prem.threat_event.epextended_event.target_device_vid | Target Device VID value recorded in the extended threat-event details. | keyword |
+| trellix_epo_on_prem.threat_event.epextended_event.target_modify_time | Target Modify Time value recorded in the extended threat-event details. | date |
+| trellix_epo_on_prem.threat_event.epextended_event.target_parent_process_hash | Target Parent Process Hash value recorded in the extended threat-event details. | keyword |
+| trellix_epo_on_prem.threat_event.epextended_event.target_parent_process_name | Target Parent Process Name value recorded in the extended threat-event details. | keyword |
+| trellix_epo_on_prem.threat_event.epextended_event.target_parent_process_signed | Target Parent Process Signed value recorded in the extended threat-event details. | boolean |
+| trellix_epo_on_prem.threat_event.epextended_event.target_parent_process_signer | Target Parent Process Signer value recorded in the extended threat-event details. | keyword |
+| trellix_epo_on_prem.threat_event.epextended_event.target_share_name | Target Share Name value recorded in the extended threat-event details. | keyword |
+| trellix_epo_on_prem.threat_event.epextended_event.target_url | Target URL value recorded in the extended threat-event details. | keyword |
+| trellix_epo_on_prem.threat_event.epextended_event.task_name | Task Name value recorded in the extended threat-event details. | keyword |
+| trellix_epo_on_prem.threat_event.epextended_event.threat_detected_on_creation | Threat Detected On Creation value recorded in the extended threat-event details. | boolean |
+| trellix_epo_on_prem.threat_event.epextended_event.threat_impact | Threat Impact value recorded in the extended threat-event details. | keyword |
+| trellix_epo_on_prem.threat_event.epextended_event.topic | Topic value recorded in the extended threat-event details. | keyword |
+| trellix_epo_on_prem.threat_event.epoevents.agent_guid | Agent GUID value recorded in the ePO threat event. | keyword |
+| trellix_epo_on_prem.threat_event.epoevents.analyzer | Analyzer value recorded in the ePO threat event. | keyword |
+| trellix_epo_on_prem.threat_event.epoevents.analyzer_datversion | Analyzer DAT Version value recorded in the ePO threat event. | keyword |
+| trellix_epo_on_prem.threat_event.epoevents.analyzer_engine_version | Analyzer Engine Version value recorded in the ePO threat event. | keyword |
+| trellix_epo_on_prem.threat_event.epoevents.detected_utc | Detection time recorded in the ePO threat event. | date |
+| trellix_epo_on_prem.threat_event.epoevents.event_time_local | Event Time Local value recorded in the ePO threat event. | date |
+| trellix_epo_on_prem.threat_event.epoevents.server_id | Server ID value recorded in the ePO threat event. | keyword |
+| trellix_epo_on_prem.threat_event.epoevents.source_host_name | Source Host Name value recorded in the ePO threat event. | keyword |
+| trellix_epo_on_prem.threat_event.epoevents.source_url | Source URL value recorded in the ePO threat event. | keyword |
+| trellix_epo_on_prem.threat_event.epoevents.target_process_name | Target Process Name value recorded in the ePO threat event. | keyword |
+| trellix_epo_on_prem.threat_event.epoevents.tenant_id | Tenant ID value recorded in the ePO threat event. | keyword |
+| trellix_epo_on_prem.threat_event.epoevents.threat_action_taken | Threat Action Taken value recorded in the ePO threat event. | keyword |
+| trellix_epo_on_prem.threat_event.epoevents.threat_category | Trellix threat-category identifier used to classify the event variant. | keyword |
+| trellix_epo_on_prem.threat_event.epoevents.threat_handled | Threat Handled value recorded in the ePO threat event. | boolean |
+| trellix_epo_on_prem.threat_event.epoevents.threat_type | Trellix threat-type identifier used as the primary event variant discriminator. | keyword |
 
 
 ### Example event
@@ -579,15 +587,15 @@ An example event for `threat_event` looks as following:
 {
     "@timestamp": "2026-01-15T10:00:05.000Z",
     "agent": {
-        "ephemeral_id": "0c322b55-d47c-474f-bf0f-e34b2254d67f",
-        "id": "5a47f9c4-fb3c-4c8f-990d-e72b35323e14",
-        "name": "elastic-agent-81775",
+        "ephemeral_id": "f881ef2b-efd1-4af5-b460-e0e116c5f518",
+        "id": "a2fb1761-8ae3-4b2a-9c75-70e411e394b4",
+        "name": "elastic-agent-99099",
         "type": "filebeat",
         "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "trellix_epo_on_prem.threat_event",
-        "namespace": "49603",
+        "namespace": "81646",
         "type": "logs"
     },
     "destination": {
@@ -607,7 +615,7 @@ An example event for `threat_event` looks as following:
         "version": "9.4.0"
     },
     "elastic_agent": {
-        "id": "5a47f9c4-fb3c-4c8f-990d-e72b35323e14",
+        "id": "a2fb1761-8ae3-4b2a-9c75-70e411e394b4",
         "snapshot": false,
         "version": "8.19.0"
     },
@@ -617,18 +625,18 @@ An example event for `threat_event` looks as following:
             "intrusion_detection"
         ],
         "code": "18063",
-        "created": "2025-01-01T00:00:00.000Z",
         "dataset": "trellix_epo_on_prem.threat_event",
         "id": "11111111-1111-4111-8111-111111111106",
-        "ingested": "2026-09-03T10:31:30Z",
+        "ingested": "2026-09-08T18:03:37Z",
         "kind": "alert",
         "original": "{\"EPExtendedEvent.AMCoreContentVersion\":\"1.0.0\",\"EPExtendedEvent.APIName\":\"SyntheticApiCall\",\"EPExtendedEvent.AccessRequested\":\"IDS_AAC_REQ_READ\",\"EPExtendedEvent.AnalyzerContentCreationDate\":\"2026-01-01T00:00:00+00:00\",\"EPExtendedEvent.AnalyzerContentVersion\":\"10.7.0.14078\",\"EPExtendedEvent.AnalyzerGTIQuery\":true,\"EPExtendedEvent.AnalyzerRegInfo\":\"Synthetic analyzer registry context\",\"EPExtendedEvent.AnalyzerRuleID\":\"complete-rule-001\",\"EPExtendedEvent.AnalyzerRuleName\":\"Synthetic complete coverage rule\",\"EPExtendedEvent.AnalyzerTechnologyVersion\":\"10.7.20.14030\",\"EPExtendedEvent.AttackVectorType\":3,\"EPExtendedEvent.BladeName\":\"IDS_BLADE_NAME_FW\",\"EPExtendedEvent.Cleanable\":true,\"EPExtendedEvent.Direction\":1,\"EPExtendedEvent.DurationBeforeDetection\":1200,\"EPExtendedEvent.EventAutoID\":6,\"EPExtendedEvent.FirstActionStatus\":true,\"EPExtendedEvent.FirstAttemptedAction\":\"blocked\",\"EPExtendedEvent.Location\":\"C:\\\\Example\\\\sample.exe\",\"EPExtendedEvent.NaturalLangDescription\":\"Synthetic complete field coverage system-test event\",\"EPExtendedEvent.SecondActionStatus\":false,\"EPExtendedEvent.SecondAttemptedAction\":\"quarantined\",\"EPExtendedEvent.SourceAccessTime\":\"2026-01-15T09:00:00+00:00\",\"EPExtendedEvent.SourceCreateTime\":\"2025-01-01T00:00:00+00:00\",\"EPExtendedEvent.SourceDescription\":\"EXAMPLE AGENT MODULE\",\"EPExtendedEvent.SourceDeviceDisplayName\":\"Example Virtual SCSI Disk Device\",\"EPExtendedEvent.SourceDevicePID\":\"PCI\\\\VEN_8086\\u0026DEV_1234\\u0026SUBSYS_00000000\\u0026REV_01\\\\4\\u0026abc\\u00260\\u002600A8\",\"EPExtendedEvent.SourceDeviceSerialNumber\":\"EXAMPLE-SOURCE-SERIAL-0001\",\"EPExtendedEvent.SourceDeviceVID\":\"PCI\\\\VEN_8086\\u0026DEV_1234\\u0026SUBSYS_00000000\\u0026REV_01\\\\4\\u0026abc\\u00260\\u002600A8\",\"EPExtendedEvent.SourceFilePath\":\"C:\\\\Program Files\\\\ExampleApp\",\"EPExtendedEvent.SourceFileSize\":524288,\"EPExtendedEvent.SourceHash\":\"DEADBEEF0123456789ABCDEFF0123456\",\"EPExtendedEvent.SourceModifyTime\":\"2025-01-01T00:00:00+00:00\",\"EPExtendedEvent.SourceParentProcessHash\":\"FEEDFACE0123456789ABCDEFF0123456\",\"EPExtendedEvent.SourceParentProcessName\":\"example-parent.exe\",\"EPExtendedEvent.SourceParentProcessSigned\":true,\"EPExtendedEvent.SourceParentProcessSigner\":\"C=US, O=Example Corp, CN=Example Publisher\",\"EPExtendedEvent.SourcePort\":52000,\"EPExtendedEvent.SourceProcessHash\":\"F6789012345678901234ABCDEF012345\",\"EPExtendedEvent.SourceProcessSigned\":true,\"EPExtendedEvent.SourceProcessSigner\":\"C=US, O=Example Corp, CN=Example Windows\",\"EPExtendedEvent.SourceShareName\":\"\\\\\\\\source-host.example.com\\\\share\",\"EPExtendedEvent.SourceSigned\":true,\"EPExtendedEvent.SourceSigner\":\"C=US, O=Example Corp, CN=Example Windows\",\"EPExtendedEvent.SourceURLRatingCode\":\"trusted\",\"EPExtendedEvent.SourceURLWebCategory\":\"business\",\"EPExtendedEvent.TargetAccessTime\":\"2026-01-15T09:57:00+00:00\",\"EPExtendedEvent.TargetCreateTime\":\"2025-04-01T08:00:00+00:00\",\"EPExtendedEvent.TargetDescription\":\"Synthetic target description\",\"EPExtendedEvent.TargetDeviceDisplayName\":\"Example Target Device\",\"EPExtendedEvent.TargetDevicePID\":\"DEV_5678\",\"EPExtendedEvent.TargetDeviceSerialNumber\":\"EXAMPLE-TARGET-SERIAL-0001\",\"EPExtendedEvent.TargetDeviceVID\":\"VEN_1234\",\"EPExtendedEvent.TargetFileSize\":102400,\"EPExtendedEvent.TargetHash\":\"6789012345678901234ABCDEF0123456\",\"EPExtendedEvent.TargetModifyTime\":\"2025-04-01T08:00:00+00:00\",\"EPExtendedEvent.TargetName\":\"example-document.pdf\",\"EPExtendedEvent.TargetParentProcessHash\":\"B2C3D4E5F6789012345678901234ABCD\",\"EPExtendedEvent.TargetParentProcessName\":\"parent-app.exe\",\"EPExtendedEvent.TargetParentProcessSigned\":true,\"EPExtendedEvent.TargetParentProcessSigner\":\"C=US, O=Example Corp, CN=Example Code Signing\",\"EPExtendedEvent.TargetPath\":\"C:\\\\Users\\\\Public\",\"EPExtendedEvent.TargetShareName\":\"\\\\\\\\target-host.example.com\\\\share\",\"EPExtendedEvent.TargetSigned\":false,\"EPExtendedEvent.TargetSigner\":\"C=US, O=Example Corp, CN=Example Windows Publisher\",\"EPExtendedEvent.TargetURL\":\"https://target.example.com/resource\",\"EPExtendedEvent.TaskName\":\"Synthetic Scan Task\",\"EPExtendedEvent.ThreatDetectedOnCreation\":true,\"EPExtendedEvent.ThreatImpact\":\"low\",\"EPExtendedEvent.Topic\":\"Synthetic threat topic\",\"EPOEvents.AgentGUID\":\"77777777-8888-4999-8AAA-BBBBBBBBBB07\",\"EPOEvents.Analyzer\":\"ENDP_TEST_1000\",\"EPOEvents.AnalyzerDATVersion\":\"9999.0\",\"EPOEvents.AnalyzerDetectionMethod\":\"Access Protection\",\"EPOEvents.AnalyzerEngineVersion\":\"1.2.3\",\"EPOEvents.AnalyzerHostName\":\"lab-host-complete.example.com\",\"EPOEvents.AnalyzerIPV4\":1177773066,\"EPOEvents.AnalyzerIPV6\":\"0:0:0:0:0:FFFF:C633:640A\",\"EPOEvents.AnalyzerMAC\":\"00aabbccddee\",\"EPOEvents.AnalyzerName\":\"Trellix Endpoint Security\",\"EPOEvents.AnalyzerVersion\":\"10.7.20.14066\",\"EPOEvents.AutoGUID\":\"11111111-1111-4111-8111-111111111106\",\"EPOEvents.AutoID\":6,\"EPOEvents.DetectedUTC\":\"2026-01-15T10:00:05+00:00\",\"EPOEvents.EventTimeLocal\":\"2026-01-15T10:00:05+00:00\",\"EPOEvents.ReceivedUTC\":\"2026-01-15T10:00:05+00:00\",\"EPOEvents.ServerID\":\"epo-server-01.example.com\",\"EPOEvents.SourceHostName\":\"source-host.example.com\",\"EPOEvents.SourceIPV4\":1177773066,\"EPOEvents.SourceIPV6\":\"0:0:0:0:0:FFFF:C633:640A\",\"EPOEvents.SourceMAC\":\"010203040506\",\"EPOEvents.SourceProcessName\":\"example-source-process.exe\",\"EPOEvents.SourceURL\":\"https://source.example.com/path\",\"EPOEvents.SourceUserName\":\"EXAMPLE\\\\source_user\",\"EPOEvents.TargetFileName\":\"C:\\\\Users\\\\Public\\\\example-document.pdf\",\"EPOEvents.TargetHostName\":\"target-host.example.com\",\"EPOEvents.TargetIPV4\":1258320178,\"EPOEvents.TargetIPV6\":\"0:0:0:0:0:FFFF:CB00:7132\",\"EPOEvents.TargetMAC\":\"001122334477\",\"EPOEvents.TargetPort\":80,\"EPOEvents.TargetProcessName\":\"example-target-process.exe\",\"EPOEvents.TargetProtocol\":\"TCP\",\"EPOEvents.TargetUserName\":\"EXAMPLE\\\\target_user\",\"EPOEvents.TenantId\":1,\"EPOEvents.ThreatActionTaken\":\"blocked\",\"EPOEvents.ThreatCategory\":\"hip.process\",\"EPOEvents.ThreatEventID\":18063,\"EPOEvents.ThreatHandled\":true,\"EPOEvents.ThreatName\":\"Synthetic complete system-test event\",\"EPOEvents.ThreatSeverity\":2,\"EPOEvents.ThreatType\":\"IDS_THREAT_TYPE_VALUE_SP\"}",
+        "outcome": "success",
         "provider": "Access Protection",
         "reason": "Synthetic complete system-test event",
         "sequence": 6,
         "severity": 2,
         "type": [
-            "info"
+            "denied"
         ]
     },
     "file": {
@@ -637,9 +645,8 @@ An example event for `threat_event` looks as following:
             "exists": true
         },
         "created": "2025-01-01T00:00:00.000Z",
-        "directory": "C:\\Users\\Public",
         "hash": {
-            "md5": "6789012345678901234ABCDEF0123456"
+            "md5": "DEADBEEF0123456789ABCDEFF0123456"
         },
         "mtime": "2025-01-01T00:00:00.000Z",
         "path": "C:\\Program Files\\ExampleApp",
@@ -707,7 +714,9 @@ An example event for `threat_event` looks as following:
         ],
         "hosts": [
             "lab-host-complete.example.com",
-            "epo-server-01.example.com"
+            "epo-server-01.example.com",
+            "target-host.example.com",
+            "source-host.example.com"
         ],
         "ip": [
             "198.51.100.10",
@@ -746,7 +755,12 @@ An example event for `threat_event` looks as following:
                     "exists": false,
                     "subject_name": "C=US, O=Example Corp, CN=Example Windows Publisher"
                 },
+                "created": "2025-04-01T08:00:00.000Z",
                 "directory": "C:\\Users\\Public",
+                "hash": {
+                    "md5": "6789012345678901234ABCDEF0123456"
+                },
+                "mtime": "2025-04-01T08:00:00.000Z",
                 "name": "example-document.pdf",
                 "path": "C:\\Users\\Public\\example-document.pdf",
                 "size": 102400
@@ -755,67 +769,64 @@ An example event for `threat_event` looks as following:
     },
     "trellix_epo_on_prem": {
         "threat_event": {
-            "EPExtendedEvent": {
-                "AMCoreContentVersion": "1.0.0",
-                "APIName": "SyntheticApiCall",
-                "AccessRequested": "IDS_AAC_REQ_READ",
-                "AnalyzerContentCreationDate": "2026-01-01T00:00:00.000Z",
-                "AnalyzerGTIQuery": true,
-                "AnalyzerRegInfo": "Synthetic analyzer registry context",
-                "AnalyzerTechnologyVersion": "10.7.20.14030",
-                "AttackVectorType": 3,
-                "BladeName": "IDS_BLADE_NAME_FW",
-                "Cleanable": true,
-                "Direction": 1,
-                "DurationBeforeDetection": 1200,
-                "EventAutoID": "6",
-                "FirstActionStatus": true,
-                "FirstAttemptedAction": "blocked",
-                "Location": "C:\\Example\\sample.exe",
-                "SecondActionStatus": false,
-                "SecondAttemptedAction": "quarantined",
-                "SourceDescription": "EXAMPLE AGENT MODULE",
-                "SourceDevicePID": "PCI\\VEN_8086&DEV_1234&SUBSYS_00000000&REV_01\\4&abc&0&00A8",
-                "SourceDeviceSerialNumber": "EXAMPLE-SOURCE-SERIAL-0001",
-                "SourceDeviceVID": "PCI\\VEN_8086&DEV_1234&SUBSYS_00000000&REV_01\\4&abc&0&00A8",
-                "SourceHash": "DEADBEEF0123456789ABCDEFF0123456",
-                "SourceShareName": "\\\\source-host.example.com\\share",
-                "SourceURLRatingCode": "trusted",
-                "SourceURLWebCategory": "business",
-                "TargetCreateTime": "2025-04-01T08:00:00.000Z",
-                "TargetDescription": "Synthetic target description",
-                "TargetDeviceDisplayName": "Example Target Device",
-                "TargetDevicePID": "DEV_5678",
-                "TargetDeviceSerialNumber": "EXAMPLE-TARGET-SERIAL-0001",
-                "TargetDeviceVID": "VEN_1234",
-                "TargetModifyTime": "2025-04-01T08:00:00.000Z",
-                "TargetParentProcessHash": "B2C3D4E5F6789012345678901234ABCD",
-                "TargetParentProcessName": "parent-app.exe",
-                "TargetParentProcessSigned": true,
-                "TargetParentProcessSigner": "C=US, O=Example Corp, CN=Example Code Signing",
-                "TargetShareName": "\\\\target-host.example.com\\share",
-                "TargetURL": "https://target.example.com/resource",
-                "TaskName": "Synthetic Scan Task",
-                "ThreatDetectedOnCreation": true,
-                "ThreatImpact": "low",
-                "Topic": "Synthetic threat topic"
+            "epextended_event": {
+                "access_requested": "IDS_AAC_REQ_READ",
+                "amcore_content_version": "1.0.0",
+                "analyzer_content_creation_date": "2026-01-01T00:00:00.000Z",
+                "analyzer_gtiquery": true,
+                "analyzer_reg_info": "Synthetic analyzer registry context",
+                "analyzer_technology_version": "10.7.20.14030",
+                "apiname": "SyntheticApiCall",
+                "attack_vector_type": "3",
+                "blade_name": "IDS_BLADE_NAME_FW",
+                "cleanable": true,
+                "direction": "1",
+                "duration_before_detection": 1200,
+                "event_auto_id": "6",
+                "first_action_status": true,
+                "first_attempted_action": "blocked",
+                "location": "C:\\Example\\sample.exe",
+                "second_action_status": false,
+                "second_attempted_action": "quarantined",
+                "source_description": "EXAMPLE AGENT MODULE",
+                "source_device_pid": "PCI\\VEN_8086&DEV_1234&SUBSYS_00000000&REV_01\\4&abc&0&00A8",
+                "source_device_serial_number": "EXAMPLE-SOURCE-SERIAL-0001",
+                "source_device_vid": "PCI\\VEN_8086&DEV_1234&SUBSYS_00000000&REV_01\\4&abc&0&00A8",
+                "source_share_name": "\\\\source-host.example.com\\share",
+                "source_urlrating_code": "trusted",
+                "source_urlweb_category": "business",
+                "target_description": "Synthetic target description",
+                "target_device_display_name": "Example Target Device",
+                "target_device_pid": "DEV_5678",
+                "target_device_serial_number": "EXAMPLE-TARGET-SERIAL-0001",
+                "target_device_vid": "VEN_1234",
+                "target_parent_process_hash": "B2C3D4E5F6789012345678901234ABCD",
+                "target_parent_process_name": "parent-app.exe",
+                "target_parent_process_signed": true,
+                "target_parent_process_signer": "C=US, O=Example Corp, CN=Example Code Signing",
+                "target_share_name": "\\\\target-host.example.com\\share",
+                "target_url": "https://target.example.com/resource",
+                "task_name": "Synthetic Scan Task",
+                "threat_detected_on_creation": true,
+                "threat_impact": "low",
+                "topic": "Synthetic threat topic"
             },
-            "EPOEvents": {
-                "AgentGUID": "77777777-8888-4999-8AAA-BBBBBBBBBB07",
-                "Analyzer": "ENDP_TEST_1000",
-                "AnalyzerDATVersion": "9999.0",
-                "AnalyzerEngineVersion": "1.2.3",
-                "DetectedUTC": "2026-01-15T10:00:05.000Z",
-                "EventTimeLocal": "2026-01-15T10:00:05.000Z",
-                "ServerID": "epo-server-01.example.com",
-                "SourceHostName": "source-host.example.com",
-                "SourceURL": "https://source.example.com/path",
-                "TargetProcessName": "example-target-process.exe",
-                "TenantId": "1",
-                "ThreatActionTaken": "blocked",
-                "ThreatCategory": "hip.process",
-                "ThreatHandled": true,
-                "ThreatType": "IDS_THREAT_TYPE_VALUE_SP"
+            "epoevents": {
+                "agent_guid": "77777777-8888-4999-8AAA-BBBBBBBBBB07",
+                "analyzer": "ENDP_TEST_1000",
+                "analyzer_datversion": "9999.0",
+                "analyzer_engine_version": "1.2.3",
+                "detected_utc": "2026-01-15T10:00:05.000Z",
+                "event_time_local": "2026-01-15T10:00:05.000Z",
+                "server_id": "epo-server-01.example.com",
+                "source_host_name": "source-host.example.com",
+                "source_url": "https://source.example.com/path",
+                "target_process_name": "example-target-process.exe",
+                "tenant_id": "1",
+                "threat_action_taken": "blocked",
+                "threat_category": "hip.process",
+                "threat_handled": true,
+                "threat_type": "IDS_THREAT_TYPE_VALUE_SP"
             }
         }
     },

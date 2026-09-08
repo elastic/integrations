@@ -88,47 +88,56 @@ state:
     EPExtendedEvent.NaturalLangDescription EPExtendedEvent.Direction
 redact:
   fields: ~
-program: |
+program: |-
   (
     state.?want_more.orValue(false) ?
       state
     :
-      state.with({
-        // int() before string() for the same reason as below: the var arrives
-        // as a float64 and string() of a float64 >= 1e6 renders in scientific
-        // notation, which is not a valid query operand.
-        "event_auto_id": state.?cursor.last_event_auto_id.orValue(
-          string(int(state.initial_event_auto_id))
-        )
-      })
+      state.with(
+        {
+          // int() before string() for the same reason as below: the var arrives
+          // as a float64 and string() of a float64 >= 1e6 renders in scientific
+          // notation, which is not a valid query operand.
+          "event_auto_id": state.?cursor.last_event_auto_id.orValue(
+            string(int(state.initial_event_auto_id))
+          ),
+        }
+      )
   ).as(state,
     state.with(
       get(
-        state.url.trim_right("/") + "/remote/core.executeQuery?" +
-        {
+        state.url.trim_right("/") + "/remote/core.executeQuery?" + {
           "target": ["EPExtendedEvent"],
           // (top N) keyset page ordered by the unique AutoID.
-          "select": ['(select (top ' + string(int(state.page_size)) + ') ' + state.columns + ')'],
-          "where": ['(where (gt EPOEvents.AutoID ' + state.event_auto_id + '))'],
+          "select": ["(select (top " + string(int(state.page_size)) + ") " + state.columns + ")"],
+          "where": ["(where (gt EPOEvents.AutoID " + state.event_auto_id + "))"],
           "order": ["(order (asc EPOEvents.AutoID))"],
-          ":output": ["json"]
+          ":output": ["json"],
         }.format_query()
       ).as(resp,
-        resp.StatusCode == 200 ?
+        // core.executeQuery is a plain-text protocol that reports query errors
+        // with HTTP 200 and an "Error <n> :" body, so the status alone does not
+        // establish that the body is JSON. Without the prefix check a non-JSON
+        // 200 aborts the whole evaluation inside decode_json(), which returns no
+        // events at all and leaves nothing in the index to diagnose.
+        (resp.StatusCode == 200 && string(resp.Body).trim_space().has_prefix("OK:")) ?
           string(resp.Body).trim_space().trim_prefix("OK:").decode_json().as(rows,
             // Advance to the greatest AutoID returned by this page. The ID is
             // routed through int() before string(): JSON numbers arrive as float64,
             // and string() of a float64 >= 1e6 renders as scientific notation, which
             // is not a valid operand for the (gt EPOEvents.AutoID ...) query.
-            string(int(
-              rows.last()["EPOEvents.AutoID"].orValue(state.event_auto_id)
-            )).as(new_event_auto_id, {
-              "events": rows.map(e, {"message": e.encode_json()}),
-              "event_auto_id": new_event_auto_id,
-              "cursor": {"last_event_auto_id": new_event_auto_id},
-              "want_more": size(rows) == int(state.page_size) &&
-                new_event_auto_id != state.event_auto_id
-            })
+            string(
+              int(
+                rows.last()["EPOEvents.AutoID"].orValue(state.event_auto_id)
+              )
+            ).as(new_event_auto_id,
+              {
+                "events": rows.map(e, {"message": e.encode_json()}),
+                "event_auto_id": new_event_auto_id,
+                "cursor": {"last_event_auto_id": new_event_auto_id},
+                "want_more": size(rows) == int(state.page_size) && new_event_auto_id != state.event_auto_id,
+              }
+            )
           )
         :
           {
@@ -137,14 +146,14 @@ program: |
                 "code": string(resp.StatusCode),
                 "id": resp.Status,
                 "message": "GET " + state.url.trim_right("/") + "/remote/core.executeQuery: " + (
-                  size(resp.Body) != 0 ?
+                  (size(resp.Body) != 0) ?
                     string(resp.Body)
                   :
                     resp.Status + " (" + string(resp.StatusCode) + ")"
-                )
-              }
+                ),
+              },
             },
-            "want_more": false
+            "want_more": false,
           }
       )
     )
