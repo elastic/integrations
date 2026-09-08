@@ -1,0 +1,44 @@
+format_version: "3.6.5"
+name: gcp_metrics_otel
+title: "Google Cloud Metrics (OpenTelemetry)"
+version: 0.1.0
+source:
+  license: "Elastic-2.0"
+description: >-
+  Collect Google Cloud service metrics from Cloud Monitoring using the OTel
+  Collector Google Cloud Monitoring receiver.
+type: integration
+categories:
+  - google_cloud
+  - cloud
+  - observability
+  - opentelemetry
+conditions:
+  kibana:
+    version: "^9.6.0"
+  elastic:
+    subscription: basic
+icons:
+  - src: /img/gcp_otel_logo.svg
+    title: GCP OTel logo
+    size: 32x32
+    type: image/svg+xml
+requires:
+  input:
+    - package: googlecloudmonitor_input_otel
+      version: "0.1.0"
+policy_templates:
+  - name: gcp_metrics
+    title: Google Cloud Metrics
+    description: Collect Google Cloud service metrics from Cloud Monitoring
+    data_streams:
+      - compute
+    inputs:
+      - package: googlecloudmonitor_input_otel
+        title: Google Cloud Metrics
+        description: >
+          Collect Google Cloud service metrics using the OTel Collector
+          Google Cloud Monitoring receiver.
+owner:
+  type: elastic
+  github: elastic/obs-infraobs-integrations

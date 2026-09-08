@@ -1,0 +1,73 @@
+title: "Google Cloud Compute Engine Metrics"
+type: metrics
+# Pins the dataset instead of inheriting the input package default. Without
+# this, Fleet falls back to <package>.<data_stream> and documents land in
+# metrics-gcp_metrics_otel.compute.otel-*.
+dataset: gcp.compute
+streams:
+  - package: googlecloudmonitor_input_otel
+    title: Google Cloud Compute Engine Metrics
+    description: >
+      Compute Engine hypervisor metrics from Cloud Monitoring: CPU, disk
+      throughput and latency, network, firewall drops, memory balloon,
+      uptime, interruptions, and managed instance group size.
+    vars:
+      - name: project_id
+        type: text
+        title: GCP Project ID
+        required: true
+        description: The GCP project ID to query Compute Engine metrics from.
+        show_user: true
+      - name: metrics_list
+        type: text
+        title: Metrics List
+        required: false
+        multi: true
+        description: >
+          Compute Engine metric type names to collect. Defaults to the
+          hypervisor metrics available for every instance without a guest
+          agent. Guest metrics such as
+          `compute.googleapis.com/guest/memory/percent_used` can be appended
+          once the instances report them.
+        default:
+          - compute.googleapis.com/instance/cpu/utilization
+          - compute.googleapis.com/instance/cpu/usage_time
+          - compute.googleapis.com/instance/cpu/reserved_cores
+          - compute.googleapis.com/instance/cpu/guest_visible_vcpus
+          - compute.googleapis.com/instance/cpu/scheduler_wait_time
+          - compute.googleapis.com/instance/disk/read_bytes_count
+          - compute.googleapis.com/instance/disk/read_ops_count
+          - compute.googleapis.com/instance/disk/write_bytes_count
+          - compute.googleapis.com/instance/disk/write_ops_count
+          - compute.googleapis.com/instance/disk/average_io_latency
+          - compute.googleapis.com/instance/disk/average_io_queue_depth
+          - compute.googleapis.com/instance/disk/performance_status
+          - compute.googleapis.com/instance/disk/provisioning/iops
+          - compute.googleapis.com/instance/disk/provisioning/throughput
+          - compute.googleapis.com/instance/disk/provisioning/size
+          - compute.googleapis.com/instance/network/received_bytes_count
+          - compute.googleapis.com/instance/network/received_packets_count
+          - compute.googleapis.com/instance/network/sent_bytes_count
+          - compute.googleapis.com/instance/network/sent_packets_count
+          - compute.googleapis.com/firewall/dropped_bytes_count
+          - compute.googleapis.com/firewall/dropped_packets_count
+          - compute.googleapis.com/instance/memory/balloon/ram_size
+          - compute.googleapis.com/instance/memory/balloon/ram_used
+          - compute.googleapis.com/instance/memory/balloon/swap_in_bytes_count
+          - compute.googleapis.com/instance/memory/balloon/swap_out_bytes_count
+          - compute.googleapis.com/instance/uptime
+          - compute.googleapis.com/instance/uptime_total
+          - compute.googleapis.com/instance/interruption_count
+          - compute.googleapis.com/instance_group/size
+        show_user: true
+      - name: collection_interval
+        type: duration
+        title: Collection Interval
+        required: false
+        description: >
+          How often the receiver polls Cloud Monitoring. The receiver enforces
+          a hard minimum of 60s. Compute Engine samples most hypervisor metrics
+          every 60s, so lower values increase Cloud Monitoring API cost without
+          adding resolution.
+        default: 300s
+        show_user: true
