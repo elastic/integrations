@@ -1,0 +1,47 @@
+host: "{{listen_address}}:{{listen_port}}"
+{{#if udp_options}}
+{{udp_options}}
+{{/if}}
+{{#if ssl}}
+ssl: {{ssl}}
+{{/if}}
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+processors:
+- script:
+    lang: javascript
+    source: >
+      function process(event) {
+        var msg = event.Get("message");
+        if (msg) {
+          var i = msg.indexOf("<" + "?xml");
+          if (i >= 0) { event.Put("xml_payload", msg.substring(i)); }
+        }
+      }
+- decode_xml:
+    field: xml_payload
+    target_field: xml_obj
+    to_lower: false
+    ignore_failure: true
+- script:
+    lang: javascript
+    source: >
+      function process(event) {
+        var o = event.Get("xml_obj");
+        if (o) { event.Put("message", JSON.stringify(o)); }
+      }
+- drop_fields:
+    fields: [xml_payload, xml_obj]
+    ignore_missing: true
+
+{{#if processors}}
+{{processors}}
+{{/if}}
