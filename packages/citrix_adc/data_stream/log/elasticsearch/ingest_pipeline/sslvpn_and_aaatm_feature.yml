@@ -210,6 +210,22 @@ processors:
       tag: set_client_ip_from_client_ip
       copy_from: citrix_adc.log.client_ip
       ignore_empty_value: true
+  - convert:
+      field: citrix_adc.log.x_forwarded_for_ip
+      tag: convert_x_forwarded_for_ip_to_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.citrix_adc?.log?.x_forwarded_for_ip != null && ctx.citrix_adc.log.x_forwarded_for_ip != ''
+      on_failure:
+        - append:
+            tag: append_error_message_a41c9d72
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: network.forwarded_ip
+      tag: set_network_forwarded_ip_from_x_forwarded_for_ip
+      copy_from: citrix_adc.log.x_forwarded_for_ip
+      ignore_empty_value: true
   - set:
       field: url.domain
       tag: set_url_domain_from_hostname
