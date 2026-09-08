@@ -58,17 +58,17 @@ download_file() {
   local url=$2
   local tmp
 
-  tmp="$(mktemp "$(dirname "${dest}")/.tmp.XXXXXX")"
+  tmp="$(mktemp "$(dirname "${dest}")/tmp.XXXXXX")"
   if ! retry 5 curl --fail --silent --show-error --location -o "${tmp}" "${url}"; then
     rm -f "${tmp}"
     >&2 echo "Failed to download ${url}"
     return 1
   fi
-  mv "${tmp}" "${dest}"
+  mv "${tmp}" "${dest}" || { rm -f "${tmp}"; return 1; }
 }
 
 download_bin() {
-  download_file "$1" "$2"
+  download_file "$1" "$2" || return "$?"
   chmod +x "$1"
 }
 
