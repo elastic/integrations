@@ -1,40 +1,28 @@
-title: Audit Logs
+title: DLP Incident Events
 type: logs
 streams:
   - input: cel
-    title: Trellix ePO On-Prem Audit Logs
-    description: Collect audit logs with CEL input.
+    title: Trellix ePO DLP Incident Logs
+    description: Collect DLP incident logs from the Trellix ePO REST API.
     enabled: false
     template_path: cel.yml.hbs
     vars:
       - name: initial_interval
         type: text
         title: Initial Interval
-        description: How far back to pull the logs from the audit API. Supported units for this parameter are h/m/s.
+        description: How far back to pull DLP incidents on the first run, measured against the ePO server's own clock. Supported units are h/m/s.
         multi: false
         required: true
         show_user: true
         default: 24h
-        secret: false
       - name: interval
         type: text
         title: Interval
-        description: Duration between requests to the Trellix ePO audit log API. Supported units for this parameter are h/m/s.
+        description: Duration between DLP incident collection requests. Supported units are h/m/s.
         multi: false
         required: true
         show_user: true
-        default: 24h
-        secret: false
-      - name: tz_offset
-        type: text
-        title: Timezone Offset
-        description: >-
-          Use this parameter to adjust the timezone offset when importing logs from a host in a different timezone so that datetimes in cursor used for interval calls are appropriately interpreted. Accepts an HH:mm offset such as "+05:30" or "-08:00".
-        multi: false
-        required: true
-        show_user: true
-        secret: false
-        default: "+5:30"
+        default: 5m
       - name: max_executions
         type: integer
         title: Maximum Pages Per Interval
@@ -46,12 +34,11 @@ streams:
       - name: page_size
         type: integer
         title: Page Size
-        description: Number of audit records fetched per API request.
+        description: Number of records fetched per request. Keep this value high (e.g. 500 or more). A low batch size can cause records with the same update time to be fetched repeatedly.
         multi: false
         required: true
         show_user: false
         default: 500
-        secret: false
       - name: http_client_timeout
         type: text
         title: HTTP Client Timeout
@@ -60,7 +47,6 @@ streams:
         required: true
         show_user: false
         default: 60s
-        secret: false
       - name: enable_request_tracer
         type: bool
         title: Enable request tracing
@@ -70,7 +56,6 @@ streams:
         required: false
         show_user: false
         default: false
-        secret: false
       - name: preserve_original_event
         type: bool
         title: Preserve original event
@@ -79,7 +64,6 @@ streams:
         required: true
         show_user: true
         default: false
-        secret: false
       - name: tags
         type: text
         title: Tags
@@ -89,8 +73,7 @@ streams:
         show_user: false
         default:
           - forwarded
-          - trellix_epo_on_prem-audit
-        secret: false
+          - trellix_epo_on_prem-dlp_incident
       - name: processors
         type: yaml
         title: Processors
@@ -98,4 +81,3 @@ streams:
         multi: false
         required: false
         show_user: false
-        secret: false
