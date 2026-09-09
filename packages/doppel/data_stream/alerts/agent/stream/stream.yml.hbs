@@ -5,7 +5,26 @@ resource.tracer:
   enabled: {{enable_request_tracer}}
   filename: "../../logs/cel/http-request-trace-*.ndjson"
   maxbackups: 5
+{{! Fleet's handlebars has no `eq`; `contains` compares strings and is the only
+    equality test available. Its else branch is never rendered, so each API version
+    gets its own block. }}
+{{#contains "v2" api_version}}
+auth.oauth2:
+  client.id: {{client_id}}
+  client.secret: {{client_secret}}
+  token_url: {{token_url}}
+  endpoint_params:
+    grant_type:
+      - client_credentials
+    audience:
+      - doppel-external
+{{/contains}}
 state:
+{{#contains "v2" api_version}}
+  alerts_path: /v2/alerts
+{{/contains}}
+{{#contains "v1" api_version}}
+  alerts_path: /v1/alerts
   api_key: {{api_key}}
 {{#if x_user_api_key}}
   x_user_api_key: {{x_user_api_key}}
@@ -13,8 +32,12 @@ state:
 {{#if organization_code}}
   organization_code: {{organization_code}}
 {{/if}}
+{{/contains}}
   initial_interval: {{initial_interval}}
   page_size: {{page_size}}
+  # Usage attribution only; never affects request handling. Bump on every release,
+  # the package version is not readable from the CEL program.
+  client_attribution: elastic/1.2.0
 redact:
   fields:
     - api_key
@@ -38,14 +61,21 @@ program: |
     state.with(
       request(
         "GET",
-        state.url.trim_right("/") + "/v1/alerts?" + {
+        state.url.trim_right("/") + state.alerts_path + "?" + {
           "page": [string(int(state.page))],
           "page_size": [string(int(state.page_size))],
           "last_activity_timestamp": [state.last_activity_ts],
         }.format_query()
       ).with({
         "Header": {
-          "X-Api-Key": [state.api_key],
+          // Set explicitly rather than relying on the input's default User-Agent:
+          // that default is not applied when auth.oauth2 is enabled before stack
+          // 9.3.0. See https://github.com/elastic/beats/issues/50867.
+          "User-Agent": ["doppel-" + state.client_attribution],
+          "x-doppel-client": [state.client_attribution],
+          // V2 sends an OAuth bearer token, attached by the input, and takes the
+          // organisation from that token; the V1 headers are absent from state.
+          ?"X-Api-Key": state.?api_key.optMap(v, [v]),
           ?"X-User-Api-Key": state.?x_user_api_key.optMap(v, [v]),
           ?"X-Organization-Code": state.?organization_code.optMap(v, [v]),
         }
@@ -65,7 +95,7 @@ program: |
             "error": {
               "code": string(resp.StatusCode),
               "id": string(resp.Status),
-              "message": "GET " + state.url.trim_right("/") + "/v1/alerts: " + (
+              "message": "GET " + state.url.trim_right("/") + state.alerts_path + ": " + (
                 size(resp.Body) != 0 ?
                   string(resp.Body)
                 :
