@@ -1,0 +1,148 @@
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+{{#if max_executions}}
+max_executions: {{max_executions}}
+{{/if}}
+resource.url: {{url}}
+auth.basic:
+  user: {{username}}
+  password: {{password}}
+state:
+  initial_interval: {{initial_interval}}
+  page_size: {{page_size}}
+  columns: >-
+    UDLP_EPD_Incidents.IncidentId UDLP_EPD_Incidents.OriginalIncidentId UDLP_EPD_Incidents.IncidentType
+    UDLP_EPD_Incidents.ViolationLocalTime UDLP_EPD_Incidents.ViolationTimezone
+    UDLP_EPD_Incidents.ViolationUTCTime UDLP_EPD_Incidents.ViolationCustomTime
+    UDLP_EPD_Incidents.Severity
+    UDLP_EPD_Incidents.StatusId UDLP_EPD_Incidents.ResolutionId
+    UDLP_EPD_Incidents.Reviewer UDLP_EPD_Incidents.McAfeeAgentGuid
+    UDLP_EPD_Incidents.DlpAgentVersion UDLP_EPD_Incidents.EvidenceCount
+    UDLP_EPD_Incidents.TotalMatchCount UDLP_EPD_Incidents.TotalContentSize
+    UDLP_EPD_Incidents.ClassificationsToDisplay UDLP_EPD_Incidents.RulesToDisplay
+    UDLP_EPD_Incidents.ConnectivityState UDLP_EPD_Incidents.ActualAction
+    UDLP_EPD_Incidents.ExpectedAction UDLP_EPD_Incidents.FailureReason
+    UDLP_EPD_Incidents.LastUpdateTimestamp UDLP_EPD_Incidents.ReportingProduct
+    UDLP_EPD_Incidents.ShortMatchString UDLP_EPD_Incidents.RuleSetToDisplay
+redact:
+  fields: ~
+program: |-
+  (
+    state.?want_more.orValue(false) ?
+      state
+    :
+      state.with(
+        {
+          // Empty until the first page lands. The seed below is relative and
+          // evaluated by ePO, so no client-side instant is needed to start.
+          "last_update_timestamp": state.?cursor.last_update_timestamp.orValue(""),
+        }
+      )
+  ).as(state,
+    state.with(
+      get(
+        state.url.trim_right("/") + "/remote/core.executeQuery?" + {
+          "target": ["UDLP_EPD_Incidents"],
+          // (top N) keyset page ordered by LastUpdateTimestamp.
+          // int() before string(): the var arrives as a float64 and string() of a
+          // float64 >= 1e6 renders in scientific notation, which is not a valid
+          // query operand.
+          "select": ["(select (top " + string(int(state.page_size)) + ") " + state.columns + ")"],
+          // Without a cursor, seed from newerThan, whose argument is a duration in
+          // milliseconds that ePO resolves against its own clock. A client-side
+          // instant cannot seed this column: it stores a bare wall clock, so any
+          // boundary built from the agent's clock is wrong by the server's offset,
+          // which over-collects east of UTC and silently skips history west of it.
+          // Once a row has been seen its own timestamp is an exact boundary, and
+          // inclusive ge keeps records sharing it from being skipped.
+          "where": [
+            (state.last_update_timestamp == "") ?
+              ("(where (newerThan UDLP_EPD_Incidents.LastUpdateTimestamp " + string(int(duration(state.initial_interval)) / 1000000) + "))")
+            :
+              "(where (ge UDLP_EPD_Incidents.LastUpdateTimestamp \"" + state.last_update_timestamp + "\"))",
+          ],
+          "order": ["(order (asc UDLP_EPD_Incidents.LastUpdateTimestamp))"],
+          ":output": ["json"],
+        }.format_query()
+      ).as(resp,
+        // core.executeQuery is a plain-text protocol that reports query errors
+        // with HTTP 200 and an "Error <n> :" body, so the status alone does not
+        // establish that the body is JSON. Without the prefix check a non-JSON
+        // 200 aborts the whole evaluation inside decode_json(), which returns no
+        // events at all and leaves nothing in the index to diagnose.
+        (resp.StatusCode == 200 && string(resp.Body).trim_space().has_prefix("OK:")) ?
+          string(resp.Body).trim_space().trim_prefix("OK:").decode_json().as(rows,
+            (
+              // ePO compares the printed wall clock in this column, not the instant
+              // the appended offset denotes: against a server holding a row stamped
+              // "2026-08-17T17:26:34+05:30", (ge ... "2026-08-17T17:26:35") returns
+              // nothing while (ge ... "2026-08-17T11:56:35") -- one second past the
+              // same row's UTC instant -- still returns it. So the boundary handed
+              // back has to be those digits. format() renders in the parsed value's
+              // own offset, which reproduces them unchanged. Do not re-anchor this to
+              // UTC to match the audit stream: that would park the cursor a whole
+              // offset behind the last record and re-read it forever. The offset is
+              // still authoritative for *interpreting* the value, which is why the
+              // ingest pipeline honours it when deriving the indexed timestamp.
+              (size(rows) > 0) ?
+                timestamp(
+                  string(rows[size(rows) - 1]["UDLP_EPD_Incidents.LastUpdateTimestamp"])
+                ).format("2006-01-02T15:04:05")
+              :
+                state.last_update_timestamp
+            ).as(new_last_update_timestamp,
+              {
+                "events": rows.map(e, {"message": e.encode_json()}),
+                "last_update_timestamp": new_last_update_timestamp,
+                "cursor": {"last_update_timestamp": new_last_update_timestamp},
+                // The cursor comparison stops a full page whose rows all share the
+                // boundary timestamp from being re-fetched for the rest of the budget.
+                "want_more": size(rows) == int(state.page_size) && new_last_update_timestamp != state.last_update_timestamp,
+              }
+            )
+          )
+        :
+          {
+            "events": {
+              "error": {
+                "code": string(resp.StatusCode),
+                "id": resp.Status,
+                "message": "GET " + state.url.trim_right("/") + "/remote/core.executeQuery: " + (
+                  (size(resp.Body) != 0) ?
+                    string(resp.Body)
+                  :
+                    resp.Status + " (" + string(resp.StatusCode) + ")"
+                ),
+              },
+            },
+            "want_more": false,
+          }
+      )
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

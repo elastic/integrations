@@ -2,9 +2,9 @@
 
 ## Overview
 
-[Trellix ePolicy Orchestrator (ePO) On-Prem](https://www.trellix.com/products/epolicy-orchestrator/) is a centralized security management platform for managing endpoint policies, products, systems, and security events across an organization. It offers comprehensive audit logging for system administration, user activity, policy changes, and security-related actions; its Web Control component logs web browsing activity together with content and reputation ratings applied to each visited URL; its System Tree maintains a record of every managed endpoint — agent identity and version, communication and managed state, node path, and tenant and tag assignment; and its compliance history reporting captures point-in-time snapshots of how many managed computers are compliant with policy and how that posture changes over time — combining authentication, authorization, detailed audit trails, web usage monitoring, endpoint inventory, agent health, and historical compliance measurement into a unified platform for **critical security infrastructure monitoring and compliance**.
+[Trellix ePolicy Orchestrator (ePO) On-Prem](https://www.trellix.com/products/epolicy-orchestrator/) is a centralized security management platform for managing endpoint policies, products, systems, and security events across an organization. It offers comprehensive audit logging for system administration, user activity, policy changes, and security-related actions; its Web Control component logs web browsing activity together with content and reputation ratings applied to each visited URL; its System Tree maintains a record of every managed endpoint — agent identity and version, communication and managed state, node path, and tenant and tag assignment; its compliance history reporting captures point-in-time snapshots of how many managed computers are compliant with policy and how that posture changes over time; and it provides visibility into Data Loss Prevention (DLP) incidents and endpoint threat activity across hybrid endpoint deployments — combining authentication, authorization, detailed audit trails, web usage monitoring, endpoint inventory, agent health, historical compliance measurement, sensitive-data protection, and threat detection into a unified platform for **critical security infrastructure monitoring and compliance**.
 
-The Trellix ePO On-Prem integration for Elastic collects audit logs, web control logs, managed system (endpoint) records, and endpoint compliance history records using the **REST / Web API** via CEL input, and visualizes them in Kibana.
+The Trellix ePO On-Prem integration for Elastic collects audit logs, web control logs, managed system (endpoint) records, endpoint compliance history records, DLP incident records, and threat event logs using the **REST / Web API** via CEL input, and visualizes them in Kibana.
 
 ### Compatibility
 
@@ -15,6 +15,10 @@ The Trellix ePO On-Prem integration is compatible with **Trellix ePO On-Prem 5.1
 This integration uses the Elastic Agent CEL input to poll the Trellix ePO REST / Web API at configurable intervals. It retrieves audit log records from the `OrionAuditLog` table using keyset-based pagination with cursor timestamps, and web control event records from the `WP_EventInfo` table using a keyset cursor on the numeric `EventAutoID` field (because `WP_EventInfo` has no timestamp column). Each poll for web control requests events with `EventAutoID` greater than the last persisted value, orders results ascending by `EventAutoID`, and persists the highest `EventAutoID` returned for the next poll.
 
 It retrieves managed system records from the `EPOLeafNode` table using a timestamp cursor on `LastUpdate` — the first poll seeds the window with the relative `newerThan` operator so that ePO resolves the boundary against its own clock, and subsequent polls request records at or after the last persisted timestamp, order results ascending by `LastUpdate`, and persist the wall clock the API returned — and compliance history records from the `EpoComplianceHistory` table using a keyset cursor on the numeric `AutoId` field (the table's monotonically increasing primary key). Each poll for compliance history requests records with `AutoId` greater than the last persisted value, orders results ascending by `AutoId`, and persists the highest `AutoId` returned for the next poll. The `system` and `compliance_history` data streams page through results within a single poll until a response no longer fills the configured page size or the **Maximum Pages Per Interval** budget is reached.
+
+The `dlp_incident` data stream retrieves DLP incident records from the `UDLP_EPD_Incidents` table and paginates using `LastUpdateTimestamp` as an inclusive time cursor. Because the filter is inclusive, records sharing the boundary timestamp are re-read on the next poll; the ingest pipeline assigns a stable document ID from `IncidentId` so the repeats overwrite rather than duplicate. An incident that is updated later is therefore collected again, keeping its status, resolution, and reviewer fields current.
+
+The `threat_event` data stream queries the `EPExtendedEvent` target and retrieves fields from both `EPOEvents` and `EPExtendedEvent`, so only threat events with matching extended details are collected. It implements keyset-based pagination using the unique ascending `EPOEvents.AutoID` column as the cursor, so no record is re-read at a page boundary.
 
 Each event is mapped to Elastic Common Schema (ECS) for standardized field naming and ingested as an individual event for enrichment by the built-in ingest pipeline.
 
@@ -28,6 +32,8 @@ The Trellix ePO On-Prem integration collects the following types of data:
 | `web_control` | Trellix ePO web control event records, including browsed URLs, user names, content/category ratings (phishing, spam, download, exploit, bad-link, pop-up), overall rating, list/reason/action identifiers, and per-event counts, retrieved from the ePO Web API. | `/remote/core.executeQuery` API |
 | `compliance_history` | Trellix ePO compliance history records, including the originating chart and reporting task name, evaluated computer counts, compliant and noncompliant counts and percentages, and snapshot timestamp, retrieved from the ePO Web API. | `/remote/core.executeQuery` API |
 | `system` | Trellix ePO managed system (endpoint) records, including node name, path, and type; agent GUID and version; managed and communication state; and tenant, tag, and sequence metadata, retrieved from the ePO Web API. | `/remote/core.executeQuery` API |
+| `dlp_incident` | Trellix ePO DLP incidents, including violation times, severity, status, evidence counts, classifications, matched rules, actions, and reviewer information. | `/remote/core.executeQuery` API |
+| `threat_event` | Trellix ePO threat events and extended details, including endpoint detections, rules, actions, severity, network activity, files, processes, registry paths, and related entities. | `/remote/core.executeQuery` API |
 
 ### Supported use cases
 
@@ -39,6 +45,10 @@ Integrating Trellix ePO compliance history with Elastic provides centralized vis
 
 Integrating Trellix ePO managed system records with Elastic provides centralized visibility into the endpoints under ePO management — agent version and communication health, managed state, node placement in the System Tree, and tag-based grouping — enabling asset inventory tracking, agent health and coverage monitoring, and investigation of unmanaged or stale endpoints within Kibana dashboards.
 
+Integrating Trellix ePO DLP with Elastic provides centralized visibility into DLP policy violations and sensitive-data activity across managed endpoints. It supports incident investigation, policy effectiveness analysis, compliance reporting, and monitoring of classifications, matched rules, actions, severity, and reviewer activity in Kibana.
+
+It also provides centralized visibility into endpoint threat activity across managed systems, supporting threat investigation, detection and response, endpoint activity analysis, intrusion prevention monitoring, firewall traffic analysis, and correlation across hosts, users, IP addresses, files, processes, hashes, and rules in Kibana.
+
 ## What do I need to use this integration?
 
 ### From Trellix ePO On-Prem
@@ -47,7 +57,7 @@ To collect data via the REST / Web API, you need the following:
 
 1. **Trellix ePO server**: Trellix ePO On-Prem 5.10.0 or above with REST API / Web API enabled.
 2. **User account**: A Trellix ePO user account with:
-   - **Query permissions** to the `OrionAuditLog` table (or `OrionAuditLogMT` for multitenant deployments), the `WP_EventInfo` table, the `EPOLeafNode` table, and/or the `EpoComplianceHistory` table.
+   - **Query permissions** to the `OrionAuditLog` table (or `OrionAuditLogMT` for multitenant deployments), the `WP_EventInfo` table, the `EPOLeafNode` table, the `EpoComplianceHistory` table, the `UDLP_EPD_Incidents` table, and/or the `EPOEvents` and `EPExtendedEvent` tables, depending on the data streams you enable.
    - Sufficient role permissions to execute queries via the Web API.
 3. **API credentials**: Username and password for basic authentication.
 4. **Server URL**: Base URL of the Trellix ePO server (default port: 8443, for example `https://epo.example.com:8443`).
@@ -82,10 +92,10 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
         * Set **Trellix ePO URL** to the base URL of your Trellix ePO server, for example `https://epo.example.com:8443`.
         * Set the **Username** for the ePO user account with audit log query permissions.
         * Set the **Password** for the ePO user account.
-        * Set **Initial Event Auto Id** to the starting `EventAutoID` from which to begin querying events. Subsequent collections resume from the last persisted `EventAutoID`. Set to `0` to start from the beginning (default: `0`).        
-        * Set **Interval** to the polling frequency. The default is `5m`.
-        * Set **Page Size** to the number of audit log records to retrieve per API request. The default is `500`.
-        * Optionally adjust **HTTP Client Timeout**, proxy, and SSL settings.
+        * **Initial Interval**: The lookback period for the first API request (default: `24h`).
+        * **Timezone Offset**: The UTC offset the ePO server returns in `StartTime`, as an `HH:mm` value such as `+05:30` or `-08:00` (default: `+5:30`).
+        * **Page Size**: Number of audit log records to retrieve per API call (default: `500`).
+        * Optionally adjust **Interval** and **HTTP Client Timeout** as needed.
     * For **web control** logs:
         * Set **Trellix ePO URL** to the base URL of your Trellix ePO server, for example `https://epo.example.com:8443`.
         * Set **Username** for the ePO user account with `WP_EventInfo` query permissions.
@@ -112,20 +122,41 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
         * Set **Maximum Pages Per Interval** to the maximum number of pages collected at each interval. The default is `1000`.
         * Set **Page Size** to the number of system records to retrieve per API request. The default is `500`.
         * Optionally adjust **HTTP Client Timeout**, proxy, and SSL settings.
+    * For **DLP incident** logs:
+        * Set **Trellix ePO URL** to the base URL of your Trellix ePO server, for example `https://epo.example.com:8443`.
+        * Set **Username** for the ePO user account with `UDLP_EPD_Incidents` query permissions.
+        * Set **Password** for the ePO user account.
+        * Set **Initial Interval** to the lookback period used for the first API request. The default is `24h`.
+        * Set **Interval** to the polling frequency. The default is `5m`.
+        * Set **Page Size** to the number of DLP incident records to retrieve per API request. The default is `500`.
+        * Optionally adjust **HTTP Client Timeout**, proxy, and SSL settings.
+    * For **threat event** logs:
+        * Set **Trellix ePO URL** to the base URL of your Trellix ePO server, for example `https://epo.example.com:8443`.
+        * Set **Username** for the ePO user account with `EPOEvents` and `EPExtendedEvent` query permissions.
+        * Set **Password** for the ePO user account.
+        * Set **Initial Event Auto ID** to the `EPOEvents.AutoID` that collection should start after on the first run. The default is `0`, which collects all threat events available on the server.
+        * Set **Interval** to the polling frequency. The default is `5m`.
+        * Set **Page Size** to the number of threat event records to retrieve per API request. The default is `500`.
+        * Optionally adjust **HTTP Client Timeout**, proxy, and SSL settings.
 
 6. Select **Save and continue** to save the integration.
 
 ## Troubleshooting
 
-* **No data collected**: Verify that the Trellix ePO API URL is correct, credentials are valid, and the Elastic Agent has network access to the ePO server. Check that the user account has permissions to query the `OrionAuditLog`, `WP_EventInfo`, `EPOLeafNode`, and/or `EpoComplianceHistory` tables, and that the required data stream is enabled. For compliance history, use the local target `EpoComplianceHistory`; do not use the rollup target unless a rollup database is configured.
+* **No data collected**: Verify that the Trellix ePO API URL is correct, credentials are valid, and the Elastic Agent has network access to the ePO server. Check that the user account has permissions to query the `OrionAuditLog`, `WP_EventInfo`, `EPOLeafNode`, `EpoComplianceHistory`, `UDLP_EPD_Incidents`, `EPOEvents`, and/or `EPExtendedEvent` tables, and that the required data stream is enabled. For compliance history, use the local target `EpoComplianceHistory`; do not use the rollup target unless a rollup database is configured.
 * **Authentication failures**: Ensure the username and password are correct and the user account has not been locked or disabled in Trellix ePO. Verify the account has sufficient permissions to access the required tables.
 * **Incomplete or missing fields**: Confirm that the ePO user account has sufficient permissions to access all fields configured in the integration (select clause in the CEL template).
+* **Missing expected threat events**: The `threat_event` query uses `EPExtendedEvent` as its target and collects only events with matching extended details.
 * **Pagination issues (audit)**: If audit logs are not advancing beyond the initial set, verify that the `StartTime` field is present in all returned records and that pagination timestamps are being correctly updated.
 * **Pagination issues (web control)**: If web control logs are not advancing beyond the initial set, verify that `EventAutoID` values are strictly increasing in the source table and that the persisted `EventAutoID` cursor is being correctly updated between polls.
 * **Pagination issues (compliance history)**: If compliance history records are not advancing beyond the initial set, verify that `AutoId` values are strictly increasing in the source table and that the persisted `AutoId` cursor is being correctly updated between polls.
 * **Pagination issues (system)**: If system records are not advancing beyond the initial set, verify that the `LastUpdate` field is present in all returned records, that `LastUpdate` values are increasing in the source table, and that the persisted timestamp cursor is being correctly updated between polls.
+* **Pagination issues (DLP incident and threat event)**: If collection does not advance, verify that `UDLP_EPD_Incidents.LastUpdateTimestamp` (DLP incidents) or `EPOEvents.AutoID` (threat events) is present in every returned record and that records are ordered by this field.
+* **Collection timeouts**: Increase **HTTP Client Timeout** or reduce **Page Size**.
 * **SSL certificate errors**: If your Trellix ePO server uses a self-signed certificate, extract the certificate and configure it under the SSL settings of the integration, or add it to the Elastic Agent's trusted certificate store.
 * **Network connectivity issues**: Verify firewall rules allow outbound HTTPS traffic from the Elastic Agent host to the Trellix ePO server on the configured port.
+* **Missing historical incidents**: Increase **Initial Interval** so that the first DLP incident request covers the required lookback period.
+* **Missing historical threat events**: Lower **Initial Event Auto ID** so that the first request starts from an earlier `EPOEvents.AutoID`.
 
 For help with Elastic ingest tools, check [Common problems](https://www.elastic.co/docs/troubleshoot/ingest/fleet/common-problems).
 
@@ -138,6 +169,8 @@ For help with Elastic ingest tools, check [Common problems](https://www.elastic.
 3. Open the **[Logs Trellix ePO On-Prem] Audit** dashboard to verify audit event data is being collected.
 4. Open the **[Logs Trellix ePO On-Prem] Web Control** dashboard and verify that Web Control data is populated.
 5. Open the **[Logs Trellix ePO On-Prem] System** dashboard and verify that managed system data is populated.
+6. Open the **[Logs Trellix ePO On-Prem] DLP Incident Overview** dashboard and verify that DLP incident data is populated.
+7. Open the **[Logs Trellix ePO On-Prem] Threat Event Overview** dashboard and verify that threat event data is populated.
 
 ## Scaling
 
@@ -207,6 +240,34 @@ The `system` data stream provides Trellix ePO On-Prem managed system (endpoint) 
 
 {{ event "system" }}
 
+### DLP incident
+
+The `dlp_incident` data stream provides Trellix ePO On-Prem DLP incident records collected from the Web API.
+
+#### DLP incident fields
+
+{{ fields "dlp_incident" }}
+
+### Example event
+
+#### DLP incident
+
+{{ event "dlp_incident" }}
+
+### Threat event
+
+The `threat_event` data stream provides Trellix ePO On-Prem threat event records and matching extended event details collected from the Web API.
+
+#### Threat event fields
+
+{{ fields "threat_event" }}
+
+### Example event
+
+#### Threat event
+
+{{ event "threat_event" }}
+
 ### Inputs used
 
 These inputs are used in the integration:
@@ -221,3 +282,5 @@ This integration uses the following API:
 * **Web Control**: Collects web control event records via the **Trellix ePO executeQuery API** (endpoint: `/remote/core.executeQuery`). Records are queried from the `WP_EventInfo` table using keyset-based pagination with the `EventAutoID` field as a cursor to ensure efficient and non-duplicating retrieval.
 * **Compliance history**: Collects compliance history records via the **Trellix ePO executeQuery API** (endpoint: `/remote/core.executeQuery`). Records are queried from the `EpoComplianceHistory` table using keyset-based pagination with the `AutoId` field as a cursor to ensure efficient and non-duplicating retrieval.
 * **System**: Collects managed system (endpoint) records via the **Trellix ePO executeQuery API** (endpoint: `/remote/core.executeQuery`). Records are queried from the `EPOLeafNode` table using keyset-based pagination with the `LastUpdate` field as a cursor to ensure efficient and non-duplicating retrieval.
+* **DLP incident**: Collects DLP incident records through the **Trellix ePO executeQuery API** (endpoint: `/remote/core.executeQuery`). Records are queried from `UDLP_EPD_Incidents` and ordered by `LastUpdateTimestamp`, which is used as an inclusive time cursor.
+* **Threat event**: Collects threat event records through the **Trellix ePO executeQuery API** (endpoint: `/remote/core.executeQuery`). Records are queried using the `EPExtendedEvent` target, fields are selected from `EPOEvents` and `EPExtendedEvent`, and pagination is keyset-based using `EPOEvents.AutoID` as the cursor.

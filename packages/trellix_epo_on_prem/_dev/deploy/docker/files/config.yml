@@ -418,3 +418,437 @@ rules:
           Content-Type:
             - 'text/plain'
         body: 'OK: []'
+
+  # dlp_incident page 2: matched on the cursor the program derives from page 1's
+  # last row (LastUpdateTimestamp 2026-01-15T15:45:20+05:30, echoed back as the
+  # bare server-local wall clock the where clause is read in). ge is inclusive, so
+  # a real server hands back the boundary row 100007 alongside the new one; the
+  # pipeline fingerprints _id from IncidentId, so the repeat overwrites rather
+  # than duplicating. That keeps this page full, which is what makes the next
+  # query -- the exhausted one below -- happen at all.
+  - path: /remote/core.executeQuery
+    methods: ['GET']
+    query_params:
+      target: 'UDLP_EPD_Incidents'
+      select: '{select:.*}'
+      where: '(where (ge UDLP_EPD_Incidents.LastUpdateTimestamp "2026-01-15T15:45:20"))'
+      order: '{order:.*}'
+      ':output': 'json'
+    request_headers:
+      Authorization:
+        - "Basic dGVtcF91c2VyOnRlbXBfcGFzc3dvcmQ="
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'text/plain'
+        body: |-
+          OK: [
+            {
+              "UDLP_EPD_Incidents.IncidentId": 100007,
+              "UDLP_EPD_Incidents.OriginalIncidentId": 100006,
+              "UDLP_EPD_Incidents.IncidentType": 2,
+              "UDLP_EPD_Incidents.ViolationLocalTime": "2026-01-15T15:45:20+05:30",
+              "UDLP_EPD_Incidents.ViolationTimezone": "India Standard Time",
+              "UDLP_EPD_Incidents.ViolationUTCTime": "2026-01-15T10:15:20+05:30",
+              "UDLP_EPD_Incidents.ViolationCustomTime": "2026-01-15T15:45:20+05:30",
+              "UDLP_EPD_Incidents.Severity": 3,
+              "UDLP_EPD_Incidents.StatusId": 2,
+              "UDLP_EPD_Incidents.ResolutionId": 1,
+              "UDLP_EPD_Incidents.Reviewer": "analyst@example.com",
+              "UDLP_EPD_Incidents.McAfeeAgentGuid": "89a1d5c1-2b3e-4f67-8a9b-0c1d2e3f4a5c",
+              "UDLP_EPD_Incidents.DlpAgentVersion": "11.10.0.456",
+              "UDLP_EPD_Incidents.EvidenceCount": 2,
+              "UDLP_EPD_Incidents.TotalMatchCount": 4,
+              "UDLP_EPD_Incidents.TotalContentSize": 4096,
+              "UDLP_EPD_Incidents.ClassificationsToDisplay": "Confidential Data",
+              "UDLP_EPD_Incidents.RulesToDisplay": "Block confidential data upload",
+              "UDLP_EPD_Incidents.ConnectivityState": 1,
+              "UDLP_EPD_Incidents.ActualAction": 1,
+              "UDLP_EPD_Incidents.ExpectedAction": 2,
+              "UDLP_EPD_Incidents.FailureReason": 0,
+              "UDLP_EPD_Incidents.LastUpdateTimestamp": "2026-01-15T15:45:20+05:30",
+              "UDLP_EPD_Incidents.ReportingProduct": 1,
+              "UDLP_EPD_Incidents.ShortMatchString": "Sample confidential identifier: ***-**-1234",
+              "UDLP_EPD_Incidents.RuleSetToDisplay": "Endpoint DLP Rules"
+            },
+            {
+              "UDLP_EPD_Incidents.IncidentId": 100008,
+              "UDLP_EPD_Incidents.OriginalIncidentId": 100007,
+              "UDLP_EPD_Incidents.IncidentType": 1,
+              "UDLP_EPD_Incidents.ViolationLocalTime": "2026-01-15T16:05:35+05:30",
+              "UDLP_EPD_Incidents.ViolationTimezone": "India Standard Time",
+              "UDLP_EPD_Incidents.ViolationUTCTime": "2026-01-15T10:35:35+05:30",
+              "UDLP_EPD_Incidents.ViolationCustomTime": "2026-01-15T16:05:35+05:30",
+              "UDLP_EPD_Incidents.Severity": 4,
+              "UDLP_EPD_Incidents.StatusId": 3,
+              "UDLP_EPD_Incidents.ResolutionId": 0,
+              "UDLP_EPD_Incidents.Reviewer": "security.lead@example.net",
+              "UDLP_EPD_Incidents.McAfeeAgentGuid": "89a1d5c1-2b3e-4f67-8a9b-0c1d2e3f4a5d",
+              "UDLP_EPD_Incidents.DlpAgentVersion": "11.11.0.100",
+              "UDLP_EPD_Incidents.EvidenceCount": 3,
+              "UDLP_EPD_Incidents.TotalMatchCount": 7,
+              "UDLP_EPD_Incidents.TotalContentSize": 8192,
+              "UDLP_EPD_Incidents.ClassificationsToDisplay": "Regulated Data",
+              "UDLP_EPD_Incidents.RulesToDisplay": "Block regulated data copy",
+              "UDLP_EPD_Incidents.ConnectivityState": 0,
+              "UDLP_EPD_Incidents.ActualAction": 2,
+              "UDLP_EPD_Incidents.ExpectedAction": 2,
+              "UDLP_EPD_Incidents.FailureReason": 1,
+              "UDLP_EPD_Incidents.LastUpdateTimestamp": "2026-01-15T16:05:35+05:30",
+              "UDLP_EPD_Incidents.ReportingProduct": 2,
+              "UDLP_EPD_Incidents.ShortMatchString": "Sample regulated identifier: REG-0003",
+              "UDLP_EPD_Incidents.RuleSetToDisplay": "Endpoint DLP Rules"
+            }
+          ]
+
+  # dlp_incident exhausted: the cursor after page 2. Later polls re-query from
+  # here and collect nothing, so hit_count stays deterministic.
+  - path: /remote/core.executeQuery
+    methods: ['GET']
+    query_params:
+      target: 'UDLP_EPD_Incidents'
+      select: '{select:.*}'
+      where: '(where (ge UDLP_EPD_Incidents.LastUpdateTimestamp "2026-01-15T16:05:35"))'
+      order: '{order:.*}'
+      ':output': 'json'
+    request_headers:
+      Authorization:
+        - "Basic dGVtcF91c2VyOnRlbXBfcGFzc3dvcmQ="
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'text/plain'
+        body: |-
+          OK: []
+
+  # dlp_incident page 1: the first poll seeds from newerThan with initial_interval
+  # expressed in milliseconds, which ePO resolves against its own clock. That makes
+  # the seed independent of the agent's clock and zone, so it can be matched
+  # exactly. A full page (== page_size) sets want_more.
+  - path: /remote/core.executeQuery
+    methods: ['GET']
+    query_params:
+      target: 'UDLP_EPD_Incidents'
+      select: '{select:.*}'
+      where: '(where (newerThan UDLP_EPD_Incidents.LastUpdateTimestamp 86400000))'
+      order: '{order:.*}'
+      ':output': 'json'
+    request_headers:
+      Authorization:
+        - "Basic dGVtcF91c2VyOnRlbXBfcGFzc3dvcmQ="
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'text/plain'
+        body: |-
+          OK: [
+            {
+              "UDLP_EPD_Incidents.IncidentId": 100006,
+              "UDLP_EPD_Incidents.OriginalIncidentId": 100005,
+              "UDLP_EPD_Incidents.IncidentType": 1,
+              "UDLP_EPD_Incidents.ViolationLocalTime": "2026-01-15T15:30:05+05:30",
+              "UDLP_EPD_Incidents.ViolationTimezone": "India Standard Time",
+              "UDLP_EPD_Incidents.ViolationUTCTime": "2026-01-15T10:00:05+05:30",
+              "UDLP_EPD_Incidents.ViolationCustomTime": "2026-01-15T15:30:05+05:30",
+              "UDLP_EPD_Incidents.Severity": 2,
+              "UDLP_EPD_Incidents.StatusId": 1,
+              "UDLP_EPD_Incidents.ResolutionId": 0,
+              "UDLP_EPD_Incidents.Reviewer": "reviewer@example.com",
+              "UDLP_EPD_Incidents.McAfeeAgentGuid": "89a1d5c1-2b3e-4f67-8a9b-0c1d2e3f4a5b",
+              "UDLP_EPD_Incidents.DlpAgentVersion": "11.10.0.456",
+              "UDLP_EPD_Incidents.EvidenceCount": 1,
+              "UDLP_EPD_Incidents.TotalMatchCount": 1,
+              "UDLP_EPD_Incidents.TotalContentSize": 2048,
+              "UDLP_EPD_Incidents.ClassificationsToDisplay": "Restricted Data",
+              "UDLP_EPD_Incidents.RulesToDisplay": "Block restricted upload",
+              "UDLP_EPD_Incidents.ConnectivityState": 1,
+              "UDLP_EPD_Incidents.ActualAction": 2,
+              "UDLP_EPD_Incidents.ExpectedAction": 2,
+              "UDLP_EPD_Incidents.FailureReason": 0,
+              "UDLP_EPD_Incidents.LastUpdateTimestamp": "2026-01-15T15:30:05+05:30",
+              "UDLP_EPD_Incidents.ReportingProduct": 1,
+              "UDLP_EPD_Incidents.ShortMatchString": "Sample restricted identifier: ***-**-5678",
+              "UDLP_EPD_Incidents.RuleSetToDisplay": "Endpoint DLP Rules"
+            },
+            {
+              "UDLP_EPD_Incidents.IncidentId": 100007,
+              "UDLP_EPD_Incidents.OriginalIncidentId": 100006,
+              "UDLP_EPD_Incidents.IncidentType": 2,
+              "UDLP_EPD_Incidents.ViolationLocalTime": "2026-01-15T15:45:20+05:30",
+              "UDLP_EPD_Incidents.ViolationTimezone": "India Standard Time",
+              "UDLP_EPD_Incidents.ViolationUTCTime": "2026-01-15T10:15:20+05:30",
+              "UDLP_EPD_Incidents.ViolationCustomTime": "2026-01-15T15:45:20+05:30",
+              "UDLP_EPD_Incidents.Severity": 3,
+              "UDLP_EPD_Incidents.StatusId": 2,
+              "UDLP_EPD_Incidents.ResolutionId": 1,
+              "UDLP_EPD_Incidents.Reviewer": "analyst@example.com",
+              "UDLP_EPD_Incidents.McAfeeAgentGuid": "89a1d5c1-2b3e-4f67-8a9b-0c1d2e3f4a5c",
+              "UDLP_EPD_Incidents.DlpAgentVersion": "11.10.0.456",
+              "UDLP_EPD_Incidents.EvidenceCount": 2,
+              "UDLP_EPD_Incidents.TotalMatchCount": 4,
+              "UDLP_EPD_Incidents.TotalContentSize": 4096,
+              "UDLP_EPD_Incidents.ClassificationsToDisplay": "Confidential Data",
+              "UDLP_EPD_Incidents.RulesToDisplay": "Block confidential data upload",
+              "UDLP_EPD_Incidents.ConnectivityState": 1,
+              "UDLP_EPD_Incidents.ActualAction": 1,
+              "UDLP_EPD_Incidents.ExpectedAction": 2,
+              "UDLP_EPD_Incidents.FailureReason": 0,
+              "UDLP_EPD_Incidents.LastUpdateTimestamp": "2026-01-15T15:45:20+05:30",
+              "UDLP_EPD_Incidents.ReportingProduct": 1,
+              "UDLP_EPD_Incidents.ShortMatchString": "Sample confidential identifier: ***-**-1234",
+              "UDLP_EPD_Incidents.RuleSetToDisplay": "Endpoint DLP Rules"
+            }
+          ]
+
+  # dlp_incident catchall: every other target ends in a wildcard where rule, so
+  # match one here too. Without it an unanticipated cursor gets a non-200, the
+  # program emits the error branch that drops the cursor, and the next poll
+  # re-seeds from newerThan and re-collects page 1 -- breaking hit_count.
+  - path: /remote/core.executeQuery
+    methods: ['GET']
+    query_params:
+      target: 'UDLP_EPD_Incidents'
+      select: '{select:.*}'
+      where: '{where:.*}'
+      order: '{order:.*}'
+      ':output': 'json'
+    request_headers:
+      Authorization:
+        - "Basic dGVtcF91c2VyOnRlbXBfcGFzc3dvcmQ="
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'text/plain'
+        body: |-
+          OK: []
+
+  # threat_event page 1: a full page (== page_size) led by the row with complete
+  # field coverage, so the program sets want_more and pages again from the
+  # greatest AutoID it saw. Each row carries a distinct AutoGUID because the
+  # pipeline fingerprints _id from that field.
+  - path: /remote/core.executeQuery
+    methods: ['GET']
+    query_params:
+      target: 'EPExtendedEvent'
+      select: '{select:.*}'
+      where: "(where (gt EPOEvents.AutoID 0))"
+      order: '{order:.*}'
+      ':output': 'json'
+    request_headers:
+      Authorization:
+        - "Basic dGVtcF91c2VyOnRlbXBfcGFzc3dvcmQ="
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'text/plain'
+        body: |-
+          OK: [
+            {
+              "EPOEvents.AutoID": 6,
+              "EPOEvents.AutoGUID": "11111111-1111-4111-8111-111111111106",
+              "EPOEvents.ServerID": "epo-server-01.example.com",
+              "EPOEvents.ReceivedUTC": "2026-01-15T10:00:05+00:00",
+              "EPOEvents.DetectedUTC": "2026-01-15T10:00:05+00:00",
+              "EPOEvents.EventTimeLocal": "2026-01-15T10:00:05+00:00",
+              "EPOEvents.AgentGUID": "77777777-8888-4999-8AAA-BBBBBBBBBB07",
+              "EPOEvents.Analyzer": "ENDP_TEST_1000",
+              "EPOEvents.AnalyzerName": "Trellix Endpoint Security",
+              "EPOEvents.AnalyzerVersion": "10.7.20.14066",
+              "EPOEvents.AnalyzerHostName": "lab-host-complete.example.com",
+              "EPOEvents.AnalyzerIPV4": 1177773066,
+              "EPOEvents.AnalyzerIPV6": "0:0:0:0:0:FFFF:C633:640A",
+              "EPOEvents.AnalyzerMAC": "00aabbccddee",
+              "EPOEvents.AnalyzerDATVersion": "9999.0",
+              "EPOEvents.AnalyzerEngineVersion": "1.2.3",
+              "EPOEvents.AnalyzerDetectionMethod": "Access Protection",
+              "EPOEvents.SourceHostName": "source-host.example.com",
+              "EPOEvents.SourceIPV4": 1177773066,
+              "EPOEvents.SourceIPV6": "0:0:0:0:0:FFFF:C633:640A",
+              "EPOEvents.SourceMAC": "010203040506",
+              "EPOEvents.SourceUserName": "EXAMPLE\\source_user",
+              "EPOEvents.SourceProcessName": "example-source-process.exe",
+              "EPOEvents.SourceURL": "https://source.example.com/path",
+              "EPOEvents.TargetHostName": "target-host.example.com",
+              "EPOEvents.TargetIPV4": 1258320178,
+              "EPOEvents.TargetIPV6": "0:0:0:0:0:FFFF:CB00:7132",
+              "EPOEvents.TargetMAC": "001122334477",
+              "EPOEvents.TargetUserName": "EXAMPLE\\target_user",
+              "EPOEvents.TargetPort": 80,
+              "EPOEvents.TargetProtocol": "TCP",
+              "EPOEvents.TargetProcessName": "example-target-process.exe",
+              "EPOEvents.TargetFileName": "C:\\Users\\Public\\example-document.pdf",
+              "EPOEvents.ThreatCategory": "hip.process",
+              "EPOEvents.ThreatEventID": 18063,
+              "EPOEvents.ThreatSeverity": 2,
+              "EPOEvents.ThreatName": "Synthetic complete system-test event",
+              "EPOEvents.ThreatType": "IDS_THREAT_TYPE_VALUE_SP",
+              "EPOEvents.ThreatActionTaken": "blocked",
+              "EPOEvents.ThreatHandled": true,
+              "EPOEvents.TenantId": 1,
+              "EPExtendedEvent.EventAutoID": 6,
+              "EPExtendedEvent.Location": "C:\\Example\\sample.exe",
+              "EPExtendedEvent.BladeName": "IDS_BLADE_NAME_FW",
+              "EPExtendedEvent.AnalyzerTechnologyVersion": "10.7.20.14030",
+              "EPExtendedEvent.AnalyzerContentCreationDate": "2026-01-01T00:00:00+00:00",
+              "EPExtendedEvent.AnalyzerContentVersion": "10.7.0.14078",
+              "EPExtendedEvent.AMCoreContentVersion": "1.0.0",
+              "EPExtendedEvent.AnalyzerRuleID": "complete-rule-001",
+              "EPExtendedEvent.AnalyzerRuleName": "Synthetic complete coverage rule",
+              "EPExtendedEvent.AnalyzerRegInfo": "Synthetic analyzer registry context",
+              "EPExtendedEvent.AnalyzerGTIQuery": true,
+              "EPExtendedEvent.ThreatDetectedOnCreation": true,
+              "EPExtendedEvent.ThreatImpact": "low",
+              "EPExtendedEvent.SourcePort": 52000,
+              "EPExtendedEvent.SourceShareName": "\\\\source-host.example.com\\share",
+              "EPExtendedEvent.SourceProcessHash": "F6789012345678901234ABCDEF012345",
+              "EPExtendedEvent.SourceProcessSigned": true,
+              "EPExtendedEvent.SourceProcessSigner": "C=US, O=Example Corp, CN=Example Windows",
+              "EPExtendedEvent.SourceParentProcessName": "example-parent.exe",
+              "EPExtendedEvent.SourceParentProcessHash": "FEEDFACE0123456789ABCDEFF0123456",
+              "EPExtendedEvent.SourceParentProcessSigned": true,
+              "EPExtendedEvent.SourceParentProcessSigner": "C=US, O=Example Corp, CN=Example Publisher",
+              "EPExtendedEvent.SourceFilePath": "C:\\Program Files\\ExampleApp",
+              "EPExtendedEvent.SourceFileSize": 524288,
+              "EPExtendedEvent.SourceHash": "DEADBEEF0123456789ABCDEFF0123456",
+              "EPExtendedEvent.SourceSigned": true,
+              "EPExtendedEvent.SourceSigner": "C=US, O=Example Corp, CN=Example Windows",
+              "EPExtendedEvent.SourceModifyTime": "2025-01-01T00:00:00+00:00",
+              "EPExtendedEvent.SourceAccessTime": "2026-01-15T09:00:00+00:00",
+              "EPExtendedEvent.SourceCreateTime": "2025-01-01T00:00:00+00:00",
+              "EPExtendedEvent.SourceDeviceDisplayName": "Example Virtual SCSI Disk Device",
+              "EPExtendedEvent.SourceDeviceSerialNumber": "EXAMPLE-SOURCE-SERIAL-0001",
+              "EPExtendedEvent.SourceDeviceVID": "PCI\\VEN_8086&DEV_1234&SUBSYS_00000000&REV_01\\4&abc&0&00A8",
+              "EPExtendedEvent.SourceDevicePID": "PCI\\VEN_8086&DEV_1234&SUBSYS_00000000&REV_01\\4&abc&0&00A8",
+              "EPExtendedEvent.SourceDescription": "EXAMPLE AGENT MODULE",
+              "EPExtendedEvent.SourceURLRatingCode": "trusted",
+              "EPExtendedEvent.SourceURLWebCategory": "business",
+              "EPExtendedEvent.TargetURL": "https://target.example.com/resource",
+              "EPExtendedEvent.TargetShareName": "\\\\target-host.example.com\\share",
+              "EPExtendedEvent.TargetHash": "6789012345678901234ABCDEF0123456",
+              "EPExtendedEvent.TargetSigned": false,
+              "EPExtendedEvent.TargetSigner": "C=US, O=Example Corp, CN=Example Windows Publisher",
+              "EPExtendedEvent.TargetParentProcessSigned": true,
+              "EPExtendedEvent.TargetParentProcessSigner": "C=US, O=Example Corp, CN=Example Code Signing",
+              "EPExtendedEvent.TargetParentProcessName": "parent-app.exe",
+              "EPExtendedEvent.TargetParentProcessHash": "B2C3D4E5F6789012345678901234ABCD",
+              "EPExtendedEvent.TargetName": "example-document.pdf",
+              "EPExtendedEvent.TargetPath": "C:\\Users\\Public",
+              "EPExtendedEvent.TargetFileSize": 102400,
+              "EPExtendedEvent.TargetModifyTime": "2025-04-01T08:00:00+00:00",
+              "EPExtendedEvent.TargetAccessTime": "2026-01-15T09:57:00+00:00",
+              "EPExtendedEvent.TargetCreateTime": "2025-04-01T08:00:00+00:00",
+              "EPExtendedEvent.TargetDeviceDisplayName": "Example Target Device",
+              "EPExtendedEvent.TargetDeviceSerialNumber": "EXAMPLE-TARGET-SERIAL-0001",
+              "EPExtendedEvent.TargetDeviceVID": "VEN_1234",
+              "EPExtendedEvent.TargetDevicePID": "DEV_5678",
+              "EPExtendedEvent.TargetDescription": "Synthetic target description",
+              "EPExtendedEvent.Cleanable": true,
+              "EPExtendedEvent.TaskName": "Synthetic Scan Task",
+              "EPExtendedEvent.APIName": "SyntheticApiCall",
+              "EPExtendedEvent.FirstAttemptedAction": "blocked",
+              "EPExtendedEvent.FirstActionStatus": true,
+              "EPExtendedEvent.SecondAttemptedAction": "quarantined",
+              "EPExtendedEvent.SecondActionStatus": false,
+              "EPExtendedEvent.Topic": "Synthetic threat topic",
+              "EPExtendedEvent.AttackVectorType": 3,
+              "EPExtendedEvent.AccessRequested": "IDS_AAC_REQ_READ",
+              "EPExtendedEvent.DurationBeforeDetection": 1200,
+              "EPExtendedEvent.NaturalLangDescription": "Synthetic complete field coverage system-test event",
+              "EPExtendedEvent.Direction": 1
+            },
+            {
+              "EPOEvents.AutoID": 7,
+              "EPOEvents.AutoGUID": "11111111-1111-4111-8111-111111111107",
+              "EPOEvents.ServerID": "epo-server-01.example.com",
+              "EPOEvents.ReceivedUTC": "2026-01-15T10:05:10+00:00",
+              "EPOEvents.DetectedUTC": "2026-01-15T10:05:10+00:00",
+              "EPOEvents.EventTimeLocal": "2026-01-15T10:05:10+00:00",
+              "EPOEvents.AgentGUID": "77777777-8888-4999-8AAA-BBBBBBBBBB08",
+              "EPOEvents.Analyzer": "ENDP_TEST_1000",
+              "EPOEvents.AnalyzerName": "Trellix Endpoint Security",
+              "EPOEvents.AnalyzerVersion": "10.7.20.14066",
+              "EPOEvents.AnalyzerHostName": "lab-host-page1.example.com",
+              "EPOEvents.ThreatCategory": "hip.process",
+              "EPOEvents.ThreatEventID": 18064,
+              "EPOEvents.ThreatSeverity": 3,
+              "EPOEvents.ThreatName": "Synthetic paging event page 1",
+              "EPOEvents.ThreatType": "IDS_THREAT_TYPE_VALUE_SP",
+              "EPOEvents.ThreatActionTaken": "blocked",
+              "EPOEvents.ThreatHandled": true,
+              "EPOEvents.TenantId": 1,
+              "EPExtendedEvent.EventAutoID": 7,
+              "EPExtendedEvent.Location": "C:\\Example\\page1.exe",
+              "EPExtendedEvent.ThreatImpact": "low"
+            }
+          ]
+
+  # threat_event page 2: a short page, which clears want_more and ends the cycle.
+  - path: /remote/core.executeQuery
+    methods: ['GET']
+    query_params:
+      target: 'EPExtendedEvent'
+      select: '{select:.*}'
+      where: "(where (gt EPOEvents.AutoID 7))"
+      order: '{order:.*}'
+      ':output': 'json'
+    request_headers:
+      Authorization:
+        - "Basic dGVtcF91c2VyOnRlbXBfcGFzc3dvcmQ="
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'text/plain'
+        body: |-
+          OK: [
+            {
+              "EPOEvents.AutoID": 8,
+              "EPOEvents.AutoGUID": "11111111-1111-4111-8111-111111111108",
+              "EPOEvents.ServerID": "epo-server-01.example.com",
+              "EPOEvents.ReceivedUTC": "2026-01-15T10:10:15+00:00",
+              "EPOEvents.DetectedUTC": "2026-01-15T10:10:15+00:00",
+              "EPOEvents.EventTimeLocal": "2026-01-15T10:10:15+00:00",
+              "EPOEvents.AgentGUID": "77777777-8888-4999-8AAA-BBBBBBBBBB09",
+              "EPOEvents.Analyzer": "ENDP_TEST_1000",
+              "EPOEvents.AnalyzerName": "Trellix Endpoint Security",
+              "EPOEvents.AnalyzerVersion": "10.7.20.14066",
+              "EPOEvents.AnalyzerHostName": "lab-host-page2.example.com",
+              "EPOEvents.ThreatCategory": "hip.process",
+              "EPOEvents.ThreatEventID": 18065,
+              "EPOEvents.ThreatSeverity": 4,
+              "EPOEvents.ThreatName": "Synthetic paging event page 2",
+              "EPOEvents.ThreatType": "IDS_THREAT_TYPE_VALUE_SP",
+              "EPOEvents.ThreatActionTaken": "quarantined",
+              "EPOEvents.ThreatHandled": true,
+              "EPOEvents.TenantId": 1,
+              "EPExtendedEvent.EventAutoID": 8,
+              "EPExtendedEvent.Location": "C:\\Example\\page2.exe",
+              "EPExtendedEvent.ThreatImpact": "medium"
+            }
+          ]
+
+  # threat_event catchall: any cursor beyond the seeded rows is exhausted, so a
+  # later poll re-collects nothing and hit_count stays deterministic.
+  - path: /remote/core.executeQuery
+    methods: ['GET']
+    query_params:
+      target: 'EPExtendedEvent'
+      select: '{select:.*}'
+      where: '{where:.*}'
+      order: '{order:.*}'
+      ':output': 'json'
+    request_headers:
+      Authorization:
+        - "Basic dGVtcF91c2VyOnRlbXBfcGFzc3dvcmQ="
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'text/plain'
+        body: |-
+          OK: []
