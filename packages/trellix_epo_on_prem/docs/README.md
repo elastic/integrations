@@ -261,22 +261,22 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2026-07-16T13:45:04+05:30",
     "agent": {
-        "ephemeral_id": "deb8bb4e-ab01-4424-97ff-f976b5466ec8",
-        "id": "6ba555b8-87e7-4eee-95aa-294bc8f5731d",
-        "name": "elastic-agent-47279",
+        "ephemeral_id": "5c1f3179-0336-4e5e-b329-544066bdae4d",
+        "id": "3cee9f7c-50b6-407e-875b-1e939fb333ba",
+        "name": "elastic-agent-49992",
         "type": "filebeat",
         "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "trellix_epo_on_prem.audit",
-        "namespace": "38398",
+        "namespace": "25367",
         "type": "logs"
     },
     "ecs": {
         "version": "9.4.0"
     },
     "elastic_agent": {
-        "id": "6ba555b8-87e7-4eee-95aa-294bc8f5731d",
+        "id": "3cee9f7c-50b6-407e-875b-1e939fb333ba",
         "snapshot": false,
         "version": "8.19.0"
     },
@@ -289,7 +289,7 @@ An example event for `audit` looks as following:
         "dataset": "trellix_epo_on_prem.audit",
         "end": "2026-07-16T13:45:05+05:30",
         "id": "1943",
-        "ingested": "2026-09-08T09:57:21Z",
+        "ingested": "2026-09-09T09:27:50Z",
         "kind": "event",
         "original": "{\"OrionAuditLog.AutoId\":1943,\"OrionAuditLog.CmdName\":\"Delete user\",\"OrionAuditLog.EndTime\":\"2026-07-16T13:45:05+05:30\",\"OrionAuditLog.Message\":\"User \\\"bob.smith\\\" deleted from system\",\"OrionAuditLog.Priority\":3,\"OrionAuditLog.StartTime\":\"2026-07-16T13:45:04+05:30\",\"OrionAuditLog.Success\":true,\"OrionAuditLog.UserId\":1,\"OrionAuditLog.UserName\":\"admin\"}",
         "outcome": "success",
@@ -334,24 +334,24 @@ An example event for `web_control` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-09-08T09:59:43.584Z",
+    "@timestamp": "2026-09-09T09:30:18.053Z",
     "agent": {
-        "ephemeral_id": "08f17bae-39bd-4461-bc64-18c4cfbdf94a",
-        "id": "16564894-57a5-4f2b-88ca-6f41941b604c",
-        "name": "elastic-agent-22972",
+        "ephemeral_id": "20828da6-6122-4c9d-bbc3-eb1948386c53",
+        "id": "2dbf1940-197c-4eb8-920d-2c5b51b330a7",
+        "name": "elastic-agent-28682",
         "type": "filebeat",
         "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "trellix_epo_on_prem.web_control",
-        "namespace": "98326",
+        "namespace": "33210",
         "type": "logs"
     },
     "ecs": {
         "version": "9.4.0"
     },
     "elastic_agent": {
-        "id": "16564894-57a5-4f2b-88ca-6f41941b604c",
+        "id": "2dbf1940-197c-4eb8-920d-2c5b51b330a7",
         "snapshot": false,
         "version": "8.19.0"
     },
@@ -362,7 +362,7 @@ An example event for `web_control` looks as following:
         ],
         "dataset": "trellix_epo_on_prem.web_control",
         "id": "494",
-        "ingested": "2026-09-08T09:59:46Z",
+        "ingested": "2026-09-09T09:30:21Z",
         "kind": "event",
         "original": "{\"WP_EventInfo.BadLinkRatingID\":4,\"WP_EventInfo.ContentID\":0,\"WP_EventInfo.Count\":1,\"WP_EventInfo.DomainName\":\"reports.blockedSiteDSSError\",\"WP_EventInfo.DownloadRatingID\":4,\"WP_EventInfo.EventAutoID\":494,\"WP_EventInfo.ExploitRatingID\":4,\"WP_EventInfo.ListID\":1,\"WP_EventInfo.ObserverMode\":true,\"WP_EventInfo.PhishingRatingID\":4,\"WP_EventInfo.PopupRatingID\":4,\"WP_EventInfo.RatingID\":6,\"WP_EventInfo.ReasonID\":7,\"WP_EventInfo.SpamRatingID\":4,\"WP_EventInfo.URL\":\"reports.blockedSiteDSSError\",\"WP_EventInfo.UserName\":null}",
         "type": [
@@ -410,22 +410,22 @@ An example event for `product_event` looks as following:
 {
     "@timestamp": "2026-07-21T09:23:20.000Z",
     "agent": {
-        "ephemeral_id": "a7a17a29-88e5-46b7-96d3-cc7d8a55b1c9",
-        "id": "483dd43d-5021-460f-b77f-e5592534e132",
-        "name": "elastic-agent-10139",
+        "ephemeral_id": "44ffbeba-a91e-4b0c-9063-942400658e8c",
+        "id": "4601a264-c278-4adc-996b-e9bd0002eeaf",
+        "name": "elastic-agent-45206",
         "type": "filebeat",
         "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "trellix_epo_on_prem.product_event",
-        "namespace": "36064",
+        "namespace": "18087",
         "type": "logs"
     },
     "ecs": {
         "version": "9.4.0"
     },
     "elastic_agent": {
-        "id": "483dd43d-5021-460f-b77f-e5592534e132",
+        "id": "4601a264-c278-4adc-996b-e9bd0002eeaf",
         "snapshot": false,
         "version": "8.19.0"
     },
@@ -445,7 +445,7 @@ An example event for `product_event` looks as following:
         "created": "2026-07-21T09:23:47.000Z",
         "dataset": "trellix_epo_on_prem.product_event",
         "id": "1",
-        "ingested": "2026-09-08T09:58:56Z",
+        "ingested": "2026-09-09T09:29:29Z",
         "kind": "event",
         "original": "{\"EPOProductEvents.AgentGUID\":\"89A1D5C1-2B3E-4F67-8A9B-0C1D2E3F4A5B\",\"EPOProductEvents.AutoID\":1,\"EPOProductEvents.DetectedUTC\":\"2026-07-21T14:53:20+05:30\",\"EPOProductEvents.Error\":0,\"EPOProductEvents.ExtraDATNames\":null,\"EPOProductEvents.HostName\":\"HOST-EXAMPLE-02\",\"EPOProductEvents.IPV6\":\"2001:DB8:85A3:0:8A2E:370:7334:1\",\"EPOProductEvents.InitiatorID\":null,\"EPOProductEvents.InitiatorType\":\"CommandLine\",\"EPOProductEvents.Locale\":1033,\"EPOProductEvents.NodeID\":1,\"EPOProductEvents.ProductCode\":\"EPOAGENT3000\",\"EPOProductEvents.ReceivedUTC\":\"2026-07-21T14:53:47+05:30\",\"EPOProductEvents.SPHotFix\":null,\"EPOProductEvents.SiteName\":null,\"EPOProductEvents.TVDEventID\":2411,\"EPOProductEvents.TVDSeverity\":0,\"EPOProductEvents.TenantId\":1,\"EPOProductEvents.Type\":\"Install\",\"EPOProductEvents.UserName\":\"SYSTEM\"}",
         "outcome": "success",
@@ -509,15 +509,15 @@ An example event for `device_event` looks as following:
 {
     "@timestamp": "2026-07-31T08:15:42.000Z",
     "agent": {
-        "ephemeral_id": "5b61103b-9a9b-4456-8366-86dd7071c4d0",
-        "id": "c1ca1c9c-de6e-41a6-9ffd-9c85d8bcd84f",
-        "name": "elastic-agent-25734",
+        "ephemeral_id": "4f107c00-f467-41cc-8c34-fd1dc1dcdb6d",
+        "id": "3adfb064-cec4-40f2-bae5-7f05017c4b6b",
+        "name": "elastic-agent-87569",
         "type": "filebeat",
         "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "trellix_epo_on_prem.device_event",
-        "namespace": "12500",
+        "namespace": "78980",
         "type": "logs"
     },
     "device": {
@@ -531,7 +531,7 @@ An example event for `device_event` looks as following:
         "version": "9.4.0"
     },
     "elastic_agent": {
-        "id": "c1ca1c9c-de6e-41a6-9ffd-9c85d8bcd84f",
+        "id": "3adfb064-cec4-40f2-bae5-7f05017c4b6b",
         "snapshot": false,
         "version": "8.19.0"
     },
@@ -545,7 +545,7 @@ An example event for `device_event` looks as following:
         "created": "2026-07-31T08:16:03.000Z",
         "dataset": "trellix_epo_on_prem.device_event",
         "id": "1048576",
-        "ingested": "2026-09-08T09:58:06Z",
+        "ingested": "2026-09-09T09:28:39Z",
         "kind": "event",
         "original": "{\"EEFFDeviceAllEventsView.AgentGUID\":\"11111111-2222-4333-8444-555555555555\",\"EEFFDeviceAllEventsView.AutoID\":1048576,\"EEFFDeviceAllEventsView.BackupSize\":1024.5,\"EEFFDeviceAllEventsView.BackupState\":\"Completed\",\"EEFFDeviceAllEventsView.BackupTime\":18.75,\"EEFFDeviceAllEventsView.CredentialType\":1,\"EEFFDeviceAllEventsView.DeviceSN\":\"EXAMPLE-DEVICE-SN-001\",\"EEFFDeviceAllEventsView.DeviceSize\":64000,\"EEFFDeviceAllEventsView.EventGeneratedTime\":\"2026-07-31T08:15:42.000Z\",\"EEFFDeviceAllEventsView.EventID\":3001,\"EEFFDeviceAllEventsView.EventReportedTime\":\"2026-07-31T08:16:03.000Z\",\"EEFFDeviceAllEventsView.Exempted\":\"No\",\"EEFFDeviceAllEventsView.FileSystem\":\"NTFS\",\"EEFFDeviceAllEventsView.FileSystemVersion\":\"3.1\",\"EEFFDeviceAllEventsView.InitializationState\":\"Initialized\",\"EEFFDeviceAllEventsView.InitializationTime\":12.25,\"EEFFDeviceAllEventsView.Key\":\"example-removable-media-key-001\",\"EEFFDeviceAllEventsView.MediaType\":2,\"EEFFDeviceAllEventsView.ProductName\":\"Example Secure USB\",\"EEFFDeviceAllEventsView.Protected\":\"Yes\",\"EEFFDeviceAllEventsView.ProtectedSize\":62000,\"EEFFDeviceAllEventsView.UserName\":\"EXAMPLE\\\\analyst\",\"EEFFDeviceAllEventsView.UserResponse\":\"Approved\",\"EEFFDeviceAllEventsView.VendorName\":\"Example Vendor\"}",
         "type": [

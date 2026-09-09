@@ -61,7 +61,12 @@ program: |-
           ":output": ["json"],
         }.format_query()
       ).as(resp,
-        (resp.StatusCode == 200) ?
+        // core.executeQuery is a plain-text protocol that reports query errors
+        // with HTTP 200 and an "Error <n> :" body, so the status alone does not
+        // establish that the body is JSON. Without the prefix check a non-JSON
+        // 200 aborts the whole evaluation inside decode_json(), which returns no
+        // events at all and leaves nothing in the index to diagnose.
+        (resp.StatusCode == 200 && string(resp.Body).trim_space().has_prefix("OK:")) ?
           string(resp.Body).trim_space().trim_prefix("OK:").decode_json().as(rows,
             // Advance to the greatest AutoID returned by this page. The ID is
             // routed through int() before string(): JSON numbers arrive as float64,
