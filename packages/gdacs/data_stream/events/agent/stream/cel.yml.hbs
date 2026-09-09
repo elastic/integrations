@@ -1,7 +1,7 @@
 config_version: 2
 interval: {{interval}}
 resource.url: {{url}}
-resource.timeout: 120s
+resource.timeout: {{request_timeout}}
 resource.tracer:
   enabled: {{enable_request_tracer}}
   filename: "../../logs/cel/http-request-trace-*.ndjson"
@@ -74,7 +74,9 @@ program: |-
                 request(
                   "GET",
                   f.properties.url.geometry
-                ).do_request().as(polyResp, (polyResp.StatusCode == 200) ?
+                ).do_request().as(polyResp, is_error(polyResp) ?
+                  [{"message": f.encode_json()}]
+                : (polyResp.StatusCode == 200) ?
                   polyResp.Body.decode_json().as(polyBody,
                     (has(polyBody.features) && size(polyBody.features) > 0) ?
                       (
