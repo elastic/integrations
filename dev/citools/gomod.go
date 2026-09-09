@@ -34,7 +34,7 @@ func PackageVersionGoMod(path, modulePath string) (*semver.Version, error) {
 		epVersion = r.Mod.Version
 	}
 	if epVersion == "" {
-		return nil, fmt.Errorf("not found elastic-package dependency")
+		return nil, fmt.Errorf("elastic-package dependency not found")
 	}
 
 	foundVersion, err := semver.NewVersion(epVersion)

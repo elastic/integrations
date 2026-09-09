@@ -1,0 +1,72 @@
+---
+name: Sync backport changelog
+description: >
+  Builds the backport tool, configures git, runs the changelog sync,
+  and posts the result comment on the originating backport PR.
+
+inputs:
+  before:
+    description: 'SHA before the push (or first parent of the merge commit on retry)'
+    required: true
+  after:
+    description: 'SHA after the push (or merge commit SHA on retry)'
+    required: true
+  backport-branch:
+    description: 'Name of the backport branch (e.g. backport-8.x)'
+    required: true
+  pr-number:
+    description: 'Backport PR number; skips the merge-commit→PR lookup when provided'
+    required: false
+    default: ''
+  github-token:
+    description: 'GitHub token for gh CLI and API calls'
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Set up Go
+      uses: actions/setup-go@v7
+      with:
+        # Use the backport tool's own Go version (pinned to main's version)
+        # so it stays consistent regardless of which backport branch this runs on.
+        go-version-file: cmd/backport/.go-version
+
+    - name: Build backport tool
+      shell: bash
+      run: mkdir -p "$GITHUB_WORKSPACE/build" && go build -C cmd/backport -o "$GITHUB_WORKSPACE/build/backport" .
+
+    - name: Configure git
+      uses: elastic/oblt-actions/git/setup@v1
+      with:
+        username: 'github-actions[bot]'
+        email: '41898282+github-actions[bot]@users.noreply.github.com'
+
+    - name: Sync backport changelog
+      id: sync
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.github-token }}
+        BEFORE: ${{ inputs.before }}
+        AFTER: ${{ inputs.after }}
+        REPOSITORY: ${{ github.repository }}
+        BACKPORT_BRANCH: ${{ inputs.backport-branch }}
+        BACKPORT_PR_NUMBER: ${{ inputs.pr-number }}
+        PACKAGES_DIR: ${{ github.workspace }}/packages
+      run: |
+        "$GITHUB_WORKSPACE/build/backport" sync-changelog
+
+    - name: Comment on backport PR
+      if: always()
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.github-token }}
+        BACKPORT_PR_NUMBER: ${{ steps.sync.outputs.backport_pr_number }}
+        WORKING_BRANCH: ${{ steps.sync.outputs.working_branch }}
+        NOT_FOUND_PACKAGES: ${{ steps.sync.outputs.not_found_packages }}
+        CREATE_OUTCOME: ${{ steps.sync.outputs.create_outcome }}
+        EXISTING_SYNC_PR_URL: ${{ steps.sync.outputs.existing_sync_pr_url }}
+        RUN_ID: ${{ github.run_id }}
+        REPOSITORY: ${{ github.repository }}
+      run: |
+        "$GITHUB_WORKSPACE/build/backport" post-comment
