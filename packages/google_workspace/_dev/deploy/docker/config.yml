@@ -15,6 +15,37 @@ rules:
         body: |
           {"access_token": "1/fFAGRNJru1FTz70BzhT3Zg","expires_in": 3920,"token_type": "Bearer",
           "scope": "https://www.googleapis.com/auth/admin.reports.audit.readonly","refresh_token": "1//xEoDL4iW3cxlI7yDbSRFYNG01kVKM2C-259HOF2aQbI"}
+  # Chunked-window endpoint shared by the Reports API data streams' test-chunked
+  # system tests, which point application_name_for_url at "chunked_<app>".
+  # The response echoes the requested startTime as the event time with a fixed
+  # uniqueQualifier, so the fingerprinted _id only changes when the requested
+  # window start changes. With chunk_duration set, every interval advances
+  # startTime by one chunk and produces a new document. Without it, the next
+  # startTime is derived from the returned event time, which equals the previous
+  # startTime, so the same document is re-sent and only one is indexed.
+  # An empty window (startTime == endTime) is answered with an error body and
+  # no items, mirroring the API's rejection of such requests.
+  - path: /admin/reports/v1/activity/users/all/applications/chunked_{app}
+    methods: [GET]
+    query_params:
+      startTime: "{startTime:.*}"
+      endTime: "{endTime:.*}"
+    request_headers:
+      Accept:
+        - "application/json"
+      Authorization:
+        - "Bearer 1/fFAGRNJru1FTz70BzhT3Zg"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |
+          {{- if eq .request.vars.startTime .request.vars.endTime }}
+          {"error":{"code":400,"message":"Start time must be before end time.","status":"INVALID_ARGUMENT"}}
+          {{- else }}
+          {"kind":"admin#reports#activities","etag":"\"chunked\"","items":[{"kind":"admin#reports#activity","id":{"time":"{{.request.vars.startTime}}","uniqueQualifier":1,"applicationName":"{{.request.vars.app}}","customerId":"C03az79cb"},"etag":"\"chunk\"","actor":{"callerType":"USER","email":"user@example.com","profileId":"114511147312345678901"},"ownerDomain":"example.com","ipAddress":"192.0.2.10","events":[{"type":"chunk_test","name":"chunk_window"}]}]}
+          {{- end }}
   - path: /v1beta1/alerts
     methods: [GET]
     query_params:
