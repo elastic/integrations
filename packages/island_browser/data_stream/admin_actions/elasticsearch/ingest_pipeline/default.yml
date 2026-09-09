@@ -33,6 +33,40 @@ processors:
       field: event.original
       tag: json_event_original_74d23cc2
       target_field: json
+  - script:
+      tag: script_normalize_siem_snake_case
+      lang: painless
+      description: Copy snake_case SIEM field names to camelCase keys expected by the legacy pipeline.
+      if: ctx.json instanceof Map
+      source: |-
+        String snakeToCamel(String s) {
+          StringBuilder sb = new StringBuilder();
+          boolean cap = false;
+          for (int i = 0; i < s.length(); i++) {
+            String c = s.substring(i, i + 1);
+            if ("_".equals(c)) {
+              cap = true;
+            } else if (cap) {
+              sb.append(c.toUpperCase());
+              cap = false;
+            } else {
+              sb.append(c);
+            }
+          }
+          return sb.toString();
+        }
+        def keys = new ArrayList(ctx.json.keySet());
+        for (def key : keys) {
+          if (key instanceof String && key.indexOf('_') >= 0) {
+            def camel = snakeToCamel(key);
+            if (!ctx.json.containsKey(camel)) {
+              ctx.json.put(camel, ctx.json.get(key));
+            }
+          }
+        }
+        if (ctx.json.action != null && ctx.json.actionType == null) {
+          ctx.json.actionType = ctx.json.action;
+        }
   - fingerprint:
       fields:
         - event.original
@@ -63,6 +97,17 @@ processors:
       tag: rename_actionType_3ba78693
       target_field: island_browser.admin_actions.action_type
       ignore_missing: true
+  - rename:
+      field: json.auditType
+      tag: rename_auditType
+      target_field: island_browser.admin_actions.audit_type
+      ignore_missing: true
+  - set:
+      field: island_browser.admin_actions.source
+      tag: set_source
+      copy_from: json.source
+      ignore_empty_value: true
+      if: ctx.island_browser?.admin_actions?.source == null
   - set:
       field: event.action
       tag: set_event_action_from_admin_actions_action_type_4e17c4a2
