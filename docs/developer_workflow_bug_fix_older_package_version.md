@@ -1,1 +1,0 @@
-**This content has moved. Please see the [Integrations Developer Guide](https://www.elastic.co/guide/en/integrations-developer/current/developer-workflow-support-old-package.html) instead.**
