@@ -12,21 +12,20 @@ streams:
       throughput and latency, network, firewall drops, memory balloon,
       uptime, interruptions, and managed instance group size.
     template_path: stream.yml.hbs
+    # Type, title, description and defaults are inherited from
+    # googlecloudmonitor_input_otel. Inherited vars land as show_user: false
+    # regardless of the input package, so the two that belong on the main form
+    # are re-listed for visibility only.
     vars:
       - name: project_id
-        type: text
-        title: GCP Project ID
-        required: true
-        description: The GCP project ID to query Compute Engine metrics from.
         show_user: true
-      # Additions go through additional_metrics below, not through the
-      # inherited metrics_list. Setting metrics_list makes the input package's
-      # template emit a non-empty value, which replaces the default set from
-      # agent/stream/stream.yml.hbs rather than adding to it, so keep it hidden.
-      # The inherited metric_descriptor_filters renders into that same key and
-      # has the same effect; it is already hidden by the input package.
-      - name: metrics_list
-        show_user: false
+      - name: collection_interval
+        show_user: true
+      # metrics_list and the inherited metric_descriptor_filters both render
+      # into the receiver's metrics_list, and a non-empty value there replaces
+      # the default set from agent/stream/stream.yml.hbs rather than adding to
+      # it. Additions go through additional_metrics instead. Both stay hidden,
+      # which is already the default for inherited vars.
       - name: additional_metrics
         type: text
         title: Additional Metrics
@@ -37,15 +36,4 @@ streams:
           Compute Engine metrics collected by default, for example
           `compute.googleapis.com/guest/memory/percent_used`. Each entry must be
           an exact metric type name.
-        show_user: true
-      - name: collection_interval
-        type: duration
-        title: Collection Interval
-        required: false
-        description: >
-          How often the receiver polls Cloud Monitoring. The receiver enforces
-          a hard minimum of 60s. Compute Engine samples most hypervisor metrics
-          every 60s, so lower values increase Cloud Monitoring API cost without
-          adding resolution.
-        default: 300s
         show_user: true

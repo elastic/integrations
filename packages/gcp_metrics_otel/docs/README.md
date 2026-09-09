@@ -106,4 +106,4 @@ The receiver issues one time series query per collected metric type on every col
 
 ### Startup errors
 
-- `"collection_interval" must be not lower than...` — raise **Collection Interval** to at least `60s`.
+- `"collection_interval" must be not lower than the allowed minimum` — raise **Collection Interval** to at least `60s`.
