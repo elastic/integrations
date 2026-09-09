@@ -469,8 +469,6 @@ An example event for `report` looks as following:
 ```
 
 
-### Data streams using ILM policies
-
 
 
 ### Transforms used

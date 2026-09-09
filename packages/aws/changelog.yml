@@ -1,4 +1,19 @@
 # newer versions go on top
+- version: "8.1.3"
+  changes:
+    - description: Render `use_cloud_connectors` in the `s3_daily_storage` and `s3_request` stream templates. These two `aws/metrics` streams in the agentless-enabled S3 policy template were missed in 7.2.0, so with Identity Federation selected the agent skipped the Cloud Connectors credential chain and attempted a bare `sts:AssumeRole`, failing with AccessDenied and marking the agent unhealthy.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/21058
+- version: "8.1.2"
+  changes:
+    - description: Add an `Instance or Pod IAM Role` option to the `Setup Access` selector so Elastic Agent can authenticate with the AWS SDK default credential chain (EC2 instance profile, EKS Pod Identity or IRSA) without entering access keys or a Role ARN. Since 7.0.0 every option required at least one credential field, which made this documented path impossible to save.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/21025
+- version: "8.1.1"
+  changes:
+    - description: Lower the minimum supported Elastic Agent version from 9.6.0 to 9.4.0. The required capabilities (auth.aws for CEL/HTTPJSON inputs and libbeat Cloud Connectors on the current ExternalID contract) all ship in Elastic Agent 9.4.0.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/21007
 - version: "8.1.0"
   changes:
     - description: Enable Identity Federation (Cloud Connectors) for the SecurityHub data streams (securityhub_findings, securityhub_findings_full_posture, securityhub_insights) by migrating their HTTPJSON templates from hand-rolled SigV4 signing to the input's auth.aws configuration. Fixes silent session-token breakage in the hand-rolled path.
