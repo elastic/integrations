@@ -142,10 +142,11 @@ rules:
             "metadata": {}
           }
           `}}
-  - path: /api/v2/vrm/public/vulnerabilities
+  # Vulnerability — Page 2, fetched via the absolute nextPageLink (cursor present; must precede page 1)
+  - path: /api/v2/vrm/public/vrmReport/vulnerabilities
     methods: ['GET']
     query_params:
-      pageSize: '2'
+      cursor: 'eyJpZCI6IjIifQ=='
     request_headers:
       Authorization: "Bearer mock-access-token-abc123"
     responses:
@@ -156,73 +157,142 @@ rules:
         body: |-
           {{ minify_json `
           {
+            "lastDataUpdate": "2026-09-07T01:32:06.000Z",
+            "total": 3,
+            "nextPageLink": null,
             "data": [
               {
-                "cve": "CVE-2009-0316",
-                "status": "Active",
-                "description": "Untrusted search path vulnerability in src/if_python.c in the Python interface in Vim before 7.2.045 allows local users to execute arbitrary code via a Trojan horse Python file in the current working directory, related to a vulnerability in the PySys_SetArgv function (CVE-2008-5983), as demonstrated by an erroneous search path for plugin/bike.vim in bicyclerepair.",
-                "severity": 20,
-                "severityLevel": "Medium",
-                "cvss2": 6.9,
-                "cvss2Vector": "AV:L/AC:M/Au:N/C:C/I:C/A:C",
-                "cvss30": null,
-                "cvss3Vector": null,
-                "cvss31": null,
-                "cvss31Vector": null,
-                "cvss4": null,
-                "cvss4Vector": null,
-                "epssPercentile": 0.41737,
-                "epssProbability": 0.00199,
-                "epssScore": 0.00199,
+                "cve": "CVE-2016-9535",
+                "description": "tif_predict.h and tif_predict.c in libtiff 4.0.6 have assertions that can lead to assertion failures in debug mode, or buffer overflows in release mode, when dealing with unusual tile size like YCbCr with subsampling.",
+                "severity": 40,
+                "severityLevel": "Critical",
+                "cvss2": 7.5,
+                "cvss2Vector": "AV:N/AC:H/Au:N/C:P/I:P/A:P",
+                "cvss30": 9.8,
+                "cvss3Vector": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
+                "cvss31": 9.8,
+                "cvss31Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
+                "cvss4": 0,
+                "cvss4Vector": "",
+                "epssPercentile": 0.91298,
+                "epssProbability": 0.04767,
+                "epssScore": 0.04767,
                 "inCisaKev": false,
                 "inExploitDb": false,
-                "exploitKitExist": false,
-                "isExploitedInTheWild": false,
                 "hasAttackTechnique": false,
-                "techniqueId": null,
-                "deviceFoundOn": 2,
-                "products": 2,
-                "criticalAssetsFoundOn": 2,
-                "criticalAssetsAtRisk": 0,
+                "deviceFoundOn": 8,
+                "products": 3,
+                "criticalAssetsFoundOn": 5,
+                "criticalAssetsAtRisk": 30,
                 "chokePointFoundOn": 0,
-                "firstDetected": "2026-04-29T00:00:00.000Z",
-                "publishedDate": "2009-01-28T00:00:00.000Z"
+                "firstDetected": "2025-10-15T00:00:00.000Z",
+                "publishedDate": "2016-11-22T00:00:00.000Z",
+                "NVDURL": "https://nvd.nist.gov/vuln/detail/CVE-2016-9535",
+                "CVEOrgURL": "https://www.cve.org/CVERecord?id=CVE-2016-9535",
+                "MSRCURL": "https://msrc.microsoft.com/update-guide/vulnerability/CVE-2016-9535",
+                "RedHatURL": "https://access.redhat.com/security/cve/CVE-2016-9535",
+                "AmazonLinuxURL": "https://explore.alas.aws.amazon.com/CVE-2016-9535.html",
+                "DebianURL": "https://security-tracker.debian.org/tracker/CVE-2016-9535",
+                "UbuntuURL": "https://ubuntu.com/security/CVE-2016-9535",
+                "SUSEURL": "https://www.suse.com/security/cve/CVE-2016-9535.html",
+                "OracleURL": ""
+              }
+            ]
+          }
+          `}}
+  # Vulnerability — Page 1, initial fetch (no cursor)
+  - path: /api/v2/vrm/public/vrmReport/vulnerabilities
+    methods: ['GET']
+    query_params:
+      pageSize: '2'
+      cursor: null
+    request_headers:
+      Authorization: "Bearer mock-access-token-abc123"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "lastDataUpdate": "2026-09-07T01:32:06.000Z",
+            "total": 3,
+            "nextPageLink": "https://xm-cyber.example.com/api/v2/vrm/public/vrmReport/vulnerabilities?pageSize=2&cursor=eyJpZCI6IjIifQ==",
+            "data": [
+              {
+                "cve": "CVE-2013-6629",
+                "description": "The get_sos function in jdmarker.c in libjpeg does not check for certain duplications of component data, which allows remote attackers to obtain sensitive information via a crafted JPEG image.",
+                "severity": 20,
+                "severityLevel": "Medium",
+                "cvss2": 5,
+                "cvss2Vector": "AV:N/AC:M/Au:N/C:P/I:N/A:N",
+                "cvss30": 0,
+                "cvss3Vector": "",
+                "cvss31": 0,
+                "cvss31Vector": "",
+                "cvss4": 0,
+                "cvss4Vector": "",
+                "epssPercentile": 0.95322,
+                "epssProbability": 0.10117,
+                "epssScore": 0.10117,
+                "inCisaKev": false,
+                "inExploitDb": false,
+                "hasAttackTechnique": false,
+                "deviceFoundOn": 18,
+                "products": 2,
+                "criticalAssetsFoundOn": 1,
+                "criticalAssetsAtRisk": 29,
+                "chokePointFoundOn": 1,
+                "firstDetected": "2025-04-03T00:00:00.000Z",
+                "publishedDate": "2013-11-19T00:00:00.000Z",
+                "NVDURL": "https://nvd.nist.gov/vuln/detail/CVE-2013-6629",
+                "CVEOrgURL": "https://www.cve.org/CVERecord?id=CVE-2013-6629",
+                "MSRCURL": "https://msrc.microsoft.com/update-guide/vulnerability/CVE-2013-6629",
+                "RedHatURL": "https://access.redhat.com/security/cve/CVE-2013-6629",
+                "AmazonLinuxURL": "https://explore.alas.aws.amazon.com/CVE-2013-6629.html",
+                "DebianURL": "https://security-tracker.debian.org/tracker/CVE-2013-6629",
+                "UbuntuURL": "",
+                "SUSEURL": "https://www.suse.com/security/cve/CVE-2013-6629.html",
+                "OracleURL": ""
               },
               {
                 "cve": "CVE-2016-0185",
-                "status": "Active",
-                "description": "Media Center in Microsoft Windows Vista SP2, Windows 7 SP1, and Windows 8.1 allows remote attackers to execute arbitrary code via a crafted Media Center link (aka .mcl) file, aka 'Windows Media Center Remote Code Execution Vulnerability.'",
+                "description": "Media Center in Microsoft Windows Vista SP2, Windows 7 SP1, and Windows 8.1 allows remote attackers to execute arbitrary code via a crafted Media Center link (aka .mcl) file.",
                 "severity": 30,
                 "severityLevel": "High",
                 "cvss2": 9.3,
                 "cvss2Vector": "AV:N/AC:M/Au:N/C:C/I:C/A:C",
-                "cvss30": null,
-                "cvss3Vector": null,
+                "cvss30": 0,
+                "cvss3Vector": "",
                 "cvss31": 7.8,
                 "cvss31Vector": "CVSS:3.1/AV:L/AC:L/PR:N/UI:R/S:U/C:H/I:H/A:H",
-                "cvss4": null,
-                "cvss4Vector": null,
-                "epssPercentile": 0.99132,
-                "epssProbability": 0.80235,
-                "epssScore": 0.80235,
+                "cvss4": 0,
+                "cvss4Vector": "",
+                "epssPercentile": 0.99326,
+                "epssProbability": 0.6994,
+                "epssScore": 0.6994,
                 "inCisaKev": true,
                 "inExploitDb": true,
-                "exploitKitExist": true,
-                "isExploitedInTheWild": true,
                 "hasAttackTechnique": false,
-                "techniqueId": null,
-                "deviceFoundOn": 17,
+                "deviceFoundOn": 16,
                 "products": 1,
-                "criticalAssetsFoundOn": 17,
-                "criticalAssetsAtRisk": 33,
-                "chokePointFoundOn": 4,
+                "criticalAssetsFoundOn": 0,
+                "criticalAssetsAtRisk": 29,
+                "chokePointFoundOn": 1,
                 "firstDetected": "2025-04-03T00:00:00.000Z",
-                "publishedDate": "2016-05-11T00:00:00.000Z"
+                "publishedDate": "2016-05-11T00:00:00.000Z",
+                "NVDURL": "https://nvd.nist.gov/vuln/detail/CVE-2016-0185",
+                "CVEOrgURL": "https://www.cve.org/CVERecord?id=CVE-2016-0185",
+                "MSRCURL": "https://msrc.microsoft.com/update-guide/vulnerability/CVE-2016-0185",
+                "RedHatURL": "",
+                "AmazonLinuxURL": "",
+                "DebianURL": "",
+                "UbuntuURL": "",
+                "SUSEURL": "",
+                "OracleURL": ""
               }
-            ],
-            "meta": {
-              "next": null
-            }
+            ]
           }
           `}}
   # Page 2 — fetched via nextLink cursor=page2
@@ -538,11 +608,11 @@ rules:
             }
           }
           ` }}
-  # Device
-  - path: /api/v2/vrm/public/devices
+  # Device — Page 2, fetched via the absolute nextPageLink (cursor present; must precede page 1)
+  - path: /api/v2/vrm/public/vrmReport/devices
     methods: ['GET']
     query_params:
-      pageSize: '2'
+      cursor: 'eyJpZCI6IjIifQ=='
     request_headers:
       Authorization: "Bearer mock-access-token-abc123"
     responses:
@@ -553,27 +623,85 @@ rules:
         body: |-
           {{ minify_json `
           {
+            "lastDataUpdate": "2026-09-07T01:32:06.000Z",
+            "total": 3,
+            "nextPageLink": null,
+            "data": [
+              {
+                "deviceId": "90000000000000000003",
+                "deviceName": "router-03",
+                "chokePointScore": 58,
+                "chokePointLevel": "Informative",
+                "isCriticalAsset": false,
+                "lastScan": "2026-09-06T14:08:10.764Z",
+                "lastCompromised": null,
+                "deviceType": "NetworkDevice",
+                "type": "agent",
+                "products": 1,
+                "ipAddress": "81.2.69.142",
+                "subnet": "81.2.69.142/31",
+                "labels": [],
+                "enrichmentLabels": ["cloud"],
+                "os": "RouterOS 7",
+                "domain": "",
+                "ou": "",
+                "fqdn": null,
+                "criticalVulnerabilities": 0,
+                "highVulnerabilities": 0,
+                "mediumVulnerabilities": 2,
+                "lowVulnerabilities": 8,
+                "unknownVulnerabilities": 1,
+                "maxCvssV2": 5,
+                "maxCvssV3": 6.5,
+                "maxCvssV31": 6,
+                "maxCvssV4": 5.5,
+                "enitityVulnerabilities": 0,
+                "affectedEntities": 0,
+                "criticalAssetsAtRisk": 0,
+                "riskScore": 18
+              }
+            ]
+          }
+          `}}
+  # Device — Page 1, initial fetch (no cursor)
+  - path: /api/v2/vrm/public/vrmReport/devices
+    methods: ['GET']
+    query_params:
+      pageSize: '2'
+      cursor: null
+    request_headers:
+      Authorization: "Bearer mock-access-token-abc123"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "lastDataUpdate": "2026-09-07T01:32:06.000Z",
+            "total": 3,
+            "nextPageLink": "https://xm-cyber.example.com/api/v2/vrm/public/vrmReport/devices?pageSize=2&cursor=eyJpZCI6IjIifQ==",
             "data": [
               {
                 "deviceId": "9000000000000000001",
                 "deviceName": "host-01",
-                "isChokePoint": true,
-                "chokePointScore": 100,
-                "chokePointLevel": "Critical",
-                "isCriticalAsset": true,
-                "lastScan": "2026-05-12T21:54:01.641Z",
-                "lastCompromised": null,
+                "chokePointScore": 38,
+                "chokePointLevel": "Low",
+                "isCriticalAsset": false,
+                "lastScan": "2026-09-06T14:08:10.982Z",
+                "lastCompromised": "2026-09-04T00:00:00.000Z",
                 "deviceType": "Workstation",
-                "type": "Endpoint",
-                "products": 5,
-                "ipAddress": "192.168.1.10",
-                "subnet": "192.168.1.0/24",
+                "type": "agent",
+                "products": 4,
+                "ipAddress": "175.16.199.0",
+                "subnet": "175.16.199.0/24",
                 "labels": ["lab", "example-security-test"],
                 "enrichmentLabels": ["enriched"],
                 "os": "Windows 11",
                 "domain": "corp.example.com",
                 "ou": "OU=Workstations,DC=corp,DC=example,DC=com",
-                "fqdn": "hugh.corp.example.com",
+                "fqdn": "host-01.corp.example.com",
                 "criticalVulnerabilities": 2,
                 "highVulnerabilities": 5,
                 "mediumVulnerabilities": 10,
@@ -586,40 +714,21 @@ rules:
                 "enitityVulnerabilities": 1,
                 "affectedEntities": 4,
                 "criticalAssetsAtRisk": 2,
-                "riskScore": 75,
-                "apps": [
-                  {
-                    "name": "Example Product",
-                    "vendor": "VendorCo",
-                    "version": "1.2.3",
-                    "deviceFoundOn": 2,
-                    "chokePointFoundOn": "1",
-                    "affectedCriticalAssets": 0,
-                    "productsCriticalAssetsAtRisk": 1,
-                    "productVulnerabilities": 3,
-                    "activeCves": ["CVE-2023-0001"],
-                    "closedCves": [],
-                    "productOperatingSystems": ["Windows"],
-                    "activeCvesSafeVersion": [
-                      {"cve": "CVE-2023-0001", "safeVersion": "2.0.0"}
-                    ]
-                  }
-                ]
+                "riskScore": 75
               },
               {
                 "deviceId": "90000000000000000002",
                 "deviceName": "server-02",
-                "isChokePoint": true,
                 "chokePointScore": 90,
-                "chokePointLevel": "Critical",
+                "chokePointLevel": "High",
                 "isCriticalAsset": true,
-                "lastScan": "2026-05-12T21:54:02.136Z",
+                "lastScan": "2026-09-06T14:08:10.955Z",
                 "lastCompromised": "2025-11-01T08:00:00.000Z",
                 "deviceType": "Server",
-                "type": "Infrastructure",
+                "type": "agent",
                 "products": 12,
-                "ipAddress": "10.0.0.50",
-                "subnet": "10.0.0.0/24",
+                "ipAddress": "216.160.83.56",
+                "subnet": "216.160.83.56/29",
                 "labels": ["backup"],
                 "enrichmentLabels": [],
                 "os": "Ubuntu 22.04",
@@ -638,37 +747,16 @@ rules:
                 "enitityVulnerabilities": 0,
                 "affectedEntities": 2,
                 "criticalAssetsAtRisk": 0,
-                "riskScore": 42,
-                "apps": [
-                  {
-                    "name": "OpenSSH",
-                    "vendor": "OpenBSD",
-                    "version": "8.9p1",
-                    "deviceFoundOn": 1,
-                    "chokePointFoundOn": "4",
-                    "affectedCriticalAssets": 1,
-                    "productsCriticalAssetsAtRisk": 0,
-                    "productVulnerabilities": 1,
-                    "activeCves": ["CVE-2024-6387"],
-                    "closedCves": ["CVE-2000-0001"],
-                    "productOperatingSystems": ["Linux"],
-                    "activeCvesSafeVersion": [
-                      {"cve": "CVE-2024-6387", "safeVersion": "9.6p1"}
-                    ]
-                  }
-                ]
+                "riskScore": 42
               }
-            ],
-            "meta": {
-              "next": null
-            }
+            ]
           }
           `}}
-  # Product
-  - path: /api/v2/vrm/public/products
+  # Product — Page 2, fetched via the absolute nextPageLink (cursor present; must precede page 1)
+  - path: /api/v2/vrm/public/vrmReport/products
     methods: ['GET']
     query_params:
-      pageSize: '20'
+      cursor: 'eyJpZCI6IjIifQ=='
     request_headers:
       Authorization: "Bearer mock-access-token-abc123"
     responses:
@@ -679,46 +767,69 @@ rules:
         body: |-
           {{ minify_json `
           {
+            "lastDataUpdate": "2026-09-07T01:32:06.000Z",
+            "total": 3,
+            "nextPageLink": null,
             "data": [
               {
-                "affectedCriticalAssets": 2,
-                "chokePointsFoundOn": 0,
-                "devicesFoundOn": 2,
-                "productName": "wget",
-                "productOperatingSystems": ["Linux sles 12.5 Server"],
+                "productName": "dracut-squash",
+                "vendor": null,
                 "productVulnerabilities": 1,
+                "devicesFoundOn": 1,
+                "affectedCriticalAssets": 0,
+                "chokePointsFoundOn": 0,
                 "productsCriticalAssetsAtRisk": 0,
-                "vendor": null
+                "productOperatingSystem": []
+              }
+            ]
+          }
+          `}}
+  # Product — Page 1, initial fetch (no cursor)
+  - path: /api/v2/vrm/public/vrmReport/products
+    methods: ['GET']
+    query_params:
+      pageSize: '20'
+      cursor: null
+    request_headers:
+      Authorization: "Bearer mock-access-token-abc123"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "lastDataUpdate": "2026-09-07T01:32:06.000Z",
+            "total": 3,
+            "nextPageLink": "https://xm-cyber.example.com/api/v2/vrm/public/vrmReport/products?pageSize=20&cursor=eyJpZCI6IjIifQ==",
+            "data": [
+              {
+                "productName": "windows remote desktop services",
+                "vendor": null,
+                "productVulnerabilities": 2,
+                "devicesFoundOn": 8,
+                "affectedCriticalAssets": 3,
+                "chokePointsFoundOn": 0,
+                "productsCriticalAssetsAtRisk": 29,
+                "productOperatingSystem": ["Windows 7 SP 1.0", "Windows Server 2012 R2", "Windows Server 2012 R2 (DC)"]
               },
               {
-                "affectedCriticalAssets": 26,
-                "chokePointsFoundOn": 6,
-                "devicesFoundOn": 26,
                 "productName": ".net framework",
-                "productOperatingSystems": [
+                "vendor": "microsoft",
+                "productVulnerabilities": 93,
+                "devicesFoundOn": 26,
+                "affectedCriticalAssets": 5,
+                "chokePointsFoundOn": 0,
+                "productsCriticalAssetsAtRisk": 30,
+                "productOperatingSystem": [
                   "Windows 10 ver 1909",
                   "Windows Server 2012 R2",
                   "Windows 7 SP 1.0",
                   "Windows Server 2012 R2 (DC)",
                   "Windows Server 2019 (DC)"
-                ],
-                "productVulnerabilities": 71,
-                "productsCriticalAssetsAtRisk": 38,
-                "vendor": "microsoft"
-              },
-              {
-                "affectedCriticalAssets": 1,
-                "chokePointsFoundOn": 1,
-                "devicesFoundOn": 1,
-                "productName": "ACME Secure Agent",
-                "productOperatingSystems": ["Windows Server 2019 (DC)", "Ubuntu 22.04"],
-                "productVulnerabilities": 4243,
-                "productsCriticalAssetsAtRisk": 12,
-                "vendor": "ACME"
+                ]
               }
-            ],
-            "meta": {
-              "next": null
-            }
+            ]
           }
           `}}

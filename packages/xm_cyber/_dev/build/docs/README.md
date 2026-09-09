@@ -25,23 +25,22 @@ The XM Cyber integration collects the following types of data:
 | Data stream | Description | Endpoint |
 |---|---|---|
 | `audit_trail` | Audit Records | `/api/audit-trail/auditRecords` |
-| `vulnerability` | CVE records from XM Cyber's Vulnerability Risk Management (VRM) feed, including CVSS v2/v3/v4 scores, EPSS metrics, CISA KEV / in-the-wild exploitation flags, and per-CVE counts of devices, products, and critical assets at risk | `/api/v2/vrm/public/vulnerabilities` |
+| `vulnerability` | Open CVE records from XM Cyber's Vulnerability Risk Management (VRM) feed, including CVSS v2/v3/v4 scores, EPSS metrics, CISA KEV / Exploit-DB flags, vendor advisory URLs, and per-CVE counts of devices, products, and critical assets at risk | `/api/v2/vrm/public/vrmReport/vulnerabilities` |
 | `entity_inventory` | Inventory of entities (devices, identities, and cloud resources) tracked by XM Cyber, enriched with OS, network, agent, and cloud-account metadata. | `/api/entityInventory/entities` |
 | `risk_score` | Organization-level security grade (A–F), numeric risk score, trend data, and per-scenario breakdowns | `/api/scenarios/v2/scenarios/riskScore` |
-| `device` | Device inventory from XM Cyber VRM: identity (device id, name, type), network and directory context (IP, subnet, FQDN, domain, OU, OS), choke-point and critical-asset flags, aggregate vulnerability counts and max CVSS scores, XM Cyber risk score, per-device installed applications with active CVEs and remediation hints | `/api/v2/vrm/public/devices` |
-| `product` | **Product-level** aggregates from VRM: one event per software product with fleet-wide counts (devices where it appears, choke-point presence, affected critical assets, products critical assets at risk, vulnerability count), vendor, and reported operating systems. | `/api/v2/vrm/public/products` |
+| `device` | Device inventory from XM Cyber VRM: identity (device id, name, type), network and directory context (IP, subnet, FQDN, domain, OU, OS), choke-point level and critical-asset flag, aggregate vulnerability counts and max CVSS scores, and XM Cyber risk score | `/api/v2/vrm/public/vrmReport/devices` |
+| `product` | **Product-level** aggregates from VRM: one event per software product with fleet-wide counts (devices where it appears, choke-point presence, affected critical assets, products critical assets at risk, vulnerability count), vendor, and reported operating systems. | `/api/v2/vrm/public/vrmReport/products` |
 
 ### Supported use cases
 
 - **Audit and compliance monitoring**: Track administrative and user activity within your XM Cyber tenant — including console logins, sensor scan results, and configuration changes — and correlate it with the rest of your security telemetry to support compliance reviews and incident investigations.
-- **Risk-based vulnerability prioritization**: Rank CVEs by CVSS impact, EPSS exploit probability, and CISA KEV / in-the-wild exploitation flags to focus remediation effort where it actually reduces business risk.
+- **Risk-based vulnerability prioritization**: Rank open CVEs by CVSS impact, EPSS exploit probability, and CISA KEV / Exploit-DB flags to focus remediation effort where it actually reduces business risk.
 - **Attack-path-aware exposure analysis**: Correlate detected CVEs with XM Cyber's attack-technique simulations to identify which vulnerabilities act as choke points or stepping stones to crown-jewel assets.
 - **Asset and exposure visibility**: Maintain a unified inventory of the devices, identities, and cloud resources XM Cyber discovers across hybrid environments — with OS, network, agent, and cloud-account context — to support asset management, attack-surface monitoring, and prioritization of critical assets.
 - **Security posture tracking**: Monitor your organization's XM Cyber risk score over time and correlate score changes with security events.
 - **Hybrid device inventory**: Track which assets XM Cyber has discovered, how they are classified, and how they are labeled across on-premises and cloud footprints.
-- **Exposure-aware asset triage**: Use choke-point and critical-asset signals together with per-device vulnerability counts and max CVSS to prioritize which hosts warrant review first.
-- **Application-level context**: Inspect installed products under each device, including active CVEs, closed CVEs, and suggested safe versions where the API provides them.
-- **Software exposure across the fleet**: Rank products by `product_vulnerabilities`, `devices_found_on`, and `choke_points_found_on`, and slice by `product_operating_systems` to align remediation with platform mix.
+- **Exposure-aware asset triage**: Use choke-point level and critical-asset signals together with per-device vulnerability counts and max CVSS to prioritize which hosts warrant review first.
+- **Software exposure across the fleet**: Rank products by `product_vulnerabilities`, `devices_found_on`, and `choke_points_found_on`, and slice by `product_operating_system` to align remediation with platform mix.
 - **Critical-asset risk from products**: Use `affected_critical_assets` and `products_critical_assets_at_risk` with vendor and OS context to prioritize patch and upgrade work.
 
 ## What do I need to use this integration?
@@ -201,11 +200,11 @@ These XM Cyber REST API endpoints are used by this integration:
 | `/api/auth` | POST | all | Exchange API key for Bearer access token |
 | `/api/refresh-token` | POST | all | Refresh an expired access token |
 | `/api/audit-trail/auditRecords` | GET | `audit_trail` | Audit Records |
-| `/api/v2/vrm/public/vulnerabilities` | GET | `vulnerabilities` | Paginated exposure rows (attack techniques / CVE context) |
+| `/api/v2/vrm/public/vrmReport/vulnerabilities` | GET | `vulnerability` | Paginated open CVE records (CVSS, EPSS, CISA KEV / Exploit-DB, advisory URLs) |
 | `/api/entityInventory/entities` | GET | `entity_inventory` | List entities (devices, identities, cloud resources) tracked by XM Cyber |
 | `/api/scenarios/v2/scenarios/riskScore` | GET | `risk_score` | Organization risk score and grade |
-| `/api/v2/vrm/public/devices` | GET | `device` | Paginated device inventory with vulnerability aggregates and per-application CVE context |
-| `/api/v2/vrm/public/products` | GET | `product` | Paginated product-level exposure aggregates (counts and OS list per product) |
+| `/api/v2/vrm/public/vrmReport/devices` | GET | `device` | Paginated device inventory with vulnerability aggregates |
+| `/api/v2/vrm/public/vrmReport/products` | GET | `product` | Paginated product-level exposure aggregates (counts and OS list per product) |
 
 ### ILM Policy
 
