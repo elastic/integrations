@@ -11,7 +11,7 @@ import (
 	"path/filepath"
 
 	"github.com/pkg/errors"
-	yaml "gopkg.in/yaml.v2"
+	yaml "gopkg.in/yaml.v3"
 )
 
 type fieldsContent struct {
@@ -33,7 +33,7 @@ type fieldDefinition struct {
 	Path        string `yaml:"path,omitempty"`
 	Footnote    string `yaml:"footnote,omitempty"`
 	// Example is not consistent in ECS schema (either single field or array)
-	//Example     string             `yaml:"example,omitempty"`
+	// Example     string             `yaml:"example,omitempty"`
 	IgnoreAbove *int                   `yaml:"ignore_above,omitempty"`
 	MultiFields []multiFieldDefinition `yaml:"multi_fields,omitempty"`
 	Fields      fieldDefinitionArray   `yaml:"fields,omitempty"`
@@ -234,7 +234,7 @@ func filterEcsFields(ecsFields fieldDefinitionArray, filteredNames []string) fie
 }
 
 func visitEcsFieldsToFilter(namePrefix string, f fieldDefinition, filteredNames []string) (fieldDefinition, bool) {
-	var name = namePrefix
+	name := namePrefix
 	if namePrefix != "" {
 		name += "."
 	}
