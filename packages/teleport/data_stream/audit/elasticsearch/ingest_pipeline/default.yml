@@ -4,14 +4,16 @@ processors:
   # Process the message field.
   - set:
       field: ecs.version
-      tag: set_ecs_version
+      tag: set_ecs_version_6b2cef5e
       value: 8.11.0
   # Set up tag logic for choosing which cloud metadata to include.
   - append:
+      tag: append_tags_8889e0bc
       field: tags
       value: ["elastic_cloud_data", "provider_cloud_data"]
       if: ctx.tags?.contains('both') == true
   - script:
+      tag: script_75314853
       lang: painless
       source: |
         if (ctx.tags != null) {
@@ -23,10 +25,12 @@ processors:
           }
         }
   - set:
+      tag: set__conf_want_provider_cloud_791fe766
       field: _conf.want_provider_cloud
       value: true
       if: ctx.tags?.contains('provider_cloud_data') == true
   - remove:
+      tag: remove_cloud_61d5aaea
       description: Remove elastic agent-provided cloud metadata fields if not requested.
       field: cloud
       if: ctx.tags != null && !ctx.tags.contains('elastic_cloud_data')
@@ -35,104 +39,121 @@ processors:
   - rename:
       field: message
       target_field: event.original
-      tag: rename_message
+      tag: rename_message_a7b1f822
       ignore_missing: true
       if: ctx.event?.original == null
   - remove:
       field: message
       ignore_missing: true
-      tag: remove_message
+      tag: remove_message_319421e7
       if: ctx.event?.original != null
   - json:
       field: event.original
-      tag: json_original
+      tag: json_original_9fb5f23e
       target_field: teleport.audit
   # Metadata is a common event metadata.
   # All of these fields are mapped to ECS fields.
   - date:
+      tag: date_teleport_audit_time_to_timestamp_c1733655
       field: teleport.audit.time
       target_field: '@timestamp'
       formats:
         - ISO8601
       if: ctx.teleport?.audit?.time != null
   - remove:
+      tag: remove_teleport_audit_time_f75730e4
       field: teleport.audit.time
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_event_to_event_action_5b7765af
       field: teleport.audit.event
       target_field: event.action
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_code_to_event_code_5e12df2c
       field: teleport.audit.code
       target_field: event.code
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_uid_to_event_id_07fd4730
       field: teleport.audit.uid
       target_field: event.id
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_ei_to_event_sequence_b82f7a02
       field: teleport.audit.ei
       target_field: event.sequence
       ignore_missing: true
   # Add the event categorization.
   - pipeline:
+      tag: pipeline_event_categories_b7327123
       name: '{{ IngestPipeline "event-categories" }}'
       ignore_failure: true
   # Rename label fields early so they reach their flattened mapping even
   # if event-groups fails. Dotted keys inside labels (e.g.
-  # "cluster.coreweave.cloud/type") cause mapping conflicts under dynamic
+  # "cluster.teleport.cloud/type") cause mapping conflicts under dynamic
   # mapping, but are safe inside flattened fields.
   - rename:
+      tag: rename_teleport_audit_kubernetes_labels_to_teleport_audit_kubernetes_labels_30012aba
       field: teleport.audit.kubernetes_labels
       target_field: teleport.audit.kubernetes.labels
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_teleport_audit_kube_labels_to_teleport_audit_kubernetes_labels_c23b2ca9
       field: teleport.audit.kube_labels
       target_field: teleport.audit.kubernetes.labels
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_teleport_audit_server_labels_to_teleport_audit_server_labels_a4dc9ec9
       field: teleport.audit.server_labels
       target_field: teleport.audit.server.labels
       ignore_missing: true
       ignore_failure: true
   # Process most of the field groups.
   - pipeline:
+      tag: pipeline_event_groups_ee9679e8
       name: '{{ IngestPipeline "event-groups" }}'
       ignore_failure: true
   # App session request related metadata
   # The HTTP-related fields are used for other events as well. They work as catch-all
   # fields and should be at the end of the group processing.
   - rename:
+      tag: rename_teleport_audit_method_to_http_request_method_11f9b2a2
       field: teleport.audit.method
       target_field: http.request.method
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_path_to_url_path_f05a3ea4
       field: teleport.audit.path
       target_field: url.path
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_teleport_audit_raw_query_to_url_query_105c0424
       field: teleport.audit.raw_query
       target_field: url.query
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_teleport_audit_cluster_name_to_orchestrator_cluster_name_d7dcc946
       field: teleport.audit.cluster_name
       target_field: orchestrator.cluster.name
       ignore_missing: true
       ignore_failure: true
   - remove:
+      tag: remove_teleport_audit_cluster_name_893c2f26
       field: teleport.audit.cluster_name
       ignore_missing: true
   - rename:
+      tag: rename_teleport_audit_name_to_orchestrator_resource_name_ed440a84
       field: teleport.audit.name
       target_field: orchestrator.resource.name
       ignore_missing: true
   - script:
       description: Convert the body if it's base64-encoded.
-      tag: script_decode_body_base64
+      tag: script_decode_body_base64_0cdfb843
       lang: painless
       if: ctx.teleport?.audit?.body != null
       source: |
@@ -140,51 +161,59 @@ processors:
       ignore_failure: true
   - rename:
       description: Move the body field directly if it's already a JSON or cannot be parsed.
-      tag: move_body_json
+      tag: move_body_json_b1741231
       field: teleport.audit.body
       target_field: teleport.audit.database.request_body
       ignore_missing: true
   - set:
+      tag: set_http_request_body_content_8d4eb7b5
       field: http.request.body.content
       value: '{{{teleport.audit.database.request_body}}}'
       if: ctx.teleport?.audit?.database?.request_body != null && (ctx.teleport?.audit?.database?.request_body instanceof String)
   - json:
       description: Try to parse the body field directly as JSON.
       field: teleport.audit.database.request_body
-      tag: json_http_request_body
+      tag: json_http_request_body_9258213c
       ignore_failure: true
       if: ctx.teleport?.audit?.database?.request_body != null
   - rename:
+      tag: rename_teleport_audit_status_code_to_http_response_status_code_a16bec4f
       field: teleport.audit.status_code
       target_field: http.response.status_code
       ignore_missing: true
   - append:
+      tag: append_message_98da5b94
       field: message
       value:
         - '{{{teleport.audit.error}}}'
       allow_duplicates: false
       if: ctx.teleport?.audit?.error != null
   - remove:
+      tag: remove_teleport_audit_error_84294db7
       field: teleport.audit.error
       ignore_missing: true
   # Enrich the fields.
   - pipeline:
+      tag: pipeline_event_enrich_ebdfd522
       name: '{{ IngestPipeline "event-enrich" }}'
       ignore_failure: true
   # Final steps.
   - script:
       description: Drops null/empty values recursively.
-      tag: script_drop_null_empty_values
+      tag: script_drop_null_empty_values_53dd9140
       lang: painless
       source: "boolean dropEmptyFields(Object object) {\n  if (object == null || object == \"\") {\n    return true;\n  } else if (object instanceof Map) {\n    ((Map) object).values().removeIf(value -> dropEmptyFields(value));\n    return (((Map) object).size() == 0);\n  } else if (object instanceof List) {\n    ((List) object).removeIf(value -> dropEmptyFields(value));\n    return (((List) object).length == 0);\n  }\n  return false;\n}\ndropEmptyFields(ctx);\n"
 on_failure:
   - append:
+      tag: append_error_message_6906b116
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

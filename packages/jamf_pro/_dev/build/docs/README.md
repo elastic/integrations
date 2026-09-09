@@ -102,6 +102,18 @@ By default these sections are included inventory documents:
 
 All the sections can be enabled or disabled on the integration policy settings page.
 
+#### Latest inventory transform
+
+This integration includes a latest transform that maintains a single up-to-date
+document per device in a dedicated index. The transform destination is accessible
+via the `logs-jamf_pro_latest.inventory` alias.
+
+The source data stream accumulates all inventory snapshots (one per device per
+report cycle). A default ILM policy rolls the source index over every 7 days and
+deletes each rolled-over index 30 days later. The transform's retention policy
+removes devices from the latest index whose `@timestamp` is more than 30 days
+old.
+
 Here is an example inventory document:
 
 {{event "inventory"}}

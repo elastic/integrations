@@ -1,0 +1,189 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies when a Microsoft Exchange inbox rule is created or modified with a name composed only of special characters. Adversaries may use obfuscated inbox rule names to evade detection, hide malicious forwarding or deletion rules, or blend in with benign audit noise. The rule name is parsed from \"o365.audit.ObjectId\", which encodes the mailbox identity and rule name separated by a backslash.",
+        "false_positives": [
+            "Rare legitimate automation or third-party tools may create inbox rules with non-alphanumeric names. Validate against known messaging workflows and approved admin scripts before escalating."
+        ],
+        "from": "now-9m",
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "Esql.inbox_rule_name",
+                "o365.audit.ObjectId",
+                "o365.audit.UserId",
+                "user.name",
+                "user.domain",
+                "event.action",
+                "source.ip",
+                "source.as.organization.name",
+                "o365.audit.Parameters.ForwardTo",
+                "o365.audit.Parameters.ForwardAsAttachmentTo",
+                "o365.audit.Parameters.RedirectTo"
+            ]
+        },
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "M365 Exchange Inbox Rule with Obfuscated Name",
+        "note": "## Triage and analysis\n\n### Investigating M365 Exchange Inbox Rule with Obfuscated Name\n\nThis rule flags `New-InboxRule` and `Set-InboxRule` activity where the inbox rule name extracted from\n`o365.audit.ObjectId` contains only special characters. Attackers use these names to make malicious rules harder to spot\nin the Microsoft 365 compliance portal and security tooling.\n\nBecause this rule uses ESQL `grok` and `keep`, review the original `o365.audit` documents for full rule parameters\n(`o365.audit.Parameters.*`) such as forwarding, deletion, or move actions.\n\n### Possible investigation steps\n\n- Review `Esql.inbox_rule_name` and `o365.audit.ObjectId` to confirm the parsed rule identity and mailbox path.\n- Identify the actor using `o365.audit.UserId` and correlate with Entra ID sign-in logs for the same `source.ip`.\n- Inspect `event.action` to determine whether the rule was newly created or modified.\n- Review kept forwarding and redirect parameters (`ForwardTo`, `ForwardAsAttachmentTo`, `ForwardingAddress`,\n   `RedirectTo`, `RedirectToRecipients`) for external destinations outside `user.domain`.\n- Pull the source event and review `o365.audit.Parameters` for `DeleteMessage`, `MoveToFolder`, or\n  `SubjectContainsWords` that indicate evasion or exfiltration intent.\n- Hunt for other inbox rules from the same user or IP with standard or obfuscated names.\n\n### False positive analysis\n\n- Internal scripts that programmatically name rules with symbols may match. Document approved senders and exclude if\n  necessary.\n- Broken or partial `ObjectId` values can affect grok extraction; verify the parsed name in the raw audit record.\n\n### Response and remediation\n\n- Remove the inbox rule from the affected mailbox if unauthorized.\n- Reset credentials and revoke sessions for the user if compromise is suspected.\n- Review the tenant for additional malicious inbox or transport rules from the same source IP.\n",
+        "query": "from logs-o365.audit-* metadata _id, _version, _index\n| where\n    data_stream.dataset == \"o365.audit\" and\n    event.provider == \"Exchange\" and\n    event.action in (\"New-InboxRule\", \"Set-InboxRule\") and\n    event.outcome == \"success\" and\n    o365.audit.ObjectId is not null\n| grok o365.audit.ObjectId \"\"\".*\\\\\\\\(?<Esql.inbox_rule_name>.*)$\"\"\"\n// only special chars in inbox rule name\n| where Esql.inbox_rule_name rlike \"\"\"[!@#$%^&*()_+={[\\]|\\\\:;\"'<,>.?/~` \\-]+\"\"\"\n| keep\n    @timestamp,\n    _id,\n    _version,\n    _index,\n    Esql.inbox_rule_name,\n    o365.audit.ObjectId,\n    o365.audit.UserId,\n    o365.audit.ApplicationId,\n    user.name,\n    user.domain,\n    event.action,\n    source.ip,\n    source.as.number,\n    source.as.organization.name,\n    o365.audit.Parameters.ForwardTo,\n    o365.audit.Parameters.ForwardAsAttachmentTo,\n    o365.audit.Parameters.RedirectTo\n",
+        "references": [
+            "https://www.microsoft.com/en-us/security/blog/2026/04/06/ai-enabled-device-code-phishing-campaign-april-2026/"
+        ],
+        "related_integrations": [
+            {
+                "package": "o365",
+                "version": ">=3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "@timestamp",
+                "type": "date"
+            },
+            {
+                "ecs": false,
+                "name": "_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "_index",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "_version",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "o365.audit.ApplicationId",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "o365.audit.ObjectId",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "o365.audit.Parameters.ForwardAsAttachmentTo",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "o365.audit.Parameters.ForwardTo",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "o365.audit.Parameters.RedirectTo",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "o365.audit.UserId",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.as.number",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "source.as.organization.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": true,
+                "name": "user.domain",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "1c3d9346-4591-4894-935c-dad2824850f2",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: SaaS",
+            "Domain: Email",
+            "Data Source: Microsoft 365",
+            "Data Source: Microsoft 365 Audit Logs",
+            "Use Case: Threat Detection",
+            "Resources: Investigation Guide",
+            "Tactic: Persistence",
+            "Tactic: Stealth"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Stealth",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1564",
+                        "name": "Hide Artifacts",
+                        "reference": "https://attack.mitre.org/techniques/T1564/",
+                        "subtechnique": [
+                            {
+                                "id": "T1564.008",
+                                "name": "Email Hiding Rules",
+                                "reference": "https://attack.mitre.org/techniques/T1564/008/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1137",
+                        "name": "Office Application Startup",
+                        "reference": "https://attack.mitre.org/techniques/T1137/",
+                        "subtechnique": [
+                            {
+                                "id": "T1137.005",
+                                "name": "Outlook Rules",
+                                "reference": "https://attack.mitre.org/techniques/T1137/005/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 2
+    },
+    "id": "1c3d9346-4591-4894-935c-dad2824850f2_2",
+    "type": "security-rule"
+}

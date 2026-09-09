@@ -69,15 +69,15 @@ processors:
       if: ctx.json == null && ctx.event?.original != null
       description: Decode the CEL message (a JSON string of one audit_log object) into the working json object.
 
-  # --- S3 (Log Pipeline) input only ---
-  # aws-s3 deliveries carry the envelope {type, timestamp, data}. Lift `data` up
-  # to json.* and map the flat actor/IP fields the API path expects nested / from
-  # the webhook branch.
+  # --- S3/GCS (Log Pipeline) input only ---
+  # Both aws-s3 and gcs deliveries carry the envelope {type, timestamp, data}.
+  # Lift `data` up to json.* and map the flat actor/IP fields the API path
+  # expects nested / from the webhook branch.
   - pipeline:
       name: '{{ IngestPipeline "s3" }}'
       tag: dispatch_s3
       if: ctx.json?.type == 'audit_log'
-  # --- end S3-only ---
+  # --- end S3/GCS-only ---
 
   # Common normalization: @timestamp and event.id from the audit_log object.
   - date:
@@ -234,9 +234,9 @@ processors:
       method: SHA-256
       tag: fingerprint_event_id
       if: ctx.event?.id != null && ctx.event.id != ''
-  # S3 (Log Pipeline) audit deliveries carry no id field, so event.id is unset.
-  # Fingerprint the raw object instead, so a re-delivered S3 object (aws-s3 is
-  # at-least-once) deduplicates to the same _id.
+  # S3/GCS (Log Pipeline) audit deliveries carry no id field, so event.id is
+  # unset. Fingerprint the raw object instead, so a re-delivered S3/GCS object
+  # (both inputs are at-least-once) deduplicates to the same _id.
   - fingerprint:
       fields:
         - event.original

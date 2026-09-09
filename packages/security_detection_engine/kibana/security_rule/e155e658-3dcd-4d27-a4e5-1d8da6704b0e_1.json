@@ -1,0 +1,118 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects when the same non-system GKE identity creates a CertificateSigningRequest (CSR) and then approves that same CSR within five minutes, consistent with self-approval abuse. Attackers who gain CSR create and approval RBAC can submit a certificate request and approve it themselves to obtain a long-lived client certificate without involving cluster operators, a pattern documented in Kubernetes persistence research and adversary emulation.",
+        "false_positives": [
+            "Automation that both submits and approves CSRs in one workflow may trigger this rule. Baseline cert-manager or internal PKI pipelines and tune exclusions for known service accounts."
+        ],
+        "from": "now-11m",
+        "investigation_fields": {
+            "field_names": [
+                "client.user.email",
+                "Esql.csr_name",
+                "Esql.create_count",
+                "Esql.approval_count",
+                "Esql.event_action_values",
+                "Esql.timestamp_first_seen",
+                "Esql.timestamp_last_seen",
+                "Esql.source_ip_values",
+                "Esql.user_agent_original_values",
+                "Esql.data_stream_namespace_values"
+            ]
+        },
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "GKE Certificate Signing Request Self-Approved",
+        "note": "## Triage and analysis\n\n### Investigating GKE Certificate Signing Request Self-Approved\n\nThis rule groups CSR create and approval events by `client.user.email` and normalized CSR name (`Esql.csr_name`).\nGKE logs approval on subresource paths (`.../csr-name/approval`), so the query strips `/approval` suffixes before\ncorrelating. An alert means the same identity both submitted and approved the same CSR within five minutes, a strong\nindicator of manual self-approval rather than normal `system:gcp-controller-manager` auto-approval of node\ncertificates.\n\n### Possible investigation steps\n\n- Review `Esql.event_action_values` for the sequence of create followed by `approval.update`.\n- Inspect `gcp.audit.request.spec.signerName` and decode `gcp.audit.request.spec.request` on create events for the\n  requested identity.\n- Validate whether the actor should hold both CSR create and approval permissions.\n- Hunt for subsequent API activity authenticated as the minted certificate identity.\n\n### False positive analysis\n\n- cert-manager or internal PKI automation that creates and approves CSRs under the same service account in one workflow.\n- GitOps or bootstrap tooling that submits and signs CSRs programmatically. Baseline known automation and tune exclusions\n  for those principals.\n- Two unrelated CSR events from the same user within five minutes should not match because the query requires at least\n  one create and one approval-class action on the same normalized CSR name.\n\n### Related rules\n\n- GKE Certificate Signing Request API Client Signer Requested - 1e344fba-a2f7-462b-aaec-d6c8f80d5a28\n- GKE Certificate Signing Request Privileged Identity Requested - 4159bec9-76ad-4cdc-a797-4a8572073bbe\n- GKE Client Certificate Signing Request Created or Approved - ec67ab57-945a-4edb-84f8-1d7a51f46544\n\n### Response and remediation\n\n- Revoke or deny the CSR, remove approval RBAC from untrusted principals, and rotate cluster signing credentials if\n  abuse is confirmed.\n\n",
+        "query": "from logs-gcp.audit-* metadata _id, _index, _version\n| where data_stream.dataset == \"gcp.audit\"\n    and service.name == \"k8s.io\"\n    and event.outcome == \"success\"\n    and event.action in (\n      \"io.k8s.certificates.v1.certificatesigningrequests.create\",\n      \"io.k8s.certificates.v1.certificatesigningrequests.approval.update\"\n    )\n    and client.user.email is not null\n    and gcp.audit.resource_name is not null\n    and not client.user.email in (\n      \"system:gcp-controller-manager\",\n      \"system:kube-controller-manager\",\n      \"system:serviceaccount:kube-system:certificate-controller\",\n      \"kubelet-bootstrap\",\n      \"kubelet-nodepool-bootstrap\"\n    )\n    and not client.user.email like \"system:node:*\"\n| eval Esql.csr_name = replace(gcp.audit.resource_name, \"/approval\", \"\")\n| stats\n    Esql.create_count = count(*) where event.action == \"io.k8s.certificates.v1.certificatesigningrequests.create\",\n    Esql.approval_count = count(*) where event.action == \"io.k8s.certificates.v1.certificatesigningrequests.approval.update\",\n    Esql.event_action_values = values(event.action),\n    Esql.timestamp_first_seen = min(@timestamp),\n    Esql.timestamp_last_seen = max(@timestamp),\n    Esql.source_ip_values = values(source.ip),\n    Esql.user_agent_original_values = values(user_agent.original),\n    Esql.data_stream_namespace_values = values(data_stream.namespace)\n  by client.user.email, Esql.csr_name\n| where Esql.create_count >= 1\n    and Esql.approval_count >= 1\n    and date_diff(\"seconds\", Esql.timestamp_first_seen, Esql.timestamp_last_seen) <= 300\n| keep client.user.email, Esql.*\n",
+        "references": [
+            "https://kubernetes.io/docs/reference/access-authn-authz/certificate-signing-requests/",
+            "https://kubernetes.io/docs/concepts/security/rbac-good-practices/",
+            "https://stratus-red-team.cloud/attack-techniques/kubernetes/k8s.persistence.create-client-certificate/",
+            "https://raesene.github.io/blog/2022/12/21/Kubernetes-persistence-with-Tocan-and-Teisteanas/",
+            "https://www.aquasec.com/blog/kubernetes-rbac-privilige-escalation/"
+        ],
+        "related_integrations": [
+            {
+                "integration": "audit",
+                "package": "gcp",
+                "version": ">=2.41.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "client.user.email",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "e155e658-3dcd-4d27-a4e5-1d8da6704b0e",
+        "setup": "The GCP Fleet integration with GKE audit logs enabled is required to be compatible with this rule.",
+        "severity": "high",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: Kubernetes",
+            "Data Source: GCP",
+            "Data Source: GCP Audit Logs",
+            "Data Source: Google Cloud Platform",
+            "Use Case: Threat Detection",
+            "Tactic: Persistence",
+            "Tactic: Privilege Escalation",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1098",
+                        "name": "Account Manipulation",
+                        "reference": "https://attack.mitre.org/techniques/T1098/",
+                        "subtechnique": [
+                            {
+                                "id": "T1098.006",
+                                "name": "Additional Container Cluster Roles",
+                                "reference": "https://attack.mitre.org/techniques/T1098/006/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0004",
+                    "name": "Privilege Escalation",
+                    "reference": "https://attack.mitre.org/tactics/TA0004/"
+                },
+                "technique": [
+                    {
+                        "id": "T1098",
+                        "name": "Account Manipulation",
+                        "reference": "https://attack.mitre.org/techniques/T1098/",
+                        "subtechnique": [
+                            {
+                                "id": "T1098.006",
+                                "name": "Additional Container Cluster Roles",
+                                "reference": "https://attack.mitre.org/techniques/T1098/006/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "e155e658-3dcd-4d27-a4e5-1d8da6704b0e_1",
+    "type": "security-rule"
+}

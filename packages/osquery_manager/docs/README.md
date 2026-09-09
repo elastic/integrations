@@ -16,3 +16,36 @@ For information about using Osquery, refer to the [Osquery Kibana documentation]
 This includes information about required privileges; how to run, schedule, and save queries; how to map osquery fields to ECS; and other useful information about managing Osquery with this integration.
 
 For information about Osquery tables, refer to the [Osquery schema documentation](https://osquery.io/schema) and [Osquery Extension for Elastic](https://github.com/elastic/beats/blob/main/x-pack/osquerybeat/ext/osquery-extension/README.md).
+
+## Shadow AI Discovery
+
+The integration ships prebuilt osquery **packs** that inventory AI and LLM tooling across your endpoints, giving security and platform teams a single-policy way to answer "what AI is running in my fleet?" — local model runtimes, AI coding agents, Model Context Protocol (MCP) servers, AI packages, browser and editor extensions, and the network and persistence footprint of AI tools.
+
+There is one pack per operating system:
+
+| Pack | Platform |
+|------|----------|
+| `ai-asset-discovery-windows` | Windows |
+| `ai-asset-discovery-macos` | macOS |
+| `ai-asset-discovery-linux` | Linux |
+
+Assign the pack matching each agent's OS to your Osquery Manager policy in Fleet. Once the scheduled queries run, results are stored in Elasticsearch and tagged with an `event.action` of `osquery.ai_*`, so you can search, visualize, and build detections on top of them.
+
+### What it inventories
+
+- **Running AI tools** — local LLM runtimes, AI coding agents, and MCP servers, classified by role in `labels.process_category` (`llm_runtime`, `agent`, `mcp`).
+- **Installed AI software** — desktop apps, OS packages, Python and npm packages, and browser/editor extensions (Chrome, Firefox, Safari, VS Code).
+- **AI configuration** — MCP and AI tool config files and tool directories, plus recent changes to them.
+- **AI network and persistence footprint** — listening ports, outbound sockets for AI processes, and auto-start entries (Windows services, scheduled tasks, launchd, systemd, cron).
+
+### Interpreting results
+
+Asset queries run in snapshot mode: every scheduled run emits a full, current-state set of rows. This covers packages, extensions, applications, services, scheduled tasks, and the `ai_config_files_*` inventory. Expect the same asset to reappear on each interval, and use latest-per-host aggregation or time-range filters when building dashboards and hunts.
+
+Queries that observe live state run in differential mode instead: `ai_processes_*`, `ai_listening_ports_*`, `ai_process_network_summary_*`, `ai_docker_containers_*`, `ai_process_envs_*`, `ai_config_file_changes_*`, and `ai_dns_cache_windows`. Each run reports only what appeared or disappeared since the previous run, so a process that keeps running is reported once when it starts rather than on every interval, and a host with no activity produces no rows. This has two consequences for analysis: panels and rules over these datasets see transitions rather than current state, so widen the time range or aggregate on last-seen; and clearing an agent's data directory re-reports everything once as new.
+
+`ai_sensitive_file_proximity_*` needs one extra caveat. On macOS and Linux it reports credential paths that an AI process actually holds open. On Windows that evidence is not available, so it pairs AI processes with credential paths belonging to the same user: a row means both exist for that user, **not** that the process read the file.
+
+### Privacy
+
+These queries collect **metadata only** — names, versions, paths, ports, and configuration locations. They do not read file contents, prompts, completions, or credentials.

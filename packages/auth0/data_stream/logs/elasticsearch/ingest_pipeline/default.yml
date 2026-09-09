@@ -2,39 +2,48 @@
 description: Pipeline for processing Auth0 log stream events
 processors:
 - set:
+    tag: set_ecs_version_0f7334bb
     field: ecs.version
     value: '8.11.0'
 - set:
+    tag: set_auth0_logs_data_39b49042
     field: auth0.logs.data
     copy_from: json.data
 - date:
+    tag: date_auth0_logs_data_date_4e6fa838
     field: auth0.logs.data.date
     formats:
       - ISO8601
 - set:
+    tag: set_log_level_c05499f4
     field: log.level
     value: info
 - set:
+    tag: set_log_level_888b5f67
     field: log.level
     value: error
     if: ctx?.auth0?.logs?.data?.details?.error != null
 - set:
+    tag: set_source_ip_d897744c
     field: source.ip
     copy_from: auth0.logs.data.ip
     if: ctx?.auth0?.logs?.data?.ip != null
 - rename:
+    tag: rename_auth0_logs_data_isMobile_to_auth0_logs_data_is_mobile_903ac444
     field: auth0.logs.data.isMobile
     target_field: auth0.logs.data.is_mobile
     ignore_missing: true
     ignore_failure: true
 # IP Geolocation Lookup
 - geoip:
+    tag: geoip_source_ip_to_source_geo_1c827844
     field: source.ip
     target_field: source.geo
     ignore_missing: true
     if: 'ctx.source?.geo == null && ctx?.source?.ip != null'
 # IP Autonomous System (AS) Lookup
 - geoip:
+    tag: geoip_source_ip_to_source_as_6fdf3d28
     database_file: GeoLite2-ASN.mmdb
     field: source.ip
     target_field: source.as
@@ -44,22 +53,27 @@ processors:
     ignore_missing: true
     if: ctx?.source?.ip != null
 - rename:
+    tag: rename_source_as_asn_to_source_as_number_a917047d
     field: source.as.asn
     target_field: source.as.number
     ignore_missing: true
 - rename:
+    tag: rename_source_as_organization_name_to_source_as_organization_name_f1362d0b
     field: source.as.organization_name
     target_field: source.as.organization.name
     ignore_missing: true
 - set:
+    tag: set_network_type_9ad17ef3
     field: network.type
     value: ipv6
     if: 'ctx.source?.ip != null && ctx.source?.ip.contains(":")'
 - set:
+    tag: set_network_type_b218823a
     field: network.type
     value: ipv4
     if: 'ctx.network?.type == null && ctx.source?.ip != null'
 - grok:
+    tag: grok_auth0_logs_data_user_name_3c8cef66
     field: auth0.logs.data.user_name
     patterns:
       - '%{USERNAME:user.name}@%{HOSTNAME:user.domain}'
@@ -69,9 +83,10 @@ processors:
 - set:
     field: user.email
     copy_from: auth0.logs.data.user_name
-    tag: copy_user_email
+    tag: copy_user_email_00fddb72
     if: ctx.auth0?.logs?.data?.user_name != null && ctx.auth0.logs.data.user_name.indexOf("@") > 0
 - set:
+    tag: set_user_id_2975f88e
     field: user.id
     copy_from: auth0.logs.data.user_id
     if: 'ctx?.auth0?.logs?.data?.user_id != null'
@@ -79,24 +94,26 @@ processors:
     field: related.user
     value: '{{{user.id}}}'
     allow_duplicates: false
-    tag: append_related_user_id
+    tag: append_related_user_id_23cff8dc
     if: ctx.user?.id != null
 - append:
     field: related.user
     value: '{{{user.name}}}'
     allow_duplicates: false
-    tag: append_related_user_name
+    tag: append_related_user_name_325195a6
     if: ctx.user?.name != null
 - append:
     field: related.user
     value: '{{{user.email}}}'
     allow_duplicates: false
-    tag: append_related_user_email
+    tag: append_related_user_email_b9ac313b
     if: ctx.user?.email != null
 - user_agent:
+    tag: user_agent_auth0_logs_data_user_agent_699d351f
     field: auth0.logs.data.user_agent
     ignore_missing: true
 - set:
+    tag: set_event_id_1b18964d
     field: event.id
     copy_from: auth0.logs.data.log_id
     if: 'ctx?.auth0?.logs?.data?.log_id != null'
@@ -104,16 +121,20 @@ processors:
 # Event kind, code and action
 ##
 - set:
+    tag: set_event_kind_de80643c
     field: event.kind
     value: event
 - append:
+    tag: append_event_category_109b4d72
     field: event.category
     value: authentication
 - set:
+    tag: set_auth0_logs_data_type_id_e7ef1d1b
     field: auth0.logs.data.type_id
     copy_from: auth0.logs.data.type
     ignore_empty_value: true
 - script:
+    tag: script_sets_event_type_category_action_91f7e898
     lang: painless
     description: Sets event type, category and action based on type
     if: ctx.auth0?.logs?.data?.type != null
@@ -1064,43 +1085,49 @@ processors:
          }
 - script:
     if: ctx?.auth0?.logs?.data?.details?.initiatedAt != null
-    tag: convert_timestamp_initiated_at to string removing any scientific notation if present
+    tag: convert_timestamp_initiated_at_to_string_removing_any_scientific_notation_if_present_e80b2ab8
     lang: painless
     source: >
       ctx.auth0.logs.data.details.initiatedAt = Math.round(Double.parseDouble(ctx.auth0.logs.data.details.initiatedAt.toString()));
     on_failure:
         - append:
+            tag: append_error_message_c2f8735f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 - script:
     if: ctx?.auth0?.logs?.data?.details?.completedAt != null
-    tag: convert_timestamp_completed_at to string removing any scientific notation if present
+    tag: convert_timestamp_completed_at_to_string_removing_any_scientific_notation_if_present_3233ab0d
     lang: painless
     source: >
       ctx.auth0.logs.data.details.completedAt = Math.round(Double.parseDouble(ctx.auth0.logs.data.details.completedAt.toString()));
     on_failure:
         - append:
+            tag: append_error_message_adbeb223
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 - date:
+    tag: date_auth0_logs_data_details_initiatedAt_to_auth0_logs_data_login_initiatedAt_b874bf8a
     if: ctx?.auth0?.logs?.data?.details?.initiatedAt != null
     field: auth0.logs.data.details.initiatedAt
     target_field: auth0.logs.data.login.initiatedAt
     formats:
       - UNIX_MS
 - date:
+    tag: date_auth0_logs_data_details_completedAt_to_auth0_logs_data_login_completedAt_de813d26
     if: ctx?.auth0?.logs?.data?.details?.completedAt != null
     field: auth0.logs.data.details.completedAt
     target_field: auth0.logs.data.login.completedAt
     formats:
       - UNIX_MS
 - convert:
-    if:  ctx?.auth0?.logs?.data?.details?.elapsedTime != null
+    tag: convert_auth0_logs_data_details_elapsedTime_to_auth0_logs_data_login_elapsedTime_0a1a9568
+    if: ctx?.auth0?.logs?.data?.details?.elapsedTime != null
     field: auth0.logs.data.details.elapsedTime
     target_field: auth0.logs.data.login.elapsedTime
     type: long
     ignore_missing: true
 - convert:
+    tag: convert_auth0_logs_data_details_stats_loginsCount_to_auth0_logs_data_login_stats_loginsCount_f2350bf2
     if: "ctx.auth0.logs.data.type == 'Successful login'"
     field: auth0.logs.data.details.stats.loginsCount
     target_field: auth0.logs.data.login.stats.loginsCount
@@ -1110,6 +1137,7 @@ processors:
 # Clean up
 ##
 - remove:
+    tag: remove_clean_up_0ca75707
     field:
       - json
       - auth0.logs.data.$event_schema.version
@@ -1121,6 +1149,7 @@ processors:
       - auth0.logs.data.log_id
     ignore_missing: true
 - script:
+    tag: script_processor_iterates_over_whole_document_4d6993cb
     lang: painless
     description: This script processor iterates over the whole document to remove fields with null values.
     source: |
@@ -1148,12 +1177,15 @@ processors:
 
 on_failure:
 - set:
+    tag: set_event_kind_72b1902f
     field: event.kind
     value: pipeline_error
 - append:
+    tag: append_tags_279d5a5c
     field: tags
     value: preserve_original_event
     allow_duplicates: false
 - append:
+    tag: append_error_message_206bb8ac
     field: error.message
     value: '{{{ _ingest.on_failure_message }}}'

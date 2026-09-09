@@ -29,7 +29,7 @@
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
-        "esql": "FROM metrics-aws.sqs.otel-*\n| WHERE Namespace == \"AWS/SQS\"\n    AND MetricName == \"ApproximateNumberOfMessagesVisible\"\n    AND stat == \"Average\"\n    AND QueueName NOT LIKE \"*dlq*\"\n| STATS backlog = AVG(`metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesVisible`)\n    BY QueueName, cloud.region\n// Tune: sustained visible backlog depth that indicates consumers are not keeping up\n| WHERE backlog > 1000"
+        "esql": "TS metrics-aws.sqs.otel-*\n| WHERE Namespace == \"AWS/SQS\"\n    AND MetricName == \"ApproximateNumberOfMessagesVisible\"\n    AND stat == \"Average\"\n    AND QueueName NOT LIKE \"*dlq*\"\n| STATS backlog = AVG(AVG_OVER_TIME(`metrics.amazonaws.com/AWS/SQS/ApproximateNumberOfMessagesVisible`))\n    BY QueueName, cloud.region\n// Tune: sustained visible backlog depth that indicates consumers are not keeping up\n| WHERE backlog > 1000\n| EVAL sqs_queue = CONCAT(QueueName, \" (\", cloud.region, \")\")"
       },
       "size": 0,
       "threshold": [
@@ -40,7 +40,7 @@
       "timeWindowSize": 15,
       "timeWindowUnit": "m",
       "groupBy": "row",
-      "termField": "QueueName",
+      "termField": "sqs_queue",
       "termSize": 100,
       "excludeHitsFromPreviousRun": true
     }

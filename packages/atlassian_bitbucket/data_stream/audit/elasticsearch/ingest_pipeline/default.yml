@@ -2,25 +2,30 @@
 description: Pipeline for processing sample logs
 processors:
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_facc4822
       ignore_missing: true
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
+      tag: json_event_original_to_json_5e54dc16
       field: event.original
       target_field: json
   - drop:
+      tag: drop_7c77088c
       if: ctx.json?.entities instanceof List && ctx.json.entities.length == 0
   - script:
+      tag: script_processor_iterates_over_whole_document_8c9e51e1
       lang: painless
       if: ctx.json instanceof Map
       description: This script processor iterates over the whole document to remove fields with null values.
@@ -47,33 +52,40 @@ processors:
         }
         handleMap(ctx.json);
   - set:
+      tag: set__tmp_timestamp_5b2e9ff8
       field: _tmp.timestamp
       copy_from: json.timestamp
       if: ctx.json?.timestamp != null && ctx.json?.timestamp instanceof String
   - set:
+      tag: set__tmp_timestamp_49d3953e
       field: _tmp.timestamp
       value: "{{{json.timestamp.epochSecond}}}.{{{json.timestamp.nano}}}"
       if: ctx.json?.timestamp != null && ctx.json?.timestamp instanceof Map && ctx.json?.timestamp?.epochSecond != null && ctx.json?.timestamp?.nano != null
   - date:
+      tag: date__tmp_timestamp_to_timestamp_0218cf07
       field: _tmp.timestamp
       formats:
         - UNIX
         - ISO8601
       target_field: "@timestamp"
   - rename:
+      tag: rename_json_source_to_source_address_091b5798
       field: json.source
       target_field: source.address
       ignore_missing: true
   - convert:
+      tag: convert_source_address_to_source_ip_48c76f83
       field: source.address
       target_field: source.ip
       type: ip
       ignore_missing: true
   - geoip:
+      tag: geoip_source_ip_to_source_geo_da2e41b2
       field: source.ip
       target_field: source.geo
       ignore_missing: true
   - geoip:
+      tag: geoip_source_ip_to_source_as_28d69883
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
       target_field: source.as
@@ -82,61 +94,74 @@ processors:
         - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_source_as_asn_to_source_as_number_a917047d
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
   - rename:
+      tag: rename_source_as_organization_name_to_source_as_organization_name_f1362d0b
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
   - rename:
+      tag: rename_json_author_id_to_user_id_cf7e3d88
       field: json.author.id
       target_field: user.id
       ignore_missing: true
   - rename:
+      tag: rename_json_author_name_to_user_name_630eea34
       field: json.author.name
       target_field: user.name
       ignore_missing: true
   - rename:
+      tag: rename_json_auditType_to_bitbucket_audit_type_d295f223
       field: json.auditType
       target_field: bitbucket.audit.type
       ignore_missing: true
   - rename:
+      tag: rename_json_type_to_bitbucket_audit_type_74901528
       field: json.type
       target_field: bitbucket.audit.type
       ignore_missing: true
   - rename:
+      tag: rename_json_method_to_bitbucket_audit_method_e8fcedb0
       field: json.method
       target_field: bitbucket.audit.method
       ignore_missing: true
   - rename:
+      tag: rename_json_system_to_service_address_67c6f11c
       field: json.system
       target_field: service.address
       ignore_missing: true
   - uri_parts:
+      tag: uri_parts_service_address_to__tmp_service_9d835542
       field: service.address
       target_field: _tmp.service
       ignore_failure: true
       if: ctx.service?.address != null
   - rename:
+      tag: rename_json_extraAttributes_to_bitbucket_audit_extra_attributes_57a92c05
       field: json.extraAttributes
       target_field: bitbucket.audit.extra_attributes
       ignore_missing: true
   - rename:
+      tag: rename_json_changedValues_to_bitbucket_audit_changed_values_029a9301
       field: json.changedValues
       target_field: bitbucket.audit.changed_values
       ignore_missing: true
   - rename:
+      tag: rename_json_affectedObjects_to_bitbucket_audit_affected_objects_8302b25f
       field: json.affectedObjects
       target_field: bitbucket.audit.affected_objects
       ignore_missing: true
   - set:
+      tag: set_event_action_131fbf4a
       field: event.action
       copy_from: bitbucket.audit.type.actionI18nKey
       ignore_empty_value: true
   - script:
       lang: painless
-      tag: Add ECS categorization
+      tag: add_ecs_categorization_7ce24fa3
       params:
         bitbucket.service.user.audit.action.usercreated:
           category:
@@ -359,6 +384,7 @@ processors:
         def hm = new HashMap(params.get(ctx.event.action));
         hm.forEach((k, v) -> ctx.event[k] = v);
   - script:
+      tag: script_add_ecs_user_fields_6651f4c6
       lang: painless
       description: Add ECS User fields
       if: "['bitbucket.service.audit.category.usersandgroups'].contains(ctx.bitbucket?.audit?.type?.categoryI18nKey)"
@@ -417,36 +443,43 @@ processors:
           }
         }
   - append:
+      tag: append_related_user_837e080f
       field: related.user
       value: '{{{user.name}}}'
       allow_duplicates: false
       if: ctx.user?.name != null
   - append:
+      tag: append_related_user_be5e9d5c
       field: related.user
       value: '{{{user.target.name}}}'
       allow_duplicates: false
       if: ctx.user?.target?.name != null
   - append:
+      tag: append_related_user_d2acb44a
       field: related.user
       value: '{{{user.changes.name}}}'
       allow_duplicates: false
       if: ctx.user?.changes?.name != null
   - append:
+      tag: append_related_ip_8121c591
       field: related.ip
       value: '{{{source.ip}}}'
       allow_duplicates: false
       if: ctx.source?.ip != null
   - append:
+      tag: append_related_hosts_95c097cc
       field: related.hosts
       value: '{{{_tmp.service.domain}}}'
       allow_duplicates: false
       if: ctx._tmp?.service?.domain != null
   - remove:
+      tag: remove_a849b846
       field:
         - json
         - _tmp
       ignore_missing: true
   - script:
+      tag: script_processor_iterates_over_whole_document_4d6993cb
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
       source: |
@@ -473,13 +506,16 @@ processors:
         handleMap(ctx);
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message_8ac65503
       field: error.message
       value: >
         Processor "{{{ _ingest.on_failure_processor_type }}}"

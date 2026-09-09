@@ -1,0 +1,113 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects creation of a GKE service account token through the TokenRequest API by a non-system identity. TokenRequest allows programmatic minting of short-lived tokens for any service account the caller can create tokens for, without reading a mounted projected token from disk. Attackers with initial cluster access can abuse this API to obtain tokens for more privileged service accounts, pivot via Workload Identity to GCP APIs, or retain access after pod termination. Unlike filesystem token theft, TokenRequest activity is visible only in Kubernetes audit logs as create against the serviceaccounts/token subresource.",
+        "false_positives": [
+            "Platform agents, admission webhooks, and CI jobs may legitimately call TokenRequest under non-standard identities. Baseline approved automation by client.user.email after validation. Expected GKE and kube-system controllers are excluded; expand exclusions if additional managed components appear in telemetry."
+        ],
+        "from": "now-6m",
+        "index": [
+            "logs-gcp.audit-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "client.user.email",
+                "source.ip",
+                "user_agent.original",
+                "event.action",
+                "event.outcome",
+                "gcp.audit.resource_name",
+                "gcp.audit.request",
+                "data_stream.namespace"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "GKE Service Account Token Created via TokenRequest API",
+        "note": "## Triage and analysis\n\n### Investigating GKE Service Account Token Created via TokenRequest API\n\nThis alert indicates a successful create against the serviceaccounts/token subresource (TokenRequest API), which issues\na new service account token without a filesystem read. On GKE this can be abused to mint tokens for privileged service\naccounts \u2014 including those bound through Workload Identity \u2014 and pivot to GCP APIs.\n\n### Possible investigation steps\n\n- Review `client.user.email`, `source.ip`, and `user_agent.original`.\n- Identify the targeted service account from `gcp.audit.resource_name` (typically\n  `core/v1/namespaces/<ns>/serviceaccounts/<sa>/token`).\n- Determine which Role or ClusterRoleBindings grant the actor `create` on `serviceaccounts/token`.\n- Correlate the same actor and source with follow-on secret reads, pod exec, RBAC changes, or GCP API activity via\n  Workload Identity.\n\n### False positive analysis\n\n- New platform automation that mints projected tokens outside the excluded controllers may match. Allowlist after\n  confirming expected behavior.\n\n### Response and remediation\n\n- If unauthorized, remove or revert RBAC that allows TokenRequest and rotate the affected service account credentials.\n- For Workload Identity-linked service accounts, revoke related GCP role sessions and review Cloud Audit Logs in the\n  same window.\n\n",
+        "query": "data_stream.dataset:gcp.audit and service.name:\"k8s.io\" and event.outcome:success and\nevent.action:\"io.k8s.core.v1.serviceaccounts.token.create\" and\nclient.user.email:(* and not (\n  \"system:kube-controller-manager\" or\n  \"system:kube-scheduler\" or\n  \"system:gke-controller-manager\" or\n  \"system:gcp-controller-manager\" or\n  system\\:node\\:* or\n  system\\:serviceaccount\\:kube-system\\:* or\n  system\\:serviceaccount\\:gke-managed-system\\:* or\n  system\\:serviceaccount\\:gke-connect\\:* or\n  system\\:serviceaccount\\:anthos-identity-service\\:*\n))\n",
+        "references": [
+            "https://kubernetes.io/docs/reference/kubernetes-api/authentication-resources/token-v1/",
+            "https://stratus-red-team.cloud/attack-techniques/kubernetes/k8s.persistence.create-token/"
+        ],
+        "related_integrations": [
+            {
+                "integration": "audit",
+                "package": "gcp",
+                "version": ">=2.41.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "client.user.email",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "service.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "5d505bed-6d0e-4afa-b445-64841d4b8c58",
+        "setup": "The GCP Fleet integration with GKE audit logs enabled is required to be compatible with this rule.\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: Kubernetes",
+            "Data Source: GCP",
+            "Data Source: Google Cloud Platform",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1552",
+                        "name": "Unsecured Credentials",
+                        "reference": "https://attack.mitre.org/techniques/T1552/",
+                        "subtechnique": [
+                            {
+                                "id": "T1552.007",
+                                "name": "Container API",
+                                "reference": "https://attack.mitre.org/techniques/T1552/007/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 1
+    },
+    "id": "5d505bed-6d0e-4afa-b445-64841d4b8c58_1",
+    "type": "security-rule"
+}

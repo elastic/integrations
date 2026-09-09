@@ -67,15 +67,15 @@ processors:
       if: ctx.json == null && ctx.event?.original != null
       description: Decode the CEL message JSON into json.
 
-  # --- S3 (Log Pipeline) input only ---
-  # aws-s3 deliveries carry the envelope {type, timestamp, data}. Lift `data` up
-  # to json.* so the shared API field extraction below applies (the S3 data field
-  # names match the API names).
+  # --- S3/GCS (Log Pipeline) input only ---
+  # Both aws-s3 and gcs deliveries carry the envelope {type, timestamp, data}.
+  # Lift `data` up to json.* so the shared API field extraction below applies
+  # (the S3/GCS data field names match the API names).
   - pipeline:
       name: '{{ IngestPipeline "s3" }}'
       tag: dispatch_s3
       if: ctx.json?.type == 'auth_log'
-  # --- end S3-only ---
+  # --- end S3/GCS-only ---
 
   # json.timestamp is the sub-event time (or session time); session_timestamp is session start.
   - date:

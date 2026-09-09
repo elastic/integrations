@@ -3,7 +3,7 @@ description: Pipeline for processing group logs.
 processors:
   - date:
       field: axonius.identity.first_seen
-      tag: date_first_seen
+      tag: date_first_seen_46674b68
       target_field: axonius.identity.first_seen
       formats:
         - EEE, dd MMM yyyy HH:mm:ss 'GMT'
@@ -12,91 +12,102 @@ processors:
       if: ctx.axonius?.identity?.first_seen != null && ctx.axonius.identity.first_seen != ''
       on_failure:
         - remove:
+            tag: remove_axonius_identity_first_seen_20d1278a
             field: axonius.identity.first_seen
             ignore_missing: true
         - append:
+            tag: append_error_message_aee8453a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: axonius.identity.user_count_link
-      tag: foreach_user_count_link_bracketWeight
+      tag: foreach_user_count_link_bracketWeight_834dafda
       if: ctx.axonius?.identity?.user_count_link instanceof List
       processor:
         convert:
           field: _ingest._value.bracketWeight
-          tag: convert_user_count_link_bracketWeight_to_double
+          tag: convert_user_count_link_bracketWeight_to_double_0eeac1bf
           type: double
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_bracketWeight_bf5cb0d2
                 field: _ingest._value.bracketWeight
                 ignore_missing: true
             - append:
+                tag: append_error_message_c4fe4f2c
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: axonius.identity.user_count_link
-      tag: foreach_user_count_link_leftBracket
+      tag: foreach_user_count_link_leftBracket_9cf59446
       if: ctx.axonius?.identity?.user_count_link instanceof List
       processor:
         convert:
           field: _ingest._value.leftBracket
-          tag: convert_user_count_link_leftBracket_to_double
+          tag: convert_user_count_link_leftBracket_to_double_1d00c24f
           type: double
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_leftBracket_180b2038
                 field: _ingest._value.leftBracket
                 ignore_missing: true
             - append:
+                tag: append_error_message_7dd41efc
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: axonius.identity.user_count_link
-      tag: foreach_user_count_link_not
+      tag: foreach_user_count_link_not_c86b6c41
       if: ctx.axonius?.identity?.user_count_link instanceof List
       processor:
         convert:
           field: _ingest._value.not
-          tag: convert_user_count_link_not_to_boolean
+          tag: convert_user_count_link_not_to_boolean_b9312e7a
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_not_18a15107
                 field: _ingest._value.not
                 ignore_missing: true
             - append:
+                tag: append_error_message_001e7653
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: axonius.identity.user_count_link
-      tag: foreach_user_count_link_rightBracket
+      tag: foreach_user_count_link_rightBracket_99e830f0
       if: ctx.axonius?.identity?.user_count_link instanceof List
       processor:
         convert:
           field: _ingest._value.rightBracket
-          tag: convert_user_count_link_rightBracket_to_double
+          tag: convert_user_count_link_rightBracket_to_double_d5ac63d9
           type: double
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_rightBracket_f8f56e6c
                 field: _ingest._value.rightBracket
                 ignore_missing: true
             - append:
+                tag: append_error_message_e59182ba
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: axonius.identity.user_count_link
-      tag: foreach_user_count_link_value
+      tag: foreach_user_count_link_value_c47c8002
       if: ctx.axonius?.identity?.user_count_link instanceof List
       processor:
         append:
           field: related.user
-          tag: append_user_count_link_value_into_related_user
+          tag: append_user_count_link_value_into_related_user_3aa32572
           value: '{{{_ingest._value.value}}}'
           allow_duplicates: false
 on_failure:
   - append:
+      tag: append_error_message_417e65c9
       field: error.message
       value: |-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
@@ -104,5 +115,10 @@ on_failure:
         {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
+  - append:
+      tag: append_tags_279d5a5c
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

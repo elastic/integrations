@@ -18,7 +18,19 @@ Public documentation is compiled and exported to our [Elastic docs](https://www.
 Please review the [Contributing Guide](CONTRIBUTING.md) to learn how to build and develop packages, understand the release procedure and
 explore the builder tools.
 
+If you're using an AI coding agent, we recommend installing the [Agent skills](#agent-skills) below before you start.
+
 More information about the CI pipelines that are available in this repository [here](./docs/ci_pipelines.md).
+
+### Agent skills
+
+Companion agent skills for building, reviewing, and maintaining Elastic integration packages are available in [`elastic/integration-skills`](https://github.com/elastic/integration-skills). They work with Cursor, Codex, Gemini, Claude Code, and any other LLM-powered coding environment that can read skill/instruction files from a directory. Install them with:
+
+```
+npx skills add elastic/integration-skills
+```
+
+Claude Code users can instead install the skills natively as a plugin - see [`CLAUDE.md`](CLAUDE.md).
 
 ## External links
 

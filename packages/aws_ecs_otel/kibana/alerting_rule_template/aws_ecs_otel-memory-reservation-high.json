@@ -1,0 +1,48 @@
+{
+  "id": "aws_ecs_otel-memory-reservation-high",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when the percentage of memory reserved by running tasks approaches the cluster's total registered memory capacity. High reservation means new tasks cannot be placed without adding capacity.",
+    "name": "[AWS ECS OTel] Memory reservation high",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "aws_ecs",
+      "otel"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 3
+    },
+    "flapping": {
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    },
+    "artifacts": {
+      "investigation_guide": {
+        "blob": "## Memory Reservation High\n\n`MemoryReservation` is the percentage of total registered memory in the cluster that is reserved by running tasks. When this is high, the cluster scheduler cannot place new tasks even if existing tasks are not using all of their reserved memory.\n\nThis is a **cluster-level** metric, distinct from the service-level `MemoryUtilization` alert. A cluster can be at high reservation while actual memory utilisation is low if tasks over-provision their memory requests.\n\n### Triage Steps\n1. Identify which services hold the most memory reservation — compare task definition memory values against `MemoryUtilized` / `MemoryReserved` from Container Insights for actual usage.\n2. Check for pending tasks failing to place due to insufficient memory — review service events in the ECS console.\n3. For EC2-backed clusters, verify capacity provider auto-scaling is configured and triggering correctly.\n4. Consider right-sizing task memory reservations if actual utilisation is consistently much lower than the reservation.\n\n### Customisation\n- Default threshold is 80% (AWS recommendation).\n- Memory reservation saturation is often more critical than CPU reservation because over-committing memory leads to OOM kills, whereas over-committing CPU leads only to throttling. Consider a lower threshold (e.g., 75%) for memory-sensitive workloads.\n- Fargate clusters provision capacity per-task and are not subject to this constraint; this alert is most relevant for EC2-backed ECS clusters."
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "TS metrics-aws.ecs.otel-*\n| WHERE Namespace == \"AWS/ECS\"\n    AND MetricName == \"MemoryReservation\"\n    AND stat == \"Average\"\n| STATS avg_mem_res = AVG(AVG_OVER_TIME(`metrics.amazonaws.com/AWS/ECS/MemoryReservation`))\n    BY ClusterName, cloud.region\n// Percent of registered cluster memory reserved — tune threshold (default: 80%)\n| WHERE avg_mem_res > 80.0\n| EVAL ecs_cluster = CONCAT(ClusterName, \" (\", cloud.region, \")\")\n| SORT avg_mem_res DESC"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "ecs_cluster",
+      "termSize": 100,
+      "excludeHitsFromPreviousRun": true
+    }
+  }
+}

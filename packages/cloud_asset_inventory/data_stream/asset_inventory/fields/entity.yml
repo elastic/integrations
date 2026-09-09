@@ -1,5 +1,5 @@
 - name: entity
-  type: group  
+  type: group
   fields:
   - name: id
     type: keyword
@@ -12,11 +12,23 @@
 
   - name: sub_type
     type: keyword
-  
+
   - name: source
     type: keyword
-  
+
   - name: raw
     type: flattened
 
-  
+  - name: Details
+    type: flattened
+    description: >
+      Non-ECS resource-specific attributes. Examples: RDS Engine/EngineVersion; ELB
+      DNSName/PubliclyAccessible/LoadBalancerType/State/IPAddresses/OwnerTag; EC2
+      ImageId/Platform/VpcId/SubnetId/State/InstanceProfileArn/RoleArn; Route53 record
+      Type/ResourceRecords/ZoneID/ZoneName/AliasTargetDNS/HealthCheckId; EKS
+      Status/Version/Endpoint/RoleArn/PlatformVersion/EndpointPublicAccess/EndpointPrivateAccess;
+      and a normalized resource creation timestamp CreatedAt across all asset types. As a
+      flattened field this accepts new keys without a mapping change. Keys use UpperCamelCase
+      per the non-ECS naming convention. Renamed from entity.attributes (1.7.0), which collided
+      with the Entity Store's reserved entity.attributes.* typed leaves and broke generic entity
+      extraction.

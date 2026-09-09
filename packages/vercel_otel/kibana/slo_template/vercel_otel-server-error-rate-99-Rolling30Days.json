@@ -1,0 +1,57 @@
+{
+    "attributes": {
+        "name": "[Vercel OTel] Server-side error rate 99% rolling 30 days",
+        "description": "Tracks the proportion of production lambda and edge requests that complete without an HTTP 5xx response, targeting 99% success over a rolling 30-day window. A breach signals that a serverless function or edge middleware defect is causing real requests to fail, degrading the core request-serving experience for end users. Requests where the function crashed before returning any response (http.response.status_code = -1) are excluded from both good and total counts, since no HTTP response was actually served.",
+        "indicator": {
+            "type": "sli.metric.custom",
+            "params": {
+                "index": "logs-*",
+                "filter": "data_stream.dataset: \"vercel.logs.otel\" and vercel.log.source: (\"lambda\" or \"edge\") and deployment.environment.name: \"production\" and http.response.status_code >= 0",
+                "good": {
+                    "metrics": [
+                        {
+                            "name": "A",
+                            "aggregation": "doc_count",
+                            "filter": "NOT http.response.status_code >= 500"
+                        }
+                    ],
+                    "equation": "A"
+                },
+                "total": {
+                    "metrics": [
+                        {
+                            "name": "A",
+                            "aggregation": "doc_count"
+                        }
+                    ],
+                    "equation": "A"
+                },
+                "timestampField": "@timestamp"
+            }
+        },
+        "budgetingMethod": "occurrences",
+        "timeWindow": {
+            "duration": "30d",
+            "type": "rolling"
+        },
+        "objective": {
+            "target": 0.99
+        },
+        "tags": [
+            "vercel",
+            "otel"
+        ],
+        "groupBy": [
+            "vercel.project.id"
+        ],
+        "artifacts": {
+            "dashboards": [
+                {
+                    "id": "vercel_otel-logs"
+                }
+            ]
+        }
+    },
+    "id": "vercel_otel-server-error-rate-99-Rolling30Days",
+    "type": "slo_template"
+}

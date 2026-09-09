@@ -1,7 +1,7 @@
 ---
 description: >-
   Parse Kolide device check-run results (type "check_result") collected from the
-  Kolide Log Pipeline via the aws-s3 input. Unlike the issues data stream (which
+  Kolide Log Pipeline via the aws-s3/gcs inputs. Unlike the issues data stream (which
   tracks the failure lifecycle), check-run results include every run: passing,
   failing, inapplicable, and unknown. Reference:
   https://www.kolide.com/docs/admins/log-pipeline/overview
@@ -11,8 +11,8 @@ processors:
       tag: set_ecs_version
       value: '9.4.0'
 
-  # The aws-s3 input delivers the raw object in `message`. Keep a raw copy in
-  # event.original, then decode it into the working `json` object below.
+  # The aws-s3/gcs inputs deliver the raw object in `message`. Keep a raw copy
+  # in event.original, then decode it into the working `json` object below.
   - rename:
       field: message
       tag: rename_message_to_event_original
@@ -127,8 +127,9 @@ processors:
       ignore_missing_pipeline: true
 
   # event.id / deduplication: check-run results have no native id, so derive a
-  # stable event.id from device_id + check_id + @timestamp. aws-s3 is
-  # at-least-once, so fingerprint it to _id to upsert re-delivered objects.
+  # stable event.id from device_id + check_id + @timestamp. aws-s3/gcs are
+  # at-least-once, so fingerprint it to _id so re-delivered objects are dropped
+  # as duplicates instead of indexed twice.
   - set:
       field: event.id
       tag: set_event_id

@@ -38,9 +38,11 @@ rules:
             "id_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJub25lIn0.eyJhdWQiOiIyZDRkMTFhMi1mODE0LTQ2YTctOD..."
           }
           `}}
+  # Page 1: initial request uses the 'ge' cursor filter (dynamic timestamp).
   - path: /v1.0/security/incidents
     methods: [GET]
     query_params:
+      $filter: "{initial:lastUpdateDateTime ge .*}"
       $skip: 0
       $top: 2
     request_headers:
@@ -158,7 +160,7 @@ rules:
                 "tenantId": "b3c1b5fc-828c-45fa-a1e1-10d74f6d6e9c",
                 "displayName": "Multi-stage incident involving Initial access & Command and control on multiple endpoints reported by multiple sources",
                 "createdDateTime": "2021-08-13T08:43:35.5533333Z",
-                "lastUpdateDateTime": "2021-09-30T09:35:45.1133333Z",
+                "lastUpdateDateTime": "2021-09-30T09:35:46.1133333Z",
                 "assignedTo": "KaiC@contoso.onmicrosoft.com",
                 "classification": "truePositive",
                 "determination": "multiStagedAttack",
@@ -236,10 +238,14 @@ rules:
             ]
           }
           `}}
+  # Page 2: pagination advances the filter to 'gt <max lastUpdateDateTime of page 1>'
+  # while keeping $skip at 0. If the input still used $skip offsets it would send
+  # $skip=2 here, which no rule matches, and --exit-on-unmatched-rule would fail.
   - path: /v1.0/security/incidents
     methods: [GET]
     query_params:
-      $skip: 2
+      $filter: "lastUpdateDateTime gt 2021-09-30T09:35:46.1133333Z"
+      $skip: 0
       $top: 2
     request_headers:
       Authorization:
@@ -261,7 +267,7 @@ rules:
                 "tenantId": "b3c1b5fc-828c-45fa-a1e1-10d74f6d6e9c",
                 "displayName": "Multi-stage incident involving Initial access & Command and control on multiple endpoints reported by multiple sources",
                 "createdDateTime": "2021-08-13T08:43:35.5533333Z",
-                "lastUpdateDateTime": "2021-09-30T09:35:45.1133333Z",
+                "lastUpdateDateTime": "2021-09-30T09:35:47.1133333Z",
                 "assignedTo": "KaiC@contoso.onmicrosoft.com",
                 "classification": "truePositive",
                 "determination": "multiStagedAttack",
@@ -366,7 +372,7 @@ rules:
                 "tenantId": "b3c1b5fc-828c-45fa-a1e1-10d74f6d6e9c",
                 "displayName": "Multi-stage incident involving Initial access & Command and control on multiple endpoints reported by multiple sources",
                 "createdDateTime": "2021-08-13T08:43:35.5533333Z",
-                "lastUpdateDateTime": "2021-09-30T09:35:45.1133333Z",
+                "lastUpdateDateTime": "2021-09-30T09:35:48.1133333Z",
                 "assignedTo": "KaiC@contoso.onmicrosoft.com",
                 "classification": "truePositive",
                 "determination": "multiStagedAttack",
@@ -434,10 +440,13 @@ rules:
             ]
           }
           `}}
+  # Page 3: filter advances to 'gt <max lastUpdateDateTime of page 2>'. The empty
+  # page (len < batch_size) stops pagination.
   - path: /v1.0/security/incidents
     methods: [GET]
     query_params:
-      $skip: 4
+      $filter: "lastUpdateDateTime gt 2021-09-30T09:35:48.1133333Z"
+      $skip: 0
       $top: 2
     request_headers:
       Authorization:

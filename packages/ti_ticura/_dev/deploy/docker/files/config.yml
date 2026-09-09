@@ -3,8 +3,9 @@ rules:
   #   1. GET <feed>?targetFormat=ECSV1&mode=url  -> 200 {"downloadUrl": "<blob URL>"}
   #   2. GET <blob URL>                          -> 200 application/x-ndjson (the feed)
   # The integration's CEL program resolves the URL in step 1 and downloads the
-  # feed directly in step 2 (no redirect). {{ hostname }}:{{ env "PORT" }}
-  # resolve to this mock's address so the agent can reach the blob path.
+  # feed directly in step 2 (no redirect). {{ .request.host }} echoes the Host
+  # header of the inbound request, so the blob URL always points back at the
+  # address the agent used to reach this mock.
 
   # ── Standard feed (10 indicators, all IOC types) ─────────────────────────
   # Used by: test-default-config.yml, test-tracer-config.yml,
@@ -22,7 +23,7 @@ rules:
           Content-Type:
             - "application/json"
         body: |
-          {"downloadUrl": "http://{{ hostname }}:{{ env "PORT" }}/v1/feeds/download/blob"}
+          {"downloadUrl": "http://{{ .request.host }}/v1/feeds/download/blob"}
   - path: /v1/feeds/download/blob
     methods: ["GET"]
     responses:
@@ -49,7 +50,7 @@ rules:
           Content-Type:
             - "application/json"
         body: |
-          {"downloadUrl": "http://{{ hostname }}:{{ env "PORT" }}/v1/feeds/expired/blob"}
+          {"downloadUrl": "http://{{ .request.host }}/v1/feeds/expired/blob"}
   - path: /v1/feeds/expired/blob
     methods: ["GET"]
     responses:
@@ -76,7 +77,7 @@ rules:
           Content-Type:
             - "application/json"
         body: |
-          {"downloadUrl": "http://{{ hostname }}:{{ env "PORT" }}/v1/feeds/malformed/blob"}
+          {"downloadUrl": "http://{{ .request.host }}/v1/feeds/malformed/blob"}
   - path: /v1/feeds/malformed/blob
     methods: ["GET"]
     responses:
@@ -106,7 +107,7 @@ rules:
           Content-Type:
             - "application/json"
         body: |
-          {"downloadUrl": "http://{{ hostname }}:{{ env "PORT" }}/v1/feeds/update/blob"}
+          {"downloadUrl": "http://{{ .request.host }}/v1/feeds/update/blob"}
   - path: /v1/feeds/update/blob
     methods: ["GET"]
     responses:

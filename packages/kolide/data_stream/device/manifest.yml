@@ -7,8 +7,8 @@ streams:
       Collect the full Kolide device inventory from the Kolide REST API (GET /devices)
       on every poll. The /devices endpoint exposes no modified-since cursor, so each
       interval re-collects the complete collection; the ingest pipeline assigns a
-      content-based document `_id` so unchanged devices are overwritten and any change
-      is captured as a new document.
+      content-based document `_id` so unchanged devices are deduplicated across polls
+      and any change is captured as a new document.
     template_path: cel.yml.hbs
     vars:
       - name: interval

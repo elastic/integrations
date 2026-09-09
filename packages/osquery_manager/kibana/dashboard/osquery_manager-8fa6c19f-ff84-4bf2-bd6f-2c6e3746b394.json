@@ -65,29 +65,31 @@
                         "description": "",
                         "params": {
                             "fontSize": 12,
-                            "markdown": "**Query profiles** show how expensive each osquery query is per host. `osquery_profile.source` distinguishes **scheduled** (native `osquery_schedule` metrics), **rrule** (RRULE-scheduled runs), and **live** (process deltas around ad-hoc queries). Each document is one execution, correlatable via `response_id`.\n\n**How to read the metrics:** `memory` is the **osqueryd process RSS**, not per-query memory. Live/RRULE `duration` includes extension round-trip overhead, so **`cpu_time` is the better cost signal** for those; scheduled `duration`/`cpu_time` come from osquery's own per-query accounting. Diff-mode scheduled queries only produce a profile when results change. `duration`/`cpu_time` are in ms, memory in bytes, `utilization` in %.\n\nUse the tables to find the top queries and hosts, then click a value (or use the controls above) to drill down. Profiling is on by default; queries can opt out with `profiling: false`.\n\n**No data?** This dashboard is fed by the **query profiles** stream of the Osquery Manager integration, which is disabled by default. Enable it in the integration policy; panels and controls stay empty until the first profile documents arrive.",
+                            "markdown": "### Osquery — Query Profiles `Experimental`\n\n> Query profiling is enabled by default. To disable it globally, add the following to the Advanced Osquery configuration in your Fleet integration policy:\n>\n> ```json\n> {\n>   \"elastic_options\": {\n>     \"profiling\": {\n>       \"profiling_all\": false\n>     }\n>   }\n> }\n> ```\n\n#### How to use this dashboard\n\n**Query profiles** show how expensive each osquery query is per host. Each document is one execution, correlatable via `response_id`.\n\nSource types distinguish how a query was triggered:\n\n* **Live** — ad-hoc queries run on demand from the Osquery live queries interface\n* **Recurring rule** — RRULE-scheduled runs, managed via Kibana pack scheduling\n* **Scheduled** — native `osquery_schedule` metrics, configured in your pack",
                             "openLinksInNewTab": false
                         },
                         "title": "",
                         "type": "markdown",
                         "uiState": {}
-                    }
+                    },
+                    "type": "visualization"
                 },
                 "gridData": {
-                    "h": 4,
+                    "h": 12,
                     "i": "e5498188-b668-47f9-af54-200504c4f5e9",
                     "w": 48,
                     "x": 0,
                     "y": 0
                 },
                 "panelIndex": "e5498188-b668-47f9-af54-200504c4f5e9",
-                "title": "About [Osquery Manager] Query Profiles",
+                "title": "",
                 "type": "visualization",
                 "version": "8.7.1"
             },
             {
                 "embeddableConfig": {
                     "attributes": {
+                        "description": "Number of profile events received. Each event represents one profiled query execution.",
                         "references": [
                             {
                                 "id": "logs-*",
@@ -109,7 +111,7 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Profiles",
+                                                    "label": "Executions",
                                                     "operationType": "count",
                                                     "params": {
                                                         "emptyAsNull": true
@@ -138,28 +140,31 @@
                                 "metricAccessor": "e865a305-51ca-4731-8da7-bff57e14835c"
                             }
                         },
-                        "title": "Profiles",
+                        "title": "Profiled executions",
                         "type": "lens",
                         "visualizationType": "lnsMetric"
                     },
+                    "description": "Number of profile events received. Each event represents one profiled query execution.",
                     "enhancements": {},
-                    "hidePanelTitles": false
+                    "hidePanelTitles": false,
+                    "type": "lens"
                 },
                 "gridData": {
                     "h": 6,
                     "i": "f5b7359e-f21b-4744-88d7-64ce3002f147",
                     "w": 12,
                     "x": 0,
-                    "y": 4
+                    "y": 12
                 },
                 "panelIndex": "f5b7359e-f21b-4744-88d7-64ce3002f147",
-                "title": "Profiles",
+                "title": "Profiled executions",
                 "type": "lens",
                 "version": "8.7.1"
             },
             {
                 "embeddableConfig": {
                     "attributes": {
+                        "description": "Number of unique named queries that generated at least one profile.",
                         "references": [
                             {
                                 "id": "logs-*",
@@ -181,7 +186,7 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Queries profiled",
+                                                    "label": "Unique query names profiled",
                                                     "operationType": "unique_count",
                                                     "params": {
                                                         "emptyAsNull": false
@@ -211,22 +216,24 @@
                                 "metricAccessor": "c4f3c133-d46e-4414-9787-148e818c2574"
                             }
                         },
-                        "title": "Queries profiled",
+                        "title": "Distinct queries",
                         "type": "lens",
                         "visualizationType": "lnsMetric"
                     },
+                    "description": "Number of unique named queries that generated at least one profile.",
                     "enhancements": {},
-                    "hidePanelTitles": false
+                    "hidePanelTitles": false,
+                    "type": "lens"
                 },
                 "gridData": {
                     "h": 6,
                     "i": "a55b880f-e33b-4e34-a9f5-ad99c208201d",
                     "w": 12,
                     "x": 12,
-                    "y": 4
+                    "y": 12
                 },
                 "panelIndex": "a55b880f-e33b-4e34-a9f5-ad99c208201d",
-                "title": "Queries profiled",
+                "title": "Distinct queries",
                 "type": "lens",
                 "version": "8.7.1"
             },
@@ -289,14 +296,15 @@
                         "visualizationType": "lnsMetric"
                     },
                     "enhancements": {},
-                    "hidePanelTitles": false
+                    "hidePanelTitles": false,
+                    "type": "lens"
                 },
                 "gridData": {
                     "h": 6,
                     "i": "59baf7a5-2863-4fe0-b7f8-3c36b1d79342",
                     "w": 12,
                     "x": 24,
-                    "y": 4
+                    "y": 12
                 },
                 "panelIndex": "59baf7a5-2863-4fe0-b7f8-3c36b1d79342",
                 "title": "Hosts reporting",
@@ -306,6 +314,7 @@
             {
                 "embeddableConfig": {
                     "attributes": {
+                        "description": "Mean query execution time across all executions.",
                         "references": [
                             {
                                 "id": "logs-*",
@@ -327,7 +336,7 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Avg duration (ms)",
+                                                    "label": "ms per execution",
                                                     "operationType": "average",
                                                     "params": {
                                                         "emptyAsNull": false
@@ -361,15 +370,17 @@
                         "type": "lens",
                         "visualizationType": "lnsMetric"
                     },
+                    "description": "Mean query execution time across all executions.",
                     "enhancements": {},
-                    "hidePanelTitles": false
+                    "hidePanelTitles": false,
+                    "type": "lens"
                 },
                 "gridData": {
                     "h": 6,
                     "i": "bd418604-ffdf-4566-b40f-553c8b37be64",
                     "w": 12,
                     "x": 36,
-                    "y": 4
+                    "y": 12
                 },
                 "panelIndex": "bd418604-ffdf-4566-b40f-553c8b37be64",
                 "title": "Average duration (ms)",
@@ -507,14 +518,15 @@
                         "visualizationType": "lnsXY"
                     },
                     "enhancements": {},
-                    "hidePanelTitles": false
+                    "hidePanelTitles": false,
+                    "type": "lens"
                 },
                 "gridData": {
                     "h": 11,
                     "i": "9a93ca42-5253-450d-8b24-97289a524218",
                     "w": 24,
                     "x": 0,
-                    "y": 10
+                    "y": 18
                 },
                 "panelIndex": "9a93ca42-5253-450d-8b24-97289a524218",
                 "title": "Avg query duration over time (ms)",
@@ -658,14 +670,15 @@
                         "visualizationType": "lnsXY"
                     },
                     "enhancements": {},
-                    "hidePanelTitles": false
+                    "hidePanelTitles": false,
+                    "type": "lens"
                 },
                 "gridData": {
                     "h": 11,
                     "i": "78bb3728-460f-43d4-b53c-1f08f162bd5e",
                     "w": 24,
                     "x": 24,
-                    "y": 10
+                    "y": 18
                 },
                 "panelIndex": "78bb3728-460f-43d4-b53c-1f08f162bd5e",
                 "title": "Avg osqueryd RSS over time",
@@ -723,7 +736,7 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Profiles",
+                                                    "label": "Executions",
                                                     "operationType": "count",
                                                     "params": {
                                                         "emptyAsNull": true
@@ -830,22 +843,23 @@
                                 "layerType": "data"
                             }
                         },
-                        "title": "Profiles by source",
+                        "title": "By source",
                         "type": "lens",
                         "visualizationType": "lnsDatatable"
                     },
                     "enhancements": {},
-                    "hidePanelTitles": false
+                    "hidePanelTitles": false,
+                    "type": "lens"
                 },
                 "gridData": {
                     "h": 11,
                     "i": "3d0d8dc7-c9ce-4579-ac35-0142043386f4",
                     "w": 16,
                     "x": 0,
-                    "y": 21
+                    "y": 29
                 },
                 "panelIndex": "3d0d8dc7-c9ce-4579-ac35-0142043386f4",
-                "title": "Profiles by source",
+                "title": "By source",
                 "type": "lens",
                 "version": "8.7.1"
             },
@@ -868,12 +882,12 @@
                                             "columnOrder": [
                                                 "3d479817-e25f-47db-b32d-c78a6c4c601a",
                                                 "9833252f-eeea-4ab1-9c9a-4fd82b83b19c",
-                                                "65305118-bf1e-436d-8399-6792745fa518",
-                                                "af06ebf9-a5d3-4e9c-941e-4edfa7802760",
                                                 "a39fdb2f-4faa-4dde-abd9-25a265532b55",
                                                 "ea835b72-01ad-4e76-9adb-65b993cfc6ee",
                                                 "327d3de1-2f0b-4894-b9fd-e34b2dd2a5ce",
                                                 "82b27507-479e-4490-8cdc-01281fec4ddb",
+                                                "af06ebf9-a5d3-4e9c-941e-4edfa7802760",
+                                                "65305118-bf1e-436d-8399-6792745fa518",
                                                 "13c30bb6-701f-45cd-8052-f1f21ab7fd44",
                                                 "aabd2c7f-247c-4256-a610-58180a1630cc"
                                             ],
@@ -911,7 +925,7 @@
                                                     "params": {
                                                         "missingBucket": false,
                                                         "orderBy": {
-                                                            "columnId": "65305118-bf1e-436d-8399-6792745fa518",
+                                                            "columnId": "a39fdb2f-4faa-4dde-abd9-25a265532b55",
                                                             "type": "column"
                                                         },
                                                         "orderDirection": "desc",
@@ -928,7 +942,7 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Profiles",
+                                                    "label": "Executions",
                                                     "operationType": "count",
                                                     "params": {
                                                         "emptyAsNull": true
@@ -1052,14 +1066,6 @@
                                         "isTransposed": false
                                     },
                                     {
-                                        "columnId": "65305118-bf1e-436d-8399-6792745fa518",
-                                        "isTransposed": false
-                                    },
-                                    {
-                                        "columnId": "af06ebf9-a5d3-4e9c-941e-4edfa7802760",
-                                        "isTransposed": false
-                                    },
-                                    {
                                         "columnId": "a39fdb2f-4faa-4dde-abd9-25a265532b55",
                                         "isTransposed": false
                                     },
@@ -1076,6 +1082,14 @@
                                         "isTransposed": false
                                     },
                                     {
+                                        "columnId": "af06ebf9-a5d3-4e9c-941e-4edfa7802760",
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "65305118-bf1e-436d-8399-6792745fa518",
+                                        "isTransposed": false
+                                    },
+                                    {
                                         "columnId": "13c30bb6-701f-45cd-8052-f1f21ab7fd44",
                                         "isTransposed": false
                                     },
@@ -1088,22 +1102,23 @@
                                 "layerType": "data"
                             }
                         },
-                        "title": "Top queries (by name / SQL)",
+                        "title": "Top queries by avg duration",
                         "type": "lens",
                         "visualizationType": "lnsDatatable"
                     },
                     "enhancements": {},
-                    "hidePanelTitles": false
+                    "hidePanelTitles": false,
+                    "type": "lens"
                 },
                 "gridData": {
                     "h": 11,
                     "i": "2484d2c4-4433-449b-94d1-4e717490a26d",
                     "w": 32,
                     "x": 16,
-                    "y": 21
+                    "y": 29
                 },
                 "panelIndex": "2484d2c4-4433-449b-94d1-4e717490a26d",
-                "title": "Top queries (by name / SQL)",
+                "title": "Top queries by avg duration",
                 "type": "lens",
                 "version": "8.7.1"
             },
@@ -1149,7 +1164,7 @@
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Profiles",
+                                                    "label": "Executions",
                                                     "operationType": "count",
                                                     "params": {
                                                         "emptyAsNull": true
@@ -1287,14 +1302,15 @@
                         "visualizationType": "lnsDatatable"
                     },
                     "enhancements": {},
-                    "hidePanelTitles": false
+                    "hidePanelTitles": false,
+                    "type": "lens"
                 },
                 "gridData": {
                     "h": 12,
                     "i": "a6c918a4-eaea-4f14-b503-694d5cd59bad",
                     "w": 24,
                     "x": 0,
-                    "y": 32
+                    "y": 40
                 },
                 "panelIndex": "a6c918a4-eaea-4f14-b503-694d5cd59bad",
                 "title": "Top hosts",
@@ -1432,14 +1448,15 @@
                         "visualizationType": "lnsXY"
                     },
                     "enhancements": {},
-                    "hidePanelTitles": false
+                    "hidePanelTitles": false,
+                    "type": "lens"
                 },
                 "gridData": {
                     "h": 12,
                     "i": "fbeeefc6-44ba-4acd-bbf7-0f2c0c398649",
                     "w": 24,
                     "x": 24,
-                    "y": 32
+                    "y": 40
                 },
                 "panelIndex": "fbeeefc6-44ba-4acd-bbf7-0f2c0c398649",
                 "title": "Avg CPU time over time (ms)",
@@ -1683,14 +1700,15 @@
                         "visualizationType": "lnsDatatable"
                     },
                     "enhancements": {},
-                    "hidePanelTitles": false
+                    "hidePanelTitles": false,
+                    "type": "lens"
                 },
                 "gridData": {
                     "h": 16,
                     "i": "fe31d29d-5088-42bb-88b2-ecf4876de537",
                     "w": 48,
                     "x": 0,
-                    "y": 44
+                    "y": 52
                 },
                 "panelIndex": "fe31d29d-5088-42bb-88b2-ecf4876de537",
                 "title": "Executions (drill-down)",
@@ -1702,12 +1720,9 @@
         "title": "[Osquery Manager] Query Profiles",
         "version": 1
     },
-    "coreMigrationVersion": "8.7.1",
+    "coreMigrationVersion": "8.8.0",
     "created_at": "2026-07-02T15:45:00.000Z",
     "id": "osquery_manager-8fa6c19f-ff84-4bf2-bd6f-2c6e3746b394",
-    "migrationVersion": {
-        "dashboard": "8.7.0"
-    },
     "references": [
         {
             "id": "logs-*",
@@ -1785,5 +1800,6 @@
             "type": "index-pattern"
         }
     ],
-    "type": "dashboard"
+    "type": "dashboard",
+    "typeMigrationVersion": "10.3.0"
 }

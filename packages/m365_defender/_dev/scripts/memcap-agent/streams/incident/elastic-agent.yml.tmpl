@@ -1,0 +1,67 @@
+# Template for a standalone Elastic Agent config reproducing the agentless
+# m365_defender `incident` httpjson input (with include_alerts=true, the shipped
+# default), matching what agentless-controller deploys (single elastic-agent
+# container, monitoring on but logs/metrics collection off, no GOMEMLIMIT).
+#
+# This is a TEMPLATE, not a runnable config. The request/response/cursor "behaviour"
+# block is a single `#__STREAM_BEHAVIOR__` placeholder: run.sh extracts
+# request.transforms + response.pagination + response.split + cursor verbatim from
+# ../../../data_stream/incident/agent/stream/httpjson.yml.hbs at run time, resolves the
+# handful of Handlebars tokens (batch_size, initial_interval, the include_* conditionals
+# - keeping the include_alerts bodies, i.e. $expand=alerts and the nested body.alerts
+# split with keep_parent, which is the worst case) and splices it in. So the harness
+# always exercises the exact request + nested-split shape the package ships - nothing to
+# copy by hand (see the README "Keeping the configs in sync"). run.sh errors out if the
+# .hbs grows a token it does not know how to resolve, so drift is caught, not silently
+# mis-rendered.
+#
+# Only connection/scaffolding lives here: auth + URL point at the mock; interval is 24h
+# so the input fires once; batch_size is neutralised to a huge sentinel (in the spliced
+# block) so the real time-boundary pagination guard is false and it halts after one page.
+# Output points at an unreachable ES on purpose: decoded events are held in memory
+# (conservative worst case) and do not add page cache to the cgroup. The key amplifier is
+# the nested split on body.alerts with keep_parent:true - each alert becomes an event that
+# also carries its parent incident, so memory grows with incidents x alerts-per-incident.
+outputs:
+  default:
+    type: elasticsearch
+    hosts: ["http://127.0.0.1:9200"]
+agent:
+  monitoring:
+    enabled: true
+    http:
+      enabled: true
+      host: 0.0.0.0
+      port: 6791
+    logs: false
+    metrics: false
+  logging:
+    level: info
+    to_stderr: true
+inputs:
+- type: httpjson
+  id: m365d-incident-worstcase
+  use_output: default
+  data_stream:
+    namespace: default
+  streams:
+  - id: httpjson-m365d-incident-worstcase
+    data_stream:
+      dataset: m365_defender.incident
+      type: logs
+    config_version: 2
+    interval: 24h
+    auth.oauth2.client.id: test-client-id
+    auth.oauth2.client.secret: test-client-secret
+    auth.oauth2.token_url: http://svc-m365d:8082/tenant_id/oauth2/v2.0/token
+    auth.oauth2.scopes: http://svc-m365d:8082/.default
+    auth.oauth2.endpoint_params:
+      grant_type:
+        - client_credentials
+    request.url: http://svc-m365d:8082/v1.0/security/incidents
+    request.timeout: 300s
+    #__STREAM_BEHAVIOR__
+    tags:
+      - preserve_original_event
+      - forwarded
+    publisher_pipeline.disable_host: true

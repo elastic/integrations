@@ -12,9 +12,15 @@ The Microsoft Entra ID Entity Analytics integration collects two types of data: 
 
 ## Requirements
 
-Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
+Elastic Agent must be installed for standard deployments. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md).
 
 ## Setup
+
+### Elastic Managed deployment
+
+This integration supports Elastic Managed deployment, where the collection agent runs in Elastic's cloud rather than inside your network. The Microsoft Graph API is a public HTTPS endpoint, so no special connectivity configuration is required.
+
+When using Elastic Managed deployment, the **request tracer** option is not available because it writes to the agent's local filesystem.
 
 ### Collect data from Microsoft Graph REST API
 
@@ -62,9 +68,11 @@ For more details on how to set up the necessary App Registration, permission gra
 
 ## Usage
 
-The integration periodically contacts Microsoft Entra ID using the Graph API, retrieving updates for users, devices and groups, updates its internal cache of user and device metadata and group membership information, and ships updated user metadata to Elasticsearch.
+The integration periodically contacts Microsoft Entra ID using the Graph API, retrieving updates for users, devices, and groups, updates its internal cache of metadata and group membership information, and ships updated records to Elasticsearch.
 
-Fetching and shipping updates occurs in one of two processes: **full synchronizations** and **incremental updates**. Full synchronizations will send the entire list of users and devices in state, along with write markers to indicate the start and end of the synchronization event. Incremental updates will only send data for changed users and devices during that event. Changes on a user or device can come in many forms, whether it be a change to the user or device metadata, a user/device was added or deleted, or group membership was changed (either direct or transitive). By default, full synchronizations occur every 24 hours and incremental updates occur every 15 minutes. These intervals may be customized to suit your use case.
+Fetching and shipping updates occurs in one of two processes: **full synchronizations** and **incremental updates**. Full synchronizations send the entire list of users and devices in state. Incremental updates send only records that changed since the last sync. Changes include metadata updates, additions, deletions, and group membership changes (direct or transitive). By default, full synchronizations occur every 24 hours and incremental updates occur every 15 minutes. These intervals may be customized to suit your use case.
+
+By default this integration uses **minimal-state sync**, which routes user and device documents directly to the `user` and `device` data streams. Existing policies are updated to use minimal-state sync on upgrade.
 
 This integration provides an **asset inventory**, a point-in-time snapshot of which users and devices exist and their current properties. It does not provide an audit trail of who changed what, or when. If you need to track administrative changes to Entra ID objects (user modifications, deletions, group membership changes by an administrator, etc.), use the [Azure integration's](https://docs.elastic.co/integrations/azure) audit logs data stream, which collects [Entra ID audit logs](https://learn.microsoft.com/en-us/entra/identity/monitoring-health/concept-audit-logs) via Event Hub.
 
@@ -144,21 +152,6 @@ A device document:
 }
 ```
 
-Full synchronizations will be bounded on either side by "write marker" documents.
-
-```json
-{
-  "@timestamp": "2022-11-04T09:57:19.786056-05:00",
-  "event": {
-    "action": "started",
-    "start": "2022-11-04T09:57:19.786056-05:00"
-  },
-  "labels": {
-    "identity_source": "azure-1"
-  }
-}
-```
-
 ## Logs reference
 
 ### Entity
@@ -171,41 +164,43 @@ An example event for `entity` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-04-01T18:07:36.482Z",
+    "@timestamp": "2026-07-29T09:35:46.444Z",
     "agent": {
-        "ephemeral_id": "91db5bd7-4c69-428c-83d2-01c1bf05ba7c",
-        "id": "c8d80307-c3e5-45ae-bb30-a0025259b7ae",
-        "name": "elastic-agent-65963",
+        "ephemeral_id": "ba88dec0-f6de-48e7-9946-8719b6f0cd06",
+        "id": "a08acbcd-2d58-4e0f-b909-c2e369278788",
+        "name": "elastic-agent-96580",
         "type": "filebeat",
-        "version": "8.15.1"
+        "version": "9.4.4"
     },
     "data_stream": {
         "dataset": "entityanalytics_entra_id.entity",
-        "namespace": "55663",
+        "namespace": "93376",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "c8d80307-c3e5-45ae-bb30-a0025259b7ae",
+        "id": "a08acbcd-2d58-4e0f-b909-c2e369278788",
         "snapshot": false,
-        "version": "8.15.1"
+        "version": "9.4.4"
     },
     "event": {
         "action": "started",
         "agent_id_status": "verified",
         "dataset": "entityanalytics_entra_id.entity",
-        "ingested": "2025-04-01T18:07:39Z",
+        "ingested": "2026-07-29T09:35:49Z",
         "kind": "asset",
-        "original": "{\"input\":{\"type\":\"entity-analytics\"},\"agent\":{\"name\":\"elastic-agent-65963\",\"id\":\"c8d80307-c3e5-45ae-bb30-a0025259b7ae\",\"type\":\"filebeat\",\"ephemeral_id\":\"91db5bd7-4c69-428c-83d2-01c1bf05ba7c\",\"version\":\"8.15.1\"},\"@timestamp\":\"2025-04-01T18:07:36.482Z\",\"ecs\":{\"version\":\"8.11.0\"},\"data_stream\":{\"namespace\":\"55663\",\"type\":\"logs\",\"dataset\":\"entityanalytics_entra_id.entity\"},\"elastic_agent\":{\"id\":\"c8d80307-c3e5-45ae-bb30-a0025259b7ae\",\"version\":\"8.15.1\",\"snapshot\":false},\"event\":{\"start\":\"2025-04-01T18:07:36.482Z\",\"action\":\"started\",\"dataset\":\"entityanalytics_entra_id.entity\"},\"labels\":{\"identity_source\":\"entity-analytics-entityanalytics_entra_id.entity-b4dd8d01-dde7-48c9-8b0f-9c1f991c2117\"},\"tags\":[\"all-entities\",\"preserve_original_event\",\"forwarded\",\"entityanalytics_entra_id-entity\"],\"_version_type\":\"internal\",\"_index\":\"logs-entityanalytics_entra_id.entity-55663\",\"_id\":null,\"_version\":-4}",
-        "start": "2025-04-01T18:07:36.482Z"
+        "module": "entityanalytics_entra_id",
+        "original": "{\"input\":{\"type\":\"entity-analytics\"},\"agent\":{\"name\":\"elastic-agent-96580\",\"id\":\"a08acbcd-2d58-4e0f-b909-c2e369278788\",\"type\":\"filebeat\",\"ephemeral_id\":\"ba88dec0-f6de-48e7-9946-8719b6f0cd06\",\"version\":\"9.4.4\"},\"@timestamp\":\"2026-07-29T09:35:46.444Z\",\"ecs\":{\"version\":\"8.11.0\"},\"data_stream\":{\"namespace\":\"93376\",\"type\":\"logs\",\"dataset\":\"entityanalytics_entra_id.entity\"},\"elastic_agent\":{\"id\":\"a08acbcd-2d58-4e0f-b909-c2e369278788\",\"version\":\"9.4.4\",\"snapshot\":false},\"event\":{\"start\":\"2026-07-29T09:35:46.444Z\",\"action\":\"started\",\"dataset\":\"entityanalytics_entra_id.entity\"},\"labels\":{\"identity_source\":\"entity-analytics-entityanalytics_entra_id.entity-c223753b-856d-4a4c-94e8-68670d6b3985\"},\"tags\":[\"all-entities\",\"preserve_original_event\",\"forwarded\",\"entityanalytics_entra_id-entity\"],\"_version_type\":\"internal\",\"_index\":\"logs-entityanalytics_entra_id.entity-93376\",\"_id\":null,\"_version\":-4}",
+        "provider": "Microsoft Entra ID",
+        "start": "2026-07-29T09:35:46.444Z"
     },
     "input": {
         "type": "entity-analytics"
     },
     "labels": {
-        "identity_source": "entity-analytics-entityanalytics_entra_id.entity-b4dd8d01-dde7-48c9-8b0f-9c1f991c2117"
+        "identity_source": "entity-analytics-entityanalytics_entra_id.entity-c223753b-856d-4a4c-94e8-68670d6b3985"
     },
     "tags": [
         "all-entities",

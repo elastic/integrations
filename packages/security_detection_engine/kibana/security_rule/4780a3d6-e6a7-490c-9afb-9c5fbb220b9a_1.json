@@ -1,0 +1,86 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects an unusual volume of GKE API get requests against multiple distinct Secret objects from the same client fingerprint (user, source IP, and user agent) within the rule lookback window. This can indicate credential access or in-cluster reconnaissance, where a user or token is used to enumerate and retrieve sensitive data such as service account tokens, registry credentials, TLS material, or application configuration. Failed get requests are included and can signal RBAC probing; system service accounts are excluded only when secret reads succeed, since failed secret access by a service account may indicate compromise or misconfiguration worth investigating.",
+        "false_positives": [
+            "Startup, Helm, or controllers may legitimately touch many secrets in one window; tune by client.user.email, namespace, or IP allowlists when baselined."
+        ],
+        "from": "now-6m",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "GKE Rapid Secret GET Activity Against Multiple Objects",
+        "note": "## Triage and analysis\n\n### Investigating GKE Rapid Secret GET Activity Against Multiple Objects\n\nThis rule surfaces clusters of `get` operations on secrets where the same identity and client path\n(`client.user.email`, `source.ip`, `user_agent.original`) touch several different secret resource paths within the\nlookback window. Allowed and denied outcomes are included: successful reads may indicate harvesting; repeated\nfailure responses can still signal reconnaissance or RBAC probing. System service accounts and core controllers are\nexcluded only for successful secret reads, failed attempts from those identities still alert.\n\n### Investigation steps\n\n- Inspect `Esql.event_outcome_values` for a mix of success vs failure and whether failures cluster on sensitive namespaces.\n- Map the identity to RBAC and namespace scope; review `Esql.gcp_audit_resource_name_values` for high-value targets (tokens, registry\n  credentials, TLS bundles, application secrets).\n- Pivot on the same `source.ip` and user for follow-on API activity (exec, pod create, role changes, broad `list` on secrets).\n- Validate against expected automation (CI, GitOps, backup, in-cluster controllers) before treating as malicious.\n\n### False positives\n\n- Controllers and Helm may legitimately read many secrets in one window; tune exclusions after baselining known automation.",
+        "query": "from logs-gcp.audit-* metadata _id, _index, _version\n| where data_stream.dataset == \"gcp.audit\"\n    and service.name == \"k8s.io\"\n    and event.action == \"io.k8s.core.v1.secrets.get\"\n    and source.ip is not null\n    and client.user.email is not null\n    and not to_string(source.ip) in (\"127.0.0.1\", \"::1\")\n    and not (\n      (client.user.email in (\"system:kube-controller-manager\", \"system:kube-scheduler\") or client.user.email like \"system:serviceaccount:*\")\n      and event.outcome == \"success\"\n    )\n    and not gcp.audit.resource_name like \"*sh.helm.release.*\"\n| stats\n    Esql.gcp_audit_resource_name_count_distinct = count_distinct(gcp.audit.resource_name),\n    Esql.gcp_audit_resource_name_values = values(gcp.audit.resource_name),\n    Esql.event_outcome_values = values(event.outcome),\n    Esql.timestamp_values = values(@timestamp)\n  by client.user.email, source.ip, user_agent.original\n| where Esql.gcp_audit_resource_name_count_distinct >= 3\n| keep client.user.email, source.ip, user_agent.original, Esql.gcp_audit_resource_name_count_distinct, Esql.gcp_audit_resource_name_values, Esql.event_outcome_values, Esql.timestamp_values\n",
+        "references": [
+            "https://attack.mitre.org/techniques/T1552/007/"
+        ],
+        "related_integrations": [
+            {
+                "integration": "audit",
+                "package": "gcp",
+                "version": ">=2.41.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "client.user.email",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": true,
+                "name": "user_agent.original",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "4780a3d6-e6a7-490c-9afb-9c5fbb220b9a",
+        "setup": "The GCP Fleet integration with GKE audit logs enabled is required to be compatible with this rule.",
+        "severity": "high",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: Kubernetes",
+            "Data Source: GCP",
+            "Data Source: Google Cloud Platform",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1552",
+                        "name": "Unsecured Credentials",
+                        "reference": "https://attack.mitre.org/techniques/T1552/",
+                        "subtechnique": [
+                            {
+                                "id": "T1552.007",
+                                "name": "Container API",
+                                "reference": "https://attack.mitre.org/techniques/T1552/007/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "4780a3d6-e6a7-490c-9afb-9c5fbb220b9a_1",
+    "type": "security-rule"
+}

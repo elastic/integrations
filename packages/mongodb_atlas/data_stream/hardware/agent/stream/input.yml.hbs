@@ -91,7 +91,13 @@ program: |
       ).as(state, !has(state.next) ?
         state
       : (state.next >= size(state.hostlist)) ?
-        {}
+        {
+          "events": [],
+          "group_id": state.group_id,
+          "want_more": false,
+          "page_num": 1,
+          "query": state.query,
+        }
       :
         request("GET", string(state.hostlist[state.next])).with(
           {
@@ -140,6 +146,9 @@ program: |
                 },
               ],
               "want_more": false,
+              "group_id": state.group_id,
+              "page_num": 1,
+              "query": state.query,
             }
           :
             {
@@ -152,6 +161,9 @@ program: |
                 },
               ],
               "want_more": false,
+              "group_id": state.group_id,
+              "page_num": 1,
+              "query": state.query,
             }
           )
         )

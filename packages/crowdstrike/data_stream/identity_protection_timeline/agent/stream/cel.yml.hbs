@@ -28,6 +28,7 @@ auth.oauth2:
 state:
   initial_interval: {{initial_interval}}
   batch_size: {{batch_size}}
+  user_agent: Elastic-crowdstrike/{{#if _meta.package.version}}{{_meta.package.version}}{{else}}unknown{{/if}}
   query: >-
     query GetTimelineEvents($startTime: DateTimeInput, $first: Int, $after: Cursor) {
       timeline(
@@ -141,7 +142,11 @@ program: |-
             ?"after": state.?cursor.end_cursor,
           },
         }.encode_json()
-      ).do_request().as(resp, (resp.StatusCode == 200) ?
+      ).as(req, req.with(
+        {
+          "Header": req.Header.with({"User-Agent": [state.user_agent]}),
+        }
+      )).do_request().as(resp, (resp.StatusCode == 200) ?
         resp.Body.decode_json().as(body,
           (size(body.?errors.orValue([])) > 0) ?
             {

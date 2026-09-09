@@ -43,7 +43,7 @@ program: |-
             :
               {
                 "per_page": [string(int(state.batch_size))],
-                "query": ["detected_at>" + since],
+                "query": ["detected_at>" + since + " OR resolved_at>" + since + " OR blocks_device_at>" + since],
               }
           ).format_query()
         ).with(
@@ -59,10 +59,20 @@ program: |-
                 {
                   "events": records.map(e, {"message": e.encode_json()}),
                   "cursor": {
+                    // resolved_at/blocks_device_at are frequently present with an
+                    // explicit JSON null (not absent), and .orValue() only
+                    // substitutes for an absent key, not a present null value, so
+                    // each field is explicitly null-checked before timestamp().
+                    // blocks_device_at is a *future* enforcement deadline (not a
+                    // past event like detected_at/resolved_at), so it can exceed
+                    // "now" -- cap the result at now so the cursor never jumps
+                    // ahead of real time and starves later polls of real matches.
                     "last_timestamp": (size(records) > 0) ?
-                      string(
-                        (records.map(e, timestamp(e.?detected_at.orValue(since)))
-                          + [timestamp(since)]).max()
+                      (records.map(e, timestamp(e.?detected_at.orValue(since)))
+                        + records.map(e, e.?resolved_at.orValue(since).as(v, timestamp(v == null ? since : v)))
+                        + records.map(e, e.?blocks_device_at.orValue(since).as(v, timestamp(v == null ? since : v)))
+                        + [timestamp(since)]).max().as(candidate,
+                        string((candidate > now) ? now : candidate)
                       )
                     :
                       since,

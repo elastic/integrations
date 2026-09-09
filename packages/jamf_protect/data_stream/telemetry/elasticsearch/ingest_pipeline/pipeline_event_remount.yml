@@ -2,69 +2,85 @@
 description: Pipeline for parsing specific fields related to vollume remount events in Jamf Protect
 processors:
 
-##########################
-## ECS Event Specific ##
-##########################
+    ##########################
+    ## ECS Event Specific ##
+    ##########################
     - append:
+        tag: append_event_type_fffb7a5a
         field: event.type
         value: start
     - set:
+        tag: set_event_reason_374d23fd
         field: event.reason
         value: A file system has been remounted
     - rename:
+        tag: rename_jamf_protect_telemetry_event_remount_statfs_f_mntfromname_to_volume_device_name_03705701
         field: jamf_protect.telemetry.event.remount.statfs.f_mntfromname
         target_field: volume.device_name
         ignore_missing: true
     - rename:
+        tag: rename_jamf_protect_telemetry_event_remount_statfs_f_mntonname_to_volume_mount_name_1ff0885d
         field: jamf_protect.telemetry.event.remount.statfs.f_mntonname
         target_field: volume.mount_name
         ignore_missing: true
     - rename:
+        tag: rename_jamf_protect_telemetry_event_remount_statfs_f_fstypename_to_volume_file_system_type_1b5820c8
         field: jamf_protect.telemetry.event.remount.statfs.f_fstypename
         target_field: volume.file_system_type
         ignore_missing: true
     - rename:
+        tag: rename_jamf_protect_telemetry_event_remount_device_size_to_volume_size_469b4289
         field: jamf_protect.telemetry.event.remount.device.size
         target_field: volume.size
         ignore_missing: true
     - rename:
+        tag: rename_jamf_protect_telemetry_event_remount_device_bus_name_to_volume_bus_type_98b4c842
         field: jamf_protect.telemetry.event.remount.device.bus_name
         target_field: volume.bus_type
         ignore_missing: true
     - rename:
+        tag: rename_jamf_protect_telemetry_event_remount_device_product_id_to_volume_product_id_c5042c69
         field: jamf_protect.telemetry.event.remount.device.product_id
         target_field: volume.product_id
         ignore_missing: true
     - rename:
+        tag: rename_jamf_protect_telemetry_event_remount_device_product_name_to_volume_product_name_52d57ef9
         field: jamf_protect.telemetry.event.remount.device.product_name
         target_field: volume.product_name
         ignore_missing: true
     - rename:
+        tag: rename_jamf_protect_telemetry_event_remount_device_vendor_id_to_volume_vendor_id_5f9f1b7d
         field: jamf_protect.telemetry.event.remount.device.vendor_id
         target_field: volume.vendor_id
         ignore_missing: true
     - rename:
+        tag: rename_jamf_protect_telemetry_event_remount_device_vendor_name_to_volume_vendor_name_a0136971
         field: jamf_protect.telemetry.event.remount.device.vendor_name
         target_field: volume.vendor_name
         ignore_missing: true
     - rename:
+        tag: rename_jamf_protect_telemetry_event_remount_device_protocol_to_volume_device_type_d89b8db4
         field: jamf_protect.telemetry.event.remount.device.protocol
         target_field: volume.device_type
         ignore_missing: true
     - rename:
+        tag: rename_jamf_protect_telemetry_event_remount_device_is_removable_to_volume_removable_d9e90b90
         field: jamf_protect.telemetry.event.remount.device.is_removable
         target_field: volume.removable
         ignore_missing: true
     - rename:
+        tag: rename_jamf_protect_telemetry_event_remount_device_is_writable_to_volume_writable_3a647e96
         field: jamf_protect.telemetry.event.remount.device.is_writable
         target_field: volume.writable
         ignore_missing: true
     - rename:
+        tag: rename_jamf_protect_telemetry_event_remount_device_serial_number_to_volume_serial_number_4afd65bd
         field: jamf_protect.telemetry.event.remount.device.serial_number
         target_field: volume.serial_number
         ignore_missing: true
-##########################
-## ECS Process ##
-##########################
+    ##########################
+    ## ECS Process ##
+    ##########################
     - pipeline:
+        tag: pipeline_object_process_0d75fa7a
         name: '{{ IngestPipeline "pipeline_object_process" }}'

@@ -1,0 +1,156 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects execution of SUID binaries that may be used for privilege escalation under the root effective user when the real user and parent user are not root, combined with minimal argument counts and suspicious parent context (interpreters, short shell -c invocations, or parents running from user-writable paths) to indicate potential misuse of SUID binaries for privilege escalation.",
+        "false_positives": [
+            "Some automation or break-glass tooling may invoke SUID binaries from scripts under /home; validate parent identity and change tickets before escalating."
+        ],
+        "from": "now-6m",
+        "index": [
+            "logs-endpoint.events.process*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Suspicious SUID Binary Execution",
+        "note": "## Triage and analysis\n\n### Investigating Suspicious SUID Binary Execution\n\nConfirm whether the non-root real user should be invoking SUID binaries as root. Review the parent process tree, script path, and any preceding download or decode activity.\n\n### Possible investigation steps\n\n- Inspect `process.parent.command_line` and working directory for obfuscation or one-liners.\n- Check authentication and sudoers policy for the user.\n- Pivot on the host for additional privilege escalation or persistence in the same session.\n\n### Response and remediation\n\n- If unauthorized, contain the session, revoke elevated access, and review sudoers and polkit policy for tampering.\n",
+        "query": "process where host.os.type == \"linux\" and event.type == \"start\" and event.action == \"exec\" and (\n  (process.user.id == \"0\" and process.real_user.id != \"0\" and process.parent.user.id != \"0\") or\n  (process.group.id == \"0\" and process.real_group.id != \"0\" and process.parent.group.id != \"0\")\n) and\n(\n  (process.name in (\"su\", \"passwd\", \"unix_chkpwd\") and process.args_count <= 2) or\n  (\n    process.name in (\"pkexec\", \"fusermount\", \"fusermount3\", \"mount\", \"umount\", \"newgrp\", \"chsh\") and\n    process.args_count == 1\n  ) or\n  process.name in (\n    \"sudoedit\", \"gpasswd\", \"chfn\", \"polkit-agent-helper-1\", \"dbus-daemon-launch-helper\", \"ssh-keysign\",\n    \"pam_extrausers_chkpwd\", \"expiry\", \"chage\", \"crontab\", \"wall\", \"bsd-write\", \"ssh-agent\",\n    \"ping6\", \"traceroute\", \"mtr\", \"ntfs-3g\", \"Xorg.wrap\", \"chrome-sandbox\", \"bwrap\"\n  )\n) and\n(\n  process.parent.name like (\".*\", \"python*\", \"perl*\", \"ruby*\", \"lua*\", \"php*\", \"node\", \"deno\", \"bun\", \"java\") or\n  process.parent.executable like (\"./*\", \"/tmp/*\", \"/var/tmp/*\", \"/dev/shm/*\", \"/run/user/*\", \"/var/run/user/*\", \"/home/*/*\") or\n  (\n    process.parent.name in (\"bash\", \"dash\", \"sh\", \"tcsh\", \"csh\", \"zsh\", \"ksh\", \"fish\", \"mksh\") and\n    process.parent.args in (\"-c\", \"-cl\", \"-lc\", \"--command\", \"-ic\", \"-ci\", \"-bash\", \"-sh\", \"-zsh\", \"-dash\", \"-fish\", \"-ksh\", \"-mksh\") and\n    process.parent.args_count <= 4\n  )\n) and\nnot (\n  (process.name == \"crontab\" and process.args in (\"-l\", \"-e\")) or\n  (process.name in (\"passwd\", \"chsh\") and process.args == \"--version\")\n)\n",
+        "references": [
+            "https://attack.mitre.org/techniques/T1548/"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": ">=9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args_count",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "process.group.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.args_count",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.group.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.user.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.real_group.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.real_user.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.user.id",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "e7856173-6489-449f-80ec-c1f5fcd7b87c",
+        "severity": "high",
+        "tags": [
+            "Data Source: Elastic Defend",
+            "Domain: Endpoint",
+            "OS: Linux",
+            "Use Case: Threat Detection",
+            "Tactic: Privilege Escalation",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0004",
+                    "name": "Privilege Escalation",
+                    "reference": "https://attack.mitre.org/tactics/TA0004/"
+                },
+                "technique": [
+                    {
+                        "id": "T1548",
+                        "name": "Abuse Elevation Control Mechanism",
+                        "reference": "https://attack.mitre.org/techniques/T1548/",
+                        "subtechnique": [
+                            {
+                                "id": "T1548.001",
+                                "name": "Setuid and Setgid",
+                                "reference": "https://attack.mitre.org/techniques/T1548/001/"
+                            },
+                            {
+                                "id": "T1548.003",
+                                "name": "Sudo and Sudo Caching",
+                                "reference": "https://attack.mitre.org/techniques/T1548/003/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 3
+    },
+    "id": "e7856173-6489-449f-80ec-c1f5fcd7b87c_3",
+    "type": "security-rule"
+}

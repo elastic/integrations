@@ -1,0 +1,25 @@
+version: '2.3'
+services:
+  setup-permissions:
+    image: busybox
+    command: chmod 1777 /tmp
+    volumes:
+      - ${SERVICE_LOGS_DIR}:/tmp
+  test-unix:
+    image: docker.elastic.co/observability/stream:v0.21.0
+    depends_on:
+      setup-permissions:
+        condition: service_completed_successfully
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+      - ${SERVICE_LOGS_DIR}:/tmp
+    command: log --start-signal=SIGHUP --delay=5s --addr /tmp/test.sock -p=unix /sample_logs/test-unix.log
+  test-syslog:
+    image: docker.elastic.co/observability/stream:v0.21.0
+    depends_on:
+      setup-permissions:
+        condition: service_completed_successfully
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+      - ${SERVICE_LOGS_DIR}:/tmp
+    command: log --start-signal=SIGHUP --delay=5s --addr /tmp/test-syslog.sock -p=unix /sample_logs/test-unix.log

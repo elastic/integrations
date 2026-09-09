@@ -1,0 +1,128 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects the first successful GKE secrets.get by a pod service account from a previously unseen combination of service-account identity, user agent, and source IP. Controllers routinely read secrets with a stable client fingerprint; a new user agent or source for that service account could indicate a stolen token used outside the workload (for example curl, a custom script, or kubectl from an unexpected host).",
+        "false_positives": [
+            "Controller upgrades, sidecar replacements, or client library version bumps change user agents and can produce a first-seen alert for known service accounts. Confirm the new client is expected before treating as compromise.",
+            "Newly deployed operators or workloads that change egress IP will alert once while the history window learns their client fingerprint."
+        ],
+        "from": "now-6m",
+        "history_window_start": "now-7d",
+        "index": [
+            "logs-gcp.audit-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "client.user.email",
+                "source.ip",
+                "user_agent.original",
+                "event.action",
+                "event.outcome",
+                "gcp.audit.resource_name",
+                "data_stream.namespace"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "GKE Unusual Service Account Secret Access via New User Agent",
+        "new_terms_fields": [
+            "client.user.email",
+            "user_agent.original",
+            "source.ip"
+        ],
+        "note": "## Triage and analysis\n\n### Investigating GKE Unusual Service Account Secret Access via New User Agent\n\nThis new-terms rule alerts when a `system:serviceaccount:*` identity successfully calls `secrets.get` with a\n`client.user.email` + `user_agent.original` + `source.ip` combination not seen in the history window.\n\n### Possible investigation steps\n\n- Confirm whether the service account normally uses this user agent or whether the client looks like an interactive\n  or scripting tool (`curl`, `python`, `kubectl`, generic HTTP libraries).\n- Review `gcp.audit.resource_name` and namespace scope against the workload's expected secret mounts and RBAC.\n- Pivot on the same `client.user.email` or `source.ip` for secret list/get bursts, exec, or RBAC changes.\n- Compare to recent deployments or operator upgrades that would legitimately introduce a new client string.\n\n### False positive analysis\n\n- Operator or library upgrades that change the user-agent string for an otherwise unchanged service account.\n- First enablement of the rule will surface baseline controller clients until the history window fills.\n\n### Response and remediation\n\n- If malicious, revoke the service-account token, rotate exposed secrets, isolate the originating workload or\n  host, and tighten RBAC so the identity can only read required secrets.\n",
+        "query": "data_stream.dataset:gcp.audit and service.name:k8s.io and event.outcome:success and\nevent.action:\"io.k8s.core.v1.secrets.get\" and\nclient.user.email:system\\:serviceaccount\\:* and\nuser_agent.original:(* and not *kubernetes/$Format*) and\nsource.ip:(* and not (127.0.0.1 or \"::1\"))\n",
+        "references": [
+            "https://kubernetes.io/docs/reference/access-authn-authz/authentication/#service-account-tokens"
+        ],
+        "related_integrations": [
+            {
+                "integration": "audit",
+                "package": "gcp",
+                "version": ">=2.41.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "client.user.email",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "service.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": true,
+                "name": "user_agent.original",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "5dd3358c-4664-4b4c-aca1-b3fa4a4c83c9",
+        "setup": "The GCP Fleet integration with GKE audit logs enabled is required to be compatible with this rule.",
+        "severity": "low",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: Kubernetes",
+            "Data Source: GCP",
+            "Data Source: Google Cloud Platform",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1552",
+                        "name": "Unsecured Credentials",
+                        "reference": "https://attack.mitre.org/techniques/T1552/",
+                        "subtechnique": [
+                            {
+                                "id": "T1552.007",
+                                "name": "Container API",
+                                "reference": "https://attack.mitre.org/techniques/T1552/007/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "new_terms",
+        "version": 1
+    },
+    "id": "5dd3358c-4664-4b4c-aca1-b3fa4a4c83c9_1",
+    "type": "security-rule"
+}

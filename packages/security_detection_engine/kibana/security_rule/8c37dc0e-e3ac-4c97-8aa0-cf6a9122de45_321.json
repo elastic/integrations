@@ -1,0 +1,163 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies an unexpected process spawning from dns.exe, the process responsible for Windows DNS server services, which may indicate activity related to remote code execution or other forms of exploitation.",
+        "false_positives": [
+            "Werfault.exe will legitimately spawn when dns.exe crashes, but the DNS service is very stable and so this is a low occurring event. Denial of Service (DoS) attempts by intentionally crashing the service will also cause werfault.exe to spawn."
+        ],
+        "from": "now-9m",
+        "index": [
+            "endgame-*",
+            "logs-crowdstrike.fdr*",
+            "logs-endpoint.events.process-*",
+            "logs-m365_defender.event-*",
+            "logs-sentinel_one_cloud_funnel.*",
+            "logs-system.security*",
+            "logs-windows.forwarded*",
+            "logs-windows.sysmon_operational-*",
+            "winlogbeat-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "host.name",
+                "host.id",
+                "user.id",
+                "process.entity_id",
+                "process.pid",
+                "process.executable",
+                "process.command_line",
+                "process.pe.original_file_name",
+                "process.hash.sha256",
+                "process.code_signature.subject_name",
+                "process.code_signature.trusted",
+                "process.parent.entity_id",
+                "process.parent.executable",
+                "process.parent.command_line"
+            ]
+        },
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Unusual Child Process of dns.exe",
+        "note": "## Triage and analysis\n\n### Investigating Unusual Child Process of dns.exe\n#### Possible investigation steps\n\n- What did \"dns.exe\" launch, and does that define a crash path or live execution path?\n  - Focus: `process.name`, `process.executable`, `process.command_line`, and `process.parent.executable`.\n  - Implication: escalate quickly for shells, script hosts, downloaders, service tools, or non-Windows paths spawned by \"dns.exe\"; a bounded \"WerFault.exe\" crash-reporting child points toward DNS service fault or SIGRed DoS, but still needs follow-on checks.\n- Is the child binary a recognized system or DNS-support component, or a disguised payload?\n  - Focus: `process.executable`, `process.hash.sha256`, `process.pe.original_file_name`, `process.code_signature.subject_name`, and `process.code_signature.trusted`.\n  - Implication: escalate when the child is unsigned, renamed, user-writable, newly seen, or PE-mismatched; a recognized Microsoft or vendor identity lowers only identity concern and does not clear unexpected execution from \"dns.exe\".\n- What intent does the child command line express?\n  - Focus: `process.command_line`, `process.name`, and `process.Ext.token.integrity_level_name`.\n  - Implication: escalate for discovery, script interpretation, download, service change, credential, or persistence behavior under the DNS service token; crash-reporting or bounded diagnostic arguments support fault handling.\n- Do lineage and session context fit the Windows DNS service?\n  - Focus: `process.parent.command_line`, `process.parent.entity_id`, `process.Ext.session_info.logon_type`, and `user.id`.\n  - Implication: escalate when parent, service, or user context does not fit a stable Windows DNS service launch; expected service lineage supports but does not prove a benign child.\n- Did the child produce follow-on execution or artifacts after the spawn?\n  - Focus: recovered file, registry, network, DNS, and descendant process events for `host.id` + child `process.entity_id`, or `host.id` + `process.pid` in a tight alert window.\n    - !{investigate{\"description\":\"\",\"label\":\"File and registry events for the same child process\",\"providers\":[[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"file\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"}],[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"registry\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n    - !{investigate{\"description\":\"\",\"label\":\"Network events for the same child process\",\"providers\":[[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"network\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n    - !{investigate{\"description\":\"\",\"label\":\"Child process events from the dns.exe child\",\"providers\":[[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"process\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.parent.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Hint: prioritize descendant `process.command_line`, `file.path`, `registry.path`, and `destination.ip`. Missing network telemetry is unresolved, not benign.\n  - Implication: escalate when recovered events show descendants, payload staging, persistence changes, or outbound activity; no follow-on activity supports a crash-only hypothesis but cannot clear the alert alone.\n- If local evidence remains suspicious or unresolved, do same-host alerts show the same DNS-service execution pattern?\n  - Focus: same-parent process starts and related alerts on `host.id`, prioritizing `process.parent.name` of \"dns.exe\", the same child `process.executable`, or the same `process.hash.sha256`.\n    - !{investigate{\"description\":\"\",\"label\":\"Process events from the same dns.exe parent\",\"providers\":[[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"process\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.parent.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.parent.entity_id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n    - !{investigate{\"description\":\"\",\"label\":\"Alerts associated with the host\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n  - Hint: broaden scope only after child identity, command intent, lineage, or follow-on recovery remains suspicious or incomplete.\n  - Implication: escalate scope when related alerts repeat the \"dns.exe\" child pattern or child binary identity; unrelated or nonmatching alerts keep the case narrower.\n- Escalate for live execution intent, suspicious identity or lineage, or recovered post-exploitation artifacts; close only when evidence tightly binds one crash-handling or recognized DNS-support workflow on this host; preserve artifacts and escalate when evidence is mixed or incomplete.\n\n### False positive analysis\n\n- Crash handling can legitimately produce \"WerFault.exe\" after a DNS service fault or SIGRed DoS attempt. Confirm that child identity, `process.command_line`, signer, and `host.id` form a crash-reporting pattern and recovered follow-on endpoint activity does not contradict it. Use incident records only as corroboration; telemetry-only closure requires a crash-reporter-only pattern on the same `host.id` without payload descendants or artifact creation.\n- Named DNS/security tooling, such as ReasonLabs DNS components in the rule exclusions, explains the alert only when exact `process.executable`, `process.code_signature.subject_name`, `process.command_line`, `process.parent.executable`, and `host.id` match that product workflow. Treat generic vendor claims, partial matches, or a trusted signer without matching behavior as unresolved.\n- Before creating an exception, anchor it on exact child path, signer or certificate thumbprint when available, command line, parent DNS service path, and affected `host.id`. Avoid exceptions on `process.parent.name` of \"dns.exe\", `process.name` alone, or the entire host.\n\n### Response and remediation\n\n- If suspicious but unconfirmed, preserve the child `process.entity_id`, `process.executable`, `process.hash.sha256`, signer details, `process.command_line`, `process.parent.command_line`, crash dumps, recovered endpoint events, and any collected payload artifacts before containment.\n- Apply reversible containment before destructive action: remove the server from DNS rotation, restrict external resolver exposure, or heighten monitoring on the affected `host.id`. Move to host isolation only when follow-on execution or broader compromise evidence shows the server cannot serve safely.\n- If confirmed benign, reverse temporary containment and record the exact child path, signer, command line, parent DNS service path, and `host.id` that proved the crash-handling or DNS-support workflow. Create an exception only after the same pattern is stable across prior alerts.\n- If confirmed malicious, weigh DNS/domain-controller criticality, then isolate the server when feasible, terminate the suspicious child and descendants after evidence capture, and block confirmed malicious domains, IPs, hashes, or payload paths identified during triage.\n- Scope other DNS servers and domain controllers for the same child path, hash, command line, signer, or \"dns.exe\" child-process pattern before deleting artifacts or rebuilding systems.\n- Eradicate only payloads, persistence changes, or malicious child processes identified during the investigation, restore DNS service configuration from known-good state, and reset credentials only if evidence shows credential exposure or lateral movement from the server.\n- Post-incident hardening: apply the Microsoft DNS security update for CVE-2020-1350, remove temporary SIGRed workarounds only after patching is verified, and retain process plus file, registry, and network telemetry for DNS servers where gaps limited triage.\n",
+        "query": "process where host.os.type == \"windows\" and event.type == \"start\" and\n  process.parent.name : \"dns.exe\" and\n  not process.executable : (\n    \"?:\\\\Windows\\\\System32\\\\conhost.exe\",\n    \"?:\\\\Windows\\\\System32\\\\dns.exe\",\n\n    /* Crowdstrike specific exclusion as it uses NT Object paths */\n    \"\\\\Device\\\\HarddiskVolume*\\\\Windows\\\\System32\\\\conhost.exe\",\n    \"\\\\Device\\\\HarddiskVolume*\\\\Windows\\\\System32\\\\dns.exe\",\n    \"\\\\Device\\\\HarddiskVolume*\\\\Program Files\\\\ReasonLabs\\\\*\"\n  ) and\n  not ?process.parent.executable : \"?:\\\\Program Files\\\\ReasonLabs\\\\DNS\\\\ui\\\\DNS.exe\"\n",
+        "references": [
+            "https://research.checkpoint.com/2020/resolving-your-way-into-domain-admin-exploiting-a-17-year-old-bug-in-windows-dns-servers/",
+            "https://msrc-blog.microsoft.com/2020/07/14/july-2020-security-update-cve-2020-1350-vulnerability-in-windows-domain-name-system-dns-server/",
+            "https://github.com/maxpl0it/CVE-2020-1350-DoS",
+            "https://www.elastic.co/security-labs/detection-rules-for-sigred-vulnerability"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": ">=9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": ">=3.0.0"
+            },
+            {
+                "package": "system",
+                "version": ">=2.0.0"
+            },
+            {
+                "package": "m365_defender",
+                "version": ">=5.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": ">=1.9.0"
+            },
+            {
+                "package": "crowdstrike",
+                "version": ">=3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "8c37dc0e-e3ac-4c97-8aa0-cf6a9122de45",
+        "setup": "## Setup\n\nThis rule is designed for data generated by [Elastic Defend](https://www.elastic.co/security/endpoint-security), which provides native endpoint detection and response, along with event enrichments designed to work with our detection rules.\n\nSetup instructions: https://ela.st/install-elastic-defend\n\n### Additional data sources\n\nThis rule also supports the following third-party data sources. For setup instructions, refer to the links below:\n\n- [CrowdStrike](https://ela.st/crowdstrike-integration)\n- [Microsoft Defender XDR](https://ela.st/m365-defender)\n- [SentinelOne Cloud Funnel](https://ela.st/sentinel-one-cloud-funnel)\n- [Sysmon Event ID 1 - Process Creation](https://ela.st/sysmon-event-1-setup)\n- [Windows Process Creation Logs](https://ela.st/audit-process-creation)\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Lateral Movement",
+            "Resources: Investigation Guide",
+            "Data Source: Elastic Endgame",
+            "Use Case: Vulnerability",
+            "Data Source: Elastic Defend",
+            "Data Source: Windows Security Event Logs",
+            "Data Source: Microsoft Defender XDR",
+            "Data Source: Sysmon",
+            "Data Source: SentinelOne",
+            "Data Source: Crowdstrike",
+            "Tactic: Initial Access"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0008",
+                    "name": "Lateral Movement",
+                    "reference": "https://attack.mitre.org/tactics/TA0008/"
+                },
+                "technique": [
+                    {
+                        "id": "T1210",
+                        "name": "Exploitation of Remote Services",
+                        "reference": "https://attack.mitre.org/techniques/T1210/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0001",
+                    "name": "Initial Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0001/"
+                },
+                "technique": [
+                    {
+                        "id": "T1190",
+                        "name": "Exploit Public-Facing Application",
+                        "reference": "https://attack.mitre.org/techniques/T1190/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 321
+    },
+    "id": "8c37dc0e-e3ac-4c97-8aa0-cf6a9122de45_321",
+    "type": "security-rule"
+}

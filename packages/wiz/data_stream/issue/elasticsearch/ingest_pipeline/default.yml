@@ -3,110 +3,103 @@ description: Pipeline for processing Issue logs.
 processors:
   - set:
       field: ecs.version
-      tag: set_ecs_version
+      tag: set_ecs_version_6b2cef5e
       value: '8.11.0'
   - terminate:
-      tag: data_collection_error
+      tag: data_collection_error_4bdbb3d0
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
       description: error message set and no data to process.
-  - remove:
-      field:
-        - organization
-        - division
-        - team
-      ignore_missing: true
-      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
-      tag: remove_agentless_tags
-      description: >-
-        Removes the fields added by Agentless as metadata,
-        as they can collide with ECS fields.
   - rename:
       field: message
-      tag: rename_message
+      tag: rename_message_4217da53
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
       description: 'Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.'
   - remove:
+      tag: remove_message_facc4822
       field: message
       ignore_missing: true
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
       field: event.original
-      tag: json_decoding
+      tag: json_decoding_a68ecd77
       target_field: json
       on_failure:
         - append:
+            tag: append_error_message_b006b7b1
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: json.updatedAt
-      tag: date_updatedAt
+      tag: date_updatedAt_23fe412f
       target_field: wiz.issue.updated_at
       formats:
         - ISO8601
       if: ctx.json?.updatedAt != null && ctx.json.updatedAt != ''
       on_failure:
         - append:
+            tag: append_error_message_7577e60c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.entitySnapshot.cloudPlatform
-      tag: rename_cloudPlatform
+      tag: rename_cloudPlatform_13bcdd78
       target_field: wiz.issue.entity_snapshot.cloud.platform
       ignore_missing: true
   - set:
       field: cloud.provider
-      tag: set_cloud_provider
+      tag: set_cloud_provider_6d50b5a8
       copy_from: wiz.issue.entity_snapshot.cloud.platform
       ignore_empty_value: true
   - rename:
       field: json.entitySnapshot.region
-      tag: rename_region
+      tag: rename_region_ce1e0708
       target_field: wiz.issue.entity_snapshot.region
       ignore_missing: true
   - set:
       field: cloud.region
-      tag: set_cloud_region
+      tag: set_cloud_region_9f798f80
       copy_from: wiz.issue.entity_snapshot.region
       ignore_empty_value: true
   - append:
       field: event.category
-      tag: append_event_category
+      tag: append_event_category_5bc3dda0
       value: configuration
   - append:
       field: event.type
-      tag: append_event_type
+      tag: append_event_type_5eab37e6
       value: info
   - date:
       field: json.createdAt
       target_field: wiz.issue.created_at
-      tag: date_set_createdat
+      tag: date_set_createdat_0437aed4
       formats:
         - ISO8601
       if: ctx.json?.createdAt != null && ctx.json.createdAt != ''
       on_failure:
         - append:
+            tag: append_error_message_e6e8d31d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.created
-      tag: set_event_created
+      tag: set_event_created_f23f55a5
       copy_from: wiz.issue.created_at
       ignore_empty_value: true
   - rename:
       field: json.id
-      tag: rename_id
+      tag: rename_id_8551c35a
       target_field: wiz.issue.id
       ignore_missing: true
   - set:
       field: event.id
-      tag: set_event_id
+      tag: set_event_id_cffc4259
       copy_from: wiz.issue.id
       ignore_empty_value: true
   - script:
-      tag: set_event_url
+      tag: set_event_url_94ed922d
       description: Generate an event URL from the event ID and rule ID; helps to investigate the Wiz events.
       lang: painless
       if: ctx.event?.id != null
@@ -115,121 +108,126 @@ processors:
   - set:
       field: event.kind
       value: event
-      tag: set_event_kind
+      tag: set_event_kind_d452ef2c
   - date:
       field: json.dueAt
-      tag: set_dueAt
+      tag: date_dueAt_1018dbd6
       target_field: wiz.issue.due_at
       formats:
         - ISO8601
       if: ctx.json?.dueAt != null && ctx.json.dueAt != ''
       on_failure:
         - append:
+            tag: append_error_message_93f95420
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.entitySnapshot.cloudProviderURL
-      tag: rename_cloudProviderURL
+      tag: rename_cloudProviderURL_8c3f5c51
       target_field: wiz.issue.entity_snapshot.cloud.provider_url
       ignore_missing: true
   - uri_parts:
       field: wiz.issue.entity_snapshot.cloud.provider_url
-      tag: uri_parts_wiz_issue_entity_snapshot_cloud_provider_url
+      tag: uri_parts_wiz_issue_entity_snapshot_cloud_provider_url_30933d2d
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_99737a68
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.entitySnapshot.externalId
-      tag: rename_external_id
+      tag: rename_external_id_05d1b7d0
       target_field: wiz.issue.entity_snapshot.external_id
       ignore_missing: true
   - rename:
       field: json.entitySnapshot.id
-      tag: rename_entity_snapshot_id
+      tag: rename_entity_snapshot_id_2817d5c7
       target_field: wiz.issue.entity_snapshot.id
       ignore_missing: true
   - rename:
       field: json.entitySnapshot.name
-      tag: rename_entity_snapshot_name
+      tag: rename_entity_snapshot_name_93e6474f
       target_field: wiz.issue.entity_snapshot.name
       ignore_missing: true
   - rename:
       field: json.entitySnapshot.nativeType
-      tag: rename_entity_snapshot_native_type
+      tag: rename_entity_snapshot_native_type_0c62052e
       target_field: wiz.issue.entity_snapshot.native_type
       ignore_missing: true
   - rename:
       field: json.entitySnapshot.providerId
-      tag: rename_entity_snapshot_provider_id
+      tag: rename_entity_snapshot_provider_id_4bf65780
       target_field: wiz.issue.entity_snapshot.provider_id
       ignore_missing: true
   - rename:
       field: json.entitySnapshot.resourceGroupExternalId
-      tag: rename_entity_snapshot_resource_group_external_id
+      tag: rename_entity_snapshot_resource_group_external_id_8a5d2750
       target_field: wiz.issue.entity_snapshot.resource_group_external_id
       ignore_missing: true
   - rename:
       field: json.entitySnapshot.status
-      tag: rename_entity_snapshot_status
+      tag: rename_entity_snapshot_status_b95a5708
       target_field: wiz.issue.entity_snapshot.status
       ignore_missing: true
   - rename:
       field: json.entitySnapshot.subscriptionExternalId
-      tag: rename_entity_snapshot_subscription_external_id
+      tag: rename_entity_snapshot_subscription_external_id_9852ef3d
       target_field: wiz.issue.entity_snapshot.subscription.external_id
       ignore_missing: true
   - rename:
       field: json.entitySnapshot.subscriptionName
-      tag: rename_entity_snapshot_subscription_name
+      tag: rename_entity_snapshot_subscription_name_099c8515
       target_field: wiz.issue.entity_snapshot.subscription.name
       ignore_missing: true
   - rename:
       field: json.entitySnapshot.subscriptionTags
-      tag: rename_entity_snapshot_subscription_tags
+      tag: rename_entity_snapshot_subscription_tags_7d63771c
       target_field: wiz.issue.entity_snapshot.subscription.tags
       ignore_missing: true
   - rename:
       field: json.entitySnapshot.tags
-      tag: rename_entity_snapshot_tags
+      tag: rename_entity_snapshot_tags_587e3efd
       target_field: wiz.issue.entity_snapshot.tags
       ignore_missing: true
   - rename:
       field: json.entitySnapshot.type
-      tag: rename_entity_snapshot_type
+      tag: rename_entity_snapshot_type_a6eb12fe
       target_field: wiz.issue.entity_snapshot.type
       ignore_missing: true
   - rename:
       field: json.notes
-      tag: rename_notes
+      tag: rename_notes_b64958da
       target_field: wiz.issue.notes
       ignore_missing: true
   - foreach:
+      tag: foreach_wiz_issue_notes_b83061fb
       field: wiz.issue.notes
       if: ctx.wiz?.issue?.notes instanceof List
       ignore_failure: true
       processor:
         date:
           field: _ingest._value.createdAt
-          tag: convert_created_at_notes
+          tag: date_created_at_notes_a02473e3
           target_field: _ingest._value.created_at
           ignore_failure: true
           formats:
             - ISO8601
   - foreach:
+      tag: foreach_wiz_issue_notes_3d31da2d
       field: wiz.issue.notes
       if: ctx.wiz?.issue?.notes instanceof List
       ignore_failure: true
       processor:
         date:
           field: _ingest._value.updatedAt
-          tag: convert_updated_at_notes
+          tag: date_updated_at_notes_24f25e88
           target_field: _ingest._value.updated_at
           ignore_failure: true
           formats:
             - ISO8601
   - foreach:
+      tag: foreach_wiz_issue_notes_d54b3b40
       field: wiz.issue.notes
       if: ctx.wiz?.issue?.notes instanceof List
       ignore_failure: true
@@ -238,95 +236,102 @@ processors:
           field:
             - _ingest._value.createdAt
             - _ingest._value.updatedAt
-          tag: remove_created_updated_notes
+          tag: remove_created_updated_notes_3df2e3fe
   - foreach:
+      tag: foreach_wiz_issue_notes_020b9dd4
       field: wiz.issue.notes
       if: ctx.wiz?.issue?.notes instanceof List
       ignore_failure: true
       processor:
         rename:
           field: _ingest._value.serviceAccount.name
-          tag: rename_service_account_name
+          tag: rename_service_account_name_677f097a
           target_field: _ingest._value.service_account.name
           ignore_missing: true
   - foreach:
+      tag: foreach_wiz_issue_notes_94e0483d
       field: wiz.issue.notes
       if: ctx.wiz?.issue?.notes instanceof List
       ignore_failure: true
       processor:
         append:
           field: related.user
-          tag: append_notes_user_name_into_related_user
+          tag: append_notes_user_name_into_related_user_07f02eb1
           value: '{{{_ingest._value.user.name}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_wiz_issue_notes_839ef00c
       field: wiz.issue.notes
       if: ctx.wiz?.issue?.notes instanceof List
       ignore_failure: true
       processor:
         append:
           field: related.user
-          tag: append_notes_user_email_into_related_user
+          tag: append_notes_user_email_into_related_user_363abb7a
           value: '{{{_ingest._value.user.email}}}'
           allow_duplicates: false
   - rename:
       field: json.projects
-      tag: rename_projects
+      tag: rename_projects_03d818b7
       target_field: wiz.issue.projects
       ignore_missing: true
   - foreach:
+      tag: foreach_wiz_issue_projects_5989468d
       field: wiz.issue.projects
       if: ctx.wiz?.issue?.projects instanceof List
       ignore_failure: true
       processor:
         rename:
           field: _ingest._value.businessUnit
-          tag: rename_buisness_unit
+          tag: rename_buisness_unit_3a9232e6
           target_field: _ingest._value.business_unit
           ignore_missing: true
   - foreach:
+      tag: foreach_wiz_issue_projects_1607ac38
       field: wiz.issue.projects
       if: ctx.wiz?.issue?.projects instanceof List
       ignore_failure: true
       processor:
         rename:
           field: _ingest._value.riskProfile.businessImpact
-          tag: rename_buisness_unit
+          tag: rename_buisness_unit_744fa20f
           target_field: _ingest._value.risk_profile.business_impact
           ignore_missing: true
   - date:
       field: json.resolvedAt
       target_field: wiz.issue.resolved_at
-      tag: date_set_resolvedat
+      tag: date_set_resolvedat_f791d0b8
       formats:
         - ISO8601
       if: ctx.json?.resolvedAt != null && ctx.json.resolvedAt != ''
       on_failure:
         - append:
+            tag: append_error_message_64cd1d04
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.serviceTickets
-      tag: rename_service_tickets
+      tag: rename_service_tickets_f96fb2bb
       target_field: wiz.issue.service_tickets
       ignore_missing: true
   - foreach:
+      tag: foreach_wiz_issue_service_tickets_bd891c16
       field: wiz.issue.service_tickets
       if: ctx.wiz?.issue?.service_tickets instanceof List
       ignore_failure: true
       processor:
         rename:
           field: _ingest._value.externalId
-          tag: rename_external_id
+          tag: rename_external_id_367f1cf9
           target_field: _ingest._value.external_id
           ignore_missing: true
   - rename:
       field: json.severity
-      tag: rename_severity
+      tag: rename_severity_5e527c4e
       target_field: wiz.issue.severity
       ignore_missing: true
   - script:
-      tag: map_source_rules_array
+      tag: map_source_rules_array_14b3baf4
       description: 'Loop over sourceRules array and create mapped objects for source_rules nested field'
       if: ctx.json?.sourceRules != null && ctx.json.sourceRules instanceof List && ctx.json.sourceRules.size() > 0
       lang: painless
@@ -378,36 +383,38 @@ processors:
         ctx.wiz.issue.source_rules = sourceRulesList;
       on_failure:
         - append:
+            tag: append_error_message_079803d5
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: json.statusChangedAt
-      tag: date_set_timestamp
+      tag: date_set_timestamp_72277997
       formats:
         - ISO8601
       if: ctx.json?.statusChangedAt != null && ctx.json.statusChangedAt != ''
       on_failure:
         - append:
+            tag: append_error_message_2808c479
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: wiz.issue.status.changed_at
-      tag: date_set_status_changed_at
+      tag: set_status_changed_at_c311cf6b
       copy_from: '@timestamp'
       ignore_empty_value: true
   - rename:
       field: json.status
-      tag: rename_status
+      tag: rename_status_f1c432f6
       target_field: wiz.issue.status.value
       ignore_missing: true
   - rename:
       field: json.type
-      tag: rename_issuetype
+      tag: rename_issuetype_45e59549
       target_field: wiz.issue.type
       ignore_missing: true
   - remove:
       field: json
-      tag: remove_json
+      tag: remove_json_94dc55cd
       ignore_missing: true
   - remove:
       field:
@@ -416,12 +423,12 @@ processors:
         - wiz.issue.entity_snapshot.region
         - wiz.issue.created_at
         - wiz.issue.id
-      tag: remove_custom_duplicate_fields
+      tag: remove_custom_duplicate_fields_1d34e9ed
       ignore_missing: true
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
   - script:
       description: Drops null/empty values recursively.
-      tag: script_to_drop_null_values
+      tag: script_to_drop_null_values_84501ca6
       lang: painless
       source: |
         boolean drop(Object object) {
@@ -439,22 +446,26 @@ processors:
         drop(ctx);
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_4fd8ffa8
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_b6c08950
       field: tags
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message_6906b116
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

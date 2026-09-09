@@ -96,6 +96,23 @@ Instead of a connection string, you can authenticate using a Microsoft Entra ID 
 4. **Configure the integration**  
    Set **Authentication type** to **Client Secret**. Provide **Tenant ID**, **Client ID**, **Client Secret**, and the fully qualified **Event Hub namespace** (for example `yournamespace.servicebus.windows.net`). Use the same Storage Account and container as for connection string authentication; the integration will use the client secret to access both Event Hubs and Storage.
 
+#### AMQP-over-WebSockets
+
+By default, the integration uses AMQP ports `5671` and `5672` to communicate with Event Hubs. If these ports are blocked, set **Event Hubs transport protocol** to **AMQP-over-WebSockets** in the advanced options. This tunnels AMQP over HTTPS on port `443`.
+
+This option requires the Event Hub processor v2 (**Processor version** set to `v2`, which is the default) and Elastic Agent 8.19.10, 9.1.10, 9.2.4, or later.
+
+#### Proxy support
+
+Proxy support is optional and requires **Event Hubs transport protocol** set to **AMQP-over-WebSockets**.
+
+To enable it:
+
+1. In the advanced options, set **Event Hubs transport protocol** to **AMQP-over-WebSockets**.
+2. Define the `HTTPS_PROXY` environment variable for the Elastic Agent process, for example `HTTPS_PROXY=http://proxy.example.com:8080`. Elastic Agent routes both Event Hubs and Storage Account traffic through the proxy.
+
+This requires processor v2 and Elastic Agent 8.19.10, 9.1.10, 9.2.4, or later.
+
 #### Configuration options
 
 `auth_type` :
@@ -143,6 +160,34 @@ _string_
 `authority_host` :
 _string_
 (Optional, for client secret authentication.) Microsoft Entra ID authority endpoint. Defaults to `https://login.microsoftonline.com` (Azure Public Cloud). Use a different endpoint for other clouds (for example Azure Government, China, Germany).
+
+`processor_version` :
+_string_
+The Event Hub processor version that the integration should use. Possible values are `v1` (legacy) and `v2` (recommended). Defaults to `v2`.
+
+`processor_update_interval` :
+_string_
+(Processor v2 only) How often the processor should attempt to claim partitions. Defaults to `10s`.
+
+`processor_start_position` :
+_string_
+(Processor v2 only) Where the processor starts processing messages for all partitions. `earliest` (default) starts from the last checkpoint, or the beginning of the event hub if no checkpoint is available. `latest` starts from the latest event and continues with new events as they arrive.
+
+`partition_receive_timeout` :
+_string_
+(Processor v2 only) Maximum time to wait before processing the messages received from the event hub. The partition consumer waits up to a "receive count" or a "receive timeout," whichever comes first. Defaults to `5s`.
+
+`partition_receive_count` :
+_int_
+(Processor v2 only) Maximum number of messages from the event hub to wait for before processing them. The partition consumer waits up to a "receive count" or a "receive timeout," whichever comes first. Defaults to `100`.
+
+`migrate_checkpoint` :
+_bool_
+(Processor v2 only) Controls whether the processor migrates checkpoint information from the v1 format to the v2 format at startup, so it resumes from where v1 left off instead of reprocessing the event hub retention window. Defaults to `true`.
+
+`transport` :
+_string_
+(Processor v2 only) The transport protocol to use when connecting to Event Hubs. `amqp` (default) uses ports `5671` and `5672`. `websocket` uses AMQP-over-WebSockets on port `443` and enables proxy support through the `HTTPS_PROXY` environment variable.
 
 `storage_account_container` :
 _string_

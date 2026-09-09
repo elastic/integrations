@@ -1,0 +1,57 @@
+# Verify the minimal-state sync path routes Entra ID entities to per-type data
+# streams without producing marker events in the entity data stream.
+#
+# This test explicitly sets use_minimal_state: true.
+#
+# The mock Graph API provides:
+#   - 2 users  → entityanalytics_entra_id.user
+#   - 1 device (object id c9d9f9b3-…) → entityanalytics_entra_id.device
+
+[!external_stack] skip 'Skipping external stack test.'
+[!exec:jq] skip 'Skipping test requiring absent jq command'
+
+use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+
+install_agent -profile ${CONFIG_PROFILES}/${PROFILE} -network_name NETWORK_NAME
+
+exec ln -s ${PACKAGE_ROOT}/_dev/deploy/docker entra_id
+docker_up -profile ${CONFIG_PROFILES}/${PROFILE} -network ${NETWORK_NAME} entra_id
+
+add_package -profile ${CONFIG_PROFILES}/${PROFILE}
+
+add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config.yaml ENTITY_DS
+
+# Verify user documents arrive in the user data stream.
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 2 -timeout 5m logs-entityanalytics_entra_id.user-*
+cp stdout user_docs.json
+exec jq '[.hits.hits[]._source.user.id] | sort[]' user_docs.json
+stdout 'aa534e49-edfd-4541-8256-8bbf34f122b4'
+stdout 'feb6a386-612a-4ed1-9b13-2adc73074a19'
+
+# Verify device documents arrive in the device data stream.
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -timeout 2m logs-entityanalytics_entra_id.device-*
+cp stdout device_docs.json
+exec jq '[.hits.hits[]._source.device.id] | unique[]' device_docs.json
+stdout 'c9d9f9b3-0c91-4080-b392-78f775903b3a'
+
+# The entity data stream should have no documents (no markers in minimal mode).
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 0 -confirm 30s -timeout 1m ${ENTITY_DS}
+
+# Clean up.
+remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${ENTITY_DS}
+uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 1m
+docker_down entra_id
+
+-- test_config.yaml --
+input: entity-analytics
+data_stream:
+  vars:
+    tenant_id: TENANT_ID
+    client_id: CLIENT_ID
+    secret: foobar
+    login_endpoint: http://svc-entra_id:8080
+    api_endpoint: http://svc-entra_id:8080/v1.0
+    dataset: all
+    use_minimal_state: true
+    sync_interval: 24h
+    update_interval: 15m

@@ -3,27 +3,28 @@ description: Pipeline for processing mail logs.
 processors:
   - set:
       field: ecs.version
-      tag: set_ecs_version
+      tag: set_ecs_version_6b2cef5e
       value: 8.11.0
   - rename:
       field: message
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_176375fd
       target_field: event.original
       ignore_missing: true
       description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_9ecc8509
       ignore_missing: true
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - json:
       field: event.original
-      tag: json_event_original
+      tag: json_event_original_a68ecd77
       target_field: json
       on_failure:
         - append:
+            tag: append_error_message_cea45f41
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - fingerprint:
@@ -31,210 +32,211 @@ processors:
         - json.id
         - json.ts
         - json.data
-      tag: fingerprint_mail
+      tag: fingerprint_mail_6121248e
       target_field: _id
       ignore_missing: true
   - set:
       field: event.kind
-      tag: set_event_kind_to_event
+      tag: set_event_kind_to_event_d452ef2c
       value: event
   - append:
       field: event.category
-      tag: append_email_into_event_category
+      tag: append_email_into_event_category_0a688284
       value: email
   - append:
       field: event.type
-      tag: append_info_into_event_type
+      tag: append_info_into_event_type_5eab37e6
       value: info
   - set:
       field: observer.vendor
-      tag: set_observer_vendor
+      tag: set_observer_vendor_cfe16424
       value: Proofpoint
   - set:
       field: observer.product
-      tag: set_observer_product
+      tag: set_observer_product_31cc2997
       value: Proofpoint On Demand
   - set:
       field: observer.type
-      tag: set_observer_type
+      tag: set_observer_type_414de4ad
       value: mail-gateway
   - rename:
       field: json.data
-      tag: rename_data
+      tag: rename_data_8c9401e1
       target_field: proofpoint_on_demand.mail.data
       ignore_missing: true
   - set:
       field: message
-      tag: set_message_from_mail_data
+      tag: set_message_from_mail_data_dadc66b8
       copy_from: proofpoint_on_demand.mail.data
       ignore_empty_value: true
   - rename:
       field: json.id
-      tag: rename_id
+      tag: rename_id_70e3e730
       target_field: proofpoint_on_demand.mail.id
       ignore_missing: true
   - set:
       field: event.id
-      tag: set_event_id_from_mail_id
+      tag: set_event_id_from_mail_id_cabf4e5c
       copy_from: proofpoint_on_demand.mail.id
       ignore_empty_value: true
   - rename:
       field: json.metadata.origin.data.agent
-      tag: rename_metadata_origin_data_agent
+      tag: rename_metadata_origin_data_agent_c22b2d47
       target_field: proofpoint_on_demand.mail.metadata.origin.data.agent
       ignore_missing: true
   - set:
       field: observer.hostname
-      tag: set_observer_hostname_from_mail_metadata_origin_data_agent
+      tag: set_observer_hostname_from_mail_metadata_origin_data_agent_d814b192
       copy_from: proofpoint_on_demand.mail.metadata.origin.data.agent
       ignore_empty_value: true
   - append:
       field: related.hosts
-      tag: append_metadata_origin_data_agent_into_related_hosts
+      tag: append_metadata_origin_data_agent_into_related_hosts_59a503b3
       value: '{{{proofpoint_on_demand.mail.metadata.origin.data.agent}}}'
       allow_duplicates: false
       if: ctx.proofpoint_on_demand?.mail?.metadata?.origin?.data?.agent != null
   - rename:
       field: json.metadata.origin.data.cid
-      tag: rename_metadata_origin_data_cid
+      tag: rename_metadata_origin_data_cid_28b05738
       target_field: proofpoint_on_demand.mail.metadata.origin.data.cid
       ignore_missing: true
   - set:
       field: observer.name
-      tag: set_observer_name_from_mail_metadata_origin_data_cid
+      tag: set_observer_name_from_mail_metadata_origin_data_cid_7800de1e
       copy_from: proofpoint_on_demand.mail.metadata.origin.data.cid
       ignore_empty_value: true
   - rename:
       field: json.metadata.origin.data.version
-      tag: rename_metadata_origin_data_version
+      tag: rename_metadata_origin_data_version_b392362a
       target_field: proofpoint_on_demand.mail.metadata.origin.data.version
       ignore_missing: true
   - set:
       field: observer.version
-      tag: set_observer_version_from_mail_metadata_origin_data_version
+      tag: set_observer_version_from_mail_metadata_origin_data_version_f2dbae2e
       copy_from: proofpoint_on_demand.mail.metadata.origin.data.version
       ignore_empty_value: true
   - rename:
       field: json.pps.agent
-      tag: rename_pps_agent
+      tag: rename_pps_agent_52f222ec
       target_field: proofpoint_on_demand.mail.pps.agent
       ignore_missing: true
   - set:
       field: observer.hostname
-      tag: set_observer_hostname_from_pps_agent
+      tag: set_observer_hostname_from_pps_agent_05ee7696
       copy_from: proofpoint_on_demand.mail.pps.agent
       override: true
       ignore_empty_value: true
   - append:
       field: related.hosts
-      tag: append_pps_agent_into_related_hosts
+      tag: append_pps_agent_into_related_hosts_c0ef6c09
       value: '{{{proofpoint_on_demand.mail.pps.agent}}}'
       allow_duplicates: false
       if: ctx.proofpoint_on_demand?.mail?.pps?.agent != null
   - rename:
       field: json.pps.cid
-      tag: rename_pps_cid
+      tag: rename_pps_cid_05fde36a
       target_field: proofpoint_on_demand.mail.pps.cid
       ignore_missing: true
   - set:
       field: observer.name
-      tag: set_observer_name_from_pps_cid
+      tag: set_observer_name_from_pps_cid_1c3e27e4
       copy_from: proofpoint_on_demand.mail.pps.cid
       override: true
       ignore_empty_value: true
   - rename:
       field: json.pps.version
-      tag: rename_pps_version
+      tag: rename_pps_version_c1ef113d
       target_field: proofpoint_on_demand.mail.pps.version
       ignore_missing: true
   - set:
       field: observer.version
-      tag: set_observer_version_from_pps_version
+      tag: set_observer_version_from_pps_version_1e86eede
       copy_from: proofpoint_on_demand.mail.pps.version
       override: true
       ignore_empty_value: true
   - rename:
       field: json.sm.auth
-      tag: rename_sm_auth
+      tag: rename_sm_auth_eb81c80b
       target_field: proofpoint_on_demand.mail.sm.auth
       ignore_missing: true
   - convert:
       field: json.sm.class
-      tag: convert_sm_class_to_long
+      tag: convert_sm_class_to_long_e6308f5f
       target_field: proofpoint_on_demand.mail.sm.class
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_cb31a21c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.sm.ctladdr
-      tag: rename_sm_ctladdr
+      tag: rename_sm_ctladdr_02c44b9e
       target_field: proofpoint_on_demand.mail.sm.ctladdr
       ignore_missing: true
   - grok:
       field: proofpoint_on_demand.mail.sm.ctladdr
       patterns:
         - '^<%{EMAILADDRESS:_temp.address}> \(%{NUMBER}/%{NUMBER}\)$'
-      tag: grok_for_ctladdr
+      tag: grok_for_ctladdr_0c736475
       ignore_failure: true
   - set:
       field: email.sender.address
-      tag: set_email_sender_address_from_temp_address
+      tag: set_email_sender_address_from_temp_address_1145034d
       copy_from: _temp.address
       ignore_empty_value: true
       if: ctx.json?.sm?.from == null && ctx._temp?.address != null
   - append:
       field: email.from.address
-      tag: append_temp_address_into_email_from_address
+      tag: append_temp_address_into_email_from_address_6c1a5efd
       value: '{{{_temp.address}}}'
       allow_duplicates: false
       if: ctx.json?.sm?.from == null && ctx._temp?.address != null
   - append:
       field: related.user
-      tag: append_temp_address_into_related_user
+      tag: append_temp_address_into_related_user_68b30bbe
       value: '{{{_temp.address}}}'
       allow_duplicates: false
       if: ctx._temp?.address != null
   - rename:
       field: json.sm.daemon
-      tag: rename_sm_daemon
+      tag: rename_sm_daemon_02642ded
       target_field: proofpoint_on_demand.mail.sm.daemon
       ignore_missing: true
   - rename:
       field: json.sm.delay
-      tag: rename_sm_delay
+      tag: rename_sm_delay_52eed562
       target_field: proofpoint_on_demand.mail.sm.delay
       ignore_missing: true
   - rename:
       field: json.sm.dsn
-      tag: rename_sm_dsn
+      tag: rename_sm_dsn_345d9dad
       target_field: proofpoint_on_demand.mail.sm.dsn
       ignore_missing: true
   - rename:
       field: json.sm.mailer
-      tag: rename_sm_mailer
+      tag: rename_sm_mailer_7aafcfc4
       target_field: proofpoint_on_demand.mail.sm.mailer
       ignore_missing: true
   - rename:
       field: json.sm.from
-      tag: rename_sm_from
+      tag: rename_sm_from_659f7160
       target_field: proofpoint_on_demand.mail.sm.from
       ignore_missing: true
   - rename:
       field: json.sm.msgid
-      tag: rename_sm_msgid
+      tag: rename_sm_msgid_896866eb
       target_field: proofpoint_on_demand.mail.sm.msgid
       ignore_missing: true
   - rename:
       field: json.sm.to
-      tag: rename_sm_to
+      tag: rename_sm_to_a03ec656
       target_field: proofpoint_on_demand.mail.sm.to
       ignore_missing: true
   - script:
       description: Remove unwanted characters.
-      tag: script_remove_unwanted_characters
+      tag: script_remove_unwanted_characters_f15a5212
       lang: painless
       source: |
         def removeUnwantedCharacters(def input) {
@@ -260,156 +262,163 @@ processors:
         }
       on_failure:
         - append:
+            tag: append_error_message_5e37d66c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: email.from.address
-      tag: append_proofpoint_on_demand_mail_sm_from_into_email_from_address
+      tag: append_proofpoint_on_demand_mail_sm_from_into_email_from_address_f44cd561
       value: '{{{proofpoint_on_demand.mail.sm.from}}}'
       allow_duplicates: false
       if: ctx.proofpoint_on_demand?.mail?.sm?.from != null
   - append:
       field: related.user
-      tag: append_sm_from_into_related_user
+      tag: append_sm_from_into_related_user_90c0e8f2
       value: '{{{proofpoint_on_demand.mail.sm.from}}}'
       allow_duplicates: false
       if: ctx.proofpoint_on_demand?.mail?.sm?.from != null
   - set:
       field: email.message_id
-      tag: set_email_message_id_from_mail_sm_msgid
+      tag: set_email_message_id_from_mail_sm_msgid_60bd4bfe
       copy_from: proofpoint_on_demand.mail.sm.msgid
       ignore_empty_value: true
   - foreach:
+      tag: foreach_proofpoint_on_demand_mail_sm_to_a7466dee
       field: proofpoint_on_demand.mail.sm.to
       if: ctx.proofpoint_on_demand?.mail?.sm?.to instanceof List
       processor:
         append:
           field: email.to.address
-          tag: append_sm_to_into_email_to_address
+          tag: append_sm_to_into_email_to_address_b8ebdd4c
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_proofpoint_on_demand_mail_sm_to_7fc1540d
       field: proofpoint_on_demand.mail.sm.to
       if: ctx.proofpoint_on_demand?.mail?.sm?.to instanceof List
       processor:
         append:
           field: related.user
-          tag: append_sm_to_into_related_user
+          tag: append_sm_to_into_related_user_a4f44c8c
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - convert:
       field: json.sm.nrcpts
-      tag: convert_sm_nrcpts_to_long
+      tag: convert_sm_nrcpts_to_long_932eed88
       target_field: proofpoint_on_demand.mail.sm.nrcpts
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_001a9e22
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.sm.pri
-      tag: convert_sm_pri_to_long
+      tag: convert_sm_pri_to_long_823656a8
       target_field: proofpoint_on_demand.mail.sm.priority
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_f73ff24e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.sm.proto
-      tag: rename_sm_proto
+      tag: rename_sm_proto_9ed3f6ae
       target_field: proofpoint_on_demand.mail.sm.protocol
       ignore_missing: true
   - set:
       field: network.protocol
-      tag: set_network_protocol_from_mail_sm_protocol
+      tag: set_network_protocol_from_mail_sm_protocol_1ae21a1b
       copy_from: proofpoint_on_demand.mail.sm.protocol
       ignore_empty_value: true
   - lowercase:
       field: network.protocol
-      tag: lowercase_network_protocol
+      tag: lowercase_network_protocol_12733ef1
       ignore_missing: true
   - rename:
       field: json.sm.qid
-      tag: rename_sm_qid
+      tag: rename_sm_qid_593b08ef
       target_field: proofpoint_on_demand.mail.sm.qid
       ignore_missing: true
   - rename:
       field: json.sm.relay
-      tag: rename_sm_relay
+      tag: rename_sm_relay_1f766e22
       target_field: proofpoint_on_demand.mail.sm.relay
       ignore_missing: true
   - convert:
       field: json.sm.sizeBytes
-      tag: convert_sm_sizeBytes_to_long
+      tag: convert_sm_sizeBytes_to_long_d2bd4bdd
       target_field: proofpoint_on_demand.mail.sm.size_bytes
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_6226c45f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.sm.stat
-      tag: rename_sm_stat
+      tag: rename_sm_stat_99586014
       target_field: proofpoint_on_demand.mail.sm.status
       ignore_missing: true
   - set:
       field: event.outcome
-      tag: set_event_outcome_to_success
+      tag: set_event_outcome_to_success_25e9896e
       value: success
       if: ctx.proofpoint_on_demand?.mail?.sm?.status != null && ctx.proofpoint_on_demand.mail.sm.status.toLowerCase().contains('sent')
   - set:
       field: event.outcome
-      tag: set_event_outcome_to_failure
+      tag: set_event_outcome_to_failure_2a94f9ab
       value: failure
       if: ctx.proofpoint_on_demand?.mail?.sm?.status != null && (ctx.proofpoint_on_demand.mail.sm.status.toLowerCase().contains('service unavailable') || ctx.proofpoint_on_demand.mail.sm.status.toLowerCase().contains('connection refused'))
   - rename:
       field: json.sm.tls.verify
-      tag: rename_sm_tls_verify
+      tag: rename_sm_tls_verify_893070ef
       target_field: proofpoint_on_demand.mail.sm.tls.verify
       ignore_missing: true
   - rename:
       field: json.sm.xdelay
-      tag: rename_sm_xdelay
+      tag: rename_sm_xdelay_4494965d
       target_field: proofpoint_on_demand.mail.sm.xdelay
       ignore_missing: true
   - rename:
       field: json.tls
-      tag: rename_tls
+      tag: rename_tls_e1257c64
       target_field: proofpoint_on_demand.mail.tls
       ignore_missing: true
   - set:
       field: tls.cipher
-      tag: set_tls_cipher_from_mail_tls_cipher
+      tag: set_tls_cipher_from_mail_tls_cipher_9724ca9b
       copy_from: proofpoint_on_demand.mail.tls.cipher
       ignore_empty_value: true
       if: ctx.proofpoint_on_demand?.mail?.tls?.cipher != 'NONE'
   - dissect:
       field: proofpoint_on_demand.mail.tls.version
-      tag: dissect_tls_version_protocol_and_tls_version
+      tag: dissect_tls_version_protocol_and_tls_version_2ff4e88c
       pattern: '%{tls.version_protocol}v%{tls.version}'
       ignore_failure: true
   - lowercase:
       field: tls.version_protocol
-      tag: lowercase_tls_version_protocol
+      tag: lowercase_tls_version_protocol_83b34b9e
       ignore_missing: true
   - date:
       field: json.ts
-      tag: date_ts
+      tag: date_ts_f0df4105
       target_field: proofpoint_on_demand.mail.ts
       formats:
         - ISO8601
       if: ctx.json?.ts != null && ctx.json.ts != ''
       on_failure:
         - append:
+            tag: append_error_message_fcb529a3
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: '@timestamp'
-      tag: set_@timestamp_from_mail_ts
+      tag: set_@timestamp_from_mail_ts_eeb01e82
       copy_from: proofpoint_on_demand.mail.ts
       ignore_empty_value: true
   - remove:
@@ -422,17 +431,17 @@ processors:
         - proofpoint_on_demand.mail.ts
         - proofpoint_on_demand.mail.to
         - proofpoint_on_demand.mail.tls.cipher
-      tag: remove_custom_duplicate_fields
+      tag: remove_custom_duplicate_fields_f17e0875
       ignore_missing: true
       if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
   - remove:
       field:
         - json
         - _temp
-      tag: remove_json_temp
+      tag: remove_json_temp_c9df19f6
       ignore_missing: true
   - script:
-      tag: script_to_drop_null_values
+      tag: script_to_drop_null_values_50c8d6aa
       lang: painless
       description: Drops null/empty values recursively.
       source: |-
@@ -451,23 +460,26 @@ processors:
         drop(ctx);
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_4fd8ffa8
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message_6906b116
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
