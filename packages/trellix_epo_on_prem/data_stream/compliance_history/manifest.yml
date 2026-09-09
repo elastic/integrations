@@ -4,16 +4,17 @@ streams:
   - input: cel
     title: Trellix ePO Compliance History Logs
     description: Collect compliance history records from the Trellix ePO REST API.
+    enabled: false
     template_path: cel.yml.hbs
     vars:
-      - name: initial_interval
+      - name: initial_auto_id
         type: text
-        title: Initial Interval
-        description: How far back to pull compliance history on the first run. Supported units are h/m/s.
+        title: Initial Auto ID
+        description: The starting AutoID from which to begin querying events. Subsequent collections will resume from the last persisted EventAutoID. Set to '0' to start from the beginning.
         multi: false
         required: true
         show_user: true
-        default: 24h
+        default: '0'
       - name: interval
         type: text
         title: Interval
@@ -21,7 +22,7 @@ streams:
         multi: false
         required: true
         show_user: true
-        default: 24h
+        default: 5m
       - name: max_executions
         type: integer
         title: Maximum Pages Per Interval

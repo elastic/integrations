@@ -29,7 +29,6 @@ rules:
               "OrionAuditLog.UserName": "admin"
             }
           ]
-
   # web_control page 1: a full page (== page_size), so the program sets
   # want_more and pages again from the last EventAutoID it saw.
   - path: /remote/core.executeQuery
@@ -87,7 +86,6 @@ rules:
               "WP_EventInfo.UserName": null
             }
           ]
-
   # web_control page 2: a short page, which clears want_more and ends the cycle.
   - path: /remote/core.executeQuery
     methods: ['GET']
@@ -126,7 +124,6 @@ rules:
               "WP_EventInfo.UserName": null
             }
           ]
-
   # web_control catchall: any cursor beyond the seeded rows is exhausted, so a
   # later poll re-collects nothing and hit_count stays deterministic.
   - path: /remote/core.executeQuery
@@ -146,13 +143,14 @@ rules:
           Content-Type:
             - 'text/plain'
         body: 'OK: []'
-
+  # compliance_history page 1: a full page (== page_size), so the program sets
+  # want_more and pages again from the last AutoId it saw.
   - path: /remote/core.executeQuery
     methods: ['GET']
     query_params:
       target: 'EpoComplianceHistory'
       select: '{select:.*}'
-      where: '{where:.*}'
+      where: '(where (gt EpoComplianceHistory.AutoId 0))'
       order: '{order:.*}'
       ':output': 'json'
     request_headers:
@@ -176,16 +174,81 @@ rules:
               "EpoComplianceHistory.CountCompliant": 4,
               "EpoComplianceHistory.TheTimestamp": "2026-08-02T01:00:20+05:30",
               "EpoComplianceHistory.TenantId": 0
+            },
+            {
+              "EpoComplianceHistory.AutoId": 5,
+              "EpoComplianceHistory.ChartName": "Trellix Agent Compliance Summary",
+              "EpoComplianceHistory.TaskName": "Generate Records for Trellix Agent Compliance History Reporting",
+              "EpoComplianceHistory.CountComputers": 5,
+              "EpoComplianceHistory.CountNonCompliant": 2,
+              "EpoComplianceHistory.PercentNonCompliant": 40.0,
+              "EpoComplianceHistory.PercentCompliant": 60.0,
+              "EpoComplianceHistory.CountCompliant": 3,
+              "EpoComplianceHistory.TheTimestamp": "2026-08-09T01:00:19+05:30",
+              "EpoComplianceHistory.TenantId": 0
             }
           ]
-
+  # compliance_history page 2: a short page, which clears want_more and ends the cycle.
+  - path: /remote/core.executeQuery
+    methods: ['GET']
+    query_params:
+      target: 'EpoComplianceHistory'
+      select: '{select:.*}'
+      where: '(where (gt EpoComplianceHistory.AutoId 5))'
+      order: '{order:.*}'
+      ':output': 'json'
+    request_headers:
+      Authorization:
+        - "Basic dGVtcF91c2VyOnRlbXBfcGFzc3dvcmQ="
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'text/plain'
+        body: |-
+          OK: [
+            {
+              "EpoComplianceHistory.AutoId": 6,
+              "EpoComplianceHistory.ChartName": "Trellix Agent Compliance Summary",
+              "EpoComplianceHistory.TaskName": "Generate Records for Trellix Agent Compliance History Reporting",
+              "EpoComplianceHistory.CountComputers": 6,
+              "EpoComplianceHistory.CountNonCompliant": 0,
+              "EpoComplianceHistory.PercentNonCompliant": 0.0,
+              "EpoComplianceHistory.PercentCompliant": 100.0,
+              "EpoComplianceHistory.CountCompliant": 6,
+              "EpoComplianceHistory.TheTimestamp": "2026-08-16T01:00:23+05:30",
+              "EpoComplianceHistory.TenantId": 0
+            }
+          ]
+  # compliance_history catchall: any cursor beyond the seeded rows is exhausted, so a
+  # later poll re-collects nothing and hit_count stays deterministic.
+  - path: /remote/core.executeQuery
+    methods: ['GET']
+    query_params:
+      target: 'EpoComplianceHistory'
+      select: '{select:.*}'
+      where: '{where:.*}'
+      order: '{order:.*}'
+      ':output': 'json'
+    request_headers:
+      Authorization:
+        - "Basic dGVtcF91c2VyOnRlbXBfcGFzc3dvcmQ="
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'text/plain'
+        body: 'OK: []'
+  # system page 1: the first poll has no cursor, so it seeds with newerThan.
+  # A full page (== page_size) sets want_more and pages again from the last
+  # LastUpdate it saw.
   - path: /remote/core.executeQuery
     methods: ['GET']
     query_params:
       target: 'EPOLeafNode'
-      select: '{select:.*}'
-      where: '{where:.*}'
-      order: '{order:.*}'
+      select: "{select:.*}"
+      where: "(where (newerThan EPOLeafNode.LastUpdate {ms:.*}))"
+      order: "{order:.*}"
       ':output': 'json'
     request_headers:
       Authorization:
@@ -215,5 +278,143 @@ rules:
               "EPOLeafNode.TenantId": 1,
               "EPOLeafNode.TransferSiteListsID": false,
               "EPOLeafNode.Type": 1
+            },
+            {
+              "EPOLeafNode.AgentGUID": "7A1B9C42-3E56-4D80-9F17-8B24E6C05D31",
+              "EPOLeafNode.AgentVersion": "5.8.6.185",
+              "EPOLeafNode.AutoID": 4,
+              "EPOLeafNode.ExcludedTags": "",
+              "EPOLeafNode.LastCommSecure": "1",
+              "EPOLeafNode.LastUpdate": "2026-08-03T14:05:12+05:30",
+              "EPOLeafNode.ManagedState": 1,
+              "EPOLeafNode.NodeName": "DESKTOP-M4XKP2Q",
+              "EPOLeafNode.NodePath": null,
+              "EPOLeafNode.ParentID": 2,
+              "EPOLeafNode.SequenceErrorCount": 0,
+              "EPOLeafNode.SequenceErrorCountLastUpdate": null,
+              "EPOLeafNode.ServerKeyHash": "zCpCbtDGJO5y9CB7kjIW+lY9lEPxhJhunES4S5Aayao=",
+              "EPOLeafNode.Tags": "Workstation",
+              "EPOLeafNode.TenantId": 1,
+              "EPOLeafNode.TransferSiteListsID": false,
+              "EPOLeafNode.Type": 1
             }
           ]
+  # system page 2: the cursor is inclusive (ge), so the boundary record comes
+  # back a second time alongside the next one. Another full page keeps want_more
+  # set. Fingerprint _id on auto_id collapses the repeated record at index time.
+  - path: /remote/core.executeQuery
+    methods: ['GET']
+    query_params:
+      target: 'EPOLeafNode'
+      select: "{select:.*}"
+      where: '(where (ge EPOLeafNode.LastUpdate "2026-08-03T14:05:12"))'
+      order: "{order:.*}"
+      ':output': 'json'
+    request_headers:
+      Authorization:
+        - "Basic dGVtcF91c2VyOnRlbXBfcGFzc3dvcmQ="
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'text/plain'
+        body: |-
+          OK: [
+            {
+              "EPOLeafNode.AgentGUID": "7A1B9C42-3E56-4D80-9F17-8B24E6C05D31",
+              "EPOLeafNode.AgentVersion": "5.8.6.185",
+              "EPOLeafNode.AutoID": 4,
+              "EPOLeafNode.ExcludedTags": "",
+              "EPOLeafNode.LastCommSecure": "1",
+              "EPOLeafNode.LastUpdate": "2026-08-03T14:05:12+05:30",
+              "EPOLeafNode.ManagedState": 1,
+              "EPOLeafNode.NodeName": "DESKTOP-M4XKP2Q",
+              "EPOLeafNode.NodePath": null,
+              "EPOLeafNode.ParentID": 2,
+              "EPOLeafNode.SequenceErrorCount": 0,
+              "EPOLeafNode.SequenceErrorCountLastUpdate": null,
+              "EPOLeafNode.ServerKeyHash": "zCpCbtDGJO5y9CB7kjIW+lY9lEPxhJhunES4S5Aayao=",
+              "EPOLeafNode.Tags": "Workstation",
+              "EPOLeafNode.TenantId": 1,
+              "EPOLeafNode.TransferSiteListsID": false,
+              "EPOLeafNode.Type": 1
+            },
+            {
+              "EPOLeafNode.AgentGUID": "C58D2E71-9F03-4A6B-B142-6D97E38A0C24",
+              "EPOLeafNode.AgentVersion": "5.8.5.170",
+              "EPOLeafNode.AutoID": 5,
+              "EPOLeafNode.ExcludedTags": "",
+              "EPOLeafNode.LastCommSecure": "0",
+              "EPOLeafNode.LastUpdate": "2026-08-03T16:47:03+05:30",
+              "EPOLeafNode.ManagedState": 0,
+              "EPOLeafNode.NodeName": "LAPTOP-R7WQ4NZ",
+              "EPOLeafNode.NodePath": null,
+              "EPOLeafNode.ParentID": 2,
+              "EPOLeafNode.SequenceErrorCount": 2,
+              "EPOLeafNode.SequenceErrorCountLastUpdate": "2026-08-03T16:40:11+05:30",
+              "EPOLeafNode.ServerKeyHash": "zCpCbtDGJO5y9CB7kjIW+lY9lEPxhJhunES4S5Aayao=",
+              "EPOLeafNode.Tags": "Laptop",
+              "EPOLeafNode.TenantId": 1,
+              "EPOLeafNode.TransferSiteListsID": false,
+              "EPOLeafNode.Type": 1
+            }
+          ]
+  # system page 3: only the boundary record remains, so this short page clears
+  # want_more and ends the cycle.
+  - path: /remote/core.executeQuery
+    methods: ['GET']
+    query_params:
+      target: 'EPOLeafNode'
+      select: "{select:.*}"
+      where: '(where (ge EPOLeafNode.LastUpdate "2026-08-03T16:47:03"))'
+      order: "{order:.*}"
+      ':output': 'json'
+    request_headers:
+      Authorization:
+        - "Basic dGVtcF91c2VyOnRlbXBfcGFzc3dvcmQ="
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'text/plain'
+        body: |-
+          OK: [
+            {
+              "EPOLeafNode.AgentGUID": "C58D2E71-9F03-4A6B-B142-6D97E38A0C24",
+              "EPOLeafNode.AgentVersion": "5.8.5.170",
+              "EPOLeafNode.AutoID": 5,
+              "EPOLeafNode.ExcludedTags": "",
+              "EPOLeafNode.LastCommSecure": "0",
+              "EPOLeafNode.LastUpdate": "2026-08-03T16:47:03+05:30",
+              "EPOLeafNode.ManagedState": 0,
+              "EPOLeafNode.NodeName": "LAPTOP-R7WQ4NZ",
+              "EPOLeafNode.NodePath": null,
+              "EPOLeafNode.ParentID": 2,
+              "EPOLeafNode.SequenceErrorCount": 2,
+              "EPOLeafNode.SequenceErrorCountLastUpdate": "2026-08-03T16:40:11+05:30",
+              "EPOLeafNode.ServerKeyHash": "zCpCbtDGJO5y9CB7kjIW+lY9lEPxhJhunES4S5Aayao=",
+              "EPOLeafNode.Tags": "Laptop",
+              "EPOLeafNode.TenantId": 1,
+              "EPOLeafNode.TransferSiteListsID": false,
+              "EPOLeafNode.Type": 1
+            }
+          ]
+  # system catchall: any cursor beyond the seeded rows is exhausted, so a later
+  # poll re-collects nothing and hit_count stays deterministic.
+  - path: /remote/core.executeQuery
+    methods: ['GET']
+    query_params:
+      target: 'EPOLeafNode'
+      select: "{select:.*}"
+      where: "{where:.*}"
+      order: "{order:.*}"
+      ':output': 'json'
+    request_headers:
+      Authorization:
+        - "Basic dGVtcF91c2VyOnRlbXBfcGFzc3dvcmQ="
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'text/plain'
+        body: 'OK: []'

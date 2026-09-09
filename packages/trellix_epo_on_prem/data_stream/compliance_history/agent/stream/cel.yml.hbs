@@ -20,7 +20,9 @@ auth.basic:
   user: {{username}}
   password: {{password}}
 state:
-  initial_interval: {{initial_interval}}
+  # The first poll starts after this AutoId; subsequent polls resume from the
+  # persisted cursor.
+  initial_auto_id: "{{initial_auto_id}}"
   page_size: {{page_size}}
   columns: >-
     EpoComplianceHistory.AutoId
@@ -34,76 +36,66 @@ state:
     EpoComplianceHistory.TheTimestamp
     EpoComplianceHistory.TenantId
 redact:
-  fields:
-    - password
-program: |-
+  fields: ~
+program: |
   (
-    state.?want_more.orValue(false)
-    ?
+    state.?want_more.orValue(false) ?
       state
     :
-      state.with(
-        {
-          "the_timestamp": state.?cursor.last_timestamp.orValue(
-            (now - duration(state.initial_interval)).format("2006-01-02T15:04:05")
-          ),
-        }
-      )
+      state.with({
+        "auto_id": state.?cursor.last_auto_id.orValue(
+          string(state.initial_auto_id)
+        )
+      })
   ).as(state,
     state.with(
       get(
-        state.url.trim_right("/") + "/remote/core.executeQuery?" + {
+        state.url.trim_right("/") + "/remote/core.executeQuery?" +
+        {
           "target": ["EpoComplianceHistory"],
-          "select": [
-            "(select (top " + string(state.page_size) + ") " + state.columns + ")",
-          ],
-          // The inclusive time cursor intentionally overlaps the boundary
-          // timestamp so downstream fingerprinting can remove duplicates.
-          "where": [
-            "(where (ge EpoComplianceHistory.TheTimestamp \"" +
-              state.the_timestamp + "\"))",
-          ],
-          "order": [
-            "(order (asc EpoComplianceHistory.TheTimestamp))",
-          ],
-        }.format_query() + "&:output=json"
+          // (top N) keyset page ordered by the unique AutoId.
+          "select": ['(select (top ' + string(int(state.page_size)) + ') ' + state.columns + ')'],
+          "where": ['(where (gt EpoComplianceHistory.AutoId ' + state.auto_id + '))'],
+          "order": ["(order (asc EpoComplianceHistory.AutoId))"],
+          ":output": ["json"]
+        }.format_query()
       ).as(resp,
-        (resp.StatusCode == 200)
-        ?
-          string(resp.Body).trim_space().trim_prefix("OK:").trim_space().decode_json().as(rows,
-            (
-              (size(rows) > 0)
-              ?
-                timestamp(
-                  string(
-                    rows[size(rows) - 1]["EpoComplianceHistory.TheTimestamp"]
-                  )
-                ).format("2006-01-02T15:04:05")
-              :
-                state.the_timestamp
-            ).as(new_timestamp,
-              {
-                "events": rows.map(e, {"message": e.encode_json()}),
-                "the_timestamp": new_timestamp,
-                "cursor": {
-                  "last_timestamp": new_timestamp,
-                },
-                "want_more": size(rows) == int(state.page_size),
-              }
-            )
+        // core.executeQuery is a plain-text protocol that reports query errors
+        // with HTTP 200 and an "Error <n> :" body, so the status alone does not
+        // establish that the body is JSON. Without the prefix check a non-JSON
+        // 200 aborts the whole evaluation inside decode_json(), which returns no
+        // events at all and leaves nothing in the index to diagnose.
+        (resp.StatusCode == 200 && string(resp.Body).trim_space().has_prefix("OK:")) ?
+          string(resp.Body).trim_space().trim_prefix("OK:").decode_json().as(rows,
+            // Advance to the greatest AutoId returned by this page. The ID is routed
+            // through int() before string(): JSON numbers arrive as float64, and
+            // string() of a float64 >= 1e6 renders as scientific notation, which is
+            // not a valid operand for the (gt EpoComplianceHistory.AutoId ...) query.
+            string(int(
+              rows.last()["EpoComplianceHistory.AutoId"].orValue(state.auto_id)
+            )).as(new_auto_id, {
+              "events": rows.map(e, {"message": e.encode_json()}),
+              "auto_id": new_auto_id,
+              "cursor": {"last_auto_id": new_auto_id},
+              "want_more": size(rows) == int(state.page_size) &&
+                new_auto_id != state.auto_id
+            })
           )
         :
           {
             "events": {
               "error": {
                 "code": string(resp.StatusCode),
-                "id": string(resp.Status),
-                "message": "GET /remote/core.executeQuery: " + (
-                  (size(resp.Body) != 0) ? string(resp.Body) : string(resp.Status)
-                ),
-              },
+                "id": resp.Status,
+                "message": "GET " + state.url.trim_right("/") + "/remote/core.executeQuery: " + (
+                  size(resp.Body) != 0 ?
+                    string(resp.Body)
+                  :
+                    resp.Status + " (" + string(resp.StatusCode) + ")"
+                )
+              }
             },
-            "want_more": false,
+            "want_more": false
           }
       )
     )

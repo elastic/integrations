@@ -20,9 +20,8 @@ auth.basic:
   user: {{username}}
   password: {{password}}
 state:
-  initial_interval: {{initial_interval}}
+  initial_interval: "{{initial_interval}}"
   page_size: {{page_size}}
-  tz_offset: "{{tz_offset}}"
   columns: >-
     EPOLeafNode.AutoID EPOLeafNode.NodeName EPOLeafNode.Type
     EPOLeafNode.ParentID EPOLeafNode.AgentGUID EPOLeafNode.LastUpdate
@@ -33,84 +32,87 @@ state:
     EPOLeafNode.TransferSiteListsID EPOLeafNode.ManagedState
     EPOLeafNode.Tags EPOLeafNode.ExcludedTags
 redact:
-  fields:
-    - password
+  fields: ~
 program: |
   (
-    state.?want_more.orValue(false)
-    ?
+    state.?want_more.orValue(false) ?
       state
     :
-      state.with(
-        {
-          "update_time": state.?cursor.last_update_time.orValue(
-            (now - duration(state.initial_interval)).format("2006-01-02T15:04:05")
-          ),
-        }
-      )
+      state.with({
+        // Empty until the first page lands. The seed below is relative and
+        // evaluated by ePO, so no client-side instant is needed to start.
+        "update_time": state.?cursor.last_update_time.orValue("")
+      })
   ).as(state,
     state.with(
       get(
-        state.url.trim_right("/") + "/remote/core.executeQuery?" + {
+        state.url.trim_right("/") + "/remote/core.executeQuery?" +
+        {
           "target": ["EPOLeafNode"],
-          "select": [
-            "(select (top " + string(state.page_size) + ") " + state.columns + ")",
-          ],
-          // The inclusive time cursor intentionally overlaps the boundary
-          // timestamp so downstream fingerprinting can remove duplicates.
+          // (top N) keyset page ordered by LastUpdate.
+          "select": ['(select (top ' + string(state.page_size) + ') ' + state.columns + ')'],
+          // Without a cursor, seed from newerThan, whose argument is a duration in
+          // milliseconds that ePO resolves against its own clock. A client-side
+          // instant cannot seed this column: it stores a bare wall clock, so any
+          // boundary built from the agent's clock is wrong by the server's offset,
+          // which over-collects east of UTC and silently skips history west of it.
+          // Once a row has been seen its own timestamp is an exact boundary, and
+          // inclusive ge keeps records sharing it from being skipped.
           "where": [
-            "(where (ge EPOLeafNode.LastUpdate \"" +
-              state.update_time + "\"))",
+            state.update_time == "" ?
+              '(where (newerThan EPOLeafNode.LastUpdate ' +
+                string(int(duration(state.initial_interval)) / 1000000) + '))'
+            :
+              '(where (ge EPOLeafNode.LastUpdate "' + state.update_time + '"))'
           ],
-          "order": [
-            "(order (asc EPOLeafNode.LastUpdate))",
-          ],
-        }.format_query() + "&:output=json"
+          "order": ["(order (asc EPOLeafNode.LastUpdate))"],
+          ":output": ["json"]
+        }.format_query()
       ).as(resp,
-        (resp.StatusCode == 200)
-        ?
-          string(resp.Body).trim_space().trim_prefix("OK:").trim_space().decode_json().as(rows,
-            (
-              (size(rows) > 0)
-              ?
-                // Advance the cursor using the wall-clock the API itself returned.
-                // LastUpdate comes back with a UTC offset (e.g. "+05:30"), but the
-                // API interprets a bare timestamp in the where clause as UTC, so the
-                // offset has to be subtracted here. Echoing the returned wall clock
-                // back verbatim excludes the boundary record and silently skips
-                // tz_offset worth of records on every poll.
-                (
-                  timestamp(
-                    string(
-                      rows[size(rows) - 1]["EPOLeafNode.LastUpdate"]
-                    )
-                  ) - state.tz_offset.split(":").as(tz, duration(tz[0] + "h" + tz[1] + "m"))
-                ).format("2006-01-02T15:04:05")
-              :
-                state.update_time
-            ).as(new_update_time,
-              {
-                "events": rows.map(e, {"message": e.encode_json()}),
-                "update_time": new_update_time,
-                "cursor": {
-                  "last_update_time": new_update_time,
-                },
-                "want_more": size(rows) == int(state.page_size),
-              }
-            )
+        // core.executeQuery is a plain-text protocol that reports query errors
+        // with HTTP 200 and an "Error <n> :" body, so the status alone does not
+        // establish that the body is JSON. Without the prefix check a non-JSON
+        // 200 aborts the whole evaluation inside decode_json(), which returns no
+        // events at all and leaves nothing in the index to diagnose.
+        (resp.StatusCode == 200 && string(resp.Body).trim_space().has_prefix("OK:")) ?
+          string(resp.Body).trim_space().trim_prefix("OK:").decode_json().as(rows,
+            // LastUpdate is stored without a zone and merely has the server's offset
+            // appended on the way out, so "2026-08-03T12:31:28+05:30" holds the digits
+            // the where clause compares against. format() renders in the parsed value's
+            // own offset, which hands those digits back unchanged. Do not re-anchor this
+            // to UTC: the offset here is decorative, so converting would park the cursor
+            // a whole offset behind the last record and re-read it forever.
+            (size(rows) > 0 ?
+              timestamp(
+                string(rows[size(rows) - 1]["EPOLeafNode.LastUpdate"])
+              ).format("2006-01-02T15:04:05")
+            :
+              state.update_time
+            ).as(new_update_time, {
+              "events": rows.map(e, {"message": e.encode_json()}),
+              "update_time": new_update_time,
+              "cursor": {"last_update_time": new_update_time},
+              // The cursor comparison stops a full page whose rows all share the
+              // boundary timestamp from being re-fetched for the rest of the budget.
+              "want_more": size(rows) == int(state.page_size) &&
+                new_update_time != state.update_time
+            })
           )
         :
           {
             "events": {
               "error": {
                 "code": string(resp.StatusCode),
-                "id": string(resp.Status),
-                "message": "GET /remote/core.executeQuery: " + (
-                  (size(resp.Body) != 0) ? string(resp.Body) : string(resp.Status)
-                ),
-              },
+                "id": resp.Status,
+                "message": "GET " + state.url.trim_right("/") + "/remote/core.executeQuery: " + (
+                  size(resp.Body) != 0 ?
+                    string(resp.Body)
+                  :
+                    resp.Status + " (" + string(resp.StatusCode) + ")"
+                )
+              }
             },
-            "want_more": false,
+            "want_more": false
           }
       )
     )

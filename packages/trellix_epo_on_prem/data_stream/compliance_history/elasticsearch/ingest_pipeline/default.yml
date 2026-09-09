@@ -35,24 +35,20 @@ processors:
       if: ctx.event?.original != null
   - json:
       field: event.original
-      target_field: json
+      target_field: trellix_epo_on_prem.compliance_history
       tag: parse_json
       if: ctx.event?.original != null
   - dot_expander:
       field: '*'
-      path: json
-      tag: dot_expander_json
-      if: ctx.json != null
+      path: trellix_epo_on_prem.compliance_history
+      tag: dot_expander_compliance_history
+      if: ctx.trellix_epo_on_prem?.compliance_history != null
   - rename:
-      field: json.EpoComplianceHistory
+      field: trellix_epo_on_prem.compliance_history.EpoComplianceHistory
       target_field: trellix_epo_on_prem.compliance_history.epo_compliance_history
       ignore_missing: true
-      tag: rename_json_to_vendor_namespace
-      if: ctx.json?.EpoComplianceHistory != null
-  - remove:
-      field: json
-      ignore_missing: true
-      tag: remove_json
+      tag: rename_to_vendor_namespace
+      if: ctx.trellix_epo_on_prem?.compliance_history?.EpoComplianceHistory != null
   - set:
       field: event.kind
       tag: set_event_kind
@@ -115,7 +111,6 @@ processors:
       field: trellix_epo_on_prem.compliance_history.epo_compliance_history.AutoId
       type: string
       ignore_missing: true
-      if: ctx.trellix_epo_on_prem?.compliance_history?.epo_compliance_history?.AutoId != ''
       tag: convert_auto_id_to_string
   - set:
       field: event.id
@@ -147,7 +142,6 @@ processors:
       field: trellix_epo_on_prem.compliance_history.epo_compliance_history.count_compliant
       type: long
       ignore_missing: true
-      if: ctx.trellix_epo_on_prem?.compliance_history?.epo_compliance_history?.count_compliant != ''
       tag: convert_count_compliant
       on_failure:
         - remove:
@@ -162,7 +156,6 @@ processors:
       field: trellix_epo_on_prem.compliance_history.epo_compliance_history.count_computers
       type: long
       ignore_missing: true
-      if: ctx.trellix_epo_on_prem?.compliance_history?.epo_compliance_history?.count_computers != ''
       tag: convert_count_computers
       on_failure:
         - remove:
@@ -177,7 +170,6 @@ processors:
       field: trellix_epo_on_prem.compliance_history.epo_compliance_history.count_non_compliant
       type: long
       ignore_missing: true
-      if: ctx.trellix_epo_on_prem?.compliance_history?.epo_compliance_history?.count_non_compliant != ''
       tag: convert_count_non_compliant
       on_failure:
         - remove:
@@ -197,7 +189,6 @@ processors:
       field: trellix_epo_on_prem.compliance_history.epo_compliance_history.percent_compliant
       type: double
       ignore_missing: true
-      if: ctx.trellix_epo_on_prem?.compliance_history?.epo_compliance_history?.percent_compliant != ''
       tag: convert_percent_compliant
       on_failure:
         - remove:
@@ -212,7 +203,6 @@ processors:
       field: trellix_epo_on_prem.compliance_history.epo_compliance_history.percent_non_compliant
       type: double
       ignore_missing: true
-      if: ctx.trellix_epo_on_prem?.compliance_history?.epo_compliance_history?.percent_non_compliant != ''
       tag: convert_percent_non_compliant
       on_failure:
         - remove:
@@ -270,7 +260,10 @@ on_failure:
   - append:
       field: error.message
       tag: append_pipeline_failure_message
-      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
       tag: set_pipeline_error_to_event_kind
