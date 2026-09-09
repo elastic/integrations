@@ -7,7 +7,7 @@ RUN echo >> /opt/bitnami/php/etc/php-fpm.d/www.conf &&\
 
 # Following command installs nginx
 
-RUN apt-get update -y &&\
+RUN apt-get -o Acquire::Retries=3 update -y &&\
     apt-get upgrade -y &&\
     apt-get install nginx -y
 
