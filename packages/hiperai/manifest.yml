@@ -1,0 +1,83 @@
+format_version: "3.0.0"
+name: hiperai
+title: "HiperAI SecureAI"
+version: "1.0.0"
+description: >-
+  Collect security events, audit logs, AI governance violations, DLP alerts, and authentication activity from HiperAI SecureAI — the enterprise AI security and governance platform. SecureAI provides real-time monitoring of LLM usage, SMLTP policy enforcement, prompt injection detection, and sensitive data protection across generative AI workflows.
+type: integration
+categories:
+  - security
+conditions:
+  kibana:
+    version: "^8.12.0"
+  elastic:
+    subscription: "basic"
+owner:
+  github: Hiper-AI
+  type: partner
+icons:
+  - src: /img/logo.svg
+    title: HiperAI SecureAI Logo
+    size: "32x32"
+    type: image/svg+xml
+screenshots:
+  - src: /img/screenshots/secureai-elastic-config.png
+    title: SecureAI Elastic SIEM Configuration
+    size: "1920x1080"
+    type: image/png
+  - src: /img/screenshots/secureai-test-connection.png
+    title: SecureAI Test Connection Success
+    size: "1920x1080"
+    type: image/png
+  - src: /img/screenshots/secureai-kibana-discover.png
+    title: SecureAI Events in Kibana Discover
+    size: "1920x1080"
+    type: image/png
+policy_templates:
+  - name: hiperai
+    title: HiperAI SecureAI Events
+    description: >-
+      Receive security events from the HiperAI SecureAI platform. Events include authentication activity, AI model usage, SMLTP policy violations, DLP triggers, and administrative changes.
+    inputs:
+      - type: http_endpoint
+        title: HTTP Endpoint
+        description: >-
+          Receive SecureAI events via HTTP webhook. Configure SecureAI to push events to the Elastic Agent HTTP listener endpoint.
+        vars:
+          - name: listen_address
+            type: text
+            title: Listen Address
+            description: >-
+              Bind address for the HTTP listener. Use 0.0.0.0 to listen on all interfaces.
+            default: "0.0.0.0"
+            required: true
+            show_user: false
+          - name: listen_port
+            type: integer
+            title: Listen Port
+            description: The port to listen on for incoming SecureAI events.
+            default: 8089
+            required: true
+            show_user: true
+          - name: secret_header
+            type: text
+            title: Secret Header
+            description: >-
+              HTTP header name used for authentication (e.g., Authorization).
+            required: false
+            show_user: false
+          - name: secret_value
+            type: password
+            title: Secret Value
+            description: >-
+              Expected value for the secret header. For API Key auth, use the format "ApiKey <base64-encoded-key>".
+            required: false
+            show_user: false
+          - name: ssl
+            type: yaml
+            title: TLS/SSL Configuration
+            description: >-
+              TLS configuration for the HTTP listener. See Elastic Agent documentation for available options.
+            multi: false
+            required: false
+            show_user: false

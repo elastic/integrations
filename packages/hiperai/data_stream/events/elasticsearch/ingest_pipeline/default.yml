@@ -1,0 +1,295 @@
+---
+description: Pipeline for processing HiperAI SecureAI security events.
+processors:
+  ##
+  ## 1. Timestamp normalization
+  ##
+  - date:
+      field: json.timestamp
+      formats:
+        - "ISO8601"
+        - "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+        - "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
+      target_field: "@timestamp"
+      ignore_failure: true
+      if: ctx.json?.timestamp != null
+
+  ##
+  ## 2. Preserve original event (optional)
+  ##
+  - rename:
+      field: message
+      target_field: event.original
+      ignore_missing: true
+      if: ctx.tags != null && ctx.tags.contains('preserve_original_event')
+
+  ##
+  ## 3. Map to ECS event.* fields
+  ##
+  - set:
+      field: event.kind
+      value: event
+  - set:
+      field: event.module
+      value: hiperai
+  - set:
+      field: event.dataset
+      value: hiperai.events
+  - rename:
+      field: json.event_type
+      target_field: event.action
+      ignore_missing: true
+  - set:
+      field: event.provider
+      value: secureai
+
+  # Map severity to ECS event.severity (numeric) and custom severity name
+  - set:
+      field: event.severity
+      value: 1
+      if: ctx.json?.severity == 'info'
+  - set:
+      field: event.severity
+      value: 2
+      if: ctx.json?.severity == 'low'
+  - set:
+      field: event.severity
+      value: 3
+      if: ctx.json?.severity == 'medium'
+  - set:
+      field: event.severity
+      value: 4
+      if: ctx.json?.severity == 'high'
+  - set:
+      field: event.severity
+      value: 5
+      if: ctx.json?.severity == 'critical'
+
+  # Map category to ECS event.category
+  - append:
+      field: event.category
+      value: authentication
+      if: >-
+        ctx.json?.category == 'authentication' ||
+        ctx.json?.event_type == 'login_success' ||
+        ctx.json?.event_type == 'login_failed'
+  - append:
+      field: event.category
+      value: intrusion_detection
+      if: >-
+        ctx.json?.category == 'security' ||
+        ctx.json?.event_type == 'security_incident' ||
+        ctx.json?.event_type == 'policy_violation' ||
+        ctx.json?.event_type == 'smltp_violation'
+  - append:
+      field: event.category
+      value: configuration
+      if: ctx.json?.category == 'configuration'
+  - append:
+      field: event.category
+      value: process
+      if: >-
+        ctx.json?.category == 'api' ||
+        ctx.json?.event_type == 'chat_completion'
+  - append:
+      field: event.category
+      value: session
+      if: ctx.json?.event_type == 'logout'
+
+  # Map event outcome
+  - set:
+      field: event.outcome
+      value: success
+      if: >-
+        ctx.json?.activity?.outcome == 'success' ||
+        ctx.json?.event_type == 'login_success'
+  - set:
+      field: event.outcome
+      value: failure
+      if: >-
+        ctx.json?.activity?.outcome == 'failure' ||
+        ctx.json?.event_type == 'login_failed'
+
+  ##
+  ## 4. Map to ECS source.* fields
+  ##
+  - convert:
+      field: json.ip
+      target_field: source.ip
+      type: ip
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.actor.ip_address
+      target_field: source.ip
+      ignore_missing: true
+      override: false
+      if: ctx.source?.ip == null && ctx.json?.actor?.ip_address != null
+
+  ##
+  ## 5. Map to ECS user.* fields
+  ##
+  - rename:
+      field: json.user
+      target_field: user.name
+      ignore_missing: true
+  - rename:
+      field: json.actor.username
+      target_field: user.name
+      ignore_missing: true
+      override: false
+      if: ctx.user?.name == null
+  - rename:
+      field: json.actor.user_id
+      target_field: user.id
+      ignore_missing: true
+
+  ##
+  ## 6. Map to ECS user_agent.* fields
+  ##
+  - rename:
+      field: json.user_agent
+      target_field: user_agent.original
+      ignore_missing: true
+  - rename:
+      field: json.actor.user_agent
+      target_field: user_agent.original
+      ignore_missing: true
+      override: false
+      if: ctx.user_agent?.original == null
+  - user_agent:
+      field: user_agent.original
+      ignore_missing: true
+      ignore_failure: true
+
+  ##
+  ## 7. Map to ECS observer.* fields (SecureAI is the security observer)
+  ##
+  - set:
+      field: observer.vendor
+      value: HiperAI
+  - set:
+      field: observer.product
+      value: SecureAI
+  - set:
+      field: observer.type
+      value: ai_security_gateway
+
+  ##
+  ## 8. Map message field
+  ##
+  - rename:
+      field: json.message
+      target_field: message
+      ignore_missing: true
+  - rename:
+      field: json.activity.description
+      target_field: message
+      ignore_missing: true
+      override: false
+      if: ctx.message == null
+
+  ##
+  ## 9. Map SecureAI-specific fields (under hiperai.*)
+  ##
+  - rename:
+      field: json.action
+      target_field: hiperai.action
+      ignore_missing: true
+  - rename:
+      field: json.category
+      target_field: hiperai.category
+      ignore_missing: true
+  - rename:
+      field: json.severity
+      target_field: hiperai.severity
+      ignore_missing: true
+  - rename:
+      field: json.session_id
+      target_field: hiperai.session_id
+      ignore_missing: true
+  - rename:
+      field: json.activity
+      target_field: hiperai.activity
+      ignore_missing: true
+  - rename:
+      field: json.metadata
+      target_field: hiperai.metadata
+      ignore_missing: true
+
+  ##
+  ## 10. GeoIP enrichment from source IP
+  ##
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+      ignore_failure: true
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      target_field: source.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+
+  ##
+  ## 11. Related fields for correlation
+  ##
+  - append:
+      field: related.ip
+      value: "{{source.ip}}"
+      allow_duplicates: false
+      if: ctx.source?.ip != null
+  - append:
+      field: related.user
+      value: "{{user.name}}"
+      allow_duplicates: false
+      if: ctx.user?.name != null
+
+  ##
+  ## 12. Cleanup temporary fields
+  ##
+  - remove:
+      field:
+        - json.timestamp
+        - json.source
+        - json.actor
+        - json
+      ignore_missing: true
+  - remove:
+      field: event.original
+      if: ctx.tags == null || !ctx.tags.contains('preserve_original_event')
+      ignore_missing: true
+      ignore_failure: true
+
+  ##
+  ## 13. Ensure tags field is properly set
+  ##
+  - append:
+      field: tags
+      value: forwarded
+      allow_duplicates: false
+      if: ctx.tags != null
+
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      value: >-
+        Processor {{ _ingest.on_failure_processor_type }}
+        with tag {{ _ingest.on_failure_processor_tag }} in pipeline
+        {{ _ingest.on_failure_pipeline }} failed with message:
+        {{ _ingest.on_failure_message }}
