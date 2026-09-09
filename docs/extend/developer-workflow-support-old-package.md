@@ -311,4 +311,24 @@ Packages in `skip_checklist_packages` are excluded from the checklist comment (n
 
     * **Solution**: Remove the `--coverage-format` flag from the relevant script on the backport branch.
 
+4. Docker Compose YAML unmarshal error in backport branch:
+
+    * Example of the error:
+
+        `Error: error running package system tests: could not complete test run: could not setup service: could not get Docker Compose configuration for service: yaml: unmarshal errors: line 8: cannot unmarshal !!seq into map[string]string`
+
+    * **Affected versions**: `elastic-package` < v0.96.0.
+
+    * **Cause**: `elastic-package` < v0.96.0 always calls the standalone `docker-compose` binary directly (not the `docker compose` CLI plugin). A CI infrastructure update replaced the standalone binary installation (`with_docker_compose`) with the Docker CLI plugin (`with_docker_compose_plugin`). Docker 26.1.2+ ships `docker-compose-plugin` v2.24.7+ as a system binary, which `elastic-package` < v0.96.0 picks up instead of the pinned version. Docker Compose v2.23+ changed the `environment` field in its config output from a YAML map to a sequence (`!!seq`), which the older `elastic-package` struct (`Environment map[string]string`) cannot unmarshal. Pinning `DOCKER_COMPOSE_VERSION` in the pipeline file does not help because that variable only controls the CLI plugin installed at `~/.docker/cli-plugins/`, which pre-v0.96.0 elastic-package never uses.
+
+        From v0.96.0 onward, `elastic-package` tries `docker compose` (CLI plugin) first and falls back to `docker-compose` (standalone), so it picks up the pinned plugin version and the error does not occur.
+
+    * **Solution**: On the backport branch, make the following changes (see [example commit](https://github.com/elastic/integrations/commit/fbf68eb4a3f5baa928d930ed2408982f8cb3c54b)):
+
+        1. Revert `DOCKER_COMPOSE_VERSION` in `.buildkite/pipeline.yml`, `.buildkite/pipeline.publish.yml`, and `.buildkite/pipeline.serverless.yml` back to the value that was in use on that branch before the CI sync (e.g. `v2.17.2`). The variable controls which standalone binary is downloaded, so it must match a version < v2.23.0 to avoid the `!!seq` format.
+        2. Restore the `with_docker_compose` function in `.buildkite/scripts/common.sh` (which downloads and installs the pinned standalone `docker-compose` binary into `${BIN_FOLDER}`, the first entry on `PATH`).
+        3. Call `with_docker_compose` from `test_one_package.sh` and `test_integrations_with_serverless.sh` alongside any existing plugin installation.
+
+        This ensures `elastic-package` < v0.96.0 finds the pinned standalone binary before the system-installed v2.24.7+.
+
 
