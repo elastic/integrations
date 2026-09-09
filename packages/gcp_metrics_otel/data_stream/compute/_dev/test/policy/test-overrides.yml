@@ -1,13 +1,13 @@
-# Overrides the integration defaults and exercises the receiver settings that
-# are inherited from googlecloudmonitor_input_otel rather than redeclared here,
-# proving they still reach the rendered agent policy.
+# Checks that additional_metrics is appended to the default metric set from
+# stream.yml.hbs rather than replacing it, and that the receiver settings
+# inherited from googlecloudmonitor_input_otel rather than redeclared here
+# still reach the rendered agent policy.
 data_stream:
   vars:
     project_id: "my-gcp-project"
-    metrics_list:
-      - "compute.googleapis.com/instance/cpu/utilization"
-    metric_descriptor_filters:
-      - 'metric.type = starts_with("compute.googleapis.com/instance/disk/")'
+    additional_metrics:
+      - "compute.googleapis.com/guest/memory/percent_used"
+      - "compute.googleapis.com/guest/disk/percent_used"
     collection_interval: "120s"
     initial_delay: "5s"
     timeout: "30s"
