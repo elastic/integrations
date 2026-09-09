@@ -1,0 +1,72 @@
+# Use of "*" to use all namespaces defined.
+source:
+  index:
+    - "logs-kolide.device-*"
+  query:
+    bool:
+      filter:
+        # kolide.device carries two document shapes: full inventory snapshots polled
+        # from the REST API (event.kind: state) and sparse webhook deliveries routed
+        # in from kolide.webhook (devices.created, devices.registered,
+        # devices.destroyed, device_trust.status_changed; event.kind: event). A latest
+        # transform replaces the whole document, so an unfiltered source would let a
+        # sparse webhook delivery overwrite a full snapshot. Only the API snapshots
+        # describe complete device state.
+        - term:
+            event.kind: state
+      must_not:
+        - exists:
+            field: error.message
+        # The initial run scans the whole source index pattern, so without this
+        # guard it would read documents out of searchable-snapshot storage.
+        - terms:
+            _tier:
+              - data_frozen
+              - data_cold
+dest:
+  # The version suffix on the dest.index should be incremented if a breaking
+  # change is made to the index mapping or settings (for example index.mode).
+  # You must also bump the fleet_transform_version for any change to this
+  # transform configuration to take effect. The old destination index is not
+  # automatically removed. We are dependent on
+  # https://github.com/elastic/package-spec/issues/523 to give us that ability
+  # in order to prevent having duplicate data and prevent query time field type
+  # conflicts.
+  index: "logs-kolide_latest.dest_device-1"
+  aliases:
+    - alias: "logs-kolide_latest.device"
+      move_on_creation: true
+latest:
+  # host.id is the Kolide device identifier and is stable across renames. host.hostname
+  # is the mutable display name; it is retained as a plain field on the destination
+  # documents so it stays available as a match field for lookups and enrichment.
+  unique_key:
+    - event.dataset
+    - host.id
+  sort: "@timestamp"
+description: >-
+  Latest devices from Kolide. As devices get updated, this transform stores only the latest state of each device inside the destination index. Thus the transform's destination index contains only the latest state of the device.
+frequency: 30s
+settings:
+  # This is required to prevent the transform from clobbering the Fleet-managed mappings.
+  deduce_mappings: false
+  unattended: true
+sync:
+  time:
+    field: "event.ingested"
+    # Updated to 120s because of refresh delay in Serverless. With default 60s,
+    # sometimes transform wouldn't process all documents.
+    delay: 120s
+# No retention_policy by design. The device ingest pipeline assigns a content
+# fingerprint _id (over event.original minus last_seen_at), and this is a logs data
+# stream, so re-polling an unchanged device collides on that _id and the write is
+# dropped rather than merged. @timestamp and event.ingested on a device's newest
+# source document therefore track the last time its content changed, not the last
+# time it was seen. A time-based retention policy would evict devices that are still
+# active in Kolide but have not changed configuration within max_age.
+_meta:
+  managed: false
+  # Bump this version to delete, reinstall, and restart the transform during
+  # package installation.
+  fleet_transform_version: 0.1.0
+  run_as_kibana_system: false
