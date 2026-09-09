@@ -355,6 +355,11 @@ is_stack_created() {
     if [ "${files}" -gt 0 ]; then
         return 0
     fi
+    # snapshot.yml was the name used before elastic-package renamed it to docker-compose.yml
+    files=$(find ~/.elastic-package -type f -name "snapshot.yml" | wc -l)
+    if [ "${files}" -gt 0 ]; then
+        return 0
+    fi
     return 1
 }
 
