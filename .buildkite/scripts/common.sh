@@ -188,6 +188,16 @@ with_docker() {
     docker version -f json  | jq -r '.Server.Version'
 }
 
+with_docker_compose() {
+    create_bin_folder
+    check_platform_architecture
+
+    echo "--- Setting up the Docker-compose environment..."
+    retry 5 curl -sSL --fail -o "${BIN_FOLDER}/docker-compose" "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-${platform_type_lowercase}-${hw_type}"
+    chmod +x "${BIN_FOLDER}/docker-compose"
+    docker-compose version
+}
+
 with_docker_compose_plugin() {
     echo "--- Setting up the Docker compose plugin environment..."
     if [[ "${DOCKER_COMPOSE_VERSION:-"false"}" == "false" ]]; then
@@ -325,6 +335,11 @@ delete_kind_cluster() {
 is_stack_created() {
     local files=0
     files=$(find ~/.elastic-package -type f -name "docker-compose.yml" | wc -l)
+    if [ "${files}" -gt 0 ]; then
+        return 0
+    fi
+    # snapshot.yml was the name used before elastic-package renamed it to docker-compose.yml
+    files=$(find ~/.elastic-package -type f -name "snapshot.yml" | wc -l)
     if [ "${files}" -gt 0 ]; then
         return 0
     fi
