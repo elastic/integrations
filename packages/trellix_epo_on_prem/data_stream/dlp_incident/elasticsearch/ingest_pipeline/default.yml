@@ -60,7 +60,9 @@ processors:
             for (int i = 0; i < str.length(); i++) {
                 char c = str.charAt(i);
                 if (Character.isUpperCase(c)) {
-                    if (i > 0 && Character.isLowerCase(str.charAt(i - 1))) {
+                    if (i > 0 && str.charAt(i - 1) != (char) '_'
+                        && (!Character.isUpperCase(str.charAt(i - 1))
+                        || (i + 1 < str.length() && Character.isLowerCase(str.charAt(i + 1))))) {
                         result += "_";
                     }
                     result += Character.toLowerCase(c);
@@ -255,21 +257,21 @@ processors:
   # columns carry local wall clocks that the appended offset correctly describes,
   # and they are parsed with it intact.
   - gsub:
-      field: trellix_epo_on_prem.dlp_incident.udlp_epd_incidents.violation_utctime
+      field: trellix_epo_on_prem.dlp_incident.udlp_epd_incidents.violation_utc_time
       pattern: '[+-]\d{2}:\d{2}$'
       replacement: 'Z'
       ignore_missing: true
       tag: gsub_violation_utc_time_server_offset
   - date:
-      field: trellix_epo_on_prem.dlp_incident.udlp_epd_incidents.violation_utctime
-      target_field: trellix_epo_on_prem.dlp_incident.udlp_epd_incidents.violation_utctime
+      field: trellix_epo_on_prem.dlp_incident.udlp_epd_incidents.violation_utc_time
+      target_field: trellix_epo_on_prem.dlp_incident.udlp_epd_incidents.violation_utc_time
       formats:
         - ISO8601
       tag: date_violation_utc_time
-      if: ctx.trellix_epo_on_prem?.dlp_incident?.udlp_epd_incidents?.violation_utctime != null
+      if: ctx.trellix_epo_on_prem?.dlp_incident?.udlp_epd_incidents?.violation_utc_time != null
       on_failure:
         - remove:
-            field: trellix_epo_on_prem.dlp_incident.udlp_epd_incidents.violation_utctime
+            field: trellix_epo_on_prem.dlp_incident.udlp_epd_incidents.violation_utc_time
             ignore_missing: true
             tag: remove_violation_utc_time_on_date_failure
         - append:
@@ -278,7 +280,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: '@timestamp'
-      copy_from: trellix_epo_on_prem.dlp_incident.udlp_epd_incidents.violation_utctime
+      copy_from: trellix_epo_on_prem.dlp_incident.udlp_epd_incidents.violation_utc_time
       ignore_empty_value: true
       tag: set_timestamp_from_violation_utc_time
   - date:
@@ -341,7 +343,7 @@ processors:
         - trellix_epo_on_prem.dlp_incident.udlp_epd_incidents.rules_to_display
         - trellix_epo_on_prem.dlp_incident.udlp_epd_incidents.rule_set_to_display
         - trellix_epo_on_prem.dlp_incident.udlp_epd_incidents.severity
-        - trellix_epo_on_prem.dlp_incident.udlp_epd_incidents.violation_utctime
+        - trellix_epo_on_prem.dlp_incident.udlp_epd_incidents.violation_utc_time
       ignore_missing: true
       tag: remove_custom_mapped_ecs_fields
   - set:
