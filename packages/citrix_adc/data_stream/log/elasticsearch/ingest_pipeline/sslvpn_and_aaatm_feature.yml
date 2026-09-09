@@ -9,7 +9,10 @@ processors:
       pattern_definitions:
         SEP: "%{SPACE}-%{SPACE}"
         CLIENT_IP_OPT: "Client_ip (%{IP:citrix_adc.log.client_ip})?"
-        XFF_IP_OPT: '(?:X-Forwarded-For_ip(?: +%{IP:citrix_adc.log.x_forwarded_for_ip})?(?:(?!\s-\s).)*%{SEP})?'
+        # The lookahead stops the address capture from ending mid-address: without
+        # it, %{IP} can match a short valid prefix of an IPv4-mapped IPv6 address
+        # and the bounded eater absorbs the rest, capturing a wrong address.
+        XFF_IP_OPT: '(?:X-Forwarded-For_ip(?: +%{IP:citrix_adc.log.x_forwarded_for_ip}(?![0-9A-Fa-f:.]))?(?:(?!\s-\s).)*%{SEP})?'
         NAT_IP: 'Nat_ip (%{IP:citrix_adc.log.nat.ip}|"%{DATA}")'
       patterns:
         - '^User %{DATA:citrix_adc.log.user} - %{CLIENT_IP_OPT}%{SEP}%{XFF_IP_OPT}%{NAT_IP} - Vserver %{IP:citrix_adc.log.vserver.ip}:%{INT:citrix_adc.log.vserver.port} - Browser_type "%{DATA:citrix_adc.log.browser_type}" - Group\(s\) "%{DATA:citrix_adc.log.groups}" ?$'
@@ -24,7 +27,10 @@ processors:
         SEP: "%{SPACE}-%{SPACE}"
         USER_INFO: "User %{DATA:citrix_adc.log.user}"
         CLIENT_IP_OPT: "Client_ip (%{IP:citrix_adc.log.client_ip})?"
-        XFF_IP_OPT: '(?:X-Forwarded-For_ip(?: +%{IP:citrix_adc.log.x_forwarded_for_ip})?(?:(?!\s-\s).)*%{SEP})?'
+        # The lookahead stops the address capture from ending mid-address: without
+        # it, %{IP} can match a short valid prefix of an IPv4-mapped IPv6 address
+        # and the bounded eater absorbs the rest, capturing a wrong address.
+        XFF_IP_OPT: '(?:X-Forwarded-For_ip(?: +%{IP:citrix_adc.log.x_forwarded_for_ip}(?![0-9A-Fa-f:.]))?(?:(?!\s-\s).)*%{SEP})?'
         # Unquoted variant: LOGOUT has been seen with a bare, unquoted Nat_ip
         # value. The final branch keeps that tolerance but is bounded so it
         # cannot run past a separator and silently swallow a whole segment.
@@ -83,7 +89,10 @@ processors:
       pattern_definitions:
         SEP: "%{SPACE}-%{SPACE}"
         CLIENT_IP_OPT: "Client_ip (%{IP:citrix_adc.log.client_ip})?"
-        XFF_IP_OPT: '(?:X-Forwarded-For_ip(?: +%{IP:citrix_adc.log.x_forwarded_for_ip})?(?:(?!\s-\s).)*%{SEP})?'
+        # The lookahead stops the address capture from ending mid-address: without
+        # it, %{IP} can match a short valid prefix of an IPv4-mapped IPv6 address
+        # and the bounded eater absorbs the rest, capturing a wrong address.
+        XFF_IP_OPT: '(?:X-Forwarded-For_ip(?: +%{IP:citrix_adc.log.x_forwarded_for_ip}(?![0-9A-Fa-f:.]))?(?:(?!\s-\s).)*%{SEP})?'
         NAT_IP: 'Nat_ip (%{IP:citrix_adc.log.nat.ip}|"%{DATA}")'
       patterns:
         - '^User %{DATA:citrix_adc.log.user} - %{CLIENT_IP_OPT}%{SEP}%{XFF_IP_OPT}%{NAT_IP} - Vserver %{IP:citrix_adc.log.vserver.ip}:%{INT:citrix_adc.log.vserver.port} - Source %{IP:citrix_adc.log.source.ip}:%{INT:citrix_adc.log.source.port} - Destination %{IP:citrix_adc.log.destination.ip}:%{INT:citrix_adc.log.destination.port} - Start_time "%{DATA:_tmp.start_time}" - End_time "%{GREEDYDATA:_tmp.end_time}" - Duration %{DATA:citrix_adc.log.duration} - Total_bytes_send %{NUMBER:citrix_adc.log.total_bytes_send:int} - Total_bytes_recv %{NUMBER:citrix_adc.log.total_bytes_received:int} - Total_compressedbytes_send %{NUMBER:citrix_adc.log.total_compressed_bytes_send:int} - Total_compressedbytes_recv %{NUMBER:citrix_adc.log.total_compressed_bytes_recieved:int} - Compression_ratio_send %{NUMBER:citrix_adc.log.compression_ratio_send:float}% - Compression_ratio_recv %{NUMBER:citrix_adc.log.compression_ratio_recieved:float}% - Access %{WORD:citrix_adc.log.access} - Group\(s\) "%{DATA:citrix_adc.log.groups}"$'
@@ -96,7 +105,10 @@ processors:
       pattern_definitions:
         SEP: "%{SPACE}-%{SPACE}"
         CLIENT_IP_OPT: "Client_ip (%{IP:citrix_adc.log.client_ip})?"
-        XFF_IP_OPT: '(?:X-Forwarded-For_ip(?: +%{IP:citrix_adc.log.x_forwarded_for_ip})?(?:(?!\s-\s).)*%{SEP})?'
+        # The lookahead stops the address capture from ending mid-address: without
+        # it, %{IP} can match a short valid prefix of an IPv4-mapped IPv6 address
+        # and the bounded eater absorbs the rest, capturing a wrong address.
+        XFF_IP_OPT: '(?:X-Forwarded-For_ip(?: +%{IP:citrix_adc.log.x_forwarded_for_ip}(?![0-9A-Fa-f:.]))?(?:(?!\s-\s).)*%{SEP})?'
         NAT_IP: 'Nat_ip (%{IP:citrix_adc.log.nat.ip}|"%{DATA}")'
       patterns:
         - '^User %{DATA:citrix_adc.log.user} - %{CLIENT_IP_OPT}%{SEP}%{XFF_IP_OPT}%{NAT_IP} - Vserver %{IP:citrix_adc.log.vserver.ip}:%{INT:citrix_adc.log.vserver.port} - Last_contact "%{DATA:citrix_adc.log.last_contact}" - Group\(s\) "%{DATA:citrix_adc.log.groups}" ?$'
@@ -109,7 +121,10 @@ processors:
       pattern_definitions:
         SEP: "%{SPACE}-%{SPACE}"
         CLIENT_IP_OPT: "Client_ip (%{IP:citrix_adc.log.client_ip})?"
-        XFF_IP_OPT: '(?:X-Forwarded-For_ip(?: +%{IP:citrix_adc.log.x_forwarded_for_ip})?(?:(?!\s-\s).)*%{SEP})?'
+        # The lookahead stops the address capture from ending mid-address: without
+        # it, %{IP} can match a short valid prefix of an IPv4-mapped IPv6 address
+        # and the bounded eater absorbs the rest, capturing a wrong address.
+        XFF_IP_OPT: '(?:X-Forwarded-For_ip(?: +%{IP:citrix_adc.log.x_forwarded_for_ip}(?![0-9A-Fa-f:.]))?(?:(?!\s-\s).)*%{SEP})?'
         NAT_IP: 'Nat_ip (%{IP:citrix_adc.log.nat.ip}|"%{DATA}")'
       patterns:
         - '^(Context %{DATA:citrix_adc.log.username}@%{IP} - SessionId: %{NUMBER:citrix_adc.log.session_id} - )?(\[%{DATA}\] )?User %{DATA:citrix_adc.log.user} - %{CLIENT_IP_OPT}%{SEP}%{XFF_IP_OPT}%{NAT_IP} - Vserver %{IP:citrix_adc.log.vserver.ip}:%{INT:citrix_adc.log.vserver.port} - Source %{IP:citrix_adc.log.source.ip}:%{INT:citrix_adc.log.source.port} - Destination %{IP:citrix_adc.log.destination.ip}:%{INT:citrix_adc.log.destination.port} - Start_time "%{DATA:_tmp.start_time}" - End_time "%{GREEDYDATA:_tmp.end_time}" - Duration %{DATA:citrix_adc.log.duration} - Total_bytes_send %{NUMBER:citrix_adc.log.total_bytes_send:int} - Total_bytes_recv %{NUMBER:citrix_adc.log.total_bytes_received:int} - Access %{WORD:citrix_adc.log.access} - Group\(s\) "%{DATA:citrix_adc.log.groups}" ?$'
@@ -174,7 +189,10 @@ processors:
       pattern_definitions:
         SEP: "%{SPACE}-%{SPACE}"
         CLIENT_IP_OPT: "Client_ip (%{IP:citrix_adc.log.client_ip})?"
-        XFF_IP_OPT: '(?:X-Forwarded-For_ip(?: +%{IP:citrix_adc.log.x_forwarded_for_ip})?(?:(?!\s-\s).)*%{SEP})?'
+        # The lookahead stops the address capture from ending mid-address: without
+        # it, %{IP} can match a short valid prefix of an IPv4-mapped IPv6 address
+        # and the bounded eater absorbs the rest, capturing a wrong address.
+        XFF_IP_OPT: '(?:X-Forwarded-For_ip(?: +%{IP:citrix_adc.log.x_forwarded_for_ip}(?![0-9A-Fa-f:.]))?(?:(?!\s-\s).)*%{SEP})?'
         NAT_IP: 'Nat_ip (%{IP:citrix_adc.log.nat.ip}|"%{DATA}")'
       patterns:
         - '^(Sessionid|Session id) %{NUMBER:citrix_adc.log.session_id:int} - User %{DATA:citrix_adc.log.user} - %{CLIENT_IP_OPT}%{SEP}%{XFF_IP_OPT}%{NAT_IP} - Vserver_ip %{IP:citrix_adc.log.vserver.ip} - Errmsg "%{DATA:citrix_adc.log.errmsg}" ?$'
