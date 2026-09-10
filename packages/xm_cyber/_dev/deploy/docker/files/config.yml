@@ -295,6 +295,108 @@ rules:
             ]
           }
           `}}
+  # Vulnerability Instance — Page 2, fetched via the absolute nextPageLink (cursor present; must precede page 1)
+  - path: /api/v2/vrm/public/vrmReport/vulnerabilityInstances
+    methods: ['GET']
+    query_params:
+      cursor: 'eyJpZCI6IjIifQ=='
+    request_headers:
+      Authorization: "Bearer mock-access-token-abc123"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "lastDataUpdate": "2026-09-07T01:32:06.000Z",
+            "total": 2,
+            "nextPageLink": null,
+            "data": [
+              {
+                "deviceId": "9000000000000000002",
+                "productVersions": [
+                  {
+                    "productVendor": "microsoft",
+                    "productName": "windows 10 version 1909 for x64-based systems",
+                    "version": "KB0",
+                    "filePaths": [],
+                    "activeCves": [
+                      {
+                        "cve": "CVE-2021-26414",
+                        "safeVersion": "KB5014701 14 Mar, 2023"
+                      }
+                    ],
+                    "closedCveIds": []
+                  }
+                ]
+              }
+            ]
+          }
+          `}}
+  # Vulnerability Instance — Page 1, initial fetch (no cursor)
+  - path: /api/v2/vrm/public/vrmReport/vulnerabilityInstances
+    methods: ['GET']
+    query_params:
+      pageSize: '2'
+      cursor: null
+    request_headers:
+      Authorization: "Bearer mock-access-token-abc123"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "lastDataUpdate": "2026-09-07T01:32:06.000Z",
+            "total": 2,
+            "nextPageLink": "https://xm-cyber.example.com/api/v2/vrm/public/vrmReport/vulnerabilityInstances?pageSize=2&cursor=eyJpZCI6IjIifQ==",
+            "data": [
+              {
+                "deviceId": "9000000000000000001",
+                "productVersions": [
+                  {
+                    "productVendor": "",
+                    "productName": "windows print spooler",
+                    "version": "Not Available",
+                    "filePaths": ["C:/Windows/System32/ntoskrnl.exe"],
+                    "activeCves": [
+                      {
+                        "cve": "CVE-2021-34527",
+                        "safeVersion": null
+                      }
+                    ],
+                    "closedCveIds": []
+                  },
+                  {
+                    "productVendor": "microsoft",
+                    "productName": ".net framework",
+                    "version": "4.8",
+                    "filePaths": [],
+                    "activeCves": [
+                      {
+                        "cve": "CVE-2021-24111",
+                        "safeVersion": null
+                      },
+                      {
+                        "cve": "CVE-2022-21911",
+                        "safeVersion": null
+                      },
+                      {
+                        "cve": "CVE-2022-26832",
+                        "safeVersion": null
+                      }
+                    ],
+                    "closedCveIds": []
+                  }
+                ]
+              }
+            ]
+          }
+          `}}
   # Page 2 — fetched via nextLink cursor=page2
   - path: /api/entityInventory/entities
     methods: ['GET']

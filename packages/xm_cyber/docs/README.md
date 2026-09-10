@@ -30,6 +30,7 @@ The XM Cyber integration collects the following types of data:
 | `risk_score` | Organization-level security grade (A–F), numeric risk score, trend data, and per-scenario breakdowns | `/api/scenarios/v2/scenarios/riskScore` |
 | `device` | Device inventory from XM Cyber VRM: identity (device id, name, type), network and directory context (IP, subnet, FQDN, domain, OU, OS), choke-point level and critical-asset flag, aggregate vulnerability counts and max CVSS scores, and XM Cyber risk score | `/api/v2/vrm/public/vrmReport/devices` |
 | `product` | **Product-level** aggregates from VRM: one event per software product with fleet-wide counts (devices where it appears, choke-point presence, affected critical assets, products critical assets at risk, vulnerability count), vendor, and reported operating systems. | `/api/v2/vrm/public/vrmReport/products` |
+| `vulnerability_instance` | Per-device CVE instances from VRM: one event per device listing its installed product versions, each with vendor, version, file paths, active CVEs (and safe versions), and closed CVE IDs | `/api/v2/vrm/public/vrmReport/vulnerabilityInstances` |
 
 ### Supported use cases
 
@@ -42,6 +43,7 @@ The XM Cyber integration collects the following types of data:
 - **Exposure-aware asset triage**: Use choke-point level and critical-asset signals together with per-device vulnerability counts and max CVSS to prioritize which hosts warrant review first.
 - **Software exposure across the fleet**: Rank products by `product_vulnerabilities`, `devices_found_on`, and `choke_points_found_on`, and slice by `product_operating_system` to align remediation with platform mix.
 - **Critical-asset risk from products**: Use `affected_critical_assets` and `products_critical_assets_at_risk` with vendor and OS context to prioritize patch and upgrade work.
+- **Instance-level remediation**: Use `vulnerability_instance` to see which product version on which device still has an active CVE, and whether a safe version is already known.
 
 ## What do I need to use this integration?
 
@@ -309,22 +311,22 @@ An example event for `vulnerability` looks as following:
 {
     "@timestamp": "2025-04-03T00:00:00.000Z",
     "agent": {
-        "ephemeral_id": "c403924b-3af0-4469-8d91-ec1a82b0f8a9",
-        "id": "c1f294d3-3bf1-4dd1-8b85-1a1e4f28d08a",
-        "name": "elastic-agent-88318",
+        "ephemeral_id": "1415cdb9-9052-41ce-9ab6-2a02164fce32",
+        "id": "5dfba9ac-17fb-490d-833b-ec34c50ba454",
+        "name": "elastic-agent-86940",
         "type": "filebeat",
         "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "xm_cyber.vulnerability",
-        "namespace": "10627",
+        "namespace": "71489",
         "type": "logs"
     },
     "ecs": {
         "version": "9.4.0"
     },
     "elastic_agent": {
-        "id": "c1f294d3-3bf1-4dd1-8b85-1a1e4f28d08a",
+        "id": "5dfba9ac-17fb-490d-833b-ec34c50ba454",
         "snapshot": false,
         "version": "8.19.0"
     },
@@ -334,7 +336,7 @@ An example event for `vulnerability` looks as following:
             "vulnerability"
         ],
         "dataset": "xm_cyber.vulnerability",
-        "ingested": "2026-09-08T10:56:17Z",
+        "ingested": "2026-09-08T10:58:28Z",
         "kind": "event",
         "original": "{\"AmazonLinuxURL\":\"https://explore.alas.aws.amazon.com/CVE-2013-6629.html\",\"CVEOrgURL\":\"https://www.cve.org/CVERecord?id=CVE-2013-6629\",\"DebianURL\":\"https://security-tracker.debian.org/tracker/CVE-2013-6629\",\"MSRCURL\":\"https://msrc.microsoft.com/update-guide/vulnerability/CVE-2013-6629\",\"NVDURL\":\"https://nvd.nist.gov/vuln/detail/CVE-2013-6629\",\"OracleURL\":\"\",\"RedHatURL\":\"https://access.redhat.com/security/cve/CVE-2013-6629\",\"SUSEURL\":\"https://www.suse.com/security/cve/CVE-2013-6629.html\",\"UbuntuURL\":\"\",\"chokePointFoundOn\":1,\"criticalAssetsAtRisk\":29,\"criticalAssetsFoundOn\":1,\"cve\":\"CVE-2013-6629\",\"cvss2\":5,\"cvss2Vector\":\"AV:N/AC:M/Au:N/C:P/I:N/A:N\",\"cvss30\":0,\"cvss31\":0,\"cvss31Vector\":\"\",\"cvss3Vector\":\"\",\"cvss4\":0,\"cvss4Vector\":\"\",\"description\":\"The get_sos function in jdmarker.c in libjpeg does not check for certain duplications of component data, which allows remote attackers to obtain sensitive information via a crafted JPEG image.\",\"deviceFoundOn\":18,\"epssPercentile\":0.95322,\"epssProbability\":0.10117,\"epssScore\":0.10117,\"firstDetected\":\"2025-04-03T00:00:00.000Z\",\"hasAttackTechnique\":false,\"inCisaKev\":false,\"inExploitDb\":false,\"products\":2,\"publishedDate\":\"2013-11-19T00:00:00.000Z\",\"severity\":20,\"severityLevel\":\"Medium\"}",
         "type": [
@@ -1236,6 +1238,132 @@ An example event for `product` looks as following:
 }
 ```
 
+### Vulnerability Instance
+
+#### Vulnerability Instance fields
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| input.type | Type of filebeat input. | keyword |
+| observer.product | The product name of the observer. | constant_keyword |
+| observer.vendor | Vendor name of the observer. | constant_keyword |
+| vulnerability.scanner.vendor | The name of the vulnerability scanner vendor. | constant_keyword |
+| xm_cyber.vulnerability_instance.device_id | XM Cyber device identifier. | keyword |
+| xm_cyber.vulnerability_instance.product_versions.active_cves.cve | CVE identifier. | keyword |
+| xm_cyber.vulnerability_instance.product_versions.active_cves.safe_version | Vendor-recommended safe version when provided. | keyword |
+| xm_cyber.vulnerability_instance.product_versions.closed_cve_ids | CVE identifiers that have been closed for this product version. | keyword |
+| xm_cyber.vulnerability_instance.product_versions.file_paths | File paths associated with this product version on the device, when reported. | keyword |
+| xm_cyber.vulnerability_instance.product_versions.product_name | Product display name. | keyword |
+| xm_cyber.vulnerability_instance.product_versions.product_vendor | Software vendor. Empty in the API for about half of product versions. | keyword |
+| xm_cyber.vulnerability_instance.product_versions.version | Installed product version string. May be free text such as "Not Available". | keyword |
+
+
+### Example event
+
+#### Vulnerability Instance
+
+An example event for `vulnerability_instance` looks as following:
+
+```json
+{
+    "@timestamp": "2026-09-09T10:10:35.173Z",
+    "agent": {
+        "ephemeral_id": "69e09147-c511-44a9-9c0e-3b91ac7cc05d",
+        "id": "78ed120c-03a9-4351-8dc0-3a17fc806802",
+        "name": "elastic-agent-29896",
+        "type": "filebeat",
+        "version": "8.19.0"
+    },
+    "data_stream": {
+        "dataset": "xm_cyber.vulnerability_instance",
+        "namespace": "72119",
+        "type": "logs"
+    },
+    "device": {
+        "id": "9000000000000000001"
+    },
+    "ecs": {
+        "version": "9.5.0"
+    },
+    "elastic_agent": {
+        "id": "78ed120c-03a9-4351-8dc0-3a17fc806802",
+        "snapshot": false,
+        "version": "8.19.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "vulnerability",
+            "host"
+        ],
+        "dataset": "xm_cyber.vulnerability_instance",
+        "ingested": "2026-09-09T10:10:38Z",
+        "kind": "event",
+        "original": "{\"deviceId\":\"9000000000000000001\",\"productVersions\":[{\"activeCves\":[{\"cve\":\"CVE-2021-34527\",\"safeVersion\":null}],\"closedCveIds\":[],\"filePaths\":[\"C:/Windows/System32/ntoskrnl.exe\"],\"productName\":\"windows print spooler\",\"productVendor\":\"\",\"version\":\"Not Available\"},{\"activeCves\":[{\"cve\":\"CVE-2021-24111\",\"safeVersion\":null},{\"cve\":\"CVE-2022-21911\",\"safeVersion\":null},{\"cve\":\"CVE-2022-26832\",\"safeVersion\":null}],\"closedCveIds\":[],\"filePaths\":[],\"productName\":\".net framework\",\"productVendor\":\"microsoft\",\"version\":\"4.8\"}]}",
+        "type": [
+            "info"
+        ]
+    },
+    "host": {
+        "id": "9000000000000000001"
+    },
+    "input": {
+        "type": "cel"
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "xm_cyber-vulnerability_instance"
+    ],
+    "vulnerability": {
+        "enumeration": "CVE"
+    },
+    "xm_cyber": {
+        "vulnerability_instance": {
+            "device_id": "9000000000000000001",
+            "product_versions": [
+                {
+                    "active_cves": [
+                        {
+                            "cve": "CVE-2021-34527"
+                        }
+                    ],
+                    "file_paths": [
+                        "C:/Windows/System32/ntoskrnl.exe"
+                    ],
+                    "product_name": "windows print spooler",
+                    "version": "Not Available"
+                },
+                {
+                    "active_cves": [
+                        {
+                            "cve": "CVE-2021-24111"
+                        },
+                        {
+                            "cve": "CVE-2022-21911"
+                        },
+                        {
+                            "cve": "CVE-2022-26832"
+                        }
+                    ],
+                    "product_name": ".net framework",
+                    "product_vendor": "microsoft",
+                    "version": "4.8"
+                }
+            ]
+        }
+    }
+}
+```
+
 ### Inputs used
 
 These inputs can be used with this integration:
@@ -1279,6 +1407,7 @@ These XM Cyber REST API endpoints are used by this integration:
 | `/api/scenarios/v2/scenarios/riskScore` | GET | `risk_score` | Organization risk score and grade |
 | `/api/v2/vrm/public/vrmReport/devices` | GET | `device` | Paginated device inventory with vulnerability aggregates |
 | `/api/v2/vrm/public/vrmReport/products` | GET | `product` | Paginated product-level exposure aggregates (counts and OS list per product) |
+| `/api/v2/vrm/public/vrmReport/vulnerabilityInstances` | GET | `vulnerability_instance` | Paginated device records with per-product-version active CVEs and safe versions |
 
 ### ILM Policy
 

@@ -30,6 +30,7 @@ The XM Cyber integration collects the following types of data:
 | `risk_score` | Organization-level security grade (A–F), numeric risk score, trend data, and per-scenario breakdowns | `/api/scenarios/v2/scenarios/riskScore` |
 | `device` | Device inventory from XM Cyber VRM: identity (device id, name, type), network and directory context (IP, subnet, FQDN, domain, OU, OS), choke-point level and critical-asset flag, aggregate vulnerability counts and max CVSS scores, and XM Cyber risk score | `/api/v2/vrm/public/vrmReport/devices` |
 | `product` | **Product-level** aggregates from VRM: one event per software product with fleet-wide counts (devices where it appears, choke-point presence, affected critical assets, products critical assets at risk, vulnerability count), vendor, and reported operating systems. | `/api/v2/vrm/public/vrmReport/products` |
+| `vulnerability_instance` | Per-device CVE instances from VRM: one event per device listing its installed product versions, each with vendor, version, file paths, active CVEs (and safe versions), and closed CVE IDs | `/api/v2/vrm/public/vrmReport/vulnerabilityInstances` |
 
 ### Supported use cases
 
@@ -42,6 +43,7 @@ The XM Cyber integration collects the following types of data:
 - **Exposure-aware asset triage**: Use choke-point level and critical-asset signals together with per-device vulnerability counts and max CVSS to prioritize which hosts warrant review first.
 - **Software exposure across the fleet**: Rank products by `product_vulnerabilities`, `devices_found_on`, and `choke_points_found_on`, and slice by `product_operating_system` to align remediation with platform mix.
 - **Critical-asset risk from products**: Use `affected_critical_assets` and `products_critical_assets_at_risk` with vendor and OS context to prioritize patch and upgrade work.
+- **Instance-level remediation**: Use `vulnerability_instance` to see which product version on which device still has an active CVE, and whether a safe version is already known.
 
 ## What do I need to use this integration?
 
@@ -187,6 +189,18 @@ For help with Elastic ingest tools, check [Common problems](https://www.elastic.
 
 {{event "product"}}
 
+### Vulnerability Instance
+
+#### Vulnerability Instance fields
+
+{{fields "vulnerability_instance"}}
+
+### Example event
+
+#### Vulnerability Instance
+
+{{event "vulnerability_instance"}}
+
 ### Inputs used
 
 {{ inputDocs }}
@@ -205,6 +219,7 @@ These XM Cyber REST API endpoints are used by this integration:
 | `/api/scenarios/v2/scenarios/riskScore` | GET | `risk_score` | Organization risk score and grade |
 | `/api/v2/vrm/public/vrmReport/devices` | GET | `device` | Paginated device inventory with vulnerability aggregates |
 | `/api/v2/vrm/public/vrmReport/products` | GET | `product` | Paginated product-level exposure aggregates (counts and OS list per product) |
+| `/api/v2/vrm/public/vrmReport/vulnerabilityInstances` | GET | `vulnerability_instance` | Paginated device records with per-product-version active CVEs and safe versions |
 
 ### ILM Policy
 
