@@ -7,15 +7,24 @@
 package main
 
 import (
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
 
+	"github.com/Masterminds/semver/v3"
 	"github.com/magefile/mage/mg"
 	"github.com/magefile/mage/sh"
 	"github.com/pkg/errors"
 
+	"github.com/elastic/integrations/dev/citools"
 	"github.com/elastic/integrations/dev/codeowners"
+	"github.com/elastic/integrations/dev/coverage"
+	"github.com/elastic/integrations/dev/packagenames"
+)
+
+const (
+	elasticPackageModulePath = "github.com/elastic/elastic-package"
 )
 
 var (
@@ -32,6 +41,7 @@ func Check() error {
 	mg.Deps(ModTidy)
 	mg.Deps(goTest)
 	mg.Deps(codeowners.Check)
+	mg.Deps(packagenames.Check)
 	return nil
 }
 
@@ -49,6 +59,14 @@ func ImportBeats() error {
 	}
 	args = append(args, "*.go")
 	return sh.Run("go", args...)
+}
+
+func MergeCoverage() error {
+	coverageFiles, err := filepath.Glob("build/test-coverage/coverage-*.xml")
+	if err != nil {
+		return fmt.Errorf("glob failed: %w", err)
+	}
+	return coverage.MergeGenericCoverageFiles(coverageFiles, "build/test-coverage/coverage_merged.xml")
 }
 
 func build() error {
@@ -92,11 +110,10 @@ func goImports() error {
 }
 
 func goTest() error {
-	args := []string{"test"}
+	args := []string{"run", "gotest.tools/gotestsum", "--format", "testname", "--junitfile", "tests-report.xml"}
 	stdout := io.Discard
 	stderr := io.Discard
 	if mg.Verbose() {
-		args = append(args, "-v")
 		stdout = os.Stdout
 		stderr = os.Stderr
 	}
@@ -127,4 +144,122 @@ func findFilesRecursive(match func(path string, info os.FileInfo) bool) ([]strin
 
 func ModTidy() error {
 	return sh.RunV("go", "mod", "tidy")
+}
+
+// ListPackages lists all packages found under the packages directory.
+func ListPackages() error {
+	const packagesDir = "packages"
+	packages, err := citools.ListPackages(packagesDir)
+	if err != nil {
+		return fmt.Errorf("failed to list packages: %w", err)
+	}
+	for _, p := range packages {
+		fmt.Println(p)
+	}
+	return nil
+}
+
+// IsSubscriptionCompatible checks whether or not the package in the current directory allows to run with the given subscription (ELASTIC_SUBSCRIPTION env var).
+func IsSubscriptionCompatible() error {
+	subscription := os.Getenv("ELASTIC_SUBSCRIPTION")
+	if subscription == "" {
+		fmt.Println("true")
+		return nil
+	}
+
+	supported, err := citools.IsSubscriptionCompatible(subscription, "manifest.yml")
+	if err != nil {
+		return err
+	}
+	if supported {
+		fmt.Println("true")
+		return nil
+	}
+	fmt.Println("false")
+	return nil
+}
+
+// KibanaConstraintPackage returns the Kibana version constraint defined in the package manifest
+func KibanaConstraintPackage() error {
+	constraint, err := citools.KibanaConstraintPackage("manifest.yml")
+	if err != nil {
+		return fmt.Errorf("failed to get Kibana constraint: %w", err)
+	}
+	if constraint == nil {
+		fmt.Println("null")
+		return nil
+	}
+	fmt.Println(constraint)
+	return nil
+}
+
+// IsSupportedStack checks whether or not the package in the current directory is allowed to be installed in the given stack version
+func IsSupportedStack(stackVersion string) error {
+	if stackVersion == "" {
+		fmt.Println("true")
+		return nil
+	}
+
+	supported, err := citools.IsPackageSupportedInStackVersion(stackVersion, "manifest.yml")
+	if err != nil {
+		return err
+	}
+
+	if supported {
+		fmt.Println("true")
+		return nil
+	}
+	fmt.Println("false")
+	return nil
+}
+
+// IsLogsDBSupportedInPackage checks whether or not the package in the current directory supports LogsDB
+func IsLogsDBSupportedInPackage() error {
+	supported, err := citools.IsLogsDBSupportedInPackage("manifest.yml")
+	if err != nil {
+		return err
+	}
+	if !supported {
+		fmt.Println("false")
+		return nil
+	}
+	fmt.Println("true")
+	return nil
+}
+
+// IsVersionLessThanLogsDBGA checks whether or not the given version supports LogsDB. Minimum version that supports LogsDB as GA 8.17.0.
+func IsVersionLessThanLogsDBGA(version string) error {
+	stackVersion, err := semver.NewVersion(version)
+	if err != nil {
+		return fmt.Errorf("failed to parse version %q: %w", version, err)
+	}
+	lessThan := citools.IsVersionLessThanLogsDBGA(stackVersion)
+	if lessThan {
+		fmt.Println("true")
+		return nil
+	}
+	fmt.Println("false")
+	return nil
+}
+
+// IsElasticPackageDependencyLessThan checks whether or not the elastic-package version set in go.mod is less than the given version
+func IsElasticPackageDependencyLessThan(version string) error {
+	foundVersion, err := citools.PackageVersionGoMod("go.mod", elasticPackageModulePath)
+	if err != nil {
+		return fmt.Errorf("failed to get elastic-package version from go.mod: %w", err)
+	}
+	fmt.Fprintf(os.Stderr, "Found elastic-package %s\n", foundVersion)
+
+	desiredVersion, err := semver.NewVersion(version)
+	if err != nil {
+		return fmt.Errorf("failed to parse version %q: %w", version, err)
+	}
+
+	value := "false"
+	if foundVersion.LessThan(desiredVersion) {
+		value = "true"
+	}
+
+	fmt.Println(value)
+	return nil
 }
