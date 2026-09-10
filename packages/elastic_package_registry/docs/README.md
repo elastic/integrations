@@ -292,7 +292,5 @@ An example event for `metrics` looks as following:
 ```
 
 
-### Data streams using ILM policies
-
 
 
