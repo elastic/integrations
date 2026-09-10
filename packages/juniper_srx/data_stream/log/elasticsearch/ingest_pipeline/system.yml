@@ -309,10 +309,11 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
 # After System Structured, Structured-Brief, and Unstructured messages: there are optional key-value pairs seperated by ", ". These should now be in `message` field
-# split k-v fields inside message field.
+# split k-v fields inside message field. Skip free-text leftovers (no ", Key:" pattern) so
+# prose with embedded colons (e.g. DOT1XD Custom_log MAC addresses) is not treated as one KV pair.
 - kv:
     field: message
-    if: 'ctx.message != null && ctx.message != ""'
+    if: 'ctx.message != null && ctx.message != "" && /,\s[a-zA-Z0-9_\-\s]+:/.matcher(ctx.message).find()'
     tag: "kv_message"
     field_split: ',\s(?=[a-zA-Z0-9\_\-\s]+:)'
     value_split: ":"
@@ -420,6 +421,11 @@ processors:
     value: authentication
     if: ctx.juniper?.srx?.tag == "SSHD_LOGIN_FAILED"
 - append:
+    tag: append_event_category_dot1xd_authenticated
+    field: event.category
+    value: authentication
+    if: ctx.juniper?.srx?.tag == "DOT1XD_USR_AUTHENTICATED"
+- append:
     tag: append_event_type_3720ee03
     field: event.type
     value: allowed
@@ -466,6 +472,11 @@ processors:
     field: event.outcome
     value: failure
     if: ctx.juniper?.srx?.tag == "SSHD_LOGIN_FAILED"
+- set:
+    tag: set_event_outcome_dot1xd_authenticated
+    field: event.outcome
+    value: success
+    if: ctx.juniper?.srx?.tag == "DOT1XD_USR_AUTHENTICATED"
 
 ####################################
 ## ECS Server/Destination Mapping ##
@@ -824,6 +835,31 @@ processors:
     target_field: source.user.name
     ignore_missing: true
     if: "ctx.juniper?.srx?.username != null"
+- rename:
+    tag: rename_juniper_srx_mac_address_to_source_mac
+    field: juniper.srx.mac_address
+    target_field: source.mac
+    ignore_missing: true
+    if: ctx.juniper?.srx?.mac_address != null
+- gsub:
+    tag: gsub_source_mac_strip_separators
+    field: source.mac
+    pattern: '[-:.]'
+    replacement: ''
+    ignore_missing: true
+    if: ctx.source?.mac != null
+- gsub:
+    tag: gsub_source_mac_insert_hyphens
+    field: source.mac
+    pattern: '(..)(?!$)'
+    replacement: '$1-'
+    ignore_missing: true
+    if: ctx.source?.mac != null
+- uppercase:
+    tag: uppercase_source_mac
+    field: source.mac
+    ignore_missing: true
+    if: ctx.source?.mac != null
 
 #########################
 ## ECS Related Mapping ##
@@ -849,6 +885,12 @@ processors:
     field: juniper.srx.interface_name
     target_field: observer.ingress.interface.name
     ignore_missing: true
+- rename:
+    tag: rename_juniper_srx_vlan_name_to_observer_ingress_vlan_name
+    field: juniper.srx.vlan_name
+    target_field: observer.ingress.vlan.name
+    ignore_missing: true
+    if: ctx.juniper?.srx?.vlan_name != null
 - rename:
     tag: rename_syslog_hostname_to_observer_name_8e306b20
     field: syslog_hostname
@@ -919,6 +961,7 @@ processors:
     - syslog_program
     - syslog_hostname
     - tag
+    - juniper.srx.user_type
     - juniper.srx.destination_port
     - juniper.srx.nat_destination_port
     - juniper.srx.outbound_bytes
