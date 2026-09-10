@@ -159,22 +159,22 @@ An example event for `audit_trail` looks as following:
 {
     "@timestamp": "2023-01-03T19:13:54.358Z",
     "agent": {
-        "ephemeral_id": "55b27668-d54c-4a65-ade5-c33577da3ef7",
-        "id": "1799662a-7b8f-4bf6-8c4e-6ff0ac45f498",
-        "name": "elastic-agent-39650",
+        "ephemeral_id": "5ecdbc53-59d2-40a2-b8fb-c6c6c04dae7a",
+        "id": "9b2185f3-9604-47d2-a73a-798192fbf5ec",
+        "name": "elastic-agent-39102",
         "type": "filebeat",
         "version": "8.18.0"
     },
     "data_stream": {
         "dataset": "xm_cyber.audit_trail",
-        "namespace": "21331",
+        "namespace": "45900",
         "type": "logs"
     },
     "ecs": {
-        "version": "9.4.0"
+        "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "1799662a-7b8f-4bf6-8c4e-6ff0ac45f498",
+        "id": "9b2185f3-9604-47d2-a73a-798192fbf5ec",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -183,7 +183,7 @@ An example event for `audit_trail` looks as following:
         "agent_id_status": "verified",
         "dataset": "xm_cyber.audit_trail",
         "id": "64b2c3d4e5f60718293a4b5c",
-        "ingested": "2026-07-17T09:30:14Z",
+        "ingested": "2026-09-10T08:36:03Z",
         "kind": "event",
         "original": "{\"_id\":\"64b2c3d4e5f60718293a4b5c\",\"details\":\"john.doe@example.com Logged in via user\",\"eventSubType\":\"CONSOLE_LOGIN\",\"eventType\":\"ACCESS\",\"objectName\":\"User\",\"objectType\":\"USER\",\"tenant\":\"demo\",\"terminalId\":{\"hostname\":\"demo.clients.example.com\",\"ip\":\"192.0.2.0\"},\"timestamp\":\"2023-01-03T19:13:54.358Z\",\"userId\":{\"email\":\"john.doe@example.com\",\"name\":\"John Doe\"}}",
         "type": [
@@ -311,24 +311,24 @@ An example event for `vulnerability` looks as following:
 {
     "@timestamp": "2025-04-03T00:00:00.000Z",
     "agent": {
-        "ephemeral_id": "1415cdb9-9052-41ce-9ab6-2a02164fce32",
-        "id": "5dfba9ac-17fb-490d-833b-ec34c50ba454",
-        "name": "elastic-agent-86940",
+        "ephemeral_id": "70f15a38-9a0b-4995-9a66-16ebc0ca5427",
+        "id": "c678a788-ca24-460f-b0e3-ade42ab52b69",
+        "name": "elastic-agent-61855",
         "type": "filebeat",
-        "version": "8.19.0"
+        "version": "8.18.0"
     },
     "data_stream": {
         "dataset": "xm_cyber.vulnerability",
-        "namespace": "71489",
+        "namespace": "34521",
         "type": "logs"
     },
     "ecs": {
-        "version": "9.4.0"
+        "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "5dfba9ac-17fb-490d-833b-ec34c50ba454",
+        "id": "c678a788-ca24-460f-b0e3-ade42ab52b69",
         "snapshot": false,
-        "version": "8.19.0"
+        "version": "8.18.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -336,7 +336,7 @@ An example event for `vulnerability` looks as following:
             "vulnerability"
         ],
         "dataset": "xm_cyber.vulnerability",
-        "ingested": "2026-09-08T10:58:28Z",
+        "ingested": "2026-09-10T08:40:03Z",
         "kind": "event",
         "original": "{\"AmazonLinuxURL\":\"https://explore.alas.aws.amazon.com/CVE-2013-6629.html\",\"CVEOrgURL\":\"https://www.cve.org/CVERecord?id=CVE-2013-6629\",\"DebianURL\":\"https://security-tracker.debian.org/tracker/CVE-2013-6629\",\"MSRCURL\":\"https://msrc.microsoft.com/update-guide/vulnerability/CVE-2013-6629\",\"NVDURL\":\"https://nvd.nist.gov/vuln/detail/CVE-2013-6629\",\"OracleURL\":\"\",\"RedHatURL\":\"https://access.redhat.com/security/cve/CVE-2013-6629\",\"SUSEURL\":\"https://www.suse.com/security/cve/CVE-2013-6629.html\",\"UbuntuURL\":\"\",\"chokePointFoundOn\":1,\"criticalAssetsAtRisk\":29,\"criticalAssetsFoundOn\":1,\"cve\":\"CVE-2013-6629\",\"cvss2\":5,\"cvss2Vector\":\"AV:N/AC:M/Au:N/C:P/I:N/A:N\",\"cvss30\":0,\"cvss31\":0,\"cvss31Vector\":\"\",\"cvss3Vector\":\"\",\"cvss4\":0,\"cvss4Vector\":\"\",\"description\":\"The get_sos function in jdmarker.c in libjpeg does not check for certain duplications of component data, which allows remote attackers to obtain sensitive information via a crafted JPEG image.\",\"deviceFoundOn\":18,\"epssPercentile\":0.95322,\"epssProbability\":0.10117,\"epssScore\":0.10117,\"firstDetected\":\"2025-04-03T00:00:00.000Z\",\"hasAttackTechnique\":false,\"inCisaKev\":false,\"inExploitDb\":false,\"products\":2,\"publishedDate\":\"2013-11-19T00:00:00.000Z\",\"severity\":20,\"severityLevel\":\"Medium\"}",
         "type": [
@@ -778,9 +778,9 @@ An example event for `entity_inventory` looks as following:
 {
     "@timestamp": "2026-05-05T21:05:15.079Z",
     "agent": {
-        "ephemeral_id": "6db08d4c-f6f9-4c4d-addb-5d7b13059786",
-        "id": "a63b7488-f0c6-47bb-b9fa-723c4b23a358",
-        "name": "elastic-agent-97309",
+        "ephemeral_id": "a2ada65a-c678-47d7-926f-1c51eb8184ca",
+        "id": "acb43cf7-01f6-4799-a877-a4cc49c6a070",
+        "name": "elastic-agent-74798",
         "type": "filebeat",
         "version": "8.18.0"
     },
@@ -796,14 +796,14 @@ An example event for `entity_inventory` looks as following:
     },
     "data_stream": {
         "dataset": "xm_cyber.entity_inventory",
-        "namespace": "49491",
+        "namespace": "66402",
         "type": "logs"
     },
     "ecs": {
-        "version": "9.4.0"
+        "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "a63b7488-f0c6-47bb-b9fa-723c4b23a358",
+        "id": "acb43cf7-01f6-4799-a877-a4cc49c6a070",
         "snapshot": false,
         "version": "8.18.0"
     },
@@ -811,7 +811,7 @@ An example event for `entity_inventory` looks as following:
         "agent_id_status": "verified",
         "dataset": "xm_cyber.entity_inventory",
         "id": "awsSsmParameter-arn:aws:ssm:us-east-1:000000000001:parameter/ExampleBuild/testKeys",
-        "ingested": "2026-07-17T09:32:46Z",
+        "ingested": "2026-09-10T08:37:39Z",
         "kind": "asset",
         "original": "{\"accountId\":\"000000000001\",\"accountName\":\"example-account\",\"arn\":\"arn:aws:ssm:us-east-1:000000000001:parameter/ExampleBuild/testKeys\",\"category\":\"Cloud\",\"customProperties\":{\"domainWorkgroup\":{\"data\":\"AWS/000000000001\",\"type\":\"domain\"},\"ouComputer\":\"AWS/000000000001/us-east-1/SSM/ParameterMetadata\",\"ouUser\":\"AWS/000000000001/SSM/ParameterMetadata\",\"subnetInfo\":\"AWS_000000000001_us-east-1\"},\"disabled\":false,\"displayName\":\"/ExampleBuild/testKeys\",\"entityDetails\":{\"id\":\"awsSsmParameter-arn:aws:ssm:us-east-1:000000000001:parameter/ExampleBuild/testKeys\",\"isAsset\":null,\"name\":\"/ExampleBuild/testKeys\",\"subType\":\"awsSsmParameter\",\"subTypeDisplayName\":\"AWS SSM Parameter\"},\"entityType\":\"AwsSsmParameterEntity\",\"id\":\"awsSsmParameter-arn:aws:ssm:us-east-1:000000000001:parameter/ExampleBuild/testKeys\",\"name\":\"/ExampleBuild/testKeys\",\"notIncludedInAttacks\":false,\"organizationId\":\"o-abc123def4\",\"region\":\"us-east-1\",\"ruleDisplayName\":\"000000000001 / /ExampleBuild/testKeys\",\"ssmParameterDataType\":\"text\",\"ssmParameterKeyId\":\"alias/aws/ssm\",\"ssmParameterLastModifiedDate\":\"2020-07-19T09:53:58.629Z\",\"ssmParameterLastModifiedUser\":\"arn:aws:sts::000000000001:assumed-role/AWSReservedSSO_ExampleAccess_0123456789abcdef/alice.johnson@example.org\",\"ssmParameterName\":\"/ExampleBuild/testKeys\",\"ssmParameterTier\":\"Standard\",\"ssmParameterType\":\"SecureString\",\"ssmParameterVersion\":1,\"status\":\"active\",\"type\":\"awsSsmParameter\",\"typeDisplayName\":\"AWS SSM Parameter\",\"useType\":\"Storage\",\"xmProviderAccount\":\"example-account\",\"xmUpdateTime\":\"2026-05-05T21:05:15.079Z\"}"
     },
@@ -923,31 +923,31 @@ An example event for `risk_score` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-07-17T09:35:28.559Z",
+    "@timestamp": "2026-09-10T08:39:09.235Z",
     "agent": {
-        "ephemeral_id": "3ab54312-695e-407e-a8a1-23a2d3825292",
-        "id": "488043c1-24f5-4a6c-b760-51eb4f84c770",
-        "name": "elastic-agent-33912",
+        "ephemeral_id": "61983e71-45f8-4edb-b725-7824db52c570",
+        "id": "a072407d-837b-44e8-b94c-2bed8bc607e5",
+        "name": "elastic-agent-99625",
         "type": "filebeat",
         "version": "8.18.0"
     },
     "data_stream": {
         "dataset": "xm_cyber.risk_score",
-        "namespace": "52557",
+        "namespace": "74041",
         "type": "logs"
     },
     "ecs": {
         "version": "9.4.0"
     },
     "elastic_agent": {
-        "id": "488043c1-24f5-4a6c-b760-51eb4f84c770",
+        "id": "a072407d-837b-44e8-b94c-2bed8bc607e5",
         "snapshot": false,
         "version": "8.18.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "xm_cyber.risk_score",
-        "ingested": "2026-07-17T09:35:31Z",
+        "ingested": "2026-09-10T08:39:12Z",
         "kind": "event",
         "original": "{\"avgGraphData\":[{\"date\":\"2025-12-03T00:00:00.000Z\",\"grade\":\"A\",\"score\":95}],\"graphData\":{\"campaigns\":null,\"fromDate\":\"2025-12-02T00:00:00.000Z\",\"grade\":\"A\",\"score\":95,\"toDate\":\"2025-12-03T00:00:00.000Z\"},\"scenario\":{\"grade\":\"B\",\"id\":\"A101\",\"name\":\"(EX) Endpoint to Servers\",\"score\":82},\"stats\":{\"grade\":\"A\",\"score\":90,\"trend\":1}}"
     },
@@ -1053,15 +1053,15 @@ An example event for `device` looks as following:
 {
     "@timestamp": "2026-09-06T14:08:10.764Z",
     "agent": {
-        "ephemeral_id": "7143190e-da28-468f-a4aa-a7efe60ef8b8",
-        "id": "2cab7308-a0a2-438c-9998-35e8245a12b0",
-        "name": "elastic-agent-59469",
+        "ephemeral_id": "15215a94-0c30-4a17-bd64-7588a4058776",
+        "id": "f438b10d-0d4b-4d84-9ec4-a71ee3ff87b7",
+        "name": "elastic-agent-89601",
         "type": "filebeat",
-        "version": "8.19.0"
+        "version": "8.18.0"
     },
     "data_stream": {
         "dataset": "xm_cyber.device",
-        "namespace": "65221",
+        "namespace": "81303",
         "type": "logs"
     },
     "device": {
@@ -1069,12 +1069,12 @@ An example event for `device` looks as following:
         "type": "NetworkDevice"
     },
     "ecs": {
-        "version": "9.4.0"
+        "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "2cab7308-a0a2-438c-9998-35e8245a12b0",
+        "id": "f438b10d-0d4b-4d84-9ec4-a71ee3ff87b7",
         "snapshot": false,
-        "version": "8.19.0"
+        "version": "8.18.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -1082,7 +1082,7 @@ An example event for `device` looks as following:
             "host"
         ],
         "dataset": "xm_cyber.device",
-        "ingested": "2026-09-08T10:20:26Z",
+        "ingested": "2026-09-10T08:36:52Z",
         "kind": "event",
         "original": "{\"affectedEntities\":0,\"chokePointLevel\":\"Informative\",\"chokePointScore\":58,\"criticalAssetsAtRisk\":0,\"criticalVulnerabilities\":0,\"deviceId\":\"90000000000000000003\",\"deviceName\":\"router-03\",\"deviceType\":\"NetworkDevice\",\"domain\":\"\",\"enitityVulnerabilities\":0,\"enrichmentLabels\":[\"cloud\"],\"fqdn\":null,\"highVulnerabilities\":0,\"ipAddress\":\"81.2.69.142\",\"isCriticalAsset\":false,\"labels\":[],\"lastCompromised\":null,\"lastScan\":\"2026-09-06T14:08:10.764Z\",\"lowVulnerabilities\":8,\"maxCvssV2\":5,\"maxCvssV3\":6.5,\"maxCvssV31\":6,\"maxCvssV4\":5.5,\"mediumVulnerabilities\":2,\"os\":\"RouterOS 7\",\"ou\":\"\",\"products\":1,\"riskScore\":18,\"subnet\":\"81.2.69.142/31\",\"type\":\"agent\",\"unknownVulnerabilities\":1}",
         "type": [
@@ -1184,31 +1184,31 @@ An example event for `product` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-09-08T09:50:34.620Z",
+    "@timestamp": "2026-09-10T08:38:21.093Z",
     "agent": {
-        "ephemeral_id": "4aef39fb-7e1c-49cb-9184-46cd3580e91e",
-        "id": "bf2dd1b7-58d0-46d6-9c03-d58b0fd66c25",
-        "name": "elastic-agent-38558",
+        "ephemeral_id": "0ae12553-7c31-434a-86e5-af651db28cf0",
+        "id": "73affc9a-7c68-4876-95cc-04512ef7a835",
+        "name": "elastic-agent-85202",
         "type": "filebeat",
-        "version": "8.19.0"
+        "version": "8.18.0"
     },
     "data_stream": {
         "dataset": "xm_cyber.product",
-        "namespace": "11077",
+        "namespace": "14788",
         "type": "logs"
     },
     "ecs": {
-        "version": "9.4.0"
+        "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "bf2dd1b7-58d0-46d6-9c03-d58b0fd66c25",
+        "id": "73affc9a-7c68-4876-95cc-04512ef7a835",
         "snapshot": false,
-        "version": "8.19.0"
+        "version": "8.18.0"
     },
     "event": {
         "agent_id_status": "verified",
         "dataset": "xm_cyber.product",
-        "ingested": "2026-09-08T09:50:37Z",
+        "ingested": "2026-09-10T08:38:24Z",
         "kind": "event",
         "original": "{\"affectedCriticalAssets\":3,\"chokePointsFoundOn\":0,\"devicesFoundOn\":8,\"productName\":\"windows remote desktop services\",\"productOperatingSystem\":[\"Windows 7 SP 1.0\",\"Windows Server 2012 R2\",\"Windows Server 2012 R2 (DC)\"],\"productVulnerabilities\":2,\"productsCriticalAssetsAtRisk\":29,\"vendor\":null}"
     },
@@ -1274,17 +1274,17 @@ An example event for `vulnerability_instance` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-09-09T10:10:35.173Z",
+    "@timestamp": "2026-09-10T08:40:47.781Z",
     "agent": {
-        "ephemeral_id": "69e09147-c511-44a9-9c0e-3b91ac7cc05d",
-        "id": "78ed120c-03a9-4351-8dc0-3a17fc806802",
-        "name": "elastic-agent-29896",
+        "ephemeral_id": "e9e70892-ee8b-4d36-b4e0-6905cfcf3bdc",
+        "id": "176b3041-3ae2-45e6-98d6-98a713752b3d",
+        "name": "elastic-agent-18463",
         "type": "filebeat",
-        "version": "8.19.0"
+        "version": "8.18.0"
     },
     "data_stream": {
         "dataset": "xm_cyber.vulnerability_instance",
-        "namespace": "72119",
+        "namespace": "50307",
         "type": "logs"
     },
     "device": {
@@ -1294,9 +1294,9 @@ An example event for `vulnerability_instance` looks as following:
         "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "78ed120c-03a9-4351-8dc0-3a17fc806802",
+        "id": "176b3041-3ae2-45e6-98d6-98a713752b3d",
         "snapshot": false,
-        "version": "8.19.0"
+        "version": "8.18.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -1305,7 +1305,7 @@ An example event for `vulnerability_instance` looks as following:
             "host"
         ],
         "dataset": "xm_cyber.vulnerability_instance",
-        "ingested": "2026-09-09T10:10:38Z",
+        "ingested": "2026-09-10T08:40:50Z",
         "kind": "event",
         "original": "{\"deviceId\":\"9000000000000000001\",\"productVersions\":[{\"activeCves\":[{\"cve\":\"CVE-2021-34527\",\"safeVersion\":null}],\"closedCveIds\":[],\"filePaths\":[\"C:/Windows/System32/ntoskrnl.exe\"],\"productName\":\"windows print spooler\",\"productVendor\":\"\",\"version\":\"Not Available\"},{\"activeCves\":[{\"cve\":\"CVE-2021-24111\",\"safeVersion\":null},{\"cve\":\"CVE-2022-21911\",\"safeVersion\":null},{\"cve\":\"CVE-2022-26832\",\"safeVersion\":null}],\"closedCveIds\":[],\"filePaths\":[],\"productName\":\".net framework\",\"productVendor\":\"microsoft\",\"version\":\"4.8\"}]}",
         "type": [
