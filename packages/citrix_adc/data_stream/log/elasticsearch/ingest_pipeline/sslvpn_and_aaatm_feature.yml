@@ -15,7 +15,7 @@ processors:
         # that never appeared in the log: ::ffff:81.2.69.194 captured as
         # ::ffff:81, or 81.2.69.144g captured as 81.2.69.144.
         XFF_IP_OPT: '(?:X-Forwarded-For_ip(?: +%{IP:citrix_adc.log.x_forwarded_for_ip}(?=[,\s]|$))?(?:(?!\s-\s).)*%{SEP})?'
-        NAT_IP: 'Nat_ip (%{IP:citrix_adc.log.nat.ip}|"%{DATA}")'
+        NAT_IP: 'Nat_ip (?:%{IP:citrix_adc.log.nat.ip}|"%{DATA}")?'
       patterns:
         - '^User %{DATA:citrix_adc.log.user} - %{CLIENT_IP_OPT}%{SEP}%{XFF_IP_OPT}%{NAT_IP} - Vserver %{IP:citrix_adc.log.vserver.ip}:%{INT:citrix_adc.log.vserver.port} - Browser_type "%{DATA:citrix_adc.log.browser_type}" - Group\(s\) "%{DATA:citrix_adc.log.groups}" ?$'
         - '^User %{DATA:citrix_adc.log.user} - %{CLIENT_IP_OPT}%{SEP}%{XFF_IP_OPT}%{NAT_IP} - Vserver %{IP:citrix_adc.log.vserver.ip}:%{INT:citrix_adc.log.vserver.port} - Browser_type "%{DATA:citrix_adc.log.browser_type}" - SSLVPN_client_type %{DATA:citrix_adc.log.sslvpn_client_type} - Group\(s\) "%{DATA:citrix_adc.log.groups}" ?$'
@@ -39,7 +39,7 @@ processors:
         # there is no NAT, or no value at all. Anything else is not a Nat_ip
         # value and fails the pattern rather than being absorbed and dropped.
         NAT_IP_OPT: 'Nat_ip (?:%{IP:citrix_adc.log.nat.ip}|"%{DATA}")?'
-        NAT_IP_ESCAPED: "Nat_ip (%{IP:citrix_adc.log.nat.ip}|\\\\?\"%{DATA}\\\\?\")"
+        NAT_IP_ESCAPED: "Nat_ip (?:%{IP:citrix_adc.log.nat.ip}|\\\\?\"%{DATA}\\\\?\")?"
         VSERVER_INFO: "Vserver %{IP:citrix_adc.log.vserver.ip}:%{INT:citrix_adc.log.vserver.port}"
         TIME_INFO: "Start_time \"%{DATA:_tmp.start_time}\"%{SEP}End_time \"%{DATA:_tmp.end_time}\"%{SEP}Duration %{NOTSPACE:citrix_adc.log.duration}"
         TIME_INFO_ESCAPED: "Start_time \\\\?\"%{DATA:_tmp.start_time}\\\\?\"%{SEP}End_time \\\\?\"%{DATA:_tmp.end_time}\\\\?\"%{SEP}Duration %{NOTSPACE:citrix_adc.log.duration}"
@@ -99,7 +99,7 @@ processors:
         # that never appeared in the log: ::ffff:81.2.69.194 captured as
         # ::ffff:81, or 81.2.69.144g captured as 81.2.69.144.
         XFF_IP_OPT: '(?:X-Forwarded-For_ip(?: +%{IP:citrix_adc.log.x_forwarded_for_ip}(?=[,\s]|$))?(?:(?!\s-\s).)*%{SEP})?'
-        NAT_IP: 'Nat_ip (%{IP:citrix_adc.log.nat.ip}|"%{DATA}")'
+        NAT_IP: 'Nat_ip (?:%{IP:citrix_adc.log.nat.ip}|"%{DATA}")?'
       patterns:
         - '^User %{DATA:citrix_adc.log.user} - %{CLIENT_IP_OPT}%{SEP}%{XFF_IP_OPT}%{NAT_IP} - Vserver %{IP:citrix_adc.log.vserver.ip}:%{INT:citrix_adc.log.vserver.port} - Source %{IP:citrix_adc.log.source.ip}:%{INT:citrix_adc.log.source.port} - Destination %{IP:citrix_adc.log.destination.ip}:%{INT:citrix_adc.log.destination.port} - Start_time "%{DATA:_tmp.start_time}" - End_time "%{GREEDYDATA:_tmp.end_time}" - Duration %{DATA:citrix_adc.log.duration} - Total_bytes_send %{NUMBER:citrix_adc.log.total_bytes_send:int} - Total_bytes_recv %{NUMBER:citrix_adc.log.total_bytes_received:int} - Total_compressedbytes_send %{NUMBER:citrix_adc.log.total_compressed_bytes_send:int} - Total_compressedbytes_recv %{NUMBER:citrix_adc.log.total_compressed_bytes_recieved:int} - Compression_ratio_send %{NUMBER:citrix_adc.log.compression_ratio_send:float}% - Compression_ratio_recv %{NUMBER:citrix_adc.log.compression_ratio_recieved:float}% - Access %{WORD:citrix_adc.log.access} - Group\(s\) "%{DATA:citrix_adc.log.groups}"$'
         - '^Context %{DATA:citrix_adc.log.username}@%{IP} - SessionId: %{NUMBER:citrix_adc.log.session_id} - User %{DATA:citrix_adc.log.user} - %{CLIENT_IP_OPT}%{SEP}%{XFF_IP_OPT}%{NAT_IP} - Vserver %{IP:citrix_adc.log.vserver.ip}:%{INT:citrix_adc.log.vserver.port} - Source %{IP:citrix_adc.log.source.ip}:%{INT:citrix_adc.log.source.port} - Destination %{IP:citrix_adc.log.destination.ip}:%{INT:citrix_adc.log.destination.port} - Start_time "%{DATA:_tmp.start_time}" - End_time "%{GREEDYDATA:_tmp.end_time}" - Duration %{DATA:citrix_adc.log.duration} - Total_bytes_send %{NUMBER:citrix_adc.log.total_bytes_send:int} - Total_bytes_recv %{NUMBER:citrix_adc.log.total_bytes_received:int} - Total_compressedbytes_send %{NUMBER:citrix_adc.log.total_compressed_bytes_send:int} - Total_compressedbytes_recv %{NUMBER:citrix_adc.log.total_compressed_bytes_recieved:int} - Compression_ratio_send %{NUMBER:citrix_adc.log.compression_ratio_send:float}% - Compression_ratio_recv %{NUMBER:citrix_adc.log.compression_ratio_recieved:float}% - Access %{WORD:citrix_adc.log.access} - Group\(s\) "%{DATA:citrix_adc.log.groups}" ?$'
@@ -117,7 +117,7 @@ processors:
         # that never appeared in the log: ::ffff:81.2.69.194 captured as
         # ::ffff:81, or 81.2.69.144g captured as 81.2.69.144.
         XFF_IP_OPT: '(?:X-Forwarded-For_ip(?: +%{IP:citrix_adc.log.x_forwarded_for_ip}(?=[,\s]|$))?(?:(?!\s-\s).)*%{SEP})?'
-        NAT_IP: 'Nat_ip (%{IP:citrix_adc.log.nat.ip}|"%{DATA}")'
+        NAT_IP: 'Nat_ip (?:%{IP:citrix_adc.log.nat.ip}|"%{DATA}")?'
       patterns:
         - '^User %{DATA:citrix_adc.log.user} - %{CLIENT_IP_OPT}%{SEP}%{XFF_IP_OPT}%{NAT_IP} - Vserver %{IP:citrix_adc.log.vserver.ip}:%{INT:citrix_adc.log.vserver.port} - Last_contact "%{DATA:citrix_adc.log.last_contact}" - Group\(s\) "%{DATA:citrix_adc.log.groups}" ?$'
         - '^Context %{DATA} - SessionId: %{NUMBER:citrix_adc.log.session_id} - User %{DATA:citrix_adc.log.user} - %{CLIENT_IP_OPT}%{SEP}%{XFF_IP_OPT}%{NAT_IP} - Vserver %{IP:citrix_adc.log.vserver.ip}:%{INT:citrix_adc.log.vserver.port} - Last_contact "%{DATA:citrix_adc.log.last_contact}" - Group\(s\) "%{DATA:citrix_adc.log.groups}" ?$'
@@ -135,7 +135,7 @@ processors:
         # that never appeared in the log: ::ffff:81.2.69.194 captured as
         # ::ffff:81, or 81.2.69.144g captured as 81.2.69.144.
         XFF_IP_OPT: '(?:X-Forwarded-For_ip(?: +%{IP:citrix_adc.log.x_forwarded_for_ip}(?=[,\s]|$))?(?:(?!\s-\s).)*%{SEP})?'
-        NAT_IP: 'Nat_ip (%{IP:citrix_adc.log.nat.ip}|"%{DATA}")'
+        NAT_IP: 'Nat_ip (?:%{IP:citrix_adc.log.nat.ip}|"%{DATA}")?'
       patterns:
         - '^(Context %{DATA:citrix_adc.log.username}@%{IP} - SessionId: %{NUMBER:citrix_adc.log.session_id} - )?(\[%{DATA}\] )?User %{DATA:citrix_adc.log.user} - %{CLIENT_IP_OPT}%{SEP}%{XFF_IP_OPT}%{NAT_IP} - Vserver %{IP:citrix_adc.log.vserver.ip}:%{INT:citrix_adc.log.vserver.port} - Source %{IP:citrix_adc.log.source.ip}:%{INT:citrix_adc.log.source.port} - Destination %{IP:citrix_adc.log.destination.ip}:%{INT:citrix_adc.log.destination.port} - Start_time "%{DATA:_tmp.start_time}" - End_time "%{GREEDYDATA:_tmp.end_time}" - Duration %{DATA:citrix_adc.log.duration} - Total_bytes_send %{NUMBER:citrix_adc.log.total_bytes_send:int} - Total_bytes_recv %{NUMBER:citrix_adc.log.total_bytes_received:int} - Access %{WORD:citrix_adc.log.access} - Group\(s\) "%{DATA:citrix_adc.log.groups}" ?$'
 
@@ -205,7 +205,7 @@ processors:
         # that never appeared in the log: ::ffff:81.2.69.194 captured as
         # ::ffff:81, or 81.2.69.144g captured as 81.2.69.144.
         XFF_IP_OPT: '(?:X-Forwarded-For_ip(?: +%{IP:citrix_adc.log.x_forwarded_for_ip}(?=[,\s]|$))?(?:(?!\s-\s).)*%{SEP})?'
-        NAT_IP: 'Nat_ip (%{IP:citrix_adc.log.nat.ip}|"%{DATA}")'
+        NAT_IP: 'Nat_ip (?:%{IP:citrix_adc.log.nat.ip}|"%{DATA}")?'
       patterns:
         - '^(Sessionid|Session id) %{NUMBER:citrix_adc.log.session_id:int} - User %{DATA:citrix_adc.log.user} - %{CLIENT_IP_OPT}%{SEP}%{XFF_IP_OPT}%{NAT_IP} - Vserver_ip %{IP:citrix_adc.log.vserver.ip} - Errmsg "%{DATA:citrix_adc.log.errmsg}" ?$'
 
