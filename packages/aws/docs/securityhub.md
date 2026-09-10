@@ -11,10 +11,12 @@ Agentless deployments are only supported in Elastic Serverless and Elastic Cloud
 
 ## Compatibility
 
-  1. The minimum compatible version of this module is `Elastic Agent 8.4.0`.
+  1. The minimum compatible version of this module is `Elastic Agent 9.4.0`.
   2. This module is tested against `AWS Security Hub API version 1.0`.
 
-## To collect data from AWS Security Hub APIs, users must have an Access Key and a Secret Key. To create API token follow below steps:
+## To collect data from AWS Security Hub APIs, users must have AWS credentials
+
+The data streams authenticate with the standard AWS credential methods described in [AWS Credentials](https://www.elastic.co/docs/current/integrations/aws#aws-credentials): an access key pair, temporary security credentials, a shared credentials file, or an IAM role to assume, as well as Identity Federation (Cloud Connectors) in agentless deployments. To create an access key pair:
 
   1. Login to https://console.aws.amazon.com/.
   2. Go to https://console.aws.amazon.com/iam/ to access the IAM console.
@@ -26,7 +28,7 @@ Agentless deployments are only supported in Elastic Serverless and Elastic Cloud
 ## Note
 
   1. For the current integration package, it is recommended to have interval in hours.
-  2. For the current integration package, it is compulsory to add Secret Access Key and Access Key ID.
+  2. AWS credentials are required; any of the supported credential methods listed above can be used.
   3. Findings Full Posture data stream request all the historical findings every 24 hours.
   4. The **Findings** and **Findings Full Posture** data streams collect from the `GetFindings` API using the CEL input with native AWS SigV4 signing (`auth.aws`).
 
@@ -38,7 +40,7 @@ The **Findings** and **Findings Full Posture** data streams page through the `Ge
 
 For the **Findings** stream this is usually self-correcting: collection is incremental, so the next interval resumes where the previous one stopped. For **Findings Full Posture**, which re-reads the full current posture on each run, a very large account may not finish a sweep within one interval.
 
-To resolve this, increase **Maximum Executions** in the data stream's advanced settings (it must be a positive integer), or shorten the collection interval so each run has fewer pages to fetch.
+To resolve this, increase **Maximum Executions** in the data stream's advanced settings (it must be a positive integer). For the **Findings** stream, shortening the collection interval also reduces the pages per run, since each run then covers fewer new findings. For **Findings Full Posture** the interval does not change the sweep size; instead raise **Maximum Executions** or narrow the result set with the **Findings Filters** setting.
 
 ## Logs
 
