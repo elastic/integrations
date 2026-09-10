@@ -2,155 +2,185 @@
 description: Pipeline for processing Group logs.
 processors:
   - set:
+      tag: set_ecs_version_6b2cef5e
       field: ecs.version
       value: 8.11.0
   - set:
+      tag: set_event_kind_d452ef2c
       field: event.kind
       value: event
   - set:
+      tag: set_event_category_5b3c8dc9
       field: event.category
       value: [iam]
   - set:
+      tag: set_event_type_69153259
       field: event.type
       value: [group]
   - rename:
+      tag: rename_message_to_event_original_a7b1f822
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_facc4822
       ignore_missing: true
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
       field: event.original
-      tag: 'json_decoding'
+      tag: json_decoding_c3a1053e
       target_field: json
       on_failure:
         - append:
+            tag: append_error_message_09c9e9da
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - drop:
+      tag: drop_5ebaa6cd
       if: ctx.json?.data != null && ctx.json.data.isEmpty()
   - rename:
+      tag: rename_json_links_self_to_trellix_epo_cloud_group_links_self_dfe625fe
       field: json.links.self
       target_field: trellix_epo_cloud.group.links.self
       ignore_missing: true
   - set:
+      tag: set_event_reference_3ad836f6
       field: event.reference
       copy_from: trellix_epo_cloud.group.links.self
       ignore_empty_value: true
   - rename:
+      tag: rename_json_id_to_trellix_epo_cloud_group_id_dc4b9a74
       field: json.id
       target_field: trellix_epo_cloud.group.id
       ignore_missing: true
   - set:
+      tag: set_group_id_c8c52782
       field: group.id
       copy_from: trellix_epo_cloud.group.id
       ignore_empty_value: true
   - rename:
+      tag: rename_json_attributes_name_to_trellix_epo_cloud_group_attributes_name_a059bbce
       field: json.attributes.name
       target_field: trellix_epo_cloud.group.attributes.name
       ignore_missing: true
   - set:
+      tag: set_group_name_affbe13e
       field: group.name
       copy_from: trellix_epo_cloud.group.attributes.name
       ignore_empty_value: true
   - convert:
       field: json.attributes.groupTypeId
-      tag: 'convert_groupTypeId_to_string'
+      tag: convert_groupTypeId_to_string_333c6e52
       target_field: trellix_epo_cloud.group.attributes.group_type.id
       type: string
       ignore_missing: true
       if: ctx.json?.attributes?.groupTypeId != ''
       on_failure:
         - append:
+            tag: append_error_message_0d273060
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.attributes.l1ParentId
-      tag: 'convert_parentId_to_string'
+      tag: convert_parentId_to_string_b5a63a3a
       target_field: trellix_epo_cloud.group.attributes.l1_parent.id
       type: string
       ignore_missing: true
       if: ctx.json?.attributes?.l1ParentId != ''
       on_failure:
         - append:
+            tag: append_error_message_e040bbc8
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.attributes.l2ParentId
-      tag: 'convert_parentId_to_string'
+      tag: convert_parentId_to_string_3e0a85d5
       target_field: trellix_epo_cloud.group.attributes.l2_parent.id
       type: string
       ignore_missing: true
       if: ctx.json?.attributes?.l2ParentId != ''
       on_failure:
         - append:
+            tag: append_error_message_b1c0ca54
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_attributes_nodePath_to_trellix_epo_cloud_group_attributes_node_path_9044ad39
       field: json.attributes.nodePath
       target_field: trellix_epo_cloud.group.attributes.node.path
       ignore_missing: true
   - rename:
+      tag: rename_json_attributes_nodeTextPath_to_trellix_epo_cloud_group_attributes_node_text_path_ed1feb60
       field: json.attributes.nodeTextPath
       target_field: trellix_epo_cloud.group.attributes.node.text_path
       ignore_missing: true
   - rename:
+      tag: rename_json_attributes_nodeTextPath2_to_trellix_epo_cloud_group_attributes_node_text_path2_875599ac
       field: json.attributes.nodeTextPath2
       target_field: trellix_epo_cloud.group.attributes.node.text_path2
       ignore_missing: true
   - rename:
+      tag: rename_json_attributes_notes_to_trellix_epo_cloud_group_attributes_notes_e4946f75
       field: json.attributes.notes
       target_field: trellix_epo_cloud.group.attributes.notes
       ignore_missing: true
   - convert:
       field: json.attributes.parentId
-      tag: 'convert_parentId_to_string'
+      tag: convert_parentId_to_string_1de8a7ac
       target_field: trellix_epo_cloud.group.attributes.parent.id
       type: string
       ignore_missing: true
       if: ctx.json?.attributes?.parentId != ''
       on_failure:
         - append:
+            tag: append_error_message_4d5df25f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_relationships_groups_data_id_to_trellix_epo_cloud_group_relationships_groups_data_id_50192791
       field: json.relationships.groups.data.id
       target_field: trellix_epo_cloud.group.relationships.groups.data.id
       ignore_missing: true
   - rename:
+      tag: rename_json_relationships_groups_data_type_to_trellix_epo_cloud_group_relationships_groups_data_type_8a14019d
       field: json.relationships.groups.data.type
       target_field: trellix_epo_cloud.group.relationships.groups.data.type
       ignore_missing: true
   - rename:
+      tag: rename_json_relationships_groups_links_related_to_trellix_epo_cloud_group_relationships_groups_links_related_02d6ee05
       field: json.relationships.groups.links.related
       target_field: trellix_epo_cloud.group.relationships.groups.links.related
       ignore_missing: true
   - rename:
+      tag: rename_json_relationships_groups_links_self_to_trellix_epo_cloud_group_relationships_groups_links_self_fc9b37f5
       field: json.relationships.groups.links.self
       target_field: trellix_epo_cloud.group.relationships.groups.links.self
       ignore_missing: true
   - rename:
+      tag: rename_json_relationships_subGroups_links_related_to_trellix_epo_cloud_group_relationships_sub_groups_links_related_a6e9fc1e
       field: json.relationships.subGroups.links.related
       target_field: trellix_epo_cloud.group.relationships.sub_groups.links.related
       ignore_missing: true
   - rename:
+      tag: rename_json_relationships_subGroups_links_self_to_trellix_epo_cloud_group_relationships_sub_groups_links_self_3edf5468
       field: json.relationships.subGroups.links.self
       target_field: trellix_epo_cloud.group.relationships.sub_groups.links.self
       ignore_missing: true
   - rename:
+      tag: rename_json_type_to_trellix_epo_cloud_type_30381a2d
       field: json.type
       target_field: trellix_epo_cloud.type
       ignore_missing: true
   - remove:
+      tag: remove_f3d169b2
       field:
         - json
       ignore_missing: true
   - remove:
+      tag: remove_709c94bd
       field:
         - trellix_epo_cloud.group.links.self
         - trellix_epo_cloud.group.id
@@ -158,6 +188,7 @@ processors:
       ignore_missing: true
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
   - script:
+      tag: script_drops_null_empty_values_recursively_f6a89620
       lang: painless
       description: Drops null/empty values recursively.
       source: |-
@@ -175,22 +206,27 @@ processors:
         }
         drop(ctx);
   - set:
+      tag: set_event_kind_4fd8ffa8
       field: event.kind
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_b6c08950
       field: tags
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message_9b078312
       field: error.message
       value: '{{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

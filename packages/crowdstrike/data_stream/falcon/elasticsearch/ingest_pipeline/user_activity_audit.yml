@@ -7,15 +7,15 @@ processors:
   - append:
       field: event.category
       value: iam
-      tag: append_iam_category
+      tag: append_iam_category_0eb47497
   - append:
       field: event.type
       value: change
-      tag: append_change_type
+      tag: append_change_type_b7534197
   - set:
       field: event.action
       value: user_activity_audit_event
-      tag: set_user_activity_audit_event
+      tag: set_user_activity_audit_event_7b7b8572
   - grok:
       tag: grok_crowdstrike_event_UserId_70ae09b7
       field: crowdstrike.event.UserId
@@ -27,29 +27,32 @@ processors:
   - set:
       field: user.email
       copy_from: crowdstrike.event.UserId
-      tag: copy_user_email
+      tag: copy_user_email_185a04c9
       if: ctx.crowdstrike?.event?.UserId != null && ctx.crowdstrike.event.UserId.indexOf("@") > 0
   - rename:
       field: crowdstrike.event.OperationName
       target_field: message
       ignore_missing: true
-      tag: rename_operation_name
+      tag: rename_operation_name_6c82e2e9
   - rename:
       field: crowdstrike.event.UserIp
       target_field: source.ip
       ignore_missing: true
-      tag: rename_user_ip
+      tag: rename_user_ip_10251dc2
       if: ctx.crowdstrike?.event?.UserIp != null && ctx.crowdstrike?.event?.UserIp != ""
 
 on_failure:
   - append:
+      tag: append_error_message_9c9ce5dc
       field: error.message
       value: |-
         Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

@@ -2,44 +2,50 @@
 description: Pipeline for parsing GitHub audit logs
 processors:
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - append:
+      tag: append_event_category_e1ee9a8c
       field: event.category
       value:
         - configuration
         - web
   - rename:
       field: message
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_176375fd
       target_field: event.original
       ignore_missing: true
       description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_9ecc8509
       ignore_missing: true
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - json:
+      tag: json_event_original_to_json_5e54dc16
       field: event.original
       target_field: json
   - fail:
+      tag: fail_missing_json_object_74459f8f
       if: "!(ctx.json instanceof Map)"
       message: Missing JSON object
   - fingerprint:
+      tag: fingerprint_to_id_0a8a3679
       fields:
         - json._document_id
       target_field: "_id"
       ignore_missing: true
   - rename:
+      tag: rename_json_to_github_2879b127
       field: json
       target_field: github
       ignore_missing: true
   - date:
       field: github.created_at
-      tag: date_created_at
+      tag: date_created_at_520a2c1c
       formats:
         - UNIX_MS
       timezone: UTC
@@ -47,13 +53,15 @@ processors:
       if: ctx.github?.created_at != null
       on_failure:
         - remove:
+            tag: remove_github_created_at_010a80b6
             field: github.created_at
         - append:
+            tag: append_error_message_040fdc9f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: github.@timestamp
-      tag: date_@timestamp
+      tag: date_@timestamp_a7582a37
       formats:
         - UNIX_MS
       timezone: UTC
@@ -61,113 +69,138 @@ processors:
       if: ctx.github?.get('@timestamp') != null
       on_failure:
         - remove:
+            tag: remove_github_timestamp_364ffc55
             field: github.@timestamp
         - append:
+            tag: append_error_message_35a6b42a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_github__document_id_to_event_id_26a6bbc2
       field: github._document_id
       target_field: event.id
       ignore_missing: true
   - rename:
+      tag: rename_github_action_to_event_action_05524b39
       field: github.action
       target_field: event.action
       ignore_missing: true
   - set:
+      tag: set_event_kind_0d477994
       field: event.kind
       value: alert
       if: ctx.event?.action?.equalsIgnoreCase('code_scanning.alert_created') == true || ctx.event?.action?.equalsIgnoreCase('secret_scanning_alert.create') == true
   - set:
+      tag: set_event_kind_31b9e9ac
       field: event.kind
       value: event
       if: ctx.event?.kind == null
   - rename:
+      tag: rename_github_actor_to_user_name_8172ce88
       field: github.actor
       target_field: user.name
       ignore_missing: true
   - append:
+      tag: append_related_user_c036eec2
       field: related.user
       value: "{{{user.name}}}"
       if: ctx.user?.name != null
   - rename:
+      tag: rename_github_user_to_user_target_name_d847b55f
       field: github.user
       target_field: user.target.name
       ignore_missing: true
   - append:
+      tag: append_related_user_9680e737
       field: related.user
       value: "{{{user.target.name}}}"
       if: ctx.user?.target?.name != null
   - convert:
       field: github.repository_public
       target_field: github.repository_public
-      tag: convert_repository_public_to_boolean
+      tag: convert_repository_public_to_boolean_181bebf3
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_github_repository_public_6045b964
             field: github.repository_public
         - append:
+            tag: append_error_message_4e2d87bd
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_github_data_team_to_github_team_a4f357ba
       field: github.data.team
       target_field: github.team
       ignore_missing: true
       if: ctx.github?.team == null
   - set:
+      tag: set_group_name_aaad2615
       field: group.name
       copy_from: github.team
       ignore_empty_value: true
       if: ctx.event?.action.startsWith("team.")
   - set:
+      tag: set_user_target_group_name_c2ed003d
       field: user.target.group.name
       copy_from: github.team
       ignore_empty_value: true
       if: ctx.event?.action?.startsWith("team.") == true && ctx.user?.target?.name != null
   - set:
+      tag: set_group_name_42257061
       field: group.name
       copy_from: github.org
       ignore_empty_value: true
       if: ctx.event?.action.startsWith("org.")
   - set:
+      tag: set_user_target_group_name_139e1ca5
       field: user.target.group.name
       copy_from: github.org
       ignore_empty_value: true
       if: ctx.event?.action?.startsWith("org.") == true && ctx.user?.target?.name != null
   - rename:
+      tag: rename_github_data_old_user_to_user_target_group_name_9ef1cbba
       field: github.data.old_user
       target_field: user.target.group.name
       ignore_missing: true
   - rename:
+      tag: rename_github_data_old_user_to_user_target_group_name_6068f8fa
       field: github.data.old_user
       target_field: user.target.group.name
       ignore_missing: true
       if: ctx.user?.target?.group?.name == null
   - rename:
+      tag: rename_github_actor_location_country_code_to_client_geo_country_iso_code_5d630bf4
       field: github.actor_location.country_code
       target_field: client.geo.country_iso_code
       ignore_missing: true
   - convert:
       field: github.actor_ip
       target_field: github.actor_ip
-      tag: convert_actor_ip_to_ip
+      tag: convert_actor_ip_to_ip_6bf236d3
       type: ip
       ignore_missing: true
       if: ctx.github?.actor_ip != null && ctx.github.actor_ip != ''
       on_failure:
         - remove:
+            tag: remove_github_actor_ip_e7305734
             field: github.actor_ip
         - append:
+            tag: append_error_message_95a3de54
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
+      tag: append_related_ip_a83ff53c
       field: related.ip
       value: '{{{github.actor_ip}}}'
       if: ctx.github?.actor_ip != null
   - user_agent:
+      tag: user_agent_github_user_agent_bc60ddd3
       field: github.user_agent
       ignore_missing: true
   - grok:
+      tag: grok_event_action_e7945a25
       field: event.action
       ignore_missing: true
       patterns:
@@ -175,108 +208,119 @@ processors:
       pattern_definitions:
         GH_CAT: '[a-z_]+'
   - append:
+      tag: append_event_category_5634efe9
       field: event.category
       value: iam
       if: '["team","org"].contains(ctx.github.category)'
   - append:
+      tag: append_event_type_18178cc4
       field: event.type
       value:
         - group
         - user
       if: '["team","org"].contains(ctx.github.category)'
   - append:
+      tag: append_event_type_b4084fd9
       field: event.type
       value: creation
       if: ctx._temp?.action?.contains("create") == true || ctx._temp?.action?.contains("add") == true
   - append:
+      tag: append_event_type_57265258
       field: event.type
       value: deletion
       if: ctx._temp?.action?.contains("delete") == true || ctx._temp?.action?.contains("remove") == true
   - append:
+      tag: append_event_type_65cf1e89
       field: event.type
       value: change
       if: ctx.event?.type == null || ctx.event.type.size() == 0
   - convert:
       field: github.active
-      tag: convert_active_to_boolean
+      tag: convert_active_to_boolean_083f9081
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_github_active_87fa9c9b
             field: github.active
         - append:
+            tag: append_error_message_dfb9ec0e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: github.actor_is_bot
-      tag: convert_actor_is_bot_to_boolean
+      tag: convert_actor_is_bot_to_boolean_30149b9d
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_github_actor_is_bot_14e17c63
             field: github.actor_is_bot
         - append:
+            tag: append_error_message_57660dd0
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: github.audit_log_stream_enabled
-      tag: convert_audit_log_stream_enabled_to_boolean
+      tag: convert_audit_log_stream_enabled_to_boolean_2756303c
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_github_audit_log_stream_enabled_5d6f3d9b
             field: github.audit_log_stream_enabled
         - append:
+            tag: append_error_message_2495c0e9
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: github.actor_id
-      tag: convert_actor_id_to_string
+      tag: convert_actor_id_to_string_73e19b86
       type: string
       ignore_missing: true
   - set:
       field: user.id
-      tag: set_user_id
+      tag: set_user_id_06f84f90
       copy_from: github.actor_id
       ignore_empty_value: true
   - append:
       field: related.user
-      tag: append_actor_id_to_related_user
+      tag: append_actor_id_to_related_user_8f8370ea
       value: '{{{github.actor_id}}}'
       allow_duplicates: false
   - convert:
       field: github.business_id
-      tag: convert_business_id_to_string
+      tag: convert_business_id_to_string_bf5d335f
       type: string
       ignore_missing: true
   - convert:
       field: github.org_id
-      tag: convert_org_id_to_string
+      tag: convert_org_id_to_string_1c0f9a33
       type: string
       ignore_missing: true
   - set:
       field: user.target.id
-      tag: set_user_target_id
+      tag: set_user_target_id_5ed69446
       copy_from: github.user_id
       ignore_empty_value: true
   - convert:
       field: github.user_id
-      tag: convert_user_id_to_string
+      tag: convert_user_id_to_string_765fc6bf
       type: string
       ignore_missing: true
   - set:
       field: user.target.id
-      tag: set_user_target_id
+      tag: set_user_target_id_a9ec2340
       copy_from: github.user_id
       ignore_empty_value: true
   - append:
       field: related.user
-      tag: append_user_id_to_related_user
+      tag: append_user_id_to_related_user_93e635c0
       value: '{{{github.user_id}}}'
       allow_duplicates: false
   - script:
       lang: painless
-      tag: decide_events_and_events_object
+      tag: decide_events_and_events_object_f9956c34
       description: Dynamically map github.events and github.events_object
       if: ctx.github?.events instanceof List
       source: |
@@ -288,137 +332,146 @@ processors:
         }
   - convert:
       field: github.events
-      tag: convert_events_to_string
+      tag: convert_events_to_string_62935ab2
       type: string
       ignore_missing: true
   - convert:
       field: github.hook_id
-      tag: convert_hook_id_to_string
+      tag: convert_hook_id_to_string_1caa243c
       type: string
       ignore_missing: true
   - convert:
       field: github.transport_protocol
-      tag: convert_transport_protocol_to_long
+      tag: convert_transport_protocol_to_long_dfff3d31
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_github_transport_protocol_78168b0b
             field: github.transport_protocol
         - append:
+            tag: append_error_message_0e3a2d82
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: network.protocol
-      tag: set_network_protocol
+      tag: set_network_protocol_21f9f0cc
       copy_from: github.transport_protocol_name
       ignore_empty_value: true
   - convert:
       field: github.version
-      tag: convert_version_to_string
+      tag: convert_version_to_string_a59aed09
       type: string
       ignore_missing: true
   - date:
       field: github.data.started_at
-      tag: date_data_started_at
+      tag: date_data_started_at_2e2bdf56
       target_field: github.data.started_at
       formats:
         - ISO8601
       if: ctx.github?.data?.started_at != null && ctx.github.data.started_at != ''
       on_failure:
         - remove:
+            tag: remove_github_data_started_at_07afb8dc
             field: github.data.started_at
         - append:
+            tag: append_error_message_2a08829e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: github.data.trigger_id
-      tag: convert_data_trigger_id_to_string
+      tag: convert_data_trigger_id_to_string_9c12430f
       type: string
       ignore_missing: true
   - convert:
       field: github.data.workflow_id
-      tag: convert_data_workflow_id_to_string
+      tag: convert_data_workflow_id_to_string_4268d07b
       type: string
       ignore_missing: true
   - convert:
       field: github.data.workflow_run_id
-      tag: convert_data_workflow_run_id_to_string
+      tag: convert_data_workflow_run_id_to_string_3e0b1f7d
       type: string
       ignore_missing: true
   - convert:
       field: github.public_repo
-      tag: convert_public_repo_to_boolean
+      tag: convert_public_repo_to_boolean_21834abf
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_github_public_repo_d5b455d1
             field: github.public_repo
         - append:
+            tag: append_error_message_2824ad42
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: github.actor_location.ip
-      tag: convert_actor_location_ip_to_ip
+      tag: convert_actor_location_ip_to_ip_fc4da539
       type: ip
       ignore_missing: true
       if: ctx.github?.actor_location?.ip != ''
       on_failure:
         - remove:
+            tag: remove_github_actor_location_ip_d524d7b7
             field: github.actor_location.ip
         - append:
+            tag: append_error_message_5b3e778e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: related.ip
-      tag: append_actor_location_ip_to_related_ip
+      tag: append_actor_location_ip_to_related_ip_9f001541
       value: '{{{github.actor_location.ip}}}'
       allow_duplicates: false
   - convert:
       field: github.pull_request_id
-      tag: convert_pull_request_id_to_string
+      tag: convert_pull_request_id_to_string_262c2dc4
       type: string
       ignore_missing: true
   - convert:
       field: github.repo_id
-      tag: convert_repo_id_to_string
+      tag: convert_repo_id_to_string_aaec4960
       type: string
       ignore_missing: true
   - convert:
       field: github.repositories_added
-      tag: convert_repositories_added_to_string
+      tag: convert_repositories_added_to_string_fda910f9
       type: string
       ignore_missing: true
   - convert:
       field: github.repositories_removed
-      tag: convert_repositories_removed_to_string
+      tag: convert_repositories_removed_to_string_6ee05e7e
       type: string
       ignore_missing: true
   - convert:
       field: github.token_id
-      tag: convert_token_id_to_string
+      tag: convert_token_id_to_string_97fcfeab
       type: string
       ignore_missing: true
   - convert:
       field: github.audit_log_stream_id
-      tag: convert_audit_log_stream_id_to_string
+      tag: convert_audit_log_stream_id_to_string_24ac67e0
       type: string
       ignore_missing: true
   - convert:
       field: github.ruleset_id
-      tag: convert_ruleset_id_to_string
+      tag: convert_ruleset_id_to_string_3acda937
       type: string
       ignore_missing: true
   - append:
       field: related.user
-      tag: append_blocked_user_to_related_user
+      tag: append_blocked_user_to_related_user_b0e32157
       value: '{{{github.blocked_user}}}'
       allow_duplicates: false
   - append:
       field: related.hash
-      tag: append_data_head_sha_to_related_hash
+      tag: append_data_head_sha_to_related_hash_9739e1e2
       value: '{{{github.data.head_sha}}}'
       allow_duplicates: false
   - remove:
+      tag: remove_be1d7231
       field:
         - _temp
         - github.created_at
@@ -428,10 +481,11 @@ processors:
       field:
         - log.file.path
         - log.offset
-      tag: remove_log_fields
+      tag: remove_log_fields_80d0b0f4
       if: ctx.aws?.s3?.bucket != null && ctx.aws.s3.object != null
       ignore_missing: true
   - script:
+      tag: script_processor_iterates_over_whole_document_4d6993cb
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
       source: |
@@ -458,12 +512,18 @@ processors:
         handleMap(ctx);
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message_206bb8ac
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'

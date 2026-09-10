@@ -1,0 +1,53 @@
+{
+    "attributes": {
+        "name": "[Vercel OTel] Largest contentful paint p75 99.5% rolling 30 days",
+        "description": "Tracks the 75th-percentile Largest Contentful Paint (LCP) reported by Speed Insights for production page loads, targeting 99.5% of hourly windows with a p75 LCP under 2500ms (Vercel's 'good' threshold) over a rolling 30-day window. A breach signals a page-load regression \u2014 commonly an unoptimised image, a blocking resource, or elevated server response time introduced by a recent deployment \u2014 that visibly slows how quickly a page's main content appears to real users.",
+        "indicator": {
+            "type": "sli.metric.timeslice",
+            "params": {
+                "index": "metrics-*",
+                "filter": "data_stream.dataset: \"vercel.speedinsights.v1.otel\" and deployment.environment.name: \"production\" and metrics.LCP: *",
+                "metric": {
+                    "metrics": [
+                        {
+                            "name": "A",
+                            "aggregation": "percentile",
+                            "field": "metrics.LCP",
+                            "percentile": 75
+                        }
+                    ],
+                    "equation": "A",
+                    "comparator": "LT",
+                    "threshold": 2500
+                },
+                "timestampField": "@timestamp"
+            }
+        },
+        "budgetingMethod": "timeslices",
+        "timeWindow": {
+            "duration": "30d",
+            "type": "rolling"
+        },
+        "objective": {
+            "target": 0.995,
+            "timesliceTarget": 0.95,
+            "timesliceWindow": "1h"
+        },
+        "tags": [
+            "vercel",
+            "otel"
+        ],
+        "groupBy": [
+            "vercel.project.id"
+        ],
+        "artifacts": {
+            "dashboards": [
+                {
+                    "id": "vercel_otel-speed-insights"
+                }
+            ]
+        }
+    },
+    "id": "vercel_otel-lcp-p75-99.5-Rolling30Days",
+    "type": "slo_template"
+}

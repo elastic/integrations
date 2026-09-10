@@ -4,137 +4,160 @@ description: Pipeline for processing Network Proxy object.
 processors:
   - convert:
       field: ocsf.proxy.location.is_on_premises
-      tag: convert_proxy_location_is_on_premises_to_boolean
+      tag: convert_proxy_location_is_on_premises_to_boolean_5f987a5d
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_ocsf_proxy_location_is_on_premises_2b40ff4f
             field: ocsf.proxy.location.is_on_premises
             ignore_missing: true
         - append:
+            tag: append_error_message_31629e11
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - remove:
       field: ocsf.proxy.ip
-      tag: remove_empty_proxy_ip
+      tag: remove_empty_proxy_ip_e616ec93
       if: ctx.ocsf?.proxy?.ip == '' || ctx.ocsf?.proxy?.ip == '-'
   - convert:
       field: ocsf.proxy.ip
-      tag: convert_proxy_ip_to_ip
+      tag: convert_proxy_ip_to_ip_1af40e96
       type: ip
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_ocsf_proxy_ip_4799f642
             field: ocsf.proxy.ip
             ignore_missing: true
         - append:
+            tag: append_error_message_dda7106b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: related.ip
-      tag: append_proxy_ip_into_related_ip
+      tag: append_proxy_ip_into_related_ip_8dccc385
       value: '{{{ocsf.proxy.ip}}}'
       allow_duplicates: false
       if: ctx.ocsf?.proxy?.ip != null
   - foreach:
+      tag: foreach_ocsf_proxy_location_coordinates_d1bce493
       field: ocsf.proxy.location.coordinates
       if: ctx.ocsf?.proxy?.location?.coordinates instanceof List
       ignore_failure: true
       processor:
         convert:
           field: _ingest._value
-          tag: convert_proxy_location_coordinates_to_double
+          tag: convert_proxy_location_coordinates_to_double_c422e902
           type: double
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_257fdbee
                 field: _ingest._value
                 ignore_missing: true
             - append:
+                tag: append_error_message_94acbe18
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: ocsf.proxy.port
-      tag: convert_proxy_port_to_long
+      tag: convert_proxy_port_to_long_b653a027
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_ocsf_proxy_port_22a1e88e
             field: ocsf.proxy.port
             ignore_missing: true
         - append:
+            tag: append_error_message_de1b5155
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
-      tag: drop_empty_proxy_intermediate_ips
+      tag: drop_empty_proxy_intermediate_ips_78aadeb8
       if: ctx.ocsf?.proxy?.intermediate_ips instanceof List
       source: |-
         ctx.ocsf.proxy.intermediate_ips.removeIf(v -> v == '-');
   - foreach:
+      tag: foreach_ocsf_proxy_intermediate_ips_f933a449
       field: ocsf.proxy.intermediate_ips
       if: ctx.ocsf?.proxy?.intermediate_ips instanceof List
       ignore_failure: true
       processor:
         convert:
           field: _ingest._value
-          tag: convert_proxy_intermediate_ips_to_ip
+          tag: convert_proxy_intermediate_ips_to_ip_3dbe5118
           type: ip
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_4b0b4a8c
                 field: _ingest._value
                 ignore_missing: true
             - append:
+                tag: append_error_message_bf7cae61
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_ocsf_proxy_intermediate_ips_e92e6022
       field: ocsf.proxy.intermediate_ips
       if: ctx.ocsf?.proxy?.intermediate_ips instanceof List
       ignore_failure: true
       processor:
         append:
           field: related.ip
-          tag: append_proxy_intermediate_ips_into_related_ip
+          tag: append_proxy_intermediate_ips_into_related_ip_5c37eb81
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
   - gsub:
       field: ocsf.proxy.mac
-      tag: gsub_proxy_mac
+      tag: gsub_proxy_mac_5c9c54a0
       pattern: '[-:.]'
       replacement: '-'
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_802315d7
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - uppercase:
       field: ocsf.proxy.mac
-      tag: uppercase_proxy_mac
+      tag: uppercase_proxy_mac_5b3c527e
       ignore_missing: true
       if: ctx.ocsf?.proxy?.mac != ''
       on_failure:
         - remove:
+            tag: remove_ocsf_proxy_mac_2a0e6e73
             field: ocsf.proxy.mac
             ignore_missing: true
         - append:
+            tag: append_error_message_dcebcea6
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: related.hosts
-      tag: append_proxy_domain_into_related_hosts
+      tag: append_proxy_domain_into_related_hosts_922c90d8
       value: '{{{ocsf.proxy.domain}}}'
       allow_duplicates: false
       if: ctx.ocsf?.proxy?.domain != null
   - append:
       field: related.hosts
-      tag: append_proxy_hostname_into_related_hosts
+      tag: append_proxy_hostname_into_related_hosts_c98af9e9
       value: '{{{ocsf.proxy.hostname}}}'
       allow_duplicates: false
       if: ctx.ocsf?.proxy?.hostname != null
 on_failure:
   - append:
+      tag: append_error_message_6906b116
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
+  - append:
+      tag: append_tags_279d5a5c
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

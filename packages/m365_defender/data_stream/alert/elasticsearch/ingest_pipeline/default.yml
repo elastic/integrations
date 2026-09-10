@@ -8,21 +8,21 @@ processors:
         - team
       ignore_missing: true
       if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
-      tag: remove_agentless_tags
+      tag: remove_agentless_tags_e6856012
       description: >-
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
   - set:
       field: ecs.version
-      tag: set_ecs_version
+      tag: set_ecs_version_6b2cef5e
       value: '8.11.0'
   - set:
       field: event.kind
-      tag: set_event_kind
+      tag: set_event_kind_ab1166ce
       value: alert
   - rename:
       field: message
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_a7b1f822
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
@@ -34,7 +34,7 @@ processors:
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
       field: event.original
-      tag: json_event_original
+      tag: json_event_original_a68ecd77
       target_field: json
       on_failure:
         - append:
@@ -42,13 +42,13 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - drop:
-      tag: drop_if_event_is_malformed
+      tag: drop_if_event_is_malformed_4de315f5
       description: |
         If an empty 'value' array exists, it means the input did not split correctly because we have
         no more alerts and the event can be ignored.
       if: ctx.json?.value instanceof List && ctx.json.value.length == 0
   - fail:
-      tag: fail_if_value_array_has_elements
+      tag: fail_if_value_array_has_elements_70fc4de8
       description: |
         If we get here and the 'value' array has elements it means there is an error in the input 
         configuration.
@@ -62,13 +62,13 @@ processors:
         - json.lastUpdateDateTime
         - json.incidentId
         - json.providerAlertId
-      tag: fingerprint_processor
+      tag: fingerprint_processor_bcf20331
       target_field: _id
       ignore_missing: true
   - script:
       lang: painless
       description: Drops empty string values recursively.
-      tag: painless_remove_empty_from_evidence
+      tag: painless_remove_empty_from_evidence_999f7462
       if: ctx.json?.evidence != null
       source: |-
         boolean drop(Object object) {
@@ -86,7 +86,7 @@ processors:
         drop(ctx.json.evidence);
   - script:
       description: Dynamically map event.category and event.type field from evidence.
-      tag: script_to_set_event_category_and_type
+      tag: script_to_set_event_category_and_type_1fb0213c
       lang: painless
       if: ctx.json?.evidence instanceof List
       params:
@@ -153,7 +153,7 @@ processors:
         }
   - dot_expander:
       field: '@odata.type'
-      tag: dot_expander_@odata_type
+      tag: dot_expander_@odata_type_942309cb
       path: json
       override: true
       on_failure:
@@ -163,12 +163,12 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.@odata.type
-      tag: rename_@odata_type
+      tag: rename_@odata_type_72fef407
       target_field: m365_defender.alert.odata_type
       ignore_missing: true
   - date:
       field: json.lastUpdateDateTime
-      tag: date_lastUpdateDateTime
+      tag: date_lastUpdateDateTime_2abade2f
       formats:
         - ISO8601
       if: ctx.json?.lastUpdateDateTime != null && ctx.json.lastUpdateDateTime != ''
@@ -179,32 +179,32 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: m365_defender.alert.last_update_datetime
-      tag: set_last_update_datetime
+      tag: set_last_update_datetime_ca379ace
       copy_from: '@timestamp'
       ignore_empty_value: true
   - rename:
       field: json.description
-      tag: rename_description
+      tag: rename_description_c46fe865
       target_field: m365_defender.alert.description
       ignore_missing: true
   - set:
       field: message
-      tag: set_message
+      tag: set_message_97256389
       copy_from: m365_defender.alert.description
       ignore_empty_value: true
   - rename:
       field: json.tenantId
-      tag: rename_tenantId
+      tag: rename_tenantId_2d45dc28
       target_field: m365_defender.alert.tenant_id
       ignore_missing: true
   - set:
       field: cloud.account.id
-      tag: set_cloud_account_id
+      tag: set_cloud_account_id_501a7507
       copy_from: m365_defender.alert.tenant_id
       ignore_empty_value: true
   - date:
       field: json.createdDateTime
-      tag: date_createdDateTime
+      tag: date_createdDateTime_af4306b0
       target_field: m365_defender.alert.created_datetime
       formats:
         - ISO8601
@@ -216,12 +216,12 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.created
-      tag: set_event_created
+      tag: set_event_created_5fe37437
       copy_from: m365_defender.alert.created_datetime
       ignore_empty_value: true
   - date:
       field: json.lastActivityDateTime
-      tag: date_lastActivityDateTime
+      tag: date_lastActivityDateTime_eabeb9af
       target_field: m365_defender.alert.last_activity_datetime
       formats:
         - ISO8601
@@ -233,38 +233,38 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.end
-      tag: set_event_end
+      tag: set_event_end_3d0ed71d
       copy_from: m365_defender.alert.last_activity_datetime
       ignore_empty_value: true
   - rename:
       field: json.id
-      tag: rename_id
+      tag: rename_id_3a83e39e
       target_field: m365_defender.alert.id
       ignore_missing: true
   - set:
       field: event.id
-      tag: set_event_id
+      tag: set_event_id_3ccc5d4e
       copy_from: m365_defender.alert.id
       ignore_empty_value: true
   - rename:
       field: json.serviceSource
-      tag: rename_serviceSource
+      tag: rename_serviceSource_dc322bf2
       target_field: m365_defender.alert.service_source
       ignore_missing: true
   - set:
       field: event.provider
-      tag: set_event_provider
+      tag: set_event_provider_bc8fcc5d
       copy_from: m365_defender.alert.service_source
       ignore_empty_value: true
   - rename:
       field: json.severity
-      tag: rename_severity
+      tag: rename_severity_39904be3
       target_field: m365_defender.alert.severity
       ignore_missing: true
   - script:
       lang: painless
       description: Script to set event.severity.
-      tag: set_event_severity
+      tag: set_event_severity_bc38f42f
       if: ctx.m365_defender?.alert?.severity instanceof String
       source: |-
         ctx.event = ctx.event ?: [:];
@@ -285,7 +285,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: json.firstActivityDateTime
-      tag: date_firstActivityDateTime
+      tag: date_firstActivityDateTime_e9c345fa
       target_field: m365_defender.alert.first_activity_datetime
       formats:
         - ISO8601
@@ -297,12 +297,12 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.start
-      tag: set_event_start
+      tag: set_event_start_cb460ab4
       copy_from: m365_defender.alert.first_activity_datetime
       ignore_empty_value: true
   - script:
       description: Determine event.duration from starting and ending activity timestamp.
-      tag: script_event_duration
+      tag: script_event_duration_fb5c9c38
       lang: painless
       if: ctx.event?.start != null && ctx.event?.end != null
       source: |
@@ -311,7 +311,7 @@ processors:
         ctx.event['duration'] = ChronoUnit.NANOS.between(eventstart, eventend);
   - uri_parts:
       field: json.alertWebUrl
-      tag: uri_parts_alertWebUrl
+      tag: uri_parts_alertWebUrl_c32a838c
       target_field: m365_defender.alert.web_url
       if: ctx.json?.alertWebUrl != null
       keep_original: true
@@ -325,206 +325,209 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.url
-      tag: set_event_url
+      tag: set_event_url_ae78a30a
       copy_from: m365_defender.alert.web_url.original
       ignore_empty_value: true
   - rename:
       field: json.assignedTo
-      tag: rename_assignedTo
+      tag: rename_assignedTo_c8a340fb
       target_field: m365_defender.alert.assigned_to
       ignore_missing: true
   - append:
       field: related.user
-      tag: append_related_user
+      tag: append_related_user_c9d61d02
       value: '{{{m365_defender.alert.assigned_to}}}'
       if: ctx.m365_defender?.alert?.assigned_to != null
       allow_duplicates: false
   - set:
       field: source.user.name
-      tag: set_source_user_name
+      tag: set_source_user_name_7044ddfc
       copy_from: m365_defender.alert.assigned_to
       ignore_empty_value: true
   - rename:
       field: json.threatFamilyName
-      tag: rename_threatFamilyName
+      tag: rename_threatFamilyName_7cfd7f60
       target_field: m365_defender.alert.threat_family_name
       ignore_missing: true
   - rename:
       field: json.category
-      tag: rename_category
+      tag: rename_category_6f29b3d9
       target_field: m365_defender.alert.category
       ignore_missing: true
   - append:
       field: threat.tactic.name
-      tag: append_threat_tactic_name
+      tag: append_threat_tactic_name_38f91e74
       value: '{{{m365_defender.alert.category}}}'
       if: ctx.m365_defender?.alert?.category != null
       allow_duplicates: false
   - rename:
       field: json.mitreTechniques
-      tag: rename_mitreTechniques
+      tag: rename_mitreTechniques_84b3e639
       target_field: m365_defender.alert.mitre_techniques
       ignore_missing: true
   - set:
       field: threat.technique.subtechnique.id
-      tag: set_threat_technique_subtechnique_id
+      tag: set_threat_technique_subtechnique_id_ddb17391
       copy_from: m365_defender.alert.mitre_techniques
       ignore_empty_value: true
   - rename:
       field: json.actorDisplayName
-      tag: rename_actorDisplayName
+      tag: rename_actorDisplayName_96ba5c3f
       target_field: m365_defender.alert.actor_display_name
       ignore_missing: true
   - rename:
       field: json.classification
-      tag: rename_classification
+      tag: rename_classification_78cea6e9
       target_field: m365_defender.alert.classification
       ignore_missing: true
   - foreach:
       field: json.comments
-      tag: foreach_comments
+      tag: foreach_comments_8a52bd6a
       if: ctx.json?.comments instanceof List
       processor:
         append:
           field: related.user
-          tag: foreach_comments_append_createdByDisplayName
+          tag: foreach_comments_append_createdByDisplayName_3750be0e
           value: '{{{_ingest._value.createdByDisplayName}}}'
           allow_duplicates: false
   - rename:
       field: json.comments
-      tag: rename_comments
+      tag: rename_comments_a1953492
       target_field: m365_defender.alert.comments
       ignore_missing: true
   - rename:
       field: json.detectorId
-      tag: rename_detectorId
+      tag: rename_detectorId_282c444d
       target_field: m365_defender.alert.detector_id
       ignore_missing: true
   - rename:
       field: json.detectionSource
-      tag: rename_detection_source
+      tag: rename_detection_source_25fcff12
       target_field: m365_defender.alert.detection_source
       ignore_missing: true
   - rename:
       field: json.determination
-      tag: rename_determination
+      tag: rename_determination_6c63756a
       target_field: m365_defender.alert.determination
       ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_createdDateTime
+      tag: foreach_evidence_createdDateTime_bec8d182
       if: ctx.json?.evidence instanceof List
       processor:
         date:
           field: _ingest._value.createdDateTime
-          tag: date_foreach_evidence_createdDateTime
+          tag: date_foreach_evidence_createdDateTime_c6851601
           target_field: _ingest._value.created_datetime
           formats:
             - ISO8601
           on_failure:
             - remove:
+                tag: remove_ingest_value_createdDateTime_2af42a26
                 field: _ingest._value.createdDateTime
                 ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_remediationStatus
+      tag: foreach_evidence_remediationStatus_2b31e7bf
       if: ctx.json?.evidence instanceof List
       processor:
         rename:
           field: _ingest._value.remediationStatus
-          tag: foreach_rename_remediationStatus
+          tag: foreach_rename_remediationStatus_11be866a
           target_field: _ingest._value.remediation_status
           ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_evident_ipInterfaces
+      tag: foreach_evident_ipInterfaces_7196b9b9
       if: ctx.json?.evidence instanceof List
       processor:
         foreach:
           field: _ingest._value.ipInterfaces
-          tag: inside_foreach_convert_ipInterfaces
+          tag: inside_foreach_convert_ipInterfaces_1c933a8e
           ignore_missing: true
           processor:
             convert:
               field: _ingest._value
-              tag: foreach_convert_ipInterfaces
+              tag: foreach_convert_ipInterfaces_d6338ff6
               type: ip
               ignore_missing: true
               on_failure:
                 - remove:
+                    tag: remove_ingest_value_c79da93c
                     field: _ingest._value
                     ignore_missing: true
                 - append:
+                    tag: append_error_message_445580d2
                     field: error.message
                     value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_ip_interfaces
+      tag: foreach_evidence_ip_interfaces_493fe6b5
       if: ctx.json?.evidence instanceof List
       processor:
         rename:
           field: _ingest._value.ipInterfaces
-          tag: rename_foreach_ip_interfaces
+          tag: rename_foreach_ip_interfaces_78ad1b7b
           target_field: _ingest._value.ip_interfaces
           ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_ip_interfaces_to_host_ip
+      tag: foreach_evidence_ip_interfaces_to_host_ip_d9104f43
       if: ctx.json?.evidence instanceof List
       processor:
         foreach:
           field: _ingest._value.ip_interfaces
-          tag: foreach_append_ip_interfaces_to_host_ip
+          tag: foreach_append_ip_interfaces_to_host_ip_d83584b8
           ignore_missing: true
           processor:
             append:
               field: host.ip
-              tag: append_ip_interfaces_to_host_ip
+              tag: append_ip_interfaces_to_host_ip_e76ca594
               value: '{{{_ingest._value}}}'
               allow_duplicates: false
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_ip_interfaces_to_related_ip
+      tag: foreach_evidence_ip_interfaces_to_related_ip_e47e7578
       if: ctx.json?.evidence instanceof List
       processor:
         foreach:
           field: _ingest._value.ip_interfaces
-          tag: foreach_append_ip_interfaces_to_related_ip
+          tag: foreach_append_ip_interfaces_to_related_ip_42ef7b76
           ignore_missing: true
           processor:
             append:
               field: related.ip
-              tag: append_ip_interfaces_to_related_ip
+              tag: append_ip_interfaces_to_related_ip_0937fc4b
               value: '{{{_ingest._value}}}'
               allow_duplicates: false
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_detailedRoles
+      tag: foreach_evidence_detailedRoles_537aa1b8
       if: ctx.json?.evidence instanceof List
       processor:
         rename:
           field: _ingest._value.detailedRoles
-          tag: rename_foreach_detailedRoles
+          tag: rename_foreach_detailedRoles_123b1a62
           target_field: _ingest._value.detailed_roles
           ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_rename_remediationStatusDetails
+      tag: foreach_rename_remediationStatusDetails_5d17c609
       if: ctx.json?.evidence instanceof List
       processor:
         rename:
           field: _ingest._value.remediationStatusDetails
-          tag: rename_foreach_remediationStatusDetails
+          tag: rename_foreach_remediationStatusDetails_07a381f1
           target_field: _ingest._value.remediation_status_details
           ignore_missing: true
   - rename:
       field: json.incidentId
-      tag: rename_incidentId
+      tag: rename_incidentId_babc1c47
       target_field: m365_defender.alert.incident_id
       ignore_missing: true
   - uri_parts:
       field: json.incidentWebUrl
-      tag: uri_parts_incidentWebUrl
+      tag: uri_parts_incidentWebUrl_713d844c
       target_field: m365_defender.alert.incident_web_url
       if: ctx.json?.incidentWebUrl != null
       keep_original: true
@@ -538,17 +541,17 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.providerAlertId
-      tag: rename_providerAlertId
+      tag: rename_providerAlertId_af1995e6
       target_field: m365_defender.alert.provider_alert_id
       ignore_missing: true
   - rename:
       field: json.recommendedActions
-      tag: rename_recommendedActions
+      tag: rename_recommendedActions_cdf77513
       target_field: m365_defender.alert.recommended_actions
       ignore_missing: true
   - date:
       field: json.resolvedDateTime
-      tag: date_resolvedDateTime
+      tag: date_resolvedDateTime_f01eec3e
       target_field: m365_defender.alert.resolved_datetime
       formats:
         - ISO8601
@@ -560,614 +563,630 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.status
-      tag: rename_status
+      tag: rename_status_a6deb15e
       target_field: m365_defender.alert.status
       ignore_missing: true
   - rename:
       field: json.threatDisplayName
-      tag: rename_threatDisplayName
+      tag: rename_threatDisplayName_777a2487
       target_field: m365_defender.alert.threat_display_name
       ignore_missing: true
   - rename:
       field: json.title
-      tag: rename_title
+      tag: rename_title_3b4b22a6
       target_field: m365_defender.alert.title
       ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_dot_expander
+      tag: foreach_evidence_dot_expander_9a99e6de
       if: ctx.json?.evidence instanceof List
       processor:
         dot_expander:
+          tag: dot_expander_odata_type_d834f623
           field: '@odata.type'
           path: _ingest._value
           ignore_failure: true
           override: true
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_@0data
+      tag: foreach_evidence_@0data_33f83ffd
       if: ctx.json?.evidence instanceof List
       processor:
         rename:
           field: _ingest._value.@odata.type
-          tag: foreach_rename_evidence_@odata
+          tag: foreach_rename_evidence_@odata_44bc5699
           target_field: _ingest._value.odata_type
           ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_receivedDateTime
+      tag: foreach_evidence_receivedDateTime_66722e49
       if: ctx.json?.evidence instanceof List
       processor:
         date:
           field: _ingest._value.receivedDateTime
-          tag: date_foreach_evidence_receivedDateTime
+          tag: date_foreach_evidence_receivedDateTime_a722657e
           target_field: _ingest._value.received_datetime
           formats:
             - ISO8601
           on_failure:
             - remove:
+                tag: remove_ingest_value_receivedDateTime_f9561232
                 field: _ingest._value.receivedDateTime
                 ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_append_email_Delivery_timestamp
+      tag: foreach_evidence_append_email_Delivery_timestamp_6aa23d00
       if: ctx.json?.evidence instanceof List
       processor:
         append:
           field: email.delivery_timestamp
-          tag: append_foreach_evidence_email_Delivery_timestamp
+          tag: append_foreach_evidence_email_Delivery_timestamp_a0be4d51
           value: '{{{_ingest._value.received_datetime}}}'
           allow_duplicates: false
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_antiSpamDirection
+      tag: foreach_evidence_antiSpamDirection_a3e2e133
       if: ctx.json?.evidence instanceof List
       processor:
         rename:
           field: _ingest._value.antiSpamDirection
-          tag: rename_foreach_antispam_direction
+          tag: rename_foreach_antispam_direction_380dc5d2
           target_field: _ingest._value.antispam_direction
           ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_append_email_direction
+      tag: foreach_evidence_append_email_direction_8079f88c
       if: ctx.json?.evidence instanceof List
       processor:
         append:
           field: email.direction
-          tag: append_foreach_evidence_email_direction
+          tag: append_foreach_evidence_email_direction_118bed41
           value: '{{{_ingest._value.antispam_direction}}}'
           allow_duplicates: false
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_append_email_subject
+      tag: foreach_evidence_append_email_subject_1b79c99f
       if: ctx.json?.evidence instanceof List
       processor:
         append:
           field: email.subject
-          tag: append_foreach_evidence_email_subject
+          tag: append_foreach_evidence_email_subject_f51a5b9c
           value: '{{{_ingest._value.subject}}}'
           allow_duplicates: false
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_rename_recipientEmailAddress
+      tag: foreach_evidence_rename_recipientEmailAddress_f16e5cfd
       if: ctx.json?.evidence instanceof List
       processor:
         rename:
           field: _ingest._value.recipientEmailAddress
-          tag: rename_foreach_evidence_recipientEmailAddress
+          tag: rename_foreach_evidence_recipientEmailAddress_1b2c07d8
           target_field: _ingest._value.recipient_email_address
           ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_append_related_user
+      tag: foreach_evidence_append_related_user_3293390c
       if: ctx.json?.evidence instanceof List
       processor:
         append:
           field: related.user
-          tag: append_foreach_evidence_related_user
+          tag: append_foreach_evidence_related_user_af59732e
           value: '{{{_ingest._value.recipient_email_address}}}'
           allow_duplicates: false
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_append_email_to_address
+      tag: foreach_evidence_append_email_to_address_febb3333
       if: ctx.json?.evidence instanceof List
       processor:
         append:
           field: email.to.address
-          tag: append_foreach_evidence_email_to_address
+          tag: append_foreach_evidence_email_to_address_1589238c
           value: '{{{_ingest._value.recipient_email_address}}}'
           allow_duplicates: false
   - foreach:
       field: json.evidence
-      tag: foreach_convert_evidence_attachmentsCount
+      tag: foreach_convert_evidence_attachmentsCount_1cf05488
       if: ctx.json?.evidence instanceof List
       processor:
         convert:
           field: _ingest._value.attachmentsCount
-          tag: convert_foreach_evidence_attachmentsCount
+          tag: convert_foreach_evidence_attachmentsCount_abf817c3
           target_field: _ingest._value.attachments_count
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_attachmentsCount_25d2cea8
                 field: _ingest._value.attachmentsCount
             - append:
+                tag: append_error_message_e4cac6bd
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: json.evidence
-      tag: foreach_rename_deliveryAction
+      tag: foreach_rename_deliveryAction_67376752
       if: ctx.json?.evidence instanceof List
       processor:
         rename:
           field: _ingest._value.deliveryAction
-          tag: rename_foreach_evidence_deliveryAction
+          tag: rename_foreach_evidence_deliveryAction_3d71e904
           target_field: _ingest._value.delivery_action
           ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_rename_evidence_deliveryLocation
+      tag: foreach_rename_evidence_deliveryLocation_d6755dc1
       if: ctx.json?.evidence instanceof List
       processor:
         rename:
           field: _ingest._value.deliveryLocation
-          tag: rename_foreach_evidence_deliveryLocation
+          tag: rename_foreach_evidence_deliveryLocation_b0cecb21
           target_field: _ingest._value.delivery_location
           ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_append_evidence_internetMessageId
+      tag: foreach_append_evidence_internetMessageId_3cf0eaf1
       if: ctx.json?.evidence instanceof List
       processor:
         append:
           field: email.message_id
-          tag: append_foreach_evidence_email_message_id
+          tag: append_foreach_evidence_email_message_id_74cc6c1b
           value: '{{{_ingest._value.internetMessageId}}}'
           allow_duplicates: false
   - foreach:
       field: json.evidence
-      tag: foreach_append_evidence_networkMessageId
+      tag: foreach_append_evidence_networkMessageId_0d18baae
       if: ctx.json?.evidence instanceof List
       processor:
         append:
           field: email.local_id
-          tag: append_foreach_evidence_email_local_id
+          tag: append_foreach_evidence_email_local_id_b7695949
           value: '{{{_ingest._value.networkMessageId}}}'
           allow_duplicates: false
   - foreach:
       field: json.evidence
-      tag: foreach_dot_expander_evidence_p1Sender
+      tag: foreach_dot_expander_evidence_p1Sender_f1f20652
       if: ctx.json?.evidence instanceof List
       processor:
         dot_expander:
+          tag: dot_expander_odata_type_5cff5716
           field: '@odata.type'
           path: _ingest._value.p1Sender
           ignore_failure: true
           override: true
   - foreach:
       field: json.evidence
-      tag: foreach_rename_evidence_odata_type
+      tag: foreach_rename_evidence_odata_type_d5f0f452
       if: ctx.json?.evidence instanceof List
       processor:
         rename:
           field: _ingest._value.p1Sender.@odata.type
-          tag: rename_foreach_evidence_odata_type
+          tag: rename_foreach_evidence_odata_type_c2ffc7fc
           target_field: _ingest._value.p1_sender.odata_type
           ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_rename_evidence_p2Sender
+      tag: foreach_rename_evidence_p2Sender_44ec86b2
       if: ctx.json?.evidence instanceof List
       processor:
         dot_expander:
+          tag: dot_expander_odata_type_1899f9e2
           field: '@odata.type'
           path: _ingest._value.p2Sender
           ignore_failure: true
           override: true
   - foreach:
       field: json.evidence
-      tag: foreach_rename_evidence_p2Sender_odata_type
+      tag: foreach_rename_evidence_p2Sender_odata_type_230d6285
       if: ctx.json?.evidence instanceof List
       processor:
         rename:
           field: _ingest._value.p2Sender.@odata.type
-          tag: rename_foreach_evidence_p2Sender_odata_type
+          tag: rename_foreach_evidence_p2Sender_odata_type_9849bdd5
           target_field: _ingest._value.p2_sender.odata_type
           ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_rename_evidence_displayName
+      tag: foreach_rename_evidence_displayName_15942c4e
       if: ctx.json?.evidence instanceof List
       processor:
         rename:
           field: _ingest._value.p1Sender.displayName
-          tag: rename_foreach_p2Sender_displayName
+          tag: rename_foreach_p2Sender_displayName_8b6d3a1f
           target_field: _ingest._value.p1_sender.display_name
           ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_append_p1Sender_Display_name
+      tag: foreach_evidence_append_p1Sender_Display_name_edc4a2a9
       if: ctx.json?.evidence instanceof List
       processor:
         append:
           field: related.user
-          tag: append_foreach_evidence_p1Sender_Display_name
+          tag: append_foreach_evidence_p1Sender_Display_name_e57457bb
           value: '{{{_ingest._value.p1_sender.display_name}}}'
           allow_duplicates: false
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_rename_p1sender_domain_name
+      tag: foreach_evidence_rename_p1sender_domain_name_844292a2
       if: ctx.json?.evidence instanceof List
       processor:
         rename:
           field: _ingest._value.p1Sender.domainName
-          tag: rename_foreach_evidence_p1sender_domainName
+          tag: rename_foreach_evidence_p1sender_domainName_331217ac
           target_field: _ingest._value.p1_sender.domain_name
           ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_rename_evidence_append_related_hosts_p1sender_domain_name
+      tag: foreach_rename_evidence_append_related_hosts_p1sender_domain_name_9d7f9e15
       if: ctx.json?.evidence instanceof List
       processor:
         append:
           field: related.hosts
-          tag: append_foreach_rename_evidence_related_hosts_p1sender_domain_name
+          tag: append_foreach_rename_evidence_related_hosts_p1sender_domain_name_c5501435
           value: '{{{_ingest._value.p1_sender.domain_name}}}'
           allow_duplicates: false
   - foreach:
       field: json.evidence
-      tag: foreach_rename_evidence_p1sender_emailAddress
+      tag: foreach_rename_evidence_p1sender_emailAddress_c07cfe0e
       if: ctx.json?.evidence instanceof List
       processor:
         rename:
           field: _ingest._value.p1Sender.emailAddress
-          tag: rename_foreach_evidence_p1sender_emailaddress
+          tag: rename_foreach_evidence_p1sender_emailaddress_00851a66
           target_field: _ingest._value.p1_sender.email_address
           ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_append_email_from_adress
+      tag: foreach_evidence_append_email_from_adress_c2d15bc1
       if: ctx.json?.evidence instanceof List
       processor:
         append:
           field: email.from.address
-          tag: append_foreach_evidence_email_from_adress
+          tag: append_foreach_evidence_email_from_adress_f3c47ca0
           value: '{{{_ingest._value.p1_sender.email_address}}}'
           allow_duplicates: false
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_append_email_sender_address
+      tag: foreach_evidence_append_email_sender_address_bb5ead90
       if: ctx.json?.evidence instanceof List
       processor:
         append:
           field: email.sender.address
-          tag: append_foreach_evidence_email_sender_address
+          tag: append_foreach_evidence_email_sender_address_30f46d69
           value: '{{{_ingest._value.p1_sender.email_address}}}'
           allow_duplicates: false
   - foreach:
       field: json.evidence
-      tag: foreach_append_evidence_related_user_p1sender_emailaddress
+      tag: foreach_append_evidence_related_user_p1sender_emailaddress_b705f639
       if: ctx.json?.evidence instanceof List
       processor:
         append:
           field: related.user
-          tag: append_foreach_evidence_related_user_p1sender_emailaddress
+          tag: append_foreach_evidence_related_user_p1sender_emailaddress_e629b69b
           value: '{{{_ingest._value.p1_sender.email_address}}}'
           allow_duplicates: false
   - foreach:
       field: json.evidence
-      tag: foreach_rename_evidence_p2sender_displayname
+      tag: foreach_rename_evidence_p2sender_displayname_7651362d
       if: ctx.json?.evidence instanceof List
       processor:
         rename:
           field: _ingest._value.p2Sender.displayName
-          tag: rename_foreach_evidence_p2sender_displayname
+          tag: rename_foreach_evidence_p2sender_displayname_3efd81bb
           target_field: _ingest._value.p2_sender.display_name
           ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_append_user_p2sender_display_name
+      tag: foreach_evidence_append_user_p2sender_display_name_7ffc159a
       if: ctx.json?.evidence instanceof List
       processor:
         append:
           field: related.user
-          tag: append_foreach_evidence_user_p2sender_display_name
+          tag: append_foreach_evidence_user_p2sender_display_name_1940025c
           value: '{{{_ingest._value.p2_sender.display_name}}}'
           allow_duplicates: false
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_rename_p2sender_domain_name
+      tag: foreach_evidence_rename_p2sender_domain_name_c680c8e7
       if: ctx.json?.evidence instanceof List
       processor:
         rename:
           field: _ingest._value.p2Sender.domainName
-          tag: rename_foreach_evidence_p2sender_domain_name
+          tag: rename_foreach_evidence_p2sender_domain_name_09178957
           target_field: _ingest._value.p2_sender.domain_name
           ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_append_hosts_p2sender_domain_name
+      tag: foreach_evidence_append_hosts_p2sender_domain_name_f68a5a4e
       if: ctx.json?.evidence instanceof List
       processor:
         append:
           field: related.hosts
-          tag: append_foreach_evidence_hosts_p2sender_domain_name
+          tag: append_foreach_evidence_hosts_p2sender_domain_name_f0fa2a17
           value: '{{{_ingest._value.p2_sender.domain_name}}}'
           allow_duplicates: false
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_rename_p2sender_email_address
+      tag: foreach_evidence_rename_p2sender_email_address_4c219121
       if: ctx.json?.evidence instanceof List
       processor:
         rename:
           field: _ingest._value.p2Sender.emailAddress
-          tag: rename_foreach_evidence_p2sender_emailAddress
+          tag: rename_foreach_evidence_p2sender_emailAddress_cc260275
           target_field: _ingest._value.p2_sender.email_address
           ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_append_evidence_p2sender_emailaddress
+      tag: foreach_append_evidence_p2sender_emailaddress_b8ce376d
       if: ctx.json?.evidence instanceof List
       processor:
         append:
           field: email.from.address
-          tag: append_foreach_evidence_p2sender_emailaddress
+          tag: append_foreach_evidence_p2sender_emailaddress_d72c8845
           value: '{{{_ingest._value.p2_sender.email_address}}}'
           allow_duplicates: false
   - foreach:
       field: json.evidence
-      tag: foreach_append_user_p2sender_email_address
+      tag: foreach_append_user_p2sender_email_address_0195c5f7
       if: ctx.json?.evidence instanceof List
       processor:
         append:
           field: related.user
-          tag: append_foreach_user_p2sender_email_address
+          tag: append_foreach_user_p2sender_email_address_61cd41f3
           value: '{{{_ingest._value.p2_sender.email_address}}}'
           allow_duplicates: false
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_convert_senderIp
+      tag: foreach_evidence_convert_senderIp_391f9325
       if: ctx.json?.evidence instanceof List
       processor:
         convert:
           field: _ingest._value.senderIp
-          tag: convert_foreach_evidence_senderIp
+          tag: convert_foreach_evidence_senderIp_7eec4268
           target_field: _ingest._value.sender_ip
           type: ip
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_senderIp_c6f084fe
                 field: _ingest._value.senderIp
             - append:
+                tag: append_error_message_d0cce9d0
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_append_source_ip_sender_ip
+      tag: foreach_evidence_append_source_ip_sender_ip_7880a40b
       if: ctx.json?.evidence instanceof List
       processor:
         append:
           field: source.ip
-          tag: append_foreach_evidence_source_ip_sender_ip
+          tag: append_foreach_evidence_source_ip_sender_ip_827238c8
           value: '{{{_ingest._value.sender_ip}}}'
           allow_duplicates: false
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_append_related_ip_sender_ip
+      tag: foreach_evidence_append_related_ip_sender_ip_02615043
       if: ctx.json?.evidence instanceof List
       processor:
         append:
           field: related.ip
-          tag: append_foreach_evidence_related_ip_sender_ip
+          tag: append_foreach_evidence_related_ip_sender_ip_b9ced7af
           value: '{{{_ingest._value.sender_ip}}}'
           allow_duplicates: false
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_rename_threatDetectionMethods
+      tag: foreach_evidence_rename_threatDetectionMethods_fa569111
       if: ctx.json?.evidence instanceof List
       processor:
         rename:
           field: _ingest._value.threatDetectionMethods
-          tag: rename_foreach_evidence_threatDetectionMethods
+          tag: rename_foreach_evidence_threatDetectionMethods_d99a8241
           target_field: _ingest._value.threat_detection_methods
           ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_convert_urlCount
+      tag: foreach_evidence_convert_urlCount_f9d2e923
       if: ctx.json?.evidence instanceof List
       processor:
         convert:
           field: _ingest._value.urlCount
-          tag: convert_foreach_evidence_urlCount
+          tag: convert_foreach_evidence_urlCount_9a743a2a
           target_field: _ingest._value.url_count
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_urlCount_c880d74b
                 field: _ingest._value.urlCount
             - append:
+                tag: append_error_message_4518bc32
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_convert_instanceId
+      tag: foreach_evidence_convert_instanceId_b51c8c3b
       if: ctx.json?.evidence instanceof List
       processor:
         convert:
           field: _ingest._value.instanceId
-          tag: convert_foreach_evidence_instanceId
+          tag: convert_foreach_evidence_instanceId_b7dd4935
           target_field: _ingest._value.instance_id
           type: string
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_instanceId_2d476361
                 field: _ingest._value.instanceId
             - append:
+                tag: append_error_message_02548c7f
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_append_cloud_instance_id
+      tag: foreach_evidence_append_cloud_instance_id_eee7990f
       if: ctx.json?.evidence instanceof List
       processor:
         append:
           field: cloud.instance.id
-          tag: append_foreach_evidence_cloud_instance_id
+          tag: append_foreach_evidence_cloud_instance_id_f26c23b9
           value: '{{{_ingest._value.instance_id}}}'
           allow_duplicates: false
   - foreach:
       field: json.evidence
-      tag: foreach_rename_evidence_instanceName
+      tag: foreach_rename_evidence_instanceName_ab0f0d5a
       if: ctx.json?.evidence instanceof List
       processor:
         rename:
           field: _ingest._value.instanceName
-          tag: rename_foreach_evidence_instanceName
+          tag: rename_foreach_evidence_instanceName_c8a642b1
           target_field: _ingest._value.instance_name
           ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_append_cloud_instance_name
+      tag: foreach_evidence_append_cloud_instance_name_5c6994c0
       if: ctx.json?.evidence instanceof List
       processor:
         append:
           field: cloud.instance.name
-          tag: append_foreach_evidence_cloud_instance_name
+          tag: append_foreach_evidence_cloud_instance_name_5f36846c
           value: '{{{_ingest._value.instance_name}}}'
           allow_duplicates: false
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_convert_appId
+      tag: foreach_evidence_convert_appId_28d472e9
       if: ctx.json?.evidence instanceof List
       processor:
         convert:
           field: _ingest._value.appId
-          tag: convert_foreach_evidence_appID
+          tag: convert_foreach_evidence_appID_ac89ab4b
           target_field: _ingest._value.app_id
           type: string
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_appId_c1674d3e
                 field: _ingest._value.appId
             - append:
+                tag: append_error_message_7cc74324
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_rename_displayName
+      tag: foreach_evidence_rename_displayName_6f66d7ed
       if: ctx.json?.evidence instanceof List
       processor:
         rename:
           field: _ingest._value.displayName
-          tag: rename_foreach_evidence_display_name
+          tag: rename_foreach_evidence_display_name_bce189c9
           target_field: _ingest._value.display_name
           ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_convert_saasAppId
+      tag: foreach_evidence_convert_saasAppId_5da2c33d
       if: ctx.json?.evidence instanceof List
       processor:
         convert:
           field: _ingest._value.saasAppId
-          tag: convert_foreach_evidence_saasAppId
+          tag: convert_foreach_evidence_saasAppId_f4a9f879
           target_field: _ingest._value.saas_app_id
           type: string
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_saasAppId_3b002767
                 field: _ingest._value.saasAppId
             - append:
+                tag: append_error_message_8ab8a90e
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_rename_vmMetadata_cloudProvider
+      tag: foreach_evidence_rename_vmMetadata_cloudProvider_57779a72
       if: ctx.json?.evidence instanceof List
       processor:
         rename:
           field: _ingest._value.vmMetadata.cloudProvider
-          tag: rename_foreach_evidence_vmMetadata_cloudProvider
+          tag: rename_foreach_evidence_vmMetadata_cloudProvider_c1835609
           target_field: _ingest._value.vm_metadata.cloud_provider
           ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_rename_mdaDeviceId
+      tag: foreach_evidence_rename_mdaDeviceId_a5f9fb7c
       if: ctx.json?.evidence instanceof List
       processor:
         rename:
           field: _ingest._value.mdeDeviceId
-          tag: rename_foreach_evidence_mdaDeviceId
+          tag: rename_foreach_evidence_mdaDeviceId_6fa7126d
           target_field: _ingest._value.mde_device_id
           ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_append_mdaDeviceId_into_related_hosts
+      tag: foreach_evidence_append_mdaDeviceId_into_related_hosts_ce60189e
       if: ctx.json?.evidence instanceof List
       processor:
         append:
           field: related.hosts
-          tag: append_foreach_evidence_mdaDeviceId_into_related_hosts
+          tag: append_foreach_evidence_mdaDeviceId_into_related_hosts_7a4f4212
           value: '{{{_ingest._value.mde_device_id}}}'
           allow_duplicates: false
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_rename_osPlatform
+      tag: foreach_evidence_rename_osPlatform_9e179010
       if: ctx.json?.evidence instanceof List
       processor:
         rename:
           field: _ingest._value.osPlatform
-          tag: rename_foreach_osPlatform
+          tag: rename_foreach_osPlatform_88e869e3
           target_field: _ingest._value.os_platform
           ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_append_host_os_name
+      tag: foreach_evidence_append_host_os_name_c6474571
       if: ctx.json?.evidence instanceof List
       processor:
         append:
           field: host.os.name
-          tag: append_foreach_evidence_host_os_name
+          tag: append_foreach_evidence_host_os_name_6e2a9e05
           value: '{{{_ingest._value.os_platform}}}'
           allow_duplicates: false
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_append_os_platform_related_hosts
+      tag: foreach_evidence_append_os_platform_related_hosts_9bc130ae
       if: ctx.json?.evidence instanceof List
       processor:
         append:
           field: related.hosts
-          tag: append_foreach_evidence_os_platform_related_hosts
+          tag: append_foreach_evidence_os_platform_related_hosts_81c23fc3
           value: '{{{_ingest._value.os_platform}}}'
           allow_duplicates: false
   - foreach:
       field: json.evidence
-      tag: foreach_append_host_os_version
+      tag: foreach_append_host_os_version_80a99881
       if: ctx.json?.evidence instanceof List
       processor:
         append:
           field: host.os.version
-          tag: append_foreach_host_os_version
+          tag: append_foreach_host_os_version_b3de8d75
           value: '{{{_ingest._value.version}}}'
           allow_duplicates: false
   - foreach:
       field: json.evidence
-      tag: foreach_append_version_into_related_hosts
+      tag: foreach_append_version_into_related_hosts_7acb12fa
       if: ctx.json?.evidence instanceof List
       processor:
         append:
           field: related.hosts
-          tag: append_foreach_version_into_related_hosts
+          tag: append_foreach_version_into_related_hosts_cd613463
           value: '{{{_ingest._value.version}}}'
           allow_duplicates: false
   - foreach:
       field: json.evidence
-      tag: foreach_rename_evidence_azureAdDeviceId
+      tag: foreach_rename_evidence_azureAdDeviceId_aa6a6467
       if: ctx.json?.evidence instanceof List
       processor:
         append:
           field: device.id
-          tag: append_azureAdDeviceId_into_device_id
+          tag: append_azureAdDeviceId_into_device_id_5fc90e3b
           value: '{{{_ingest._value.azureAdDeviceId}}}'
           allow_duplicates: false
   - foreach:
@@ -1177,1163 +1196,1192 @@ processors:
       processor:
         rename:
           field: _ingest._value.azureAdDeviceId
-          tag: rename_foreach_evidence_azureAdDeiveId
+          tag: rename_foreach_evidence_azureAdDeiveId_1fd2b5ed
           target_field: _ingest._value.azure_ad_device_id
           ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_rename_defenderAvStatus
+      tag: foreach_evidence_rename_defenderAvStatus_646c27f0
       if: ctx.json?.evidence instanceof List
       processor:
         rename:
           field: _ingest._value.defenderAvStatus
-          tag: rename_foreach_evidence_defenderAvStatus
+          tag: rename_foreach_evidence_defenderAvStatus_a62bef4a
           target_field: _ingest._value.defender_av_status
           ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_rename_deviceDnsName
+      tag: foreach_evidence_rename_deviceDnsName_ee2f5d3d
       if: ctx.json?.evidence instanceof List
       processor:
         rename:
           field: _ingest._value.deviceDnsName
-          tag: rename_foreach_evidece_deviceDnsName
+          tag: rename_foreach_evidece_deviceDnsName_99324812
           target_field: _ingest._value.device_dns_name
           ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_append_hosts_device_dns_name
+      tag: foreach_evidence_append_hosts_device_dns_name_8b1449ba
       if: ctx.json?.evidence instanceof List
       processor:
         append:
           field: related.hosts
-          tag: append_foreach_evidence_hosts_device_dns_name
+          tag: append_foreach_evidence_hosts_device_dns_name_817a07cf
           value: '{{{_ingest._value.device_dns_name}}}'
           allow_duplicates: false
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_append_device_dns_name_to_host_hostname
+      tag: foreach_evidence_append_device_dns_name_to_host_hostname_c90847f5
       if: ctx.json?.evidence instanceof List
       processor:
         append:
           field: host.hostname
-          tag: append_foreach_evidence_device_dns_name_to_host_hostname
+          tag: append_foreach_evidence_device_dns_name_to_host_hostname_2c6b3725
           value: '{{{_ingest._value.device_dns_name}}}'
           allow_duplicates: false
   - foreach:
       field: json.evidence
-      tag: foreach_date_firstSeenDateTime
+      tag: foreach_date_firstSeenDateTime_01124148
       if: ctx.json?.evidence instanceof List
       processor:
         date:
           field: _ingest._value.firstSeenDateTime
-          tag: date_foreach_firstSeenDateTime
+          tag: date_foreach_firstSeenDateTime_1abde3c1
           target_field: _ingest._value.first_seen_datetime
           formats:
             - ISO8601
           on_failure:
             - remove:
+                tag: remove_ingest_value_firstSeenDateTime_b2e39c37
                 field: _ingest._value.firstSeenDateTime
                 ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_rename_healthStatus
+      tag: foreach_evidence_rename_healthStatus_6e75f47e
       if: ctx.json?.evidence instanceof List
       processor:
         rename:
           field: _ingest._value.healthStatus
-          tag: rename_foreach_evidence_healthStatus
+          tag: rename_foreach_evidence_healthStatus_7ed4b087
           target_field: _ingest._value.health_status
           ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: double_foreach_evidence__rename_accountName
+      tag: double_foreach_evidence__rename_accountName_ed598714
       if: ctx.json?.evidence instanceof List
       processor:
         foreach:
           field: _ingest._value.loggedOnUsers
-          tag: inside_foreach_evidence_loggedOnUSers_rename_accountName
+          tag: inside_foreach_evidence_loggedOnUSers_rename_accountName_ea4ecc5d
           ignore_missing: true
           processor:
             rename:
               field: _ingest._value.accountName
-              tag: rename_foreach_evidence_accountName
+              tag: rename_foreach_evidence_accountName_f6174f1f
               target_field: _ingest._value.account_name
               ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: double_foreach_evidence_append_loggedOnUsers_account_name
+      tag: double_foreach_evidence_append_loggedOnUsers_account_name_c00a4efe
       if: ctx.json?.evidence instanceof List
       processor:
         foreach:
           field: _ingest._value.loggedOnUsers
-          tag: inside_foreach_append_loggedOnUsers_account_name
+          tag: inside_foreach_append_loggedOnUsers_account_name_3996bbd7
           ignore_missing: true
           processor:
             append:
               field: related.user
-              tag: append_inside_foreach_loggedOnUsers_account_name
+              tag: append_inside_foreach_loggedOnUsers_account_name_6ba4125b
               value: '{{{_ingest._value.account_name}}}'
               allow_duplicates: false
   - foreach:
       field: json.evidence
-      tag: double_foreach_evidence_rename_loggedOnUsers_domainName
+      tag: double_foreach_evidence_rename_loggedOnUsers_domainName_c8626919
       if: ctx.json?.evidence instanceof List
       processor:
         foreach:
           field: _ingest._value.loggedOnUsers
-          tag: inside_foreach_rename_loggedOnUsers_domainName
+          tag: inside_foreach_rename_loggedOnUsers_domainName_c32ab386
           ignore_missing: true
           processor:
             rename:
               field: _ingest._value.domainName
-              tag: rename_foreach_loggedOnUsers_domainName
+              tag: rename_foreach_loggedOnUsers_domainName_f75415e6
               target_field: _ingest._value.domain_name
               ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: double_foreach_evidence_loggedOnUsers_append_domain_name
+      tag: double_foreach_evidence_loggedOnUsers_append_domain_name_952e15cc
       if: ctx.json?.evidence instanceof List
       processor:
         foreach:
           field: _ingest._value.loggedOnUsers
-          tag: inside_foreach_loggedOnUsers_append_domainName
+          tag: inside_foreach_loggedOnUsers_append_domainName_38203eb6
           ignore_missing: true
           processor:
             append:
               field: related.hosts
-              tag: append_inside_foreach_loggedOnUsers_domainName
+              tag: append_inside_foreach_loggedOnUsers_domainName_a1a76c8a
               value: '{{{_ingest._value.domain_name}}}'
               allow_duplicates: false
   - foreach:
       field: json.evidence
-      tag: double_foreach_evidence_loggedOnUsers_dot_expander_@odata_type
+      tag: double_foreach_evidence_loggedOnUsers_dot_expander_@odata_type_746e40bd
       if: ctx.json?.evidence instanceof List
       processor:
         foreach:
           field: _ingest._value.loggedOnUsers
-          tag: inside_foreach_dot_expander_loggedOnUsers
+          tag: inside_foreach_dot_expander_loggedOnUsers_e6a9d561
           ignore_missing: true
           processor:
             dot_expander:
+              tag: dot_expander_odata_type_0bf5a279
               field: '@odata.type'
               path: _ingest._value
               ignore_failure: true
               override: true
   - foreach:
       field: json.evidence
-      tag: double_foreach_evidence_loggedOnUsers_rename_@odata_type
+      tag: double_foreach_evidence_loggedOnUsers_rename_@odata_type_816ff8cf
       if: ctx.json?.evidence instanceof List
       processor:
         foreach:
           field: _ingest._value.loggedOnUsers
-          tag: inside_foreach_loggedOnUsers_rename_@odata_type
+          tag: inside_foreach_loggedOnUsers_rename_@odata_type_bdf5275c
           ignore_missing: true
           processor:
             rename:
               field: _ingest._value.@odata.type
-              tag: rename_evidence_foreach_loggedOnUsers_@odata_type
+              tag: rename_evidence_foreach_loggedOnUsers_@odata_type_b5e48f00
               target_field: _ingest._value.odata_type
               ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_rename_loggedOnUsers
+      tag: foreach_evidence_rename_loggedOnUsers_632cae56
       if: ctx.json?.evidence instanceof List
       processor:
         rename:
+          tag: rename_ingest_value_loggedOnUsers_to_ingest_value_logged_on_users_46026a00
           field: _ingest._value.loggedOnUsers
           target_field: _ingest._value.logged_on_users
           ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_onboardingStatus_rename
+      tag: foreach_evidence_onboardingStatus_rename_2bf6b10d
       if: ctx.json?.evidence instanceof List
       processor:
         rename:
+          tag: rename_ingest_value_onboardingStatus_to_ingest_value_onboarding_status_102c7c3c
           field: _ingest._value.onboardingStatus
           target_field: _ingest._value.onboarding_status
           ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_convert_osBuild
+      tag: foreach_evidence_convert_osBuild_29b871e6
       if: ctx.json?.evidence instanceof List
       processor:
         convert:
           field: _ingest._value.osBuild
-          tag: convert_foreach_evidence_osBuild
+          tag: convert_foreach_evidence_osBuild_07b0e952
           target_field: _ingest._value.os_build
           type: string
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_osBuild_26a40f74
                 field: _ingest._value.osBuild
             - append:
+                tag: append_error_message_b200d825
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_convert_rbacGroupId
+      tag: foreach_evidence_convert_rbacGroupId_6075a876
       if: ctx.json?.evidence instanceof List
       processor:
         convert:
           field: _ingest._value.rbacGroupId
-          tag: convert_foreach_evidence_rbacGroupId
+          tag: convert_foreach_evidence_rbacGroupId_c3adb457
           target_field: _ingest._value.rbac_group.id
           type: string
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_rbacGroupId_645fd2a1
                 field: _ingest._value.rbacGroupId
             - append:
+                tag: append_error_message_d718687f
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: json.evidence
-      tag: foreach_rename_evidence_rbacGroupName
+      tag: foreach_rename_evidence_rbacGroupName_37b203f8
       if: ctx.json?.evidence instanceof List
       processor:
         rename:
           field: _ingest._value.rbacGroupName
-          tag: rename_foreach_evidence_rbacGroupName
+          tag: rename_foreach_evidence_rbacGroupName_f85b9c21
           target_field: _ingest._value.rbac_group.name
           ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_rename_riskScore
+      tag: foreach_evidence_rename_riskScore_29178b3c
       if: ctx.json?.evidence instanceof List
       processor:
         rename:
           field: _ingest._value.riskScore
-          tag: rename_foreach_evidence_riskScore
+          tag: rename_foreach_evidence_riskScore_c618a6e1
           target_field: _ingest._value.risk_score
           ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_dot_expander_vmMetadata
+      tag: foreach_evidence_dot_expander_vmMetadata_8beccac4
       if: ctx.json?.evidence instanceof List
       processor:
         dot_expander:
+          tag: dot_expander_odata_type_8b89e06e
           field: '@odata.type'
           path: _ingest._value.vmMetadata
           ignore_failure: true
           override: true
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_rename_vmMetadata_@odata_type
+      tag: foreach_evidence_rename_vmMetadata_@odata_type_e5f04fa3
       if: ctx.json?.evidence instanceof List
       processor:
         rename:
           field: _ingest._value.vmMetadata.@odata.type
-          tag: rename_foreach_evidence_vmMetadata_@odata_type
+          tag: rename_foreach_evidence_vmMetadata_@odata_type_4172a75e
           target_field: _ingest._value.vm_metadata.odata_type
           ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_rename_vmMetadata_resourceId
+      tag: foreach_evidence_rename_vmMetadata_resourceId_bbc16c28
       if: ctx.json?.evidence instanceof List
       processor:
         rename:
           field: _ingest._value.vmMetadata.resourceId
-          tag: rename_foreach_evidence_vmMetadata_resourceId
+          tag: rename_foreach_evidence_vmMetadata_resourceId_0b939f9a
           target_field: _ingest._value.vm_metadata.resource_id
           ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_rename_vmMetadata_subscriptionId
+      tag: foreach_evidence_rename_vmMetadata_subscriptionId_12a40d3a
       if: ctx.json?.evidence instanceof List
       processor:
         rename:
           field: _ingest._value.vmMetadata.subscriptionId
-          tag: rename_foreach_evidence_vmMetadata_subscriptionId
+          tag: rename_foreach_evidence_vmMetadata_subscriptionId_1fb79583
           target_field: _ingest._value.vm_metadata.subscription_id
           ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_rename_vmMetadata_vmId
+      tag: foreach_evidence_rename_vmMetadata_vmId_d8e7614a
       if: ctx.json?.evidence instanceof List
       processor:
         rename:
           field: _ingest._value.vmMetadata.vmId
-          tag: rename_foreach_evidence_vmMetadata_vmId
+          tag: rename_foreach_evidence_vmMetadata_vmId_495a9e37
           target_field: _ingest._value.vm_metadata.vm_id
           ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_rename_detectionStatus
+      tag: foreach_evidence_rename_detectionStatus_50e164a9
       if: ctx.json?.evidence instanceof List
       processor:
         rename:
           field: _ingest._value.detectionStatus
-          tag: rename_foreach_evidence_detectionStatus
+          tag: rename_foreach_evidence_detectionStatus_8c4cec50
           target_field: _ingest._value.detection_status
           ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_append_detection_status
+      tag: foreach_evidence_append_detection_status_3c87d1ca
       if: ctx.json?.evidence instanceof List
       processor:
         append:
           field: event.action
-          tag: append_foreach_evidence_detection_status
+          tag: append_foreach_evidence_detection_status_e40e0f9e
           value: '{{{_ingest._value.detection_status}}}'
           allow_duplicates: false
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_dot_expander_fileDetails
+      tag: foreach_evidence_dot_expander_fileDetails_e6b6816e
       if: ctx.json?.evidence instanceof List
       processor:
         dot_expander:
+          tag: dot_expander_odata_type_58df5758
           field: '@odata.type'
           path: _ingest._value.fileDetails
           ignore_failure: true
           override: true
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_rename_fileDetails_@odata_type
+      tag: foreach_evidence_rename_fileDetails_@odata_type_b474f0dc
       if: ctx.json?.evidence instanceof List
       processor:
         rename:
           field: _ingest._value.fileDetails.@odata.type
-          tag: rename_foreach_evidence_fileDetails_@odata_type
+          tag: rename_foreach_evidence_fileDetails_@odata_type_c11ce608
           target_field: _ingest._value.file_details.odata_type
           ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_rename_fileDetails_sha1
+      tag: foreach_evidence_rename_fileDetails_sha1_81e67c9e
       if: ctx.json?.evidence instanceof List
       processor:
         rename:
           field: _ingest._value.fileDetails.sha1
-          tag: rename_foreach_evidence_fileDetails_sha1
+          tag: rename_foreach_evidence_fileDetails_sha1_9fb5a867
           target_field: _ingest._value.file_details.sha1
           ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_append_fileDetails_sha1_into_fileHashSha1
+      tag: foreach_evidence_append_fileDetails_sha1_into_fileHashSha1_3daf4fff
       if: ctx.json?.evidence instanceof List
       processor:
         append:
           field: file.hash.sha1
-          tag: append_foreach_evidence_fileDetails_sha1_into_fileHashSha1
+          tag: append_foreach_evidence_fileDetails_sha1_into_fileHashSha1_03613bc0
           value: '{{{_ingest._value.file_details.sha1}}}'
           allow_duplicates: false
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_append_fileDetails_sha1_into_related_hash
+      tag: foreach_evidence_append_fileDetails_sha1_into_related_hash_e6a57e02
       if: ctx.json?.evidence instanceof List
       processor:
         append:
           field: related.hash
-          tag: append_foreach_evidence_fileDetails_sha1_into_related_hash
+          tag: append_foreach_evidence_fileDetails_sha1_into_related_hash_3ac56de9
           value: '{{{_ingest._value.file_details.sha1}}}'
           allow_duplicates: false
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_rename_fileDetails_sha256
+      tag: foreach_evidence_rename_fileDetails_sha256_229809a2
       if: ctx.json?.evidence instanceof List
       processor:
         rename:
           field: _ingest._value.fileDetails.sha256
-          tag: rename_foreach_evidence_fileDetails_sha256
+          tag: rename_foreach_evidence_fileDetails_sha256_f540eb0d
           target_field: _ingest._value.file_details.sha256
           ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_append_filedetails_sha256_into_file_hash_sha256
+      tag: foreach_evidence_append_filedetails_sha256_into_file_hash_sha256_33aa922f
       if: ctx.json?.evidence instanceof List
       processor:
         append:
           field: file.hash.sha256
-          tag: append_foreach_evidence_filedetails_sha256_into_file_hash_sha256
+          tag: append_foreach_evidence_filedetails_sha256_into_file_hash_sha256_5cc7b398
           value: '{{{_ingest._value.file_details.sha256}}}'
           allow_duplicates: false
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_append_filedetails_sha256_into_related_hash
+      tag: foreach_evidence_append_filedetails_sha256_into_related_hash_3c6127e2
       if: ctx.json?.evidence instanceof List
       processor:
         append:
           field: related.hash
-          tag: append_foreach_evidence_filedetails_sha256_into_related_hash
+          tag: append_foreach_evidence_filedetails_sha256_into_related_hash_998e8fa6
           value: '{{{_ingest._value.file_details.sha256}}}'
           allow_duplicates: false
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_rename_fileDetails_fileName
+      tag: foreach_evidence_rename_fileDetails_fileName_fbe607ae
       if: ctx.json?.evidence instanceof List
       processor:
         rename:
           field: _ingest._value.fileDetails.fileName
-          tag: rename_foreach_evidence_fileDetails_FileName
+          tag: rename_foreach_evidence_fileDetails_FileName_ab2d892e
           target_field: _ingest._value.file_details.name
           ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_append_fileDetails_name
+      tag: foreach_evidence_append_fileDetails_name_65b4ea3d
       if: ctx.json?.evidence instanceof List
       processor:
         append:
           field: file.name
-          tag: append_foreach_evidence_fileDetails_name
+          tag: append_foreach_evidence_fileDetails_name_209a09d5
           value: '{{{_ingest._value.file_details.name}}}'
           allow_duplicates: false
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_rename_fileDetails_filePath
+      tag: foreach_evidence_rename_fileDetails_filePath_d5e0ce18
       if: ctx.json?.evidence instanceof List
       processor:
         rename:
           field: _ingest._value.fileDetails.filePath
-          tag: rename_foreach_evidence_fileDetails_filePath
+          tag: rename_foreach_evidence_fileDetails_filePath_b34f875c
           target_field: _ingest._value.file_details.path
           ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_append_fileDetails_path
+      tag: foreach_evidence_append_fileDetails_path_055bcb41
       if: ctx.json?.evidence instanceof List
       processor:
         append:
           field: file.path
-          tag: append_foreach_evidence_fileDetails_path
+          tag: append_foreach_evidence_fileDetails_path_59f7ad6e
           value: '{{{_ingest._value.file_details.path}}}'
           allow_duplicates: false
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_convert_fileSize
+      tag: foreach_evidence_convert_fileSize_fec0be3b
       if: ctx.json?.evidence instanceof List
       processor:
         convert:
           field: _ingest._value.fileDetails.fileSize
-          tag: convert_foreach_evidence_fileSize
+          tag: convert_foreach_evidence_fileSize_801a3867
           target_field: _ingest._value.file_details.size
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_fileDetails_fileSize_cea1afa5
                 field: _ingest._value.fileDetails.fileSize
             - append:
+                tag: append_error_message_c36c6de0
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_rename_filePublisher
+      tag: foreach_evidence_rename_filePublisher_d10b13e5
       if: ctx.json?.evidence instanceof List
       processor:
         rename:
           field: _ingest._value.fileDetails.filePublisher
-          tag: rename_foreach_evidence_filePublisher
+          tag: rename_foreach_evidence_filePublisher_fa62e0e4
           target_field: _ingest._value.file_details.publisher
           ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_rename_issuer
+      tag: foreach_evidence_rename_issuer_f9c2cf57
       if: ctx.json?.evidence instanceof List
       processor:
         rename:
           field: _ingest._value.fileDetails.issuer
-          tag: rename_foreach_evidence_issuer
+          tag: rename_foreach_evidence_issuer_f6ced95f
           target_field: _ingest._value.file_details.issuer
           ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_rename_signer
+      tag: foreach_evidence_rename_signer_97e43cc9
       if: ctx.json?.evidence instanceof List
       processor:
         rename:
           field: _ingest._value.fileDetails.signer
-          tag: rename_evidence_foreach_signer
+          tag: rename_evidence_foreach_signer_a798ba95
           target_field: _ingest._value.file_details.signer
           ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_convert_ipAddress
+      tag: foreach_evidence_convert_ipAddress_2f0a205b
       if: ctx.json?.evidence instanceof List
       processor:
         convert:
           field: _ingest._value.ipAddress
-          tag: convert_foreach_evidence_ipAddress
+          tag: convert_foreach_evidence_ipAddress_e6e743ab
           target_field: _ingest._value.ip_address
           type: ip
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_ipAddress_c874de98
                 field: _ingest._value.ipAddress
             - append:
+                tag: append_error_message_22bf05e0
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_append_ip_address_into_host_ip
+      tag: foreach_evidence_append_ip_address_into_host_ip_c7b8ff00
       if: ctx.json?.evidence instanceof List
       processor:
         append:
           field: host.ip
-          tag: append_foreach_evidence_ip_address_into_host_ip
+          tag: append_foreach_evidence_ip_address_into_host_ip_e685590a
           value: '{{{_ingest._value.ip_address}}}'
           allow_duplicates: false
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_append_ip_address_into_related_ip
+      tag: foreach_evidence_append_ip_address_into_related_ip_68b8ca6f
       if: ctx.json?.evidence instanceof List
       processor:
         append:
           field: related.ip
-          tag: append_foreach_evidence_ip_address_into_related_ip
+          tag: append_foreach_evidence_ip_address_into_related_ip_c8e5c578
           value: '{{{_ingest._value.ip_address}}}'
           allow_duplicates: false
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_append_countryLetterCode_to_geo_country_iso_code
+      tag: foreach_evidence_append_countryLetterCode_to_geo_country_iso_code_660447c2
       if: ctx.json?.evidence instanceof List
       processor:
         append:
           field: source.geo.country_iso_code
-          tag: append_foreach_evidence_countryLetterCode_to_geo_country_iso_code
+          tag: append_foreach_evidence_countryLetterCode_to_geo_country_iso_code_f99fb020
           value: '{{{_ingest._value.country_letter_code}}}'
           allow_duplicates: false
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_append_url_to_url_original
+      tag: foreach_evidence_append_url_to_url_original_7a73a7ea
       if: ctx.json?.evidence instanceof List
       processor:
         append:
           field: url.original
-          tag: append_foreach_evidence_url_to_url_original
+          tag: append_foreach_evidence_url_to_url_original_c8fec6bb
           value: '{{{_ingest._value.url}}}'
           allow_duplicates: false
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_urls_array_to_url_original
+      tag: foreach_evidence_urls_array_to_url_original_e7219239
       if: ctx.json?.evidence instanceof List
       processor:
         foreach:
           field: _ingest._value.urls
-          tag: foreach_append_urls_array_to_url_original
+          tag: foreach_append_urls_array_to_url_original_802fc30d
           ignore_missing: true
           processor:
             append:
               field: url.original
-              tag: append_urls_array_to_url_original
+              tag: append_urls_array_to_url_original_47b1dada
               value: '{{{_ingest._value}}}'
               allow_duplicates: false
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_dot_expander_userAccount
+      tag: foreach_evidence_dot_expander_userAccount_d0c33431
       if: ctx.json?.evidence instanceof List
       processor:
         dot_expander:
+          tag: dot_expander_odata_type_eef3d81f
           field: '@odata.type'
           path: _ingest._value.userAccount
           ignore_failure: true
           override: true
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_rename_userAccount_odata_type
+      tag: foreach_evidence_rename_userAccount_odata_type_bd98d751
       if: ctx.json?.evidence instanceof List
       processor:
         rename:
           field: _ingest._value.userAccount.@odata.type
-          tag: renane_foreach_evidence_userAccount_odata_type
+          tag: renane_foreach_evidence_userAccount_odata_type_1e255dcc
           target_field: _ingest._value.user_account.odata_type
           ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_rename_useraccount_domainName
+      tag: foreach_evidence_rename_useraccount_domainName_71da52ba
       if: ctx.json?.evidence instanceof List
       processor:
         rename:
           field: _ingest._value.userAccount.domainName
-          tag: rename_foreach_evidence_useraccount_domainName
+          tag: rename_foreach_evidence_useraccount_domainName_fb9d7c93
           target_field: _ingest._value.user_account.domain_name
           ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_append_useraccount_domain_name
+      tag: foreach_evidence_append_useraccount_domain_name_164650e2
       if: ctx.json?.evidence instanceof List
       processor:
         append:
           field: related.hosts
-          tag: append_foreach_evidence_useraccount_domain_name
+          tag: append_foreach_evidence_useraccount_domain_name_b0b1a53f
           value: '{{{_ingest._value.user_account.domain_name}}}'
           allow_duplicates: false
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_rename_useraccount_azureAdUserId
+      tag: foreach_evidence_rename_useraccount_azureAdUserId_c9f617e3
       if: ctx.json?.evidence instanceof List
       processor:
         rename:
           field: _ingest._value.userAccount.azureAdUserId
-          tag: rename_foreach_evidence_useraccount_azureAdUserId
+          tag: rename_foreach_evidence_useraccount_azureAdUserId_d9624422
           target_field: _ingest._value.user_account.azure_ad_user_id
           ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_append_useraccount_azureAdUserId
+      tag: foreach_evidence_append_useraccount_azureAdUserId_88a9a66e
       if: ctx.json?.evidence instanceof List
       processor:
         append:
           field: related.user
-          tag: append_foreach_evidence_useraccount_azureAdUserId
+          tag: append_foreach_evidence_useraccount_azureAdUserId_e5e2126a
           value: '{{{_ingest._value.user_account.azure_ad_user_id}}}'
           allow_duplicates: false
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_rename_useraccount_userPrincipalName
+      tag: foreach_evidence_rename_useraccount_userPrincipalName_a0a65dfb
       if: ctx.json?.evidence instanceof List
       processor:
         rename:
           field: _ingest._value.userAccount.userPrincipalName
-          tag: rename_foreach_evidence_useraccount_userPrincipalName
+          tag: rename_foreach_evidence_useraccount_userPrincipalName_682eb8fb
           target_field: _ingest._value.user_account.user_principal_name
           ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_append_useraccount_user_principal_name
+      tag: foreach_evidence_append_useraccount_user_principal_name_4c09b9ab
       if: ctx.json?.evidence instanceof List
       processor:
         append:
           field: related.user
-          tag: append_foreach_evidence_useraccount_user_principal_name
+          tag: append_foreach_evidence_useraccount_user_principal_name_c766521f
           value: '{{{_ingest._value.user_account.user_principal_name}}}'
           allow_duplicates: false
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_rename_primaryAddress
+      tag: foreach_evidence_rename_primaryAddress_fcb3dd61
       if: ctx.json?.evidence instanceof List
       processor:
         rename:
           field: _ingest._value.primaryAddress
-          tag: rename_foreach_evidence_primaryAddress
+          tag: rename_foreach_evidence_primaryAddress_f5aaffd6
           target_field: _ingest._value.primary_address
           ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_append_primary_address_to_user_email
+      tag: foreach_evidence_append_primary_address_to_user_email_cf5e6f66
       if: ctx.json?.evidence instanceof List
       processor:
         append:
           field: user.email
-          tag: append_foreach_evidence_primary_address_to_user_email
+          tag: append_foreach_evidence_primary_address_to_user_email_862b8abc
           value: '{{{_ingest._value.primary_address}}}'
           allow_duplicates: false
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_append_primary_address_to_related_user
+      tag: foreach_evidence_append_primary_address_to_related_user_fd555ee0
       if: ctx.json?.evidence instanceof List
       processor:
         append:
           field: related.user
-          tag: append_foreach_evidence_primary_address_to_related_user
+          tag: append_foreach_evidence_primary_address_to_related_user_e87b6df7
           value: '{{{_ingest._value.primary_address}}}'
           allow_duplicates: false
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_rename_useraccount_accountname
+      tag: foreach_evidence_rename_useraccount_accountname_8b4ecb46
       if: ctx.json?.evidence instanceof List
       processor:
         rename:
           field: _ingest._value.userAccount.accountName
-          tag: rename_foreach_evidence_useraccount_accountname
+          tag: rename_foreach_evidence_useraccount_accountname_afb1fa56
           target_field: _ingest._value.user_account.account_name
           ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_append_useraccount_accountname
+      tag: foreach_evidence_append_useraccount_accountname_e4b18424
       if: ctx.json?.evidence instanceof List
       processor:
         append:
           field: related.user
-          tag: append_foreach_evidence_useraccount_accountname
+          tag: append_foreach_evidence_useraccount_accountname_241464b2
           value: '{{{_ingest._value.user_account.account_name}}}'
           allow_duplicates: false
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_rename_useraccount_userSid
+      tag: foreach_evidence_rename_useraccount_userSid_d838cafc
       if: ctx.json?.evidence instanceof List
       processor:
         rename:
           field: _ingest._value.userAccount.userSid
-          tag: rename_foreach_evidence_useraccount_userSid
+          tag: rename_foreach_evidence_useraccount_userSid_433dfd5f
           target_field: _ingest._value.user_account.user_sid
           ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_append_useraccount_userSid
+      tag: foreach_evidence_append_useraccount_userSid_213b965f
       if: ctx.json?.evidence instanceof List
       processor:
         append:
           field: related.user
-          tag: append_foreach_evidence_useraccount_userSid
+          tag: append_foreach_evidence_useraccount_userSid_8f9c17f8
           value: '{{{_ingest._value.user_account.user_sid}}}'
           allow_duplicates: false
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_rename_clusterBy
+      tag: foreach_evidence_rename_clusterBy_245c811f
       if: ctx.json?.evidence instanceof List
       processor:
         rename:
           field: _ingest._value.clusterBy
-          tag: rename_foreach_evidence_clusterBy
+          tag: rename_foreach_evidence_clusterBy_f8c5c68e
           target_field: _ingest._value.cluster_by
           ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_ename_clusterByValue
+      tag: foreach_evidence_ename_clusterByValue_a08d57c9
       if: ctx.json?.evidence instanceof List
       processor:
         rename:
           field: _ingest._value.clusterByValue
-          tag: rename_evidence_foreach_clusterByValue
+          tag: rename_evidence_foreach_clusterByValue_f6858daa
           target_field: _ingest._value.cluster_by_value
           ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_convert_emailCount
+      tag: foreach_evidence_convert_emailCount_b6180eb1
       if: ctx.json?.evidence instanceof List
       processor:
         convert:
           field: _ingest._value.emailCount
-          tag: convert_foreach_evidence_emailCount
+          tag: convert_foreach_evidence_emailCount_4a4f029b
           target_field: _ingest._value.email_count
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_emailCount_0c8a79a7
                 field: _ingest._value.emailCount
             - append:
+                tag: append_error_message_c45bf5d6
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_rename_networkMessageIds
+      tag: foreach_evidence_rename_networkMessageIds_06c8fc2b
       if: ctx.json?.evidence instanceof List
       processor:
         rename:
           field: _ingest._value.networkMessageIds
-          tag: rename_foreach_evidence_networkMessageId
+          tag: rename_foreach_evidence_networkMessageId_4ac1e9ef
           target_field: _ingest._value.network_message_ids
           ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_rename_evidence_objectId
+      tag: foreach_rename_evidence_objectId_6962ca9b
       if: ctx.json?.evidence instanceof List
       processor:
         rename:
           field: _ingest._value.objectId
-          tag: rename_foreach_evidence_objectId
+          tag: rename_foreach_evidence_objectId_03ec6729
           target_field: _ingest._value.object_id
           ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_rename_processCommandLine
+      tag: foreach_evidence_rename_processCommandLine_326593a1
       if: ctx.json?.evidence instanceof List
       processor:
         rename:
           field: _ingest._value.processCommandLine
-          tag: rename_foreach_evidence_processCommandLine
+          tag: rename_foreach_evidence_processCommandLine_70190c29
           target_field: _ingest._value.process.command_line
           ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_append_processCommandLine
+      tag: foreach_evidence_append_processCommandLine_4c322562
       if: ctx.json?.evidence instanceof List
       processor:
         append:
           field: process.command_line
-          tag: append_foreach_evidence_processCommandLine
+          tag: append_foreach_evidence_processCommandLine_1d1007df
           value: '{{{_ingest._value.process.command_line}}}'
           allow_duplicates: false
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_dot_expander_imageFile
+      tag: foreach_evidence_dot_expander_imageFile_3b076233
       if: ctx.json?.evidence instanceof List
       processor:
         dot_expander:
+          tag: dot_expander_odata_type_37cae189
           field: '@odata.type'
           path: _ingest._value.imageFile
           ignore_failure: true
           override: true
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_rename_imageFile_@odata_type
+      tag: foreach_evidence_rename_imageFile_@odata_type_d78bfa56
       if: ctx.json?.evidence instanceof List
       processor:
         rename:
           field: _ingest._value.imageFile.@odata.type
-          tag: rename_foreach_evidence_imageFile_@odata_type
+          tag: rename_foreach_evidence_imageFile_@odata_type_4785ffcc
           target_field: _ingest._value.image_file.odata_type
           ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_rename_imagefile_sha1
+      tag: foreach_evidence_rename_imagefile_sha1_11b3bea3
       if: ctx.json?.evidence instanceof List
       processor:
         rename:
           field: _ingest._value.imageFile.sha1
-          tag: rename_foreach_evidence_imagefile_sha1
+          tag: rename_foreach_evidence_imagefile_sha1_93bac3f7
           target_field: _ingest._value.image_file.sha1
           ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_append_imagefile_sha1_into_process_hash_sha1
+      tag: foreach_evidence_append_imagefile_sha1_into_process_hash_sha1_6b3f12dd
       if: ctx.json?.evidence instanceof List
       processor:
         append:
           field: process.hash.sha1
-          tag: append_foreach_evidence_imagefile_sha1_into_process_hash_sha1
+          tag: append_foreach_evidence_imagefile_sha1_into_process_hash_sha1_4c61c581
           value: '{{{_ingest._value.image_file.sha1}}}'
           allow_duplicates: false
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_append_imagefile_sha1_into_related_hash
+      tag: foreach_evidence_append_imagefile_sha1_into_related_hash_16d4c913
       if: ctx.json?.evidence instanceof List
       processor:
         append:
           field: related.hash
-          tag: append_foreach_evidence_imagefile_sha1_into_related_hash
+          tag: append_foreach_evidence_imagefile_sha1_into_related_hash_5c2b9b1c
           value: '{{{_ingest._value.image_file.sha1}}}'
           allow_duplicates: false
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_imagefile_sha256
+      tag: foreach_evidence_imagefile_sha256_c912454a
       if: ctx.json?.evidence instanceof List
       processor:
         rename:
           field: _ingest._value.imageFile.sha256
-          tag: foreach_evidence_rename_imagefile_sha256
+          tag: foreach_evidence_rename_imagefile_sha256_6e2f257b
           target_field: _ingest._value.image_file.sha256
           ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_append_imagefile_sha256_into_process_hash_sha256
+      tag: foreach_evidence_append_imagefile_sha256_into_process_hash_sha256_390e8e29
       if: ctx.json?.evidence instanceof List
       processor:
         append:
           field: process.hash.sha256
-          tag: append_foreach_evidence_imagefile_sha256_into_process_hash_sha256
+          tag: append_foreach_evidence_imagefile_sha256_into_process_hash_sha256_acb02a35
           value: '{{{_ingest._value.image_file.sha256}}}'
           allow_duplicates: false
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_imagefile_sha256_into_related_hash
+      tag: foreach_evidence_imagefile_sha256_into_related_hash_1c9819c1
       if: ctx.json?.evidence instanceof List
       processor:
         append:
           field: related.hash
-          tag: append_foreach_evidence_imagefile_sha256_into_related_hash
+          tag: append_foreach_evidence_imagefile_sha256_into_related_hash_441ecc79
           value: '{{{_ingest._value.image_file.sha256}}}'
           allow_duplicates: false
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_dot_expander_parentProcessImageFile
+      tag: foreach_evidence_dot_expander_parentProcessImageFile_decbc64a
       if: ctx.json?.evidence instanceof List
       processor:
         dot_expander:
+          tag: dot_expander_odata_type_397528bc
           field: '@odata.type'
           path: _ingest._value.parentProcessImageFile
           ignore_failure: true
           override: true
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_rename_parentProcessImageFile_@odata_type
+      tag: foreach_evidence_rename_parentProcessImageFile_@odata_type_7766e2ea
       if: ctx.json?.evidence instanceof List
       processor:
         rename:
           field: _ingest._value.parentProcessImageFile.@odata.type
-          tag: rename_foreach_evidence_parentProcessImageFile_@odata_type
+          tag: rename_foreach_evidence_parentProcessImageFile_@odata_type_7a5561d8
           target_field: _ingest._value.parent_process.image_file.odata_type
           ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_rename_parentProcessImageFile_sha1
+      tag: foreach_evidence_rename_parentProcessImageFile_sha1_240cfe6d
       if: ctx.json?.evidence instanceof List
       processor:
         rename:
           field: _ingest._value.parentProcessImageFile.sha1
-          tag: rename_foreach_evidence_parentProcessImageFile_sha1
+          tag: rename_foreach_evidence_parentProcessImageFile_sha1_dfa7bc5a
           target_field: _ingest._value.parent_process.image_file.sha1
           ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_append_parentProcessImageFile_sha1_into_process_parent_hash_sha1
+      tag: foreach_evidence_append_parentProcessImageFile_sha1_into_process_parent_hash_sha1_434625f5
       if: ctx.json?.evidence instanceof List
       processor:
         append:
           field: process.parent.hash.sha1
-          tag: append_foreach_evidence_parentProcessImageFile_sha1_into_process_parent_hash_sha1
+          tag: append_foreach_evidence_parentProcessImageFile_sha1_into_process_parent_hash_sha1_abeab308
           value: '{{{_ingest._value.parent_process.image_file.sha1}}}'
           allow_duplicates: false
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_append_parentProcessImageFile_sha1_into_related_hash
+      tag: foreach_evidence_append_parentProcessImageFile_sha1_into_related_hash_fd9d6e28
       if: ctx.json?.evidence instanceof List
       processor:
         append:
           field: related.hash
-          tag: append_foreach_evidence_parentProcessImageFile_sha1_into_related_hash
+          tag: append_foreach_evidence_parentProcessImageFile_sha1_into_related_hash_31535faa
           value: '{{{_ingest._value.parent_process.image_file.sha1}}}'
           allow_duplicates: false
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_rename_parentProcessImageFile_sha256
+      tag: foreach_evidence_rename_parentProcessImageFile_sha256_1f9501be
       if: ctx.json?.evidence instanceof List
       processor:
         rename:
           field: _ingest._value.parentProcessImageFile.sha256
-          tag: rename_foreach_evidence_parentProcessImageFile_sha256
+          tag: rename_foreach_evidence_parentProcessImageFile_sha256_e88299b1
           target_field: _ingest._value.parent_process.image_file.sha256
           ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_append_parentProcessImageFile_sha256_into_process_parent_hash_sha256
+      tag: foreach_evidence_append_parentProcessImageFile_sha256_into_process_parent_hash_sha256_1ef0b2b4
       if: ctx.json?.evidence instanceof List
       processor:
         append:
           field: process.parent.hash.sha256
-          tag: append_foreach_evidence_parentProcessImageFile_sha256_into_process_parent_hash_sha256
+          tag: append_foreach_evidence_parentProcessImageFile_sha256_into_process_parent_hash_sha256_9b6fe72a
           value: '{{{_ingest._value.parent_process.image_file.sha256}}}'
           allow_duplicates: false
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_append_parentProcessImageFile_sha256_into_related_hash
+      tag: foreach_evidence_append_parentProcessImageFile_sha256_into_related_hash_aa7b3d66
       if: ctx.json?.evidence instanceof List
       processor:
         append:
           field: related.hash
-          tag: append_foreach_evidence_parentProcessImageFile_sha256_into_related_hash
+          tag: append_foreach_evidence_parentProcessImageFile_sha256_into_related_hash_f14cc741
           value: '{{{_ingest._value.parent_process.image_file.sha256}}}'
           allow_duplicates: false
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_convert_parentProcessId
+      tag: foreach_evidence_convert_parentProcessId_ad40796a
       if: ctx.json?.evidence instanceof List
       processor:
         convert:
           field: _ingest._value.parentProcessId
-          tag: convert_foreach_evidence_parentProcessId
+          tag: convert_foreach_evidence_parentProcessId_1c9eb44e
           target_field: _ingest._value.parent_process.id
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_parentProcessId_5ede5bc2
                 field: _ingest._value.parentProcessId
             - append:
+                tag: append_error_message_107d3d45
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_date_parentProcessCreationDateTime
+      tag: foreach_evidence_date_parentProcessCreationDateTime_4751f1ac
       if: ctx.json?.evidence instanceof List
       processor:
         date:
           field: _ingest._value.parentProcessCreationDateTime
-          tag: date_foreach_evidence_parentProcessCreationDateTime
+          tag: date_foreach_evidence_parentProcessCreationDateTime_7a21cfe9
           target_field: _ingest._value.parent_process.creation_datetime
           formats:
             - ISO8601
           on_failure:
             - remove:
+                tag: remove_ingest_value_parentProcessCreationDateTime_1c914d9a
                 field: _ingest._value.parentProcessCreationDateTime
                 ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_append_parentProcessCreationDateTime
+      tag: foreach_evidence_append_parentProcessCreationDateTime_acc8292b
       if: ctx.json?.evidence instanceof List
       processor:
         append:
           field: process.parent.start
-          tag: append_foreach_evidence_parentProcessCreationDateTime
+          tag: append_foreach_evidence_parentProcessCreationDateTime_26f6710b
           value: '{{{_ingest._value.parent_process.creation_datetime}}}'
           allow_duplicates: false
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_convert_processId
+      tag: foreach_evidence_convert_processId_8a90e3b0
       if: ctx.json?.evidence instanceof List
       processor:
         convert:
           field: _ingest._value.processId
-          tag: convert_foreach_evidence_processId
+          tag: convert_foreach_evidence_processId_7baf143c
           target_field: _ingest._value.process.id
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_processId_40ca6032
                 field: _ingest._value.processId
             - append:
+                tag: append_error_message_26885158
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_date_processCreationDateTime
+      tag: foreach_evidence_date_processCreationDateTime_34f0b029
       if: ctx.json?.evidence instanceof List
       processor:
         date:
           field: _ingest._value.processCreationDateTime
-          tag: date_foreach_evidence_processCreationDateTime
+          tag: date_foreach_evidence_processCreationDateTime_ce1bc04b
           target_field: _ingest._value.process.creation_datetime
           formats:
             - ISO8601
           on_failure:
             - remove:
+                tag: remove_ingest_value_processCreationDateTime_0d07fa8e
                 field: _ingest._value.processCreationDateTime
                 ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_append_processCreationDateTime
+      tag: foreach_evidence_append_processCreationDateTime_846802df
       if: ctx.json?.evidence instanceof List
       processor:
         append:
           field: process.start
-          tag: append_foreach_evidence_processCreationDateTime
+          tag: append_foreach_evidence_processCreationDateTime_2dcc861c
           value: '{{{_ingest._value.process.creation_datetime}}}'
           allow_duplicates: false
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_process_name
+      tag: foreach_evidence_process_name_654a23d1
       if: ctx.json?.evidence instanceof List
       processor:
         append:
           field: process.name
-          tag: append_evidence_imageFile_to_process_name
+          tag: append_evidence_imageFile_to_process_name_1ecdf2a3
           value: '{{{_ingest._value.imageFile.fileName}}}'
           allow_duplicates: false
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_rename_imageFile_filename
+      tag: foreach_evidence_rename_imageFile_filename_78dc2cab
       if: ctx.json?.evidence instanceof List
       processor:
         rename:
           field: _ingest._value.imageFile.fileName
-          tag: rename_foreach_evidence_imageFile_filename
+          tag: rename_foreach_evidence_imageFile_filename_f7d6d909
           target_field: _ingest._value.image_file.name
           ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_rename_imageFile_filepath
+      tag: foreach_evidence_rename_imageFile_filepath_4fc02957
       if: ctx.json?.evidence instanceof List
       processor:
         rename:
           field: _ingest._value.imageFile.filePath
-          tag: rename_foreach_evidence_imageFile_filepath
+          tag: rename_foreach_evidence_imageFile_filepath_cfd06cb9
           target_field: _ingest._value.image_file.path
           ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_rename_imageFile_filePublisher
+      tag: foreach_evidence_rename_imageFile_filePublisher_6c2c81cf
       if: ctx.json?.evidence instanceof List
       processor:
         rename:
           field: _ingest._value.imageFile.filePublisher
-          tag: rename_foreach_evidence_imageFile_filePublisher
+          tag: rename_foreach_evidence_imageFile_filePublisher_7fa9d0d7
           target_field: _ingest._value.image_file.publisher
           ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_convert_imagefile_filesize
+      tag: foreach_evidence_convert_imagefile_filesize_2366f94c
       if: ctx.json?.evidence instanceof List
       processor:
         convert:
           field: _ingest._value.imageFile.fileSize
-          tag: convert_foreach_evidence_imagefile_filesize
+          tag: convert_foreach_evidence_imagefile_filesize_a942d71b
           target_field: _ingest._value.image_file.size
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_imageFile_fileSize_45eb04eb
                 field: _ingest._value.imageFile.fileSize
             - append:
+                tag: append_error_message_7b9bb432
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_rename_imagefile_issuer
+      tag: foreach_evidence_rename_imagefile_issuer_12ba7297
       if: ctx.json?.evidence instanceof List
       processor:
         rename:
           field: _ingest._value.imageFile.issuer
-          tag: rename_foreach_evidence_imagefile_issuer
+          tag: rename_foreach_evidence_imagefile_issuer_64898005
           target_field: _ingest._value.image_file.issuer
           ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_rename_imageFile_signer
+      tag: foreach_evidence_rename_imageFile_signer_153bb5ed
       if: ctx.json?.evidence instanceof List
       processor:
         rename:
           field: _ingest._value.imageFile.signer
-          tag: rename_foreach_evidence_imageFile_signer
+          tag: rename_foreach_evidence_imageFile_signer_eb6d0269
           target_field: _ingest._value.image_file.signer
           ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_rename_parentProcessImageFile_filename
+      tag: foreach_evidence_rename_parentProcessImageFile_filename_781b7cd3
       if: ctx.json?.evidence instanceof List
       processor:
         rename:
           field: _ingest._value.parentProcessImageFile.fileName
-          tag: rename_foreach_evidence_parentProcessImageFile_filename
+          tag: rename_foreach_evidence_parentProcessImageFile_filename_4700c13a
           target_field: _ingest._value.parent_process.image_file.name
           ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_parentProcessImageFile_filepath
+      tag: foreach_evidence_parentProcessImageFile_filepath_662ca0e4
       if: ctx.json?.evidence instanceof List
       processor:
         rename:
           field: _ingest._value.parentProcessImageFile.filePath
-          tag: rename_foreach_evidence_parentProcessImageFile_filepath
+          tag: rename_foreach_evidence_parentProcessImageFile_filepath_582d2a5d
           target_field: _ingest._value.parent_process.image_file.path
           ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_rename_parentProcessImageFile_filepublisher
+      tag: foreach_evidence_rename_parentProcessImageFile_filepublisher_755c3d61
       if: ctx.json?.evidence instanceof List
       processor:
         rename:
           field: _ingest._value.parentProcessImageFile.filePublisher
-          tag: rename_foreach_evidence_parentProcessImageFile_filepublisher
+          tag: rename_foreach_evidence_parentProcessImageFile_filepublisher_c935b64e
           target_field: _ingest._value.parent_process.image_file.publisher
           ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_convert_parentProcessImageFile_filesize
+      tag: foreach_evidence_convert_parentProcessImageFile_filesize_2228c45a
       if: ctx.json?.evidence instanceof List
       processor:
         convert:
           field: _ingest._value.parentProcessImageFile.fileSize
-          tag: convert_foreach_evidence_parentProcessImageFile_filesize
+          tag: convert_foreach_evidence_parentProcessImageFile_filesize_ab3a3ce1
           target_field: _ingest._value.parent_process.image_file.size
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_parentProcessImageFile_fileSize_b10221db
                 field: _ingest._value.parentProcessImageFile.fileSize
             - append:
+                tag: append_error_message_e2a52a12
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_rename_parentProcessImageFile_issuer
+      tag: foreach_evidence_rename_parentProcessImageFile_issuer_02642699
       if: ctx.json?.evidence instanceof List
       processor:
         rename:
           field: _ingest._value.parentProcessImageFile.issuer
-          tag: rename_foreach_evidence_parentProcessImageFile_issuer
+          tag: rename_foreach_evidence_parentProcessImageFile_issuer_b2a94da1
           target_field: _ingest._value.parent_process.image_file.issuer
           ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_rename_parentProcessImageFile_signer
+      tag: foreach_evidence_rename_parentProcessImageFile_signer_ba132ea6
       if: ctx.json?.evidence instanceof List
       processor:
         rename:
           field: _ingest._value.parentProcessImageFile.signer
-          tag: rename_foreach_evidence_parentProcessImageFile_signer
+          tag: rename_foreach_evidence_parentProcessImageFile_signer_4719c9fe
           target_field: _ingest._value.parent_process.image_file.signer
           ignore_missing: true
   - script:
       description: Set process and file ECS fields from evidence (executables, pids, file size).
-      tag: script_set_process_fields_from_evidence
+      tag: script_set_process_fields_from_evidence_cbade378
       lang: painless
       if: ctx.json?.evidence instanceof List
       source: |
@@ -2440,117 +2488,117 @@ processors:
         }
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_rename_registryHive
+      tag: foreach_evidence_rename_registryHive_3ed8e73e
       if: ctx.json?.evidence instanceof List
       processor:
         rename:
           field: _ingest._value.registryHive
-          tag: rename_foreach_evidence_registryHive
+          tag: rename_foreach_evidence_registryHive_81e16822
           target_field: _ingest._value.registry_hive
           ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_append_registryHive
+      tag: foreach_evidence_append_registryHive_5f188fde
       if: ctx.json?.evidence instanceof List
       processor:
         append:
           field: registry.hive
-          tag: append_foreach_evidence_registryHive
+          tag: append_foreach_evidence_registryHive_d77d5567
           value: '{{{_ingest._value.registry_hive}}}'
           allow_duplicates: false
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_rename_registryKey
+      tag: foreach_evidence_rename_registryKey_9db3d977
       if: ctx.json?.evidence instanceof List
       processor:
         rename:
           field: _ingest._value.registryKey
-          tag: rename_foreach_evidence_registryKey
+          tag: rename_foreach_evidence_registryKey_199a9bd8
           target_field: _ingest._value.registry_key
           ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_append_registryKey
+      tag: foreach_evidence_append_registryKey_f2aea7d8
       if: ctx.json?.evidence instanceof List
       processor:
         append:
           field: registry.key
-          tag: append_foreach_evidence_registryKey
+          tag: append_foreach_evidence_registryKey_58e93655
           value: '{{{_ingest._value.registry_key}}}'
           allow_duplicates: false
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_rename_registryValueType
+      tag: foreach_evidence_rename_registryValueType_d051bb45
       if: ctx.json?.evidence instanceof List
       processor:
         rename:
           field: _ingest._value.registryValueType
-          tag: rename_foreach_evidence_registryValueType
+          tag: rename_foreach_evidence_registryValueType_7ac83008
           target_field: _ingest._value.registry_value_type
           ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_append_registryValueType
+      tag: foreach_evidence_append_registryValueType_0518a91b
       if: ctx.json?.evidence instanceof List
       processor:
         append:
           field: registry.data.type
-          tag: append_foreach_evidence_registryValueType
+          tag: append_foreach_evidence_registryValueType_ebb540a1
           value: '{{{_ingest._value.registry_value_type}}}'
           allow_duplicates: false
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_rename_registryValue
+      tag: foreach_evidence_rename_registryValue_f43f4685
       if: ctx.json?.evidence instanceof List
       processor:
         rename:
           field: _ingest._value.registryValue
-          tag: rename_foreach_evidence_registryValue
+          tag: rename_foreach_evidence_registryValue_56bdb437
           target_field: _ingest._value.registry_value
           ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_append_registryValue
+      tag: foreach_evidence_append_registryValue_18259ada
       if: ctx.json?.evidence instanceof List
       processor:
         append:
           field: registry.value
-          tag: append_foreach_evidence_registryValue
+          tag: append_foreach_evidence_registryValue_2edfc604
           value: '{{{_ingest._value.registry_value}}}'
           allow_duplicates: false
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_rename_registryValueName
+      tag: foreach_evidence_rename_registryValueName_118a9f7a
       if: ctx.json?.evidence instanceof List
       processor:
         rename:
           field: _ingest._value.registryValueName
-          tag: rename_foreach_evidence_registryValueName
+          tag: rename_foreach_evidence_registryValueName_86a2dc19
           target_field: _ingest._value.registry_value_name
           ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_rename_securityGroupId
+      tag: foreach_evidence_rename_securityGroupId_fb2eaf39
       if: ctx.json?.evidence instanceof List
       processor:
         rename:
           field: _ingest._value.securityGroupId
-          tag: rename_foreach_evidence_securityGroupId
+          tag: rename_foreach_evidence_securityGroupId_88dd1d8e
           target_field: _ingest._value.security_group_id
           ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_append_securityGroupId
+      tag: foreach_evidence_append_securityGroupId_4e6fe327
       if: ctx.json?.evidence instanceof List
       processor:
         append:
           field: group.id
-          tag: append_foreach_evidence_securityGroupId
+          tag: append_foreach_evidence_securityGroupId_cee5190b
           value: '{{{_ingest._value.security_group_id}}}'
           allow_duplicates: false
   - script:
       description: Map ecs fields based on evidence type.
-      tag: script_to_map_evidence_ecs_fields
+      tag: script_to_map_evidence_ecs_fields_1af75599
       lang: painless
       if: ctx.json?.evidence instanceof List
       source: |
@@ -2656,32 +2704,33 @@ processors:
         }
   - foreach:
       field: process.parent.entity_id
-      tag: foreach_fingerprint_parent_process_entity_id
+      tag: foreach_fingerprint_parent_process_entity_id_fde451f9
       if: ctx.process?.parent?.entity_id instanceof List
       processor:
         fingerprint:
           fields:
             - _ingest._value
-          tag: fingerprint_parent_process_entity_id
+          tag: fingerprint_parent_process_entity_id_229fc6c8
           target_field: _ingest._value
           ignore_missing: true
   - foreach:
       field: process.entity_id
-      tag: foreach_fingerprint_process_entity_id
+      tag: foreach_fingerprint_process_entity_id_57fcc7b0
       if: ctx.process?.entity_id instanceof List
       processor:
         fingerprint:
           fields:
             - _ingest._value
-          tag: fingerprint_process_entity_id
+          tag: fingerprint_process_entity_id_be527362
           target_field: _ingest._value
           ignore_missing: true
   - foreach:
       field: json.evidence
-      tag: foreach_evidence_remove_fields
+      tag: foreach_evidence_remove_fields_d10a87f0
       if: ctx.json?.evidence instanceof List
       processor:
         remove:
+          tag: remove_ingest_value_createdDateTime_eadaf411
           field:
             - _ingest._value.createdDateTime
             - _ingest._value.receivedDateTime
@@ -2708,12 +2757,12 @@ processors:
           ignore_missing: true
   - rename:
       field: json.evidence
-      tag: rename_evidence
+      tag: rename_evidence_c44620b5
       target_field: m365_defender.alert.evidence
       ignore_missing: true
   - remove:
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
-      tag: remove_ecs_duplicate_fields
+      tag: remove_ecs_duplicate_fields_f3aa2535
       field:
         - m365_defender.alert.last_update_datetime
         - m365_defender.alert.description
@@ -2730,10 +2779,11 @@ processors:
       ignore_missing: true
   - foreach:
       field: m365_defender.alert.evidence
-      tag: remove_foreach_ecs_duplicate_fields
+      tag: remove_foreach_ecs_duplicate_fields_19234512
       if: ctx.m365_defender?.alert?.evidence instanceof List && (ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields')))
       processor:
         remove:
+          tag: remove_ingest_value_ip_address_beaaeb0e
           field:
             - _ingest._value.ip_address
             - _ingest._value.detection_status
@@ -2768,7 +2818,7 @@ processors:
           ignore_missing: true
   - script:
       lang: painless
-      tag: set_process_name_from_command_line
+      tag: set_process_name_from_command_line_2ee3cae0
       description: Set process.name from process.command_line.
       if: ctx.process?.name == null
       source: |
@@ -2826,10 +2876,10 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - remove:
       field: json
-      tag: remove_json
+      tag: remove_json_94dc55cd
       ignore_missing: true
   - script:
-      tag: script_to_drop_null_values
+      tag: script_to_drop_null_values_1f3b1d54
       lang: painless
       source: |-
         boolean drop(Object object) {
@@ -2865,12 +2915,15 @@ processors:
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message_d1b82bce
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_event_kind_f15a3197
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

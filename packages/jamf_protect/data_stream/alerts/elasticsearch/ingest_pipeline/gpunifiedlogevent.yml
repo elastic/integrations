@@ -2,28 +2,38 @@
 description: Pipeline for processing GPUnifiedLogEvent events.
 processors:
 
-######################
-## ECS Log Mapping ##
-######################
+    ######################
+    ## ECS Log Mapping ##
+    ######################
     - rename:
+        tag: rename_jamf_protect_alerts_input_match_event_process_to_process_name_5aa43c89
         field: jamf_protect.alerts.input.match.event.process
         target_field: process.name
         if: ctx.jamf_protect?.alerts?.input?.eventType == "GPUnifiedLogEvent" && ctx.jamf_protect?.alerts?.input?.match?.event?.process != null
     - rename:
+        tag: rename_jamf_protect_alerts_input_match_event_processIdentifier_to_process_pid_e3218ce5
         field: jamf_protect.alerts.input.match.event.processIdentifier
         target_field: process.pid
         if: ctx.jamf_protect?.alerts?.input?.eventType == "GPUnifiedLogEvent" && ctx.jamf_protect?.alerts?.input?.match?.event?.processIdentifier != null
     - date:
+        tag: date_jamf_protect_alerts_input_match_event_timestamp_to_process_start_c6f6e97a
         field: jamf_protect.alerts.input.match.event.timestamp
         target_field: process.start
-        formats: 
+        formats:
         - UNIX
         if: ctx.jamf_protect?.alerts?.input?.eventType == "GPUnifiedLogEvent" && ctx.jamf_protect?.alerts?.input?.match?.event?.timestamp != null
 
 on_failure:
+- append:
+    tag: append_tags_279d5a5c
+    field: tags
+    value: preserve_original_event
+    allow_duplicates: false
 - set:
+    tag: set_event_kind_72b1902f
     field: event.kind
     value: pipeline_error
 - append:
+    tag: append_error_message_206bb8ac
     field: error.message
     value: '{{{ _ingest.on_failure_message }}}'

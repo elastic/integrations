@@ -3,36 +3,39 @@ description: Pipeline for processing breach_record logs.
 processors:
   - set:
       field: ecs.version
-      tag: set_ecs_version
+      tag: set_ecs_version_6b2cef5e
       value: 8.11.0
   - terminate:
-      tag: data_collection_error
+      tag: data_collection_error_4bdbb3d0
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
       description: error message set and no data to process.
   - set:
       field: event.kind
-      tag: set_event_kind
+      tag: set_event_kind_ab1166ce
       value: alert
   - rename:
       field: message
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_a7b1f822
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
   - remove:
+      tag: remove_message_facc4822
       field: message
       ignore_missing: true
       if: 'ctx.event?.original != null'
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
       field: event.original
-      tag: json_event_original
+      tag: json_event_original_a68ecd77
       target_field: json
       on_failure:
         - append:
+            tag: append_error_message_b006b7b1
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - fingerprint:
+      tag: fingerprint_to_id_bc3ff3e1
       fields:
         - json.document_id
         - json.severity
@@ -40,502 +43,518 @@ processors:
       ignore_missing: true
   - rename:
       field: json.account_image_url
-      tag: rename_account_image_url
+      tag: rename_account_image_url_de65cd4d
       target_field: spycloud.breach_record.account.image_url
       ignore_missing: true
   - date:
       field: json.account_login_time
-      tag: date_account_login_time
+      tag: date_account_login_time_d73cb0e3
       target_field: spycloud.breach_record.account.login_time
       formats:
         - ISO8601
       if: ctx.json?.account_login_time != null && ctx.json.account_login_time != ''
       on_failure:
         - append:
+            tag: append_error_message_c574299f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: json.account_modification_time
-      tag: date_account_modification_time
+      tag: date_account_modification_time_2ec4abc2
       target_field: spycloud.breach_record.account.modification_time
       formats:
         - ISO8601
       if: ctx.json?.account_modification_time != null && ctx.json.account_modification_time != ''
       on_failure:
         - append:
+            tag: append_error_message_3e62ae37
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: json.account_signup_time
-      tag: date_account_signup_time
+      tag: date_account_signup_time_8bec590a
       target_field: spycloud.breach_record.account.signup_time
       formats:
         - ISO8601
       if: ctx.json?.account_signup_time != null && ctx.json.account_signup_time != ''
       on_failure:
         - append:
+            tag: append_error_message_f802c8ce
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.av_softwares
-      tag: rename_av_softwares
+      tag: rename_av_softwares_c39465d0
       target_field: spycloud.breach_record.av_softwares
       ignore_missing: true
   - rename:
       field: json.cc_bin
-      tag: rename_cc_bin
+      tag: rename_cc_bin_1cd10d83
       target_field: spycloud.breach_record.cc.bin
       ignore_missing: true
   - set:
       field: spycloud.breach_record.cc.bin
-      tag: mask_cc_bin
+      tag: mask_cc_bin_7fbd560c
       value: 'REDACTED'
       if: ctx.tags != null && ctx.tags.contains('hide_sensitive') && ctx.spycloud?.breach_record?.cc?.bin != null
       ignore_empty_value: true
   - rename:
       field: json.cc_expiration
-      tag: rename_cc_expiration
+      tag: rename_cc_expiration_4a856f5a
       target_field: spycloud.breach_record.cc.expiration
       ignore_missing: true
   - set:
       field: spycloud.breach_record.cc.expiration
-      tag: mask_cc_expiration
+      tag: mask_cc_expiration_0c8ab9d6
       value: 'REDACTED'
       if: ctx.tags != null && ctx.tags.contains('hide_sensitive') && ctx.spycloud?.breach_record?.cc?.expiration != null
       ignore_empty_value: true
   - rename:
       field: json.cc_last_four
-      tag: rename_cc_last_four
+      tag: rename_cc_last_four_8cf042cb
       target_field: spycloud.breach_record.cc.last_four
       ignore_missing: true
   - set:
       field: spycloud.breach_record.cc.last_four
-      tag: mask_cc_last_four
+      tag: mask_cc_last_four_d01395d7
       value: 'REDACTED'
       if: ctx.tags != null && ctx.tags.contains('hide_sensitive') && ctx.spycloud?.breach_record?.cc?.last_four != null
       ignore_empty_value: true
   - rename:
       field: json.cc_number
-      tag: rename_cc_number
+      tag: rename_cc_number_e01c64fe
       target_field: spycloud.breach_record.cc.number
       ignore_missing: true
   - set:
       field: spycloud.breach_record.cc.number
-      tag: mask_cc_number
+      tag: mask_cc_number_997faec2
       value: 'REDACTED'
       if: ctx.tags != null && ctx.tags.contains('hide_sensitive') && ctx.spycloud?.breach_record?.cc?.number != null
       ignore_empty_value: true
   - rename:
       field: json.company_name
-      tag: rename_company_name
+      tag: rename_company_name_3c049de1
       target_field: spycloud.breach_record.company_name
       ignore_missing: true
   - set:
       field: organization.name
-      tag: set_organization_name_from_breach_record_company_name
+      tag: set_organization_name_from_breach_record_company_name_6d9121af
       copy_from: spycloud.breach_record.company_name
       ignore_empty_value: true
   - rename:
       field: json.country_code
-      tag: rename_country_code
+      tag: rename_country_code_6cebd00a
       target_field: spycloud.breach_record.country.code
       ignore_missing: true
   - set:
       field: host.geo.country_iso_code
-      tag: set_host_geo_country_iso_code_from_breach_record_country_code
+      tag: set_host_geo_country_iso_code_from_breach_record_country_code_7c8ad2c5
       copy_from: spycloud.breach_record.country.code
       ignore_empty_value: true
   - rename:
       field: json.country
-      tag: rename_country
+      tag: rename_country_6b100261
       target_field: spycloud.breach_record.country.name
       ignore_missing: true
   - set:
       field: host.geo.country_name
-      tag: set_host_geo_country_name_from_breach_record_country_name
+      tag: set_host_geo_country_name_from_breach_record_country_name_b9aa0a37
       copy_from: spycloud.breach_record.country.name
       ignore_empty_value: true
   - rename:
       field: json.display_resolution
-      tag: rename_display_resolution
+      tag: rename_display_resolution_5fdccbd0
       target_field: spycloud.breach_record.display_resolution
       ignore_missing: true
   - rename:
       field: json.document_id
-      tag: rename_document_id
+      tag: rename_document_id_b5d2f9ee
       target_field: spycloud.breach_record.document_id
       ignore_missing: true
   - set:
       field: event.id
-      tag: set_event_id_from_breach_record_document_id
+      tag: set_event_id_from_breach_record_document_id_a222c256
       copy_from: spycloud.breach_record.document_id
       ignore_empty_value: true
   - rename:
       field: json.domain
-      tag: rename_domain
+      tag: rename_domain_c323e717
       target_field: spycloud.breach_record.domain
       ignore_missing: true
   - append:
       field: related.user
-      tag: append_domain_into_related_user
+      tag: append_domain_into_related_user_2d60ed28
       value: '{{{spycloud.breach_record.domain}}}'
       allow_duplicates: false
       if: ctx.spycloud?.breach_record?.domain != null
   - set:
       field: user.domain
-      tag: set_user_domain_from_breach_record_domain
+      tag: set_user_domain_from_breach_record_domain_21ef94bc
       copy_from: spycloud.breach_record.domain
       ignore_empty_value: true
   - rename:
       field: json.email_domain
-      tag: rename_email_domain
+      tag: rename_email_domain_bbf2987a
       target_field: spycloud.breach_record.email.domain
       ignore_missing: true
   - append:
       field: related.user
-      tag: append_email_domain_into_related_user
+      tag: append_email_domain_into_related_user_513b009e
       value: '{{{spycloud.breach_record.email.domain}}}'
       allow_duplicates: false
       if: ctx.spycloud?.breach_record?.email?.domain != null
   - rename:
       field: json.email_username
-      tag: rename_email_username
+      tag: rename_email_username_4fc6f7b7
       target_field: spycloud.breach_record.email.username
       ignore_missing: true
   - append:
       field: related.user
-      tag: append_email_username_into_related_user
+      tag: append_email_username_into_related_user_21e8e243
       value: '{{{spycloud.breach_record.email.username}}}'
       allow_duplicates: false
       if: ctx.spycloud?.breach_record?.email?.username != null
   - rename:
       field: json.email
-      tag: rename_email
+      tag: rename_email_ccaf089d
       target_field: spycloud.breach_record.email.value
       ignore_missing: true
   - set:
       field: user.email
-      tag: set_user_email_from_breach_record_email_value
+      tag: set_user_email_from_breach_record_email_value_e0e8900d
       copy_from: spycloud.breach_record.email.value
       ignore_empty_value: true
   - rename:
       field: json.first_name
-      tag: rename_first_name
+      tag: rename_first_name_5006e426
       target_field: spycloud.breach_record.first_name
       ignore_missing: true
   - rename:
       field: json.full_name
-      tag: rename_full_name
+      tag: rename_full_name_d14aab6a
       target_field: spycloud.breach_record.full_name
       ignore_missing: true
   - append:
       field: related.user
-      tag: append_full_name_into_related_user
+      tag: append_full_name_into_related_user_7b07e087
       value: '{{{spycloud.breach_record.full_name}}}'
       allow_duplicates: false
       if: ctx.spycloud?.breach_record?.full_name != null
   - set:
       field: user.full_name
-      tag: set_user_full_name_from_breach_record_full_name
+      tag: set_user_full_name_from_breach_record_full_name_07627de0
       copy_from: spycloud.breach_record.full_name
       ignore_empty_value: true
   - rename:
       field: json.homepage
-      tag: rename_homepage
+      tag: rename_homepage_6cb89998
       target_field: spycloud.breach_record.homepage
       ignore_missing: true
   - rename:
       field: json.industry
-      tag: rename_industry
+      tag: rename_industry_daa10491
       target_field: spycloud.breach_record.industry
       ignore_missing: true
   - rename:
       field: json.infected_machine_id
-      tag: rename_infected_machine_id
+      tag: rename_infected_machine_id_1e401b61
       target_field: spycloud.breach_record.infected.machine_id
       ignore_missing: true
   - rename:
       field: json.infected_path
-      tag: rename_infected_path
+      tag: rename_infected_path_c77c68d4
       target_field: spycloud.breach_record.infected.path
       ignore_missing: true
   - date:
       field: json.infected_time
-      tag: date_infected_time
+      tag: date_infected_time_960ab5e3
       target_field: spycloud.breach_record.infected.time
       formats:
         - ISO8601
       if: ctx.json?.infected_time != null && ctx.json.infected_time != ''
       on_failure:
         - append:
+            tag: append_error_message_bf357d79
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.ip_addresses
-      tag: rename_ip_addresses
+      tag: rename_ip_addresses_28a26ec7
       target_field: spycloud.breach_record.ip_addresses
       ignore_missing: true
   - foreach:
+      tag: foreach_spycloud_breach_record_ip_addresses_390cbc79
       field: spycloud.breach_record.ip_addresses
       if: ctx.spycloud?.breach_record?.ip_addresses instanceof List
       processor:
         convert:
           field: _ingest._value
-          tag: convert_ip_addresses_values_to_ip
+          tag: convert_ip_addresses_values_to_ip_68e82a75
           type: ip
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_db7d769d
                 field: _ingest._value
                 ignore_missing: true
             - append:
+                tag: append_error_message_5dad16ac
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_host_ip_00d539cc
       field: host.ip
       copy_from: spycloud.breach_record.ip_addresses
       ignore_empty_value: true
   - set:
+      tag: set_related_ip_6be95809
       field: related.ip
       copy_from: spycloud.breach_record.ip_addresses
       ignore_empty_value: true
   - rename:
       field: json.job_title
-      tag: rename_job_title
+      tag: rename_job_title_548bd582
       target_field: spycloud.breach_record.job_title
       ignore_missing: true
   - rename:
       field: json.keyboard_languages
-      tag: rename_keyboard_languages
+      tag: rename_keyboard_languages_25b1b630
       target_field: spycloud.breach_record.keyboard_languages
       ignore_missing: true
   - rename:
       field: json.last_name
-      tag: rename_last_name
+      tag: rename_last_name_13fed15b
       target_field: spycloud.breach_record.last_name
       ignore_missing: true
   - rename:
       field: json.log_id
-      tag: rename_log_id
+      tag: rename_log_id_8eef63c7
       target_field: spycloud.breach_record.log_id
       ignore_missing: true
   - rename:
       field: json.password_plaintext
-      tag: rename_password_plaintext
+      tag: rename_password_plaintext_081a81f5
       target_field: spycloud.breach_record.password.plaintext
       ignore_missing: true
   - set:
       field: spycloud.breach_record.password.plaintext
-      tag: mask_password_plaintext
+      tag: mask_password_plaintext_87f27579
       value: 'REDACTED'
       if: ctx.tags != null && ctx.tags.contains('hide_sensitive') && ctx.spycloud?.breach_record?.password?.plaintext != null
       ignore_empty_value: true
   - rename:
       field: json.password_type
-      tag: rename_password_type
+      tag: rename_password_type_5dc976e9
       target_field: spycloud.breach_record.password.type
       ignore_missing: true
   - rename:
       field: json.password
-      tag: rename_password
+      tag: rename_password_a2b58b46
       target_field: spycloud.breach_record.password.value
       ignore_missing: true
   - set:
       field: spycloud.breach_record.password.value
-      tag: mask_password
+      tag: mask_password_80f6497e
       value: 'REDACTED'
       if: ctx.tags != null && ctx.tags.contains('hide_sensitive') && ctx.spycloud?.breach_record?.password?.value != null
       ignore_empty_value: true
   - date:
       field: json.record_addition_date
-      tag: date_record_addition_date
+      tag: date_record_addition_date_823191a3
       target_field: spycloud.breach_record.record.addition_date
       formats:
         - ISO8601
       if: ctx.json?.record_addition_date != null && ctx.json.record_addition_date != ''
       on_failure:
         - append:
+            tag: append_error_message_546c4828
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: json.record_cracked_date
-      tag: date_record_cracked_date
+      tag: date_record_cracked_date_31fc856a
       target_field: spycloud.breach_record.record.cracked_date
       formats:
         - ISO8601
       if: ctx.json?.record_cracked_date != null && ctx.json.record_cracked_date != ''
       on_failure:
         - append:
+            tag: append_error_message_5ea8bea3
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: json.record_modification_date
-      tag: date_record_modification_date
+      tag: date_record_modification_date_b810b1e0
       target_field: spycloud.breach_record.record.modification_date
       formats:
         - ISO8601
       if: ctx.json?.record_modification_date != null && ctx.json.record_modification_date != ''
       on_failure:
         - append:
+            tag: append_error_message_e130e816
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.salt
-      tag: rename_salt
+      tag: rename_salt_470b3b0d
       target_field: spycloud.breach_record.salt
       ignore_missing: true
   - convert:
       field: json.severity
-      tag: convert_severity_to_long
+      tag: convert_severity_to_long_400a7811
       target_field: spycloud.breach_record.severity
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_d73932ce
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.severity
-      tag: set_event_severity_from_breach_record_severity
+      tag: set_event_severity_from_breach_record_severity_fe1a4b48
       copy_from: spycloud.breach_record.severity
       ignore_empty_value: true
   - convert:
       field: json.sighting
-      tag: convert_sighting_to_long
+      tag: convert_sighting_to_long_2a2565c4
       target_field: spycloud.breach_record.sighting
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_6e9e6b4e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.social_linkedin
-      tag: rename_social_linkedin
+      tag: rename_social_linkedin_6e6776a2
       target_field: spycloud.breach_record.social_linkedin
       ignore_missing: true
   - convert:
       field: json.source_id
-      tag: convert_source_id_to_string
+      tag: convert_source_id_to_string_3ad4fe11
       target_field: spycloud.breach_record.source_id
       type: string
       ignore_missing: true
   - date:
       field: json.spycloud_publish_date
-      tag: date_spycloud_publish_date
+      tag: date_spycloud_publish_date_a40e78cf
       target_field: spycloud.breach_record.spycloud_publish_date
       formats:
         - ISO8601
       if: ctx.json?.spycloud_publish_date != null && ctx.json.spycloud_publish_date != ''
       on_failure:
         - append:
+            tag: append_error_message_fb61bcc7
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: '@timestamp'
-      tag: set_@timestamp_from_breach_record_modification_date
+      tag: set_@timestamp_from_breach_record_modification_date_1fd8a8db
       copy_from: spycloud.breach_record.record.modification_date
       if: ctx.json?.record_modification_date != null
   - set:
       field: '@timestamp'
-      tag: set_@timestamp_from_breach_record_spycloud_publish_date
+      tag: set_@timestamp_from_breach_record_spycloud_publish_date_84616906
       copy_from: spycloud.breach_record.spycloud_publish_date
       if: ctx.json?.record_modification_date == null
   - rename:
       field: json.target_domain
-      tag: rename_target_domain
+      tag: rename_target_domain_2519ec10
       target_field: spycloud.breach_record.target.domain
       ignore_missing: true
   - set:
       field: destination.domain
-      tag: set_destination_domain_from_breach_record_target_domain
+      tag: set_destination_domain_from_breach_record_target_domain_97556ed7
       copy_from: spycloud.breach_record.target.domain
       ignore_empty_value: true
   - rename:
       field: json.target_subdomain
-      tag: rename_target_subdomain
+      tag: rename_target_subdomain_0af3d34b
       target_field: spycloud.breach_record.target.subdomain
       ignore_missing: true
   - set:
       field: destination.subdomain
-      tag: set_destination_subdomain_from_breach_record_target_subdomain
+      tag: set_destination_subdomain_from_breach_record_target_subdomain_62402591
       copy_from: spycloud.breach_record.target.subdomain
       ignore_empty_value: true
   - rename:
       field: json.target_url
-      tag: rename_target_url
+      tag: rename_target_url_19408401
       target_field: spycloud.breach_record.target.url
       ignore_missing: true
   - set:
       field: url.full
-      tag: set_url_full_from_breach_record_target_url
+      tag: set_url_full_from_breach_record_target_url_3f57fbe4
       copy_from: spycloud.breach_record.target.url
       ignore_empty_value: true
   - uri_parts:
       field: url.full
-      tag: uri_parts_url_full
+      tag: uri_parts_url_full_be6860b7
       ignore_failure: true
       if: ctx.url?.full != null
       on_failure:
         - append:
+            tag: append_error_message_6b178167
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.user_browser
-      tag: rename_user_browser
+      tag: rename_user_browser_c03d3352
       target_field: spycloud.breach_record.user.browser
       ignore_missing: true
   - rename:
       field: json.user_hostname
-      tag: rename_user_hostname
+      tag: rename_user_hostname_88b15765
       target_field: spycloud.breach_record.user.hostname
       ignore_missing: true
   - append:
       field: related.hosts
-      tag: append_user_hostname_into_related_hosts
+      tag: append_user_hostname_into_related_hosts_29c18f00
       value: '{{{spycloud.breach_record.user.hostname}}}'
       allow_duplicates: false
       if: ctx.spycloud?.breach_record?.user?.hostname != null
   - set:
       field: host.hostname
-      tag: set_host_hostname_from_breach_record_user_hostname
+      tag: set_host_hostname_from_breach_record_user_hostname_0ed70d3f
       copy_from: spycloud.breach_record.user.hostname
       ignore_empty_value: true
   - rename:
       field: json.username
-      tag: rename_username
+      tag: rename_username_37bf77c6
       target_field: spycloud.breach_record.user.name
       ignore_missing: true
   - append:
       field: related.user
-      tag: append_user_name_into_related_user
+      tag: append_user_name_into_related_user_92f28934
       value: '{{{spycloud.breach_record.user.name}}}'
       allow_duplicates: false
       if: ctx.spycloud?.breach_record?.user?.name != null
   - set:
       field: user.name
-      tag: set_user_name_from_breach_record_user_name
+      tag: set_user_name_from_breach_record_user_name_47ad31dc
       copy_from: spycloud.breach_record.user.name
       ignore_empty_value: true
   - rename:
       field: json.user_os
-      tag: rename_user_os
+      tag: rename_user_os_db08d1be
       target_field: spycloud.breach_record.user.os
       ignore_missing: true
   - append:
       field: related.hosts
-      tag: append_user_os_into_related_hosts
+      tag: append_user_os_into_related_hosts_13b79369
       value: '{{{spycloud.breach_record.user.os}}}'
       allow_duplicates: false
       if: ctx.spycloud?.breach_record?.user?.os != null
   - set:
       field: host.os.full
-      tag: set_host_os_full_from_breach_record_user_os
+      tag: set_host_os_full_from_breach_record_user_os_61f4bd58
       copy_from: spycloud.breach_record.user.os
       ignore_empty_value: true
   - script:
       lang: painless
-      tag: script_to_set_host_os_type
+      tag: script_to_set_host_os_type_a39bd2e4
       description: Script to set host_os_type.
       if: ctx.spycloud?.breach_record?.user?.os != null
       source: |
@@ -554,23 +573,23 @@ processors:
         }
   - rename:
       field: json.user_sys_domain
-      tag: rename_user_sys_domain
+      tag: rename_user_sys_domain_fbebc5d2
       target_field: spycloud.breach_record.user.sys.domain
       ignore_missing: true
   - append:
       field: related.hosts
-      tag: append_user_sys_domain_into_related_user
+      tag: append_user_sys_domain_into_related_user_ad5e117c
       value: '{{{spycloud.breach_record.user.sys.domain}}}'
       allow_duplicates: false
       if: ctx.spycloud?.breach_record?.user?.sys?.domain != null
   - rename:
       field: json.user_sys_registered_owner
-      tag: rename_user_sys_registered_owner
+      tag: rename_user_sys_registered_owner_385bb089
       target_field: spycloud.breach_record.user.sys.registered_owner
       ignore_missing: true
   - append:
       field: related.user
-      tag: append_user_sys_registered_owner_into_related_user
+      tag: append_user_sys_registered_owner_into_related_user_6f71ce76
       value: '{{{spycloud.breach_record.user.sys.registered_owner}}}'
       allow_duplicates: false
       if: ctx.spycloud?.breach_record?.user?.sys?.registered_owner != null
@@ -591,15 +610,15 @@ processors:
         - spycloud.breach_record.user.os
         - spycloud.breach_record.user.name
         - spycloud.breach_record.company_name
-      tag: remove_custom_duplicate_fields
+      tag: remove_custom_duplicate_fields_da7b7abd
       ignore_missing: true
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
   - remove:
       field: json
-      tag: remove_json
+      tag: remove_json_94dc55cd
       ignore_missing: true
   - script:
-      tag: script_to_drop_null_values
+      tag: script_to_drop_null_values_44aeee7c
       lang: painless
       source: |-
         boolean drop(Object o) {
@@ -618,24 +637,27 @@ processors:
       description: Drops null/empty values recursively.
   - append:
       field: event.kind
-      tag: append_pipeline_error_into_event_kind
+      tag: append_pipeline_error_into_event_kind_acc297e3
       value: pipeline_error
       allow_duplicates: false
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_b6c08950
       field: tags
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message_6906b116
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
