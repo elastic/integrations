@@ -67,7 +67,7 @@ program: |-
   			).do_request().as(resp,
   				(resp.StatusCode == 200) ?
   					resp.Body.decode_json().as(body,
-  						(body.?errors.orValue(null) != null || body.?data.?organization.?teams.orValue(null) == null) ?
+  						(body.?errors.orValue(null) != null || body.?data.organization.teams.orValue(null) == null) ?
   							{
   								"events": {
   									"error": {
@@ -94,8 +94,8 @@ program: |-
   										"combined_slug": te.node.combinedSlug,
   										"privacy": te.node.privacy,
   										"role": me.role,
-  										"parent_team_id": te.node.?parentTeam.?id.orValue(""),
-  										"parent_team_slug": te.node.?parentTeam.?slug.orValue(""),
+  										"parent_team_id": te.node.?parentTeam.id.orValue(""),
+  										"parent_team_slug": te.node.?parentTeam.slug.orValue(""),
   									}
   								)
   							).flatten()
@@ -117,6 +117,7 @@ program: |-
   									"phase": "members",
   									"member_edges": [],
   									"team_memberships": [],
+  									"members_cursor": null,
   									"teams_cursor": null,
   									"events": ctx.member_edges.filter(e,
   										state.include_bots || !e.node.login.endsWith("[bot]")
@@ -146,8 +147,8 @@ program: |-
   						"events": {
   							"error": {
   								"code": string(resp.StatusCode),
-  								"id": string(resp.Status),
-  								"message": "POST /graphql (teams): " + ((size(resp.Body) != 0) ? string(resp.Body) : string(resp.Status)),
+  								"id": resp.Status,
+  								"message": "POST /graphql (teams): " + ((size(resp.Body) != 0) ? string(resp.Body) : resp.Status),
   							},
   						},
   						"want_more": false,
@@ -179,7 +180,7 @@ program: |-
   			).do_request().as(resp,
   				(resp.StatusCode == 200) ?
   					resp.Body.decode_json().as(body,
-  						(body.?errors.orValue(null) != null || body.?data.?organization.?membersWithRole.orValue(null) == null) ?
+  						(body.?errors.orValue(null) != null || body.?data.organization.membersWithRole.orValue(null) == null) ?
   							{
   								"events": {
   									"error": {
@@ -202,13 +203,12 @@ program: |-
   								"want_more": true,
   							}
   						:
-  							// Last members page: advance cursor and transition to teams phase.
-  							// Storing endCursor ensures next cycle starts from the correct page.
+  							// Last members page: transition to teams phase. Cursor is reset
+  							// to null at the end of teams so each cycle is a full re-snapshot.
   							{
   								"phase": "teams",
   								"member_edges": ctx.member_edges + body.data.organization.membersWithRole.edges,
   								"team_memberships": [],
-  								"members_cursor": body.data.organization.membersWithRole.pageInfo.endCursor,
   								"events": [{"retry": true}],
   								"want_more": true,
   							}
@@ -218,8 +218,8 @@ program: |-
   						"events": {
   							"error": {
   								"code": string(resp.StatusCode),
-  								"id": string(resp.Status),
-  								"message": "POST /graphql (members): " + ((size(resp.Body) != 0) ? string(resp.Body) : string(resp.Status)),
+  								"id": resp.Status,
+  								"message": "POST /graphql (members): " + ((size(resp.Body) != 0) ? string(resp.Body) : resp.Status),
   							},
   						},
   						"want_more": false,

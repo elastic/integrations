@@ -48,13 +48,6 @@ processors:
       field: event.original
       tag: parse_json
       target_field: json
-      on_failure:
-        - append:
-            field: error.message
-            value: >-
-              Processor {{{_ingest.on_failure_processor_type}}} with tag
-              {{{_ingest.on_failure_processor_tag}}} failed with message:
-              {{{_ingest.on_failure_message}}}
 
   # ECS categorization — entity snapshot: kind=asset, category=iam, type=[user, info]
   - set:
@@ -154,20 +147,20 @@ processors:
       lang: painless
       if: ctx.json?.teams instanceof List && ctx.json.teams.size() != 0
       source: |-
-        def adminIds = new ArrayList();
-        def adminNames = new ArrayList();
+        def adminIds = [];
+        def adminNames = [];
         for (def team : ctx.json.teams) {
-          if (team != null && "MAINTAINER".equals(team.role)) {
+          if (team?.role == "MAINTAINER") {
             adminIds.add(team.id);
             adminNames.add(team.name);
           }
         }
         if (!adminIds.isEmpty()) {
-          if (ctx.user == null) { ctx.user = [:]; }
-          if (ctx.user.entity == null) { ctx.user.entity = [:]; }
-          if (ctx.user.entity.relationships == null) { ctx.user.entity.relationships = [:]; }
-          if (ctx.user.entity.relationships.administers == null) { ctx.user.entity.relationships.administers = [:]; }
-          if (ctx.user.entity.relationships.administers.service == null) { ctx.user.entity.relationships.administers.service = [:]; }
+          ctx.user = ctx.user ?: [:];
+          ctx.user.entity = ctx.user.entity ?: [:];
+          ctx.user.entity.relationships = ctx.user.entity.relationships ?: [:];
+          ctx.user.entity.relationships.administers = ctx.user.entity.relationships.administers ?: [:];
+          ctx.user.entity.relationships.administers.service = ctx.user.entity.relationships.administers.service ?: [:];
           ctx.user.entity.relationships.administers.service.id = adminIds;
           ctx.user.entity.relationships.administers.service.name = adminNames;
         }

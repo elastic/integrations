@@ -36,7 +36,7 @@ rules:
                         "location": "San Francisco, CA",
                         "bio": "Software engineer",
                         "pronouns": "she/her",
-                        "avatarUrl": "https://avatars.githubusercontent.com/u/12345678?v=4",
+                        "avatarUrl": "https://avatars.githubusercontent.com/u/00000000?v=4",
                         "url": "https://github.com/alice-example",
                         "websiteUrl": "https://alice.example.com",
                         "twitterUsername": "aliceexample",
@@ -65,7 +65,7 @@ rules:
                         "location": "New York, NY",
                         "bio": null,
                         "pronouns": null,
-                        "avatarUrl": "https://avatars.githubusercontent.com/u/23456789?v=4",
+                        "avatarUrl": "https://avatars.githubusercontent.com/u/00000000?v=4",
                         "url": "https://github.com/bob-example",
                         "websiteUrl": null,
                         "twitterUsername": null,
@@ -104,9 +104,9 @@ rules:
             "data": {
               "organization": {
                 "membersWithRole": {
-                  "totalCount": 4,
+                  "totalCount": 6,
                   "pageInfo": {
-                    "hasNextPage": false,
+                    "hasNextPage": true,
                     "endCursor": "members-page2-cursor"
                   },
                   "edges": [
@@ -123,7 +123,7 @@ rules:
                         "location": null,
                         "bio": "DevOps lead",
                         "pronouns": null,
-                        "avatarUrl": "https://avatars.githubusercontent.com/u/34567890?v=4",
+                        "avatarUrl": "https://avatars.githubusercontent.com/u/00000000?v=4",
                         "url": "https://github.com/carol-example",
                         "websiteUrl": null,
                         "twitterUsername": null,
@@ -152,7 +152,7 @@ rules:
                         "location": null,
                         "bio": null,
                         "pronouns": null,
-                        "avatarUrl": "https://avatars.githubusercontent.com/in/12345?v=4",
+                        "avatarUrl": "https://avatars.githubusercontent.com/u/00000000?v=4",
                         "url": "https://github.com/apps/example-bot",
                         "websiteUrl": null,
                         "twitterUsername": null,
@@ -174,9 +174,9 @@ rules:
             },
             "rateLimit": {"cost": 1, "remaining": 4998, "resetAt": "2026-08-13T21:00:00Z"}
           }
-  # Members query — page 3 / cycle 2 (cursor = "members-page2-cursor")
-  # Used when the CEL program correctly saves endCursor from the last members page.
-  # Returns three new members so that cycle 2 contributes 3 events, for a total of 6.
+  # Members query — page 3 (cursor = "members-page2-cursor")
+  # Reached within the same cycle because page 2 has hasNextPage: true.
+  # Returns three more members; together with page 1+2 the cycle collects all 6.
   - path: /graphql
     methods: ['POST']
     request_headers:
@@ -212,7 +212,7 @@ rules:
                         "location": "Austin, TX",
                         "bio": null,
                         "pronouns": null,
-                        "avatarUrl": "https://avatars.githubusercontent.com/u/56789012?v=4",
+                        "avatarUrl": "https://avatars.githubusercontent.com/u/00000000?v=4",
                         "url": "https://github.com/dave-example",
                         "websiteUrl": null,
                         "twitterUsername": null,
@@ -241,7 +241,7 @@ rules:
                         "location": null,
                         "bio": "Platform engineer",
                         "pronouns": "they/them",
-                        "avatarUrl": "https://avatars.githubusercontent.com/u/67890123?v=4",
+                        "avatarUrl": "https://avatars.githubusercontent.com/u/00000000?v=4",
                         "url": "https://github.com/eve-example",
                         "websiteUrl": null,
                         "twitterUsername": null,
@@ -270,7 +270,7 @@ rules:
                         "location": "Seattle, WA",
                         "bio": "Infrastructure lead",
                         "pronouns": null,
-                        "avatarUrl": "https://avatars.githubusercontent.com/u/78901234?v=4",
+                        "avatarUrl": "https://avatars.githubusercontent.com/u/00000000?v=4",
                         "url": "https://github.com/frank-example",
                         "websiteUrl": "https://frank.example.com",
                         "twitterUsername": null,
@@ -293,7 +293,8 @@ rules:
             "rateLimit": {"cost": 1, "remaining": 4996, "resetAt": "2026-08-13T21:00:00Z"}
           }
   # Members query — end-of-pagination sentinel (cursor = "members-page3-cursor")
-  # Returns an empty page so that cycles 3+ emit no events and hit_count stabilises at 6.
+  # Returns an empty page. With full re-snapshot (cursor reset to null each cycle) this
+  # rule is unreachable in normal operation but is kept for completeness.
   - path: /graphql
     methods: ['POST']
     request_headers:
