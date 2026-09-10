@@ -11,10 +11,12 @@ Agentless deployments are only supported in Elastic Serverless and Elastic Cloud
 
 ## Compatibility
 
-  1. The minimum compatible version of this module is `Elastic Agent 8.4.0`.
+  1. The minimum compatible version of this module is `Elastic Agent 9.4.0`.
   2. This module is tested against `AWS Security Hub API version 1.0`.
 
-## To collect data from AWS Security Hub APIs, users must have an Access Key and a Secret Key. To create API token follow below steps:
+## To collect data from AWS Security Hub APIs, users must have AWS credentials
+
+The data streams authenticate with the standard AWS credential methods described in [AWS Credentials](https://www.elastic.co/docs/current/integrations/aws#aws-credentials): an access key pair, temporary security credentials, a shared credentials file, or an IAM role to assume, as well as Identity Federation (Cloud Connectors) in agentless deployments. To create an access key pair:
 
   1. Login to https://console.aws.amazon.com/.
   2. Go to https://console.aws.amazon.com/iam/ to access the IAM console.
@@ -26,14 +28,27 @@ Agentless deployments are only supported in Elastic Serverless and Elastic Cloud
 ## Note
 
   1. For the current integration package, it is recommended to have interval in hours.
-  2. For the current integration package, it is compulsory to add Secret Access Key and Access Key ID.
+  2. AWS credentials are required; any of the supported credential methods listed above can be used.
   3. Findings Full Posture data stream request all the historical findings every 24 hours.
+  4. The **Findings** and **Findings Full Posture** data streams collect from the `GetFindings` API using the CEL input with native AWS SigV4 signing (`auth.aws`).
+
+## Troubleshooting
+
+### "reached maximum number of CEL executions"
+
+The **Findings** and **Findings Full Posture** data streams page through the `GetFindings` API using the CEL input, which caps the number of pages fetched per collection interval at the **Maximum Executions** value (each page returns up to 100 findings). When an account holds more findings than the cap allows, the agent logs `reached maximum number of CEL executions: will continue at next periodic evaluation` and stops paging for that interval.
+
+For the **Findings** stream this is usually self-correcting: collection is incremental, so the next interval resumes where the previous one stopped. For **Findings Full Posture**, which re-reads the full current posture on each run, a very large account may not finish a sweep within one interval.
+
+To resolve this, increase **Maximum Executions** in the data stream's advanced settings (it must be a positive integer). For the **Findings** stream, shortening the collection interval also reduces the pages per run, since each run then covers fewer new findings. For **Findings Full Posture** the interval does not change the sweep size; instead raise **Maximum Executions** or narrow the result set with the **Findings Filters** setting.
 
 ## Logs
 
 ### Findings
 
-This is the [`securityhub_findings`](https://docs.aws.amazon.com/securityhub/1.0/APIReference/API_GetFindings.html#API_GetFindings_ResponseElements) data stream.
+This is the [`securityhub_findings`](https://docs.aws.amazon.com/securityhub/1.0/APIReference/API_GetFindings.html#API_GetFindings_ResponseElements) data stream. Findings are collected incrementally using the finding's `UpdatedAt` timestamp, which the integration manages automatically.
+
+Use the **Findings Filters** setting to apply additional server-side [`AwsSecurityFindingFilters`](https://docs.aws.amazon.com/securityhub/1.0/APIReference/API_GetFindings.html#API_GetFindings_RequestSyntax) so that only matching findings are collected (for example, to restrict collection by `SeverityLabel` or `RecordState`). Provide a YAML or JSON object using the AWS `AwsSecurityFindingFilters` shape; the `UpdatedAt` filter is reserved for incremental collection and takes precedence over any `UpdatedAt` supplied here.
 
 An example event for `securityhub_findings` looks as following:
 
@@ -717,7 +732,9 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 
 ### Findings Full Posture
 
-This is the [`securityhub_findings_full_posture`](https://docs.aws.amazon.com/securityhub/1.0/APIReference/API_GetFindings.html#API_GetFindings_ResponseElements) data stream.
+This is the [`securityhub_findings_full_posture`](https://docs.aws.amazon.com/securityhub/1.0/APIReference/API_GetFindings.html#API_GetFindings_ResponseElements) data stream. It requests the full set of current findings every 24 hours rather than collecting incrementally.
+
+Use the **Findings Filters** setting to control which findings are collected via server-side [`AwsSecurityFindingFilters`](https://docs.aws.amazon.com/securityhub/1.0/APIReference/API_GetFindings.html#API_GetFindings_RequestSyntax). The default excludes archived (`RecordState`) and suppressed (`WorkflowStatus`) findings to reflect the current security posture; editing or clearing this setting replaces those defaults.
 
 An example event for `securityhub_findings_full_posture` looks as following:
 
