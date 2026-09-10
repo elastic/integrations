@@ -7,12 +7,10 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"os"
 	"path/filepath"
-	"strconv"
 
 	"github.com/Masterminds/semver/v3"
 	"github.com/magefile/mage/mg"
@@ -22,14 +20,11 @@ import (
 	"github.com/elastic/integrations/dev/citools"
 	"github.com/elastic/integrations/dev/codeowners"
 	"github.com/elastic/integrations/dev/coverage"
-	"github.com/elastic/integrations/dev/testsreporter"
+	"github.com/elastic/integrations/dev/packagenames"
 )
 
 const (
-	defaultResultsPath           = "build/test-results/"
-	defaultPreviousLinksNumber   = 5
-	defaultMaximumTestsReported  = 20
-	defaultServerlessProjectType = "observability"
+	elasticPackageModulePath = "github.com/elastic/elastic-package"
 )
 
 var (
@@ -46,6 +41,7 @@ func Check() error {
 	mg.Deps(ModTidy)
 	mg.Deps(goTest)
 	mg.Deps(codeowners.Check)
+	mg.Deps(packagenames.Check)
 	return nil
 }
 
@@ -114,11 +110,10 @@ func goImports() error {
 }
 
 func goTest() error {
-	args := []string{"test"}
+	args := []string{"run", "gotest.tools/gotestsum", "--format", "testname", "--junitfile", "tests-report.xml"}
 	stdout := io.Discard
 	stderr := io.Discard
 	if mg.Verbose() {
-		args = append(args, "-v")
 		stdout = os.Stdout
 		stderr = os.Stderr
 	}
@@ -151,68 +146,17 @@ func ModTidy() error {
 	return sh.RunV("go", "mod", "tidy")
 }
 
-func ReportFailedTests(ctx context.Context, testResultsFolder string) error {
-	stackVersion := os.Getenv("STACK_VERSION")
-	serverlessEnv := os.Getenv("SERVERLESS")
-	dryRunEnv := os.Getenv("DRY_RUN")
-	serverlessProjectEnv := os.Getenv("SERVERLESS_PROJECT")
-	buildURL := os.Getenv("BUILDKITE_BUILD_URL")
-	subscription := os.Getenv("ELASTIC_SUBSCRIPTION")
-
-	serverless := false
-	if serverlessEnv != "" {
-		var err error
-		serverless, err = strconv.ParseBool(serverlessEnv)
-		if err != err {
-			return fmt.Errorf("failed to parse SERVERLESS value: %w", err)
-		}
-		if serverlessProjectEnv == "" {
-			serverlessProjectEnv = defaultServerlessProjectType
-		}
+// ListPackages lists all packages found under the packages directory.
+func ListPackages() error {
+	const packagesDir = "packages"
+	packages, err := citools.ListPackages(packagesDir)
+	if err != nil {
+		return fmt.Errorf("failed to list packages: %w", err)
 	}
-
-	logsDBEnabled := false
-	if v, found := os.LookupEnv("STACK_LOGSDB_ENABLED"); found && v == "true" {
-		logsDBEnabled = true
+	for _, p := range packages {
+		fmt.Println(p)
 	}
-
-	verboseMode := false
-	if v, found := os.LookupEnv("VERBOSE_MODE_ENABLED"); found && v == "true" {
-		verboseMode = true
-	}
-
-	maxIssuesString := os.Getenv("CI_MAX_TESTS_REPORTED")
-	maxIssues := defaultMaximumTestsReported
-	if maxIssuesString != "" {
-		var err error
-		maxIssues, err = strconv.Atoi(maxIssuesString)
-		if err != nil {
-			return fmt.Errorf("failed to convert to int env. variable CI_MAX_TESTS_REPORTED %s: %w", maxIssuesString, err)
-		}
-	}
-
-	dryRun := false
-	if dryRunEnv != "" {
-		var err error
-		dryRun, err = strconv.ParseBool(dryRunEnv)
-		if err != err {
-			return fmt.Errorf("failed to parse DRY_RUN value: %w", err)
-		}
-	}
-
-	options := testsreporter.CheckOptions{
-		Serverless:        serverless,
-		ServerlessProject: serverlessProjectEnv,
-		LogsDB:            logsDBEnabled,
-		StackVersion:      stackVersion,
-		Subscription:      subscription,
-		BuildURL:          buildURL,
-		MaxPreviousLinks:  defaultPreviousLinksNumber,
-		MaxTestsReported:  maxIssues,
-		DryRun:            dryRun,
-		Verbose:           verboseMode,
-	}
-	return testsreporter.Check(ctx, testResultsFolder, options)
+	return nil
 }
 
 // IsSubscriptionCompatible checks whether or not the package in the current directory allows to run with the given subscription (ELASTIC_SUBSCRIPTION env var).
@@ -239,7 +183,7 @@ func IsSubscriptionCompatible() error {
 func KibanaConstraintPackage() error {
 	constraint, err := citools.KibanaConstraintPackage("manifest.yml")
 	if err != nil {
-		return fmt.Errorf("faile")
+		return fmt.Errorf("failed to get Kibana constraint: %w", err)
 	}
 	if constraint == nil {
 		fmt.Println("null")
@@ -295,5 +239,27 @@ func IsVersionLessThanLogsDBGA(version string) error {
 		return nil
 	}
 	fmt.Println("false")
+	return nil
+}
+
+// IsElasticPackageDependencyLessThan checks whether or not the elastic-package version set in go.mod is less than the given version
+func IsElasticPackageDependencyLessThan(version string) error {
+	foundVersion, err := citools.PackageVersionGoMod("go.mod", elasticPackageModulePath)
+	if err != nil {
+		return fmt.Errorf("failed to get elastic-package version from go.mod: %w", err)
+	}
+	fmt.Fprintf(os.Stderr, "Found elastic-package %s\n", foundVersion)
+
+	desiredVersion, err := semver.NewVersion(version)
+	if err != nil {
+		return fmt.Errorf("failed to parse version %q: %w", version, err)
+	}
+
+	value := "false"
+	if foundVersion.LessThan(desiredVersion) {
+		value = "true"
+	}
+
+	fmt.Println(value)
 	return nil
 }
