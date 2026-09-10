@@ -1,18 +1,20 @@
 # BeyondInsight Password Safe - Managed Systems Test Mock Configuration
 #
-# Test Scenario: Simulates paginated retrieval of managed systems with session expiration and re-authentication:
-# 1. Initial authentication via SignAppin endpoint (returns 200, sets session cookie)
-# 2. First ManagedSystems request with limit=1&offset=0 (returns 200, first session)
+# Test Scenario: Simulates paginated retrieval of managed systems with session
+# expiration and re-authentication, verifying the Cookie header fix:
+# 1. Initial authentication via SignAppin endpoint (returns 200, sets two cookies
+#    with attributes — ASP.NET_SessionId and __RequestVerificationToken)
+# 2. First ManagedSystems request with limit=1&offset=0 (returns 200, first system)
 # 3. Second ManagedSystems request with limit=1&offset=1 (returns 401, session expired)
-# 4. Re-authentication via SignAppin endpoint (returns 200, new session cookie)
-# 5. Retry ManagedSystems request with limit=1&offset=1 (returns 200, second session)
-# 6. Final ManagedSystems request with limit=1&offset=2 (returns 200, empty data array - no more data)
+# 4. Re-authentication via SignAppin endpoint (returns 200, new session cookies)
+# 5. Retry ManagedSystems request with limit=1&offset=1 (returns 200, second system)
+# 6. Final ManagedSystems request with limit=1&offset=2 (returns 200, empty Data array —
+#    no more data, triggers sign-out)
+# 7. Sign-out to release the server-side session
 #
-# This tests the integration's ability to handle:
-# - Session-based authentication with BeyondTrust API
-# - Paginated data retrieval with limit/offset parameters
-# - Session expiration (401) and automatic re-authentication
-# - Proper handling of empty result sets indicating end of pagination
+# Cookie header format assertion: each Cookie rule asserts the joined single-header form.
+# The buggy code replayed raw Set-Cookie values (with attributes) as multiple Cookie
+# header lines, causing 401s on real BeyondInsight servers.
 
 rules:
   # Auth
@@ -25,7 +27,9 @@ rules:
       - status_code: 200
         headers:
           Content-Type: ['application/json']
-          Set-Cookie: ['ASP.NET_SessionId={{ if eq .req_num 1 }}cookie_value1{{ else }}cookie_value2{{ end }}']
+          Set-Cookie:
+            - 'ASP.NET_SessionId={{ if eq .req_num 1 }}cookie_value1{{ else }}cookie_value2{{ end }}; path=/; secure; HttpOnly; SameSite=None'
+            - '__RequestVerificationToken=rvt_token; path=/; secure; HttpOnly'
         body: |
           {{ minify_json `
           {
@@ -47,7 +51,9 @@ rules:
       - status_code: 200
         headers:
           Content-Type: ['application/json']
-          Set-Cookie: ['ASP.NET_SessionId={{ if eq .req_num 1 }}cookie_value1{{ else }}cookie_value2{{ end }}']
+          Set-Cookie:
+            - 'ASP.NET_SessionId={{ if eq .req_num 1 }}cookie_value1{{ else }}cookie_value2{{ end }}; path=/; secure; HttpOnly; SameSite=None'
+            - '__RequestVerificationToken=rvt_token; path=/; secure; HttpOnly'
         body: |
           {{ minify_json `
           {
@@ -66,7 +72,7 @@ rules:
     request_headers:
       Authorization: ['PS-Auth key=test_api_key;.*']
       Content-Type: ['application/json']
-      Cookie: ['ASP.NET_SessionId=cookie_value1']
+      Cookie: ['ASP.NET_SessionId=cookie_value1; __RequestVerificationToken=rvt_token']
     responses:
       - status_code: 200
         headers:
@@ -134,7 +140,7 @@ rules:
     request_headers:
       Authorization: ['PS-Auth key=test_api_key;.*']
       Content-Type: ['application/json']
-      Cookie: ['ASP.NET_SessionId=cookie_value1']
+      Cookie: ['ASP.NET_SessionId=cookie_value1; __RequestVerificationToken=rvt_token']
     responses:
       - status_code: 401
         headers:
@@ -150,7 +156,7 @@ rules:
     request_headers:
       Authorization: ['PS-Auth key=test_api_key;.*']
       Content-Type: ['application/json']
-      Cookie: ['ASP.NET_SessionId=cookie_value2']
+      Cookie: ['ASP.NET_SessionId=cookie_value2; __RequestVerificationToken=rvt_token']
     responses:
       - status_code: 200
         headers:
@@ -211,12 +217,13 @@ rules:
           }
           `}}
 
+  # Empty page — no more data, triggers sign-out.
   - path: "/BeyondTrust/api/public/v3/ManagedSystems"
     methods: ["GET"]
     request_headers:
       Authorization: ['PS-Auth key=test_api_key;.*']
       Content-Type: ['application/json']
-      Cookie: ['ASP.NET_SessionId=cookie_value2']
+      Cookie: ['ASP.NET_SessionId=cookie_value2; __RequestVerificationToken=rvt_token']
     responses:
       - status_code: 200
         headers:
@@ -228,3 +235,16 @@ rules:
               "TotalCount": 2
           }
           `}}
+
+  # Sign-out to release the server-side session.
+  - path: "/BeyondTrust/api/public/v3/Auth/Signout"
+    methods: ["POST"]
+    request_headers:
+      Authorization: ['PS-Auth key=test_api_key;.*']
+      Content-Type: ['application/json']
+      Cookie: ['ASP.NET_SessionId=cookie_value2; __RequestVerificationToken=rvt_token']
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type: ['application/json']
+        body: ""

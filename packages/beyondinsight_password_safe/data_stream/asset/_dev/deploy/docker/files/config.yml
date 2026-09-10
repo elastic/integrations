@@ -1,4 +1,24 @@
 # BeyondInsight API - Workgroups Assets API Mock Configuration
+#
+# Test Scenario: Simulates asset retrieval across multiple workgroups with session
+# expiration and re-authentication, verifying the Cookie header fix and sign-out:
+# 1. Authentication: Sets two Set-Cookie headers with attributes
+# 2. GET /Workgroups with cookie_value1: returns two workgroups
+# 3. GET /Workgroups/1/Assets offset=0 with cookie_value1: returns 1 of 2 assets
+# 4. GET /Workgroups/1/Assets offset=1 with cookie_value1: returns 401 (session expired)
+# 5. Re-authentication: Returns cookie_value2
+# 6. GET /Workgroups/1/Assets offset=1 with cookie_value2: returns second asset;
+#    workgroup 2 queued
+# 7. GET /Workgroups/2/Assets offset=0 with cookie_value2: returns 0 assets;
+#    all workgroups done — triggers sign-out
+# 8. Sign-out to release the server-side session (first execution)
+#
+# Second periodic execution behavior:
+# 9. Authentication: Returns cookie_value2 (req_num=3 for this rule)
+# 10. GET /Workgroups with cookie_value2: returns workgroup 3
+# 11. GET /Workgroups/3/Assets offset=0 with cookie_value2: returns 1 asset;
+#     no more workgroups — triggers sign-out
+# 12. Sign-out to release the server-side session (second execution)
 
 rules:
   # Auth
@@ -11,7 +31,9 @@ rules:
       - status_code: 200
         headers:
           Content-Type: ['application/json']
-          Set-Cookie: ['ASP.NET_SessionId={{ if eq .req_num 1 }}cookie_value1{{ else }}cookie_value2{{ end }}']
+          Set-Cookie:
+            - 'ASP.NET_SessionId={{ if eq .req_num 1 }}cookie_value1{{ else }}cookie_value2{{ end }}; path=/; secure; HttpOnly; SameSite=None'
+            - '__RequestVerificationToken=rvt_token; path=/; secure; HttpOnly'
         body: |
           {{ minify_json `
           {
@@ -33,7 +55,9 @@ rules:
       - status_code: 200
         headers:
           Content-Type: ['application/json']
-          Set-Cookie: ['ASP.NET_SessionId={{ if eq .req_num 1 }}cookie_value1{{ else }}cookie_value2{{ end }}']
+          Set-Cookie:
+            - 'ASP.NET_SessionId={{ if eq .req_num 1 }}cookie_value1{{ else }}cookie_value2{{ end }}; path=/; secure; HttpOnly; SameSite=None'
+            - '__RequestVerificationToken=rvt_token; path=/; secure; HttpOnly'
         body: |
           {{ minify_json `
           {
@@ -45,13 +69,13 @@ rules:
           }
           `}}
 
-  # Get Workgroups
+  # Get Workgroups (first periodic execution)
   - path: "/BeyondTrust/api/public/v3/Workgroups"
     methods: ["GET"]
     request_headers:
       Authorization: ['PS-Auth key=test_api_key;.*']
       Content-Type: ['application/json']
-      Cookie: ['ASP.NET_SessionId=cookie_value1']
+      Cookie: ['ASP.NET_SessionId=cookie_value1; __RequestVerificationToken=rvt_token']
     responses:
       - status_code: 200
         headers:
@@ -81,7 +105,7 @@ rules:
     request_headers:
       Authorization: ['PS-Auth key=test_api_key;.*']
       Content-Type: ['application/json']
-      Cookie: ['ASP.NET_SessionId=cookie_value1']
+      Cookie: ['ASP.NET_SessionId=cookie_value1; __RequestVerificationToken=rvt_token']
     responses:
       - status_code: 200
         headers:
@@ -117,7 +141,7 @@ rules:
     request_headers:
       Authorization: ['PS-Auth key=test_api_key;.*']
       Content-Type: ['application/json']
-      Cookie: ['ASP.NET_SessionId=cookie_value1']
+      Cookie: ['ASP.NET_SessionId=cookie_value1; __RequestVerificationToken=rvt_token']
     responses:
       - status_code: 401
         headers:
@@ -134,7 +158,7 @@ rules:
     request_headers:
       Authorization: ['PS-Auth key=test_api_key;.*']
       Content-Type: ['application/json']
-      Cookie: ['ASP.NET_SessionId=cookie_value2']
+      Cookie: ['ASP.NET_SessionId=cookie_value2; __RequestVerificationToken=rvt_token']
     responses:
       - status_code: 200
         headers:
@@ -165,13 +189,13 @@ rules:
           Content-Type: ['text/plain']
         body: Program should never request this. {{.request.vars}}
 
-  # Get Assets for Workgroup 2 - no assets
+  # Get Assets for Workgroup 2 - no assets; triggers sign-out.
   - path: "/BeyondTrust/api/public/v3/Workgroups/2/Assets"
     methods: ["GET"]
     request_headers:
       Authorization: ['PS-Auth key=test_api_key;.*']
       Content-Type: ['application/json']
-      Cookie: ['ASP.NET_SessionId=cookie_value2']
+      Cookie: ['ASP.NET_SessionId=cookie_value2; __RequestVerificationToken=rvt_token']
     query_params:
       limit: '1'
       offset: '0'
@@ -193,7 +217,7 @@ rules:
     request_headers:
       Authorization: ['PS-Auth key=test_api_key;.*']
       Content-Type: ['application/json']
-      Cookie: ['ASP.NET_SessionId=cookie_value2']
+      Cookie: ['ASP.NET_SessionId=cookie_value2; __RequestVerificationToken=rvt_token']
     responses:
       - status_code: 200
         headers:
@@ -209,13 +233,13 @@ rules:
           ]
           `}}
 
-  # Get Assets for Workgroup 3 (second periodic execution)
+  # Get Assets for Workgroup 3 (second periodic execution); triggers sign-out.
   - path: "/BeyondTrust/api/public/v3/Workgroups/3/Assets"
     methods: ["GET"]
     request_headers:
       Authorization: ['PS-Auth key=test_api_key;.*']
       Content-Type: ['application/json']
-      Cookie: ['ASP.NET_SessionId=cookie_value2']
+      Cookie: ['ASP.NET_SessionId=cookie_value2; __RequestVerificationToken=rvt_token']
     query_params:
       limit: '1'
       offset: '0'
@@ -244,3 +268,16 @@ rules:
               "TotalCount": 1
           }
           `}}
+
+  # Sign-out to release the server-side session (called after each terminal request).
+  - path: "/BeyondTrust/api/public/v3/Auth/Signout"
+    methods: ["POST"]
+    request_headers:
+      Authorization: ['PS-Auth key=test_api_key;.*']
+      Content-Type: ['application/json']
+      Cookie: ['ASP.NET_SessionId=cookie_value2; __RequestVerificationToken=rvt_token']
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type: ['application/json']
+        body: ""

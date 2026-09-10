@@ -1,15 +1,23 @@
 # BeyondInsight Password Safe - Sessions Test Mock Configuration
 #
-# Test Scenario: Simulates session retrieval with authentication and session expiration:
-# 1. Initial authentication via SignAppin endpoint (returns 200, sets session cookie)
-# 2. First Sessions request (returns 200, all session data - 3 sessions)
-# 3. Second Sessions request (returns 401, session expired) 
-# 4. Re-authentication via SignAppin endpoint (returns 200, new session cookie)
-# 5. Retry Sessions request (returns 200, session data again - 1 session)
+# Test Scenario: Simulates session retrieval with authentication, cookie fix
+# verification, sign-out, and 401 retry:
+# 1. Initial authentication via SignAppin endpoint (returns 200, sets two cookies
+#    with attributes — ASP.NET_SessionId and __RequestVerificationToken)
+# 2. First Sessions request (returns 401) — tests that the Cookie header is
+#    correctly formatted (attributes stripped, multiple cookies joined)
+# 3. Re-authentication via SignAppin endpoint (returns 200, new session cookies)
+# 4. Retry Sessions request (returns 200, session data — 3 sessions)
+# 5. Sign-out to release the server-side session
 #
-# NOTE: Unlike managedaccount and managedsystem data streams, the Sessions API does NOT support
-# pagination with limit/offset parameters. The API returns all sessions at once with an upper 
-# cap of 100,000 sessions maximum.
+# Cookie header format assertion: the fixed code must send a single Cookie header
+# value with attributes stripped and both cookies joined by "; ".
+# The buggy code sent multiple Cookie header lines (one per Set-Cookie value),
+# which the server ignores past the first, causing 401s on real BeyondInsight servers.
+#
+# NOTE: Unlike managedaccount and managedsystem data streams, the Sessions API does NOT
+# support pagination with limit/offset parameters. The API returns all sessions at once
+# with an upper cap of 100,000 sessions maximum.
 
 rules:
   # Auth
@@ -22,7 +30,9 @@ rules:
       - status_code: 200
         headers:
           Content-Type: ['application/json']
-          Set-Cookie: ['ASP.NET_SessionId={{ if eq .req_num 1 }}session_cookie1{{ else }}session_cookie2{{ end }}']
+          Set-Cookie:
+            - 'ASP.NET_SessionId={{ if eq .req_num 1 }}session_cookie1{{ else }}session_cookie2{{ end }}; path=/; secure; HttpOnly; SameSite=None'
+            - '__RequestVerificationToken=rvt_token; path=/; secure; HttpOnly'
         body: |
           {{ minify_json `
           {
@@ -44,7 +54,9 @@ rules:
       - status_code: 200
         headers:
           Content-Type: ['application/json']
-          Set-Cookie: ['ASP.NET_SessionId={{ if eq .req_num 1 }}session_cookie1{{ else }}session_cookie2{{ end }}']
+          Set-Cookie:
+            - 'ASP.NET_SessionId={{ if eq .req_num 1 }}session_cookie1{{ else }}session_cookie2{{ end }}; path=/; secure; HttpOnly; SameSite=None'
+            - '__RequestVerificationToken=rvt_token; path=/; secure; HttpOnly'
         body: |
           {{ minify_json `
           {
@@ -56,15 +68,30 @@ rules:
           }
           `}}
 
+  # Sessions - first attempt with session_cookie1 returns 401.
+  # The Cookie assertion verifies attributes are stripped and both cookies are joined
+  # into a single header value, matching RFC 6265 §5.4.
   - path: "/BeyondTrust/api/public/v3/Sessions"
     methods: ["GET"]
     request_headers:
       Authorization: ['PS-Auth key=test_api_key;.*']
       Content-Type: ['application/json']
-      Cookie: ['ASP.NET_SessionId=session_cookie1']
-    as_sequence: true
+      Cookie: ['ASP.NET_SessionId=session_cookie1; __RequestVerificationToken=rvt_token']
     responses:
-      # Sessions - first request (successful)
+      - status_code: 401
+        headers:
+          Content-Type: ['application/json']
+        body: >-
+          "User not authenticated"
+
+  # Sessions - retry with refreshed session (session_cookie2) succeeds.
+  - path: "/BeyondTrust/api/public/v3/Sessions"
+    methods: ["GET"]
+    request_headers:
+      Authorization: ['PS-Auth key=test_api_key;.*']
+      Content-Type: ['application/json']
+      Cookie: ['ASP.NET_SessionId=session_cookie2; __RequestVerificationToken=rvt_token']
+    responses:
       - status_code: 200
         headers:
           Content-Type: ['application/json']
@@ -134,47 +161,15 @@ rules:
           ]
           `}}
 
-      # Sessions - second request (session expired)
-      - status_code: 401
-        headers:
-          Content-Type: ['application/json']
-        body: >-
-          "User not authenticated"
-
-  # Sessions - retry after re-authentication
-  - path: "/BeyondTrust/api/public/v3/Sessions"
-    methods: ["GET"]
+  # Sign-out to release the server-side session.
+  - path: "/BeyondTrust/api/public/v3/Auth/Signout"
+    methods: ["POST"]
     request_headers:
       Authorization: ['PS-Auth key=test_api_key;.*']
       Content-Type: ['application/json']
-      Cookie: ['ASP.NET_SessionId=session_cookie2']
-    as_sequence: true
+      Cookie: ['ASP.NET_SessionId=session_cookie2; __RequestVerificationToken=rvt_token']
     responses:
       - status_code: 200
         headers:
           Content-Type: ['application/json']
-        body: |-
-          {{ minify_json `
-          [
-            {
-              "SessionID": 1004,
-              "UserID": 126,
-              "NodeID": "node-004",
-              "Status": 0,
-              "ArchiveStatus": 2,
-              "Protocol": 1,
-              "StartTime": "2025-01-15T11:00:00Z",
-              "EndTime": null,
-              "Duration": 0,
-              "AssetName": "test-server-192.0.2.100",
-              "ManagedSystemID": 458,
-              "ManagedAccountID": 792,
-              "ManagedAccountName": "test_user",
-              "RecordKey": "rec_key_jkl012",
-              "Token": "token_ghi789",
-              "ApplicationID": null,
-              "RequestID": null,
-              "SessionType": 1
-            }
-          ]
-          `}}
+        body: ""

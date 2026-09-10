@@ -34,29 +34,56 @@ inputs:
                         (has(state.password) ? (sprintf(" pwd=[%s];", [state.password])) : ""),
                       ],
                       "Content-Type": ["application/json"],
-                      "Cookie": state.cursor.cookies,
+                      // Strip Set-Cookie attributes and join multiple cookies into a single header value.
+                      "Cookie": [state.cursor.cookies.map(c, c.split(";")[0]).join("; ")],
                     },
                   }
                 ).do_request().as(resp,
                   (resp.StatusCode == 200) ?
                     // Success: process JSON response with Data array of managed system objects.
-                    // More data may exist if returned array size equals the limit.
                     resp.Body.decode_json().as(body,
-                      {
-                        "events": body.Data.map(e,
+                      (size(body.Data) == int(state.limit)) ?
+                        // More pages available — keep the session open.
+                        {
+                          "events": body.Data.map(e,
+                            {
+                              "event": {
+                                "original": e.encode_json(),
+                              },
+                            }
+                          ),
+                          "want_more": true,
+                          "offset": int(state.?offset.orValue(0)) + size(body.Data),
+                          "retries": 0,
+                        }
+                      :
+                        // All data fetched — sign out and clear the session cookie.
+                        request("POST", state.url.trim_suffix("/") + "/Auth/Signout").with(
                           {
-                            "event": {
-                              "original": e.encode_json(),
+                            "Header": {
+                              "Authorization": [
+                                sprintf("PS-Auth key=%s; runas=%s;", [state.apikey, state.username]) +
+                                (has(state.password) ? (sprintf(" pwd=[%s];", [state.password])) : ""),
+                              ],
+                              "Content-Type": ["application/json"],
+                              "Cookie": [state.cursor.cookies.map(c, c.split(";")[0]).join("; ")],
                             },
                           }
-                        ),
-                        "want_more": size(body.Data) == int(state.limit),
-                        "offset": (size(body.Data) == int(state.limit)) ?
-                          (int(state.?offset.orValue(0)) + size(body.Data))
-                        :
-                          0,
-                        "retries": 0,
-                      }
+                        ).do_request().as(_,
+                          {
+                            "events": body.Data.map(e,
+                              {
+                                "event": {
+                                  "original": e.encode_json(),
+                                },
+                              }
+                            ),
+                            "want_more": false,
+                            "offset": 0,
+                            "retries": 0,
+                            "cursor": {},
+                          }
+                        )
                     )
                   : (resp.StatusCode == 401) ?
                     (
@@ -89,22 +116,36 @@ inputs:
                         }
                     )
                   :
-                    // Handle all other HTTP error responses.
-                    {
-                      "events": {
-                        "error": {
-                          "code": string(resp.StatusCode),
-                          "id": string(resp.Status),
-                          "message": "GET " + state.url.trim_suffix("/") + "/ManagedSystems: " + (
-                            (size(resp.Body) != 0) ?
-                              string(resp.Body)
-                            :
-                              string(resp.Status) + " (" + string(resp.StatusCode) + ")"
-                          ),
+                    // Handle all other HTTP error responses. Sign out to release the server-side session.
+                    request("POST", state.url.trim_suffix("/") + "/Auth/Signout").with(
+                      {
+                        "Header": {
+                          "Authorization": [
+                            sprintf("PS-Auth key=%s; runas=%s;", [state.apikey, state.username]) +
+                            (has(state.password) ? (sprintf(" pwd=[%s];", [state.password])) : ""),
+                          ],
+                          "Content-Type": ["application/json"],
+                          "Cookie": [state.cursor.cookies.map(c, c.split(";")[0]).join("; ")],
                         },
-                      },
-                      "want_more": false,
-                    }
+                      }
+                    ).do_request().as(_,
+                      {
+                        "events": {
+                          "error": {
+                            "code": string(resp.StatusCode),
+                            "id": string(resp.Status),
+                            "message": "GET " + state.url.trim_suffix("/") + "/ManagedSystems: " + (
+                              (size(resp.Body) != 0) ?
+                                string(resp.Body)
+                              :
+                                string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                            ),
+                          },
+                        },
+                        "want_more": false,
+                        "cursor": {},
+                      }
+                    )
                 )
               :
                 // Establish new authenticated session.
