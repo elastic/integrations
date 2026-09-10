@@ -13,6 +13,7 @@ SCRIPTS_BUILDKITE_PATH="${WORKSPACE}/.buildkite/scripts"
 readonly LONG_RUNNING_BRANCH_PATTERN="^(backport-|feature/)"
 
 export ELASTIC_PACKAGE_BIN=${WORKSPACE}/build/elastic-package
+export BACKPORT_BIN=${WORKSPACE}/build/backport
 
 API_BUILDKITE_PIPELINES_URL="https://api.buildkite.com/v2/organizations/elastic/pipelines/"
 
@@ -45,6 +46,40 @@ retry() {
     fi
   done
   return 0
+}
+
+# Download $2 to $1, retrying on failure.
+# --fail is essential: without it curl writes HTTP error bodies (e.g. a 504 HTML
+# page) to the output file and exits 0, which both defeats retry() and leaves a
+# corrupt file that later gets executed. Downloads to a temp file so a failed
+# attempt never leaves a partial file at the destination.
+download_file() {
+  local dest="$1"
+  local url="$2"
+  local tmp
+
+  if [[ -z "${dest}" || -z "${url}" ]]; then
+    echoerr "download_file: usage: download_file <dest> <url>"
+    return 2
+  fi
+
+  mkdir -p "$(dirname "${dest}")" || return 1
+
+  tmp="$(mktemp "$(dirname "${dest}")/tmp.XXXXXX")" || return 1
+
+  retry 5 curl --fail --silent --show-error --location -o "${tmp}" "${url}" || {
+    local exit=$?
+    rm -f "${tmp}"
+    echoerr "Failed to download ${url}"
+    return "${exit}"
+  }
+
+  mv "${tmp}" "${dest}" || { local exit=$?; rm -f "${tmp}"; return "${exit}"; }
+}
+
+download_bin() {
+  download_file "$1" "$2" || return "$?"
+  chmod +x "$1"
 }
 
 unset_secrets () {
@@ -108,8 +143,7 @@ with_go() {
   echo "--- Setting up the Go environment..."
   check_platform_architecture
   echo "GVM ${SETUP_GVM_VERSION} (platform ${platform_type_lowercase} arch ${arch_type}"
-  retry 5 curl -sL -o "${BIN_FOLDER}/gvm" "https://github.com/andrewkroh/gvm/releases/download/${SETUP_GVM_VERSION}/gvm-${platform_type_lowercase}-${arch_type}"
-  chmod +x "${BIN_FOLDER}/gvm"
+  download_bin "${BIN_FOLDER}/gvm" "https://github.com/andrewkroh/gvm/releases/download/${SETUP_GVM_VERSION}/gvm-${platform_type_lowercase}-${arch_type}"
   eval "$(gvm "$(cat .go-version)")"
   go version
   which go
@@ -125,6 +159,30 @@ with_mage() {
     go install "github.com/magefile/mage"
 
     mage --version
+}
+
+with_backport() {
+    create_bin_folder
+    echo "--- Building backport tool..."
+    check_platform_architecture
+    if [[ ! -x "${BIN_FOLDER}/gvm" ]]; then
+        echo "GVM ${SETUP_GVM_VERSION} (platform ${platform_type_lowercase} arch ${arch_type})"
+        download_bin "${BIN_FOLDER}/gvm" "https://github.com/andrewkroh/gvm/releases/download/${SETUP_GVM_VERSION}/gvm-${platform_type_lowercase}-${arch_type}"
+    fi
+    # Build inside a subshell so the Go version switch (cmd/backport/.go-version,
+    # pinned to main's version) does not leak into the caller's shell.
+    # This is important for scripts like backport_branch.sh that run `go mod tidy`
+    # on the root module afterwards and must use the branch's own .go-version.
+    mkdir -p "${WORKSPACE}/build"
+    (
+        eval "$("${BIN_FOLDER}/gvm" "$(cat "${WORKSPACE}/cmd/backport/.go-version")")"
+        go version
+        go build -C "${WORKSPACE}/cmd/backport" -o "${BACKPORT_BIN}" .
+    )
+    # Add build/ to PATH so callers can invoke `backport` by name.
+    # The Go toolchain itself is NOT added — the subshell above kept it isolated.
+    PATH="${PATH}:${WORKSPACE}/build"
+    export PATH
 }
 
 with_docker() {
@@ -174,8 +232,7 @@ with_docker_compose_plugin() {
     local DOCKER_CONFIG="$HOME/.docker/cli-plugins"
     mkdir -p "$DOCKER_CONFIG"
 
-    retry 5 curl -SL -o "${DOCKER_CONFIG}/docker-compose" "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-${platform_type_lowercase}-${hw_type}"
-    chmod +x "${DOCKER_CONFIG}/docker-compose"
+    download_bin "${DOCKER_CONFIG}/docker-compose" "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-${platform_type_lowercase}-${hw_type}"
     docker compose version
 }
 
@@ -184,14 +241,12 @@ with_kubernetes() {
     check_platform_architecture
 
     echo "--- Install kind"
-    retry 5 curl -sSLo "${BIN_FOLDER}/kind" "https://github.com/kubernetes-sigs/kind/releases/download/${KIND_VERSION}/kind-${platform_type_lowercase}-${arch_type}"
-    chmod +x "${BIN_FOLDER}/kind"
+    download_bin "${BIN_FOLDER}/kind" "https://github.com/kubernetes-sigs/kind/releases/download/${KIND_VERSION}/kind-${platform_type_lowercase}-${arch_type}"
     kind version
     which kind
 
     echo "--- Install kubectl"
-    retry 5 curl -sSLo "${BIN_FOLDER}/kubectl" "https://dl.k8s.io/release/${K8S_VERSION}/bin/${platform_type_lowercase}/${arch_type}/kubectl"
-    chmod +x "${BIN_FOLDER}/kubectl"
+    download_bin "${BIN_FOLDER}/kubectl" "https://dl.k8s.io/release/${K8S_VERSION}/bin/${platform_type_lowercase}/${arch_type}/kubectl"
     kubectl version --client
     which kubectl
 }
@@ -201,7 +256,7 @@ with_yq() {
     check_platform_architecture
     local binary="yq_${platform_type_lowercase}_${arch_type}"
 
-    retry 5 curl -sSL -o "${BIN_FOLDER}/yq.tar.gz" "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/${binary}.tar.gz"
+    download_file "${BIN_FOLDER}/yq.tar.gz" "https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/${binary}.tar.gz"
 
     tar -C "${BIN_FOLDER}" -xpf "${BIN_FOLDER}/yq.tar.gz" "./${binary}"
 
@@ -218,9 +273,7 @@ with_jq() {
     # filename for versions <=1.6 is jq-linux64
     local binary="jq-${platform_type_lowercase}-${arch_type}"
 
-    retry 5 curl -sL -o "${BIN_FOLDER}/jq" "https://github.com/jqlang/jq/releases/download/jq-${JQ_VERSION}/${binary}"
-
-    chmod +x "${BIN_FOLDER}/jq"
+    download_bin "${BIN_FOLDER}/jq" "https://github.com/jqlang/jq/releases/download/jq-${JQ_VERSION}/${binary}"
     jq --version
 }
 
@@ -234,7 +287,7 @@ with_github_cli() {
     local gh_tar_file="${gh_filename}.tar.gz"
     local gh_tar_full_path="${WORKSPACE}/tmp/${gh_tar_file}"
 
-    retry 5 curl -sL -o "${gh_tar_full_path}" "https://github.com/cli/cli/releases/download/v${GH_CLI_VERSION}/${gh_tar_file}"
+    download_file "${gh_tar_full_path}" "https://github.com/cli/cli/releases/download/v${GH_CLI_VERSION}/${gh_tar_file}"
 
     # just extract the binary file from the tar.gz
     tar -C "${BIN_FOLDER}" -xpf "${gh_tar_full_path}" "${gh_filename}/bin/gh" --strip-components=2
@@ -781,7 +834,7 @@ is_pr_affected() {
         return 0
     fi
 
-    commit_merge=$(git merge-base "${from}" "${to}")
+    commit_merge="${COMMIT_MERGE:-$(git merge-base "${from}" "${to}")}"
     echoerr "[${package_name}] git-diff: check non-package files (${commit_merge}..${to})"
     # .github/CODEOWNERS must not be added to "skip_ci_on_only_changed" in ".buildkite/pull-requests.json".
     # When this file is updated, the Buildkite build must be triggered to run the "mage check" step.
