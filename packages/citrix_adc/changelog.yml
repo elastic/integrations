@@ -4,7 +4,7 @@
     - description: Add citrix_adc.log.x_forwarded_for_ip field, mapped to network.forwarded_ip and appended to related.ip.
       type: enhancement
       link: https://github.com/elastic/integrations/pull/21134
-    - description: Fix SSLVPN grok parsing for LOGIN, LOGOUT, TCPCONNSTAT, TCPCONN_TIMEDOUT, UDPFLOWSTAT and REMOVE_SESSION_DEBUG events to handle the optional X-Forwarded-For_ip field between Client_ip and Nat_ip, including comma-separated proxy chains, non-IP values and IPv4-mapped IPv6 addresses, an absent Client_ip value, and quoted Nat_ip values in UDPFLOWSTAT. The unquoted Nat_ip fallback in LOGOUT is now bounded, so an unrecognised message segment surfaces as a document error instead of being silently discarded; bare, quoted and unquoted Nat_ip values continue to parse as before.
+    - description: Fix SSLVPN grok parsing for LOGIN, LOGOUT, TCPCONNSTAT, TCPCONN_TIMEDOUT, UDPFLOWSTAT and REMOVE_SESSION_DEBUG events to handle the optional X-Forwarded-For_ip field between Client_ip and Nat_ip, including IPv6, IPv4-mapped IPv6 and comma-separated values, and to handle Client_ip with no address. UDPFLOWSTAT events with a quoted Nat_ip now parse instead of failing. Nat_ip accepts an address, the "Mapped Ip" sentinel, or no value; any other value now produces a document error rather than being matched and discarded.
       type: bugfix
       link: https://github.com/elastic/integrations/pull/21134
 - version: "1.19.2"
