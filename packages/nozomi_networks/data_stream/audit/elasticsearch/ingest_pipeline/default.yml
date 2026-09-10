@@ -125,6 +125,12 @@ processors:
       tag: set_event_id_from_audit_id_9da1ec1e
       copy_from: nozomi_networks.audit.id
       ignore_empty_value: true
+  - split:
+      field: json.ip_address
+      tag: split_ip_address_2b0f1a3c
+      separator: ',\s*'
+      ignore_missing: true
+      if: ctx.json?.ip_address instanceof String && ctx.json.ip_address != ''
   - convert:
       field: json.ip_address
       tag: convert_ip_address_to_ip_7b12390a
@@ -140,7 +146,7 @@ processors:
   - set:
       field: source.ip
       tag: set_source_ip_from_audit_ip_address_c2d9cc45
-      copy_from: nozomi_networks.audit.ip_address
+      copy_from: nozomi_networks.audit.ip_address.0
       ignore_empty_value: true
   - geoip:
       field: source.ip
@@ -166,12 +172,16 @@ processors:
       tag: rename_source_as_organization_name_aa06a00b
       target_field: source.as.organization.name
       ignore_missing: true
-  - append:
-      field: related.ip
-      tag: append_audit_ip_address_into_related_ip_42b296ba
-      value: '{{{nozomi_networks.audit.ip_address}}}'
-      allow_duplicates: false
-      if: ctx.nozomi_networks?.audit?.ip_address != null
+  - foreach:
+      field: nozomi_networks.audit.ip_address
+      tag: foreach_audit_ip_address_into_related_ip_42b296ba
+      if: ctx.nozomi_networks?.audit?.ip_address instanceof List
+      processor:
+        append:
+          field: related.ip
+          tag: append_audit_ip_address_into_related_ip_42b296ba
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
   - rename:
       field: json.name
       tag: rename_name_a9688855

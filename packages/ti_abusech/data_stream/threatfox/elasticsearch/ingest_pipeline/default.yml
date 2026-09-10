@@ -59,6 +59,11 @@ processors:
       field: abusech.threatfox.id
       target_field: event.id
       ignore_missing: true
+  - convert:
+      tag: convert_event_id_to_string
+      field: event.id
+      type: string
+      ignore_missing: true
   #####################
   # Threat ECS Fields #
   #####################
@@ -70,6 +75,7 @@ processors:
         - "yyyy-MM-dd HH:mm:ss z"
         - "yyyy-MM-dd HH:mm:ss Z"
         - "yyyy-MM-dd HH:mm:ss"
+        - "ISO8601"
       if: "ctx.abusech?.threatfox?.first_seen != null"
   - date:
       tag: date_abusech_threatfox_last_seen_to_threat_indicator_last_seen_b73b2f5b
@@ -79,6 +85,7 @@ processors:
         - "yyyy-MM-dd HH:mm:ss z"
         - "yyyy-MM-dd HH:mm:ss Z"
         - "yyyy-MM-dd HH:mm:ss"
+        - "ISO8601"
       if: "ctx.abusech?.threatfox?.last_seen != null"
   # Set threat.indicator.name
   - set:
@@ -223,6 +230,118 @@ processors:
       tag: remove_abusech_threatfox_tags_e448ec7d
       field: abusech.threatfox.tags
       ignore_missing: true
+  ##############################
+  # Commercial API enrichment  #
+  ##############################
+  - convert:
+      tag: convert_abusech_threatfox_sightings_to_long
+      description: Convert commercial API sightings count to long.
+      field: abusech.threatfox.sightings
+      type: long
+      if: ctx.abusech?.threatfox?.sightings != null
+      on_failure:
+        - remove:
+            tag: remove_abusech_threatfox_sightings_on_convert_failure
+            field: abusech.threatfox.sightings
+            ignore_missing: true
+        - append:
+            tag: append_error_message_convert_sightings
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      tag: set_threat_indicator_sightings
+      field: threat.indicator.sightings
+      copy_from: abusech.threatfox.sightings
+      ignore_empty_value: true
+      if: ctx.abusech?.threatfox?.sightings != null
+  - convert:
+      tag: convert_abusech_threatfox_is_compromised_to_boolean
+      description: Convert commercial API is_compromised flag to boolean.
+      field: abusech.threatfox.is_compromised
+      type: boolean
+      if: ctx.abusech?.threatfox?.is_compromised != null
+      on_failure:
+        - remove:
+            tag: remove_abusech_threatfox_is_compromised_on_convert_failure
+            field: abusech.threatfox.is_compromised
+            ignore_missing: true
+        - append:
+            tag: append_error_message_convert_is_compromised
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      tag: foreach_convert_abusech_threatfox_credits_amount_to_long
+      description: Convert credits_amount in each credits entry to long.
+      field: abusech.threatfox.credits
+      if: ctx.abusech?.threatfox?.credits instanceof List
+      processor:
+        convert:
+          tag: convert_abusech_threatfox_credits_amount_to_long
+          field: _ingest._value.credits_amount
+          type: long
+          ignore_missing: true
+          on_failure:
+            - remove:
+                tag: remove_credits_amount_on_convert_failure
+                field: _ingest._value.credits_amount
+                ignore_missing: true
+            - append:
+                tag: append_error_message_convert_credits_amount
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      tag: foreach_rename_malware_samples_time_stamp_to_timestamp
+      description: Normalize community API time_stamp to commercial timestamp field name.
+      field: abusech.threatfox.malware_samples
+      if: ctx.abusech?.threatfox?.malware_samples instanceof List
+      processor:
+        rename:
+          tag: rename_malware_samples_time_stamp_to_timestamp
+          field: _ingest._value.time_stamp
+          target_field: _ingest._value.timestamp
+          ignore_missing: true
+  - foreach:
+      tag: foreach_date_malware_samples_timestamp
+      description: Parse malware sample timestamps from RFC3339 or community UTC format.
+      field: abusech.threatfox.malware_samples
+      if: ctx.abusech?.threatfox?.malware_samples instanceof List
+      processor:
+        date:
+          tag: date_malware_samples_timestamp
+          field: _ingest._value.timestamp
+          target_field: _ingest._value.timestamp
+          formats:
+            - ISO8601
+            - "yyyy-MM-dd HH:mm:ss z"
+            - "yyyy-MM-dd HH:mm:ss Z"
+            - "yyyy-MM-dd HH:mm:ss"
+          on_failure:
+            - remove:
+                tag: remove_malware_samples_timestamp_on_date_failure
+                field: _ingest._value.timestamp
+                ignore_missing: true
+  - foreach:
+      tag: foreach_append_related_hash_md5_from_malware_samples
+      description: Append malware sample MD5 hashes to ECS related.hash.
+      field: abusech.threatfox.malware_samples
+      if: ctx.abusech?.threatfox?.malware_samples instanceof List
+      processor:
+        append:
+          tag: append_related_hash_md5_from_malware_samples
+          field: related.hash
+          value: '{{{_ingest._value.md5_hash}}}'
+          allow_duplicates: false
+  - foreach:
+      tag: foreach_append_related_hash_sha256_from_malware_samples
+      description: Append malware sample SHA256 hashes to ECS related.hash.
+      field: abusech.threatfox.malware_samples
+      if: ctx.abusech?.threatfox?.malware_samples instanceof List
+      processor:
+        append:
+          tag: append_related_hash_sha256_from_malware_samples
+          field: related.hash
+          value: '{{{_ingest._value.sha256_hash}}}'
+          allow_duplicates: false
   ######################
   #   IOC expiration   #
   ######################

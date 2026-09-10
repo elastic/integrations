@@ -1,0 +1,72 @@
+- name: kolide.device
+  type: group
+  description: Custom fields for Kolide devices, collected from the REST API (GET /devices) and device webhooks.
+  fields:
+    - name: type
+      type: keyword
+      description: Type of device, one of `Mac`, `Linux`, `Windows`, `iOS`, or `Android`.
+    - name: status
+      type: keyword
+      description: Normalized (lowercase) device status, derived from the webhook `device_status` or the API `auth_state`.
+    - name: device_status
+      type: keyword
+      description: Raw device status reported by the `device_trust.status_changed` webhook, for example `blocked` (webhook only).
+    - name: device_url
+      type: keyword
+      description: API URL of the device record (webhook only).
+    - name: registered_at
+      type: date
+      description: Timestamp at which the device was registered.
+    - name: last_authenticated_at
+      type: date
+      description: Timestamp at which the device last authenticated.
+    - name: last_seen_at
+      type: date
+      description: Timestamp at which the device was last seen.
+    - name: will_block_at
+      type: date
+      description: Timestamp at which the device will be blocked, if any.
+    - name: hardware_model
+      type: keyword
+      description: Hardware model identifier, for example `MacBookPro18,1`.
+    - name: serial
+      type: keyword
+      description: Hardware serial number of the device.
+    - name: hardware_uuid
+      type: keyword
+      description: Hardware UUID of the device.
+    - name: note
+      type: text
+      description: Free-form note associated with the device.
+    - name: auth_state
+      type: keyword
+      description: Raw authentication state of the device reported by the API, for example `Good` or `Blocked` (API only).
+    - name: product_image_url
+      type: keyword
+      description: URL of the product image for the device hardware.
+    - name: form_factor
+      type: keyword
+      description: Form factor of the device, for example `Computer`.
+    - name: registered_owner_info
+      type: group
+      description: Reference to the person who registered the device (API only).
+      fields:
+        - name: identifier
+          type: keyword
+          description: Identifier of the registered owner.
+        - name: location
+          type: keyword
+          description: API URL of the registered owner resource.
+    - name: auth_configuration
+      type: group
+      description: Authentication configuration for the device (API only).
+      fields:
+        - name: device_id
+          type: keyword
+          description: Identifier of the device the configuration applies to.
+        - name: authentication_mode
+          type: keyword
+          description: Authentication mode, for example `only_registered_owner` or `any_registered_person`.
+        - name: person_groups
+          type: flattened
+          description: Person groups permitted to authenticate the device.

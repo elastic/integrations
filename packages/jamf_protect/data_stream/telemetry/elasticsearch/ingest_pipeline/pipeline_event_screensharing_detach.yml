@@ -2,19 +2,23 @@
 description: Pipeline for parsing specific fields related to screensharing detached events in Jamf Protect
 processors:
 
-##########################
-## ECS Event Specific ##
-##########################
+    ##########################
+    ## ECS Event Specific ##
+    ##########################
     - set:
+        tag: set_event_reason_41103f0d
         field: event.reason
         value: A screen sharing session has detached from a graphical session
     - append:
+        tag: append_event_type_90fe2b35
         field: event.type
         value: end
     - append:
+        tag: append_event_category_d21db9a2
         field: event.category
         value: session
     - script:
+        tag: script_5ae318d5
         lang: painless
         source: |
             ctx.event = ctx.event != null ? ctx.event : new HashMap();
@@ -29,11 +33,13 @@ processors:
               ctx.event.outcome = 'unknown';
             }
     - convert:
+        tag: convert_jamf_protect_telemetry_event_screensharing_detach_graphical_session_id_to_jamf_protect_telemetry_graphical_authentication_username_847d25e7
         field: jamf_protect.telemetry.event.screensharing_detach.graphical_session_id
         target_field: jamf_protect.telemetry.graphical_authentication_username
         type: string
         ignore_missing: true
     - convert:
+        tag: convert_jamf_protect_telemetry_event_screensharing_detach_viewer_appleid_to_jamf_protect_viewer_appleid_63896993
         field: jamf_protect.telemetry.event.screensharing_detach.viewer_appleid
         target_field: jamf_protect.viewer_appleid
         type: string
@@ -41,10 +47,12 @@ processors:
         ignore_missing: true
         ignore_failure: true
     - rename:
+        tag: rename_jamf_protect_telemetry_event_screensharing_detach_source_address_to_source_ip_9bfb67c1
         field: jamf_protect.telemetry.event.screensharing_detach.source_address
         target_field: source.ip
         ignore_missing: true
     - script:
+        tag: script_df68d29b
         lang: painless
         params:
             itemTypeMap:
@@ -59,8 +67,9 @@ processors:
                 ctx.jamf_protect = ctx.jamf_protect != null ? ctx.jamf_protect : new HashMap();
                 ctx.jamf_protect.telemetry.source_address_type = itemTypeString;
             }
-##########################
-## ECS Process ##
-##########################
+    ##########################
+    ## ECS Process ##
+    ##########################
     - pipeline:
+        tag: pipeline_object_process_0d75fa7a
         name: '{{ IngestPipeline "pipeline_object_process" }}'

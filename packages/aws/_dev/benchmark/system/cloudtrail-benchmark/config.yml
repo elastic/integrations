@@ -1,0 +1,157 @@
+fields:
+  # --- event identity -------------------------------------------------------
+  - name: eventName
+    enum:
+      - DescribeInstances
+      - DescribeImages
+      - DescribeSubnets
+      - AuthorizeSecurityGroupIngress
+      - AuthorizeSecurityGroupEgress
+      - RunInstances
+      - TerminateInstances
+      - Encrypt
+      - Decrypt
+      - AssumeRole
+      - AddUserToGroup
+      - CreateAccessKey
+      - ConsoleLogin
+      - PutBucketPolicy
+  - name: eventSource
+    enum:
+      - ec2.amazonaws.com
+      - kms.amazonaws.com
+      - sts.amazonaws.com
+      - iam.amazonaws.com
+      - s3.amazonaws.com
+      - signin.amazonaws.com
+      - cloudtrail.amazonaws.com
+  - name: eventType
+    enum:
+      - AwsApiCall
+      - AwsConsoleSignIn
+      - AwsServiceEvent
+  - name: eventCategory
+    enum:
+      - Management
+      - Data
+  - name: apiVersion
+    enum:
+      - "2016-11-15"
+      - "2012-10-17"
+  - name: readOnly
+    enum:
+      - "true"
+      - "false"
+  - name: awsRegion
+    enum:
+      - us-east-1
+      - us-east-2
+      - us-west-2
+      - eu-west-1
+      - ap-south-1
+  - name: eventTime
+    period: -24h
+
+  # --- identity -------------------------------------------------------------
+  - name: userIdentityType
+    enum:
+      - IAMUser
+      - AssumedRole
+      - AWSService
+      - Root
+      - FederatedUser
+  - name: mfaAuthenticated
+    enum:
+      - "true"
+      - "false"
+  - name: sessionCreationDate
+    period: -24h
+  - name: accountId
+    cardinality: 10
+  - name: accessKeyId
+    cardinality: 50
+  - name: principalId
+    cardinality: 50
+  - name: userName
+    cardinality: 25
+  - name: sessionIssuerPrincipalId
+    cardinality: 20
+  - name: sessionIssuerUserName
+    cardinality: 20
+
+  # --- request / response payload ------------------------------------------
+  - name: groupId
+    cardinality: 30
+  - name: instanceId
+    cardinality: 200
+  - name: securityGroupRuleId
+    cardinality: 100
+  - name: keyMaterialId
+    cardinality: 20
+  - name: resourceType
+    enum:
+      - AWS::IAM::Role
+      - AWS::IAM::User
+      - AWS::KMS::Key
+      - AWS::EC2::Instance
+      - AWS::S3::Bucket
+
+  # --- error path (sentinel "None" omits errorCode/errorMessage) ------------
+  - name: errorCode
+    enum:
+      - None
+      - None
+      - None
+      - AccessDenied
+      - UnauthorizedOperation
+      - Client.InvalidParameterValue
+      - ThrottlingException
+  - name: errorMessage
+    enum:
+      - User is not authorized to perform this operation
+      - Request limit exceeded
+      - The parameter value is not valid
+
+  # --- correlation / transport ---------------------------------------------
+  - name: requestID
+    cardinality: 1000
+  - name: eventID
+    cardinality: 1000
+  - name: sharedEventID
+    cardinality: 500
+  - name: vpcEndpointId
+    cardinality: 15
+  - name: sourceIPAddress
+    enum:
+      - 198.51.100.10
+      - 198.51.100.20
+      - 198.51.100.30
+      - 203.0.113.10
+      - 203.0.113.20
+      - 203.0.113.30
+      - 192.0.2.10
+      - 192.0.2.20
+      - 192.0.2.30
+      - 81.2.69.144
+  - name: userAgent
+    enum:
+      - aws-sdk-go-v2/1.39.0 ua/2.1 os/linux lang/go#1.24.6
+      - aws-cli/2.17.60 md/awscrt#0.21.2 ua/2.0 os/macos#23.6.0
+      - console.amazonaws.com
+      - Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36
+      - eks.amazonaws.com
+  - name: tlsVersion
+    enum:
+      - TLSv1.2
+      - TLSv1.3
+  - name: cipherSuite
+    enum:
+      - TLS_AES_128_GCM_SHA256
+      - TLS_AES_256_GCM_SHA384
+      - ECDHE-RSA-AES128-GCM-SHA256
+  - name: hostHeader
+    enum:
+      - ec2.us-east-1.amazonaws.com
+      - kms.us-east-2.amazonaws.com
+      - sts.amazonaws.com
+      - iam.amazonaws.com

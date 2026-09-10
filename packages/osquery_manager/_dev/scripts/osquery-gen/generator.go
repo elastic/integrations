@@ -119,7 +119,7 @@ type columnInfo struct {
 	Column osqueryCol
 }
 
-func generateArtifacts(outputRoot, osqueryVersion, ecsVersion, beatsRef string, ecsKeepFields []string, runPackageCheck bool) error {
+func generateArtifacts(outputRoot, osqueryVersion, ecsVersion, beatsRef, beatsPath string, ecsKeepFields []string, runPackageCheck bool) error {
 	outFields := filepath.Join(outputRoot, "packages", "osquery_manager", "data_stream", "result", "fields")
 	outSchemas := filepath.Join(outputRoot, "packages", "osquery_manager", "schemas")
 
@@ -138,9 +138,9 @@ func generateArtifacts(outputRoot, osqueryVersion, ecsVersion, beatsRef string, 
 	}
 
 	tablesForYAML := rawSchemaToOsqueryTables(coreSchemaRaw)
-	extTables, err := downloadBeatsExtensionSpecs(beatsRef)
+	extTables, err := loadBeatsExtensionSpecs(beatsRef, beatsPath)
 	if err != nil {
-		return fmt.Errorf("download beats extension specs: %w", err)
+		return fmt.Errorf("load beats extension specs: %w", err)
 	}
 	tablesForYAML = append(tablesForYAML, extTables...)
 	log.Printf("Merged %d extension tables from beats", len(extTables))
@@ -266,6 +266,18 @@ func findElasticPackageBinary() (string, error) {
 	return "", fmt.Errorf("elastic-package not found in PATH or %s", candidate)
 }
 
+type namedSpec struct {
+	Name string
+	Body []byte
+}
+
+func loadBeatsExtensionSpecs(ref, localPath string) ([]osqueryTable, error) {
+	if strings.TrimSpace(localPath) != "" {
+		return loadLocalBeatsExtensionSpecs(localPath)
+	}
+	return downloadBeatsExtensionSpecs(ref)
+}
+
 func downloadBeatsExtensionSpecs(ref string) ([]osqueryTable, error) {
 	type ghEntry struct {
 		Name string `json:"name"`
@@ -282,6 +294,54 @@ func downloadBeatsExtensionSpecs(ref string) ([]osqueryTable, error) {
 	sort.Slice(entries, func(i, j int) bool {
 		return entries[i].Name < entries[j].Name
 	})
+	specs := make([]namedSpec, 0, len(entries))
+	for _, entry := range entries {
+		if !isYAMLSpec(entry.Name) {
+			continue
+		}
+		body, err := downloadBytes(fmt.Sprintf(beatsRawSpecURL, ref, entry.Name))
+		if err != nil {
+			return nil, fmt.Errorf("download %s: %w", entry.Name, err)
+		}
+		specs = append(specs, namedSpec{Name: entry.Name, Body: body})
+	}
+	return parseBeatsExtensionSpecs(specs)
+}
+
+func loadLocalBeatsExtensionSpecs(path string) ([]osqueryTable, error) {
+	specsDir := path
+	candidate := filepath.Join(path, "x-pack", "osquerybeat", "ext", "osquery-extension", "specs")
+	if info, err := os.Stat(candidate); err == nil && info.IsDir() {
+		specsDir = candidate
+	}
+	entries, err := os.ReadDir(specsDir)
+	if err != nil {
+		return nil, fmt.Errorf("read local Beats specs: %w", err)
+	}
+	sort.Slice(entries, func(i, j int) bool { return entries[i].Name() < entries[j].Name() })
+	specs := make([]namedSpec, 0, len(entries))
+	for _, entry := range entries {
+		if entry.IsDir() || !isYAMLSpec(entry.Name()) {
+			continue
+		}
+		body, err := os.ReadFile(filepath.Join(specsDir, entry.Name()))
+		if err != nil {
+			return nil, fmt.Errorf("read %s: %w", entry.Name(), err)
+		}
+		specs = append(specs, namedSpec{Name: entry.Name(), Body: body})
+	}
+	if len(specs) == 0 {
+		return nil, fmt.Errorf("no YAML extension specs found in %s", specsDir)
+	}
+	log.Printf("Reading osquerybeat extension specs from %s", specsDir)
+	return parseBeatsExtensionSpecs(specs)
+}
+
+func isYAMLSpec(name string) bool {
+	return strings.HasSuffix(name, ".yaml") || strings.HasSuffix(name, ".yml")
+}
+
+func parseBeatsExtensionSpecs(specs []namedSpec) ([]osqueryTable, error) {
 
 	type parsedSpecFile struct {
 		Name string
@@ -291,28 +351,22 @@ func downloadBeatsExtensionSpecs(ref string) ([]osqueryTable, error) {
 	var specFiles []parsedSpecFile
 	sharedTypesByGroup := make(map[string]map[string][]beatsColumn)
 
-	for _, e := range entries {
-		if !strings.HasSuffix(e.Name, ".yaml") && !strings.HasSuffix(e.Name, ".yml") {
-			continue
-		}
-		specBody, err := downloadBytes(fmt.Sprintf(beatsRawSpecURL, ref, e.Name))
-		if err != nil {
-			return nil, fmt.Errorf("download %s: %w", e.Name, err)
-		}
+	for _, specFile := range specs {
+		specBody := specFile.Body
 		var header struct {
 			Type string `yaml:"type"`
 		}
 		if err := yaml.Unmarshal(specBody, &header); err != nil {
-			return nil, fmt.Errorf("parse header %s: %w", e.Name, err)
+			return nil, fmt.Errorf("parse header %s: %w", specFile.Name, err)
 		}
 
 		if strings.EqualFold(header.Type, "shared_types") {
 			var stf beatsSharedTypesFile
 			if err := yaml.Unmarshal(specBody, &stf); err != nil {
-				return nil, fmt.Errorf("parse shared_types %s: %w", e.Name, err)
+				return nil, fmt.Errorf("parse shared_types %s: %w", specFile.Name, err)
 			}
 			if stf.Group == "" {
-				return nil, fmt.Errorf("shared_types file %s missing group", e.Name)
+				return nil, fmt.Errorf("shared_types file %s missing group", specFile.Name)
 			}
 			if _, ok := sharedTypesByGroup[stf.Group]; !ok {
 				sharedTypesByGroup[stf.Group] = make(map[string][]beatsColumn)
@@ -327,7 +381,7 @@ func downloadBeatsExtensionSpecs(ref string) ([]osqueryTable, error) {
 			continue
 		}
 		specFiles = append(specFiles, parsedSpecFile{
-			Name: e.Name,
+			Name: specFile.Name,
 			Body: specBody,
 			Kind: header.Type,
 		})

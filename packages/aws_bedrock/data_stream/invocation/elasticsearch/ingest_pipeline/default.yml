@@ -28,7 +28,7 @@ processors:
   - set:
       tag: set_ecs_version_0f7334bb
       field: ecs.version
-      value: '8.11.0'
+      value: '9.5.0'
   - set:
       tag: set_cloud_service_name_5dd2f5cd
       field: cloud.service.name
@@ -207,7 +207,7 @@ processors:
       tag: painless_to_rename_fields_under_aws_bedrock_groups_95f68f26
       source: |
         def renameKeys(Map src, Map keyMap) {
-          def dst = new HashMap();
+          def dst = [:];
           for (def entry: src.entrySet()) {
             def key = entry.getKey();
             def value = entry.getValue();
@@ -478,6 +478,13 @@ processors:
       type: float
       ignore_failure: true
   - convert:
+      tag: convert_additional_model_request_fields_top_k_to_gen_ai_request_top_k_4e8a1c2b
+      if: ctx.gen_ai?.request?.top_k == null && ctx.aws_bedrock?.invocation?.input?.input_body_json?.additionalModelRequestFields?.top_k != null
+      field: aws_bedrock.invocation.input.input_body_json.additionalModelRequestFields.top_k
+      target_field: gen_ai.request.top_k
+      type: float
+      ignore_failure: true
+  - convert:
       tag: convert_aws_bedrock_invocation_input_input_body_json_top_p_to_gen_ai_request_top_p_81358d30
       if: ctx.aws_bedrock?.invocation?.input?.input_body_json?.top_p != null
       field: aws_bedrock.invocation.input.input_body_json.top_p
@@ -492,12 +499,33 @@ processors:
       type: float
       ignore_failure: true
   - convert:
+      tag: convert_inference_config_temperature_to_gen_ai_request_temperature_6c2f9a4d
+      if: ctx.gen_ai?.request?.temperature == null && ctx.aws_bedrock?.invocation?.input?.input_body_json?.inferenceConfig?.temperature != null
+      field: aws_bedrock.invocation.input.input_body_json.inferenceConfig.temperature
+      target_field: gen_ai.request.temperature
+      type: float
+      ignore_failure: true
+  - convert:
       tag: convert_aws_bedrock_invocation_input_input_body_json_max_tokens_to_gen_ai_request_max_tokens_59419985
       if: ctx.aws_bedrock?.invocation?.input?.input_body_json?.max_tokens != null
       field: aws_bedrock.invocation.input.input_body_json.max_tokens
       target_field: gen_ai.request.max_tokens
       type: long
       ignore_failure: true
+  - set:
+      tag: set_gen_ai_input_messages_from_input_body_json_messages_2d9f4c7e
+      if: ctx.aws_bedrock?.invocation?.input?.input_body_json?.messages instanceof List
+      field: gen_ai.input.messages
+      copy_from: aws_bedrock.invocation.input.input_body_json.messages
+      ignore_empty_value: true
+  - script:
+      tag: set_gen_ai_output_messages_from_output_message_8e1b6a3f
+      if: '!(ctx.aws_bedrock?.invocation?.output?.output_body_json instanceof List) && ctx.aws_bedrock?.invocation?.output?.output_body_json?.output?.message != null'
+      lang: painless
+      source: |
+        ctx.gen_ai = ctx.gen_ai ?: [:];
+        ctx.gen_ai.output = ctx.gen_ai.output ?: [:];
+        ctx.gen_ai.output.messages = [ctx.aws_bedrock.invocation.output.output_body_json.output.message];
   - convert:
       tag: convert_aws_bedrock_invocation_output_output_token_count_to_gen_ai_usage_completion_tokens_1c488a64
       if: ctx.aws_bedrock?.invocation?.output?.output_token_count != null
@@ -566,12 +594,8 @@ processors:
       source: |
         for (def e: ctx.aws_bedrock.invocation.output.output_body_json) {
           if (e.message?.id != null) {
-            if (ctx.gen_ai == null) {
-              ctx.gen_ai = new HashMap();
-            }
-            if (ctx.gen_ai.response == null) {
-              ctx.gen_ai.response = new HashMap();
-            }
+            ctx.gen_ai = ctx.gen_ai ?: [:];
+            ctx.gen_ai.response = ctx.gen_ai.response ?: [:];
             ctx.gen_ai.request.model.role = e.message?.role; // Surprisingly this is in the invocation.
             ctx.gen_ai.response.id = e.message?.id;
             break;
@@ -595,12 +619,8 @@ processors:
         for (int i = ctx.aws_bedrock.invocation.output.output_body_json.length-1; i >= 0; i--) {
           def e = ctx.aws_bedrock.invocation.output.output_body_json[i];
           if (e.amazon_bedrock_invocation_metrics?.invocation_latency != null) {
-            if (ctx.gen_ai == null) {
-              ctx.gen_ai = new HashMap();
-            }
-            if (ctx.gen_ai.performance == null) {
-              ctx.gen_ai.performance = new HashMap();
-            }
+            ctx.gen_ai = ctx.gen_ai ?: [:];
+            ctx.gen_ai.performance = ctx.gen_ai.performance ?: [:];
             ctx.gen_ai.performance.start_response_time = e.amazon_bedrock_invocation_metrics.first_byte_latency;
             ctx.gen_ai.performance.response_time = e.amazon_bedrock_invocation_metrics.invocation_latency;
             break;
@@ -796,9 +816,7 @@ processors:
           }
 
           // Ensure ctx.aws_bedrock.invocation.output is initialized
-          if (ctx.aws_bedrock?.invocation?.output == null) {
-              ctx.aws_bedrock.invocation.output = new HashMap();
-          }
+          ctx.aws_bedrock.invocation.output = ctx.aws_bedrock.invocation.output ?: [:];
           // Trim completionText if it exceeds 32766 characters
           if (completionText.length() > 32766) {
             completionText.setLength(32766);
@@ -806,9 +824,7 @@ processors:
           ctx.aws_bedrock.invocation.output.completion_text = completionText.toString();
         }
         catch (Exception e) {
-          if (ctx.aws_bedrock?.invocation?.output == null) {
-              ctx.aws_bedrock.invocation.output = new HashMap();
-          }
+          ctx.aws_bedrock.invocation.output = ctx.aws_bedrock.invocation.output ?: [:];
           ctx.aws_bedrock.invocation.output.completion_text =  '';
           ctx.error.message = e.getMessage()
         }
@@ -865,7 +881,7 @@ on_failure:
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
         {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
-        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+        {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}' failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
       tag: set_pipeline_error_to_event_kind_72b1902f

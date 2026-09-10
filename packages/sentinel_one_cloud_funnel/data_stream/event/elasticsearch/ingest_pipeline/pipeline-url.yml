@@ -2,33 +2,49 @@
 description: Pipeline for processing Url Event logs.
 processors:
   - rename:
+      tag: rename_json_url_address_to_sentinel_one_cloud_funnel_event_url_address_ab881b30
       field: json.url.address
       target_field: sentinel_one_cloud_funnel.event.url.address
       ignore_missing: true
   - set:
+      tag: set_url_original_3e91113e
       field: url.original
       copy_from: sentinel_one_cloud_funnel.event.url.address
       ignore_empty_value: true
   - uri_parts:
+      tag: uri_parts_url_original_c57c6a60
       field: url.original
       keep_original: true
       ignore_missing: true
   - set:
+      tag: set_destination_address_0d605210
       field: destination.address
       copy_from: url.domain
       ignore_empty_value: true
   - registered_domain:
+      tag: registered_domain_destination_address_to_destination_ae93f7ee
       field: destination.address
       target_field: destination
       if: ctx.destination?.address != null
   - rename:
+      tag: rename_json_event_url_action_to_sentinel_one_cloud_funnel_event_url_action_f74cb416
       field: json.event.url.action
       target_field: sentinel_one_cloud_funnel.event.url.action
       ignore_missing: true
 on_failure:
   - append:
+      tag: append_error_message_d916120d
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
         {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
         {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
+      value: pipeline_error
+  - append:
+      tag: append_tags_279d5a5c
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

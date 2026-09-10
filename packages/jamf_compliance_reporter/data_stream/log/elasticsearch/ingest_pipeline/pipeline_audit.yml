@@ -2,37 +2,45 @@
 description: Pipeline for Jamf Compliance Reporter audit logs.
 processors:
   - set:
+      tag: set_jamf_compliance_reporter_log_dataset_e01ccb3b
       field: jamf_compliance_reporter.log.dataset
       value: audit
   - convert:
+      tag: convert_json__event_score_to_jamf_compliance_reporter_log_event_score_3cb39b47
       field: json._event_score
       target_field: jamf_compliance_reporter.log.event_score
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_58844c12
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_header_event_id_to_event_code_ea6a00b9
       field: json.header.event_id
       target_field: event.code
       type: string
       ignore_missing: true
       ignore_failure: true
   - convert:
+      tag: convert_json_header_event_modifier_to_jamf_compliance_reporter_log_header_event_modifier_fc1dc809
       field: json.header.event_modifier
       target_field: jamf_compliance_reporter.log.header.event_modifier
       type: string
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_header_event_name_to_event_action_99289c09
       field: json.header.event_name
       target_field: event.action
       ignore_missing: true
   - lowercase:
+      tag: lowercase_event_action_9334b869
       field: event.action
       ignore_missing: true
   - script:
+      tag: script_cf20eab3
       lang: painless
       if: ctx.json?.header?.time_seconds_epoch != null && ctx.json.header.time_seconds_epoch != 0
       source: |
@@ -41,329 +49,415 @@ processors:
           ctx.json.time_milliseconds = ctx.json.time_milliseconds + (long)ctx.json.header.time_milliseconds_offset;
         }
   - date:
+      tag: date_json_time_milliseconds_55ec1666
       field: json.time_milliseconds
       if: ctx.json?.time_milliseconds != null && ctx.json.time_milliseconds != 0
       formats:
         - UNIX_MS
       on_failure:
         - append:
+            tag: append_error_message_10ae8f9f
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_header_version_to_jamf_compliance_reporter_log_header_version_41b3cab3
       field: json.header.version
       target_field: jamf_compliance_reporter.log.header.version
       type: string
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_host_info_host_name_to_host_hostname_b155f2aa
       field: json.host_info.host_name
       target_field: host.hostname
       ignore_missing: true
   - append:
+      tag: append_related_hosts_e6462550
       field: related.hosts
       value: '{{{host.hostname}}}'
       if: ctx.host?.hostname != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
+      tag: rename_json_host_info_host_uuid_to_jamf_compliance_reporter_log_host_info_host_uuid_73fc6247
       field: json.host_info.host_uuid
       target_field: jamf_compliance_reporter.log.host_info.host.uuid
       ignore_missing: true
   - rename:
+      tag: rename_json_host_info_osversion_to_host_os_version_d3d10e97
       field: json.host_info.osversion
       target_field: host.os.version
       ignore_missing: true
   - append:
+      tag: append_host_mac_ddef4d66
       field: host.mac
       value: '{{{json.host_info.primary_mac_address}}}'
       if: ctx.json?.host_info?.primary_mac_address != null
       allow_duplicates: false
       ignore_failure: true
   - gsub:
+      tag: gsub_host_mac_d1faae6a
       field: host.mac
       pattern: '[-:.]'
       replacement: '-'
       ignore_missing: true
   - uppercase:
+      tag: uppercase_host_mac_73cd4413
       field: host.mac
       ignore_missing: true
   - rename:
+      tag: rename_json_host_info_serial_number_to_host_id_02030592
       field: json.host_info.serial_number
       target_field: host.id
       ignore_missing: true
   - rename:
+      tag: rename_json_return_description_to_jamf_compliance_reporter_log_return_description_1f80b478
       field: json.return.description
       target_field: jamf_compliance_reporter.log.return.description
       ignore_missing: true
   - convert:
+      tag: convert_json_return_error_to_error_code_4de20ffe
       field: json.return.error
       target_field: error.code
       type: string
       ignore_missing: true
       ignore_failure: true
   - set:
+      tag: set_event_outcome_d9c276d7
       field: event.outcome
       value: 'success'
       if: ctx.error?.code == '0'
   - set:
+      tag: set_event_outcome_6b78e138
       field: event.outcome
       value: 'failure'
       if: ctx.error?.code != '0'
   - convert:
+      tag: convert_json_return_return_value_to_process_exit_code_a60d08a9
       field: json.return.return_value
       target_field: process.exit_code
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_754f0640
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_subject_audit_id_to_process_real_user_id_25b75fe6
       field: json.subject.audit_id
       target_field: process.real_user.id
       type: string
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_subject_audit_user_name_to_process_real_user_name_9efe64b1
       field: json.subject.audit_user_name
       target_field: process.real_user.name
       ignore_missing: true
   - append:
+      tag: append_related_user_54bf3eff
       field: related.user
       value: '{{{process.real_user.name}}}'
       if: ctx.process?.real_user?.name != null
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_user_name_6d699a67
       field: user.name
       value: '{{{json.subject.audit_user_name}}}'
       if: ctx.json?.subject?.audit_user_name != null
       allow_duplicates: false
       ignore_failure: true
   - convert:
+      tag: convert_json_subject_effective_group_id_to_jamf_compliance_reporter_log_subject_effective_group_id_08ee1ee7
       field: json.subject.effective_group_id
       target_field: jamf_compliance_reporter.log.subject.effective.group.id
       type: string
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_subject_effective_group_name_to_jamf_compliance_reporter_log_subject_effective_group_name_c257af46
       field: json.subject.effective_group_name
       target_field: jamf_compliance_reporter.log.subject.effective.group.name
       ignore_missing: true
   - convert:
+      tag: convert_json_subject_effective_user_id_to_process_user_id_4f74864d
       field: json.subject.effective_user_id
       target_field: process.user.id
       type: string
       ignore_missing: true
       ignore_failure: true
   - append:
+      tag: append_user_name_6426d56f
       field: user.name
       value: '{{{json.subject.effective_user_name}}}'
       if: ctx.json?.subject?.effective_user_name != null
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_related_user_6dba669f
       field: related.user
       value: '{{{json.subject.effective_user_name}}}'
       if: ctx.json?.subject?.effective_user_name != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
+      tag: rename_json_subject_effective_user_name_to_process_user_name_5691197e
       field: json.subject.effective_user_name
       target_field: process.user.name
       ignore_missing: true
   - convert:
+      tag: convert_json_subject_group_id_to_process_real_group_id_ea90ca9c
       field: json.subject.group_id
       target_field: process.real_group.id
       type: string
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_subject_group_name_to_process_real_group_name_81890bc5
       field: json.subject.group_name
       target_field: process.real_group.name
       ignore_missing: true
   - rename:
+      tag: rename_json_subject_process_hash_to_process_hash_sha1_ec183692
       field: json.subject.process_hash
       target_field: process.hash.sha1
       ignore_missing: true
   - append:
+      tag: append_related_hash_8db6a16a
       field: related.hash
       value: '{{{process.hash.sha1}}}'
       if: ctx.process?.hash?.sha1 != null
       allow_duplicates: false
       ignore_failure: true
   - convert:
+      tag: convert_json_subject_process_id_to_jamf_compliance_reporter_log_subject_process_pid_c6218d3b
       field: json.subject.process_id
       target_field: jamf_compliance_reporter.log.subject.process.pid
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_b970a4a6
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_subject_process_name_to_jamf_compliance_reporter_log_subject_process_name_4a7b4c83
       field: json.subject.process_name
       target_field: jamf_compliance_reporter.log.subject.process.name
       ignore_missing: true
   - convert:
+      tag: convert_json_subject_session_id_to_jamf_compliance_reporter_log_subject_session_id_f51f0574
       field: json.subject.session_id
       target_field: jamf_compliance_reporter.log.subject.session.id
       type: string
       ignore_missing: true
       ignore_failure: true
   - convert:
+      tag: convert_json_subject_terminal_id_addr_to_jamf_compliance_reporter_log_subject_terminal_id_addr_44248987
       field: json.subject.terminal_id.addr
       target_field: jamf_compliance_reporter.log.subject.terminal_id.addr
       type: string
       ignore_missing: true
       ignore_failure: true
   - convert:
+      tag: convert_json_subject_terminal_id_ip_address_9dc8b10a
       field: json.subject.terminal_id.ip_address
       type: ip
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_subject_terminal_id_ip_address_d1da3917
             field: json.subject.terminal_id.ip_address
             ignore_missing: true
         - append:
+            tag: append_error_message_4c3b7861
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - append:
+      tag: append_host_ip_e4f236dd
       field: host.ip
       value: '{{{json.subject.terminal_id.ip_address}}}'
       if: ctx.json?.subject?.terminal_id?.ip_address != null
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_related_ip_8541d760
       field: related.ip
       value: '{{{json.subject.terminal_id.ip_address}}}'
       if: ctx.json?.subject?.terminal_id?.ip_address != null
       allow_duplicates: false
       ignore_failure: true
   - convert:
+      tag: convert_json_subject_terminal_id_port_to_jamf_compliance_reporter_log_subject_terminal_id_port_301d7d36
       field: json.subject.terminal_id.port
       target_field: jamf_compliance_reporter.log.subject.terminal_id.port
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_9d728ff1
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_subject_terminal_id_type_to_jamf_compliance_reporter_log_subject_terminal_id_type_8a893ed5
       field: json.subject.terminal_id.type
       target_field: jamf_compliance_reporter.log.subject.terminal_id.type
       type: string
       ignore_missing: true
       ignore_failure: true
   - convert:
+      tag: convert_json_subject_user_id_to_user_id_19eb600e
       field: json.subject.user_id
       target_field: user.id
       type: string
       ignore_missing: true
       ignore_failure: true
   - append:
+      tag: append_user_name_11035ae3
       field: user.name
       value: '{{{json.subject.user_name}}}'
       if: ctx.json?.subject?.user_name != null
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_related_user_acadb613
       field: related.user
       value: '{{{json.subject.user_name}}}'
       if: ctx.json?.subject?.user_name != null
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_event_type_8a66ccaa
       field: event.type
       value: info
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - append:
+      tag: append_event_category_109b4d72
       field: event.category
       value: authentication
   - pipeline:
+      tag: pipeline_aue_accept_e67931fd
       name: '{{ IngestPipeline "pipeline_aue_accept" }}'
       if: ctx.event.action == 'aue_accept'
   - pipeline:
+      tag: pipeline_aue_auth_db24270d
       name: '{{ IngestPipeline "pipeline_aue_auth" }}'
       if: '["aue_auth_user", "aue_ssauthorize", "aue_ssauthmech"].contains(ctx.event.action)'
   - pipeline:
+      tag: pipeline_aue_bind_aue_connect_01455bfc
       name: '{{ IngestPipeline "pipeline_aue_bind_and_aue_connect" }}'
       if: '["aue_bind", "aue_connect"].contains(ctx.event.action)'
   - pipeline:
+      tag: pipeline_aue_chdir_29a8ddcb
       name: '{{ IngestPipeline "pipeline_aue_chdir" }}'
       if: ctx.event.action == 'aue_chdir'
   - pipeline:
+      tag: pipeline_aue_chroot_42230e85
       name: '{{ IngestPipeline "pipeline_aue_chroot" }}'
       if: ctx.event.action == 'aue_chroot'
   - pipeline:
+      tag: pipeline_aue_execve_32b565c5
       name: '{{ IngestPipeline "pipeline_aue_execve" }}'
       if: ctx.event.action == 'aue_execve'
   - pipeline:
+      tag: pipeline_aue_exit_09900d59
       name: '{{ IngestPipeline "pipeline_aue_exit" }}'
       if: ctx.event.action == 'aue_exit'
   - pipeline:
+      tag: pipeline_aue_kill_2a284975
       name: '{{ IngestPipeline "pipeline_aue_kill" }}'
       if: ctx.event.action == 'aue_kill'
   - pipeline:
+      tag: pipeline_aue_mount_65aa7105
       name: '{{ IngestPipeline "pipeline_aue_mount" }}'
       if: ctx.event.action == 'aue_mount'
   - pipeline:
+      tag: pipeline_aue_posix_spawn_40e4c839
       name: '{{ IngestPipeline "pipeline_aue_posix_spawn" }}'
       if: ctx.event.action == 'aue_posix_spawn'
   - pipeline:
+      tag: pipeline_aue_remove_from_group_aue_12d162b4
       name: '{{ IngestPipeline "pipeline_aue_remove_from_group_and_aue_mac_set_proc" }}'
       if: '["aue_remove_from_group", "aue_mac_set_proc"].contains(ctx.event.action)'
   - pipeline:
+      tag: pipeline_aue_session_b5be0f75
       name: '{{ IngestPipeline "pipeline_aue_session" }}'
       if: '["aue_session_end", "aue_session_update", "aue_session_close", "aue_session_start"].contains(ctx.event.action)'
   - pipeline:
+      tag: pipeline_aue_arguments_2885bfec
       name: '{{ IngestPipeline "pipeline_aue_arguments" }}'
       if: '["aue_setsockopt", "aue_shutdown"].contains(ctx.event.action)'
   - pipeline:
+      tag: pipeline_aue_ssauthint_f505d005
       name: '{{ IngestPipeline "pipeline_aue_ssauthint" }}'
       if: ctx.event.action == 'aue_ssauthint'
   - pipeline:
+      tag: pipeline_aue_tasknameforpid_473cfe75
       name: '{{ IngestPipeline "pipeline_aue_tasknameforpid" }}'
       if: ctx.event.action == 'aue_tasknameforpid'
   - pipeline:
+      tag: pipeline_aue_unmount_635d4cb3
       name: '{{ IngestPipeline "pipeline_aue_unmount" }}'
       if: ctx.event.action == 'aue_unmount'
   - pipeline:
+      tag: pipeline_aue_fork_160e3cc1
       name: '{{ IngestPipeline "pipeline_aue_fork" }}'
       if: ctx.event.action == 'aue_fork'
   - pipeline:
+      tag: pipeline_identity_object_a2dab2bf
       name: '{{ IngestPipeline "pipeline_identity_object" }}'
       if: '["aue_getauid", "aue_lw_login", "aue_settimeofday"].contains(ctx.event.action)'
   - pipeline:
+      tag: pipeline_aue_listen_5df0f67d
       name: '{{ IngestPipeline "pipeline_aue_listen" }}'
       if: ctx.event.action == 'aue_listen'
   - pipeline:
+      tag: pipeline_aue_logout_27fc8ba5
       name: '{{ IngestPipeline "pipeline_aue_logout" }}'
       if: ctx.event.action == 'aue_logout'
   - pipeline:
+      tag: pipeline_aue_pidfortask_9810aa85
       name: '{{ IngestPipeline "pipeline_aue_pidfortask" }}'
       if: ctx.event.action == 'aue_pidfortask'
   - pipeline:
+      tag: pipeline_aue_ptrace_c6af489d
       name: '{{ IngestPipeline "pipeline_aue_ptrace" }}'
       if: ctx.event.action == 'aue_ptrace'
   - pipeline:
+      tag: pipeline_aue_setpriority_8c52fdaf
       name: '{{ IngestPipeline "pipeline_aue_setpriority" }}'
       if: ctx.event.action == 'aue_setpriority'
   - pipeline:
+      tag: pipeline_aue_socketpair_e23326b5
       name: '{{ IngestPipeline "pipeline_aue_socketpair" }}'
       if: ctx.event.action == 'aue_socketpair'
   - pipeline:
+      tag: pipeline_aue_taskforpid_8018a705
       name: '{{ IngestPipeline "pipeline_aue_taskforpid" }}'
       if: ctx.event.action == 'aue_taskforpid'
   - pipeline:
+      tag: pipeline_aue_wait4_daa3f04d
       name: '{{ IngestPipeline "pipeline_aue_wait4" }}'
       if: ctx.event.action == 'aue_wait4'
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_error_message_206bb8ac
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      tag: append_tags_279d5a5c
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

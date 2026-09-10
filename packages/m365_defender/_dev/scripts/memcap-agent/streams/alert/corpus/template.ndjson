@@ -1,0 +1,56 @@
+{{- /*
+  Corpus-generator template for the alert memory harness. Renders ONE synthetic
+  alerts_v2 record whose shape is calibrated against a real tenant response: the full
+  36-key top level, a ~24-entry additionalData map, a populated customDetails, and an
+  evidence[] array cycling the four commonest @odata.type variants.
+
+  Calibration targets, and what this renders (see "Record shapes" in ../../README.md):
+    bytes/record      real 5,729   here 5,739
+    keys/record       real 120.8   here 123.0
+    containers/record real  28.2   here  28.0
+    string bytes      real 3,426   here 3,371
+    evidence[] items  real  3.48   here  4 (fixed: the generator cannot vary a
+                                   per-record array length)
+  Keys and containers matter as much as bytes: Go's decode cost is per allocation, and
+  a template that hit the right size with 6 evidence items over-stated the sustained
+  pod peak by 9%. The large `repeat` counts below are how the string-byte total is hit
+  - the generator emits short random words, so `repeat` is the only length lever. Only
+  these statistics crossed over from the real response; no customer payload is in the repo.
+
+  To model a fatter tenant, raise the evidence count (real max is 11) rather than the
+  repeat counts; the generator emits many copies to build one large response page.
+
+  This is a JSON *fragment*, not a standalone document: mock-config.yml splices the
+  whole generated blob verbatim into the `value` array of an alerts_v2 response,
+  between the opening `{"value":[` and a final hard-coded record that closes the
+  array. Two deliberate oddities (identical to the o365 harness):
+    - each record ends with a trailing comma "}," so consecutive records form a
+      valid JSON array (the final hard-coded record has no comma and closes it);
+    - the template has NO trailing newline, because the corpus generator already
+      appends a "\n" after every rendered record.
+*/ -}}
+{{- $id := generate "id" -}}
+{{- $providerAlertId := generate "providerAlertId" -}}
+{{- $incidentId := generate "incidentId" -}}
+{{- $tenantId := generate "tenantId" -}}
+{{- $detectorId := generate "detectorId" -}}
+{{- $status := generate "status" -}}
+{{- $severity := generate "severity" -}}
+{{- $category := generate "category" -}}
+{{- $created := generate "createdDateTime" | date "2006-01-02T15:04:05.0000000Z07:00" -}}
+{{- $updated := generate "lastUpdateDateTime" | date "2006-01-02T15:04:05.0000000Z07:00" -}}
+{"id":"{{$id}}","providerAlertId":"{{$providerAlertId}}","incidentId":"{{$incidentId}}","status":"{{$status}}","severity":"{{$severity}}","classification":null,"determination":null,"serviceSource":"microsoftDefenderForCloud","detectionSource":"microsoftDefenderForCloud","productName":"Microsoft Defender for Cloud","detectorId":"{{$detectorId}}","tenantId":"{{$tenantId}}","title":"{{ repeat 6 (generate "title") }}","description":"{{ repeat 69 (generate "description") }}","recommendedActions":"{{ repeat 50 (generate "recommendedActions") }}","category":"{{$category}}","categories":["{{$category}}"],"assignedTo":null,"alertWebUrl":"https://security.microsoft.com/alerts/{{$id}}?tid={{$tenantId}}","incidentWebUrl":"https://security.microsoft.com/incidents/{{$incidentId}}?tid={{$tenantId}}","actorDisplayName":null,"threatDisplayName":null,"threatFamilyName":null,"mitreTechniques":["T1059.001","T1059.003","T1204.002"],"createdDateTime":"{{$created}}","lastUpdateDateTime":"{{$updated}}","resolvedDateTime":null,"firstActivityDateTime":"{{$created}}","lastActivityDateTime":"{{$updated}}","systemTags":[],"alertPolicyId":null,"investigationState":"{{ generate "investigationState" }}","comments":[],"customDetails":{"AlertSourceId":"{{ generate "custom.sourceId" }}","SubscriptionId":"{{ generate "custom.subscriptionId" }}","ResourceGroup":"{{ generate "custom.resourceGroup" }}","WorkspaceId":"{{ generate "custom.workspaceId" }}"},"additionalData":{"OriginalAlertProductName":"{{ generate "additional.productName" }}","OriginalAlertProviderName":"{{ generate "additional.providerName" }}","AlertUri":"https://portal.azure.com/#alert/{{ repeat 3 (generate "additional.uri") }}","TimeGenerated":"{{$created}}","ProcessingEndTime":"{{$updated}}","Intent@odata.type":"#Int64","Intent":"5","Compromised Host":"{{ repeat 2 (generate "additional.host") }}","Suspicious Process Id":"{{ generate "additional.processId" }}","Suspicious Command Line":"{{ repeat 24 (generate "additional.commandLine") }}","Suspicious Process":"C:\\Windows\\System32\\{{ repeat 2 (generate "additional.process") }}.exe","Parent Process":"C:\\Windows\\System32\\{{ repeat 2 (generate "additional.parentProcess") }}.exe","Account Session Id":"{{ repeat 2 (generate "additional.sessionId") }}","User Name":"{{ repeat 2 (generate "additional.userName") }}","resourceType":"Virtual Machine","killChainIntent":"Execution","ResourceIdentifiers@odata.type":"#Collection","AzureResourceId":"{{ generate "additional.resourceId" }}","Alert Id":"{{ generate "additional.alertId" }}","Detected Time":"{{$created}}","Suspicious Account":"{{ generate "additional.userName" }}","Source Address":"{{ generate "additional.sourceAddress" }}","Client Principal Name":"{{ generate "additional.principalName" }}","Client Application":"{{ generate "additional.clientApplication" }}"},"evidence":[
+{{- range $i := until 4 -}}{{- if $i }},{{ end -}}
+{{- $evCreated := generate "evidence.createdDateTime" | date "2006-01-02T15:04:05.0000000Z07:00" -}}
+{{- $verdict := generate "evidence.verdict" -}}
+{{- if eq (mod $i 4) 0 -}}
+{"@odata.type":"#microsoft.graph.security.azureResourceEvidence","createdDateTime":"{{$evCreated}}","verdict":"{{$verdict}}","remediationStatus":"none","remediationStatusDetails":null,"roles":["Impacted"],"detailedRoles":[],"tags":[],"resourceType":"{{ generate "evidence.resourceType" }}","resourceName":"{{ generate "evidence.resourceName" }}","resourceId":"/subscriptions/{{ generate "evidence.resourceId" }}/resourceGroups/rg/providers/Microsoft.Compute/virtualMachines/{{ generate "evidence.resourceName" }}"}
+{{- else if eq (mod $i 4) 1 -}}
+{"@odata.type":"#microsoft.graph.security.ipEvidence","createdDateTime":"{{$evCreated}}","verdict":"{{$verdict}}","remediationStatus":"none","remediationStatusDetails":null,"roles":["Attacker"],"detailedRoles":[],"tags":[],"ipAddress":"{{ generate "evidence.ipAddress" }}","countryLetterCode":"{{ generate "evidence.countryLetterCode" }}","stream":null,"location":{"city":"{{ generate "evidence.city" }}","state":"{{ generate "evidence.state" }}","countryLetterCode":"{{ generate "evidence.countryLetterCode" }}"}}
+{{- else if eq (mod $i 4) 2 -}}
+{"@odata.type":"#microsoft.graph.security.networkConnectionEvidence","createdDateTime":"{{$evCreated}}","verdict":"{{$verdict}}","remediationStatus":"none","remediationStatusDetails":null,"roles":["Related"],"detailedRoles":[],"tags":[],"sourcePort":{{ generate "evidence.port" }},"destinationPort":{{ generate "evidence.port" }},"protocol":"{{ generate "evidence.protocol" }}","destinationAddress":{"@odata.type":"#microsoft.graph.security.ipEvidence","ipAddress":"{{ generate "evidence.ipAddress" }}"},"sourceAddress":{"@odata.type":"#microsoft.graph.security.ipEvidence","ipAddress":"{{ generate "evidence.ipAddress" }}"}}
+{{- else -}}
+{"@odata.type":"#microsoft.graph.security.userEvidence","createdDateTime":"{{$evCreated}}","verdict":"{{$verdict}}","remediationStatus":"none","remediationStatusDetails":null,"roles":["Attacker"],"detailedRoles":[],"tags":[],"stream":null,"userAccount":{"accountName":"{{ generate "evidence.accountName" }}","domainName":"{{ generate "evidence.domainName" }}","userSid":"{{ generate "evidence.userSid" }}","azureAdUserId":null,"userPrincipalName":"{{ generate "evidence.userPrincipalName" }}","displayName":"{{ generate "evidence.accountName" }}"}}
+{{- end -}}
+{{- end -}}
+]},
