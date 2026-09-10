@@ -29,6 +29,7 @@ rules:
               "OrionAuditLog.UserName": "admin"
             }
           ]
+
   # web_control page 1: a full page (== page_size), so the program sets
   # want_more and pages again from the last EventAutoID it saw.
   - path: /remote/core.executeQuery
@@ -86,6 +87,7 @@ rules:
               "WP_EventInfo.UserName": null
             }
           ]
+
   # web_control page 2: a short page, which clears want_more and ends the cycle.
   - path: /remote/core.executeQuery
     methods: ['GET']
@@ -124,6 +126,7 @@ rules:
               "WP_EventInfo.UserName": null
             }
           ]
+
   # web_control catchall: any cursor beyond the seeded rows is exhausted, so a
   # later poll re-collects nothing and hit_count stays deterministic.
   - path: /remote/core.executeQuery
@@ -143,6 +146,7 @@ rules:
           Content-Type:
             - 'text/plain'
         body: 'OK: []'
+
   # compliance_history page 1: a full page (== page_size), so the program sets
   # want_more and pages again from the last AutoId it saw.
   - path: /remote/core.executeQuery
@@ -188,6 +192,7 @@ rules:
               "EpoComplianceHistory.TenantId": 0
             }
           ]
+
   # compliance_history page 2: a short page, which clears want_more and ends the cycle.
   - path: /remote/core.executeQuery
     methods: ['GET']
@@ -220,6 +225,7 @@ rules:
               "EpoComplianceHistory.TenantId": 0
             }
           ]
+
   # compliance_history catchall: any cursor beyond the seeded rows is exhausted, so a
   # later poll re-collects nothing and hit_count stays deterministic.
   - path: /remote/core.executeQuery
@@ -239,6 +245,7 @@ rules:
           Content-Type:
             - 'text/plain'
         body: 'OK: []'
+
   # system page 1: the first poll has no cursor, so it seeds with newerThan.
   # A full page (== page_size) sets want_more and pages again from the last
   # LastUpdate it saw.
@@ -299,6 +306,7 @@ rules:
               "EPOLeafNode.Type": 1
             }
           ]
+
   # system page 2: the cursor is inclusive (ge), so the boundary record comes
   # back a second time alongside the next one. Another full page keeps want_more
   # set. Fingerprint _id on auto_id collapses the repeated record at index time.
@@ -359,6 +367,7 @@ rules:
               "EPOLeafNode.Type": 1
             }
           ]
+
   # system page 3: only the boundary record remains, so this short page clears
   # want_more and ends the cycle.
   - path: /remote/core.executeQuery
@@ -399,6 +408,7 @@ rules:
               "EPOLeafNode.Type": 1
             }
           ]
+
   # system catchall: any cursor beyond the seeded rows is exhausted, so a later
   # poll re-collects nothing and hit_count stays deterministic.
   - path: /remote/core.executeQuery
