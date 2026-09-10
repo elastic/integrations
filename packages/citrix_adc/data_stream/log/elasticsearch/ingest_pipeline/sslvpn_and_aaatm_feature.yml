@@ -38,8 +38,11 @@ processors:
         # Unquoted variant: LOGOUT has been seen with a bare, unquoted Nat_ip
         # value. The final branch keeps that tolerance, including an empty
         # value, but is bounded so it cannot run past a separator and silently
-        # swallow a whole segment.
-        NAT_IP_UNQUOTED: 'Nat_ip (?:%{IP:citrix_adc.log.nat.ip}|"%{DATA}"|(?:(?!\s-\s).)*)'
+        # swallow a whole segment. The bound uses %{SPACE} rather than \s so it
+        # also refuses to start on the separator's hyphen: the literal above
+        # consumes one space, so with "Nat_ip - Unexpected -" the branch would
+        # otherwise begin at the hyphen and eat "- Unexpected" as the value.
+        NAT_IP_UNQUOTED: 'Nat_ip (?:%{IP:citrix_adc.log.nat.ip}|"%{DATA}"|(?:(?!\s*-\s).)*)'
         NAT_IP_ESCAPED: "Nat_ip (%{IP:citrix_adc.log.nat.ip}|\\\\?\"%{DATA}\\\\?\")"
         VSERVER_INFO: "Vserver %{IP:citrix_adc.log.vserver.ip}:%{INT:citrix_adc.log.vserver.port}"
         TIME_INFO: "Start_time \"%{DATA:_tmp.start_time}\"%{SEP}End_time \"%{DATA:_tmp.end_time}\"%{SEP}Duration %{NOTSPACE:citrix_adc.log.duration}"
