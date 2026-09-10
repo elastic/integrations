@@ -164,17 +164,13 @@ processors:
       source: |-
         def fmt = ctx._conf.custom_date_format.trim();
         if (fmt.isEmpty()) {
-          if (ctx.tags == null) { ctx.tags = []; }
-          if (!ctx.tags.contains('citrix_adc.custom_date_format_empty')) {
-            ctx.tags.add('citrix_adc.custom_date_format_empty');
-          }
           return;
         }
         if (ctx.citrix_adc == null) { ctx.citrix_adc = [:]; }
         if (ctx.citrix_adc.log == null) { ctx.citrix_adc.log = [:]; }
         def formatter;
         try {
-          formatter = DateTimeFormatter.ofPattern(fmt + "[ z][ Z][z][Z]");
+          formatter = DateTimeFormatter.ofPattern(fmt + "[ z][ Z][z][Z]", Locale.ENGLISH);
         } catch (Exception e) {
           if (ctx.error == null) { ctx.error = [:]; }
           if (ctx.error.message == null) { ctx.error.message = []; }
@@ -191,7 +187,24 @@ processors:
           }
 
           try {
-            def parsed = formatter.parse(ctx._tmp[field]);
+            def values = [ctx._tmp[field]];
+            if (ctx.event != null && ctx.event.timezone instanceof String && !ctx.event.timezone.isEmpty()) {
+              values.add(ctx._tmp[field] + " " + ctx.event.timezone);
+              values.add(ctx._tmp[field] + ctx.event.timezone);
+            }
+            def parsed = null;
+            def parseException = null;
+            for (def value : values) {
+              try {
+                parsed = formatter.parse(value);
+                break;
+              } catch (Exception e) {
+                parseException = e;
+              }
+            }
+            if (parsed == null) {
+              throw parseException;
+            }
             def zonedDateTime = null;
             try {
               zonedDateTime = ZonedDateTime.from(parsed);
