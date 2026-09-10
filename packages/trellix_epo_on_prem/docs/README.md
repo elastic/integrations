@@ -2,9 +2,9 @@
 
 ## Overview
 
-[Trellix ePolicy Orchestrator (ePO) On-Prem](https://www.trellix.com/products/epolicy-orchestrator/) is a centralized security management platform for managing endpoint policies, products, systems, and security events across an organization. It offers comprehensive audit logging for system administration, user activity, policy changes, and security-related actions; its Web Control component logs web browsing activity together with content and reputation ratings applied to each visited URL; its System Tree maintains a record of every managed endpoint — agent identity and version, communication and managed state, node path, and tenant and tag assignment; its compliance history reporting captures point-in-time snapshots of how many managed computers are compliant with policy and how that posture changes over time; and it provides visibility into Data Loss Prevention (DLP) incidents and endpoint threat activity across hybrid endpoint deployments — combining authentication, authorization, detailed audit trails, web usage monitoring, endpoint inventory, agent health, historical compliance measurement, sensitive-data protection, and threat detection into a unified platform for **critical security infrastructure monitoring and compliance**.
+[Trellix ePolicy Orchestrator (ePO) On-Prem](https://www.trellix.com/products/epolicy-orchestrator/) is a centralized security management platform for managing endpoint policies, products, systems, and security events across an organization. It offers comprehensive audit logging for system administration, user activity, policy changes, and security-related actions; its Web Control component logs web browsing activity together with content and reputation ratings applied to each visited URL; its System Tree maintains a record of every managed endpoint — agent identity and version, communication and managed state, node path, and tenant and tag assignment; its compliance history reporting captures point-in-time snapshots of how many managed computers are compliant with policy and how that posture changes over time; its product event log records every product operation carried out on a managed endpoint — installs, uninstalls, updates, AMCore content changes, property collection, and policy enforcement; its removable-media device control component logs USB and other removable-storage device activity — connections, backup status, protection/initialization state, and the user's response to device policy prompts; and it provides visibility into Data Loss Prevention (DLP) incidents and endpoint threat activity across hybrid endpoint deployments — combining authentication, authorization, detailed audit trails, web usage monitoring, endpoint inventory, agent health, historical compliance measurement, product deployment and policy enforcement activity, removable-media usage, sensitive-data protection, and threat detection into a unified platform for **critical security infrastructure monitoring and compliance**.
 
-The Trellix ePO On-Prem integration for Elastic collects audit logs, web control logs, managed system (endpoint) records, endpoint compliance history records, DLP incident records, and threat event logs using the **REST / Web API** via CEL input, and visualizes them in Kibana.
+The Trellix ePO On-Prem integration for Elastic collects audit logs, web control logs, managed system (endpoint) records, endpoint compliance history records, product event logs, removable-media device event logs, DLP incident records, and threat event logs using the **REST / Web API** via CEL input, and visualizes them in Kibana.
 
 ### Compatibility
 
@@ -12,9 +12,13 @@ The Trellix ePO On-Prem integration is compatible with **Trellix ePO On-Prem 5.1
 
 ### How it works
 
-This integration uses the Elastic Agent CEL input to poll the Trellix ePO REST / Web API at configurable intervals. It retrieves audit log records from the `OrionAuditLog` table using keyset-based pagination with cursor timestamps, and web control event records from the `WP_EventInfo` table using a keyset cursor on the numeric `EventAutoID` field (because `WP_EventInfo` has no timestamp column). Each poll for web control requests events with `EventAutoID` greater than the last persisted value, orders results ascending by `EventAutoID`, and persists the highest `EventAutoID` returned for the next poll.
+This integration uses the Elastic Agent CEL input to poll the Trellix ePO REST / Web API at configurable intervals.
+
+It retrieves audit log records from the `OrionAuditLog` table using a keyset cursor on the unique ascending `AutoId` column: each poll requests records with an `AutoId` strictly greater than the last persisted value, orders results ascending by `AutoId`, and persists the greatest `AutoId` returned. Web control event records are retrieved from the `WP_EventInfo` table using a keyset cursor on the numeric `EventAutoID` field (because `WP_EventInfo` has no timestamp column). Each poll for web control requests events with `EventAutoID` greater than the last persisted value, orders results ascending by `EventAutoID`, and persists the highest `EventAutoID` returned for the next poll.
 
 It retrieves managed system records from the `EPOLeafNode` table using a timestamp cursor on `LastUpdate` — the first poll seeds the window with the relative `newerThan` operator so that ePO resolves the boundary against its own clock, and subsequent polls request records at or after the last persisted timestamp, order results ascending by `LastUpdate`, and persist the wall clock the API returned — and compliance history records from the `EpoComplianceHistory` table using a keyset cursor on the numeric `AutoId` field (the table's monotonically increasing primary key). Each poll for compliance history requests records with `AutoId` greater than the last persisted value, orders results ascending by `AutoId`, and persists the highest `AutoId` returned for the next poll. The `system` and `compliance_history` data streams page through results within a single poll until a response no longer fills the configured page size or the **Maximum Pages Per Interval** budget is reached.
+
+The `product_event` and `device_event` data streams use a keyset cursor on `AutoID`, a unique ascending column: each poll requests records with an `AutoID` strictly greater than the last persisted value, orders results ascending by `AutoID`, and persists the greatest `AutoID` returned. Because the boundary is exclusive on a unique column, no record is collected twice and no record is skipped. For `product_event`, records are retrieved from the `EPOProductEvents` table. For `device_event`, records are retrieved from the `EEFFDeviceAllEventsView` table. When a poll returns a full page of records, the integration immediately requests the next page within the same interval, up to the configured **Maximum Pages Per Interval**.
 
 The `dlp_incident` data stream retrieves DLP incident records from the `UDLP_EPD_Incidents` table and paginates using `LastUpdateTimestamp` as an inclusive time cursor. Because the filter is inclusive, records sharing the boundary timestamp are re-read on the next poll; the ingest pipeline assigns a stable document ID from `IncidentId` so the repeats overwrite rather than duplicate. An incident that is updated later is therefore collected again, keeping its status, resolution, and reviewer fields current.
 
@@ -32,6 +36,8 @@ The Trellix ePO On-Prem integration collects the following types of data:
 | `web_control` | Trellix ePO web control event records, including browsed URLs, user names, content/category ratings (phishing, spam, download, exploit, bad-link, pop-up), overall rating, list/reason/action identifiers, and per-event counts, retrieved from the ePO Web API. | `/remote/core.executeQuery` API |
 | `compliance_history` | Trellix ePO compliance history records, including the originating chart and reporting task name, evaluated computer counts, compliant and noncompliant counts and percentages, and snapshot timestamp, retrieved from the ePO Web API. | `/remote/core.executeQuery` API |
 | `system` | Trellix ePO managed system (endpoint) records, including node name, path, and type; agent GUID and version; managed and communication state; and tenant, tag, and sequence metadata, retrieved from the ePO Web API. | `/remote/core.executeQuery` API |
+| `product_event` | Trellix ePO product event records, including the operation type and initiator, the affected product code, the managed endpoint's agent GUID, hostname and IP address, the acting user account, and the source event code, severity and error code, retrieved from the ePO Web API. | `/remote/core.executeQuery` API |
+| `device_event` | Trellix ePO removable-media device event records, including device backup size/state/time, protection and initialization status, file system details, the associated agent and user, and vendor/product identifiers, retrieved from the ePO Web API. | `/remote/core.executeQuery` API |
 | `dlp_incident` | Trellix ePO DLP incidents, including violation times, severity, status, evidence counts, classifications, matched rules, actions, and reviewer information. | `/remote/core.executeQuery` API |
 | `threat_event` | Trellix ePO threat events and extended details, including endpoint detections, rules, actions, severity, network activity, files, processes, registry paths, and related entities. | `/remote/core.executeQuery` API |
 
@@ -45,9 +51,13 @@ Integrating Trellix ePO compliance history with Elastic provides centralized vis
 
 Integrating Trellix ePO managed system records with Elastic provides centralized visibility into the endpoints under ePO management — agent version and communication health, managed state, node placement in the System Tree, and tag-based grouping — enabling asset inventory tracking, agent health and coverage monitoring, and investigation of unmanaged or stale endpoints within Kibana dashboards.
 
+Integrating Trellix ePO product event records with Elastic provides visibility into product lifecycle activity across managed endpoints — which products were installed, updated, or removed, on which hosts, by which accounts, and whether each operation succeeded. Failed operations are normalized to `event.outcome: failure` with the source code preserved in `error.code`, enabling deployment failure monitoring, rollout tracking, policy enforcement auditing, and correlation of product changes with endpoint inventory and security events within Kibana dashboards.
+
+Integrating Trellix ePO device events with Elastic provides visibility into removable-media device activity across endpoints, enabling data-loss-prevention monitoring, investigation of device protection/backup status, and reporting on user responses to device control policies within Kibana dashboards.
+
 Integrating Trellix ePO DLP with Elastic provides centralized visibility into DLP policy violations and sensitive-data activity across managed endpoints. It supports incident investigation, policy effectiveness analysis, compliance reporting, and monitoring of classifications, matched rules, actions, severity, and reviewer activity in Kibana.
 
-It also provides centralized visibility into endpoint threat activity across managed systems, supporting threat investigation, detection and response, endpoint activity analysis, intrusion prevention monitoring, firewall traffic analysis, and correlation across hosts, users, IP addresses, files, processes, hashes, and rules in Kibana.
+Integrating Trellix ePO threat events with Elastic provides centralized visibility into endpoint threat activity across managed systems, supporting threat investigation, detection and response, endpoint activity analysis, intrusion prevention monitoring, firewall traffic analysis, and correlation across hosts, users, IP addresses, files, processes, hashes, and rules in Kibana.
 
 ## What do I need to use this integration?
 
@@ -57,8 +67,8 @@ To collect data via the REST / Web API, you need the following:
 
 1. **Trellix ePO server**: Trellix ePO On-Prem 5.10.0 or above with REST API / Web API enabled.
 2. **User account**: A Trellix ePO user account with:
-   - **Query permissions** to the `OrionAuditLog` table (or `OrionAuditLogMT` for multitenant deployments), the `WP_EventInfo` table, the `EPOLeafNode` table, the `EpoComplianceHistory` table, the `UDLP_EPD_Incidents` table, and/or the `EPOEvents` and `EPExtendedEvent` tables, depending on the data streams you enable.
-   - Sufficient role permissions to execute queries via the Web API.
+   - **Query permissions** to the `OrionAuditLog` table (or `OrionAuditLogMT` for multitenant deployments), the `WP_EventInfo` table, the `EPOLeafNode` table, the `EpoComplianceHistory` table, the `EPOProductEvents` table, the `EEFFDeviceAllEventsView` table, the `UDLP_EPD_Incidents` table, and/or the `EPOEvents` and `EPExtendedEvent` tables, depending on the data streams you enable.
+   - Sufficient role permissions to run queries via the Web API.
 3. **API credentials**: Username and password for basic authentication.
 4. **Server URL**: Base URL of the Trellix ePO server (default port: 8443, for example `https://epo.example.com:8443`).
 5. **Network access**: The Elastic Agent must have outbound HTTPS access to the ePO server.
@@ -86,16 +96,16 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 2. In the search bar, type **Trellix ePO On-Prem**.
 3. Select the **Trellix ePO On-Prem** integration from the search results.
 4. Select **Add Trellix ePO On-Prem** to add the integration.
-5. Enable and configure the collection methods you need:
+5. Enable and configure the **Collect Trellix ePO Logs** collection method.
 
     * For **audit** logs:
         * Set **Trellix ePO URL** to the base URL of your Trellix ePO server, for example `https://epo.example.com:8443`.
         * Set the **Username** for the ePO user account with audit log query permissions.
         * Set the **Password** for the ePO user account.
-        * **Initial Interval**: The lookback period for the first API request (default: `24h`).
-        * **Timezone Offset**: The UTC offset the ePO server returns in `StartTime`, as an `HH:mm` value such as `+05:30` or `-08:00` (default: `+5:30`).
-        * **Page Size**: Number of audit log records to retrieve per API call (default: `500`).
-        * Optionally adjust **Interval** and **HTTP Client Timeout** as needed.
+        * Set **Initial Event Auto Id** to the `OrionAuditLog.AutoId` from which to begin querying. Subsequent collections resume from the last persisted `AutoId`. Set to `0` to start from the beginning (default: `0`).
+        * Set **Interval** to the polling frequency. The default is `24h`.
+        * Set **Page Size** to the number of audit log records to retrieve per API request. The default is `500`.
+        * Optionally adjust **Maximum Pages Per Interval**, **HTTP Client Timeout**, proxy, and SSL settings.
     * For **web control** logs:
         * Set **Trellix ePO URL** to the base URL of your Trellix ePO server, for example `https://epo.example.com:8443`.
         * Set **Username** for the ePO user account with `WP_EventInfo` query permissions.
@@ -122,6 +132,22 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
         * Set **Maximum Pages Per Interval** to the maximum number of pages collected at each interval. The default is `1000`.
         * Set **Page Size** to the number of system records to retrieve per API request. The default is `500`.
         * Optionally adjust **HTTP Client Timeout**, proxy, and SSL settings.
+    * For **product event** logs:
+        * Set **Trellix ePO URL** to the base URL of your Trellix ePO server, for example `https://epo.example.com:8443`.
+        * Set **Username** for the ePO user account with `EPOProductEvents` query permissions.
+        * Set **Password** for the ePO user account.
+        * Set **Initial Event Auto ID** to the starting `AutoID` from which to begin querying events. Subsequent collections resume from the last persisted `AutoID`. Set to `0` to start from the beginning (default: `0`).
+        * Set **Interval** to the polling frequency. The default is `24h`.
+        * Set **Page Size** to the number of product event records to retrieve per API request. The default is `500`.
+        * Optionally adjust **Maximum Pages Per Interval**, **HTTP Client Timeout**, proxy, and SSL settings.
+    * For **device event** logs:
+        * Set **Trellix ePO URL** to the base URL of your Trellix ePO server, for example `https://epo.example.com:8443`.
+        * Set **Username** for the ePO user account with `EEFFDeviceAllEventsView` query permissions.
+        * Set **Password** for the ePO user account.
+        * Set **Initial Event Auto ID** to the starting `AutoID` from which to begin querying events. Subsequent collections resume from the last persisted `AutoID`. Set to `0` to start from the beginning (default: `0`).
+        * Set **Interval** to the polling frequency. The default is `24h`.
+        * Set **Page Size** to the number of device event records to retrieve per API request. The default is `500`.
+        * Optionally adjust **Maximum Pages Per Interval**, **HTTP Client Timeout**, proxy, and SSL settings.
     * For **DLP incident** logs:
         * Set **Trellix ePO URL** to the base URL of your Trellix ePO server, for example `https://epo.example.com:8443`.
         * Set **Username** for the ePO user account with `UDLP_EPD_Incidents` query permissions.
@@ -143,14 +169,15 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 
 ## Troubleshooting
 
-* **No data collected**: Verify that the Trellix ePO API URL is correct, credentials are valid, and the Elastic Agent has network access to the ePO server. Check that the user account has permissions to query the `OrionAuditLog`, `WP_EventInfo`, `EPOLeafNode`, `EpoComplianceHistory`, `UDLP_EPD_Incidents`, `EPOEvents`, and/or `EPExtendedEvent` tables, and that the required data stream is enabled. For compliance history, use the local target `EpoComplianceHistory`; do not use the rollup target unless a rollup database is configured.
+* **No data collected**: Verify that the Trellix ePO API URL is correct, credentials are valid, and the Elastic Agent has network access to the ePO server. Check that the user account has permissions to query the `OrionAuditLog`, `WP_EventInfo`, `EPOLeafNode`, `EpoComplianceHistory`, `EPOProductEvents`, `EEFFDeviceAllEventsView`, `UDLP_EPD_Incidents`, `EPOEvents`, and/or `EPExtendedEvent` tables, and that the required data stream is enabled. For compliance history, use the local target `EpoComplianceHistory`; do not use the rollup target unless a rollup database is configured.
 * **Authentication failures**: Ensure the username and password are correct and the user account has not been locked or disabled in Trellix ePO. Verify the account has sufficient permissions to access the required tables.
 * **Incomplete or missing fields**: Confirm that the ePO user account has sufficient permissions to access all fields configured in the integration (select clause in the CEL template).
 * **Missing expected threat events**: The `threat_event` query uses `EPExtendedEvent` as its target and collects only events with matching extended details.
-* **Pagination issues (audit)**: If audit logs are not advancing beyond the initial set, verify that the `StartTime` field is present in all returned records and that pagination timestamps are being correctly updated.
+* **Pagination issues (audit)**: If audit logs are not advancing, verify that `AutoId` values are increasing in the source table and that the persisted `AutoId` cursor is being updated between polls.
 * **Pagination issues (web control)**: If web control logs are not advancing beyond the initial set, verify that `EventAutoID` values are strictly increasing in the source table and that the persisted `EventAutoID` cursor is being correctly updated between polls.
 * **Pagination issues (compliance history)**: If compliance history records are not advancing beyond the initial set, verify that `AutoId` values are strictly increasing in the source table and that the persisted `AutoId` cursor is being correctly updated between polls.
 * **Pagination issues (system)**: If system records are not advancing beyond the initial set, verify that the `LastUpdate` field is present in all returned records, that `LastUpdate` values are increasing in the source table, and that the persisted timestamp cursor is being correctly updated between polls.
+* **Pagination issues (device event / product event)**: If records are not advancing, verify that `AutoID` values are increasing in the source table and that the persisted `AutoID` cursor is being updated between polls. A first run left at the default **Initial Event Auto ID** of `0` scans the whole table and may take several intervals to catch up.
 * **Pagination issues (DLP incident and threat event)**: If collection does not advance, verify that `UDLP_EPD_Incidents.LastUpdateTimestamp` (DLP incidents) or `EPOEvents.AutoID` (threat events) is present in every returned record and that records are ordered by this field.
 * **Collection timeouts**: Increase **HTTP Client Timeout** or reduce **Page Size**.
 * **SSL certificate errors**: If your Trellix ePO server uses a self-signed certificate, extract the certificate and configure it under the SSL settings of the integration, or add it to the Elastic Agent's trusted certificate store.
@@ -169,8 +196,10 @@ For help with Elastic ingest tools, check [Common problems](https://www.elastic.
 3. Open the **[Logs Trellix ePO On-Prem] Audit** dashboard to verify audit event data is being collected.
 4. Open the **[Logs Trellix ePO On-Prem] Web Control** dashboard and verify that Web Control data is populated.
 5. Open the **[Logs Trellix ePO On-Prem] System** dashboard and verify that managed system data is populated.
-6. Open the **[Logs Trellix ePO On-Prem] DLP Incident Overview** dashboard and verify that DLP incident data is populated.
-7. Open the **[Logs Trellix ePO On-Prem] Threat Event Overview** dashboard and verify that threat event data is populated.
+6. Open the **[Logs Trellix ePO On-Prem] Product Event** dashboard and verify that Product Event data is populated.
+7. Open the **[Logs Trellix ePO On-Prem] Device Event** dashboard and verify that Device Event data is populated.
+8. Open the **[Logs Trellix ePO On-Prem] DLP Incident Overview** dashboard and verify that DLP incident data is populated.
+9. Open the **[Logs Trellix ePO On-Prem] Threat Event Overview** dashboard and verify that threat event data is populated.
 
 ## Scaling
 
@@ -194,16 +223,298 @@ The `audit` data stream provides Trellix ePO On-Prem audit logs collected from t
 
 | Field | Description | Type |
 |---|---|---|
-| @timestamp | Date and time when the event occurred. | date |
-| data_stream.dataset | Dataset name associated with the data stream. | constant_keyword |
-| data_stream.namespace | Namespace used to group related data streams. | constant_keyword |
-| data_stream.type | Type of data stream, such as logs or metrics. | constant_keyword |
-| event.dataset | Event Dataset. | constant_keyword |
-| event.module | Module that generated the event. | constant_keyword |
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | input.type | Type of filebeat input. | keyword |
-| observer.product | Product name of the observer that generated the event. | constant_keyword |
-| observer.vendor | Vendor name of the observer that generated the event. | constant_keyword |
+| observer.product | The product name of the observer. | constant_keyword |
+| observer.vendor | Vendor name of the observer. | constant_keyword |
 | trellix_epo_on_prem.audit.orion_audit_log.priority | Priority/level assigned to the audit entry (enum, observed values 1, 2, 3). | long |
+
+
+### Web Control
+
+The `web_control` data stream provides Trellix ePO On-Prem web control logs collected from the Web API.
+
+#### Web Control fields
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| input.type | Type of filebeat input. | keyword |
+| observer.product | The product name of the observer. | constant_keyword |
+| observer.vendor | Vendor name of the observer. | constant_keyword |
+| trellix_epo_on_prem.web_control.wp_event_info.action_id | Numeric action identifier associated with the web-control event. | long |
+| trellix_epo_on_prem.web_control.wp_event_info.bad_link_rating_id | Numeric identifier for the bad-link rating associated with the event. | long |
+| trellix_epo_on_prem.web_control.wp_event_info.content_id | Numeric content identifier associated with the web-control event. | long |
+| trellix_epo_on_prem.web_control.wp_event_info.count | Count recorded for the web-control event. | long |
+| trellix_epo_on_prem.web_control.wp_event_info.download_rating_id | Numeric identifier for the download rating associated with the event. | long |
+| trellix_epo_on_prem.web_control.wp_event_info.exploit_rating_id | Numeric identifier for the exploit rating associated with the event. | long |
+| trellix_epo_on_prem.web_control.wp_event_info.list_id | Numeric identifier of a list associated with the web-control event. | long |
+| trellix_epo_on_prem.web_control.wp_event_info.observer_mode | Boolean indicating whether observer mode was active for the web-control event. | boolean |
+| trellix_epo_on_prem.web_control.wp_event_info.phishing_rating_id | Numeric identifier for the phishing rating associated with the event. | long |
+| trellix_epo_on_prem.web_control.wp_event_info.popup_rating_id | Numeric identifier for the pop-up rating associated with the event. | long |
+| trellix_epo_on_prem.web_control.wp_event_info.rating_id | Numeric identifier for the overall web-control rating associated with the event. | long |
+| trellix_epo_on_prem.web_control.wp_event_info.reason_id | Numeric identifier for the reason associated with the web-control event. | long |
+| trellix_epo_on_prem.web_control.wp_event_info.spam_rating_id | Numeric identifier for the spam rating associated with the event. | long |
+
+
+### Compliance history
+
+The `compliance_history` data stream provides Trellix ePO On-Prem compliance history logs collected from the Web API.
+
+#### Compliance history fields
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| input.type | Type of Filebeat input. | keyword |
+| observer.product | The product name of the observer. | constant_keyword |
+| observer.vendor | Vendor name of the observer. | constant_keyword |
+| trellix_epo_on_prem.compliance_history.epo_compliance_history.chart_name | Name of the chart that generated the compliance history record. | keyword |
+| trellix_epo_on_prem.compliance_history.epo_compliance_history.count_compliant | Number of computers recorded as compliant. | long |
+| trellix_epo_on_prem.compliance_history.epo_compliance_history.count_computers | Total number of computers evaluated by the compliance query. | long |
+| trellix_epo_on_prem.compliance_history.epo_compliance_history.count_non_compliant | Number of computers recorded as noncompliant. | long |
+| trellix_epo_on_prem.compliance_history.epo_compliance_history.percent_compliant | Percentage of evaluated computers recorded as compliant. | double |
+| trellix_epo_on_prem.compliance_history.epo_compliance_history.percent_non_compliant | Percentage of evaluated computers recorded as noncompliant. | double |
+| trellix_epo_on_prem.compliance_history.epo_compliance_history.task_name | Name of the server task that generated the compliance history record. | keyword |
+| trellix_epo_on_prem.compliance_history.epo_compliance_history.tenant_id | Tenant identifier associated with the compliance history record. | keyword |
+
+
+### System
+
+The `system` data stream provides Trellix ePO On-Prem managed system (endpoint) logs collected from the Web API.
+
+#### System fields
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| input.type | Type of filebeat input. | keyword |
+| observer.product | The product name of the observer. | constant_keyword |
+| observer.vendor | Vendor name of the observer. | constant_keyword |
+| trellix_epo_on_prem.system.epo_leaf_node.agent_guid | Globally unique identifier of the Trellix agent installation on the managed system. | keyword |
+| trellix_epo_on_prem.system.epo_leaf_node.agent_version | Version string of the managed Trellix agent installed on the system. | keyword |
+| trellix_epo_on_prem.system.epo_leaf_node.excluded_tags | Comma-separated tags excluded from the managed system node. | keyword |
+| trellix_epo_on_prem.system.epo_leaf_node.last_comm_secure | Code indicating whether the last communication from the system was secure. | keyword |
+| trellix_epo_on_prem.system.epo_leaf_node.managed_state | Numeric managed-state code associated with the system node. | long |
+| trellix_epo_on_prem.system.epo_leaf_node.node_path | Hierarchical path of the managed system node. | keyword |
+| trellix_epo_on_prem.system.epo_leaf_node.parent_id | Identifier of the parent object in the ePO system hierarchy. | keyword |
+| trellix_epo_on_prem.system.epo_leaf_node.sequence_error_count | Number of sequence errors recorded for the managed system node. | long |
+| trellix_epo_on_prem.system.epo_leaf_node.sequence_error_count_last_update | Date and time when the sequence-error count was last updated. | date |
+| trellix_epo_on_prem.system.epo_leaf_node.server_key_hash | Base64-encoded cryptographic hash associated with the ePO server key. | keyword |
+| trellix_epo_on_prem.system.epo_leaf_node.tenant_id | Tenant identifier associated with the system node. | keyword |
+| trellix_epo_on_prem.system.epo_leaf_node.transfer_site_lists_id | Boolean flag associated with transferring site-list identifiers for the system node. | boolean |
+| trellix_epo_on_prem.system.epo_leaf_node.type | Numeric type code assigned to the managed system node. | long |
+
+
+### Product Event
+
+The `product_event` data stream provides Trellix ePO On-Prem product event logs collected from the Web API.
+
+#### Product Event fields
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| input.type | Type of filebeat input. | keyword |
+| observer.product | The product name of the observer. | constant_keyword |
+| observer.vendor | Vendor name of the observer. | constant_keyword |
+| trellix_epo_on_prem.product_event.epo_product_events.agent_guid | GUID of the Trellix Agent installation that reported the event. This identifies the agent instance rather than the endpoint, so it is not mapped to an ECS host or agent identifier. | keyword |
+| trellix_epo_on_prem.product_event.epo_product_events.extra_dat_names | Additional DAT names associated with the endpoint product event. | keyword |
+| trellix_epo_on_prem.product_event.epo_product_events.initiator_id | Source identifier describing what initiated the product operation. | keyword |
+| trellix_epo_on_prem.product_event.epo_product_events.initiator_type | Source classification of the product-operation initiator. | keyword |
+| trellix_epo_on_prem.product_event.epo_product_events.locale | Locale identifier associated with the product event. | keyword |
+| trellix_epo_on_prem.product_event.epo_product_events.node_id | ePO node identifier associated with the endpoint. | keyword |
+| trellix_epo_on_prem.product_event.epo_product_events.site_name | ePO site name associated with the product event. | keyword |
+| trellix_epo_on_prem.product_event.epo_product_events.sp_hot_fix | Service-pack hotfix value associated with the product event. | keyword |
+| trellix_epo_on_prem.product_event.epo_product_events.tenant_id | Tenant identifier associated with the product event. | keyword |
+| trellix_epo_on_prem.product_event.epo_product_events.type | Trellix ePO operation class for the product event, such as Install, Uninstall, Update, AMCore, Policy Enforcement, or Property Collection. Refines the event-code categorization but is not itself an enumerated set. | keyword |
+
+
+### Device event
+
+The `device_event` data stream provides Trellix ePO On-Prem removable-media device event records collected from the Web API.
+
+#### Device event fields
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| input.type | Type of filebeat input. | keyword |
+| observer.product | The product name of the observer. | constant_keyword |
+| observer.vendor | Vendor name of the observer. | constant_keyword |
+| trellix_epo_on_prem.device_event.eeff_device_all_events_view.agent_guid | GUID of the Trellix Agent installation that reported the event. This identifies the agent instance rather than the endpoint, so it is not mapped to an ECS host or agent identifier. | keyword |
+| trellix_epo_on_prem.device_event.eeff_device_all_events_view.backup_size | Backup size value recorded for the removable-media event. | double |
+| trellix_epo_on_prem.device_event.eeff_device_all_events_view.backup_state | Backup state recorded for the removable-media event. | keyword |
+| trellix_epo_on_prem.device_event.eeff_device_all_events_view.backup_time | Backup time value recorded for the removable-media event. | double |
+| trellix_epo_on_prem.device_event.eeff_device_all_events_view.credential_type | Credential-type identifier associated with the event. | keyword |
+| trellix_epo_on_prem.device_event.eeff_device_all_events_view.device_size | Size value recorded for the removable-media device. | double |
+| trellix_epo_on_prem.device_event.eeff_device_all_events_view.exempted | Exemption status recorded for the removable-media event. | keyword |
+| trellix_epo_on_prem.device_event.eeff_device_all_events_view.file_system | File-system name recorded for the removable-media device. | keyword |
+| trellix_epo_on_prem.device_event.eeff_device_all_events_view.file_system_version | Version of the file system recorded for the removable-media device. | keyword |
+| trellix_epo_on_prem.device_event.eeff_device_all_events_view.initialization_state | Initialization state recorded for the removable-media device. | keyword |
+| trellix_epo_on_prem.device_event.eeff_device_all_events_view.initialization_time | Initialization time value recorded for the removable-media device. | double |
+| trellix_epo_on_prem.device_event.eeff_device_all_events_view.key | Key value associated with the removable-media event. | keyword |
+| trellix_epo_on_prem.device_event.eeff_device_all_events_view.media_type | Media-type identifier associated with the removable-media device. | keyword |
+| trellix_epo_on_prem.device_event.eeff_device_all_events_view.protected | Protection status recorded for the removable-media device. | keyword |
+| trellix_epo_on_prem.device_event.eeff_device_all_events_view.protected_size | Protected-size value recorded for the removable-media device. | double |
+
+
+### DLP incident
+
+The `dlp_incident` data stream provides Trellix ePO On-Prem DLP incident records collected from the Web API.
+
+#### DLP incident fields
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| input.type | Type of Filebeat input. | keyword |
+| observer.product | The product name of the observer. | constant_keyword |
+| observer.vendor | Vendor name of the observer. | constant_keyword |
+| trellix_epo_on_prem.dlp_incident.udlp_epd_incidents.actual_action | Code for the action the endpoint actually took for the DLP incident. | keyword |
+| trellix_epo_on_prem.dlp_incident.udlp_epd_incidents.classifications_to_display | Display label for the data classification associated with the DLP incident. | keyword |
+| trellix_epo_on_prem.dlp_incident.udlp_epd_incidents.connectivity_state | Connectivity-state code associated with the DLP incident. | keyword |
+| trellix_epo_on_prem.dlp_incident.udlp_epd_incidents.dlp_agent_version | Version string of the DLP agent associated with the incident. | keyword |
+| trellix_epo_on_prem.dlp_incident.udlp_epd_incidents.evidence_count | Number of evidence items associated with the DLP incident. | long |
+| trellix_epo_on_prem.dlp_incident.udlp_epd_incidents.expected_action | Code for the action DLP expected the endpoint to take for the incident. | keyword |
+| trellix_epo_on_prem.dlp_incident.udlp_epd_incidents.failure_reason | Failure-reason code for the DLP incident; 0 indicates that nothing failed. | keyword |
+| trellix_epo_on_prem.dlp_incident.udlp_epd_incidents.last_update_timestamp | Date and time when the DLP incident record was last updated. | date |
+| trellix_epo_on_prem.dlp_incident.udlp_epd_incidents.mc_afee_agent_guid | GUID identifying a McAfee agent associated with the DLP incident. | keyword |
+| trellix_epo_on_prem.dlp_incident.udlp_epd_incidents.original_incident_id | Identifier of an original incident related to the current DLP incident. | keyword |
+| trellix_epo_on_prem.dlp_incident.udlp_epd_incidents.reporting_product | Identifier of the product that reported the DLP incident. | keyword |
+| trellix_epo_on_prem.dlp_incident.udlp_epd_incidents.resolution_id | Identifier of the DLP incident resolution. | keyword |
+| trellix_epo_on_prem.dlp_incident.udlp_epd_incidents.short_match_string | Short content excerpt associated with a DLP rule match. | keyword |
+| trellix_epo_on_prem.dlp_incident.udlp_epd_incidents.status_id | Identifier of the DLP incident status. | keyword |
+| trellix_epo_on_prem.dlp_incident.udlp_epd_incidents.total_content_size | Total content size recorded for the DLP incident. | long |
+| trellix_epo_on_prem.dlp_incident.udlp_epd_incidents.total_match_count | Total number of matches recorded for the DLP incident. | long |
+| trellix_epo_on_prem.dlp_incident.udlp_epd_incidents.violation_custom_time | Custom date and time representation associated with the DLP violation. | date |
+| trellix_epo_on_prem.dlp_incident.udlp_epd_incidents.violation_local_time | Local date and time when the DLP violation occurred. | date |
+| trellix_epo_on_prem.dlp_incident.udlp_epd_incidents.violation_timezone | Windows time zone display name of the endpoint where the DLP violation occurred, for example `India Standard Time`. | keyword |
+
+
+### Threat event
+
+The `threat_event` data stream provides Trellix ePO On-Prem threat event records and matching extended event details collected from the Web API.
+
+#### Threat event fields
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| input.type | Type of filebeat input. | keyword |
+| observer.vendor | Vendor name of the observer. | constant_keyword |
+| trellix_epo_on_prem.threat_event.ep_extended_event.access_requested | Access Requested value recorded in the extended threat-event details. | keyword |
+| trellix_epo_on_prem.threat_event.ep_extended_event.am_core_content_version | AM Core Content Version value recorded in the extended threat-event details. | keyword |
+| trellix_epo_on_prem.threat_event.ep_extended_event.analyzer_content_creation_date | Analyzer Content Creation Date value recorded in the extended threat-event details. | date |
+| trellix_epo_on_prem.threat_event.ep_extended_event.analyzer_gti_query | Analyzer GTI Query value recorded in the extended threat-event details. | boolean |
+| trellix_epo_on_prem.threat_event.ep_extended_event.analyzer_reg_info | Analyzer Reg Info value recorded in the extended threat-event details. | keyword |
+| trellix_epo_on_prem.threat_event.ep_extended_event.analyzer_technology_version | Analyzer Technology Version value recorded in the extended threat-event details. | keyword |
+| trellix_epo_on_prem.threat_event.ep_extended_event.api_name | API Name value recorded in the extended threat-event details. | keyword |
+| trellix_epo_on_prem.threat_event.ep_extended_event.attack_vector_type | Attack Vector Type value recorded in the extended threat-event details. | keyword |
+| trellix_epo_on_prem.threat_event.ep_extended_event.blade_name | Blade Name value recorded in the extended threat-event details. | keyword |
+| trellix_epo_on_prem.threat_event.ep_extended_event.cleanable | Cleanable value recorded in the extended threat-event details. | boolean |
+| trellix_epo_on_prem.threat_event.ep_extended_event.direction | Direction value recorded in the extended threat-event details. | keyword |
+| trellix_epo_on_prem.threat_event.ep_extended_event.duration_before_detection | Duration Before Detection value recorded in the extended threat-event details. | long |
+| trellix_epo_on_prem.threat_event.ep_extended_event.event_auto_id | Event Auto ID value recorded in the extended threat-event details. | keyword |
+| trellix_epo_on_prem.threat_event.ep_extended_event.first_action_status | First Action Status value recorded in the extended threat-event details. | boolean |
+| trellix_epo_on_prem.threat_event.ep_extended_event.first_attempted_action | First Attempted Action value recorded in the extended threat-event details. | keyword |
+| trellix_epo_on_prem.threat_event.ep_extended_event.location | Location value recorded in the extended threat-event details. | keyword |
+| trellix_epo_on_prem.threat_event.ep_extended_event.second_action_status | Second Action Status value recorded in the extended threat-event details. | boolean |
+| trellix_epo_on_prem.threat_event.ep_extended_event.second_attempted_action | Second Attempted Action value recorded in the extended threat-event details. | keyword |
+| trellix_epo_on_prem.threat_event.ep_extended_event.source_description | Source Description value recorded in the extended threat-event details. | keyword |
+| trellix_epo_on_prem.threat_event.ep_extended_event.source_device_pid | Source Device PID value recorded in the extended threat-event details. | keyword |
+| trellix_epo_on_prem.threat_event.ep_extended_event.source_device_serial_number | Source Device Serial Number value recorded in the extended threat-event details. | keyword |
+| trellix_epo_on_prem.threat_event.ep_extended_event.source_device_vid | Source Device VID value recorded in the extended threat-event details. | keyword |
+| trellix_epo_on_prem.threat_event.ep_extended_event.source_hash | Source Hash value recorded in the extended threat-event details. | keyword |
+| trellix_epo_on_prem.threat_event.ep_extended_event.source_share_name | Source Share Name value recorded in the extended threat-event details. | keyword |
+| trellix_epo_on_prem.threat_event.ep_extended_event.source_url_rating_code | Source URL Rating Code value recorded in the extended threat-event details. | keyword |
+| trellix_epo_on_prem.threat_event.ep_extended_event.source_url_web_category | Source URL Web Category value recorded in the extended threat-event details. | keyword |
+| trellix_epo_on_prem.threat_event.ep_extended_event.target_create_time | Target Create Time value recorded in the extended threat-event details. | date |
+| trellix_epo_on_prem.threat_event.ep_extended_event.target_description | Target Description value recorded in the extended threat-event details. | keyword |
+| trellix_epo_on_prem.threat_event.ep_extended_event.target_device_display_name | Target Device Display Name value recorded in the extended threat-event details. | keyword |
+| trellix_epo_on_prem.threat_event.ep_extended_event.target_device_pid | Target Device PID value recorded in the extended threat-event details. | keyword |
+| trellix_epo_on_prem.threat_event.ep_extended_event.target_device_serial_number | Target Device Serial Number value recorded in the extended threat-event details. | keyword |
+| trellix_epo_on_prem.threat_event.ep_extended_event.target_device_vid | Target Device VID value recorded in the extended threat-event details. | keyword |
+| trellix_epo_on_prem.threat_event.ep_extended_event.target_modify_time | Target Modify Time value recorded in the extended threat-event details. | date |
+| trellix_epo_on_prem.threat_event.ep_extended_event.target_parent_process_hash | Target Parent Process Hash value recorded in the extended threat-event details. | keyword |
+| trellix_epo_on_prem.threat_event.ep_extended_event.target_parent_process_name | Target Parent Process Name value recorded in the extended threat-event details. | keyword |
+| trellix_epo_on_prem.threat_event.ep_extended_event.target_parent_process_signed | Target Parent Process Signed value recorded in the extended threat-event details. | boolean |
+| trellix_epo_on_prem.threat_event.ep_extended_event.target_parent_process_signer | Target Parent Process Signer value recorded in the extended threat-event details. | keyword |
+| trellix_epo_on_prem.threat_event.ep_extended_event.target_share_name | Target Share Name value recorded in the extended threat-event details. | keyword |
+| trellix_epo_on_prem.threat_event.ep_extended_event.target_url | Target URL value recorded in the extended threat-event details. | keyword |
+| trellix_epo_on_prem.threat_event.ep_extended_event.task_name | Task Name value recorded in the extended threat-event details. | keyword |
+| trellix_epo_on_prem.threat_event.ep_extended_event.threat_detected_on_creation | Threat Detected On Creation value recorded in the extended threat-event details. | boolean |
+| trellix_epo_on_prem.threat_event.ep_extended_event.threat_impact | Threat Impact value recorded in the extended threat-event details. | keyword |
+| trellix_epo_on_prem.threat_event.ep_extended_event.topic | Topic value recorded in the extended threat-event details. | keyword |
+| trellix_epo_on_prem.threat_event.epo_events.agent_guid | Agent GUID value recorded in the ePO threat event. | keyword |
+| trellix_epo_on_prem.threat_event.epo_events.analyzer | Analyzer value recorded in the ePO threat event. | keyword |
+| trellix_epo_on_prem.threat_event.epo_events.analyzer_dat_version | Analyzer DAT Version value recorded in the ePO threat event. | keyword |
+| trellix_epo_on_prem.threat_event.epo_events.analyzer_engine_version | Analyzer Engine Version value recorded in the ePO threat event. | keyword |
+| trellix_epo_on_prem.threat_event.epo_events.detected_utc | Detection time recorded in the ePO threat event. | date |
+| trellix_epo_on_prem.threat_event.epo_events.event_time_local | Event Time Local value recorded in the ePO threat event. | date |
+| trellix_epo_on_prem.threat_event.epo_events.server_id | Server ID value recorded in the ePO threat event. | keyword |
+| trellix_epo_on_prem.threat_event.epo_events.source_host_name | Source Host Name value recorded in the ePO threat event. | keyword |
+| trellix_epo_on_prem.threat_event.epo_events.source_url | Source URL value recorded in the ePO threat event. | keyword |
+| trellix_epo_on_prem.threat_event.epo_events.target_process_name | Target Process Name value recorded in the ePO threat event. | keyword |
+| trellix_epo_on_prem.threat_event.epo_events.tenant_id | Tenant ID value recorded in the ePO threat event. | keyword |
+| trellix_epo_on_prem.threat_event.epo_events.threat_action_taken | Threat Action Taken value recorded in the ePO threat event. | keyword |
+| trellix_epo_on_prem.threat_event.epo_events.threat_category | Trellix threat-category identifier used to classify the event variant. | keyword |
+| trellix_epo_on_prem.threat_event.epo_events.threat_handled | Threat Handled value recorded in the ePO threat event. | boolean |
+| trellix_epo_on_prem.threat_event.epo_events.threat_type | Trellix threat-type identifier used as the primary event variant discriminator. | keyword |
 
 
 ### Example event
@@ -216,22 +527,22 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2026-07-16T13:45:04+05:30",
     "agent": {
-        "ephemeral_id": "72fdf282-d4b1-4149-ae89-25d48bcb2a24",
-        "id": "525170d9-a573-4e56-9131-d4d51fa5e465",
-        "name": "elastic-agent-81415",
+        "ephemeral_id": "3be91bce-ea5d-471d-ad0a-d987cb228710",
+        "id": "ade4f196-bf69-41e7-8900-8f0deb243267",
+        "name": "elastic-agent-42258",
         "type": "filebeat",
         "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "trellix_epo_on_prem.audit",
-        "namespace": "80949",
+        "namespace": "37110",
         "type": "logs"
     },
     "ecs": {
         "version": "9.4.0"
     },
     "elastic_agent": {
-        "id": "525170d9-a573-4e56-9131-d4d51fa5e465",
+        "id": "ade4f196-bf69-41e7-8900-8f0deb243267",
         "snapshot": false,
         "version": "8.19.0"
     },
@@ -244,9 +555,9 @@ An example event for `audit` looks as following:
         "dataset": "trellix_epo_on_prem.audit",
         "end": "2026-07-16T13:45:05+05:30",
         "id": "1943",
-        "ingested": "2026-08-19T10:36:44Z",
+        "ingested": "2026-09-09T10:47:26Z",
         "kind": "event",
-        "original": "{\"OrionAuditLog.AutoId\":1943,\"OrionAuditLog.CmdName\":\"Delete user\",\"OrionAuditLog.EndTime\":\"2026-07-16T13:45:05+05:30\",\"OrionAuditLog.Message\":\"User \\\"tempuser\\\" deleted from system\",\"OrionAuditLog.Priority\":3,\"OrionAuditLog.StartTime\":\"2026-07-16T13:45:04+05:30\",\"OrionAuditLog.Success\":true,\"OrionAuditLog.UserId\":1,\"OrionAuditLog.UserName\":\"admin\"}",
+        "original": "{\"OrionAuditLog.AutoId\":1943,\"OrionAuditLog.CmdName\":\"Delete user\",\"OrionAuditLog.EndTime\":\"2026-07-16T13:45:05+05:30\",\"OrionAuditLog.Message\":\"User \\\"bob.smith\\\" deleted from system\",\"OrionAuditLog.Priority\":3,\"OrionAuditLog.StartTime\":\"2026-07-16T13:45:04+05:30\",\"OrionAuditLog.Success\":true,\"OrionAuditLog.UserId\":1,\"OrionAuditLog.UserName\":\"admin\"}",
         "outcome": "success",
         "start": "2026-07-16T13:45:04+05:30",
         "type": [
@@ -257,7 +568,7 @@ An example event for `audit` looks as following:
     "input": {
         "type": "cel"
     },
-    "message": "User \"tempuser\" deleted from system",
+    "message": "User \"bob.smith\" deleted from system",
     "related": {
         "user": [
             "1",
@@ -283,66 +594,30 @@ An example event for `audit` looks as following:
 }
 ```
 
-### Web Control
-
-The `web_control` data stream provides Trellix ePO On-Prem web control logs collected from the Web API.
-
-#### Web Control fields
-
-**Exported fields**
-
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Date and time when the event occurred. | date |
-| data_stream.dataset | Dataset name associated with the data stream. | constant_keyword |
-| data_stream.namespace | Namespace used to group related data streams. | constant_keyword |
-| data_stream.type | Type of data stream, such as logs or metrics. | constant_keyword |
-| event.dataset | Event Dataset. | constant_keyword |
-| event.module | Module that generated the event. | constant_keyword |
-| input.type | Type of filebeat input. | keyword |
-| observer.product | Product name of the observer that generated the event. | constant_keyword |
-| observer.vendor | Vendor name of the observer that generated the event. | constant_keyword |
-| trellix_epo_on_prem.web_control.wp_event_info.action_id | Numeric action identifier associated with the web-control event. | long |
-| trellix_epo_on_prem.web_control.wp_event_info.bad_link_rating_id | Numeric identifier for the bad-link rating associated with the event. | long |
-| trellix_epo_on_prem.web_control.wp_event_info.content_id | Numeric content identifier associated with the web-control event. | long |
-| trellix_epo_on_prem.web_control.wp_event_info.count | Count recorded for the web-control event. | long |
-| trellix_epo_on_prem.web_control.wp_event_info.download_rating_id | Numeric identifier for the download rating associated with the event. | long |
-| trellix_epo_on_prem.web_control.wp_event_info.exploit_rating_id | Numeric identifier for the exploit rating associated with the event. | long |
-| trellix_epo_on_prem.web_control.wp_event_info.list_id | Numeric identifier of a list associated with the web-control event. | long |
-| trellix_epo_on_prem.web_control.wp_event_info.observer_mode | Boolean indicating whether observer mode was active for the web-control event. | boolean |
-| trellix_epo_on_prem.web_control.wp_event_info.phishing_rating_id | Numeric identifier for the phishing rating associated with the event. | long |
-| trellix_epo_on_prem.web_control.wp_event_info.popup_rating_id | Numeric identifier for the pop-up rating associated with the event. | long |
-| trellix_epo_on_prem.web_control.wp_event_info.rating_id | Numeric identifier for the overall web-control rating associated with the event. | long |
-| trellix_epo_on_prem.web_control.wp_event_info.reason_id | Numeric identifier for the reason associated with the web-control event. | long |
-| trellix_epo_on_prem.web_control.wp_event_info.spam_rating_id | Numeric identifier for the spam rating associated with the event. | long |
-
-
-### Example event
-
 #### Web Control
 
 An example event for `web_control` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-08-27T12:04:24.300Z",
+    "@timestamp": "2026-09-09T10:49:52.516Z",
     "agent": {
-        "ephemeral_id": "2ed948bc-3492-4327-817e-83b23c898f5d",
-        "id": "97440a4e-3cc5-4d38-be68-1645da3ab54d",
-        "name": "elastic-agent-41151",
+        "ephemeral_id": "f02689c2-5756-4863-b193-3b2b4dc40243",
+        "id": "5496bd89-5e42-4d5d-bf54-dbbd19b76ef9",
+        "name": "elastic-agent-19132",
         "type": "filebeat",
         "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "trellix_epo_on_prem.web_control",
-        "namespace": "21957",
+        "namespace": "18521",
         "type": "logs"
     },
     "ecs": {
         "version": "9.4.0"
     },
     "elastic_agent": {
-        "id": "97440a4e-3cc5-4d38-be68-1645da3ab54d",
+        "id": "5496bd89-5e42-4d5d-bf54-dbbd19b76ef9",
         "snapshot": false,
         "version": "8.19.0"
     },
@@ -353,7 +628,7 @@ An example event for `web_control` looks as following:
         ],
         "dataset": "trellix_epo_on_prem.web_control",
         "id": "494",
-        "ingested": "2026-08-27T12:04:27Z",
+        "ingested": "2026-09-09T10:49:55Z",
         "kind": "event",
         "original": "{\"WP_EventInfo.BadLinkRatingID\":4,\"WP_EventInfo.ContentID\":0,\"WP_EventInfo.Count\":1,\"WP_EventInfo.DomainName\":\"reports.blockedSiteDSSError\",\"WP_EventInfo.DownloadRatingID\":4,\"WP_EventInfo.EventAutoID\":494,\"WP_EventInfo.ExploitRatingID\":4,\"WP_EventInfo.ListID\":1,\"WP_EventInfo.ObserverMode\":true,\"WP_EventInfo.PhishingRatingID\":4,\"WP_EventInfo.PopupRatingID\":4,\"WP_EventInfo.RatingID\":6,\"WP_EventInfo.ReasonID\":7,\"WP_EventInfo.SpamRatingID\":4,\"WP_EventInfo.URL\":\"reports.blockedSiteDSSError\",\"WP_EventInfo.UserName\":null}",
         "type": [
@@ -392,37 +667,6 @@ An example event for `web_control` looks as following:
     }
 }
 ```
-
-### Compliance history
-
-The `compliance_history` data stream provides Trellix ePO On-Prem compliance history logs collected from the Web API.
-
-#### Compliance history fields
-
-**Exported fields**
-
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
-| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
-| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
-| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
-| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
-| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
-| input.type | Type of Filebeat input. | keyword |
-| observer.product | The product name of the observer. | constant_keyword |
-| observer.vendor | Vendor name of the observer. | constant_keyword |
-| trellix_epo_on_prem.compliance_history.epo_compliance_history.chart_name | Name of the chart that generated the compliance history record. | keyword |
-| trellix_epo_on_prem.compliance_history.epo_compliance_history.count_compliant | Number of computers recorded as compliant. | long |
-| trellix_epo_on_prem.compliance_history.epo_compliance_history.count_computers | Total number of computers evaluated by the compliance query. | long |
-| trellix_epo_on_prem.compliance_history.epo_compliance_history.count_non_compliant | Number of computers recorded as noncompliant. | long |
-| trellix_epo_on_prem.compliance_history.epo_compliance_history.percent_compliant | Percentage of evaluated computers recorded as compliant. | double |
-| trellix_epo_on_prem.compliance_history.epo_compliance_history.percent_non_compliant | Percentage of evaluated computers recorded as noncompliant. | double |
-| trellix_epo_on_prem.compliance_history.epo_compliance_history.task_name | Name of the server task that generated the compliance history record. | keyword |
-| trellix_epo_on_prem.compliance_history.epo_compliance_history.tenant_id | Tenant identifier associated with the compliance history record. | keyword |
-
-
-### Example event
 
 #### Compliance history
 
@@ -489,42 +733,6 @@ An example event for `compliance_history` looks as following:
     }
 }
 ```
-
-### System
-
-The `system` data stream provides Trellix ePO On-Prem managed system (endpoint) logs collected from the Web API.
-
-#### System fields
-
-**Exported fields**
-
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
-| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
-| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
-| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
-| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
-| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
-| input.type | Type of filebeat input. | keyword |
-| observer.product | The product name of the observer. | constant_keyword |
-| observer.vendor | Vendor name of the observer. | constant_keyword |
-| trellix_epo_on_prem.system.epo_leaf_node.agent_guid | Globally unique identifier of the Trellix agent installation on the managed system. | keyword |
-| trellix_epo_on_prem.system.epo_leaf_node.agent_version | Version string of the managed Trellix agent installed on the system. | keyword |
-| trellix_epo_on_prem.system.epo_leaf_node.excluded_tags | Comma-separated tags excluded from the managed system node. | keyword |
-| trellix_epo_on_prem.system.epo_leaf_node.last_comm_secure | Code indicating whether the last communication from the system was secure. | keyword |
-| trellix_epo_on_prem.system.epo_leaf_node.managed_state | Numeric managed-state code associated with the system node. | long |
-| trellix_epo_on_prem.system.epo_leaf_node.node_path | Hierarchical path of the managed system node. | keyword |
-| trellix_epo_on_prem.system.epo_leaf_node.parent_id | Identifier of the parent object in the ePO system hierarchy. | keyword |
-| trellix_epo_on_prem.system.epo_leaf_node.sequence_error_count | Number of sequence errors recorded for the managed system node. | long |
-| trellix_epo_on_prem.system.epo_leaf_node.sequence_error_count_last_update | Date and time when the sequence-error count was last updated. | date |
-| trellix_epo_on_prem.system.epo_leaf_node.server_key_hash | Base64-encoded cryptographic hash associated with the ePO server key. | keyword |
-| trellix_epo_on_prem.system.epo_leaf_node.tenant_id | Tenant identifier associated with the system node. | keyword |
-| trellix_epo_on_prem.system.epo_leaf_node.transfer_site_lists_id | Boolean flag associated with transferring site-list identifiers for the system node. | boolean |
-| trellix_epo_on_prem.system.epo_leaf_node.type | Numeric type code assigned to the managed system node. | long |
-
-
-### Example event
 
 #### System
 
@@ -605,47 +813,195 @@ An example event for `system` looks as following:
 }
 ```
 
-### DLP incident
+#### Product Event
 
-The `dlp_incident` data stream provides Trellix ePO On-Prem DLP incident records collected from the Web API.
+An example event for `product_event` looks as following:
 
-#### DLP incident fields
+```json
+{
+    "@timestamp": "2026-07-21T09:23:20.000Z",
+    "agent": {
+        "ephemeral_id": "47cc9dac-90df-494c-b767-21b9f420cb94",
+        "id": "b20a7386-b912-4d58-b4f6-3bc59e054607",
+        "name": "elastic-agent-82828",
+        "type": "filebeat",
+        "version": "8.19.0"
+    },
+    "data_stream": {
+        "dataset": "trellix_epo_on_prem.product_event",
+        "namespace": "88150",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "9.4.0"
+    },
+    "elastic_agent": {
+        "id": "b20a7386-b912-4d58-b4f6-3bc59e054607",
+        "snapshot": false,
+        "version": "8.19.0"
+    },
+    "entity": {
+        "name": "HOST-EXAMPLE-02",
+        "type": [
+            "host"
+        ]
+    },
+    "event": {
+        "action": "deployment-successful",
+        "agent_id_status": "verified",
+        "category": [
+            "package"
+        ],
+        "code": "2411",
+        "created": "2026-07-21T09:23:47.000Z",
+        "dataset": "trellix_epo_on_prem.product_event",
+        "id": "1",
+        "ingested": "2026-09-09T10:49:07Z",
+        "kind": "event",
+        "original": "{\"EPOProductEvents.AgentGUID\":\"89A1D5C1-2B3E-4F67-8A9B-0C1D2E3F4A5B\",\"EPOProductEvents.AutoID\":1,\"EPOProductEvents.DetectedUTC\":\"2026-07-21T14:53:20+05:30\",\"EPOProductEvents.Error\":0,\"EPOProductEvents.ExtraDATNames\":null,\"EPOProductEvents.HostName\":\"HOST-EXAMPLE-02\",\"EPOProductEvents.IPV6\":\"2001:DB8:85A3:0:8A2E:370:7334:1\",\"EPOProductEvents.InitiatorID\":null,\"EPOProductEvents.InitiatorType\":\"CommandLine\",\"EPOProductEvents.Locale\":1033,\"EPOProductEvents.NodeID\":1,\"EPOProductEvents.ProductCode\":\"EPOAGENT3000\",\"EPOProductEvents.ReceivedUTC\":\"2026-07-21T14:53:47+05:30\",\"EPOProductEvents.SPHotFix\":null,\"EPOProductEvents.SiteName\":null,\"EPOProductEvents.TVDEventID\":2411,\"EPOProductEvents.TVDSeverity\":0,\"EPOProductEvents.TenantId\":1,\"EPOProductEvents.Type\":\"Install\",\"EPOProductEvents.UserName\":\"SYSTEM\"}",
+        "outcome": "success",
+        "severity": 0,
+        "type": [
+            "installation"
+        ]
+    },
+    "host": {
+        "hostname": "HOST-EXAMPLE-02",
+        "ip": [
+            "2001:DB8:85A3:0:8A2E:370:7334:1"
+        ],
+        "name": "host-example-02"
+    },
+    "input": {
+        "type": "cel"
+    },
+    "package": {
+        "name": "EPOAGENT3000"
+    },
+    "related": {
+        "hosts": [
+            "HOST-EXAMPLE-02"
+        ],
+        "ip": [
+            "2001:DB8:85A3:0:8A2E:370:7334:1"
+        ],
+        "user": [
+            "SYSTEM"
+        ]
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "trellix_epo_on_prem-product_event"
+    ],
+    "trellix_epo_on_prem": {
+        "product_event": {
+            "epo_product_events": {
+                "agent_guid": "89A1D5C1-2B3E-4F67-8A9B-0C1D2E3F4A5B",
+                "initiator_type": "CommandLine",
+                "locale": "1033",
+                "node_id": "1",
+                "tenant_id": "1",
+                "type": "Install"
+            }
+        }
+    },
+    "user": {
+        "name": "SYSTEM"
+    }
+}
+```
 
-**Exported fields**
+#### Device event
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
-| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
-| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
-| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
-| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
-| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
-| input.type | Type of Filebeat input. | keyword |
-| observer.product | The product name of the observer. | constant_keyword |
-| observer.vendor | Vendor name of the observer. | constant_keyword |
-| trellix_epo_on_prem.dlp_incident.udlp_epd_incidents.actual_action | Code for the action the endpoint actually took for the DLP incident. | keyword |
-| trellix_epo_on_prem.dlp_incident.udlp_epd_incidents.classifications_to_display | Display label for the data classification associated with the DLP incident. | keyword |
-| trellix_epo_on_prem.dlp_incident.udlp_epd_incidents.connectivity_state | Connectivity-state code associated with the DLP incident. | keyword |
-| trellix_epo_on_prem.dlp_incident.udlp_epd_incidents.dlp_agent_version | Version string of the DLP agent associated with the incident. | keyword |
-| trellix_epo_on_prem.dlp_incident.udlp_epd_incidents.evidence_count | Number of evidence items associated with the DLP incident. | long |
-| trellix_epo_on_prem.dlp_incident.udlp_epd_incidents.expected_action | Code for the action DLP expected the endpoint to take for the incident. | keyword |
-| trellix_epo_on_prem.dlp_incident.udlp_epd_incidents.failure_reason | Failure-reason code for the DLP incident; 0 indicates that nothing failed. | keyword |
-| trellix_epo_on_prem.dlp_incident.udlp_epd_incidents.last_update_timestamp | Date and time when the DLP incident record was last updated. | date |
-| trellix_epo_on_prem.dlp_incident.udlp_epd_incidents.mc_afee_agent_guid | GUID identifying a McAfee agent associated with the DLP incident. | keyword |
-| trellix_epo_on_prem.dlp_incident.udlp_epd_incidents.original_incident_id | Identifier of an original incident related to the current DLP incident. | keyword |
-| trellix_epo_on_prem.dlp_incident.udlp_epd_incidents.reporting_product | Identifier of the product that reported the DLP incident. | keyword |
-| trellix_epo_on_prem.dlp_incident.udlp_epd_incidents.resolution_id | Identifier of the DLP incident resolution. | keyword |
-| trellix_epo_on_prem.dlp_incident.udlp_epd_incidents.short_match_string | Short content excerpt associated with a DLP rule match. | keyword |
-| trellix_epo_on_prem.dlp_incident.udlp_epd_incidents.status_id | Identifier of the DLP incident status. | keyword |
-| trellix_epo_on_prem.dlp_incident.udlp_epd_incidents.total_content_size | Total content size recorded for the DLP incident. | long |
-| trellix_epo_on_prem.dlp_incident.udlp_epd_incidents.total_match_count | Total number of matches recorded for the DLP incident. | long |
-| trellix_epo_on_prem.dlp_incident.udlp_epd_incidents.violation_custom_time | Custom date and time representation associated with the DLP violation. | date |
-| trellix_epo_on_prem.dlp_incident.udlp_epd_incidents.violation_local_time | Local date and time when the DLP violation occurred. | date |
-| trellix_epo_on_prem.dlp_incident.udlp_epd_incidents.violation_timezone | Windows time zone display name of the endpoint where the DLP violation occurred, for example `India Standard Time`. | keyword |
+An example event for `device_event` looks as following:
 
-
-### Example event
+```json
+{
+    "@timestamp": "2026-07-31T08:15:42.000Z",
+    "agent": {
+        "ephemeral_id": "0f1335b4-7837-4846-8a9c-0a364c968ec8",
+        "id": "79a4d8c5-2801-40b0-a754-3ff0166fbf63",
+        "name": "elastic-agent-67431",
+        "type": "filebeat",
+        "version": "8.19.0"
+    },
+    "data_stream": {
+        "dataset": "trellix_epo_on_prem.device_event",
+        "namespace": "27293",
+        "type": "logs"
+    },
+    "device": {
+        "manufacturer": "Example Vendor",
+        "model": {
+            "name": "Example Secure USB"
+        },
+        "serial_number": "EXAMPLE-DEVICE-SN-001"
+    },
+    "ecs": {
+        "version": "9.4.0"
+    },
+    "elastic_agent": {
+        "id": "79a4d8c5-2801-40b0-a754-3ff0166fbf63",
+        "snapshot": false,
+        "version": "8.19.0"
+    },
+    "event": {
+        "action": "approved",
+        "agent_id_status": "verified",
+        "category": [
+            "host"
+        ],
+        "code": "3001",
+        "created": "2026-07-31T08:16:03.000Z",
+        "dataset": "trellix_epo_on_prem.device_event",
+        "id": "1048576",
+        "ingested": "2026-09-09T10:48:16Z",
+        "kind": "event",
+        "original": "{\"EEFFDeviceAllEventsView.AgentGUID\":\"11111111-2222-4333-8444-555555555555\",\"EEFFDeviceAllEventsView.AutoID\":1048576,\"EEFFDeviceAllEventsView.BackupSize\":1024.5,\"EEFFDeviceAllEventsView.BackupState\":\"Completed\",\"EEFFDeviceAllEventsView.BackupTime\":18.75,\"EEFFDeviceAllEventsView.CredentialType\":1,\"EEFFDeviceAllEventsView.DeviceSN\":\"EXAMPLE-DEVICE-SN-001\",\"EEFFDeviceAllEventsView.DeviceSize\":64000,\"EEFFDeviceAllEventsView.EventGeneratedTime\":\"2026-07-31T08:15:42.000Z\",\"EEFFDeviceAllEventsView.EventID\":3001,\"EEFFDeviceAllEventsView.EventReportedTime\":\"2026-07-31T08:16:03.000Z\",\"EEFFDeviceAllEventsView.Exempted\":\"No\",\"EEFFDeviceAllEventsView.FileSystem\":\"NTFS\",\"EEFFDeviceAllEventsView.FileSystemVersion\":\"3.1\",\"EEFFDeviceAllEventsView.InitializationState\":\"Initialized\",\"EEFFDeviceAllEventsView.InitializationTime\":12.25,\"EEFFDeviceAllEventsView.Key\":\"example-removable-media-key-001\",\"EEFFDeviceAllEventsView.MediaType\":2,\"EEFFDeviceAllEventsView.ProductName\":\"Example Secure USB\",\"EEFFDeviceAllEventsView.Protected\":\"Yes\",\"EEFFDeviceAllEventsView.ProtectedSize\":62000,\"EEFFDeviceAllEventsView.UserName\":\"EXAMPLE\\\\analyst\",\"EEFFDeviceAllEventsView.UserResponse\":\"Approved\",\"EEFFDeviceAllEventsView.VendorName\":\"Example Vendor\"}",
+        "type": [
+            "info"
+        ]
+    },
+    "input": {
+        "type": "cel"
+    },
+    "related": {
+        "user": [
+            "EXAMPLE\\analyst"
+        ]
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "trellix_epo_on_prem-device_event"
+    ],
+    "trellix_epo_on_prem": {
+        "device_event": {
+            "eeff_device_all_events_view": {
+                "agent_guid": "11111111-2222-4333-8444-555555555555",
+                "backup_size": 1024.5,
+                "backup_state": "Completed",
+                "backup_time": 18.75,
+                "credential_type": "1",
+                "device_size": 64000,
+                "exempted": "No",
+                "file_system": "NTFS",
+                "file_system_version": "3.1",
+                "initialization_state": "Initialized",
+                "initialization_time": 12.25,
+                "key": "example-removable-media-key-001",
+                "media_type": "2",
+                "protected": "Yes",
+                "protected_size": 62000
+            }
+        }
+    },
+    "user": {
+        "name": "EXAMPLE\\analyst"
+    }
+}
+```
 
 #### DLP incident
 
@@ -740,86 +1096,6 @@ An example event for `dlp_incident` looks as following:
     }
 }
 ```
-
-### Threat event
-
-The `threat_event` data stream provides Trellix ePO On-Prem threat event records and matching extended event details collected from the Web API.
-
-#### Threat event fields
-
-**Exported fields**
-
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
-| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
-| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
-| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
-| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
-| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
-| input.type | Type of filebeat input. | keyword |
-| observer.vendor | Vendor name of the observer. | constant_keyword |
-| trellix_epo_on_prem.threat_event.ep_extended_event.access_requested | Access Requested value recorded in the extended threat-event details. | keyword |
-| trellix_epo_on_prem.threat_event.ep_extended_event.am_core_content_version | AM Core Content Version value recorded in the extended threat-event details. | keyword |
-| trellix_epo_on_prem.threat_event.ep_extended_event.analyzer_content_creation_date | Analyzer Content Creation Date value recorded in the extended threat-event details. | date |
-| trellix_epo_on_prem.threat_event.ep_extended_event.analyzer_gti_query | Analyzer GTI Query value recorded in the extended threat-event details. | boolean |
-| trellix_epo_on_prem.threat_event.ep_extended_event.analyzer_reg_info | Analyzer Reg Info value recorded in the extended threat-event details. | keyword |
-| trellix_epo_on_prem.threat_event.ep_extended_event.analyzer_technology_version | Analyzer Technology Version value recorded in the extended threat-event details. | keyword |
-| trellix_epo_on_prem.threat_event.ep_extended_event.api_name | API Name value recorded in the extended threat-event details. | keyword |
-| trellix_epo_on_prem.threat_event.ep_extended_event.attack_vector_type | Attack Vector Type value recorded in the extended threat-event details. | keyword |
-| trellix_epo_on_prem.threat_event.ep_extended_event.blade_name | Blade Name value recorded in the extended threat-event details. | keyword |
-| trellix_epo_on_prem.threat_event.ep_extended_event.cleanable | Cleanable value recorded in the extended threat-event details. | boolean |
-| trellix_epo_on_prem.threat_event.ep_extended_event.direction | Direction value recorded in the extended threat-event details. | keyword |
-| trellix_epo_on_prem.threat_event.ep_extended_event.duration_before_detection | Duration Before Detection value recorded in the extended threat-event details. | long |
-| trellix_epo_on_prem.threat_event.ep_extended_event.event_auto_id | Event Auto ID value recorded in the extended threat-event details. | keyword |
-| trellix_epo_on_prem.threat_event.ep_extended_event.first_action_status | First Action Status value recorded in the extended threat-event details. | boolean |
-| trellix_epo_on_prem.threat_event.ep_extended_event.first_attempted_action | First Attempted Action value recorded in the extended threat-event details. | keyword |
-| trellix_epo_on_prem.threat_event.ep_extended_event.location | Location value recorded in the extended threat-event details. | keyword |
-| trellix_epo_on_prem.threat_event.ep_extended_event.second_action_status | Second Action Status value recorded in the extended threat-event details. | boolean |
-| trellix_epo_on_prem.threat_event.ep_extended_event.second_attempted_action | Second Attempted Action value recorded in the extended threat-event details. | keyword |
-| trellix_epo_on_prem.threat_event.ep_extended_event.source_description | Source Description value recorded in the extended threat-event details. | keyword |
-| trellix_epo_on_prem.threat_event.ep_extended_event.source_device_pid | Source Device PID value recorded in the extended threat-event details. | keyword |
-| trellix_epo_on_prem.threat_event.ep_extended_event.source_device_serial_number | Source Device Serial Number value recorded in the extended threat-event details. | keyword |
-| trellix_epo_on_prem.threat_event.ep_extended_event.source_device_vid | Source Device VID value recorded in the extended threat-event details. | keyword |
-| trellix_epo_on_prem.threat_event.ep_extended_event.source_hash | Source Hash value recorded in the extended threat-event details. | keyword |
-| trellix_epo_on_prem.threat_event.ep_extended_event.source_share_name | Source Share Name value recorded in the extended threat-event details. | keyword |
-| trellix_epo_on_prem.threat_event.ep_extended_event.source_url_rating_code | Source URL Rating Code value recorded in the extended threat-event details. | keyword |
-| trellix_epo_on_prem.threat_event.ep_extended_event.source_url_web_category | Source URL Web Category value recorded in the extended threat-event details. | keyword |
-| trellix_epo_on_prem.threat_event.ep_extended_event.target_create_time | Target Create Time value recorded in the extended threat-event details. | date |
-| trellix_epo_on_prem.threat_event.ep_extended_event.target_description | Target Description value recorded in the extended threat-event details. | keyword |
-| trellix_epo_on_prem.threat_event.ep_extended_event.target_device_display_name | Target Device Display Name value recorded in the extended threat-event details. | keyword |
-| trellix_epo_on_prem.threat_event.ep_extended_event.target_device_pid | Target Device PID value recorded in the extended threat-event details. | keyword |
-| trellix_epo_on_prem.threat_event.ep_extended_event.target_device_serial_number | Target Device Serial Number value recorded in the extended threat-event details. | keyword |
-| trellix_epo_on_prem.threat_event.ep_extended_event.target_device_vid | Target Device VID value recorded in the extended threat-event details. | keyword |
-| trellix_epo_on_prem.threat_event.ep_extended_event.target_modify_time | Target Modify Time value recorded in the extended threat-event details. | date |
-| trellix_epo_on_prem.threat_event.ep_extended_event.target_parent_process_hash | Target Parent Process Hash value recorded in the extended threat-event details. | keyword |
-| trellix_epo_on_prem.threat_event.ep_extended_event.target_parent_process_name | Target Parent Process Name value recorded in the extended threat-event details. | keyword |
-| trellix_epo_on_prem.threat_event.ep_extended_event.target_parent_process_signed | Target Parent Process Signed value recorded in the extended threat-event details. | boolean |
-| trellix_epo_on_prem.threat_event.ep_extended_event.target_parent_process_signer | Target Parent Process Signer value recorded in the extended threat-event details. | keyword |
-| trellix_epo_on_prem.threat_event.ep_extended_event.target_share_name | Target Share Name value recorded in the extended threat-event details. | keyword |
-| trellix_epo_on_prem.threat_event.ep_extended_event.target_url | Target URL value recorded in the extended threat-event details. | keyword |
-| trellix_epo_on_prem.threat_event.ep_extended_event.task_name | Task Name value recorded in the extended threat-event details. | keyword |
-| trellix_epo_on_prem.threat_event.ep_extended_event.threat_detected_on_creation | Threat Detected On Creation value recorded in the extended threat-event details. | boolean |
-| trellix_epo_on_prem.threat_event.ep_extended_event.threat_impact | Threat Impact value recorded in the extended threat-event details. | keyword |
-| trellix_epo_on_prem.threat_event.ep_extended_event.topic | Topic value recorded in the extended threat-event details. | keyword |
-| trellix_epo_on_prem.threat_event.epo_events.agent_guid | Agent GUID value recorded in the ePO threat event. | keyword |
-| trellix_epo_on_prem.threat_event.epo_events.analyzer | Analyzer value recorded in the ePO threat event. | keyword |
-| trellix_epo_on_prem.threat_event.epo_events.analyzer_dat_version | Analyzer DAT Version value recorded in the ePO threat event. | keyword |
-| trellix_epo_on_prem.threat_event.epo_events.analyzer_engine_version | Analyzer Engine Version value recorded in the ePO threat event. | keyword |
-| trellix_epo_on_prem.threat_event.epo_events.detected_utc | Detection time recorded in the ePO threat event. | date |
-| trellix_epo_on_prem.threat_event.epo_events.event_time_local | Event Time Local value recorded in the ePO threat event. | date |
-| trellix_epo_on_prem.threat_event.epo_events.server_id | Server ID value recorded in the ePO threat event. | keyword |
-| trellix_epo_on_prem.threat_event.epo_events.source_host_name | Source Host Name value recorded in the ePO threat event. | keyword |
-| trellix_epo_on_prem.threat_event.epo_events.source_url | Source URL value recorded in the ePO threat event. | keyword |
-| trellix_epo_on_prem.threat_event.epo_events.target_process_name | Target Process Name value recorded in the ePO threat event. | keyword |
-| trellix_epo_on_prem.threat_event.epo_events.tenant_id | Tenant ID value recorded in the ePO threat event. | keyword |
-| trellix_epo_on_prem.threat_event.epo_events.threat_action_taken | Threat Action Taken value recorded in the ePO threat event. | keyword |
-| trellix_epo_on_prem.threat_event.epo_events.threat_category | Trellix threat-category identifier used to classify the event variant. | keyword |
-| trellix_epo_on_prem.threat_event.epo_events.threat_handled | Threat Handled value recorded in the ePO threat event. | boolean |
-| trellix_epo_on_prem.threat_event.epo_events.threat_type | Trellix threat-type identifier used as the primary event variant discriminator. | keyword |
-
-
-### Example event
 
 #### Threat event
 
@@ -1091,9 +1367,11 @@ These inputs are used in the integration:
 
 This integration uses the following API:
 
-* **Audit**: Collects audit log records via the **Trellix ePO executeQuery API** (endpoint: `/remote/core.executeQuery`). Records are queried from the `OrionAuditLog` table using keyset-based pagination with the `StartTime` field as a cursor to ensure efficient and non-duplicating retrieval.
+* **Audit**: Collects audit log records via the **Trellix ePO executeQuery API** (endpoint: `/remote/core.executeQuery`). Records are queried from the `OrionAuditLog` table using a keyset cursor on `AutoId`, with results ordered ascending so the cursor advances monotonically across polls.
 * **Web Control**: Collects web control event records via the **Trellix ePO executeQuery API** (endpoint: `/remote/core.executeQuery`). Records are queried from the `WP_EventInfo` table using keyset-based pagination with the `EventAutoID` field as a cursor to ensure efficient and non-duplicating retrieval.
 * **Compliance history**: Collects compliance history records via the **Trellix ePO executeQuery API** (endpoint: `/remote/core.executeQuery`). Records are queried from the `EpoComplianceHistory` table using keyset-based pagination with the `AutoId` field as a cursor to ensure efficient and non-duplicating retrieval.
 * **System**: Collects managed system (endpoint) records via the **Trellix ePO executeQuery API** (endpoint: `/remote/core.executeQuery`). Records are queried from the `EPOLeafNode` table using keyset-based pagination with the `LastUpdate` field as a cursor to ensure efficient and non-duplicating retrieval.
+* **Product Event**: Collects product event records through the **Trellix ePO executeQuery API** at `/remote/core.executeQuery`. Records are queried from `EPOProductEvents` using a keyset cursor on `AutoID`, with results ordered ascending so the cursor advances monotonically across polls.
+* **Device event**: Collects removable-media device event records through the **Trellix ePO executeQuery API** at `/remote/core.executeQuery`. Records are queried from `EEFFDeviceAllEventsView` using a keyset cursor on `AutoID`, with results ordered ascending so the cursor advances monotonically across polls.
 * **DLP incident**: Collects DLP incident records through the **Trellix ePO executeQuery API** (endpoint: `/remote/core.executeQuery`). Records are queried from `UDLP_EPD_Incidents` and ordered by `LastUpdateTimestamp`, which is used as an inclusive time cursor.
 * **Threat event**: Collects threat event records through the **Trellix ePO executeQuery API** (endpoint: `/remote/core.executeQuery`). Records are queried using the `EPExtendedEvent` target, fields are selected from `EPOEvents` and `EPExtendedEvent`, and pagination is keyset-based using `EPOEvents.AutoID` as the cursor.

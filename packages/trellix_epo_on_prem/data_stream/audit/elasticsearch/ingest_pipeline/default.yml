@@ -54,7 +54,9 @@ processors:
             for (int i = 0; i < str.length(); i++) {
                 char c = str.charAt(i);
                 if (Character.isUpperCase(c)) {
-                    if (i > 0 && Character.isLowerCase(str.charAt(i - 1))) {
+                    if (i > 0 && str.charAt(i - 1) != (char) '_'
+                        && (!Character.isUpperCase(str.charAt(i - 1))
+                        || (i + 1 < str.length() && Character.isLowerCase(str.charAt(i + 1))))) {
                         result += "_";
                     }
                     result += Character.toLowerCase(c);
@@ -127,6 +129,7 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_split_event_action_error
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - join:
@@ -136,6 +139,7 @@ processors:
       separator: '-'
       on_failure:
         - append:
+            tag: append_join_event_action_error
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
@@ -290,7 +294,7 @@ processors:
       value: failure
   - convert:
       field: trellix_epo_on_prem.audit.orion_audit_log.user_id
-      tag: convert_OrionAuditLog_UserId_to_long
+      tag: convert_OrionAuditLog_UserId_to_string
       type: string
       ignore_missing: true
   - set:
