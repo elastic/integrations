@@ -3,17 +3,17 @@ description: Pipeline for processing compute logs.
 processors:
   - set:
       field: ecs.version
-      tag: set_ecs_version
+      tag: set_ecs_version_8efb762c
       value: 9.3.0
   - terminate:
       description: error message set and no data to process.
-      tag: terminate_data_collection_error
+      tag: terminate_data_collection_error_f2e4d3c3
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
 
   # remove agentless metadata
   - remove:
       description: Removes the fields added by Agentless as metadata, as they can collide with ECS fields.
-      tag: remove_agentless_tags
+      tag: remove_agentless_tags_457d239b
       if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
       field:
         - organization
@@ -23,61 +23,63 @@ processors:
 
   - rename:
       field: message
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_176375fd
       target_field: event.original
       ignore_missing: true
       description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_9ecc8509
       ignore_missing: true
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - json:
       field: event.original
-      tag: json_event_original
+      tag: json_event_original_0cd6d986
       target_field: axonius.compute
   # Fingerprint the full raw payload because the Axonius API does not expose a stable entity ID for compute assets; the transform keys on this value for deduplication.
   - fingerprint:
       fields:
         - event.original
-      tag: fingerprint_event_original
+      tag: fingerprint_event_original_ff0124e1
       target_field: axonius.compute.transform_unique_id
       ignore_missing: true
   - set:
-      tag: set_event_kind
+      tag: set_event_kind_d452ef2c
       field: event.kind
       value: event
   - append:
       field: event.category
       value: host
-      tag: category_host
+      tag: category_host_5098f71a
   - append:
       field: event.category
       value: vulnerability
-      tag: category_vulnerability
+      tag: category_vulnerability_30f59663
   - append:
       field: event.type
       value: info
-      tag: type_info
+      tag: type_info_5eab37e6
   - convert:
       field: axonius.compute.adapter_list_length
-      tag: convert_adapter_list_length_to_long
+      tag: convert_adapter_list_length_to_long_04dcdff0
       type: long
       ignore_missing: true
       if: ctx.axonius?.compute?.adapter_list_length != ''
       on_failure:
         - remove:
+            tag: remove_axonius_compute_adapter_list_length_95813d6b
             field: axonius.compute.adapter_list_length
             ignore_missing: true
         - append:
+            tag: append_error_message_af2cde15
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
-      tag: script_rename_fields
+      tag: script_rename_fields_c99030bb
       lang: painless
-      description:  Renames all axonius.compute.* fields to root level (removes event.data prefix). Prefixes conflicting keys with 'data_' to avoid overwriting custom data-stream-root-level fields.
+      description: Renames all axonius.compute.* fields to root level (removes event.data prefix). Prefixes conflicting keys with 'data_' to avoid overwriting custom data-stream-root-level fields.
       source: |-
         if (ctx.axonius?.compute?.event?.data instanceof Map) {
           Map eventData = ctx.axonius.compute.event.data;
@@ -92,7 +94,7 @@ processors:
         }
   - date:
       field: axonius.compute.event.accurate_for_datetime
-      tag: date_event_accurate_for_datetime
+      tag: date_event_accurate_for_datetime_4a3f7295
       target_field: axonius.compute.event.accurate_for_datetime
       formats:
         - EEE, dd MMM yyyy HH:mm:ss 'GMT'
@@ -101,19 +103,21 @@ processors:
       if: ctx.axonius?.compute?.event?.accurate_for_datetime != null && ctx.axonius.compute.event.accurate_for_datetime != ''
       on_failure:
         - remove:
+            tag: remove_axonius_compute_event_accurate_for_datetime_15dded7c
             field: axonius.compute.event.accurate_for_datetime
             ignore_missing: true
         - append:
+            tag: append_error_message_dc09246d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: '@timestamp'
-      tag: set_@timestamp_from_compute_event_accurate_for_datetime
+      tag: set_@timestamp_from_compute_event_accurate_for_datetime_954d1baa
       copy_from: axonius.compute.event.accurate_for_datetime
       ignore_empty_value: true
   - date:
       field: axonius.compute.accurate_for_datetime
-      tag: date_accurate_for_datetime
+      tag: date_accurate_for_datetime_70c2601c
       target_field: axonius.compute.accurate_for_datetime
       formats:
         - EEE, dd MMM yyyy HH:mm:ss 'GMT'
@@ -122,14 +126,16 @@ processors:
       if: ctx.axonius?.compute?.accurate_for_datetime != null && ctx.axonius.compute.accurate_for_datetime != ''
       on_failure:
         - remove:
+            tag: remove_axonius_compute_accurate_for_datetime_43ffd260
             field: axonius.compute.accurate_for_datetime
             ignore_missing: true
         - append:
+            tag: append_error_message_e75c4c55
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: axonius.compute.creation_date
-      tag: date_creation_date
+      tag: date_creation_date_708d0d0e
       target_field: axonius.compute.creation_date
       formats:
         - EEE, dd MMM yyyy HH:mm:ss 'GMT'
@@ -138,19 +144,21 @@ processors:
       if: ctx.axonius?.compute?.creation_date != null && ctx.axonius.compute.creation_date != ''
       on_failure:
         - remove:
+            tag: remove_axonius_compute_creation_date_5488920c
             field: axonius.compute.creation_date
             ignore_missing: true
         - append:
+            tag: append_error_message_1c2bcc75
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.created
-      tag: set_event_created_from_compute_creation_date
+      tag: set_event_created_from_compute_creation_date_efa86646
       copy_from: axonius.compute.creation_date
       ignore_empty_value: true
   - date:
       field: axonius.compute.fetch_time
-      tag: date_fetch_time
+      tag: date_fetch_time_7781e00d
       target_field: axonius.compute.fetch_time
       formats:
         - EEE, dd MMM yyyy HH:mm:ss 'GMT'
@@ -159,14 +167,16 @@ processors:
       if: ctx.axonius?.compute?.fetch_time != null && ctx.axonius.compute.fetch_time != ''
       on_failure:
         - remove:
+            tag: remove_axonius_compute_fetch_time_29a0fe3e
             field: axonius.compute.fetch_time
             ignore_missing: true
         - append:
+            tag: append_error_message_bf43604b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: axonius.compute.first_fetch_time
-      tag: date_first_fetch_time
+      tag: date_first_fetch_time_a32ab85c
       target_field: axonius.compute.first_fetch_time
       formats:
         - EEE, dd MMM yyyy HH:mm:ss 'GMT'
@@ -175,79 +185,91 @@ processors:
       if: ctx.axonius?.compute?.first_fetch_time != null && ctx.axonius.compute.first_fetch_time != ''
       on_failure:
         - remove:
+            tag: remove_axonius_compute_first_fetch_time_27bab6ed
             field: axonius.compute.first_fetch_time
             ignore_missing: true
         - append:
+            tag: append_error_message_d3085ef3
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: axonius.compute.from_last_fetch
-      tag: convert_from_last_fetch_to_boolean
+      tag: convert_from_last_fetch_to_boolean_4f4bcd7a
       type: boolean
       ignore_missing: true
       if: ctx.axonius?.compute?.from_last_fetch != ''
       on_failure:
         - remove:
+            tag: remove_axonius_compute_from_last_fetch_45c47646
             field: axonius.compute.from_last_fetch
             ignore_missing: true
         - append:
+            tag: append_error_message_7f9306c3
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: axonius.compute.tenant_number
-      tag: convert_tenant_number_to_long
+      tag: convert_tenant_number_to_long_ed933ae8
       type: long
       ignore_missing: true
       if: ctx.axonius?.compute?.tenant_number != ''
       on_failure:
         - remove:
+            tag: remove_axonius_compute_tenant_number_97160b40
             field: axonius.compute.tenant_number
             ignore_missing: true
         - append:
+            tag: append_error_message_6f5c79d7
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: axonius.compute.is_fetched_from_adapter
-      tag: convert_is_fetched_from_adapter_to_boolean
+      tag: convert_is_fetched_from_adapter_to_boolean_7b485cd1
       type: boolean
       ignore_missing: true
       if: ctx.axonius?.compute?.is_fetched_from_adapter != ''
       on_failure:
         - remove:
+            tag: remove_axonius_compute_is_fetched_from_adapter_727fa80d
             field: axonius.compute.is_fetched_from_adapter
             ignore_missing: true
         - append:
+            tag: append_error_message_6c829809
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: axonius.compute.memory_size
-      tag: convert_memory_size_to_double
+      tag: convert_memory_size_to_double_46505a86
       type: double
       ignore_missing: true
       if: ctx.axonius?.compute?.memory_size != ''
       on_failure:
         - remove:
+            tag: remove_axonius_compute_memory_size_be786e93
             field: axonius.compute.memory_size
             ignore_missing: true
         - append:
+            tag: append_error_message_67b751f5
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: axonius.compute.not_fetched_count
-      tag: convert_not_fetched_count_to_long
+      tag: convert_not_fetched_count_to_long_b58fcab5
       type: long
       ignore_missing: true
       if: ctx.axonius?.compute?.not_fetched_count != ''
       on_failure:
         - remove:
+            tag: remove_axonius_compute_not_fetched_count_a36b4719
             field: axonius.compute.not_fetched_count
             ignore_missing: true
         - append:
+            tag: append_error_message_21051741
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: host.os.type
-      tag: set_host_os_type_from_compute_os_type
+      tag: set_host_os_type_from_compute_os_type_4ffa2257
       copy_from: axonius.compute.os.type
       if: >-
         ctx.axonius?.compute?.os?.type != null && (
@@ -261,22 +283,22 @@ processors:
       ignore_empty_value: true
   - lowercase:
       field: host.os.type
-      tag: lowercase_host_os_type
+      tag: lowercase_host_os_type_b90026f8
       ignore_missing: true
   - append:
       field: related.user
-      tag: append_compute_owner_into_related_user
+      tag: append_compute_owner_into_related_user_d0904078
       value: '{{{axonius.compute.owner}}}'
       allow_duplicates: false
       if: ctx.axonius?.compute?.owner != null
   - pipeline:
       name: '{{ IngestPipeline "pipeline-compute-image" }}'
-      tag: pipeline-compute-image
+      tag: pipeline-compute-image_3084e992
       if: >-
         ctx.axonius?.compute?.asset_type == 'compute_images'
   - pipeline:
       name: '{{ IngestPipeline "pipeline-device" }}'
-      tag: pipeline-device
+      tag: pipeline-device_3fe69d7d
       if: >-
         ctx.axonius?.compute?.asset_type == 'devices'
   - remove:
@@ -305,10 +327,10 @@ processors:
         - axonius.compute.uuid
         - axonius.compute.vendor
         - axonius.compute.event.enrichment_type
-      tag: remove_compute_fields_mapped_to_ecs
+      tag: remove_compute_fields_mapped_to_ecs_7913b6e7
       ignore_missing: true
   - script:
-      tag: script_to_drop_null_values
+      tag: script_to_drop_null_values_7559f019
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
       source: |-
@@ -335,11 +357,12 @@ processors:
         handleMap(ctx);
   - set:
       field: event.kind
-      tag: set_pipeline_error_into_event_kind
+      tag: set_pipeline_error_into_event_kind_4fd8ffa8
       value: pipeline_error
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message_417e65c9
       field: error.message
       value: |-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
@@ -347,5 +370,10 @@ on_failure:
         {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
+  - append:
+      tag: append_tags_279d5a5c
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

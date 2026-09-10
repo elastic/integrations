@@ -1,0 +1,20 @@
+# Per-stream page-size sweeps: one stream enabled at a time, cap 6Gi, output held.
+# These establish the memory driver PER STREAM, which the ORR handbook asks for. They
+# are attribution, not addends: each run pays the whole-container baseline, so summing
+# them over-counts. Pod sizing comes from scale.csv / sustained.csv.
+# peak_bytes only: this sweep predates working-set accounting, so working set is empty.
+# alert and incident were re-measured 2026-08-04 after the record-shape calibration;
+# vulnerability is the 2026-08-03 run, unchanged because its template did not change.
+axis,point,label,streams,params,mode,mem_limit_bytes,gomemlimit,hold_s,total_raw_bytes,peak_bytes,workingset_bytes,workingset_peak_bytes,anon_bytes,oom,agent_image,run_log
+stream,250,,alert,alert=250,cold,6442450944,,0,1442593,150294528,,,,false,docker.elastic.co/elastic-agent/elastic-agent:9.6.0-SNAPSHOT,
+stream,500,,alert,alert=500,cold,6442450944,,0,2871489,166092800,,,,false,docker.elastic.co/elastic-agent/elastic-agent:9.6.0-SNAPSHOT,
+stream,1000,,alert,alert=1000,cold,6442450944,,0,5740806,190816256,,,,false,docker.elastic.co/elastic-agent/elastic-agent:9.6.0-SNAPSHOT,
+stream,2000,,alert,alert=2000,cold,6442450944,,0,11481316,265281536,,,,false,docker.elastic.co/elastic-agent/elastic-agent:9.6.0-SNAPSHOT,
+stream,10,,incident,incident=10 alerts_per_incident=100,cold,6442450944,,0,5820687,206508032,,,,false,docker.elastic.co/elastic-agent/elastic-agent:9.6.0-SNAPSHOT,
+stream,25,,incident,incident=25 alerts_per_incident=100,cold,6442450944,,0,14401477,291803136,,,,false,docker.elastic.co/elastic-agent/elastic-agent:9.6.0-SNAPSHOT,
+stream,50,,incident,incident=50 alerts_per_incident=100,cold,6442450944,,0,28805096,399777792,,,,false,docker.elastic.co/elastic-agent/elastic-agent:9.6.0-SNAPSHOT,
+stream,100,,incident,incident=100 alerts_per_incident=100,cold,6442450944,,0,57517604,589557760,,,,false,docker.elastic.co/elastic-agent/elastic-agent:9.6.0-SNAPSHOT,
+stream,2500,,vulnerability,vulnerability=2500,cold,6442450944,,0,2256183,179183616,,,,false,docker.elastic.co/elastic-agent/elastic-agent:9.6.0-SNAPSHOT,
+stream,5000,,vulnerability,vulnerability=5000,cold,6442450944,,0,4514365,188436480,,,,false,docker.elastic.co/elastic-agent/elastic-agent:9.6.0-SNAPSHOT,
+stream,10000,,vulnerability,vulnerability=10000,cold,6442450944,,0,9034813,255094784,,,,false,docker.elastic.co/elastic-agent/elastic-agent:9.6.0-SNAPSHOT,
+stream,20000,,vulnerability,vulnerability=20000,cold,6442450944,,0,18091729,333733888,,,,false,docker.elastic.co/elastic-agent/elastic-agent:9.6.0-SNAPSHOT,

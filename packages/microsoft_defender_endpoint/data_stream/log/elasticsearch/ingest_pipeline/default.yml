@@ -8,41 +8,48 @@ processors:
         - team
       ignore_missing: true
       if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
-      tag: remove_agentless_tags
+      tag: remove_agentless_tags_e6856012
       description: >-
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
   - remove:
+      tag: remove_message_e947c330
       field: message
       ignore_missing: true
       if: 'ctx.event?.original != null'
       description: 'The `message` field is no longer required if the document has an `event.original` field. Helps to maintain compatibility with the Logstash `ecs_compatibility feature`.'
   - json:
+      tag: json_event_original_to_json_5e54dc16
       field: event.original
       target_field: json
   - drop:
+      tag: drop_1101a70f
       if: ctx.json?.value?.isEmpty() == true
   - remove:
+      tag: remove_65a5568f
       field:
         - json.comments
         - host
         - cloud
       ignore_missing: true
   - rename:
+      tag: rename_json_evidence_processCommandLine_to_process_command_line_87d5c44c
       field: json.evidence.processCommandLine
       target_field: process.command_line
       ignore_missing: true
   - script:
       lang: painless
-      tag: set_process_name_from_command_line
+      tag: set_process_name_from_command_line_481b95a0
       description: Set process.name from process.command_line.
       source: |
         ctx.process = ctx.process ?: [:];
@@ -94,13 +101,15 @@ processors:
         }
       on_failure:
         - append:
+            tag: append_error_message_6ff52099
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
-#########################
-## ECS General Mapping ##
-#########################
+  #########################
+  ## ECS General Mapping ##
+  #########################
   - script:
+      tag: script_ecs_general_mapping_689b9659
       lang: painless
       if: ctx.json != null
       params:
@@ -114,6 +123,7 @@ processors:
           ctx.json.entrySet().removeIf(entry -> params.values.contains(entry.getValue()));
         }
   - script:
+      tag: script_175274f4
       lang: painless
       if: ctx.json?.evidence != null
       params:
@@ -140,86 +150,105 @@ processors:
         }
         drop(ctx);
   - set:
+      tag: set_cloud_provider_136a398d
       field: cloud.provider
       value: azure
   - set:
+      tag: set_timestamp_eb1f6f42
       field: '@timestamp'
       value: '{{{json.alertUpdateTime}}}'
       if: ctx.json?.alertUpdateTime != null
   - rename:
+      tag: rename_json_aadTenantId_to_cloud_account_id_8f6f7734
       field: json.aadTenantId
       target_field: cloud.account.id
       ignore_missing: true
   - rename:
+      tag: rename_json_machineId_to_cloud_instance_id_340e5847
       field: json.machineId
       target_field: cloud.instance.id
       ignore_missing: true
   - rename:
+      tag: rename_json_title_to_message_81e913ab
       field: json.title
       target_field: message
       ignore_missing: true
 
-#######################
-## ECS Event Mapping ##
-#######################
+  #######################
+  ## ECS Event Mapping ##
+  #######################
   - set:
+      tag: set_event_kind_39295792
       field: event.kind
       value: alert
-# Events returned from the API is always in UTC, so should never use anything else
+  # Events returned from the API is always in UTC, so should never use anything else
   - set:
+      tag: set_event_timezone_6275b231
       field: event.timezone
       value: UTC
   - set:
+      tag: set_event_action_c3bce720
       field: event.action
       value: '{{{json.category}}}'
       if: ctx.json?.category != null
   - set:
+      tag: set_event_provider_c7a88896
       field: event.provider
       value: defender_endpoint
   - set:
+      tag: set_event_created_749d01ee
       field: event.created
       value: '{{{json.alertCreationTime}}}'
       if: ctx.json?.alertCreationTime != null
   - append:
+      tag: append_event_category_3fa422a0
       field: event.category
       value: host
   - append:
+      tag: append_event_category_dc037e29
       field: event.category
       value: malware
       if: ctx.json?.category == 'Malware'
   - append:
+      tag: append_event_category_af56ec52
       field: event.category
       value: process
       if: ctx.json?.evidence?.entityType == 'Process'
   - append:
+      tag: append_event_type_fc8e2967
       field: event.type
       value: access
       if: ctx.json?.evidence?.entityType == 'User'
   - append:
+      tag: append_event_type_396d75c1
       field: event.type
       value:
         - start
       if: ctx.json?.status == 'New'
   - append:
+      tag: append_event_type_b517d614
       field: event.type
       value: end
       if: ctx.json?.status == 'Resolved'
   - rename:
+      tag: rename_json_id_to_event_id_6438e920
       field: json.id
       target_field: event.id
       ignore_missing: true
   - rename:
+      tag: rename_json_firstEventTime_to_event_start_20a87aa3
       field: json.firstEventTime
       target_field: event.start
       ignore_missing: true
   - rename:
+      tag: rename_json_lastEventTime_to_event_end_50b3aea0
       field: json.lastEventTime
       target_field: event.end
       ignore_missing: true
   - script:
       lang: painless
       description: Script to set event.severity.
-      tag: set_event_severity
+      tag: set_event_severity_be186cd4
       if: ctx.json?.severity instanceof String
       source: |-
         ctx.event = ctx.event ?: [:];
@@ -235,171 +264,200 @@ processors:
         }
       on_failure:
         - append:
+            tag: append_error_message_3cfc5ed3
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
+      tag: script_6763c8b3
       lang: painless
       if: ctx.event?.start != null && ctx.event?.end != null
       source: >
         Instant eventstart = ZonedDateTime.parse(ctx.event.start).toInstant();
         Instant eventend = ZonedDateTime.parse(ctx.event.end).toInstant();
         ctx.event['duration'] = ChronoUnit.NANOS.between(eventstart, eventend);
-
-########################
-## ECS Threat Mapping ##
-########################
+  ########################
+  ## ECS Threat Mapping ##
+  ########################
   - set:
+      tag: set_threat_framework_3cca1f4f
       field: threat.framework
       value: MITRE ATT&CK
       if: ctx.json?.category != null
   - append:
+      tag: append_threat_technique_name_e694defd
       field: threat.technique.name
       value: '{{{json.category}}}'
       if: ctx.json?.category != null
   - rename:
+      tag: rename_json_description_to_rule_description_51d58c52
       field: json.description
       target_field: rule.description
       ignore_missing: true
       if: ctx.json?.description != null && ctx.json.description.length() < 1020
 
-######################
-## ECS File Mapping ##
-######################
+  ######################
+  ## ECS File Mapping ##
+  ######################
   - rename:
+      tag: rename_json_evidence_fileName_to_file_name_37b76119
       field: json.evidence.fileName
       target_field: file.name
       ignore_missing: true
   - rename:
+      tag: rename_json_evidence_sha256_to_file_hash_sha256_d8376191
       field: json.evidence.sha256
       target_field: file.hash.sha256
       ignore_missing: true
   - rename:
+      tag: rename_json_evidence_sha1_to_file_hash_sha1_c9341a59
       field: json.evidence.sha1
       target_field: file.hash.sha1
       ignore_missing: true
   - rename:
+      tag: rename_json_evidence_filePath_to_file_path_c0b894ad
       field: json.evidence.filePath
       target_field: file.path
       ignore_missing: true
 
-######################
-## ECS Process Mapping ##
-######################
+  ######################
+  ## ECS Process Mapping ##
+  ######################
   - rename:
+      tag: rename_json_evidence_processId_to_process_pid_63c8c33f
       field: json.evidence.processId
       target_field: process.pid
       ignore_missing: true
   - rename:
+      tag: rename_json_evidence_processCreationTime_to_process_start_5744afe1
       field: json.evidence.processCreationTime
       target_field: process.start
       ignore_missing: true
   - rename:
+      tag: rename_json_evidence_parentProcessId_to_process_parent_pid_9fff990d
       field: json.evidence.parentProcessId
       target_field: process.parent.pid
       ignore_missing: true
   - rename:
+      tag: rename_json_evidence_parentProcessCreationTime_to_process_parent_start_5e342db5
       field: json.evidence.parentProcessCreationTime
       target_field: process.parent.start
       ignore_missing: true
   - set:
       field: process.entity_id
-      tag: set_process_entity_id
+      tag: set_process_entity_id_93685fa5
       value: '{{{process.pid}}}'
       ignore_empty_value: true
   - set:
       field: process.parent.entity_id
-      tag: set_process_parent_entity_id
+      tag: set_process_parent_entity_id_30fca21a
       value: '{{{process.parent.pid}}}'
       ignore_empty_value: true
-##########################
-## ECS Observer Mapping ##
-##########################
+  ##########################
+  ## ECS Observer Mapping ##
+  ##########################
   - set:
+      tag: set_observer_product_d661edd2
       field: observer.product
       value: Defender for Endpoint
   - set:
+      tag: set_observer_vendor_99db8544
       field: observer.vendor
       value: Microsoft
   - rename:
+      tag: rename_json_detectionSource_to_observer_name_a0edeb13
       field: json.detectionSource
       target_field: observer.name
       ignore_missing: true
 
-#####################
-## ECS URL Mapping ##
-#####################
+  #####################
+  ## ECS URL Mapping ##
+  #####################
   - rename:
+      tag: rename_json_evidence_url_to_url_full_62e6e9fd
       field: json.evidence.url
       target_field: url.full
       ignore_missing: true
       if: ctx.json?.evidence?.url != null
   - uri_parts:
+      tag: uri_parts_url_full_a1687495
       field: url.full
       ignore_failure: true
       if: ctx.url?.full != null
 
-######################
-## ECS Host Mapping ##
-######################
+  ######################
+  ## ECS Host Mapping ##
+  ######################
   - rename:
+      tag: rename_json_computerDnsName_to_host_hostname_4eaae100
       field: json.computerDnsName
       target_field: host.hostname
       ignore_missing: true
   - lowercase:
+      tag: lowercase_host_hostname_to_host_name_39c0d2d1
       target_field: host.name
       field: host.hostname
       if: ctx.host?.hostname != null
   - set:
+      tag: set_host_id_c0d880eb
       field: host.id
       copy_from: cloud.instance.id
       if: ctx.cloud?.instance?.id != null
       ignore_empty_value: true
 
-######################
-## ECS User Mapping ##
-######################
+  ######################
+  ## ECS User Mapping ##
+  ######################
   - rename:
+      tag: rename_json_relatedUser_userName_to_user_name_8ca12340
       field: json.relatedUser.userName
       target_field: user.name
       ignore_missing: true
   - rename:
+      tag: rename_json_relatedUser_domainName_to_user_domain_53e84dba
       field: json.relatedUser.domainName
       target_field: user.domain
       ignore_missing: true
   - rename:
+      tag: rename_json_evidence_userSid_to_user_id_2390c9a2
       field: json.evidence.userSid
       target_field: user.id
       ignore_missing: true
 
-#########################
-## ECS Related Mapping ##
-#########################
+  #########################
+  ## ECS Related Mapping ##
+  #########################
   - append:
+      tag: append_related_ip_8834607b
       field: related.ip
       value: '{{{json.evidence.ipAddress}}}'
       if: ctx.json?.evidence?.ipAddress != null
   - append:
+      tag: append_related_user_c036eec2
       field: related.user
       value: '{{{user.name}}}'
       if: ctx.user?.name != null
   - append:
+      tag: append_related_hash_12718026
       field: related.hash
       value: '{{{file.hash.sha1}}}'
       if: ctx.file?.hash?.sha1 != null
   - append:
+      tag: append_related_hash_7574f0ee
       field: related.hash
       value: '{{{file.hash.sha256}}}'
       if: ctx.file?.hash?.sha256 != null
   - append:
+      tag: append_related_hosts_555b812b
       field: related.hosts
       value: '{{{host.name}}}'
       if: ctx.host?.name != null && ctx.host.name != ''
       allow_duplicates: false
 
-#############
-## Cleanup ##
-#############
+  #############
+  ## Cleanup ##
+  #############
   - remove:
+      tag: remove_cleanup_2189f235
       field:
         - json.alertCreationTime
         - json.severity
@@ -407,25 +465,34 @@ processors:
         - json.category
       ignore_missing: true
   - rename:
+      tag: rename_json_to_microsoft_defender_endpoint_63b0021f
       field: json
       target_field: microsoft.defender_endpoint
       ignore_missing: true
   - convert:
+      tag: convert_microsoft_defender_endpoint_incidentId_e9e01906
       field: microsoft.defender_endpoint.incidentId
       type: string
       ignore_missing: true
   - convert:
+      tag: convert_microsoft_defender_endpoint_investigationId_cfb73590
       field: microsoft.defender_endpoint.investigationId
       type: string
       ignore_missing: true
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message_206bb8ac
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'

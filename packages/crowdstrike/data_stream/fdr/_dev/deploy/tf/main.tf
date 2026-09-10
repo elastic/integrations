@@ -6,6 +6,11 @@ provider "aws" {
       branch       = var.BRANCH
       build        = var.BUILD_ID
       created_date = var.CREATED_DATE
+
+      division = "engineering"
+      org      = "obs"
+      team     = "security-service-integrations" # owner.github from manifest.yml
+      project  = "integrations-crowdstrike-package" # name from manifest.yml
     }
   }
 }

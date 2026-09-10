@@ -1,0 +1,53 @@
+{
+    "id": "vercel_otel-regional-error-rate-skew",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "description": "Alerts when the HTTP 5xx error rate in a single Vercel execution region exceeds 5% over a 15-minute window, even if the global error rate looks healthy. A regional error concentration typically indicates edge/lambda infrastructure issues localized to that region rather than a global code defect.",
+        "name": "[Vercel OTel] Regional error rate skew",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "vercel",
+            "saturation"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 2
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "artifacts": {
+            "dashboards": [
+                {
+                    "id": "vercel_otel-logs"
+                }
+            ],
+            "investigation_guide": {
+                "blob": "## Regional Error Rate Skew\n\n### Triage Steps\n1. Note the affected `vercel.execution.region` from the alert context (e.g. `iad1`, `sfo1`, `pdx1`).\n2. Compare against the global error rate rule \u2014 if this rule fires alone (global rate is healthy), the issue is localized to the region's edge/lambda infrastructure rather than a code-level regression.\n3. Inspect recent errors scoped to the region: `FROM logs-vercel.logs.otel-default | WHERE vercel.execution.region == \"<region>\" AND http.response.status_code >= 500 | KEEP @timestamp, http.route, message, deployment.id | SORT @timestamp DESC | LIMIT 50`\n4. Check the Vercel status page for any reported incidents affecting that region.\n5. If this is a regional infra issue outside your control, there is typically no remediation available beyond monitoring; if it is caused by a downstream dependency only reachable from that region (e.g. a database replica), investigate that dependency's health in the affected region.\n\n### Escalation\nIf the regional skew persists for more than 30 minutes or if the region also shows in the traffic-skew visualisation, escalate to the on-call engineer and consider filing a report with Vercel support."
+            }
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "FROM logs-vercel.logs.otel-default\n| WHERE deployment.environment.name == \"production\"\n    AND vercel.log.source IN (\"lambda\", \"edge\")\n    // -1 means the function crashed before returning any response; excluded here\n    AND http.response.status_code != -1\n| STATS\n    total = COUNT(*),\n    errors = COUNT(*) WHERE http.response.status_code >= 500\n  BY vercel.execution.region\n// Minimum sample size per region to avoid noisy alerts on low-traffic regions\n| WHERE total > 20\n| EVAL region_error_rate_pct = ROUND(TO_DOUBLE(errors) / total * 100.0, 2)\n// Regional threshold is set higher than the global 5xx rule (2%) because a single region naturally has\n// higher variance with a smaller sample; adjust based on your regional traffic distribution.\n| WHERE region_error_rate_pct > 5.0\n| SORT region_error_rate_pct DESC\n| LIMIT 10"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 15,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "vercel.execution.region",
+            "termSize": 10,
+            "excludeHitsFromPreviousRun": true
+        }
+    }
+}

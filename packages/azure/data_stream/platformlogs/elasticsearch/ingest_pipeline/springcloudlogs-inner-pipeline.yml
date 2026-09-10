@@ -2,93 +2,116 @@
 description: Pipeline for parsing azure spring cloud logs.
 processors:
   - script:
+      tag: script_2da91ab9
       source: "ctx['_index'] = ctx['_index'].replace('platformlogs', 'springcloudlogs')"
       ignore_failure: true
   - rename:
+      tag: rename_azure_platformlogs_to_azure_springcloudlogs_d7f0f5b7
       field: azure.platformlogs
       target_field: azure.springcloudlogs
       ignore_missing: true
   - set:
+      tag: set_event_dataset_7a10816d
       field: event.dataset
       value: azure.springcloudlogs
       ignore_failure: true
   - set:
+      tag: set_data_stream_dataset_7249e256
       field: data_stream.dataset
       value: azure.springcloudlogs
       ignore_failure: true
   - drop:
+      tag: drop_385e17e1
       if: 'ctx.azure.springcloudlogs.category != "SystemLogs" && ctx.azure.springcloudlogs.category != "ApplicationConsole" && ctx.azure.springcloudlogs.category != "IngressLogs" && ctx.azure.springcloudlogs.category != "BuildLogs" && ctx.azure.springcloudlogs.category != "ContainerEventLogs"'
       ignore_failure: true
   - rename:
+      tag: rename_azure_springcloudlogs_LogFormat_to_azure_springcloudlogs_log_format_225eb28d
       field: azure.springcloudlogs.LogFormat
       target_field: azure.springcloudlogs.log_format
       ignore_missing: true
   - rename:
+      tag: rename_azure_springcloudlogs_properties_InstanceName_to_azure_springcloudlogs_properties_instance_name_3fb33311
       field: azure.springcloudlogs.properties.InstanceName
       target_field: azure.springcloudlogs.properties.instance_name
       ignore_missing: true
   - rename:
+      tag: rename_azure_springcloudlogs_properties_Log_to_azure_springcloudlogs_properties_log_c68a05e8
       field: azure.springcloudlogs.properties.Log
       target_field: azure.springcloudlogs.properties.log
       ignore_missing: true
   - rename:
+      tag: rename_azure_springcloudlogs_properties_ServiceName_to_azure_springcloudlogs_properties_service_name_a1ab50e1
       field: azure.springcloudlogs.properties.ServiceName
       target_field: azure.springcloudlogs.properties.service_name
       ignore_missing: true
   - rename:
+      tag: rename_azure_springcloudlogs_properties_Stream_to_azure_springcloudlogs_properties_stream_bb699344
       field: azure.springcloudlogs.properties.Stream
       target_field: azure.springcloudlogs.properties.stream
       ignore_missing: true
   - rename:
+      tag: rename_azure_springcloudlogs_properties_AppName_to_azure_springcloudlogs_properties_app_name_d84e7411
       field: azure.springcloudlogs.properties.AppName
       target_field: azure.springcloudlogs.properties.app_name
       ignore_missing: true
   - rename:
+      tag: rename_azure_springcloudlogs_properties_ServiceId_to_azure_springcloudlogs_properties_service_id_d64f02d1
       field: azure.springcloudlogs.properties.ServiceId
       target_field: azure.springcloudlogs.properties.service_id
       ignore_missing: true
   - rename:
+      tag: rename_azure_springcloudlogs_properties_Type_to_azure_springcloudlogs_properties_type_20b595c4
       field: azure.springcloudlogs.properties.Type
       target_field: azure.springcloudlogs.properties.type
       ignore_missing: true
   - rename:
+      tag: rename_azure_springcloudlogs_properties_Level_to_azure_springcloudlogs_level_cf52824b
       field: azure.springcloudlogs.properties.Level
       target_field: azure.springcloudlogs.level
       ignore_missing: true
   - rename:
+      tag: rename_azure_springcloudlogs_properties_Logger_to_azure_springcloudlogs_properties_logger_361dee2c
       field: azure.springcloudlogs.properties.Logger
       target_field: azure.springcloudlogs.properties.logger
       ignore_missing: true
   - rename:
+      tag: rename_azure_springcloudlogs_properties_Stack_to_azure_springcloudlogs_properties_stack_b6124b54
       field: azure.springcloudlogs.properties.Stack
       target_field: azure.springcloudlogs.properties.stack
       ignore_missing: true
   - rename:
+      tag: rename_azure_springcloudlogs_properties_Thread_to_azure_springcloudlogs_properties_thread_4158af24
       field: azure.springcloudlogs.properties.Thread
       target_field: azure.springcloudlogs.properties.thread
       ignore_missing: true
   - rename:
+      tag: rename_azure_springcloudlogs_level_to_log_level_3073bea0
       field: azure.springcloudlogs.level
       target_field: log.level
       ignore_missing: true
   - rename:
+      tag: rename_azure_springcloudlogs_operationName_to_azure_springcloudlogs_operation_name_35462723
       field: azure.springcloudlogs.operationName
       target_field: azure.springcloudlogs.operation_name
       ignore_missing: true
   - convert:
+      tag: convert_azure_springcloudlogs_operation_name_to_event_action_e1ae6023
       field: azure.springcloudlogs.operation_name
       target_field: event.action
       type: string
       ignore_missing: true
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message_fb774d38
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'

@@ -467,17 +467,22 @@ func runSyncChangelog(_ []string) error {
 		packagesDir = "packages"
 	}
 
-	collectResult, err := changelog.Collect(before, after, repository)
+	collectResult, err := changelog.Collect(before, after, repository, os.Getenv("BACKPORT_PR_NUMBER"))
 	if err != nil {
 		return err
 	}
 
 	if !collectResult.HasChanges {
+		outcome := "skipped"
+		if collectResult.ExistingSyncPRURL != "" {
+			outcome = "already_exists"
+		}
 		return writeGitHubOutputs(map[string]string{
-			"backport_pr_number": collectResult.BackportPRNumber,
-			"working_branch":     collectResult.WorkingBranch,
-			"not_found_packages": "",
-			"create_outcome":     "skipped",
+			"backport_pr_number":   collectResult.BackportPRNumber,
+			"working_branch":       collectResult.WorkingBranch,
+			"not_found_packages":   "",
+			"create_outcome":       outcome,
+			"existing_sync_pr_url": collectResult.ExistingSyncPRURL,
 		})
 	}
 
@@ -491,13 +496,23 @@ func runSyncChangelog(_ []string) error {
 		repository,
 	)
 	if err != nil {
+		// Write outputs before returning so the comment step can post a failure
+		// message on the backport PR even when CreateSyncPR errors out.
+		_ = writeGitHubOutputs(map[string]string{
+			"backport_pr_number":   collectResult.BackportPRNumber,
+			"working_branch":       collectResult.WorkingBranch,
+			"not_found_packages":   "",
+			"create_outcome":       "failure",
+			"existing_sync_pr_url": "",
+		})
 		return err
 	}
 	return writeGitHubOutputs(map[string]string{
-		"backport_pr_number": collectResult.BackportPRNumber,
-		"working_branch":     collectResult.WorkingBranch,
-		"not_found_packages": strings.Join(syncResult.NotFoundPackages, ","),
-		"create_outcome":     syncResult.Outcome,
+		"backport_pr_number":   collectResult.BackportPRNumber,
+		"working_branch":       collectResult.WorkingBranch,
+		"not_found_packages":   strings.Join(syncResult.NotFoundPackages, ","),
+		"create_outcome":       syncResult.Outcome,
+		"existing_sync_pr_url": "",
 	})
 }
 
@@ -515,6 +530,7 @@ func runPostComment(_ []string) error {
 		os.Getenv("CREATE_OUTCOME"),
 		os.Getenv("RUN_ID"),
 		repository,
+		os.Getenv("EXISTING_SYNC_PR_URL"),
 	)
 }
 

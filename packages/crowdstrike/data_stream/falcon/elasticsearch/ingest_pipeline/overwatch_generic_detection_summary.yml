@@ -4,35 +4,35 @@ processors:
   - set:
       field: event.kind
       value: alert
-      tag: set_event_kind
+      tag: set_event_kind_ab1166ce
   - append:
       field: event.category
       value: malware
-      tag: append_malware_category
+      tag: append_malware_category_00df95f0
   - append:
       field: event.type
       value: info
-      tag: append_info_type
+      tag: append_info_type_5eab37e6
   - rename:
       field: crowdstrike.event.CompositeId
       target_field: event.id
       ignore_missing: true
-      tag: rename_composite_id_to_event_id
+      tag: rename_composite_id_to_event_id_10eb4d1d
   - rename:
       field: crowdstrike.event.FalconHostLink
       target_field: event.reference
       ignore_missing: true
-      tag: rename_falcon_host_link
+      tag: rename_falcon_host_link_7d3b772f
   - rename:
       field: crowdstrike.event.Description
       target_field: message
       ignore_missing: true
-      tag: rename_description_to_message
+      tag: rename_description_to_message_d3527fb0
   - convert:
       field: crowdstrike.event.Severity
       type: long
       ignore_missing: true
-      tag: convert_severity_to_long
+      tag: convert_severity_to_long_97978bc8
       on_failure:
         - remove:
             tag: remove_crowdstrike_event_Severity_2c932c83
@@ -45,13 +45,16 @@ processors:
               Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}
 on_failure:
   - append:
+      tag: append_error_message_9c9ce5dc
       field: error.message
       value: |-
         Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

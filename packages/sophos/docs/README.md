@@ -986,6 +986,8 @@ The `xg` data stream collects Sophos XG (SFOS) logs.
 | sophos.xg.ftp_url | FTP URL from which virus was downloaded | keyword |
 | sophos.xg.ftpcommand | FTP command used when virus was found | keyword |
 | sophos.xg.fw_rule_id | Firewall Rule ID which is applied on the traffic | integer |
+| sophos.xg.fw_rule_name | Firewall rule name which is applied on the traffic | keyword |
+| sophos.xg.fw_rule_section | Firewall rule section which is applied on the traffic | keyword |
 | sophos.xg.fw_rule_type | Firewall rule type which is applied on the traffic | keyword |
 | sophos.xg.hb_health | Heartbeat status | keyword |
 | sophos.xg.hb_status | Heartbeat status | keyword |

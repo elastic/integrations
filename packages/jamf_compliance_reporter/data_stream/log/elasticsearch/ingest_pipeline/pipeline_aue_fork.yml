@@ -2,24 +2,38 @@
 description: Pipeline for Jamf Compliance Reporter aue_fork audit logs.
 processors:
   - rename:
+      tag: rename_json_exec_chain_parent_uuid_to_jamf_compliance_reporter_log_exec_chain_parent_uuid_2d473082
       field: json.exec_chain_parent.uuid
       target_field: jamf_compliance_reporter.log.exec_chain_parent.uuid
       ignore_missing: true
   - convert:
+      tag: convert_json_arguments_child_PID_to_jamf_compliance_reporter_log_arguments_child_pid_bd346fed
       field: json.arguments.child_PID
       target_field: jamf_compliance_reporter.log.arguments.child.pid
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_be26f75e
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - pipeline:
+      tag: pipeline_identity_object_8cb224f5
       name: '{{ IngestPipeline "pipeline_identity_object" }}'
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_error_message_206bb8ac
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      tag: append_tags_279d5a5c
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

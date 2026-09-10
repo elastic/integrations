@@ -3,13 +3,13 @@ description: Pipeline for processing offense logs.
 processors:
   - drop:
       if: ctx.message == 'empty_events_placeholder'
-      tag: drop_empty_events_placeholder
+      tag: drop_empty_events_placeholder_2f680212
   - set:
       field: ecs.version
-      tag: set_ecs_version
+      tag: set_ecs_version_dbf680ba
       value: 8.17.0
   - terminate:
-      tag: data_collection_error
+      tag: data_collection_error_4bdbb3d0
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
       description: error message set and no data to process.
 
@@ -21,28 +21,27 @@ processors:
         - team
       ignore_missing: true
       if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
-      tag: remove_agentless_tags
+      tag: remove_agentless_tags_e6856012
       description: >-
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
-
   # parse the event JSON
   - rename:
       field: message
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_176375fd
       target_field: event.original
       ignore_missing: true
       description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_9ecc8509
       ignore_missing: true
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - json:
       field: event.original
-      tag: json_event_original
+      tag: json_event_original_4f8a0ca6
       target_field: ibm_qradar.offense
 
   # Add fingerprint
@@ -50,524 +49,574 @@ processors:
       fields:
         - ibm_qradar.offense.id
         - ibm_qradar.offense.last_persisted_time
-      tag: fingerprint_offense
+      tag: fingerprint_offense_6667f62d
       target_field: _id
       ignore_missing: true
 
   # Set event.* fields
   - set:
       field: event.kind
-      tag: set_event_kind
+      tag: set_event_kind_ab1166ce
       value: alert
   - append:
       field: event.type
-      tag: append_event_type
+      tag: append_event_type_5eab37e6
       value: info
 
   # Convert values into appropriate type and do ECS mapping
   - set:
       field: user.name
-      tag: set_user_name_from_offense_assigned_to
+      tag: set_user_name_from_offense_assigned_to_3a17b135
       copy_from: ibm_qradar.offense.assigned_to
       ignore_empty_value: true
   - append:
       field: related.user
-      tag: append_offense_assigned_to_into_related_user
+      tag: append_offense_assigned_to_into_related_user_d33a4600
       value: '{{{ibm_qradar.offense.assigned_to}}}'
       allow_duplicates: false
       if: ctx.ibm_qradar?.offense?.assigned_to != null
   - append:
       field: related.user
-      tag: append_offense_closing_user_into_related_user
+      tag: append_offense_closing_user_into_related_user_43ee959c
       value: '{{{ibm_qradar.offense.closing_user}}}'
       allow_duplicates: false
       if: ctx.ibm_qradar?.offense?.closing_user != null
   - convert:
       field: ibm_qradar.offense.category_count
-      tag: convert_category_count_to_long
+      tag: convert_category_count_to_long_83b0aa47
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_ibm_qradar_offense_category_count_ff5d88ce
             field: ibm_qradar.offense.category_count
         - append:
+            tag: append_error_message_f9dc9732
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
       description: Script to set the event duration.
-      tag: script_to_set_event_duration
+      tag: script_to_set_event_duration_a5930485
       lang: painless
       if: ctx.ibm_qradar?.offense?.start_time != null && ctx.ibm_qradar?.offense?.close_time != null
       source: >-
         ctx.event.duration = (ctx.ibm_qradar.offense.close_time - ctx.ibm_qradar.offense.start_time) * 1000000;
       on_failure:
         - append:
+            tag: append_error_message_fb23327c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: ibm_qradar.offense.start_time
-      tag: date_start_time
+      tag: date_start_time_8ccae7a1
       target_field: ibm_qradar.offense.start_time
       formats:
         - UNIX_MS
       if: ctx.ibm_qradar?.offense?.start_time != null
       on_failure:
         - remove:
+            tag: remove_ibm_qradar_offense_start_time_2af8d8c0
             field: ibm_qradar.offense.start_time
         - append:
+            tag: append_error_message_84b9072c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.start
-      tag: set_event_start_from_offense_start_time
+      tag: set_event_start_from_offense_start_time_d1b507b4
       copy_from: ibm_qradar.offense.start_time
       ignore_empty_value: true
   - date:
       field: ibm_qradar.offense.close_time
-      tag: date_close_time
+      tag: date_close_time_84fdbc46
       target_field: ibm_qradar.offense.close_time
       formats:
         - UNIX_MS
       if: ctx.ibm_qradar?.offense?.close_time != null
       on_failure:
         - remove:
+            tag: remove_ibm_qradar_offense_close_time_59f94654
             field: ibm_qradar.offense.close_time
         - append:
+            tag: append_error_message_befdd7c4
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.end
-      tag: set_event_end_from_offense_close_time
+      tag: set_event_end_from_offense_close_time_8d107c94
       copy_from: ibm_qradar.offense.close_time
       ignore_empty_value: true
   - convert:
       field: ibm_qradar.offense.closing_reason_id
-      tag: convert_closing_reason_id_to_string
+      tag: convert_closing_reason_id_to_string_02758454
       type: string
       ignore_missing: true
   - convert:
       field: ibm_qradar.offense.credibility
-      tag: convert_credibility_to_long
+      tag: convert_credibility_to_long_76424b2c
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_ibm_qradar_offense_credibility_dca155b2
             field: ibm_qradar.offense.credibility
         - append:
+            tag: append_error_message_ce72caca
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: message
-      tag: set_message_from_offense_description
+      tag: set_message_from_offense_description_f93bb1d0
       copy_from: ibm_qradar.offense.description
       ignore_empty_value: true
   - convert:
       field: ibm_qradar.offense.device_count
-      tag: convert_device_count_to_long
+      tag: convert_device_count_to_long_b561561d
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_ibm_qradar_offense_device_count_460e807a
             field: ibm_qradar.offense.device_count
         - append:
+            tag: append_error_message_286a5480
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: ibm_qradar.offense.domain_id
-      tag: convert_domain_id_to_string
+      tag: convert_domain_id_to_string_216e8b7c
       type: string
       ignore_missing: true
   - convert:
       field: ibm_qradar.offense.event_count
-      tag: convert_event_count_to_long
+      tag: convert_event_count_to_long_c242460c
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_ibm_qradar_offense_event_count_935280c6
             field: ibm_qradar.offense.event_count
         - append:
+            tag: append_error_message_47344c24
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: ibm_qradar.offense.first_persisted_time
-      tag: date_first_persisted_time
+      tag: date_first_persisted_time_8e5d8906
       target_field: ibm_qradar.offense.first_persisted_time
       formats:
         - UNIX_MS
       if: ctx.ibm_qradar?.offense?.first_persisted_time != null
       on_failure:
         - remove:
+            tag: remove_ibm_qradar_offense_first_persisted_time_76fb3804
             field: ibm_qradar.offense.first_persisted_time
         - append:
+            tag: append_error_message_d7980e54
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.created
-      tag: set_event_created_from_offense_first_persisted_time
+      tag: set_event_created_from_offense_first_persisted_time_a993c999
       copy_from: ibm_qradar.offense.first_persisted_time
       ignore_empty_value: true
   - convert:
       field: ibm_qradar.offense.flow_count
-      tag: convert_flow_count_to_long
+      tag: convert_flow_count_to_long_1014768a
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_ibm_qradar_offense_flow_count_39f8ed92
             field: ibm_qradar.offense.flow_count
         - append:
+            tag: append_error_message_25affdca
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: ibm_qradar.offense.follow_up
-      tag: convert_follow_up_to_boolean
+      tag: convert_follow_up_to_boolean_4227ab02
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_ibm_qradar_offense_follow_up_025fda9a
             field: ibm_qradar.offense.follow_up
         - append:
+            tag: append_error_message_d255b8d9
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: ibm_qradar.offense.id
-      tag: convert_id_to_string
+      tag: convert_id_to_string_a389eb07
       type: string
       ignore_missing: true
   - set:
       field: event.id
-      tag: set_event_id_from_offense_id
+      tag: set_event_id_from_offense_id_7e977685
       copy_from: ibm_qradar.offense.id
       ignore_empty_value: true
   - convert:
       field: ibm_qradar.offense.inactive
-      tag: convert_inactive_to_boolean
+      tag: convert_inactive_to_boolean_8ba72a75
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_ibm_qradar_offense_inactive_944f179e
             field: ibm_qradar.offense.inactive
         - append:
+            tag: append_error_message_ff49a52f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: ibm_qradar.offense.last_persisted_time
-      tag: date_last_persisted_time
+      tag: date_last_persisted_time_9cbdca99
       target_field: ibm_qradar.offense.last_persisted_time
       formats:
         - UNIX_MS
       if: ctx.ibm_qradar?.offense?.last_persisted_time != null
       on_failure:
         - remove:
+            tag: remove_ibm_qradar_offense_last_persisted_time_2444d6a4
             field: ibm_qradar.offense.last_persisted_time
         - append:
+            tag: append_error_message_6de63a44
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: '@timestamp'
-      tag: set_@timestamp_from_offense_last_persisted_time
+      tag: set_@timestamp_from_offense_last_persisted_time_d7a8807b
       copy_from: ibm_qradar.offense.last_persisted_time
       ignore_empty_value: true
   - date:
       field: ibm_qradar.offense.last_updated_time
-      tag: date_last_updated_time
+      tag: date_last_updated_time_dd40c3bf
       target_field: ibm_qradar.offense.last_updated_time
       formats:
         - UNIX_MS
       if: ctx.ibm_qradar?.offense?.last_updated_time != null
       on_failure:
         - remove:
+            tag: remove_ibm_qradar_offense_last_updated_time_82222f20
             field: ibm_qradar.offense.last_updated_time
         - append:
+            tag: append_error_message_ae0b8baa
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: ibm_qradar.offense.local_destination_address_ids
-      tag: convert_local_destination_address_ids_to_string
+      tag: convert_local_destination_address_ids_to_string_25aabd60
       type: string
       ignore_missing: true
   - convert:
       field: ibm_qradar.offense.local_destination_count
-      tag: convert_local_destination_count_to_long
+      tag: convert_local_destination_count_to_long_50b7e7db
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_ibm_qradar_offense_local_destination_count_634b013e
             field: ibm_qradar.offense.local_destination_count
         - append:
+            tag: append_error_message_333ae648
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: ibm_qradar.offense.log_sources
-      tag: foreach_log_source
+      tag: foreach_log_source_7eccb287
       if: ctx.ibm_qradar?.offense?.log_sources instanceof List
       processor:
         convert:
           field: _ingest._value.id
-          tag: convert_log_source_id_to_string
+          tag: convert_log_source_id_to_string_af7e0a58
           type: string
           ignore_missing: true
   - foreach:
       field: ibm_qradar.offense.log_sources
-      tag: foreach_log_source
+      tag: foreach_log_source_7c5a549a
       if: ctx.ibm_qradar?.offense?.log_sources instanceof List
       processor:
         convert:
           field: _ingest._value.type_id
-          tag: convert_log_source_type_id_to_string
+          tag: convert_log_source_type_id_to_string_b7b5c272
           type: string
           ignore_missing: true
   - convert:
       field: ibm_qradar.offense.magnitude
-      tag: convert_magnitude_to_long
+      tag: convert_magnitude_to_long_93367f88
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_ibm_qradar_offense_magnitude_41968e5a
             field: ibm_qradar.offense.magnitude
         - append:
+            tag: append_error_message_c45a27c2
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: ibm_qradar.offense.offense_type
-      tag: convert_offense_type_to_string
+      tag: convert_offense_type_to_string_f876c865
       type: string
       ignore_missing: true
   - convert:
       field: ibm_qradar.offense.policy_category_count
-      tag: convert_policy_category_count_to_long
+      tag: convert_policy_category_count_to_long_6631f09e
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_ibm_qradar_offense_policy_category_count_abb89c5e
             field: ibm_qradar.offense.policy_category_count
         - append:
+            tag: append_error_message_a528af99
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: ibm_qradar.offense.protected
-      tag: convert_protected_to_boolean
+      tag: convert_protected_to_boolean_d6f98796
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_ibm_qradar_offense_protected_057471b6
             field: ibm_qradar.offense.protected
         - append:
+            tag: append_error_message_5812160e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: ibm_qradar.offense.relevance
-      tag: convert_relevance_to_long
+      tag: convert_relevance_to_long_329bc8e8
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_ibm_qradar_offense_relevance_0a0ebb0e
             field: ibm_qradar.offense.relevance
         - append:
+            tag: append_error_message_13b38785
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: ibm_qradar.offense.remote_destination_count
-      tag: convert_remote_destination_count_to_long
+      tag: convert_remote_destination_count_to_long_16c8cb13
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_ibm_qradar_offense_remote_destination_count_05dfcab2
             field: ibm_qradar.offense.remote_destination_count
         - append:
+            tag: append_error_message_ce30c167
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: ibm_qradar.offense.rules
-      tag: foreach_rules_average_capacity
+      tag: foreach_rules_average_capacity_33c6e4aa
       if: ctx.ibm_qradar?.offense?.rules instanceof List
       processor:
         convert:
           field: _ingest._value.average_capacity
-          tag: convert_rules_average_capacity_to_long
+          tag: convert_rules_average_capacity_to_long_b0797a80
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_average_capacity_9d2085d3
                 field: _ingest._value.average_capacity
                 ignore_missing: true
             - append:
+                tag: append_error_message_ba8342c6
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: ibm_qradar.offense.rules
-      tag: foreach_rules_base_capacity
+      tag: foreach_rules_base_capacity_b6980984
       if: ctx.ibm_qradar?.offense?.rules instanceof List
       processor:
         convert:
           field: _ingest._value.base_capacity
-          tag: convert_rules_base_capacity_to_long
+          tag: convert_rules_base_capacity_to_long_4afa741a
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_base_capacity_d2bef7c5
                 field: _ingest._value.base_capacity
                 ignore_missing: true
             - append:
+                tag: append_error_message_c4be361c
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: ibm_qradar.offense.rules
-      tag: foreach_rules_id
+      tag: foreach_rules_id_8e4f57fc
       if: ctx.ibm_qradar?.offense?.rules instanceof List
       processor:
         convert:
           field: _ingest._value.base_host_id
-          tag: convert_rules_base_host_id_to_string
+          tag: convert_rules_base_host_id_to_string_d6663614
           type: string
           ignore_missing: true
   - foreach:
       field: ibm_qradar.offense.rules
-      tag: foreach_rules_capacity_timestamp
+      tag: foreach_rules_capacity_timestamp_c8452c36
       if: ctx.ibm_qradar?.offense?.rules instanceof List
       processor:
         date:
           field: _ingest._value.capacity_timestamp
-          tag: date_rules_capacity_timestamp
+          tag: date_rules_capacity_timestamp_8ea0516c
           target_field: _ingest._value.capacity_timestamp
           formats:
             - UNIX_MS
           on_failure:
             - remove:
+                tag: remove_ingest_value_capacity_timestamp_45038567
                 field: _ingest._value.capacity_timestamp
                 ignore_missing: true
   - foreach:
       field: ibm_qradar.offense.rules
-      tag: foreach_rules_creation_date
+      tag: foreach_rules_creation_date_3a945438
       if: ctx.ibm_qradar?.offense?.rules instanceof List
       processor:
         date:
           field: _ingest._value.creation_date
-          tag: date_rules_creation_date
+          tag: date_rules_creation_date_67787f45
           target_field: _ingest._value.creation_date
           formats:
             - UNIX_MS
           on_failure:
             - remove:
+                tag: remove_ingest_value_creation_date_26215d8a
                 field: _ingest._value.creation_date
                 ignore_missing: true
   - foreach:
       field: ibm_qradar.offense.rules
-      tag: foreach_rules_enabled
+      tag: foreach_rules_enabled_e92ab998
       if: ctx.ibm_qradar?.offense?.rules instanceof List
       processor:
         convert:
           field: _ingest._value.enabled
-          tag: convert_rules_enabled_to_boolean
+          tag: convert_rules_enabled_to_boolean_c8b183fd
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_enabled_76028b23
                 field: _ingest._value.enabled
                 ignore_missing: true
             - append:
+                tag: append_error_message_0baeb2a9
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: ibm_qradar.offense.rules
-      tag: foreach_rules_linked_rule_identifier
+      tag: foreach_rules_linked_rule_identifier_2944a2a6
       if: ctx.ibm_qradar?.offense?.rules instanceof List
       processor:
         convert:
           field: _ingest._value.linked_rule_identifier
-          tag: convert_rules_linked_rule_identifier_to_string
+          tag: convert_rules_linked_rule_identifier_to_string_8698a331
           type: string
           ignore_missing: true
   - foreach:
       field: ibm_qradar.offense.rules
-      tag: foreach_rules_modification_date
+      tag: foreach_rules_modification_date_0c2a7ea9
       if: ctx.ibm_qradar?.offense?.rules instanceof List
       processor:
         date:
           field: _ingest._value.modification_date
-          tag: date_rules_modification_date
+          tag: date_rules_modification_date_66b811b8
           target_field: _ingest._value.modification_date
           formats:
             - UNIX_MS
           on_failure:
             - remove:
+                tag: remove_ingest_value_modification_date_211cf56a
                 field: _ingest._value.modification_date
                 ignore_missing: true
   - foreach:
       field: ibm_qradar.offense.rules
-      tag: foreach_rules_id
+      tag: foreach_rules_id_3c041f07
       if: ctx.ibm_qradar?.offense?.rules instanceof List
       processor:
         convert:
           field: _ingest._value.id
-          tag: convert_rules_id_to_string
+          tag: convert_rules_id_to_string_0c77aa62
           type: string
           ignore_missing: true
   - foreach:
       field: ibm_qradar.offense.rules
-      tag: foreach_rules_id
+      tag: foreach_rules_id_a38792b5
       if: ctx.ibm_qradar?.offense?.rules instanceof List
       processor:
         append:
           field: rule.id
-          tag: append_rules_id_into_rule_id
+          tag: append_rules_id_into_rule_id_917a5d55
           value: '{{{_ingest._value.id}}}'
           allow_duplicates: false
   - foreach:
       field: ibm_qradar.offense.rules
-      tag: foreach_rules_name
+      tag: foreach_rules_name_2ccc2b68
       if: ctx.ibm_qradar?.offense?.rules instanceof List
       processor:
         append:
           field: rule.name
-          tag: append_rules_name_into_rule_name
+          tag: append_rules_name_into_rule_name_0317a961
           value: '{{{_ingest._value.name}}}'
           allow_duplicates: false
   - foreach:
       field: ibm_qradar.offense.rules
-      tag: foreach_rules_owner
+      tag: foreach_rules_owner_89748949
       if: ctx.ibm_qradar?.offense?.rules instanceof List
       processor:
         append:
           field: rule.author
-          tag: append_rules_owner_into_rule_author
+          tag: append_rules_owner_into_rule_author_8fd1ac25
           value: '{{{_ingest._value.owner}}}'
           allow_duplicates: false
   - foreach:
       field: ibm_qradar.offense.rules
-      tag: foreach_rules_type
+      tag: foreach_rules_type_16f0836e
       if: ctx.ibm_qradar?.offense?.rules instanceof List
       processor:
         append:
           field: rule.category
-          tag: append_rules_type_into_rule_category
+          tag: append_rules_type_into_rule_category_2bf115f7
           value: '{{{_ingest._value.type}}}'
           allow_duplicates: false
   - convert:
       field: ibm_qradar.offense.security_category_count
-      tag: convert_security_category_count_to_long
+      tag: convert_security_category_count_to_long_f521d72f
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_ibm_qradar_offense_security_category_count_f2cdcbb6
             field: ibm_qradar.offense.security_category_count
         - append:
+            tag: append_error_message_c9e0b5d9
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: ibm_qradar.offense.severity
-      tag: convert_severity_to_long
+      tag: convert_severity_to_long_539e243d
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_ibm_qradar_offense_severity_601fe3be
             field: ibm_qradar.offense.severity
         - append:
+            tag: append_error_message_19b022f5
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
       lang: painless
       description: Script to set event.severity.
-      tag: script_to_set_event_severity
+      tag: script_to_set_event_severity_efd7afb9
       if: ctx.ibm_qradar?.offense?.severity != null
       source: |-
         def offenseSeverity = ctx.ibm_qradar.offense.severity;
@@ -582,40 +631,45 @@ processors:
         }
       on_failure:
         - append:
+            tag: append_error_message_10f86543
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: ibm_qradar.offense.source_address_ids
-      tag: convert_source_address_ids_to_string
+      tag: convert_source_address_ids_to_string_17366070
       type: string
       ignore_missing: true
   - convert:
       field: ibm_qradar.offense.source_count
-      tag: convert_source_count_to_long
+      tag: convert_source_count_to_long_7a40bb31
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_ibm_qradar_offense_source_count_93a351ae
             field: ibm_qradar.offense.source_count
         - append:
+            tag: append_error_message_772b60a7
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: ibm_qradar.offense.username_count
-      tag: convert_username_count_to_long
+      tag: convert_username_count_to_long_b89433d9
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_ibm_qradar_offense_username_count_b3ec796a
             field: ibm_qradar.offense.username_count
         - append:
+            tag: append_error_message_36f605d6
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   # Remove Duplicate Custom Field if preserve_duplicate_custom_fields are not enabled
   - foreach:
       field: ibm_qradar.offense.rules
-      tag: foreach_ibm_qradar_offense_rules_
+      tag: foreach_ibm_qradar_offense_rules__81a1c822
       if: ctx.ibm_qradar?.offense?.rules instanceof List
       processor:
         remove:
@@ -624,7 +678,7 @@ processors:
             - _ingest._value.owner
             - _ingest._value.id
             - _ingest._value.type
-          tag: remove_custom_duplicate_fields_from_ibm_qradar_offense_rules
+          tag: remove_custom_duplicate_fields_from_ibm_qradar_offense_rules_0e61932d
           ignore_missing: true
           if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
   - remove:
@@ -636,13 +690,13 @@ processors:
         - ibm_qradar.offense.last_persisted_time
         - ibm_qradar.offense.severity
         - ibm_qradar.offense.start_time
-      tag: remove_custom_duplicate_fields
+      tag: remove_custom_duplicate_fields_e05c8845
       ignore_missing: true
       if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
 
   # Cleanup
   - script:
-      tag: script_to_drop_null_values
+      tag: script_to_drop_null_values_7559f019
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
       source: |-
@@ -669,26 +723,29 @@ processors:
         handleMap(ctx);
   - set:
       field: event.kind
-      tag: set_pipeline_error_into_event_kind
+      tag: set_pipeline_error_into_event_kind_4fd8ffa8
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message_125e6c0f
       field: error.message
-      value: |-
+      value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
         {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
         {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

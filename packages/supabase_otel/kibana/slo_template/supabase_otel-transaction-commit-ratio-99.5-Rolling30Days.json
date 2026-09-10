@@ -1,0 +1,74 @@
+{
+  "attributes": {
+    "name": "[Supabase OTel] Database transaction commit ratio 99.5% rolling 30 days",
+    "description": "Tracks the share of database transactions that roll back rather than commit, using the cumulative pg_stat_database counters for committed and rolled back transactions. The equation computes the rollback share of all transactions in the window, so a 5-minute timeslice is good while that share stays at or below the 0.05 threshold, meaning at least 95% of transactions committed. The SLO requires 99.5% of timeslices to be good over a rolling 30 days. Both counters are cumulative, so each becomes a per-timeslice delta via max() - min(). A timeslice in which no transactions ran at all divides by zero, which Kibana records as no data rather than as a success, so quiet periods neither consume nor credit error budget. Calibrate before deploying. A rollback is not necessarily an error on this platform — PostgREST wraps every API request in a transaction, so RLS denials, constraint violations and requests that legitimately return 4xx all roll back, and ORMs roll back read-only transactions. Every application therefore has its own baseline rollback rate, part of it deliberate. The 5% bar is a conservative 'clearly wrong' line rather than a target, and should be tightened to sit just above the project's observed baseline once that is known.",
+    "indicator": {
+      "type": "sli.metric.timeslice",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset: \"supabase.metrics.otel\"",
+        "metric": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "max",
+              "field": "pg_stat_database_xact_commit_total",
+              "filter": ""
+            },
+            {
+              "name": "B",
+              "aggregation": "min",
+              "field": "pg_stat_database_xact_commit_total",
+              "filter": ""
+            },
+            {
+              "name": "C",
+              "aggregation": "max",
+              "field": "pg_stat_database_xact_rollback_total",
+              "filter": ""
+            },
+            {
+              "name": "D",
+              "aggregation": "min",
+              "field": "pg_stat_database_xact_rollback_total",
+              "filter": ""
+            }
+          ],
+          "equation": "(C-D) / ((A-B) + (C-D))",
+          "comparator": "LTE",
+          "threshold": 0.05
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "timeslices",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.995,
+      "timesliceTarget": 0.95,
+      "timesliceWindow": "5m"
+    },
+    "tags": [
+      "supabase",
+      "otel"
+    ],
+    "groupBy": [
+      "resource.attributes.supabase_project_ref"
+    ],
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "supabase_otel-591c7a1f-6ac7-43cb-8ade-9c5684d47f5b"
+        },
+        {
+          "id": "supabase_otel-0fedaab5-00a9-45ce-8340-fcf6e510d215"
+        }
+      ]
+    }
+  },
+  "id": "supabase_otel-transaction-commit-ratio-99.5-Rolling30Days",
+  "type": "slo_template"
+}

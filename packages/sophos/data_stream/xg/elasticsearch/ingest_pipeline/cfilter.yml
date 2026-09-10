@@ -112,6 +112,12 @@ processors:
     field: url.original
     target_field: url
     if: "ctx.url?.original != null"
+    on_failure:
+      - append:
+          tag: append_tags_uri_parts_failure
+          field: tags
+          value: _sophos_xg_uri_parse_failure
+          allow_duplicates: false
 - set:
     tag: set_url_full_61fd98e5
     field: url.full
@@ -133,6 +139,12 @@ processors:
     target_field: http.request.referrer
     ignore_missing: true
     if: "ctx.sophos?.xg?.referer != null"
+- rename:
+    tag: rename_sophos_xg_http_referer_to_http_request_referrer
+    field: sophos.xg.http_referer
+    target_field: http.request.referrer
+    ignore_missing: true
+    if: "ctx.http?.request?.referrer == null"
 - convert:
     tag: convert_sophos_xg_status_code_to_http_response_status_code_84654a83
     field: sophos.xg.status_code
@@ -147,6 +159,12 @@ processors:
     type: long
     ignore_missing: true
     if: "ctx.sophos?.xg?.http_status != null && ctx.sophos?.xg?.http_status != '' && ctx.sophos?.xg?.http_status != '0'"
+- rename:
+    tag: rename_sophos_xg_http_user_agent_to_user_agent_original
+    field: sophos.xg.http_user_agent
+    target_field: user_agent.original
+    ignore_missing: true
+    if: "ctx.user_agent?.original == null"
 - rename:
     tag: rename_sophos_xg_user_agent_to_user_agent_original_f9f7e024
     field: sophos.xg.user_agent
@@ -190,9 +208,6 @@ processors:
     - sophos.xg.http_user_agent
     ignore_missing: true
 on_failure:
-- set:
-    field: event.kind
-    value: pipeline_error
 - append:
     field: error.message
     value: >-
@@ -200,6 +215,9 @@ on_failure:
       {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
       {{/_ingest.on_failure_processor_tag}}in pipeline '{{{ _ingest.pipeline }}}'
       failed with message '{{{ _ingest.on_failure_message }}}'
+- set:
+    field: event.kind
+    value: pipeline_error
 - append:
     field: tags
     value: preserve_original_event
