@@ -35,9 +35,11 @@ state:
 {{/contains}}
   initial_interval: {{initial_interval}}
   page_size: {{page_size}}
-  # Usage attribution only; never affects request handling. Bump on every release,
-  # the package version is not readable from the CEL program.
-  client_attribution: elastic/1.2.0
+  # Usage attribution only; never affects request handling. `_meta.package.version` is
+  # populated from Kibana 9.4.0 onwards; the literal is the fallback for the older stacks
+  # this package still supports, and can be dropped along with the conditional once 9.4.0
+  # is the lowest supported Kibana version.
+  client_attribution: elastic/{{#if _meta.package.version}}{{_meta.package.version}}{{else}}1.2.0{{/if}}
 redact:
   fields:
     - api_key
