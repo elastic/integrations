@@ -83,6 +83,14 @@ Guidance:
 | AWS Application ELB | 1m                  | 1m              |
 | AWS ECS | 1m                  | 1m              |
 
+### Autodiscover Limit and impact on cost
+
+This integration automatically discovers and collects all CloudWatch metrics published for the configured namespaces. The CloudWatch API bills per metric requested, so the more resources that exist in your account, the more metrics are discovered and the higher the collection cost.
+
+To avoid unexpectedly large bills, the number of metrics collected is capped by the **Autodiscover Limit**, which defaults to 10,000, high enough to capture all metrics in a typical deployment. The limit applies to each namespace separately. It is a ceiling, not a fixed value - you are billed only for the metrics that actually exist, so smaller accounts cost proportionally less. With the 10,000 limit, the maximum cost per namespace is ~$3,500 per month at a 5-minute collection interval.
+
+If you need to reduce cost, you can lower the **Autodiscover Limit** in the integration's advanced settings. Reducing the limit below the number of metrics in your account means some metrics will not be collected, and which ones are dropped is not predictable. We recommend changing this value only if you understand the metric volume in your AWS account, and lowering it gradually while verifying that the metrics you rely on are still present.
+
 ## Authentication
 
 The integration supports the following ways to authenticate to AWS:
