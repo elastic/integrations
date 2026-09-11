@@ -261,18 +261,26 @@ processors:
       field: source.ip
       target_field: source.geo
       ignore_missing: true
+  - set:
+      tag: set_source_geo_region_iso_code_3a81fa3d
+      field: source.geo.region_iso_code
+      description: >-
+        Must run before the `json.geo.country` rename below: that rename removes the
+        field whenever GeoIP did not resolve the address, which would leave this
+        template rendering a malformed code such as `-NY`. Both parts are required
+        because a value of `-` is not empty, so `ignore_empty_value` does not catch it.
+      value: '{{{json.geo.country}}}-{{{json.geo.regionCode}}}'
+      ignore_empty_value: true
+      if: >-
+        ctx.source?.geo?.region_iso_code == null && ctx.json.geo?.country != null &&
+        ctx.json.geo.country != '' && ctx.json.geo?.regionCode != null &&
+        ctx.json.geo.regionCode != ''
   - rename:
       tag: rename_json_geo_country_to_source_geo_country_iso_code_66520e30
       field: json.geo.country
       target_field: source.geo.country_iso_code
       ignore_missing: true
       if: ctx.source?.geo?.country_iso_code == null
-  - set:
-      tag: set_source_geo_region_iso_code_3a81fa3d
-      field: source.geo.region_iso_code
-      value: "{{{json.geo.country}}}-{{{json.geo.regionCode}}}"
-      ignore_empty_value: true
-      if: ctx.source?.geo?.region_iso_code == null
   - rename:
       tag: rename_json_geo_city_to_source_geo_city_name_b38d8cc7
       field: json.geo.city
@@ -392,7 +400,11 @@ processors:
       ignore_missing: true
   - script:
       lang: painless
-      description: Base64 Decode the json.attackData.rule* fields
+      description: >-
+        Base64 Decode the json.attackData.rule* fields. Akamai only sends the rule*
+        arrays that apply to the event, and `akamai.siem` exists at this point only if
+        the request or response headers were present, so both the per-key lookup and
+        the target parents are created defensively.
       tag: script_base64_decode_attackData_rule_573db939
       params:
         items:
@@ -411,8 +423,9 @@ processors:
         for (def i = 0; i < ctx.json.attackData.rules.length; i++) {
           HashMap map = new HashMap();
           for (String key: params.items) {
-            if (i < ctx.json.attackData[key].length) {
-              String data = ctx.json.attackData[key][i].replace(" ", "");
+            def values = ctx.json.attackData[key];
+            if (values instanceof List && i < values.length) {
+              String data = values[i].replace(" ", "");
               try {
                 String value = data.decodeBase64();
                 map.put(key, value);
@@ -436,6 +449,12 @@ processors:
             }
           }
           rules_array.add(map);
+        }
+        if (ctx.akamai == null) {
+          ctx.akamai = new HashMap();
+        }
+        if (ctx.akamai.siem == null) {
+          ctx.akamai.siem = new HashMap();
         }
         ctx.akamai.siem.rules = rules_array;
         ctx._rule_actions = rule_actions;
@@ -633,12 +652,17 @@ processors:
   - append:
       tag: append_related_ip_feeba47d
       field: related.ip
-      value: "{{{source.ip}}}"
+      value: '{{{source.ip}}}'
       allow_duplicates: false
+      if: ctx.source?.ip != null
   - set:
       tag: set_client_10dffeb7
       field: client
       copy_from: source
+      description: >-
+        Events without an `attackData.clientIP` have no `source` object at all, and
+        `copy_from` fails on a missing source path.
+      if: ctx.source != null
   - set:
       tag: set_event_category_dbab8a4e
       field: event.category
