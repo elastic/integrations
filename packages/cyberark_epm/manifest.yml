@@ -1,7 +1,7 @@
 format_version: 3.3.2
 name: cyberark_epm
 title: CyberArk EPM
-version: "1.6.0"
+version: "1.7.0"
 description: Collect logs from CyberArk EPM with Elastic Agent.
 type: integration
 categories:
@@ -47,27 +47,77 @@ policy_templates:
         title: Collect CyberArk EPM logs via API
         description: Collecting CyberArk EPM logs via API.
         vars:
+          - name: auth_type
+            type: select
+            title: Authentication Method
+            multi: false
+            required: true
+            show_user: true
+            default: epm
+            options:
+              - text: EPM
+                value: epm
+              - text: CyberArk Identity
+                value: identity
+            description: >-
+              How Elastic Agent authenticates to the CyberArk EPM REST API. **EPM** uses the native EPM logon API and only the `[EPM]` parameters apply. **CyberArk Identity** uses the OAuth2 client credentials flow on the CyberArk Identity Security Platform Shared Services (ISPSS) and only the `[Identity]` parameters apply. See [Set up API authentication for EPM REST APIs using Identity](https://docs.cyberark.com/epm/latest/en/content/webservices/authenticate-with-identity-administration.htm) for the CyberArk-side setup.
           - name: url
             type: url
-            title: URL
+            title: "[EPM] URL"
             default: https://login.epm.cyberark.com
-            description: CyberArk EPM dispatcher server URL varies by region. To determine the correct URL for your region, refer to the [documentation](https://docs.cyberark.com/epm/latest/en/content/webservices/webservicesintro.htm#dispatc).
+            description: CyberArk EPM dispatcher server URL varies by region. To determine the correct URL for your region, refer to the [documentation](https://docs.cyberark.com/epm/latest/en/content/webservices/webservicesintro.htm#dispatc). It is only used when collecting logs with the EPM authentication method.
             multi: false
             required: true
             show_user: false
           - name: username
             type: text
-            title: Username
-            description: The username to authenticate into EPM.
+            title: "[EPM] Username"
+            description: The username to authenticate into EPM. It is a required parameter when collecting logs with the EPM authentication method.
             multi: false
-            required: true
+            required: false
             show_user: true
           - name: password
             type: password
-            title: Password
-            description: The password to authenticate into EPM.
+            title: "[EPM] Password"
+            description: The password to authenticate into EPM. It is a required parameter when collecting logs with the EPM authentication method.
             multi: false
-            required: true
+            required: false
+            show_user: true
+            secret: true
+          - name: epm_server_url
+            type: url
+            title: "[Identity] EPM Server URL"
+            description: The URL of the EPM server that serves the REST API, for example `https://na101.epm.cyberark.com`. The server name is the subdomain of your EPM console URL, not the dispatcher server name. See [documentation](https://docs.cyberark.com/epm/latest/en/content/webservices/authenticate-with-identity-administration.htm) for details. It is a required parameter when collecting logs with the CyberArk Identity authentication method.
+            multi: false
+            required: false
+            show_user: true
+          - name: identity_id
+            type: text
+            title: "[Identity] Identity ID"
+            description: The Identity ID of your CyberArk Identity tenant, for example `ACF4874`. To find it, open Identity Administration and click your user name and select **About**, then copy the **ID** shown under **Identity**. It is a required parameter when collecting logs with the CyberArk Identity authentication method.
+            multi: false
+            required: false
+            show_user: true
+          - name: identity_application_id
+            type: text
+            title: "[Identity] Application ID"
+            description: The **Application ID** on the **Settings** tab of the EPM API Client web app in Identity Administration, for example `elastic_epm_api`. Your administrator chooses this value when creating the app, and it must match exactly because it forms the last part of the token URL. It is a required parameter when collecting logs with the CyberArk Identity authentication method.
+            multi: false
+            required: false
+            show_user: true
+          - name: client_id
+            type: text
+            title: "[Identity] Client ID"
+            description: The full login name of the CyberArk Identity service user, including the tenant suffix, for example `svc_elastic@cyberark.cloud.1234`. The suffix is required, and is a different identifier from the ID in **[Identity] Identity ID**. It is a required parameter when collecting logs with the CyberArk Identity authentication method.
+            multi: false
+            required: false
+            show_user: true
+          - name: client_secret
+            type: password
+            title: "[Identity] Client Secret"
+            description: The password of the CyberArk Identity service user. It is a required parameter when collecting logs with the CyberArk Identity authentication method.
+            multi: false
+            required: false
             show_user: true
             secret: true
           - name: api_version
@@ -80,12 +130,12 @@ policy_templates:
             default: 24.12.0.4372
           - name: session_timeout
             type: text
-            title: Session Timeout
+            title: "[EPM] Session Timeout"
             multi: false
             required: true
             show_user: true
             default: 30m
-            description: The session timeout for APIs. It is defined by the `Timeout for inactive session` parameter in `Administration > Account Configuration`. Supported units for this parameter are h/m/s.
+            description: The session timeout for APIs. It is defined by the `Timeout for inactive session` parameter in `Administration > Account Configuration`. Supported units for this parameter are h/m/s. It is only used when collecting logs with the EPM authentication method; the CyberArk Identity method uses the token lifetime configured on the web app instead.
           - name: proxy_url
             type: text
             title: Proxy URL

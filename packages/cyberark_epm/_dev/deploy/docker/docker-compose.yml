@@ -11,3 +11,25 @@ services:
       - http-server
       - --addr=:8090
       - --config=/files/config.yml
+  cyberark_epm-oauth:
+    image: docker.elastic.co/observability/stream:v0.18.0
+    hostname: elastic-test.id.cyberark.cloud
+    networks:
+      - elastic-package-stack_default
+    ports:
+      - 443
+    volumes:
+      - ./files:/files:ro
+    environment:
+      PORT: '443'
+    command:
+      - http-server
+      - --addr=:443
+      - --config=/files/config.yml
+      - --tls-cert=/files/shared-certificate.crt
+      - --tls-key=/files/shared-private.key
+networks:
+  elastic-package-stack_default:
+    driver: bridge
+    name: elastic-package-stack_default
+    external: true
