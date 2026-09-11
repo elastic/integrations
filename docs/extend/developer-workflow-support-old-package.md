@@ -82,17 +82,23 @@ Sometimes, when we drop the support for an earlier version of the stack and late
 
     The backport branch is created automatically when a new entry is merged into `.backports.yml`.
 
-    **Recommended: use the `AddBackportEntry` mage target**
+    **Recommended: use the `backport add-entry` subcommand**
 
-    This target resolves the base commit automatically (combining steps 1 and 2) and inserts the entry in the correct position in the file:
+    This command resolves the base commit automatically (combining steps 1 and 2) and inserts the entry in the correct position in the file. Build the tool from the repository root first:
 
     ```bash
-    mage AddBackportEntry <package_name> <base_version>
+    go build -C cmd/backport -o backport .
+    ```
+
+    Then run:
+
+    ```bash
+    ./backport add-entry <package_name> <base_version>
     ```
 
     Example:
     ```bash
-    $ mage AddBackportEntry aws 1.19.5
+    $ ./backport add-entry aws 1.19.5
     Added: branch=backport-aws-1.19 base_commit=8cb321075afb9b77ea965e1373a03a603d9c9796
     ```
 
@@ -181,7 +187,7 @@ Sometimes, when we drop the support for an earlier version of the stack and late
 
     If the cherry-pick conflicts on files beyond a version-line difference in `manifest.yml`, the script reports the conflicting files and cleans up. In this case, apply the fix manually (see the alternative path below).
 
-    > The `auto-backport.yml` workflow handles backports automatically: when the PR merges into `main`, the workflow reads the checklist comment and runs `mage applyBackport` for every checked branch, updating the comment in real time (✅ = success, ⚠️ = conflict or error). Checking a previously-unchecked branch after the PR has already merged also triggers the workflow to create the missing backport PR. `backport_apply.sh` remains useful for ad-hoc backports and retries.
+    > The `auto-backport.yml` workflow handles backports automatically: when the PR merges into `main`, the workflow reads the checklist comment and runs `backport apply` for every checked branch, updating the comment in real time (✅ = success, ⚠️ = conflict or error). Checking a previously-unchecked branch after the PR has already merged also triggers the workflow to create the missing backport PR. `backport_apply.sh` remains useful for ad-hoc backports and retries.
 
     **Alternative: manual cherry-pick**
 
