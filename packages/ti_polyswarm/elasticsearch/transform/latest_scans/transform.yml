@@ -1,0 +1,34 @@
+---
+source:
+  index:
+    - "logs-ti_polyswarm.scans-*"
+  query:
+    bool:
+      filter:
+        - exists:
+            field: threat.indicator.file.hash.sha256
+dest:
+  index: "logs-ti_polyswarm_latest.dest_scans-1"
+  aliases:
+    - alias: "logs-ti_polyswarm_latest.scans"
+      move_on_creation: true
+latest:
+  unique_key:
+    - threat.indicator.file.hash.sha256
+  sort: "event.ingested"
+description: >-
+  Latest PolySwarm indicators, deduplicated by SHA256. Indicators that are no longer re-asserted by the polling window are removed by the retention policy.
+frequency: 30s
+settings:
+  unattended: true
+sync:
+  time:
+    field: event.ingested
+    delay: 120s
+retention_policy:
+  time:
+    field: event.ingested
+    max_age: 48h
+_meta:
+  managed: true
+  fleet_transform_version: 1.0.0

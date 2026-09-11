@@ -1,0 +1,86 @@
+# Test that a rejected API key (HTTP 401 from the metadata search endpoint) is
+# recorded as a single pipeline_error document carrying the upstream status code
+# and response body, rather than being dropped or turned into a false indicator.
+#
+# This cannot be a system test: the system test validator fails any test case
+# whose documents contain event.kind: pipeline_error, so the error branch of the
+# ingest pipeline is only reachable from a script test.
+
+[!external_stack] skip 'Skipping external stack test.'
+[!exec:jq] skip 'Skipping test requiring absent jq command'
+
+use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+install_agent -profile ${CONFIG_PROFILES}/${PROFILE} -network_name NETWORK_NAME
+docker_up -profile ${CONFIG_PROFILES}/${PROFILE} -network ${NETWORK_NAME} polyswarm-error-mock
+add_package -profile ${CONFIG_PROFILES}/${PROFILE}
+add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config.yaml DATA_STREAM_NAME
+
+# want_more is false on the error path, so a single poll yields exactly one
+# document. -confirm guards against the error being re-emitted mid-assertion.
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -confirm 15s -timeout 5m ${DATA_STREAM_NAME}
+cp stdout got_docs.json
+
+# The upstream status code and body are preserved in error.message.
+exec jq -r '[.hits.hits[]._source.error.message // empty] | flatten | .[]' got_docs.json
+stdout 'failed with status 401'
+stdout 'API key is not authorized for metadata search'
+
+# The document is classified as an error, not as an indicator.
+exec jq -r '.hits.hits[0]._source.event.kind' got_docs.json
+stdout '^pipeline_error$'
+
+exec jq '[.hits.hits[]._source | select(.threat.indicator != null)] | length' got_docs.json
+stdout '^0$'
+
+# The failing request URL is recorded for troubleshooting.
+exec jq -r '.hits.hits[0]._source.http.response.status_code' got_docs.json
+stdout '^401$'
+
+remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_NAME}
+uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 1m
+docker_down polyswarm-error-mock
+
+-- test_config.yaml --
+input: cel
+vars: ~
+data_stream:
+  vars:
+    url: http://polyswarm-error-mock:8080
+    api_key: test-api-key
+    interval: 1m
+    community: default
+    batch_size: 2
+
+-- polyswarm-error-mock/docker-compose.yml --
+version: '2.3'
+services:
+  polyswarm-error-mock:
+    image: docker.elastic.co/observability/stream:v0.23.0
+    hostname: polyswarm-error-mock
+    ports:
+      - 8080
+    environment:
+      PORT: "8080"
+    volumes:
+      - ./config.yml:/config.yml
+    command:
+      - http-server
+      - --addr=:8080
+      - --config=/config.yml
+
+-- polyswarm-error-mock/config.yml --
+rules:
+  - path: /v3/search/metadata/query
+    methods: [GET]
+    request_headers:
+      Authorization: ["test-api-key"]
+    query_params:
+      query: "{query:.*}"
+      community: "{community:.*}"
+      limit: "{limit:.*}"
+    responses:
+      - status_code: 401
+        headers:
+          Content-Type: ["application/json"]
+        body: |-
+          {"status":"UNAUTHORIZED","errors":{"description":"API key is not authorized for metadata search"}}

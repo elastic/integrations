@@ -1,0 +1,50 @@
+title: PolySwarm indicators
+type: logs
+ilm_policy: logs-ti_polyswarm.scans-default_policy
+streams:
+  - input: cel
+    title: PolySwarm malicious artifact indicators
+    description: Poll the PolySwarm metadata search API for malicious artifacts.
+    template_path: cel.yml.hbs
+    vars:
+      - name: url
+        type: text
+        title: URL
+        description: PolySwarm API base URL, without a trailing slash.
+        required: true
+        show_user: true
+        default: https://api.polyswarm.network
+      - name: api_key
+        type: password
+        title: API Key
+        description: PolySwarm API key. Sent as a raw Authorization header token.
+        required: true
+        show_user: true
+        secret: true
+      - name: interval
+        type: text
+        title: Interval
+        description: How often to poll the API. Supported units are h/m/s.
+        required: true
+        show_user: true
+        default: 5m
+      - name: query
+        type: text
+        title: Query
+        description: Server-side metadata query. Keep the malicious-detections filter so only true indicators are ingested.
+        required: true
+        show_user: true
+        default: "artifact.created:>now-1d AND scan.detections.malicious:>0"
+      - name: community
+        type: text
+        title: Community
+        required: true
+        show_user: true
+        default: default
+      - name: batch_size
+        type: integer
+        title: Batch Size
+        description: Number of results requested per poll.
+        required: true
+        show_user: false
+        default: 100

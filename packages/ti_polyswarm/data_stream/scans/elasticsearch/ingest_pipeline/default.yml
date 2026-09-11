@@ -1,0 +1,180 @@
+---
+description: Pipeline turning PolySwarm scan metadata into ECS threat indicators.
+processors:
+  - set:
+      tag: set-ecs-version
+      field: ecs.version
+      value: "9.5.0"
+  - json:
+      tag: parse-message-json
+      field: message
+      target_field: polyswarm
+      if: ctx.message != null
+  - rename:
+      tag: rename-conf-interval
+      field: _conf.interval
+      target_field: labels.interval
+      ignore_missing: true
+  - date:
+      tag: date-artifact-created
+      field: polyswarm.artifact.created
+      target_field: '@timestamp'
+      formats:
+        - ISO8601
+        - yyyy-MM-dd HH:mm:ss
+      if: ctx.polyswarm?.artifact?.created != null
+  - set:
+      tag: set-event-kind-enrichment
+      field: event.kind
+      value: enrichment
+  - set:
+      tag: set-event-kind-error
+      field: event.kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - set:
+      tag: set-event-category
+      field: event.category
+      value: [threat]
+  - set:
+      tag: set-event-type
+      field: event.type
+      value: [indicator]
+  - set:
+      tag: set-event-dataset
+      field: event.dataset
+      value: ti_polyswarm.scans
+  - set:
+      tag: set-event-module
+      field: event.module
+      value: ti_polyswarm
+  - set:
+      tag: set-threat-feed-name
+      field: threat.feed.name
+      value: PolySwarm
+      if: ctx.error?.message == null
+  - set:
+      tag: set-threat-indicator-provider
+      field: threat.indicator.provider
+      value: PolySwarm
+      if: ctx.error?.message == null
+  - set:
+      tag: set-threat-indicator-type
+      field: threat.indicator.type
+      value: file
+      if: ctx.polyswarm?.artifact?.sha256 != null
+  - rename:
+      tag: rename-sha256
+      field: polyswarm.artifact.sha256
+      target_field: threat.indicator.file.hash.sha256
+      ignore_missing: true
+  - rename:
+      tag: rename-sha1
+      field: polyswarm.artifact.sha1
+      target_field: threat.indicator.file.hash.sha1
+      ignore_missing: true
+  - rename:
+      tag: rename-md5
+      field: polyswarm.artifact.md5
+      target_field: threat.indicator.file.hash.md5
+      ignore_missing: true
+  - set:
+      tag: set-threat-indicator-name
+      field: threat.indicator.name
+      copy_from: threat.indicator.file.hash.sha256
+      if: ctx.threat?.indicator?.file?.hash?.sha256 != null
+  - set:
+      tag: set-file-size
+      field: threat.indicator.file.size
+      copy_from: polyswarm.artifact.size
+      if: ctx.polyswarm?.artifact?.size != null
+  - set:
+      tag: set-file-extension
+      field: threat.indicator.file.extension
+      copy_from: polyswarm.extension
+      if: ctx.polyswarm?.extension != null
+  - set:
+      tag: set-file-mime-type
+      field: threat.indicator.file.mime_type
+      copy_from: polyswarm.scan.mimetype.mime
+      ignore_failure: true
+      if: ctx.polyswarm?.scan?.mimetype?.mime != null
+  - date:
+      tag: date-first-seen
+      field: polyswarm.scan.first_seen
+      target_field: threat.indicator.first_seen
+      formats:
+        - ISO8601
+      ignore_failure: true
+      if: ctx.polyswarm?.scan?.first_seen != null
+  - set:
+      tag: set-first-seen-fallback
+      field: threat.indicator.first_seen
+      copy_from: '@timestamp'
+      if: ctx.threat?.indicator?.type != null && ctx.threat?.indicator?.first_seen == null
+  - date:
+      tag: date-last-seen
+      field: polyswarm.scan.last_seen
+      target_field: threat.indicator.last_seen
+      formats:
+        - ISO8601
+      ignore_failure: true
+      if: ctx.polyswarm?.scan?.last_seen != null
+  - script:
+      tag: script-map-polyscore
+      lang: painless
+      description: Map PolyScore (0-1) to ECS confidence and surface polyscore/malware family.
+      if: ctx.polyswarm?.scan?.latest_scan?.polyscore != null
+      source: |
+        def raw = ctx.polyswarm.scan.latest_scan.polyscore;
+        double score;
+        if (raw instanceof String) {
+          score = Double.parseDouble(raw);
+        } else {
+          score = ((Number) raw).doubleValue();
+        }
+        ctx.polyswarm.polyscore = score;
+        def conf = "Low";
+        if (score >= 0.7) {
+          conf = "High";
+        } else if (score >= 0.4) {
+          conf = "Medium";
+        }
+        if (ctx.threat == null) ctx.threat = [:];
+        if (ctx.threat.indicator == null) ctx.threat.indicator = [:];
+        ctx.threat.indicator.confidence = conf;
+  - set:
+      tag: set-malware-family
+      field: polyswarm.malware_family
+      copy_from: polyswarm.polyunite.malware_family
+      ignore_failure: true
+      if: ctx.polyswarm?.polyunite?.malware_family != null
+  - append:
+      tag: append-related-hash-sha256
+      field: related.hash
+      value: '{{{threat.indicator.file.hash.sha256}}}'
+      allow_duplicates: false
+      if: ctx.threat?.indicator?.file?.hash?.sha256 != null
+  - append:
+      tag: append-related-hash-sha1
+      field: related.hash
+      value: '{{{threat.indicator.file.hash.sha1}}}'
+      allow_duplicates: false
+      if: ctx.threat?.indicator?.file?.hash?.sha1 != null
+  - append:
+      tag: append-related-hash-md5
+      field: related.hash
+      value: '{{{threat.indicator.file.hash.md5}}}'
+      allow_duplicates: false
+      if: ctx.threat?.indicator?.file?.hash?.md5 != null
+  - remove:
+      tag: remove-message
+      field: message
+      ignore_missing: true
+on_failure:
+  - append:
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      value: pipeline_error
