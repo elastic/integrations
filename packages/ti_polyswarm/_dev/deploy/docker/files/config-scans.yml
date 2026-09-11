@@ -1,0 +1,148 @@
+# The API error path (HTTP 401 -> event.kind: pipeline_error) is covered by the
+# script test in data_stream/scans/_dev/test/scripts/api_error.txt, which embeds
+# its own mock. The system test validator rejects any pipeline_error document,
+# so that scenario cannot live here.
+rules:
+  # Page 1: two artifacts, more results available.
+  # The query param is captured rather than matched exactly so the rule keeps
+  # working if the default metadata query is retuned.
+  - path: /v3/search/metadata/query
+    methods: ["GET"]
+    request_headers:
+      Authorization: ["test-api-key"]
+    query_params:
+      query: "{query:.*}"
+      community: "default"
+      limit: "2"
+      offset: null
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type: ["application/json"]
+        body: |-
+          {{ minify_json `
+          {
+            "status": "OK",
+            "has_more": true,
+            "offset": "eyJwYWdlIjoyfQ",
+            "result": [
+              {
+                "artifact": {
+                  "id": "80984520749896316",
+                  "created": "2024-03-15T14:30:00.000000",
+                  "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                  "sha1": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                  "md5": "cccccccccccccccccccccccccccccccc",
+                  "size": 45056
+                },
+                "extension": "exe",
+                "meta_community": "default",
+                "hash": {
+                  "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                  "sha1": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                  "md5": "cccccccccccccccccccccccccccccccc"
+                },
+                "scan": {
+                  "first_seen": "2024-03-10T08:00:00.000000",
+                  "last_seen": "2024-03-15T13:00:00.000000",
+                  "latest_scan": {
+                    "polyscore": "0.85"
+                  },
+                  "mimetype": {
+                    "mime": "application/x-dosexec"
+                  },
+                  "detections": {
+                    "malicious": 12,
+                    "total": 25
+                  }
+                },
+                "polyunite": {
+                  "malware_family": "Trojan.GenericKD"
+                }
+              },
+              {
+                "artifact": {
+                  "id": "80984520749896317",
+                  "created": "2024-03-14T09:00:00.000000",
+                  "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                  "size": 8192
+                },
+                "extension": "js",
+                "meta_community": "default",
+                "hash": {
+                  "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+                },
+                "scan": {
+                  "first_seen": "2024-03-13T06:00:00.000000",
+                  "last_seen": "2024-03-14T08:00:00.000000",
+                  "latest_scan": {
+                    "polyscore": "0.55"
+                  },
+                  "detections": {
+                    "malicious": 5,
+                    "total": 20
+                  }
+                }
+              }
+            ]
+          }
+          `}}
+
+  # Page 2: final page, has_more false so the CEL program stops paging and
+  # clears its offset cursor.
+  - path: /v3/search/metadata/query
+    methods: ["GET"]
+    request_headers:
+      Authorization: ["test-api-key"]
+    query_params:
+      query: "{query:.*}"
+      community: "default"
+      limit: "2"
+      offset: "eyJwYWdlIjoyfQ"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type: ["application/json"]
+        body: |-
+          {{ minify_json `
+          {
+            "status": "OK",
+            "has_more": false,
+            "result": [
+              {
+                "artifact": {
+                  "id": "80984520749896318",
+                  "created": "2024-03-13T21:15:42.000000",
+                  "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+                  "sha1": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+                  "md5": "ffffffffffffffffffffffffffffffff",
+                  "size": 262144
+                },
+                "extension": "dll",
+                "meta_community": "default",
+                "hash": {
+                  "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+                  "sha1": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+                  "md5": "ffffffffffffffffffffffffffffffff"
+                },
+                "scan": {
+                  "first_seen": "2024-03-12T11:05:00.000000",
+                  "last_seen": "2024-03-13T20:45:00.000000",
+                  "latest_scan": {
+                    "polyscore": "0.21"
+                  },
+                  "mimetype": {
+                    "mime": "application/vnd.microsoft.portable-executable"
+                  },
+                  "detections": {
+                    "malicious": 2,
+                    "total": 24
+                  }
+                },
+                "polyunite": {
+                  "malware_family": "Adware.Generic"
+                }
+              }
+            ]
+          }
+          `}}

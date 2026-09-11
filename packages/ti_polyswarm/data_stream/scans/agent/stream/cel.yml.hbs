@@ -1,0 +1,71 @@
+config_version: 2
+interval: {{interval}}
+resource.url: "{{url}}"
+state:
+  api_key: "{{api_key}}"
+  query: "{{query}}"
+  community: "{{community}}"
+  batch_size: {{batch_size}}
+  offset: ""
+redact:
+  fields:
+    - api_key
+program: |
+  state.with(
+    request(
+      "GET",
+      state.url + "/v3/search/metadata/query?" + {
+        "query": [state.query],
+        "community": [state.community],
+        "limit": [string(int(state.batch_size))],
+      }.with(
+        state.offset != "" ? {"offset": [string(state.offset)]} : {}
+      ).format_query()
+    ).with(
+      {
+        "Header": {
+          "Authorization": [state.api_key],
+        },
+      }
+    ).do_request().as(resp,
+      (resp.StatusCode == 200) ?
+        bytes(resp.Body).decode_json().as(body,
+          (has(body.result) && body.result != null ? body.result : []).as(results,
+            (has(body.has_more) && body.has_more == true && has(body.offset) && size(results) > 0).as(more,
+              {
+                "events": results.map(a,
+                  {"message": a.encode_json()}
+                ),
+                "offset": more ? string(body.offset) : "",
+                "want_more": more,
+              }
+            )
+          )
+        )
+      :
+        {
+          "events": [
+            {
+              "error": {
+                "message": "GET /v3/search/metadata/query failed with status " + string(resp.StatusCode) + ": " + string(resp.Body),
+              },
+              "http": {
+                "response": {
+                  "status_code": resp.StatusCode,
+                },
+              },
+              "url": {
+                "full": state.url + "/v3/search/metadata/query",
+              },
+            },
+          ],
+          "offset": "",
+          "want_more": false,
+        }
+    )
+  )
+fields_under_root: true
+fields:
+  _conf:
+    interval: "{{interval}}"
+publisher_pipeline.disable_host: true
