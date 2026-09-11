@@ -27,10 +27,14 @@ scms:
 sources:
   latest7xSnapshot:
     name: Get latest 7.x snapshot
-    kind: json
+    kind: file
     spec:
-      file: https://storage.googleapis.com/artifacts-api/snapshots/7.17.json
-      key: .version
+      file: https://storage.googleapis.com/artifacts-api/releases/current/7.17
+    transformers:
+      # Get only the version to avoid spaces and newlines.
+      - findsubmatch:
+          pattern: '([0-9\.]+)'
+          captureindex: 1
 
 targets:
   update-7x-version:
