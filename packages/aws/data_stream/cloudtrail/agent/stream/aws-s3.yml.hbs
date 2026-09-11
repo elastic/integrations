@@ -1,10 +1,50 @@
-{{#if collect_s3_logs}} 
+{{! start SQS queue }}
+{{#unless bucket_arn}}
+{{#unless non_aws_bucket_name}}
+{{#unless access_point_arn}}
+{{#if queue_url}}
+queue_url: {{queue_url}}
+{{/if}}
+{{#if visibility_timeout}}
+visibility_timeout: {{visibility_timeout}}
+{{/if}}
+{{#if api_timeout}}
+api_timeout: {{api_timeout}}
+{{/if}}
+{{#if max_number_of_messages}}
+max_number_of_messages: {{max_number_of_messages}}
+{{/if}}
+{{/unless}}
+{{/unless}}
+{{/unless}}
+{{! end SQS queue }}
 
+{{#unless queue_url}}{{! start S3 bucket polling }}
+
+{{#unless non_aws_bucket_name}}
+{{#unless access_point_arn}}
 {{#if bucket_arn}}
 bucket_arn: {{bucket_arn}}
-{{else if access_point_arn}}
+{{/if}}
+{{/unless}}
+{{/unless}}
+
+{{#unless bucket_arn}}
+{{#unless access_point_arn}}
+{{#if non_aws_bucket_name}}
+non_aws_bucket_name: {{non_aws_bucket_name}}
+{{/if}}
+{{/unless}}
+{{/unless}}
+
+{{#unless bucket_arn}}
+{{#unless non_aws_bucket_name}}
+{{#if access_point_arn}}
 access_point_arn: {{access_point_arn}}
 {{/if}}
+{{/unless}}
+{{/unless}}
+
 {{#if interval}}
 bucket_list_interval: {{interval}}
 {{/if}}
@@ -18,24 +58,31 @@ start_timestamp: {{start_timestamp}}
 ignore_older: {{ignore_older}}
 {{/if}}
 
-{{else}}
+{{/unless}}{{! end S3 bucket polling }}
 
-{{#if queue_url}}
-queue_url: {{queue_url}}
+{{! path_style is only valid with non-AWS polling or SQS — never with AWS ARN polling. }}
+{{#unless bucket_arn}}
+{{#unless access_point_arn}}
+{{#if path_style}}
+path_style: {{path_style}}
 {{/if}}
-{{#if visibility_timeout}}
-visibility_timeout: {{visibility_timeout}}
+{{/unless}}
+{{/unless}}
+
+{{! Backup/delete apply to both SQS and S3 polling. }}
+{{#if backup_to_bucket_arn}}
+backup_to_bucket_arn: {{backup_to_bucket_arn}}
 {{/if}}
-{{#if api_timeout}}
-api_timeout: {{api_timeout}}
+{{#if backup_to_bucket_prefix}}
+backup_to_bucket_prefix: {{backup_to_bucket_prefix}}
 {{/if}}
-{{#if max_number_of_messages}}
-max_number_of_messages: {{max_number_of_messages}}
+{{#if non_aws_backup_to_bucket_name}}
+non_aws_backup_to_bucket_name: {{non_aws_backup_to_bucket_name}}
+{{/if}}
+{{#if delete_after_backup}}
+delete_after_backup: {{delete_after_backup}}
 {{/if}}
 
-{{/if}}
-
-{{! allows number of workers to be configured for SQS queue and S3 buckets}}
 {{#if number_of_workers}}
 number_of_workers: {{number_of_workers}}
 {{/if}}
