@@ -4,6 +4,11 @@ The Custom Threat Intelligence package is an integration designed to ingest thre
 
 The integration comes with a default pipeline that automatically maps standard STIX 2.1 data into ECS fields. However, it also offers the flexibility to handle custom STIX data by allowing users to add custom pipelines accordingly.
 
+## Agentless Enabled Integration
+
+Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+
 ## Key features
 
 #### Supported data sources
@@ -84,6 +89,14 @@ Some IOCs may never expire and will continue to stay in the latest destination i
 #### ILM Policy
 
 To facilitate IOC expiration, source datastream-backed indices `.ds-logs-ti_custom.indicator-*` are allowed to contain duplicates from each polling interval. ILM policy is added to these source indices so it doesn't lead to unbounded growth. This means data in these source indices will be deleted after `5 days` from ingested date.
+
+## Troubleshooting
+
+### "exceeding maximum number of CEL executions"
+
+The CEL input limits how many pages it fetches during a single polling interval. The default is `1000`. High-volume TAXII feeds with large collections may exceed this limit, causing the integration to enter a DEGRADED state with this message.
+
+To resolve this, increase `Maximum Pages Per Interval` in the integration's advanced settings. The value must be a positive integer and should be large enough to allow the agent to paginate through the full result set within one interval. Alternatively, reduce the polling interval so each run has fewer pages to fetch.
 
 ## Logs reference
 

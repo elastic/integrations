@@ -3,52 +3,54 @@ description: Pipeline for processing Admin logs.
 processors:
   - set:
       field: ecs.version
-      tag: set_ecs_version
+      tag: set_ecs_version_d69d3fcf
       value: 8.16.0
   - set:
       field: observer.vendor
-      tag: set_observer_vendor
+      tag: set_observer_vendor_5aade14b
       value: "Ping Identity"
   - set:
       field: observer.product
-      tag: set_observer_product
+      tag: set_observer_product_5692178e
       value: PingFederate
   - rename:
       field: _conf.tz_offset
       target_field: event.timezone
       if: ctx._conf?.tz_offset != null
-      tag: rename_tz_offset
+      tag: rename_tz_offset_706cc06d
       ignore_missing: true
   - rename:
       field: message
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_176375fd
       target_field: event.original
       ignore_missing: true
       description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_9ecc8509
       ignore_missing: true
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - grok:
+      tag: grok_event_original_30302277
       field: event.original
       patterns:
         - '%{DATA:ping_federate.admin.timestamp}\s\|\s%{WORD:ping_federate.admin.user}\s\|\s(%{DATA:ping_federate.admin.roles})?\s\|\s(%{IP:ping_federate.admin.ip})?\s\|\s(%{DATA:ping_federate.admin.event.detail_id})?\s\|\s(%{WORD:ping_federate.admin.component})\s\|\s(%{WORD:ping_federate.admin.event.type})?\s\|\s(%{GREEDYDATA:ping_federate.admin.message})?'
       if: ctx.event?.original != null
       on_failure:
         - append:
+            tag: append_error_message_7de55181
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.kind
       value: event
-      tag: set_event_kind
+      tag: set_event_kind_d452ef2c
   - append:
       field: event.category
       value: authentication
-      tag: append_event_category_authentication
+      tag: append_event_category_authentication_aa757558
       if: >-
         ctx.ping_federate?.admin?.event?.type != null && (
           ctx.ping_federate.admin.event.type == 'LOGIN_ATTEMPT' ||
@@ -58,7 +60,7 @@ processors:
   - append:
       field: event.category
       value: configuration
-      tag: append_event_category_configuration
+      tag: append_event_category_configuration_9f0832d4
       if: >-
         ctx.ping_federate?.admin?.event?.type != null && ctx.ping_federate?.admin?.component != null && (
           ctx.ping_federate.admin.event.type == 'IMPORT' ||
@@ -70,7 +72,7 @@ processors:
   - append:
       field: event.category
       value: iam
-      tag: append_event_category_iam
+      tag: append_event_category_iam_fd456ad7
       if: >-
         ctx.ping_federate?.admin?.event?.type != null && ctx.ping_federate?.admin?.component != null && (
           (ctx.ping_federate.admin.event.type == 'CREATE' && ctx.ping_federate.admin.component == 'USER') ||
@@ -81,11 +83,11 @@ processors:
       field: event.category
       value: session
       if: ctx.ping_federate?.admin?.event?.type != null && ctx.ping_federate.admin.event.type.contains('SESSION')
-      tag: append_event_category_session
+      tag: append_event_category_session_292f7b1c
   - append:
       field: event.type
       value: info
-      tag: append_event_type_info
+      tag: append_event_type_info_a3d9a8ad
       if: >-
         ctx.ping_federate?.admin?.event?.type != null && (
           ctx.ping_federate.admin.event.type == 'PASSWORD_CHANGE' ||
@@ -94,7 +96,7 @@ processors:
   - append:
       field: event.type
       value: end
-      tag: append_event_type_end
+      tag: append_event_type_end_c4e2370b
       if: >-
         ctx.ping_federate?.admin?.event?.type != null && (
           ctx.ping_federate.admin.event.type == 'SESSION_TIMEOUT' ||
@@ -103,7 +105,7 @@ processors:
   - append:
       field: event.type
       value: change
-      tag: append_event_type_change
+      tag: append_event_type_change_892696ca
       if: >-
         ctx.ping_federate?.admin?.event?.type != null && (
           ctx.ping_federate.admin.event.type == 'ROLE_CHANGE' ||
@@ -113,7 +115,7 @@ processors:
   - append:
       field: event.type
       value: user
-      tag: append_event_type_user
+      tag: append_event_type_user_72b2c503
       if: >-
         ctx.ping_federate?.admin?.event?.type != null && (
           ctx.ping_federate.admin.event.type == 'ROLE_CHANGE' ||
@@ -122,24 +124,24 @@ processors:
   - append:
       field: event.type
       value: start
-      tag: append_event_type_start
+      tag: append_event_type_start_7f44fc54
       if: >-
         ctx.ping_federate?.admin?.event?.type != null && ctx.ping_federate.admin.event.type == 'LOGIN_ATTEMPT'
   - append:
       field: event.type
       value: deletion
-      tag: append_event_type_deletion
+      tag: append_event_type_deletion_22bc04a0
       if: >-
         ctx.ping_federate?.admin?.event?.type != null && ctx.ping_federate.admin.event.type == 'DELETE'
   - append:
       field: event.type
       value: creation
-      tag: append_event_type_creation
+      tag: append_event_type_creation_66306c8b
       if: >-
         ctx.ping_federate?.admin?.event?.type != null && ctx.ping_federate.admin.event.type == 'CREATE'
   - date:
       field: ping_federate.admin.timestamp
-      tag: date_ping_federate_admin_timestamp
+      tag: date_ping_federate_admin_timestamp_9b1eb276
       target_field: ping_federate.admin.timestamp
       formats:
         - yyyy-MM-dd HH:mm:ss,SSS
@@ -147,16 +149,18 @@ processors:
       if: ctx.ping_federate?.admin?.timestamp != null && ctx.ping_federate.admin.timestamp != ''
       on_failure:
         - remove:
+            tag: remove_ping_federate_admin_timestamp_29eed34e
             field: ping_federate.admin.timestamp
         - append:
+            tag: append_error_message_9d38946c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-# The timezone doesn't function as expected with custom date formats like yyyy-MM-dd HH:mm:ss,SSS,
-# Hence, first converted the date to ISO8601 format and then applied the event.timezone to the ISO8601 formatted date.
-# An issue has been raised for this scenario here: https://github.com/elastic/beats/issues/42133
+  # The timezone doesn't function as expected with custom date formats like yyyy-MM-dd HH:mm:ss,SSS,
+  # Hence, first converted the date to ISO8601 format and then applied the event.timezone to the ISO8601 formatted date.
+  # An issue has been raised for this scenario here: https://github.com/elastic/beats/issues/42133
   - date:
       field: ping_federate.admin.timestamp
-      tag: date_ping_federate_admin_timestamp_timezone
+      tag: date_ping_federate_admin_timestamp_timezone_4cecf39a
       target_field: ping_federate.admin.timestamp
       timezone: '{{{event.timezone}}}'
       formats:
@@ -164,97 +168,105 @@ processors:
       if: ctx.ping_federate?.admin?.timestamp != null && ctx.ping_federate.admin.timestamp != '' && ctx.event?.timezone != null
       on_failure:
         - remove:
+            tag: remove_ping_federate_admin_timestamp_edf239f6
             field: ping_federate.admin.timestamp
         - append:
+            tag: append_error_message_e5adb770
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_timestamp_0a0f3bb7
       field: '@timestamp'
       copy_from: ping_federate.admin.timestamp
       ignore_empty_value: true
   - set:
       field: user.name
       copy_from: ping_federate.admin.user
-      tag: set_user_name
+      tag: set_user_name_741586c0
       ignore_empty_value: true
   - append:
       field: related.user
-      tag: append_user_name_to_related_user
+      tag: append_user_name_to_related_user_b00d8211
       value: '{{{ping_federate.admin.user}}}'
       allow_duplicates: false
       if: ctx.ping_federate?.admin?.user != null
   - split:
       field: ping_federate.admin.roles
-      tag: split_admin_roles
+      tag: split_admin_roles_d64be401
       if: ctx.ping_federate?.admin?.roles != null && ctx.ping_federate.admin.roles.contains(',')
       separator: ','
       on_failure:
         - remove:
+            tag: remove_ping_federate_admin_roles_1f216fef
             field: ping_federate.admin.roles
         - append:
+            tag: append_error_message_ac809f1a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_ping_federate_admin_roles_15a7950a
       field: ping_federate.admin.roles
       if: ctx.ping_federate?.admin?.roles instanceof List
       ignore_failure: true
       processor:
         append:
           field: user.roles
-          tag: append_list_to_user_roles
+          tag: append_list_to_user_roles_13f215fc
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
           if: ctx.ping_federate?.admin?.roles != null
   - append:
       field: user.roles
-      tag: append_to_user_roles
+      tag: append_to_user_roles_abc710fe
       value: '{{{ping_federate.admin.roles}}}'
       allow_duplicates: false
       if: ctx.ping_federate?.admin?.roles != null && ctx.user?.roles == null
   - set:
       field: event.action
       copy_from: ping_federate.admin.event.type
-      tag: set_event_action
+      tag: set_event_action_a3928644
       ignore_empty_value: true
   - lowercase:
       field: event.action
-      tag: lowercase_event_action
+      tag: lowercase_event_action_945f0fcf
       ignore_missing: true
   - set:
       field: event.id
       copy_from: ping_federate.admin.event.detail_id
-      tag: set_event_id
+      tag: set_event_id_549c31ce
       ignore_empty_value: true
   - set:
       field: message
       copy_from: ping_federate.admin.message
-      tag: set_message
+      tag: set_message_df18ff6a
       ignore_empty_value: true
   - convert:
       field: ping_federate.admin.ip
-      tag: convert_ping_federate_admin_ip_to_ip
+      tag: convert_ping_federate_admin_ip_to_ip_c248169e
       type: ip
       ignore_missing: true
       if: ctx.ping_federate?.admin?.ip != ''
       on_failure:
         - remove:
+            tag: remove_ping_federate_admin_ip_e3ad4d87
             field: ping_federate.admin.ip
         - append:
+            tag: append_error_message_08d0e5aa
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: source.ip
-      tag: set_source_ip
+      tag: set_source_ip_28cb5c4c
       copy_from: ping_federate.admin.ip
       ignore_empty_value: true
   - geoip:
       field: source.ip
       target_field: source.geo
-      tag: geoip_proc
+      tag: geoip_proc_9a2d4d31
       ignore_missing: true
   - append:
       field: related.ip
-      tag: append_ping_federate_admin_ip_to_related_ip
+      tag: append_ping_federate_admin_ip_to_related_ip_487bdaf9
       value: '{{{ping_federate.admin.ip}}}'
       allow_duplicates: false
       if: ctx.ping_federate?.admin?.ip != null
@@ -267,11 +279,11 @@ processors:
         - ping_federate.admin.event.type
         - ping_federate.admin.event.detail_id
         - ping_federate.admin.message
-      tag: remove_custom_duplicate_fields
+      tag: remove_custom_duplicate_fields_0ed0b06e
       ignore_missing: true
       if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
   - script:
-      tag: script_to_drop_null_values
+      tag: script_to_drop_null_values_f6a89620
       lang: painless
       description: Drops null/empty values recursively.
       source: |-
@@ -290,11 +302,12 @@ processors:
         drop(ctx);
   - set:
       field: event.kind
-      tag: set_pipeline_error_into_event_kind
+      tag: set_pipeline_error_into_event_kind_4fd8ffa8
       value: pipeline_error
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message_d916120d
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
@@ -302,9 +315,10 @@ on_failure:
         {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

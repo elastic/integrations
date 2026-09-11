@@ -1,0 +1,184 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies the execution of a process with arguments pointing to the INetCache Folder. Adversaries may deliver malicious content via WININET during initial access.",
+        "from": "now-9m",
+        "index": [
+            "endgame-*",
+            "logs-crowdstrike.fdr*",
+            "logs-endpoint.events.process-*",
+            "logs-m365_defender.event-*",
+            "logs-sentinel_one_cloud_funnel.*",
+            "logs-system.security*",
+            "logs-windows.forwarded*",
+            "logs-windows.sysmon_operational-*",
+            "winlogbeat-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "host.id",
+                "user.id",
+                "process.entity_id",
+                "process.pid",
+                "process.executable",
+                "process.command_line",
+                "process.hash.sha256",
+                "process.code_signature.subject_name",
+                "process.code_signature.trusted",
+                "process.parent.entity_id",
+                "process.parent.pid",
+                "process.parent.executable",
+                "process.parent.command_line",
+                "process.parent.args"
+            ]
+        },
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Suspicious Execution from INET Cache",
+        "note": "## Triage and analysis\n\n### Investigating Suspicious Execution from INET Cache\n\n#### Possible investigation steps\n\n- Did the alert execute a payload from INetCache, or did another process only reference cached content?\n  - Focus: `process.executable` and `process.command_line`, checking whether `AppData\\Local\\Microsoft\\Windows\\INetCache\\IE` or `\\Device\\HarddiskVolume*\\Users\\*\\INetCache\\IE` is the image path, loader input, or only a document/image argument.\n  - Implication: escalate faster when the image runs from cache or feeds cached script, archive, shortcut, or DLL content to a loader; lower suspicion when the cache path is only a file argument to a recognized viewer and later lineage shows no execution.\n\n- Does identity and launch context fit a recognized file-opening, archive, or installer workflow?\n  - Focus: `process.hash.sha256`, `process.code_signature.subject_name`, `process.code_signature.trusted`, `process.parent.executable`, and `process.parent.command_line`.\n  - Implication: escalate when identity, signer, path, or parent command line conflicts with Explorer/archive-manager file handling; lower suspicion only when identity and launcher context fit one coherent workflow. Identity alone does not clear cache execution.\n\n- Do launcher-scoped file events show a downloaded or disguised lure chain?\n  - Why: parent-scoped provenance distinguishes routine cache use from shortcut, archive, script, or DLL handoff.\n  - Focus: file events from the parent launcher via `process.parent.entity_id`; fallback to `host.id` plus parent PID and alert time, checking `file.path`, `file.origin_url`, `file.origin_referrer_url`, `file.Ext.windows.zone_identifier`, and `file.Ext.original.extension`. !{investigate{\"description\":\"\",\"label\":\"File events for the launcher process\",\"providers\":[[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.parent.entity_id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"file\",\"valueType\":\"string\"}],[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.pid\",\"queryType\":\"phrase\",\"value\":\"{{process.parent.pid}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"file\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Implication: escalate when provenance shows internet delivery, deceptive extensions, shortcut-to-archive/script transitions, or renamed cache payloads. Missing file telemetry is unresolved, not benign.\n\n- Do process-scoped DNS or connection events show delivery or follow-on infrastructure?\n  - Why: network evidence separates local file-opening from remote retrieval, payload transfer, or follow-on command and control.\n  - Focus: DNS and connection events from `process.entity_id`; fallback to `host.id` plus `process.pid` and alert time, checking DNS `dns.question.name` and `dns.resolved_ip` plus connection `destination.ip` and `destination.port`. !{investigate{\"description\":\"\",\"label\":\"Network events for the executed process\",\"providers\":[[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"network\",\"valueType\":\"string\"}],[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.pid\",\"queryType\":\"phrase\",\"value\":\"{{process.pid}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"network\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Hint: compare `lookup_result` DNS `dns.resolved_ip` values to connection `destination.ip` before judging infrastructure.\n  - Implication: escalate when the process reaches rare external, WebDAV-like, dotted-quad, or payload-transfer destinations that do not match file provenance; lower suspicion when destinations align with the same recognized vendor workflow. Missing network telemetry is unresolved, not benign.\n\n- Did the cached content lead to script, archive, DLL, or staged executable execution?\n  - Focus: child starts where `process.parent.entity_id` matches `process.entity_id`, checking child `process.name`, `process.executable`, and `process.command_line`. !{investigate{\"description\":\"\",\"label\":\"Child process starts from the cached-content process\",\"providers\":[[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"process\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.type\",\"queryType\":\"phrase\",\"value\":\"start\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.parent.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"}],[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"process\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.type\",\"queryType\":\"phrase\",\"value\":\"start\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.parent.pid\",\"queryType\":\"phrase\",\"value\":\"{{process.pid}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Hint: if entity IDs are unavailable, use parent PID plus alert time as a weaker fallback.\n  - Implication: escalate when the chain quickly launches \"cmd.exe\", \"powershell.exe\", \"rundll32.exe\", \"mshta.exe\", \"wscript.exe\", \"cscript.exe\", or another staged executable; lower suspicion when the lineage stops at the original viewer, archiver, or installer.\n\n- If local evidence remains suspicious or unresolved after lineage review, is the same user or host part of broader delivery activity?\n  - Focus: `host.id`, `user.id`, and related alerts that repeat the same cache-path role, parent launcher, child-process family, recovered destination, or provenance pattern.\n  - Hint: pivot same-user alerts. !{investigate{\"description\":\"\",\"label\":\"Alerts associated with the user\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"user.id\",\"queryType\":\"phrase\",\"value\":\"{{user.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n  - Hint: pivot same-host alerts. !{investigate{\"description\":\"\",\"label\":\"Alerts associated with the host\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n  - Implication: broaden containment when related alerts show the same lure or delivery pattern across the user or host; skip broadening when local evidence supports a coherent benign workflow or single-host containment.\n\n- Escalate on disguised/downloaded cache execution, loader handoff, suspicious infrastructure, or broader delivery; close only when process evidence and recovery bind one coherent benign workflow with no contradictions; when evidence is mixed or visibility incomplete, preserve artifacts and escalate.\n\n### False positive analysis\n\n- Browser-driven installers, vendor updaters, and archive-based delivery can launch signed helpers from cache or reference cached installer content. Confirm `process.executable`, hash/signer, parent executable/command line, `user.id`, and `host.id` align with one recognized vendor workflow, and recovered provenance/destinations do not contradict it. Without deployment records, require recurring signer or hash, parent workflow, account, and host pattern without loader children or unrelated external delivery.\n- Archive preview, document viewing, or browser-open workflows can reference cached paths without executing a cached payload. Confirm `process.command_line` uses the cache path as a document, image, or shortcut argument, the parent workflow is stable for `user.id` and `host.id`, and recovered file, network, and child-process evidence lacks `.url/.lnk`, `.cmd/.bat/.js/.hta`, archive-to-script, or DLL-loader transitions.\n- Before creating an exception, validate recurrence across prior alerts from this rule with stable `process.executable`, signer or hash, `process.parent.executable`, cache-path role, `user.id`, and `host.id`. Avoid exceptions on INetCache alone, Explorer alone, archive-manager name alone, or a user alone.\n\n### Response and remediation\n\n- If confirmed benign, reverse temporary containment and record the process identity, command line, parent workflow, account, host, and any recovered provenance or destination evidence that proved the benign workflow. Create an exception only for the recurring signer or hash, cache-path role, parent workflow, `user.id`, and `host.id` combination.\n- If suspicious but unconfirmed, preserve `process.entity_id`, `process.command_line`, parent/child lineage, runtime hash and signer, payload files, origin/referrer URLs, DNS names, destination IPs/ports, and related alert IDs before containment. Apply reversible containment first, such as temporary destination blocking or heightened monitoring for the affected `host.id` and `user.id`; isolate only when loader execution or network evidence suggests active payload delivery or command and control.\n- If confirmed malicious, preserve the same process, file, and network artifacts before destructive action. Isolate the endpoint when host criticality permits, block confirmed malicious domains, destinations, and hashes, collect suspicious payloads, then terminate processes or delete files only after scope and evidence capture are complete.\n- Eradicate only the shortcut, script, archive, DLL, extracted payload, startup item, or persistence artifact identified during the investigation. Verify the original browser-download, archive, WebDAV-like, or cache delivery path no longer reaches the host.\n- Post-incident hardening: retain the evidence set that proved the case, review SmartScreen, Mark-of-the-Web, WebDAV, archive-handling, and web-download controls for the affected host class, and record adjacent variants such as disguised `.url` lures, archive-extracted scripts, or cache-based DLL launchers in the case notes.\n",
+        "query": "process where host.os.type == \"windows\" and event.type == \"start\" and\n  process.parent.name : (\"explorer.exe\", \"winrar.exe\", \"7zFM.exe\", \"Bandizip.exe\") and\n  (\n    process.args : \"*\\\\AppData\\\\Local\\\\Microsoft\\\\Windows\\\\INetCache\\\\IE\\\\*\" or\n    process.executable : (\n      \"?:\\\\Users\\\\*\\\\AppData\\\\Local\\\\Microsoft\\\\Windows\\\\INetCache\\\\IE\\\\*\",\n\n      /* Crowdstrike specific condition as it uses NT Object paths */\n      \"\\\\Device\\\\HarddiskVolume*\\\\Users\\\\*\\\\AppData\\\\Local\\\\Microsoft\\\\Windows\\\\INetCache\\\\IE\\\\*\"\n    )\n  ) and\n  not process.executable : (\n        \"?:\\\\Program Files\\\\*.exe\",\n        \"?:\\\\Program Files (x86)\\\\*.exe\",\n        \"?:\\\\Windows\\\\System32\\\\mspaint.exe\",\n        \"?:\\\\Windows\\\\System32\\\\notepad.exe\",\n\n        /* Crowdstrike specific exclusion as it uses NT Object paths */\n        \"\\\\Device\\\\HarddiskVolume*\\\\Program Files\\\\*.exe\",\n        \"\\\\Device\\\\HarddiskVolume*\\\\Program Files (x86)\\\\*.exe\",\n        \"\\\\Device\\\\HarddiskVolume*\\\\Windows\\\\System32\\\\mspaint.exe\",\n        \"\\\\Device\\\\HarddiskVolume*\\\\Windows\\\\System32\\\\notepad.exe\"\n  )\n",
+        "references": [
+            "https://www.trendmicro.com/en_us/research/24/b/cve202421412-water-hydra-targets-traders-with-windows-defender-s.html"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "system",
+                "version": "^2.0.0"
+            },
+            {
+                "package": "m365_defender",
+                "version": "^5.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.9.0"
+            },
+            {
+                "package": "crowdstrike",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "dca6b4b0-ae70-44eb-bb7a-ce6db502ee78",
+        "setup": "## Setup\n\nThis rule is designed for data generated by [Elastic Defend](https://www.elastic.co/security/endpoint-security), which provides native endpoint detection and response, along with event enrichments designed to work with our detection rules.\n\nSetup instructions: https://ela.st/install-elastic-defend\n\n### Additional data sources\n\nThis rule also supports the following third-party data sources. For setup instructions, refer to the links below:\n\n- [CrowdStrike](https://ela.st/crowdstrike-integration)\n- [Microsoft Defender XDR](https://ela.st/m365-defender)\n- [SentinelOne Cloud Funnel](https://ela.st/sentinel-one-cloud-funnel)\n- [Sysmon Event ID 1 - Process Creation](https://ela.st/sysmon-event-1-setup)\n- [Windows Process Creation Logs](https://ela.st/audit-process-creation)\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Initial Access",
+            "Data Source: Elastic Endgame",
+            "Data Source: Elastic Defend",
+            "Data Source: Windows Security Event Logs",
+            "Data Source: Microsoft Defender XDR",
+            "Data Source: Sysmon",
+            "Data Source: SentinelOne",
+            "Data Source: Crowdstrike",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0001",
+                    "name": "Initial Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0001/"
+                },
+                "technique": [
+                    {
+                        "id": "T1566",
+                        "name": "Phishing",
+                        "reference": "https://attack.mitre.org/techniques/T1566/",
+                        "subtechnique": [
+                            {
+                                "id": "T1566.001",
+                                "name": "Spearphishing Attachment",
+                                "reference": "https://attack.mitre.org/techniques/T1566/001/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0011",
+                    "name": "Command and Control",
+                    "reference": "https://attack.mitre.org/tactics/TA0011/"
+                },
+                "technique": [
+                    {
+                        "id": "T1105",
+                        "name": "Ingress Tool Transfer",
+                        "reference": "https://attack.mitre.org/techniques/T1105/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1204",
+                        "name": "User Execution",
+                        "reference": "https://attack.mitre.org/techniques/T1204/",
+                        "subtechnique": [
+                            {
+                                "id": "T1204.002",
+                                "name": "Malicious File",
+                                "reference": "https://attack.mitre.org/techniques/T1204/002/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 213
+    },
+    "id": "dca6b4b0-ae70-44eb-bb7a-ce6db502ee78_213",
+    "type": "security-rule"
+}

@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when the number of files at L0 in the Pebble LSM tree exceeds 1000 on a store (`storage_l0_num_files > 1000`). This is a canonical sign that compactions are falling behind and read amplification is about to degrade.",
     "name": "[CockroachDB OTel] L0 file count high",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -20,13 +21,28 @@
       "lookBackWindow": 6,
       "statusChangeThreshold": 3
     },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "cockroachdb_otel-storage"
+        },
+        {
+          "id": "cockroachdb_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## CockroachDB L0 file count high\n\n### What fired\n`storage_l0_num_files` on one or more stores exceeded 1000 over the evaluation window.\n\n### Why it matters\nL0 is the top of the Pebble LSM tree. Files land here from in-memory flushes and are compacted down into L1+. When L0 grows past ~1000 files, read amplification rises sharply and compaction debt becomes self-reinforcing. Left unchecked, the store will begin stalling writes.\n\n### Triage\n1. Open the Storage dashboard filtered by `attributes.node_id` / `attributes.store`.\n2. Correlate with `storage_l0_sublevels` (sub-levels growing?), `rocksdb_read_amplification` (rising?), `rocksdb_compactions` rate (stalling or thrashing?).\n3. Check admission control (`admission_io_overload`) and disk queue (`sys_host_disk_iopsinprogress`).\n4. Inspect CPU \u2014 compactions are CPU-heavy and will be squeezed out of a hot node.\n\n### Remediation\n- Reduce write throughput to the store until compactions catch up.\n- Scale out to redistribute writes across more stores.\n- Investigate disk speed; faster disks finish compactions faster.\n\n### Tuning\n- Default threshold (`> 1000`, 15-minute window) is conservative. For latency-sensitive clusters, tighten to `> 500`.\n"
+      }
+    },
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
         "esql": "FROM metrics-cockroachdb.otel-default*\n| WHERE service.name == \"cockroachdb\"\n  AND storage_l0_num_files IS NOT NULL\n  AND storage_l0_num_files > 1000\n// > 1000 indicates compaction falling behind\n| WHERE attributes.node_id IS NOT NULL AND attributes.store IS NOT NULL\n| STATS l0_files = MAX(storage_l0_num_files) BY attributes.node_id, attributes.store, host.name\n| SORT l0_files DESC"
       },
       "size": 0,
-      "threshold": [0],
+      "threshold": [
+        0
+      ],
       "thresholdComparator": ">",
       "timeField": "@timestamp",
       "timeWindowSize": 15,

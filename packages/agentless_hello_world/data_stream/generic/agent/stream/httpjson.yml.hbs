@@ -1,0 +1,24 @@
+config_version: 2
+interval: 20s
+request.method: GET
+request.url: "{{url}}"
+request.timeout: 15s
+
+response.transforms:
+  - set:
+      target: body.http.response.status_code
+      value: 200
+  - set:
+      target: body.cursor.last_collected
+      value: '[[formatDate (now) "RFC3339"]]'
+  - set:
+      target: body.cursor.previous_collected
+      value: "[[.cursor.last_collected]]"
+      default: "1970-01-01T00:00:00Z"
+
+cursor:
+  last_collected:
+    value: "[[.last_event.cursor.last_collected]]"
+
+tags:
+  - agentless-hello-world

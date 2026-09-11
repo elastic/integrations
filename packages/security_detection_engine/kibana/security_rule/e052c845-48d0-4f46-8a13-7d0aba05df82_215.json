@@ -1,0 +1,121 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies the modification of the msDS-AllowedToDelegateTo attribute to KRBTGT. Attackers can use this technique to maintain persistence to the domain by having the ability to request tickets for the KRBTGT service.",
+        "from": "now-9m",
+        "index": [
+            "logs-system.security*",
+            "logs-windows.forwarded*",
+            "winlogbeat-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "user.name",
+                "user.id",
+                "winlog.event_data.SubjectUserName",
+                "winlog.event_data.SubjectUserSid",
+                "winlog.event_data.SubjectDomainName",
+                "winlog.event_data.SubjectLogonId",
+                "winlog.logon.id",
+                "winlog.event_data.TargetUserName",
+                "winlog.event_data.TargetSid",
+                "winlog.event_data.TargetDomainName",
+                "winlog.event_data.AllowedToDelegateTo",
+                "host.name",
+                "host.id",
+                "winlog.computer_name"
+            ]
+        },
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "KRBTGT Delegation Backdoor",
+        "note": "## Triage and analysis\n\n### Investigating KRBTGT Delegation Backdoor\n\n#### Possible investigation steps\n\n- What account was changed, and what krbtgt delegation value did the alert preserve?\n  - Focus: alert 4738 evidence in `winlog.event_data.TargetSid`, `winlog.event_data.TargetUserName`, `winlog.event_data.TargetDomainName`, `winlog.event_data.AllowedToDelegateTo`, and `winlog.computer_name`.\n  - Implication: Escalate when the target now lists a krbtgt service target such as \"krbtgt/DOMAIN\"; lower suspicion only when the target, value, and controller match a time-boxed security validation or emergency delegation repair explicitly naming krbtgt, which is not routine delegation.\n\n- Who initiated the account change?\n  - Focus: `winlog.event_data.SubjectUserSid`, `winlog.event_data.SubjectUserName`, `winlog.event_data.SubjectDomainName`, and `winlog.event_data.SubjectLogonId`.\n  - Implication: Escalate when a human admin, newly introduced service identity, or unexpected controller-local context made the change; lower suspicion only when the same stable tier-0 identity owns this exact delegation-maintenance path.\n\n- What source and authentication method created the modifying session?\n  - Focus: authentication events on the same `host.id` where `winlog.event_data.TargetLogonId` equals alert `winlog.event_data.SubjectLogonId`; review `source.ip`, `winlog.logon.type`, and `winlog.event_data.AuthenticationPackageName`. !{investigate{\"description\":\"\",\"label\":\"Authentication events for the modifying session\",\"providers\":[[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.code\",\"queryType\":\"phrase\",\"value\":\"4624\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"winlog.event_data.TargetLogonId\",\"queryType\":\"phrase\",\"value\":\"{{winlog.event_data.SubjectLogonId}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n  - Hint: missing authentication telemetry, or absent `source.ip` on local/service sessions, is unresolved, not benign; review same-session 4648 records when credential-source context matters. !{investigate{\"description\":\"\",\"label\":\"Explicit-credential events from the modifying session\",\"providers\":[[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.code\",\"queryType\":\"phrase\",\"value\":\"4648\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"winlog.event_data.SubjectLogonId\",\"queryType\":\"phrase\",\"value\":\"{{winlog.event_data.SubjectLogonId}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n  - Implication: Escalate for an unusual source, remote-interactive access, unexpected NTLM, or explicit credentials; lower suspicion when the session maps to the expected tier-0 admin path for this controller.\n\n- Did surrounding directory changes prepare, repeat, or roll back the krbtgt delegation?\n  - Focus: surrounding 4738 records for the same `winlog.event_data.TargetSid`, plus 5136 records on the same `winlog.computer_name` and modifying subject/session; use `winlog.event_data.ObjectDN`, `winlog.event_data.AttributeLDAPDisplayName`, and `winlog.event_data.AttributeValue` to identify the affected object and value.\n  - Hint: reconstruct the burst from same-target 4738 and same-controller directory-service changes; if 5136 grouping is thin, use `winlog.record_id` order on the same controller plus subject/session and object DN. Absent 5136 evidence leaves prerequisite and rollback context unresolved, not benign.\n    - !{investigate{\"description\":\"\",\"label\":\"4738 changes for this delegation target\",\"providers\":[[{\"excluded\":false,\"field\":\"event.code\",\"queryType\":\"phrase\",\"value\":\"4738\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"winlog.event_data.TargetSid\",\"queryType\":\"phrase\",\"value\":\"{{winlog.event_data.TargetSid}}\",\"valueType\":\"string\"}],[{\"excluded\":false,\"field\":\"event.code\",\"queryType\":\"phrase\",\"value\":\"4738\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"winlog.event_data.SubjectLogonId\",\"queryType\":\"phrase\",\"value\":\"{{winlog.event_data.SubjectLogonId}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-24h/h\",\"relativeTo\":\"now\"}}\n    - !{investigate{\"description\":\"\",\"label\":\"5136 directory changes by this modifying session\",\"providers\":[[{\"excluded\":false,\"field\":\"event.code\",\"queryType\":\"phrase\",\"value\":\"5136\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"winlog.computer_name\",\"queryType\":\"phrase\",\"value\":\"{{winlog.computer_name}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"winlog.event_data.SubjectLogonId\",\"queryType\":\"phrase\",\"value\":\"{{winlog.event_data.SubjectLogonId}}\",\"valueType\":\"string\"}],[{\"excluded\":false,\"field\":\"event.code\",\"queryType\":\"phrase\",\"value\":\"5136\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"winlog.event_data.SubjectUserSid\",\"queryType\":\"phrase\",\"value\":\"{{winlog.event_data.SubjectUserSid}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-24h/h\",\"relativeTo\":\"now\"}}\n  - Implication: Escalate when `winlog.event_data.AttributeLDAPDisplayName` and `winlog.event_data.AttributeValue` show delegation-enabling changes, repeated msDS-AllowedToDelegateTo writes, or no rollback; prompt removal narrows the persistence window but does not clear actor or session intent.\n\n- Does the same actor or target touch other delegation-relevant accounts in the case window?\n  - Focus: run this only if earlier answers are suspicious or unresolved; search 4738 and 5136 records for the same modifying subject/session or `winlog.event_data.TargetSid`, then compare `winlog.event_data.TargetUserName`, `winlog.event_data.ObjectDN`, `winlog.event_data.AttributeLDAPDisplayName`, and `winlog.event_data.AttributeValue`.\n  - Implication: Broaden scope when the same actor or target appears in additional delegation writes across objects or controllers; keep it narrow when changes stay confined to one exact target and resolved maintenance path. !{investigate{\"description\":\"\",\"label\":\"Delegation-sensitive changes by this actor\",\"providers\":[[{\"excluded\":false,\"field\":\"event.code\",\"queryType\":\"phrase\",\"value\":\"4738\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"winlog.event_data.SubjectUserSid\",\"queryType\":\"phrase\",\"value\":\"{{winlog.event_data.SubjectUserSid}}\",\"valueType\":\"string\"}],[{\"excluded\":false,\"field\":\"event.code\",\"queryType\":\"phrase\",\"value\":\"5136\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"winlog.event_data.SubjectUserSid\",\"queryType\":\"phrase\",\"value\":\"{{winlog.event_data.SubjectUserSid}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n\n- Escalate when a non-routine actor/session adds krbtgt delegation, supporting directory changes show setup, the value remains, or same-actor/target scope expands; close only when the modified account, krbtgt value, actor/session, source/authentication context, surrounding changes, rollback, and scope all align with one tightly controlled authorized workflow; preserve raw 4738, authentication, and directory-change evidence and escalate when findings stay mixed or incomplete.\n\n### False positive analysis\n\n- Authorized security validation or emergency delegation repair can trigger this rule only when krbtgt delegation is the explicit planned action. Confirm the target (`winlog.event_data.TargetSid` plus `winlog.event_data.AllowedToDelegateTo`), actor/session (`winlog.event_data.SubjectUserSid`, `winlog.event_data.SubjectLogonId`, and recovered authentication context), controller, and surrounding attribute evidence all align. If change records are unavailable, telemetry-only closure must still bind one exact workflow with no contradictions; prior benign recurrence strengthens confidence but is not required.\n- Do not close generic service onboarding, migration, or constrained-delegation cutover as benign unless outside confirmation explicitly names krbtgt delegation and telemetry matches that exact target, actor, session, and controller path. A normal service-delegation explanation that does not account for the krbtgt value is incomplete.\n- Before creating an exception, validate that the same `winlog.event_data.SubjectUserSid`, `winlog.event_data.TargetSid`, exact `winlog.event_data.AllowedToDelegateTo`, `winlog.computer_name`, and recovered session pattern identify the authorized workflow across prior benign cases or a tightly controlled test plan. Build the exception from that minimum confirmed pattern, and avoid exceptions on \"krbtgt\", event 4738, or \"msDS-AllowedToDelegateTo\" alone.\n\n### Response and remediation\n\n- If confirmed benign, document the actor, target account, krbtgt value, controller, recovered session context, and surrounding delegation-change pattern before reversing temporary containment. Create an exception only if that same pattern is stable across prior benign cases.\n- If suspicious but unconfirmed, first export the alert, raw 4738 record, matching authentication events, and surrounding 4738 or 5136 records. Preserve the modified account, krbtgt value, actor/session, source/auth context, and rollback evidence before reversible containment such as heightened monitoring or temporary delegation-administration restrictions.\n- If confirmed malicious, preserve the same identity, session, and directory-change evidence first, then restrict or disable the modifying account. Restrict the modified target only when it was intentionally backdoored or used for follow-on Kerberos abuse. Contain the recovered source host when session evidence identifies one, or hand off the preserved evidence set to Active Directory or incident response.\n- After containment, review recent 4738 and 5136 records for the same actor, target, and controller before cleanup. Remove the unauthorized krbtgt value from the `msDS-AllowedToDelegateTo` attribute, roll back related delegation-prerequisite changes identified in the same change set, and verify clean replication across domain controllers.\n- If ticket abuse or broader Active Directory compromise is confirmed, activate the domain-compromise plan, including the required double reset of krbtgt after scoping and coordination with directory owners.\n- Post-incident hardening: restrict delegation administration and SeEnableDelegationPrivilege to dedicated tier-0 identities, keep Audit User Account Management plus supporting 5136, 4624, and 4648 visibility on domain controllers, and document any recurring benign validation pattern for future triage.\n",
+        "query": "iam where host.os.type == \"windows\" and event.code == \"4738\" and winlog.event_data.AllowedToDelegateTo : \"*krbtgt*\"\n",
+        "references": [
+            "https://skyblue.team/posts/delegate-krbtgt",
+            "https://github.com/atc-project/atomic-threat-coverage/blob/master/Atomic_Threat_Coverage/Logging_Policies/LP_0026_windows_audit_user_account_management.md"
+        ],
+        "related_integrations": [
+            {
+                "package": "system",
+                "version": ">=2.0.0"
+            },
+            {
+                "package": "windows",
+                "version": ">=3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.code",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "winlog.event_data.AllowedToDelegateTo",
+                "type": "unknown"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "e052c845-48d0-4f46-8a13-7d0aba05df82",
+        "setup": "## Setup\n\nAudit User Account Management must be enabled to generate the events used by this rule.\nSetup instructions: https://ela.st/audit-user-account-management\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Persistence",
+            "Use Case: Active Directory Monitoring",
+            "Data Source: Active Directory",
+            "Data Source: Windows Security Event Logs",
+            "Resources: Investigation Guide",
+            "Tactic: Credential Access"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1098",
+                        "name": "Account Manipulation",
+                        "reference": "https://attack.mitre.org/techniques/T1098/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1558",
+                        "name": "Steal or Forge Kerberos Tickets",
+                        "reference": "https://attack.mitre.org/techniques/T1558/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 215
+    },
+    "id": "e052c845-48d0-4f46-8a13-7d0aba05df82_215",
+    "type": "security-rule"
+}

@@ -1,0 +1,92 @@
+# Verify that events from the event data stream are routed to OCSF-category-specific
+# data streams via routing rules.
+#
+# The test data in MinIO provides one event per OCSF category_uid value (1–6),
+# derived from the pipeline test fixtures:
+#   - category_uid 1  → amazon_security_lake.system_activity (rerouted)
+#   - category_uid 2  → amazon_security_lake.findings (rerouted)
+#   - category_uid 3  → amazon_security_lake.iam (rerouted)
+#   - category_uid 4  → amazon_security_lake.network_activity (rerouted)
+#   - category_uid 5  → amazon_security_lake.discovery (rerouted)
+#   - category_uid 6  → amazon_security_lake.application_activity (rerouted)
+#
+# The aws-s3 input decodes files as Parquet. The test data is a minimal
+# Parquet file (6 rows, one per OCSF category_uid) stored base64-encoded
+# in testdata/events.parquet.b64 and decoded at MinIO startup.
+
+[!external_stack] skip 'Skipping external stack test.'
+
+# Connect to the running stack.
+use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+
+# Install an agent.
+install_agent -profile ${CONFIG_PROFILES}/${PROFILE} -network_name NETWORK_NAME
+
+# Start MinIO with the test data pre-loaded.
+docker_up -profile ${CONFIG_PROFILES}/${PROFILE} -network ${NETWORK_NAME} asl-minio
+
+# Add the package resources.
+add_package -profile ${CONFIG_PROFILES}/${PROFILE}
+
+# Add the data stream policy reading from MinIO.
+add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config.yaml EVENT_DS
+
+# Wait for all routed docs to arrive, then confirm the total holds.
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 6 -confirm 5s -timeout 5m logs-amazon_security_lake.system_activity-*,logs-amazon_security_lake.findings-*,logs-amazon_security_lake.iam-*,logs-amazon_security_lake.network_activity-*,logs-amazon_security_lake.discovery-*,logs-amazon_security_lake.application_activity-*
+
+# Each destination got its one document (docs already indexed, these return immediately).
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -confirm 0 -timeout 30s logs-amazon_security_lake.system_activity-*
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -confirm 0 -timeout 30s logs-amazon_security_lake.findings-*
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -confirm 0 -timeout 30s logs-amazon_security_lake.iam-*
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -confirm 0 -timeout 30s logs-amazon_security_lake.network_activity-*
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -confirm 0 -timeout 30s logs-amazon_security_lake.discovery-*
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -confirm 0 -timeout 30s logs-amazon_security_lake.application_activity-*
+
+# Clean up.
+remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${EVENT_DS}
+uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 1m
+docker_down asl-minio
+
+-- test_config.yaml --
+input: aws-s3
+data_stream:
+  vars:
+    collect_s3_logs: true
+    non_aws_bucket_name: test-bucket
+    endpoint: http://svc-asl-minio:9000
+    path_style: true
+    access_key_id: minioadmin
+    secret_access_key: minioadmin
+    region: us-east-1
+    interval: 10s
+    preserve_original_event: false
+
+-- asl-minio/docker-compose.yml --
+services:
+  asl-minio:
+    image: minio/minio:RELEASE.2024-06-13T22-53-53Z
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    entrypoint: /bin/sh
+    command:
+      - -c
+      - |
+        minio server /data &
+        MINIO_PID=$$!
+        until curl -sf http://localhost:9000/minio/health/live; do sleep 1; done
+        mc alias set local http://localhost:9000 minioadmin minioadmin
+        mc mb local/test-bucket
+        base64 -d /testdata/events.parquet.b64 > /tmp/events.parquet
+        mc cp /tmp/events.parquet local/test-bucket/amazon-security-lake/events.parquet
+        wait $$MINIO_PID
+    healthcheck:
+      test: ["CMD-SHELL", "mc alias set local http://localhost:9000 minioadmin minioadmin >/dev/null 2>&1 && mc stat local/test-bucket/amazon-security-lake/events.parquet >/dev/null 2>&1"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    volumes:
+      - ./testdata:/testdata:ro
+
+-- asl-minio/testdata/events.parquet.b64 --
+UEFSMRUEFWAVSEwVDBUAEgAAMAQBAAkBAAIJBwQAAw0IAAQNCDwFAAAAAAAAAAYAAAAAAAAAFQAVFhUaLBUMFRAVBhUGHBgIBgAAAAAAAAAYCAEAAAAAAAAAFgAoCAYAAAAAAAAAGAgBAAAAAAAAABERAAAACygCAAAADAEDA4jGAhUEGSw1ABgGc2NoZW1hFQIAFQQlAhgMY2F0ZWdvcnlfdWlkABYMGRwZHCYAHBUEGTUABhAZGAxjYXRlZ29yeV91aWQVAhYMFpACFvwBJmwmCBwYCAYAAAAAAAAAGAgBAAAAAAAAABYAKAgGAAAAAAAAABgIAQAAAAAAAAAREQAZLBUEFQAVAgAVABUQFQIAPCkGGSYADAAAABaQAhYMJggW/AEAGRwYDEFSUk9XOnNjaGVtYRjAAS8vLy8vNGdBQUFBUUFBQUFBQUFLQUF3QUJnQUZBQWdBQ2dBQUFBQUJCQUFNQUFBQUNBQUlBQUFBQkFBSUFBQUFCQUFBQUFFQUFBQVVBQUFBRUFBVUFBZ0FCZ0FIQUF3QUFBQVFBQkFBQUFBQUFBRUNFQUFBQUNnQUFBQUVBQUFBQUFBQUFBd0FBQUJqWVhSbFoyOXllVjkxYVdRQUFBQUFDQUFNQUFnQUJ3QUlBQUFBQUFBQUFVQUFBQUFBQUFBQQAYIHBhcnF1ZXQtY3BwLWFycm93IHZlcnNpb24gMjUuMC4wGRwcAAAAoAEAAFBBUjE=

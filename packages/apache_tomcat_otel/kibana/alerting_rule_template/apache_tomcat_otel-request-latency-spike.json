@@ -1,38 +1,51 @@
 {
-    "id": "apache_tomcat_otel-request-latency-spike",
-    "type": "alerting_rule_template",
-    "managed": true,
-    "attributes": {
-        "name": "[Tomcat OTel] Request latency spike",
-        "ruleTypeId": ".es-query",
-        "tags": [
-            "observability",
-            "tomcat"
-        ],
-        "schedule": {
-            "interval": "5m"
+  "id": "apache_tomcat_otel-request-latency-spike",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when the average per-request processing time exceeds 500 ms on a connector. Elevated average latency is a user-visible regression and usually precedes thread-pool saturation.",
+    "name": "[Tomcat OTel] Request latency spike",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "tomcat"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 3
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "apache_tomcat_otel-request-processing"
         },
-        "alertDelay": {
-            "active": 3
-        },
-        "params": {
-            "searchType": "esqlQuery",
-            "esqlQuery": {
-                "esql": "FROM metrics-tomcat.otel-*\n| WHERE Catalina_GlobalRequestProcessor_processingTime IS NOT NULL\n    AND Catalina_GlobalRequestProcessor_requestCount IS NOT NULL\n| STATS\n    max_time = MAX(Catalina_GlobalRequestProcessor_processingTime),\n    min_time = MIN(Catalina_GlobalRequestProcessor_processingTime),\n    max_requests = MAX(Catalina_GlobalRequestProcessor_requestCount),\n    min_requests = MIN(Catalina_GlobalRequestProcessor_requestCount)\n  BY host.name, attributes.name\n| EVAL\n    delta_time_ms = max_time - min_time,\n    delta_requests = max_requests - min_requests\n// Minimum request volume to compute a meaningful average\n| WHERE delta_requests > 10\n| EVAL avg_latency_ms = ROUND(delta_time_ms / delta_requests, 2)\n// Latency threshold in milliseconds \u2014 adjust based on your SLA\n// Consider that this is average latency; tail latency will be higher\n| WHERE avg_latency_ms > 500.0\n| SORT avg_latency_ms DESC"
-            },
-            "size": 0,
-            "threshold": [
-                0
-            ],
-            "thresholdComparator": ">",
-            "timeField": "@timestamp",
-            "timeWindowSize": 15,
-            "timeWindowUnit": "m",
-            "groupBy": "row",
-            "termField": "host.name",
-            "termSize": 100,
-            "excludeHitsFromPreviousRun": true
-            
+        {
+          "id": "apache_tomcat_otel-overview"
         }
+      ],
+      "investigation_guide": {
+        "blob": "## Tomcat request latency spike\n\n### What fired\n`delta processingTime / delta requestCount > 500 ms` on a connector over the evaluation window.\n\n### Why it matters\nAverage request latency is the most direct SLI for a Tomcat connector. Sustained increases hurt user experience and cascade into thread pool saturation as workers hold connections longer. Tail latency will be worse than average, so the true impact often exceeds what this rule shows.\n\n### Triage\n1. Request Processing dashboard: confirm connector/application affected.\n2. Correlate with thread pool saturation (`Catalina_ThreadPool_currentThreadsBusy`).\n3. Check GC pauses (`java_lang_G1_Old_Generation_CollectionTime`) \u2014 GC spikes cause latency spikes.\n4. Inspect downstream dependency latency (DB, REST services, caches).\n\n### Remediation\n- Fix the slow downstream / slow servlet.\n- Add caching or circuit breakers.\n- Size the thread pool and heap for the observed latency envelope.\n\n### Tuning\n- `> 500 ms` is a coarse default; most services should alert at a much lower threshold tuned to their SLA.\n"
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-tomcat.otel-*\n| WHERE Catalina_GlobalRequestProcessor_processingTime IS NOT NULL\n    AND Catalina_GlobalRequestProcessor_requestCount IS NOT NULL\n| STATS\n    max_time = MAX(Catalina_GlobalRequestProcessor_processingTime),\n    min_time = MIN(Catalina_GlobalRequestProcessor_processingTime),\n    max_requests = MAX(Catalina_GlobalRequestProcessor_requestCount),\n    min_requests = MIN(Catalina_GlobalRequestProcessor_requestCount)\n  BY host.name, attributes.name\n| EVAL\n    delta_time_ms = max_time - min_time,\n    delta_requests = max_requests - min_requests\n// Minimum request volume to compute a meaningful average\n| WHERE delta_requests > 10\n| EVAL avg_latency_ms = ROUND(delta_time_ms / delta_requests, 2)\n// Latency threshold in milliseconds \u2014 adjust based on your SLA\n// Consider that this is average latency; tail latency will be higher\n| WHERE avg_latency_ms > 500.0\n| SORT avg_latency_ms DESC"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "host.name",
+      "termSize": 100,
+      "excludeHitsFromPreviousRun": true
     }
+  }
 }

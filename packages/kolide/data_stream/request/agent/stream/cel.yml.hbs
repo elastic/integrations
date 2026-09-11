@@ -1,0 +1,114 @@
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+resource.headers:
+  Accept:
+    - application/json
+  X-Kolide-Api-Version: "2026-04-07"
+state:
+  api_key: {{api_key}}
+  batch_size: {{batch_size}}
+redact:
+  fields:
+    - api_key
+program: |-
+  // Paginated request snapshots. Walk exemption requests first, then registration requests.
+  state.?cursor.kind.orValue("exemption").as(kind,
+    state.?cursor.next.orValue("").as(next_token,
+      state.with(
+        request(
+          "GET",
+          state.url.trim_right("/") + (
+            (kind == "registration") ?
+              "/registration_requests?"
+            :
+              "/exemption_requests?"
+          ) + (
+            (next_token != "") ?
+              {
+                "per_page": [string(int(state.batch_size))],
+                "cursor": [next_token],
+              }
+            :
+              {
+                "per_page": [string(int(state.batch_size))],
+              }
+          ).format_query()
+        ).with(
+          {
+            "Header": {
+              "Authorization": ["Bearer " + state.api_key],
+            },
+          }
+        ).do_request().as(resp,
+          (resp.StatusCode == 200) ?
+            resp.Body.decode_json().as(body,
+              {
+                "next_cursor": body.?pagination.next_cursor.orValue(""),
+                "raw_events": body.?data.orValue([]).map(e, {"message": e.with({"_kolide_request_type": kind}).encode_json()}),
+              }.as(page,
+                {
+                  // Any empty page must still publish a drop-marker event: the CEL
+                  // input only persists cursor state alongside published events, so
+                  // an empty page here (in particular an empty terminal registration
+                  // page) would otherwise silently discard the cursor.kind flip below
+                  // and permanently stall collection on the empty phase.
+                  "events": (size(page.raw_events) == 0) ?
+                    [{"message": "{}", "retry": "true"}]
+                  :
+                    page.raw_events,
+                  "cursor": {
+                    "kind": (page.next_cursor != "") ? kind : ((kind == "exemption") ? "registration" : "exemption"),
+                    "next": page.next_cursor,
+                  },
+                  "want_more": page.next_cursor != "" || kind == "exemption",
+                }
+              )
+            )
+          :
+            {
+              "events": {
+                "error": {
+                  "code": string(resp.StatusCode),
+                  "id": string(resp.Status),
+                  "message": "GET " + ((kind == "registration") ? "/registration_requests" : "/exemption_requests") + ": " + (
+                    (size(resp.Body) != 0) ?
+                      string(resp.Body)
+                    :
+                      string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                  ),
+                },
+              },
+              "want_more": false,
+            }
+        )
+      )
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+processors:
+  - drop_event.when.equals.retry: "true"
+{{#if processors}}
+{{processors}}
+{{/if}}

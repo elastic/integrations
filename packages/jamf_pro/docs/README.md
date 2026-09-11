@@ -2,6 +2,10 @@
 
 Jamf Pro is a comprehensive management solution designed to help organizations deploy, configure, secure, and manage Apple devices. This integration enables organizations to seamlessly monitor and protect their Mac fleet through Elastic, providing a unified view of security events across all endpoints and facilitating a more effective response to threats. This integration encompasses both event and inventory data ingestion from Jamf Pro.
 
+## Agentless Enabled Integration
+
+Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
 
 ## Data streams
 
@@ -97,6 +101,18 @@ By default these sections are included inventory documents:
  - `OPERATING_SYSTEM`
 
 All the sections can be enabled or disabled on the integration policy settings page.
+
+#### Latest inventory transform
+
+This integration includes a latest transform that maintains a single up-to-date
+document per device in a dedicated index. The transform destination is accessible
+via the `logs-jamf_pro_latest.inventory` alias.
+
+The source data stream accumulates all inventory snapshots (one per device per
+report cycle). A default ILM policy rolls the source index over every 7 days and
+deletes each rolled-over index 30 days later. The transform's retention policy
+removes devices from the latest index whose `@timestamp` is more than 30 days
+old.
 
 Here is an example inventory document:
 
@@ -204,6 +220,8 @@ The following non-ECS fields are used in inventory documents:
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| host.entity.attributes.managed | Indicates whether the entity is managed by an external administration or control system. Typically applicable to Host and Service entities. | boolean |
+| host.entity.lifecycle.last_activity | Timestamp of the most recent action performed by or attributed to this entity (active use). Distinct from `entity.last_seen_timestamp`, which records when the entity was last observed in data; `last_activity` implies the entity was active, not only seen. Typically applicable to User, Host, and Service entities. | date |
 | input.type | Input type | keyword |
 | jamf_pro.inventory.applications.bundle_id |  | keyword |
 | jamf_pro.inventory.applications.external_version_id |  | keyword |
@@ -303,6 +321,7 @@ The following non-ECS fields are used in inventory documents:
 | jamf_pro.inventory.local_user_accounts.admin |  | boolean |
 | jamf_pro.inventory.local_user_accounts.azure_active_directory_id |  | keyword |
 | jamf_pro.inventory.local_user_accounts.computer_azure_active_directory_id |  | keyword |
+| jamf_pro.inventory.local_user_accounts.email |  | keyword |
 | jamf_pro.inventory.local_user_accounts.file_vault2enabled |  | boolean |
 | jamf_pro.inventory.local_user_accounts.full_name |  | keyword |
 | jamf_pro.inventory.local_user_accounts.fullname |  | keyword |
@@ -374,6 +393,7 @@ The following non-ECS fields are used in inventory documents:
 | jamf_pro.inventory.user_and_location.realname |  | keyword |
 | jamf_pro.inventory.user_and_location.room |  | keyword |
 | jamf_pro.inventory.user_and_location.username |  | keyword |
+| labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
 
 
 ### Events
@@ -386,39 +406,50 @@ An example event for `events` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-09-11T06:28:04.746Z",
+    "@timestamp": "2026-07-29T03:47:37.429Z",
     "agent": {
-        "ephemeral_id": "b5b7849d-c31a-41a6-ad84-82249703023b",
-        "id": "2c65c370-55d1-42f5-a8bb-b4146b13e120",
-        "name": "elastic-agent-66011",
+        "ephemeral_id": "14d3d101-ec1d-4152-be66-ea3a0103cf37",
+        "id": "da3cee98-ea12-42e4-bed8-53fa9ca483e0",
+        "name": "elastic-agent-22239",
         "type": "filebeat",
-        "version": "8.15.0"
+        "version": "8.19.2"
     },
     "data_stream": {
         "dataset": "jamf_pro.events",
-        "namespace": "78830",
+        "namespace": "20970",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "2c65c370-55d1-42f5-a8bb-b4146b13e120",
+        "id": "da3cee98-ea12-42e4-bed8-53fa9ca483e0",
         "snapshot": false,
-        "version": "8.15.0"
+        "version": "8.19.2"
     },
     "event": {
         "action": "ComputerAdded",
         "agent_id_status": "verified",
+        "category": [
+            "host"
+        ],
         "dataset": "jamf_pro.events",
-        "ingested": "2025-09-11T06:28:05Z",
+        "ingested": "2026-07-29T03:47:38Z",
         "kind": "event",
-        "original": "{\"event\":{\"alternateMacAddress\":\"be:aa:e5:54:94:db\",\"building\":\"1S8NPV\",\"department\":\"XDO4C5\",\"deviceName\":\"VPNYC\",\"emailAddress\":\"kghrqq@email.com\",\"ipAddress\":\"89.160.20.156\",\"jssID\":\"1500747557\",\"macAddress\":\"be:aa:e5:54:94:db\",\"managementId\":\"6319330669\",\"model\":\"LJ68RT\",\"osBuild\":\"26.6913\",\"osVersion\":\"92.5786\",\"phone\":\"2183546\",\"position\":\"B64JIO\",\"realName\":\"CPK79\",\"reportedIpAddress\":\"89.160.20.156\",\"room\":\"HQC6S9\",\"serialNumber\":\"7967177\",\"udid\":\"7265694772\",\"userDirectory_id\":\"0389771137\",\"username\":\"John Doe\"},\"webhook\":{\"eventTimestamp\":1725443872001,\"id\":\"8131946016\",\"name\":\"PU17M\",\"webhookEvent\":\"ComputerAdded\"}}"
+        "original": "{\"event\":{\"alternateMacAddress\":\"be:aa:e5:54:94:db\",\"building\":\"1S8NPV\",\"department\":\"XDO4C5\",\"deviceName\":\"VPNYC\",\"emailAddress\":\"kghrqq@email.com\",\"ipAddress\":\"89.160.20.156\",\"jssID\":\"1500747557\",\"macAddress\":\"be:aa:e5:54:94:db\",\"managementId\":\"6319330669\",\"model\":\"LJ68RT\",\"osBuild\":\"26.6913\",\"osVersion\":\"92.5786\",\"phone\":\"2183546\",\"position\":\"B64JIO\",\"realName\":\"CPK79\",\"reportedIpAddress\":\"89.160.20.156\",\"room\":\"HQC6S9\",\"serialNumber\":\"7967177\",\"udid\":\"7265694772\",\"userDirectory_id\":\"0389771137\",\"username\":\"John Doe\"},\"webhook\":{\"eventTimestamp\":1725443872001,\"id\":\"8131946016\",\"name\":\"PU17M\",\"webhookEvent\":\"ComputerAdded\"}}",
+        "type": [
+            "change"
+        ]
     },
     "host": {
         "address": [
             "89.160.20.156"
         ],
+        "entity": {
+            "lifecycle": {
+                "last_activity": "2024-09-04T09:57:52.001Z"
+            }
+        },
         "geo": {
             "city_name": "Linköping",
             "continent_name": "Europe",
@@ -433,7 +464,10 @@ An example event for `events` looks as following:
         },
         "ip": [
             "89.160.20.156"
-        ]
+        ],
+        "os": {
+            "version": "92.5786"
+        }
     },
     "input": {
         "type": "http_endpoint"
@@ -471,9 +505,6 @@ An example event for `events` looks as following:
             }
         }
     },
-    "os": {
-        "version": "92.5786"
-    },
     "related": {
         "user": [
             "John Doe",
@@ -505,6 +536,7 @@ The following non-ECS fields are used in real-time event documents:
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| host.entity.lifecycle.last_activity | Timestamp of the most recent action performed by or attributed to this entity (active use). Distinct from `entity.last_seen_timestamp`, which records when the entity was last observed in data; `last_activity` implies the entity was active, not only seen. Typically applicable to User, Host, and Service entities. | date |
 | input.type |  | keyword |
 | jamf_pro.events.event.alternate_mac_address |  | keyword |
 | jamf_pro.events.event.asset_tag |  | keyword |

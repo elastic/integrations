@@ -3,9 +3,13 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when `iis.network.blocked` increases \u2014 IIS is enforcing bandwidth throttling and blocking traffic. Indicates configured bandwidth limits are being hit.",
     "name": "[IIS OTel] Bandwidth throttling detected",
     "ruleTypeId": ".es-query",
-    "tags": ["observability", "iis"],
+    "tags": [
+      "observability",
+      "iis"
+    ],
     "schedule": {
       "interval": "5m"
     },
@@ -17,13 +21,28 @@
       "lookBackWindow": 10,
       "statusChangeThreshold": 4
     },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "iis_otel-overview"
+        },
+        {
+          "id": "iis_otel-sites"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## IIS bandwidth throttling detected\n\n### What fired\n`INCREASE(iis.network.blocked) > 0` on at least one host during the window.\n\n### Why it matters\nIIS supports per-site bandwidth limits. When traffic exceeds the configured limit, IIS blocks additional bytes and the counter increments. Sustained blocking causes user-visible latency or transfer failures.\n\n### Triage\n1. Identify the affected host and (via the Sites & Pools dashboard) the busiest sites.\n2. Compare against the configured `bandwidthLimit` for each site.\n3. Look for traffic spikes from specific clients.\n\n### Remediation\n- Raise the per-site bandwidth limit if the workload has legitimately grown.\n- Throttle abusive clients at the edge / WAF.\n\n### Tuning\n- Fires on any non-zero increase. If brief spikes are tolerable, raise the threshold or add an `alertDelay`.\n"
+      }
+    },
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
         "esql": "TS metrics-iisreceiver.otel-*\n| WHERE iis.network.blocked IS NOT NULL\n| STATS blocked_increase = SUM(INCREASE(iis.network.blocked)) BY host.name\n| WHERE blocked_increase > 0\n| SORT blocked_increase DESC\n| LIMIT 20"
       },
       "size": 0,
-      "threshold": [0],
+      "threshold": [
+        0
+      ],
       "thresholdComparator": ">",
       "timeField": "@timestamp",
       "timeWindowSize": 5,

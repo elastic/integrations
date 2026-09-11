@@ -38,6 +38,17 @@ processors:
         replacement: '\='
     ignore_missing: false
     fail_on_error: true
+# PAN-OS serializes embedded NUL bytes in URL field values (e.g. PanOSReferer) as the literal
+# text `\u0000`. `\u` is not a valid CEF escape sequence, so decode_cef rejects the whole field
+# value and sets error.message, causing a pipeline_error. Strip the sequence before decoding.
+- replace:
+    when.contains.message: '\u0000'
+    fields:
+      - field: message
+        pattern: '[\\]?\\u0000'
+        replacement: ''
+    ignore_missing: false
+    fail_on_error: true
 - decode_cef:
     field: message
     ecs: false

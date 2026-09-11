@@ -1,0 +1,48 @@
+{
+  "id": "aws_rds_otel-disk-queue-depth-high",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when average disk queue depth is sustained above a threshold. High queue depth with plateauing IOPS is the canonical storage I/O saturation signature.",
+    "name": "[AWS RDS OTel] Disk queue depth high",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "aws_rds",
+      "otel"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 3
+    },
+    "flapping": {
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    },
+    "artifacts": {
+      "investigation_guide": {
+        "blob": "## Disk Queue Depth High\n\n### Triage\n1. Compare `ReadIOPS` and `WriteIOPS` to provisioned IOPS — plateauing at the ceiling confirms saturation.\n2. Check `ReadLatency`/`WriteLatency` for rising storage latency.\n3. On gp2, inspect `BurstBalance` for depleted burst credits.\n4. Review recent workload changes that increased I/O demand.\n\n### Mitigation\n- Increase provisioned IOPS or upgrade storage type.\n- Distribute read load to replicas.\n- Optimize queries to reduce I/O (indexes, smaller scans)."
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-aws.rds.otel-*\n| WHERE Namespace == \"AWS/RDS\"\n    AND MetricName == \"DiskQueueDepth\"\n    AND stat == \"Average\"\n| STATS avg_disk_queue_depth = AVG(`metrics.amazonaws.com/AWS/RDS/DiskQueueDepth`)\n    BY DBInstanceIdentifier, cloud.region\n// Queued I/O count — adjust based on workload (default: 5)\n| WHERE avg_disk_queue_depth > 5.0\n| SORT avg_disk_queue_depth DESC"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "DBInstanceIdentifier",
+      "termSize": 50,
+      "excludeHitsFromPreviousRun": true
+    }
+  }
+}

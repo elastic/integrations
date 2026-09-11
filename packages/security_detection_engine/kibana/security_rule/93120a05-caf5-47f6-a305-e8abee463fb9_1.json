@@ -1,0 +1,113 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "building_block_type": "default",
+        "description": "Detects successful Kubernetes pod creation requests using commonly abused base and debugging container images such as BusyBox, Alpine, Ubuntu, Netshoot, and network multitool variants. These images are frequently used by attackers to deploy short-lived or interactive \"throwaway\" containers for reconnaissance, payload staging, or command execution due to their small footprint or built-in tooling.",
+        "history_window_start": "now-5d",
+        "index": [
+            "logs-kubernetes.audit_logs-*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "Kubernetes Pod Creation Using Common Debug or Base Images",
+        "new_terms_fields": [
+            "source.ip",
+            "user_agent.original",
+            "user.name"
+        ],
+        "query": "event.dataset:\"kubernetes.audit_logs\" and\nkubernetes.audit.stage:\"ResponseComplete\" and\nkubernetes.audit.annotations.authorization_k8s_io/decision:\"allow\" and\nkubernetes.audit.objectRef.resource:\"pods\" and\nkubernetes.audit.verb:\"create\" and\nkubernetes.audit.requestObject.spec.containers.image:(alpine* or busybox* or ubuntu\\:* or debian\\:* or *netshoot\\:* or *network-multitool\\:* or *curl\\:*)\n",
+        "related_integrations": [
+            {
+                "package": "kubernetes",
+                "version": "^1.80.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.annotations.authorization_k8s_io/decision",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.objectRef.resource",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.requestObject.spec.containers.image",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.stage",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "kubernetes.audit.verb",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "93120a05-caf5-47f6-a305-e8abee463fb9",
+        "severity": "low",
+        "tags": [
+            "Data Source: Kubernetes",
+            "Domain: Kubernetes",
+            "Use Case: Threat Detection",
+            "Tactic: Execution",
+            "Tactic: Defense Evasion",
+            "Rule Type: BBR"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1610",
+                        "name": "Deploy Container",
+                        "reference": "https://attack.mitre.org/techniques/T1610/"
+                    },
+                    {
+                        "id": "T1609",
+                        "name": "Container Administration Command",
+                        "reference": "https://attack.mitre.org/techniques/T1609/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1610",
+                        "name": "Deploy Container",
+                        "reference": "https://attack.mitre.org/techniques/T1610/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "new_terms",
+        "version": 1
+    },
+    "id": "93120a05-caf5-47f6-a305-e8abee463fb9_1",
+    "type": "security-rule"
+}

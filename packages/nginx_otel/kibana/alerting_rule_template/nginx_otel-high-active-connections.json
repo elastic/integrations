@@ -1,37 +1,54 @@
 {
-    "id": "nginx_otel-high-active-connections",
-    "type": "alerting_rule_template",
-    "attributes": {
-        "name": "[Nginx OTel] High active connections",
-        "tags": [
-            "Nginx OTel"
-        ],
-        "ruleTypeId": ".es-query",
-        "schedule": {
-            "interval": "1m"
-        },
-        "params": {
-            "searchType": "esqlQuery",
-            "timeWindowSize": 5,
-            "timeWindowUnit": "m",
-            "esqlQuery": {
-                "esql": "FROM metrics-nginxreceiver.otel-*\n// Filter to active connection state gauges\n| WHERE state == \"active\"\n// Aggregate active connections per host\n| STATS avg_active = AVG(nginx.connections_current), max_active = MAX(nginx.connections_current), sample_count = COUNT(*) BY host.name\n// Require minimum samples to avoid false positives during startup\n| WHERE sample_count >= 3\n// Alert when average active connections exceed capacity threshold\n// Adjust threshold based on your NGINX worker_connections setting\n| WHERE avg_active > 256\n| SORT avg_active DESC\n| LIMIT 10"
-            },
-            "size": 0,
-            "threshold": [
-                0
-            ],
-            "thresholdComparator": ">",
-            "timeField": "@timestamp",
-            "groupBy": "row",
-            "termField": "host.name",
-            "termSize": 10
-        },
-        "alertDelay": {
-            "active": 3
-        }
+  "id": "nginx_otel-high-active-connections",
+  "type": "alerting_rule_template",
+  "attributes": {
+    "description": "Alerts when average active connections exceed 256. Approaching `worker_connections` ceiling.",
+    "name": "[Nginx OTel] High active connections",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "Nginx OTel"
+    ],
+    "schedule": {
+      "interval": "1m"
     },
-    "managed": true,
-    "coreMigrationVersion": "8.8.0",
-    "typeMigrationVersion": "10.1.0"
+    "alertDelay": {
+      "active": 3
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "nginx_otel-a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+        },
+        {
+          "id": "nginx_otel-b2c3d4e5-f6a7-8901-bcde-f12345678901"
+        },
+        {
+          "id": "nginx_otel-c3d4e5f6-a7b8-9012-cdef-123456789012"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## NGINX high active connections\n\n### What fired\nAverage active connections exceeded 256 during the window (min 3 samples).\n\n### Why it matters\nActive connection saturation predicts dropped connections. Usually a traffic surge, slow upstream holding workers, or under-sized `worker_connections`.\n\n### Triage\n1. Inspect connection state breakdown (reading/writing/waiting).\n2. Check upstream latency.\n\n### Remediation\n- Raise `worker_connections`.\n- Fix slow upstream.\n\n### Tuning\n- 256 is a default-configuration threshold; tune to your `worker_connections`.\n"
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "timeWindowSize": 5,
+      "timeWindowUnit": "m",
+      "esqlQuery": {
+        "esql": "FROM metrics-nginxreceiver.otel-*\n// Filter to active connection state gauges\n| WHERE state == \"active\"\n// Aggregate active connections per host\n| STATS avg_active = AVG(nginx.connections_current), max_active = MAX(nginx.connections_current), sample_count = COUNT(*) BY host.name\n// Require minimum samples to avoid false positives during startup\n| WHERE sample_count >= 3\n// Alert when average active connections exceed capacity threshold\n// Adjust threshold based on your NGINX worker_connections setting\n| WHERE avg_active > 256\n| SORT avg_active DESC\n| LIMIT 10"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "groupBy": "row",
+      "termField": "host.name",
+      "termSize": 10
+    }
+  },
+  "managed": true,
+  "coreMigrationVersion": "8.8.0",
+  "typeMigrationVersion": "10.1.0"
 }

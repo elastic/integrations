@@ -1,0 +1,46 @@
+# Test that the AWS Config data stream surfaces a clear error event when no
+# usable AWS credentials are configured. With auth.aws the input no longer
+# hard-requires static access keys (Role ARN, shared credentials, instance
+# profiles, and cloud connectors are all valid), so there is no pre-request
+# credential gate: the request is sent, fails to authenticate against AWS,
+# and the program emits the API error as an error event.
+
+[!external_stack] skip 'Skipping external stack test.'
+[!exec:jq] skip 'Skipping test requiring absent jq command'
+
+use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+install_agent -profile ${CONFIG_PROFILES}/${PROFILE} -network_name NETWORK_NAME
+
+add_package -profile ${CONFIG_PROFILES}/${PROFILE}
+add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config.yaml DATA_STREAM_NAME
+
+# The unauthenticated request fails at the API and the failure is emitted as
+# an error event per evaluation cycle. Wait for at least 1.
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -timeout 5m ${DATA_STREAM_NAME}
+cp stdout got_docs.json
+
+# Verify the error event carries the program's DescribeConfigRules error
+# wrapper (the exact AWS exception text is environment-dependent; the wrapper
+# prefix is ours, from the CEL program, and stable).
+exec jq -r '[.hits.hits[]._source.error.message // empty] | flatten | .[]' got_docs.json
+stdout 'DescribeConfigRules: POST'
+
+# Verify no data events were produced — only error events.
+exec jq '[.hits.hits[]._source | select(.aws.config != null)] | length' got_docs.json
+stdout '^0$'
+
+# Clean up.
+remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_NAME}
+uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 1m
+
+-- test_config.yaml --
+input: cel
+vars:
+  access_key_id: ""
+  secret_access_key: ""
+data_stream:
+  vars:
+    aws_region: us-east-1
+    interval: 10s
+    batch_size: 2
+    preserve_original_event: true

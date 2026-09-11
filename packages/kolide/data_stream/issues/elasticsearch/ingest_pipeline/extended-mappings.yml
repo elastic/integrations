@@ -1,0 +1,65 @@
+---
+description: >-
+  Check-type-specific field promotions from kolide.issues.value to ECS and
+  kolide.issues.* (software versions, SSH key type, disk device). Invoked from
+  default.yml after common value promotions. See https://www.kolide.com/docs/.
+processors:
+  # Software version checks (Chrome, OS updates): version -> detected/expected.
+  - set:
+      field: kolide.issues.detected_version
+      tag: set_detected_version
+      copy_from: kolide.issues.value.version
+      ignore_empty_value: true
+      if: ctx.kolide?.issues?.value?.version instanceof String
+  - set:
+      field: package.version
+      tag: set_package_version
+      copy_from: kolide.issues.detected_version
+      ignore_empty_value: true
+      if: ctx.kolide?.issues?.detected_version instanceof String
+  - set:
+      field: kolide.issues.expected_version
+      tag: set_expected_version
+      copy_from: kolide.issues.value.newest_version
+      ignore_empty_value: true
+      if: ctx.kolide?.issues?.value?.newest_version instanceof String
+
+  # SSH key checks: key_type -> kolide.issues.ssh_key_type.
+  - set:
+      field: kolide.issues.ssh_key_type
+      tag: set_ssh_key_type
+      copy_from: kolide.issues.value.key_type
+      ignore_empty_value: true
+      if: ctx.kolide?.issues?.value?.key_type instanceof String
+
+  # Disk encryption checks: device -> file.device.
+  - set:
+      field: file.device
+      tag: set_file_device
+      copy_from: kolide.issues.value.device
+      ignore_empty_value: true
+      if: ctx.kolide?.issues?.value?.device instanceof String && ctx.file?.device == null
+
+  # related.user when value.username was not promoted to user.name.
+  - append:
+      field: related.user
+      tag: append_related_user_from_value_username
+      value: '{{{kolide.issues.value.username}}}'
+      allow_duplicates: false
+      if: ctx.kolide?.issues?.value?.username instanceof String && ctx.user?.name == null
+
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

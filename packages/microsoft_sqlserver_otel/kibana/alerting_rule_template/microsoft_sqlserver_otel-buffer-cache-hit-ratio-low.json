@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when the buffer cache hit ratio drops below 95%. A low ratio means disk reads are replacing cache hits \u2014 memory pressure.",
     "name": "[SQL Server OTel] Buffer cache hit ratio low",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -19,13 +20,28 @@
       "lookBackWindow": 6,
       "statusChangeThreshold": 3
     },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "microsoft_sqlserver_otel-memory-saturation"
+        },
+        {
+          "id": "microsoft_sqlserver_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## SQL Server buffer cache hit ratio low\n\n### What fired\nBuffer cache hit ratio dropped below 95% during the window.\n\n### Why it matters\nSQL Server serves most pages from the buffer pool. A dropping hit ratio means more reads are forced to disk \u2014 a classic memory-pressure signal.\n\n### Triage\n1. Check page life expectancy and free-list stalls.\n2. Inspect memory grants pending.\n3. Look for large queries pushing buffer pool.\n\n### Remediation\n- Add memory.\n- Tune problem queries.\n\n### Tuning\n- 95% threshold; some workloads tolerate 90-95%.\n"
+      }
+    },
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
         "esql": "FROM metrics-sqlserverreceiver.otel-default\n// Instance-level metric: buffer cache hit ratio as percentage (0-100)\n| WHERE metrics.sqlserver.page.buffer_cache.hit_ratio IS NOT NULL\n| STATS min_ratio = MIN(metrics.sqlserver.page.buffer_cache.hit_ratio),\n       instance_id = MAX(resource.attributes.service.instance.id)\n  BY COALESCE(resource.attributes.service.instance.id, host.name, \"unknown\")\n// Ideally > 95%; drops mean disk reads replacing cache hits\n| WHERE min_ratio < 95.0\n| KEEP instance_id, min_ratio"
       },
       "size": 0,
-      "threshold": [0],
+      "threshold": [
+        0
+      ],
       "thresholdComparator": ">",
       "timeField": "@timestamp",
       "timeWindowSize": 10,

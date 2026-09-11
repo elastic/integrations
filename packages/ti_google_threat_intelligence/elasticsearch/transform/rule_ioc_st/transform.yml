@@ -12,13 +12,15 @@ source:
         - match_phrase:
             kibana.alert.rule.category: Indicator Match Rule
 dest:
-  index: "logs-ti_google_threat_intelligence.enriched_ioc_stream-1"
+  index: "logs-ti_google_threat_intelligence.enriched_ioc_stream-2"
   pipeline: '{{ ingestPipelineName "ti_google_threat_intelligence-correlation_detection_rule_ioc_st-pipeline" }}'
   aliases:
     - alias: "logs-ti_google_threat_intelligence.enriched_ioc_stream"
       move_on_creation: true
 latest:
   unique_key:
+    # Namespace is deliberately excluded: threat indicators are global, so the
+    # same indicator from different namespaces should deduplicate to one entry.
     - kibana.alert.uuid
   sort: "@timestamp"
 description: >-
@@ -27,7 +29,7 @@ frequency: 30s
 settings:
   # This is required to prevent the transform from clobbering the Fleet-managed mappings.
   deduce_mappings: false
-  unattended: true
+  num_failure_retries: -1
 sync:
   time:
     field: "@timestamp"
@@ -42,5 +44,5 @@ _meta:
   managed: false
   # Bump this version to delete, reinstall, and restart the transform during
   # package installation.
-  fleet_transform_version: 0.7.0
+  fleet_transform_version: 0.9.0
   run_as_kibana_system: false

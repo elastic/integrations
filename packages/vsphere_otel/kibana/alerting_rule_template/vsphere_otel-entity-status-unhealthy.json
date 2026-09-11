@@ -1,43 +1,60 @@
 {
-    "id": "vsphere_otel-entity-status-unhealthy",
-    "type": "alerting_rule_template",
-    "managed": true,
-    "attributes": {
-        "name": "[vSphere OTel] Entity status unhealthy",
-        "ruleTypeId": ".es-query",
-        "tags": [
-            "observability",
-            "vsphere",
-            "vcenter",
-            "availability"
-        ],
-        "schedule": {
-            "interval": "5m"
+  "id": "vsphere_otel-entity-status-unhealthy",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when any datacenter entity (host, VM, cluster) reports yellow or red status.",
+    "name": "[vSphere OTel] Entity status unhealthy",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "vsphere",
+      "vcenter",
+      "availability"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "vsphere_otel-overview"
         },
-        "alertDelay": {
-            "active": 2
+        {
+          "id": "vsphere_otel-hosts"
         },
-        "flapping": {
-            "lookBackWindow": 10,
-            "statusChangeThreshold": 4
-        },
-        "params": {
-            "searchType": "esqlQuery",
-            "esqlQuery": {
-                "esql": "FROM metrics-vcenterreceiver.otel-*\n// Datacenter-level host, VM, and cluster counts by entity status\n// Yellow or red status indicates problems; gray may indicate disconnected\n// Combine host, VM, and cluster counts with unhealthy status\n| WHERE (vcenter.datacenter.host.count IS NOT NULL OR vcenter.datacenter.vm.count IS NOT NULL OR vcenter.datacenter.cluster.count IS NOT NULL)\n  AND attributes.status IN (\"yellow\", \"red\")\n| EVAL entity_type = CASE(vcenter.datacenter.host.count IS NOT NULL, \"host\", vcenter.datacenter.vm.count IS NOT NULL, \"vm\", \"cluster\")\n| EVAL unhealthy_count = COALESCE(vcenter.datacenter.host.count, vcenter.datacenter.vm.count, vcenter.datacenter.cluster.count)\n| WHERE unhealthy_count > 0\n| STATS total_unhealthy = SUM(unhealthy_count) BY vcenter.datacenter.name, attributes.status, entity_type\n| SORT total_unhealthy DESC\n| LIMIT 20"
-            },
-            "size": 0,
-            "threshold": [
-                0
-            ],
-            "thresholdComparator": ">",
-            "timeField": "@timestamp",
-            "timeWindowSize": 5,
-            "timeWindowUnit": "m",
-            "groupBy": "row",
-            "termField": "vcenter.datacenter.name",
-            "termSize": 20,
-            "excludeHitsFromPreviousRun": true
+        {
+          "id": "vsphere_otel-vms"
         }
+      ],
+      "investigation_guide": {
+        "blob": "## vSphere entity status unhealthy\n\n### What fired\nEntities with `status IN (yellow, red)` exceeded 0.\n\n### Why it matters\nvSphere rolls up many underlying health checks into yellow/red status. Yellow is a warning; red is a failure \u2014 always worth investigating.\n\n### Triage\n1. Drill into vCenter for the specific alarms.\n\n### Remediation\n- Fix root cause based on alarm text.\n\n### Tuning\n- Any non-green is alerted.\n"
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-vcenterreceiver.otel-*\n// Datacenter-level host, VM, and cluster counts by entity status\n// Yellow or red status indicates problems; gray may indicate disconnected\n// Combine host, VM, and cluster counts with unhealthy status\n| WHERE (vcenter.datacenter.host.count IS NOT NULL OR vcenter.datacenter.vm.count IS NOT NULL OR vcenter.datacenter.cluster.count IS NOT NULL)\n  AND attributes.status IN (\"yellow\", \"red\")\n| EVAL entity_type = CASE(vcenter.datacenter.host.count IS NOT NULL, \"host\", vcenter.datacenter.vm.count IS NOT NULL, \"vm\", \"cluster\")\n| EVAL unhealthy_count = COALESCE(vcenter.datacenter.host.count, vcenter.datacenter.vm.count, vcenter.datacenter.cluster.count)\n| WHERE unhealthy_count > 0\n| STATS total_unhealthy = SUM(unhealthy_count) BY vcenter.datacenter.name, attributes.status, entity_type\n| SORT total_unhealthy DESC\n| LIMIT 20"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 5,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "vcenter.datacenter.name",
+      "termSize": 20,
+      "excludeHitsFromPreviousRun": true
     }
+  }
 }

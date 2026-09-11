@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when `haproxy.requests.average_time > 10 ms`. Any non-zero queue time signals backend saturation.",
     "name": "[HAProxy OTel] High backend queue time",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -14,6 +15,19 @@
     },
     "alertDelay": {
       "active": 2
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "haproxy_otel-backend"
+        },
+        {
+          "id": "haproxy_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## HAProxy high backend queue time\n\n### What fired\n`haproxy.requests.average_time > 10 ms` during the window.\n\n### Why it matters\nQueue time is how long requests wait for a backend slot. Non-zero values mean all configured connections on at least one backend server are saturated.\n\n### Triage\n1. Check session utilisation on the affected backend.\n2. Look at server max-conn and active connection counts.\n3. Correlate with upstream server-side latency.\n\n### Remediation\n- Raise per-server max-conn.\n- Add servers to the backend.\n\n### Tuning\n- 10 ms is a sensitive default; raise for bursty workloads.\n"
+      }
     },
     "params": {
       "searchType": "esqlQuery",

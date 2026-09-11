@@ -1,36 +1,50 @@
 {
-    "id": "ibmmq_otel-failed-message-operations",
-    "type": "alerting_rule_template",
-    "managed": true,
-    "attributes": {
-        "name": "[IBM MQ OTel] Failed message operations",
-        "ruleTypeId": ".es-query",
-        "tags": [
-            "observability",
-            "ibmmq"
-        ],
-        "schedule": {
-            "interval": "5m"
+  "id": "ibmmq_otel-failed-message-operations",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when MQPUT, MQPUT1 or MQGET failures occur. Put/get failures indicate queue-full, auth, or application errors.",
+    "name": "[IBM MQ OTel] Failed message operations",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "ibmmq"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "ibmmq_otel-error-analysis"
         },
-        "alertDelay": {
-            "active": 2
-        },
-        "params": {
-            "searchType": "esqlQuery",
-            "esqlQuery": {
-                "esql": "TS metrics-ibmmq.otel-*\n| STATS\n    failed_puts = SUM(RATE(ibmmq_qmgr_failed_mqput_total)),\n    failed_put1s = SUM(RATE(ibmmq_qmgr_failed_mqput1_total)),\n    failed_gets = SUM(RATE(ibmmq_qmgr_failed_mqget_total))\n    BY attributes.qmgr\n| EVAL total_failed_msg_ops = COALESCE(failed_puts, 0) + COALESCE(failed_put1s, 0) + COALESCE(failed_gets, 0)\n// Alert when failed put or get operations are detected\n// In a healthy system, these should all be at zero rate\n// Failures indicate queue full, auth issues, or application errors\n// Adjust threshold based on expected traffic volume\n| WHERE total_failed_msg_ops > 0"
-            },
-            "size": 0,
-            "threshold": [
-                0
-            ],
-            "thresholdComparator": ">",
-            "timeField": "@timestamp",
-            "timeWindowSize": 15,
-            "timeWindowUnit": "m",
-            "groupBy": "row",
-            "termField": "attributes.qmgr",
-            "termSize": 10
+        {
+          "id": "ibmmq_otel-message-traffic"
         }
+      ],
+      "investigation_guide": {
+        "blob": "## IBM MQ failed message operations\n\n### What fired\nRate of `failed_mqput_total + failed_mqput1_total + failed_mqget_total` > 0 during the window.\n\n### Why it matters\nMQ tracks every put/get failure. In a healthy system these should be zero. Elevated failures indicate queue full, authorization issues, or misbehaving applications.\n\n### Triage\n1. Split by queue to find hot spots.\n2. Check queue depth vs MAXDEPTH.\n3. Inspect application logs for reason codes.\n\n### Remediation\n- Increase queue depth or consumer capacity.\n- Fix authorization problems.\n\n### Tuning\n- Fires on any increase.\n"
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "TS metrics-ibmmq.otel-*\n| STATS\n    failed_puts = SUM(RATE(ibmmq_qmgr_failed_mqput_total)),\n    failed_put1s = SUM(RATE(ibmmq_qmgr_failed_mqput1_total)),\n    failed_gets = SUM(RATE(ibmmq_qmgr_failed_mqget_total))\n    BY attributes.qmgr\n| EVAL total_failed_msg_ops = COALESCE(failed_puts, 0) + COALESCE(failed_put1s, 0) + COALESCE(failed_gets, 0)\n// Alert when failed put or get operations are detected\n// In a healthy system, these should all be at zero rate\n// Failures indicate queue full, auth issues, or application errors\n// Adjust threshold based on expected traffic volume\n| WHERE total_failed_msg_ops > 0"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "attributes.qmgr",
+      "termSize": 10
     }
+  }
 }

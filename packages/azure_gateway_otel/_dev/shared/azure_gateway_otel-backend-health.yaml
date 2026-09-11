@@ -1,0 +1,551 @@
+dashboards:
+  - id: azure_gateway_otel-backend-health
+    name: '[Azure Application Gateway OTel] Backend Health'
+    description: >-
+      Backend pool health derived from `ApplicationGatewayAccessLog` records: per-pool latency
+      percentiles, backend status distribution, per-instance balance, slowest URLs, and the
+      gateway-vs-backend latency split. If `ApplicationGatewayPerformanceLog` records become
+      available (Application Gateway v1 SKU), they may augment this view; this content pack
+      does not depend on them.
+
+    time_range:
+      from: now-24h
+      to: now
+
+    settings:
+      margins: true
+      sync:
+        cursor: true
+        tooltips: false
+        colors: false
+
+    filters:
+      - field: data_stream.dataset
+        equals: azure.application_gateway.otel
+      - field: attributes.azure.category
+        equals: ApplicationGatewayAccessLog
+
+    controls:
+      - type: options
+        label: Gateway
+        data_view: logs-*
+        field: resource.attributes.cloud.resource_id
+      - type: options
+        label: Instance
+        data_view: logs-*
+        field: resource.attributes.service.instance.id
+      - type: options
+        label: Backend Pool
+        data_view: logs-*
+        field: attributes.azure.agw.backend.pool.name
+      - type: options
+        label: Backend Setting
+        data_view: logs-*
+        field: attributes.azure.agw.backend.setting.name
+
+    panels:
+      # ─── Navigation ─────────────────────────────────────────────────
+      - title: Navigation
+        size: {w: 48, h: 2}
+        links:
+          layout: horizontal
+          items:
+            - label: Overview
+              dashboard: azure_gateway_otel-overview
+              with_filters: false
+            - label: WAF
+              dashboard: azure_gateway_otel-waf
+              with_filters: false
+            - label: Backend Health
+              dashboard: azure_gateway_otel-backend-health
+              with_filters: false
+
+      # ─── Dashboard Overview Panel + KPIs ────────────────────────────
+      - hide_title: true
+        size: {w: 16, h: 12}
+        markdown:
+          content: |
+            ## [Azure Application Gateway OTel] Backend Health
+
+            This dashboard surfaces backend-side and gateway-instance health from access logs:
+            - Backend latency percentiles by pool
+            - Backend status code distribution (5xx, 4xx) over time
+            - Gateway-rejected requests (`backend.status_code IS NULL`)
+            - Per-instance balance: request share, latency p95
+            - Slowest URL paths by backend latency
+            - Gateway-vs-backend latency split (where latency originates)
+
+      - title: Gateway p95 (ms)
+        hide_title: true
+        size: {w: 8, h: 4}
+        esql:
+          type: metric
+          query:
+            - FROM logs-azure.application_gateway.otel-*
+            - WHERE attributes.azure.category == "ApplicationGatewayAccessLog"
+            - STATS p95_s = PERCENTILE(attributes.azure.request.duration, 95.0)
+            - EVAL p95_ms = p95_s * 1000
+          primary:
+            field: p95_ms
+            label: Gateway p95
+            format:
+              type: number
+              decimals: 1
+              suffix: " ms"
+
+      - title: Backend p95 (ms)
+        hide_title: true
+        size: {w: 8, h: 4}
+        esql:
+          type: metric
+          query:
+            - FROM logs-azure.application_gateway.otel-*
+            - WHERE attributes.azure.category == "ApplicationGatewayAccessLog"
+            - STATS p95_s = PERCENTILE(attributes.azure.agw.backend.latency, 95.0)
+            - EVAL p95_ms = p95_s * 1000
+          primary:
+            field: p95_ms
+            label: Backend p95
+            format:
+              type: number
+              decimals: 1
+              suffix: " ms"
+
+      - title: Gateway Overhead p95
+        description: >-
+          p95 of the gap between gateway-observed request duration and backend latency, in
+          milliseconds. Approximates time spent inside the gateway (TLS, WAF, buffering).
+        hide_title: true
+        size: {w: 8, h: 4}
+        esql:
+          type: metric
+          query:
+            - FROM logs-azure.application_gateway.otel-*
+            - WHERE attributes.azure.category == "ApplicationGatewayAccessLog"
+            - WHERE attributes.azure.agw.backend.latency IS NOT NULL
+            - EVAL overhead_s = attributes.azure.request.duration - attributes.azure.agw.backend.latency
+            - STATS p95_s = PERCENTILE(overhead_s, 95.0)
+            - EVAL p95_ms = p95_s * 1000
+          primary:
+            field: p95_ms
+            label: GW Overhead p95
+            format:
+              type: number
+              decimals: 1
+              suffix: " ms"
+
+      - title: Backend 5xx Rate
+        hide_title: true
+        size: {w: 8, h: 4}
+        esql:
+          type: metric
+          query:
+            - FROM logs-azure.application_gateway.otel-*
+            - WHERE attributes.azure.category == "ApplicationGatewayAccessLog"
+            - WHERE attributes.azure.agw.backend.status_code IS NOT NULL
+            - STATS total = COUNT(*), errors = COUNT(*) WHERE attributes.azure.agw.backend.status_code >= 500
+            - EVAL rate = TO_DOUBLE(errors) / TO_DOUBLE(total)
+          primary:
+            field: rate
+            label: Backend 5xx Rate
+            format:
+              type: percent
+              decimals: 2
+
+      - title: Gateway-Rejected Rate
+        description: >-
+          Share of requests where the gateway responded without reaching a backend
+          (`backend.status_code IS NULL`).
+        hide_title: true
+        size: {w: 8, h: 4}
+        esql:
+          type: metric
+          query:
+            - FROM logs-azure.application_gateway.otel-*
+            - WHERE attributes.azure.category == "ApplicationGatewayAccessLog"
+            - STATS total = COUNT(*), rejected = COUNT(*) WHERE attributes.azure.agw.backend.status_code IS NULL
+            - EVAL rate = TO_DOUBLE(rejected) / TO_DOUBLE(total)
+          primary:
+            field: rate
+            label: Gateway-Rejected
+            format:
+              type: percent
+              decimals: 2
+
+      - title: Active Instances
+        hide_title: true
+        size: {w: 8, h: 4}
+        esql:
+          type: metric
+          query:
+            - FROM logs-azure.application_gateway.otel-*
+            - WHERE attributes.azure.category == "ApplicationGatewayAccessLog"
+            - STATS instances = COUNT_DISTINCT(resource.attributes.service.instance.id)
+          primary:
+            field: instances
+            label: Active Instances
+            format:
+              type: number
+
+      - title: Active Pools
+        hide_title: true
+        size: {w: 8, h: 4}
+        esql:
+          type: metric
+          query:
+            - FROM logs-azure.application_gateway.otel-*
+            - WHERE attributes.azure.category == "ApplicationGatewayAccessLog"
+            - STATS pools = COUNT_DISTINCT(attributes.azure.agw.backend.pool.name)
+          primary:
+            field: pools
+            label: Active Pools
+            format:
+              type: number
+
+      - title: Backend-Served
+        hide_title: true
+        size: {w: 8, h: 4}
+        esql:
+          type: metric
+          query:
+            - FROM logs-azure.application_gateway.otel-*
+            - WHERE attributes.azure.category == "ApplicationGatewayAccessLog"
+            - STATS total = COUNT(*), served = COUNT(*) WHERE attributes.azure.agw.backend.status_code IS NOT NULL
+            - EVAL rate = TO_DOUBLE(served) / TO_DOUBLE(total)
+          primary:
+            field: rate
+            label: Backend-Served
+            format:
+              type: percent
+              decimals: 1
+
+      # ─── Section: Latency Split ─────────────────────────────────────
+      - title: Latency Split
+        hide_title: true
+        size: {w: 48, h: 3}
+        markdown:
+          content: '## Gateway vs Backend Latency'
+
+      - title: Gateway vs Backend p95 Over Time (ms)
+        description: >-
+          p95 of total request duration vs backend latency. When the two lines track each other,
+          backend is the source of latency; when they diverge, time is being spent inside the
+          gateway.
+        size: {w: 32, h: 12}
+        esql:
+          type: line
+          query:
+            - FROM logs-azure.application_gateway.otel-*
+            - WHERE attributes.azure.category == "ApplicationGatewayAccessLog"
+            - STATS gw_s = PERCENTILE(attributes.azure.request.duration, 95.0), be_s = PERCENTILE(attributes.azure.agw.backend.latency, 95.0) BY time_bucket = BUCKET(@timestamp, 30, ?_tstart, ?_tend)
+            - EVAL `Gateway p95` = gw_s * 1000, `Backend p95` = be_s * 1000
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: Gateway p95
+              label: Gateway p95 (ms)
+              format:
+                type: number
+                decimals: 1
+                suffix: " ms"
+            - field: Backend p95
+              label: Backend p95 (ms)
+              format:
+                type: number
+                decimals: 1
+                suffix: " ms"
+          legend:
+            visible: show
+            position: right
+
+      - title: Latency Origin
+        description: Per-request share of latency spent inside the gateway vs in the backend.
+        size: {w: 16, h: 12}
+        esql:
+          type: pie
+          query:
+            - FROM logs-azure.application_gateway.otel-*
+            - WHERE attributes.azure.category == "ApplicationGatewayAccessLog"
+            - WHERE attributes.azure.agw.backend.latency IS NOT NULL
+            - WHERE attributes.azure.request.duration > 0
+            - EVAL gw_overhead = attributes.azure.request.duration - attributes.azure.agw.backend.latency
+            - EVAL origin = CASE(gw_overhead < 0, "Backend dominant", gw_overhead > attributes.azure.agw.backend.latency, "Gateway dominant", "Backend dominant")
+            - STATS count = COUNT(*) BY origin
+            - SORT count DESC
+          metrics:
+            - field: count
+          breakdowns:
+            - field: origin
+              label: Latency Origin
+          appearance:
+            donut: medium
+          color:
+            palette: eui_amsterdam_color_blind
+            assignments:
+              - value: "Backend dominant"
+                color: '#CC5642'
+              - value: "Gateway dominant"
+                color: '#6092C0'
+          legend:
+            visible: show
+
+      # ─── Section: Per Pool ──────────────────────────────────────────
+      - title: Pools
+        hide_title: true
+        size: {w: 48, h: 3}
+        markdown:
+          content: '## Per Backend Pool'
+
+      - title: Backend Latency by Pool (ms)
+        description: p50 / p95 / p99 of backend latency per pool, in milliseconds.
+        size: {w: 48, h: 15}
+        esql:
+          type: datatable
+          query:
+            - FROM logs-azure.application_gateway.otel-*
+            - WHERE attributes.azure.category == "ApplicationGatewayAccessLog"
+            - WHERE attributes.azure.agw.backend.pool.name IS NOT NULL
+            - WHERE attributes.azure.agw.backend.latency IS NOT NULL
+            - STATS `Requests` = COUNT(*), `p50 (ms)` = PERCENTILE(attributes.azure.agw.backend.latency, 50.0) * 1000, `p95 (ms)` = PERCENTILE(attributes.azure.agw.backend.latency, 95.0) * 1000, `p99 (ms)` = PERCENTILE(attributes.azure.agw.backend.latency, 99.0) * 1000, `5xx` = COUNT(*) WHERE attributes.azure.agw.backend.status_code >= 500, `4xx` = COUNT(*) WHERE attributes.azure.agw.backend.status_code >= 400 AND attributes.azure.agw.backend.status_code < 500 BY `Pool` = attributes.azure.agw.backend.pool.name, `Setting` = attributes.azure.agw.backend.setting.name
+            - SORT `Requests` DESC
+            - LIMIT 100
+          breakdowns:
+            - field: Pool
+              label: Backend Pool
+            - field: Setting
+              label: HTTP Setting
+          metrics:
+            - field: Requests
+              label: Requests
+            - field: p50 (ms)
+              label: p50 Backend
+              format:
+                type: number
+                decimals: 1
+                suffix: " ms"
+            - field: p95 (ms)
+              label: p95 Backend
+              format:
+                type: number
+                decimals: 1
+                suffix: " ms"
+            - field: p99 (ms)
+              label: p99 Backend
+              format:
+                type: number
+                decimals: 1
+                suffix: " ms"
+            - field: 5xx
+              label: 5xx
+            - field: 4xx
+              label: 4xx
+
+      - title: Backend Status Codes Over Time
+        description: Backend HTTP status codes (rows where backend was reached) over time.
+        size: {w: 24, h: 12}
+        esql:
+          type: bar
+          mode: stacked
+          query:
+            - FROM logs-azure.application_gateway.otel-*
+            - WHERE attributes.azure.category == "ApplicationGatewayAccessLog"
+            - WHERE attributes.azure.agw.backend.status_code IS NOT NULL
+            - EVAL status_class = CASE(attributes.azure.agw.backend.status_code >= 500, "5xx", attributes.azure.agw.backend.status_code >= 400, "4xx", attributes.azure.agw.backend.status_code >= 300, "3xx", attributes.azure.agw.backend.status_code >= 200, "2xx", "1xx")
+            - STATS count = COUNT(*) BY time_bucket = BUCKET(@timestamp, 30, ?_tstart, ?_tend), status_class
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: count
+              label: Backend Responses
+          breakdown:
+            field: status_class
+          color:
+            palette: eui_amsterdam_color_blind
+            assignments:
+              - value: "2xx"
+                color: '#54B399'
+              - value: "3xx"
+                color: '#6092C0'
+              - value: "4xx"
+                color: '#D6BF57'
+              - value: "5xx"
+                color: '#CC5642'
+          legend:
+            visible: show
+            position: right
+
+      - title: Gateway-Terminated Requests Over Time
+        description: >-
+          Requests where `backend.status_code IS NULL` — the gateway answered without contacting
+          a backend (WAF block, no route, malformed, …). Broken down by `error.type`.
+        size: {w: 24, h: 12}
+        esql:
+          type: bar
+          mode: stacked
+          query:
+            - FROM logs-azure.application_gateway.otel-*
+            - WHERE attributes.azure.category == "ApplicationGatewayAccessLog"
+            - WHERE attributes.azure.agw.backend.status_code IS NULL
+            - EVAL error_type = COALESCE(attributes.error.type, "unknown")
+            - STATS count = COUNT(*) BY time_bucket = BUCKET(@timestamp, 30, ?_tstart, ?_tend), error_type
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: count
+              label: Rejected Requests
+          breakdown:
+            field: error_type
+          legend:
+            visible: show
+            position: right
+
+      # ─── Section: Per Instance ──────────────────────────────────────
+      - title: Instances
+        hide_title: true
+        size: {w: 48, h: 3}
+        markdown:
+          content: '## Per Gateway Instance'
+
+      - title: Per-Instance Request Share
+        description: Request count per gateway worker — used to spot unbalanced load.
+        size: {w: 16, h: 12}
+        esql:
+          type: pie
+          query:
+            - FROM logs-azure.application_gateway.otel-*
+            - WHERE attributes.azure.category == "ApplicationGatewayAccessLog"
+            - WHERE resource.attributes.service.instance.id IS NOT NULL
+            - STATS count = COUNT(*) BY instance = resource.attributes.service.instance.id
+            - SORT count DESC
+            - LIMIT 25
+          metrics:
+            - field: count
+          breakdowns:
+            - field: instance
+              label: Instance
+          appearance:
+            donut: medium
+          legend:
+            visible: show
+
+      - title: Per-Instance Latency p95 (ms)
+        description: p95 of total request duration per instance over time. Outliers suggest a hot worker.
+        size: {w: 32, h: 12}
+        esql:
+          type: line
+          query:
+            - FROM logs-azure.application_gateway.otel-*
+            - WHERE attributes.azure.category == "ApplicationGatewayAccessLog"
+            - WHERE resource.attributes.service.instance.id IS NOT NULL
+            - STATS p95_s = PERCENTILE(attributes.azure.request.duration, 95.0) BY time_bucket = BUCKET(@timestamp, 30, ?_tstart, ?_tend), instance = resource.attributes.service.instance.id
+            - EVAL p95_ms = p95_s * 1000
+            - SORT time_bucket ASC
+          dimension:
+            field: time_bucket
+            data_type: date
+          metrics:
+            - field: p95_ms
+              label: p95 (ms)
+              format:
+                type: number
+                decimals: 1
+                suffix: " ms"
+          breakdown:
+            field: instance
+          legend:
+            visible: show
+            position: right
+
+      - title: Per-Instance Summary
+        size: {w: 48, h: 15}
+        esql:
+          type: datatable
+          query:
+            - FROM logs-azure.application_gateway.otel-*
+            - WHERE attributes.azure.category == "ApplicationGatewayAccessLog"
+            - WHERE resource.attributes.service.instance.id IS NOT NULL
+            - STATS `Requests` = COUNT(*), `Errors` = COUNT(*) WHERE attributes.http.response.status_code >= 400, `p50 (ms)` = PERCENTILE(attributes.azure.request.duration, 50.0) * 1000, `p95 (ms)` = PERCENTILE(attributes.azure.request.duration, 95.0) * 1000, `p99 (ms)` = PERCENTILE(attributes.azure.request.duration, 99.0) * 1000 BY `Instance` = resource.attributes.service.instance.id
+            - SORT `Requests` DESC
+            - LIMIT 100
+          breakdowns:
+            - field: Instance
+              label: Instance
+          metrics:
+            - field: Requests
+              label: Requests
+            - field: Errors
+              label: 4xx + 5xx
+            - field: p50 (ms)
+              label: p50
+              format:
+                type: number
+                decimals: 1
+                suffix: " ms"
+            - field: p95 (ms)
+              label: p95
+              format:
+                type: number
+                decimals: 1
+                suffix: " ms"
+            - field: p99 (ms)
+              label: p99
+              format:
+                type: number
+                decimals: 1
+                suffix: " ms"
+
+      # ─── Section: Slowest Endpoints ─────────────────────────────────
+      - title: Slowest
+        hide_title: true
+        size: {w: 48, h: 3}
+        markdown:
+          content: '## Slowest URLs'
+
+      - title: Slowest URL Paths by Backend Latency
+        description: URL paths with highest backend latency (p95). Minimum 5 requests.
+        size: {w: 48, h: 15}
+        esql:
+          type: datatable
+          query:
+            - FROM logs-azure.application_gateway.otel-*
+            - WHERE attributes.azure.category == "ApplicationGatewayAccessLog"
+            - WHERE attributes.url.path IS NOT NULL
+            - WHERE attributes.azure.agw.backend.latency IS NOT NULL
+            - STATS `Requests` = COUNT(*), `p50 (ms)` = PERCENTILE(attributes.azure.agw.backend.latency, 50.0) * 1000, `p95 (ms)` = PERCENTILE(attributes.azure.agw.backend.latency, 95.0) * 1000, `p99 (ms)` = PERCENTILE(attributes.azure.agw.backend.latency, 99.0) * 1000, `5xx` = COUNT(*) WHERE attributes.azure.agw.backend.status_code >= 500 BY `URL Path` = attributes.url.path, `Pool` = attributes.azure.agw.backend.pool.name
+            - WHERE `Requests` >= 5
+            - SORT `p95 (ms)` DESC
+            - LIMIT 100
+          breakdowns:
+            - field: URL Path
+              label: URL Path
+            - field: Pool
+              label: Backend Pool
+          metrics:
+            - field: Requests
+              label: Requests
+            - field: p50 (ms)
+              label: p50 Backend
+              format:
+                type: number
+                decimals: 1
+                suffix: " ms"
+            - field: p95 (ms)
+              label: p95 Backend
+              format:
+                type: number
+                decimals: 1
+                suffix: " ms"
+            - field: p99 (ms)
+              label: p99 Backend
+              format:
+                type: number
+                decimals: 1
+                suffix: " ms"
+            - field: 5xx
+              label: 5xx

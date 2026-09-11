@@ -1,0 +1,26 @@
+---
+description: Benchmark 10000 workers_trace events ingested
+input: http_endpoint
+vars:
+  listen_address: 0.0.0.0
+data_stream:
+  name: workers_trace
+  vars:
+    listen_port: 9560
+    url: /cloudflare_logpush/workers_trace
+    preserve_original_event: true
+    preserve_duplicate_custom_fields: true
+warmup_time_period: 10s
+corpora:
+  input_service:
+    name: cloudflare-logpush-workers_trace
+    signal: SIGHUP
+  generator:
+    total_events: 10000
+    template:
+      path: ./workers_trace-benchmark/template.ndjson
+      type: gotext
+    config:
+      path: ./workers_trace-benchmark/config.yml
+    fields:
+      path: ./workers_trace-benchmark/fields.yml

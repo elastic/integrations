@@ -1,0 +1,17 @@
+# Regression test for the tolerant mode=url fallback in cel.yml.hbs.
+# The URL here is the pre-mode=url (0.1.0) endpoint that a package policy
+# created before mode=url existed would still carry after upgrade (Fleet keeps
+# the stored value). The CEL program must append &mode=url so the request still
+# matches the mock's standard-feed rule and ingests normally.
+input: cel
+service: cel
+data_stream:
+  vars:
+    url: http://{{Hostname}}:{{Port}}/v1/feeds/download/full?targetFormat=ECSV1
+    api_token: test-token
+    interval: 1m
+    http_client_timeout: 5m
+    preserve_original_event: false
+wait_for_data_timeout: 90s
+assert:
+  hit_count: 11

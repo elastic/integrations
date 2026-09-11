@@ -1,0 +1,131 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects PowerShell scripts referencing MiniDumpWriteDump or full-memory minidump types, which can capture process memory. Attackers use this technique to dump credential-bearing processes like LSASS for credential theft and lateral movement.",
+        "false_positives": [
+            "Bounded troubleshooting, IR, lab-validation, or red-team activity where the reconstructed target/output, launch context, and artifact/authentication evidence align."
+        ],
+        "from": "now-9m",
+        "index": [
+            "logs-windows.powershell*",
+            "winlogbeat-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "user.name",
+                "user.id",
+                "user.domain",
+                "powershell.file.script_block_text",
+                "powershell.file.script_block_id",
+                "powershell.sequence",
+                "powershell.total",
+                "file.path",
+                "file.directory",
+                "file.name",
+                "process.pid",
+                "host.name",
+                "host.id",
+                "powershell.file.script_block_length"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "PowerShell MiniDump Script",
+        "note": "## Triage and analysis\n\n### Investigating PowerShell MiniDump Script\n#### Possible investigation steps\n\n- What does the reconstructed script block prove about minidump intent?\n  - Focus: Reconstruct `powershell.file.script_block_text` with `powershell.file.script_block_id`, `powershell.sequence`, `powershell.total`, and `host.id`; determine whether code only defines dump capability, selects a target, or invokes a full-memory dump with an output path.\n  - Hint: recover fragments, order by `powershell.sequence`, then interpret the full text. !{investigate{\"description\":\"\",\"label\":\"All PowerShell 4104 fragments for this script on this host\",\"providers\":[[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"powershell.file.script_block_id\",\"queryType\":\"phrase\",\"value\":\"{{powershell.file.script_block_id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.code\",\"queryType\":\"phrase\",\"value\":\"4104\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Implication: escalate when reconstruction shows LSASS or another credential-bearing target, all-process dumping, full-memory flags, explicit PID/output path, archive/base64 handling, or cleanup; lower concern only for confirmed examples or comments with no target, output, or execution path.\n\n- If endpoint process telemetry is available, how was the PowerShell instance launched?\n  - Focus: Recover the matching process via `host.id + process.pid` before interpreting `process.*` or `process.parent.*`; review recovered `process.command_line`, `process.parent.executable`, `process.parent.command_line`, and `process.Ext.token.integrity_level_name`. !{investigate{\"description\":\"\",\"label\":\"Process events for the PowerShell instance\",\"providers\":[[{\"excluded\":false,\"field\":\"process.pid\",\"queryType\":\"phrase\",\"value\":\"{{process.pid}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"process\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Hint: record `process.entity_id` for file scoping and `process.Ext.authentication_id` for authentication bridging. If no process start event appears after time expansion, keep later pivots bounded to `host.id`, `user.id`, `process.pid`, and alert time.\n  - Implication: escalate when launch came from a browser, document, chat client, remote tool, scheduled task, user-writable script path, or unexplained elevated context; lower concern when the launch chain matches the same recognized troubleshooting, IR, lab-validation, or red-team workflow as the script content.\n\n- Did the script or recovered process leave dump output or staging evidence?\n  - Focus: reconstructed `powershell.file.script_block_text` for operator-controlled dump paths, default \"<process>_<pid>.dmp\" names, full-dump flags, archive/base64 staging, or delete-after-write logic.\n  - Hint: scope file events to `host.id`, `process.pid`, and the alert window with `file.path` and `file.name`. !{investigate{\"description\":\"\",\"label\":\"File events for the PowerShell process\",\"providers\":[[{\"excluded\":false,\"field\":\"process.pid\",\"queryType\":\"phrase\",\"value\":\"{{process.pid}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"file\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Implication: confirm dumping when a \".dmp\", renamed dump, archive, or cleanup path matches the script or recovered process. Missing endpoint file telemetry is unresolved, not benign.\n\n- If a process session is recovered, does authentication evidence show credential use after dumping?\n  - Focus: Use same-host/user Windows Security events for `event.code` 4624, 4625, or 4648; review `source.ip` and `winlog.event_data.AuthenticationPackageName` where present. !{investigate{\"description\":\"\",\"label\":\"Windows Security authentication events for the user\",\"providers\":[[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"user.id\",\"queryType\":\"phrase\",\"value\":\"{{user.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.code\",\"queryType\":\"phrase\",\"value\":\"4624\",\"valueType\":\"string\"}],[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"user.id\",\"queryType\":\"phrase\",\"value\":\"{{user.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.code\",\"queryType\":\"phrase\",\"value\":\"4625\",\"valueType\":\"string\"}],[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"user.id\",\"queryType\":\"phrase\",\"value\":\"{{user.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.code\",\"queryType\":\"phrase\",\"value\":\"4648\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-24h\",\"relativeTo\":\"now\"}}\n  - Hint: Bridge `process.Ext.authentication_id` to same-host `winlog.event_data.TargetLogonId`; search backward from process `@timestamp` because session-creating 4624 can predate the script. Search `event.code` 4648 separately on `winlog.event_data.SubjectLogonId` for explicit-credential use.\n  - Implication: escalate when new remote logons, unexpected NTLM or Kerberos activity, explicit-credential use, or privileged session creation follows the dump window. Missing authentication telemetry is unresolved, not benign.\n\n- If local evidence remains suspicious or unresolved, does related activity widen the user or host scope?\n  - Focus: related alerts for `user.id` covering credential access, LSASS access, dump-file creation, or lateral movement. !{investigate{\"description\":\"\",\"label\":\"Alerts associated with the user\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"user.id\",\"queryType\":\"phrase\",\"value\":\"{{user.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n  - Hint: compare `host.id` related alerts for the same behavior families, including non-PowerShell LSASS access or dump-file creation that confirms adjacent credential-dumping variants. !{investigate{\"description\":\"\",\"label\":\"Alerts associated with the host\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n  - Implication: broaden containment or scoping when related alerts show adjacent credential-dumping or post-compromise behavior by the same user or host; keep local when related alerts are quiet and local evidence resolves to one recognized workflow. Recurrence alone does not close unresolved telemetry.\n\n- Escalate when script intent, launch, artifacts, authentication follow-on, or related-alert scope points to unauthorized memory dumping; close only when all evidence fits one bounded troubleshooting, IR, lab-validation, or red-team activity; preserve and escalate when evidence is mixed or incomplete.\n\n### False positive analysis\n\n- Recognized troubleshooting, IR, lab-validation, or red-team activity can use minidump code. Confirm that reconstructed `powershell.file.script_block_text`, target or PID, output path, `user.id`, `host.id`, alert source path, recovered launch chain if available, and dump/authentication evidence align with the same bounded activity. If workflow records are unavailable, recurrence must show the same target/output, user/host cohort, and launch pattern without contradictory dump or authentication activity. LSASS targeting, cleanup, archive/base64 handling, post-alert authentication outside that activity, or unresolved script/process/auth evidence prevents benign closure.\n- Build exceptions from the minimum confirmed pattern: `user.id`, `host.id`, alert source path, reconstructed target/output pattern, and recovered launcher identity if available. Avoid exceptions on minidump strings, `user.name`, or host alone.\n\n### Response and remediation\n\n- If confirmed benign, reverse temporary containment and document the exact workflow evidence: reconstructed script content, target process, output path, source path, `user.id`, `host.id`, and recovered launch context if available. Create an exception only after the same pattern is proven stable across prior alerts.\n- If suspicious but unconfirmed, preserve the alert, reconstructed script fragments, recovered process details, dump paths, dump or archive artifacts, and linked `winlog.event_data.TargetLogonId`, `winlog.event_data.SubjectLogonId`, or `source.ip` evidence before containment. Apply reversible containment tied to the findings, such as restricting the affected account, collecting the dump artifact, or isolating the host when active dumping or credential use may continue.\n- If confirmed malicious, preserve the evidence set before terminating processes or deleting files, then contain the host or account according to host criticality and credential-use evidence. Rotate or reset exposed credentials when LSASS, another credential-bearing process, confirmed dump artifacts, or post-dump authentication are present.\n- Eradicate only the unauthorized scripts, dump files, archives, and persistence or delivery artifacts identified during the investigation. Review related `user.id` and `host.id` alerts for the same script fragments or dump paths before declaring scope closed.\n- Document any missing process, file, or Windows Security telemetry that limited the investigation so responders know which conclusions were evidence-backed and which remained unresolved.\n",
+        "query": "event.category:process and host.os.type:windows and\npowershell.file.script_block_text:(MiniDumpWriteDump or MiniDumpWithFullMemory or pmuDetirWpmuDiniM)\n",
+        "references": [
+            "https://github.com/PowerShellMafia/PowerSploit/blob/master/Exfiltration/Out-Minidump.ps1",
+            "https://github.com/FuzzySecurity/PowerShell-Suite/blob/master/Get-ProcessMiniDump.ps1",
+            "https://github.com/atc-project/atc-data/blob/master/docs/Logging_Policies/LP_0109_windows_powershell_script_block_log.md"
+        ],
+        "related_integrations": [
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "powershell.file.script_block_text",
+                "type": "unknown"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "577ec21e-56fe-4065-91d8-45eb8224fe77",
+        "setup": "## Setup\n\nPowerShell Script Block Logging must be enabled to generate the events used by this rule (e.g., 4104).\nSetup instructions: https://ela.st/powershell-logging-setup\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Resources: Investigation Guide",
+            "Data Source: PowerShell Logs"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1003",
+                        "name": "OS Credential Dumping",
+                        "reference": "https://attack.mitre.org/techniques/T1003/",
+                        "subtechnique": [
+                            {
+                                "id": "T1003.001",
+                                "name": "LSASS Memory",
+                                "reference": "https://attack.mitre.org/techniques/T1003/001/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1059",
+                        "name": "Command and Scripting Interpreter",
+                        "reference": "https://attack.mitre.org/techniques/T1059/",
+                        "subtechnique": [
+                            {
+                                "id": "T1059.001",
+                                "name": "PowerShell",
+                                "reference": "https://attack.mitre.org/techniques/T1059/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 214
+    },
+    "id": "577ec21e-56fe-4065-91d8-45eb8224fe77_214",
+    "type": "security-rule"
+}

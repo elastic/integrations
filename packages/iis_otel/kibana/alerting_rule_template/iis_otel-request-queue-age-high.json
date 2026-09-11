@@ -3,9 +3,13 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when the max request queue age (`iis.request.queue.age.max`) exceeds 5000 ms. Aged requests indicate the application pool cannot dequeue fast enough.",
     "name": "[IIS OTel] Request queue age elevated",
     "ruleTypeId": ".es-query",
-    "tags": ["observability", "iis"],
+    "tags": [
+      "observability",
+      "iis"
+    ],
     "schedule": {
       "interval": "5m"
     },
@@ -17,13 +21,28 @@
       "lookBackWindow": 10,
       "statusChangeThreshold": 4
     },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "iis_otel-sites"
+        },
+        {
+          "id": "iis_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## IIS request queue age elevated\n\n### What fired\n`iis.request.queue.age.max > 5000 ms` on a pool during the window.\n\n### Why it matters\nQueue age measures how long the oldest queued request has been waiting. Sustained high age means the pool's worker threads cannot drain the queue \u2014 usually because of slow back-end calls, thread starvation, or insufficient `maxConcurrentRequestsPerCPU`.\n\n### Triage\n1. Identify the affected pool from the Sites & Pools dashboard.\n2. Correlate with queue depth and request rejections on the same pool.\n3. Inspect downstream dependency latency (DB, cache, REST APIs).\n4. Check for thread or CLR contention via `w3wp.exe` performance counters.\n\n### Remediation\n- Scale out worker processes (`maxProcesses`) if CPU allows.\n- Tune `maxConcurrentRequestsPerCPU` or `processModel.requestQueueLimit`.\n- Optimise slow downstream calls.\n\n### Tuning\n- 5000 ms threshold; tighten for latency-sensitive workloads.\n"
+      }
+    },
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
         "esql": "FROM metrics-iisreceiver.otel-*\n| WHERE iis.request.queue.age.max IS NOT NULL\n| STATS max_age_ms = MAX(iis.request.queue.age.max) BY iis.application_pool, host.name\n| WHERE max_age_ms > 5000\n| SORT max_age_ms DESC\n| LIMIT 20"
       },
       "size": 0,
-      "threshold": [0],
+      "threshold": [
+        0
+      ],
       "thresholdComparator": ">",
       "timeField": "@timestamp",
       "timeWindowSize": 5,

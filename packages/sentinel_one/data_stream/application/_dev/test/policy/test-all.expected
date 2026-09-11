@@ -10,6 +10,7 @@ inputs:
           data_stream:
             dataset: sentinel_one.application
           interval: 30s
+          max_executions: 500
           processors:
             - add_fields:
                 fields:
@@ -23,7 +24,7 @@ inputs:
                 target: environment
           program: |-
             (
-              (has(state.?worklist.data) && size(state.worklist.data) > 0) ?
+              (has(state.?cursor.worklist.data) && size(state.cursor.worklist.data) > 0) ?
                 state
               :
                 state.with(
@@ -33,7 +34,7 @@ inputs:
                       "skipCount": ["true"],
                       "limit": [string(state.batch_size)],
                       ?"siteIds": state.?site_ids.optMap(v, [string(v)]),
-                      ?"cursor": state.?next_page.token.optMap(v, [v]),
+                      ?"cursor": state.?cursor.next_page.token.optMap(v, [v]),
                     }.format_query()
                   ).with(
                     {
@@ -44,11 +45,13 @@ inputs:
                   ).do_request().as(resp, (resp.StatusCode == 200) ?
                     resp.Body.decode_json().as(body,
                       {
-                        "worklist": body,
-                        "next_page": {
-                          ?"token": (body.?pagination.nextCursor.orValue(null) != null) ? optional.of(body.pagination.nextCursor) : optional.none(),
+                        "cursor": {
+                          "worklist": body,
+                          "next_page": {
+                            ?"token": (body.?pagination.nextCursor.orValue(null) != null) ? optional.of(body.pagination.nextCursor) : optional.none(),
+                          },
+                          "fetch_more": body.?pagination.nextCursor.orValue(null) != null,
                         },
-                        "fetch_more": body.?pagination.nextCursor.orValue(null) != null,
                       }
                     )
                   :
@@ -67,23 +70,24 @@ inputs:
                       },
                       "want_more": false,
                       "offset": 0,
+                      "cursor": {},
                     }
                   )
                 )
             ).as(state,
               state.with(
-                !has(state.worklist) ? // Exit early due to GET failure.
+                !has(state.?cursor.worklist) ? // Exit early due to GET failure.
                   state
-                : (has(state.worklist.data) && size(state.worklist.data) > 0) ?
+                : (has(state.cursor.worklist.data) && size(state.cursor.worklist.data) > 0) ?
                   request(
                     "GET",
                     state.url.trim_right("/") + "/web/api/v2.1/application-management/inventory/endpoints?" + {
                       "skipCount": ["true"],
-                      "applicationName": [string(state.worklist.data[0].applicationName)],
-                      "applicationVendor": [string(state.worklist.data[0].applicationVendor)],
+                      "applicationName": [string(state.cursor.worklist.data[0].applicationName)],
+                      "applicationVendor": [string(state.cursor.worklist.data[0].applicationVendor)],
                       "limit": [string(state.batch_size)],
                       ?"siteIds": state.?site_ids.optMap(v, [string(v)]),
-                      ?"cursor": state.?next_chain.token.optMap(v, [v]),
+                      ?"cursor": state.?cursor.next_chain.token.optMap(v, [v]),
                     }.format_query()
                   ).with(
                     {
@@ -93,23 +97,33 @@ inputs:
                     }
                   ).do_request().as(resp, (resp.StatusCode == 200) ?
                     resp.Body.decode_json().as(body,
-                      {
-                        "events": (has(body.data) && body.data.size() > 0) ?
-                          body.data.map(e,
-                            {
-                              "message": e.encode_json(),
-                            }
-                          )
-                        :
-                          [{"message": "retry"}],
-                        "next_chain": {
-                          ?"token": (body.?pagination.nextCursor.orValue(null) != null) ? optional.of(body.pagination.nextCursor) : optional.none(),
-                        },
-                        "worklist": {
-                          "data": (body.?pagination.nextCursor.orValue(null) != null) ? state.worklist.data : tail(state.worklist.data),
-                        },
-                        "want_more": state.?fetch_more.orValue(false) ? state.fetch_more : (body.?pagination.nextCursor.orValue(null) != null),
-                      }
+                      (body.?pagination.nextCursor.orValue(null) != null).as(has_more_endpoints,
+                        {
+                          "data": has_more_endpoints ? state.cursor.worklist.data : tail(state.cursor.worklist.data),
+                        }.as(new_worklist,
+                          {
+                            "events": (has(body.data) && body.data.size() > 0) ?
+                              body.data.map(e,
+                                {
+                                  "message": e.encode_json(),
+                                }
+                              )
+                            :
+                              [{"message": "retry"}],
+                            "want_more": state.?cursor.fetch_more.orValue(false) ? state.cursor.fetch_more : has_more_endpoints,
+                            "cursor": {
+                              "worklist": new_worklist,
+                              "next_page": {
+                                ?"token": state.?cursor.next_page.token,
+                              },
+                              "next_chain": {
+                                ?"token": has_more_endpoints ? optional.of(body.pagination.nextCursor) : optional.none(),
+                              },
+                              "fetch_more": state.?cursor.fetch_more.orValue(false),
+                            },
+                          }
+                        )
+                      )
                     )
                   :
                     {
@@ -132,6 +146,7 @@ inputs:
                   {
                     "events": [],
                     "want_more": false,
+                    "cursor": {},
                   }
               )
             )

@@ -11,15 +11,17 @@ The Azure Frontdoor logs integration retrieves the following types of log data f
 
 - **Access Logs**: Logs categorized as `FrontDoorAccessLog`.
 - **Web Application Firewall (WAF) Logs**: Logs categorized as `FrontDoorWebApplicationFirewallLog`.
+- **Health Probe Logs**: Logs categorized as `FrontDoorHealthProbeLog`.
 
-Currently, the integration does not support **Activity Logs** or **Health Probe logs**.
+Currently, the integration does not support **Activity Logs**.
 
 ## Data streams
 
-This integration collects two types of data streams:
+This integration collects three types of data streams:
 
 - access log
 - waf logs
+- health probe logs
 
 ## Requirements
 
@@ -220,3 +222,30 @@ Users can also use this in case of a Hybrid Cloud model, where one may define th
 | input.type | Input type. | keyword |
 | log.offset | Log offset. | long |
 
+
+## Health Probe Logs
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| azure.frontdoor.category | Azure Frontdoor category name. | keyword |
+| azure.frontdoor.health_probe.connection_latency_milliseconds | TCP connection latency of the health probe in milliseconds. | long |
+| azure.frontdoor.health_probe.dns_latency_microseconds | DNS resolution latency of the health probe in microseconds. | long |
+| azure.frontdoor.health_probe.health_probe_id | Unique identifier for the health probe request. | keyword |
+| azure.frontdoor.health_probe.origin_name | The hostname of the origin that was probed. | keyword |
+| azure.frontdoor.health_probe.pop | The edge PoP (Point of Presence) that issued the health probe. | keyword |
+| azure.frontdoor.health_probe.result | Result of the health probe (examples: OriginError, Success). | keyword |
+| azure.frontdoor.health_probe.total_latency_milliseconds | Total latency of the health probe in milliseconds. | long |
+| azure.frontdoor.operation_name | Azure operation name. | keyword |
+| azure.frontdoor.resource_id | Azure Resource ID. | keyword |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| input.type | Input type. | keyword |
+| log.offset | Log offset. | long |

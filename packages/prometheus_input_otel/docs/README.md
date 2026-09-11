@@ -1,4 +1,4 @@
-# Prometheus OTel Scrape (Guided)
+# Prometheus Scrape via OTel (Guided)
 
 ## Overview
 
@@ -12,7 +12,7 @@ This package configures the Prometheus receiver in the EDOT collector to scrape 
 
 Configure individual fields like targets, scrape interval, and TLS settings through the Fleet UI.
 
-**Looking for raw config mode?** If you have an existing Prometheus `scrape_configs` YAML that you want to use directly, consider using the [Prometheus OTel Scrape (Bring Your Own Config)](https://github.com/elastic/integrations/tree/main/packages/prometheus_input_otel_raw) package instead.
+**Looking for raw config mode?** If you have an existing Prometheus `scrape_configs` YAML that you want to use directly, consider using the [Prometheus Scrape via OTel (Custom Config)](https://github.com/elastic/integrations/tree/main/packages/prometheus_input_otel_raw) package instead.
 
 ### Settings
 
@@ -25,6 +25,9 @@ Configure individual fields like targets, scrape interval, and TLS settings thro
 | Scheme | Protocol scheme (HTTP/HTTPS) | `http` |
 | Honor Labels | Honor labels from scraped metrics | `false` |
 | Honor Timestamps | Honor timestamps from scraped metrics | `true` |
+| Username | Username for HTTP basic authentication | — |
+| Password | Password for HTTP basic authentication (use with Username) | — |
+| Bearer Token | Token sent as `Authorization: Bearer <token>` | — |
 
 ### TLS Configuration
 
@@ -33,9 +36,21 @@ For HTTPS endpoints, you can configure:
 - CA certificate path for custom certificate authorities
 - Client certificate and key for mutual TLS authentication
 
-### Basic Authentication
+### Authentication
 
-Username and password can be configured for endpoints requiring basic authentication.
+Configure **either** basic authentication **or** a Bearer token — not both.
+
+#### Basic Authentication
+
+Set **Username** and **Password** for endpoints that require HTTP basic authentication.
+
+#### Bearer Token Authentication
+
+Set **Bearer Token** for endpoints that require `Authorization: Bearer <token>` (for example, Temporal Cloud OpenMetrics).
+
+#### Mutual exclusivity
+
+If both Username and Bearer Token are set, the package configures **basic authentication only** and ignores the Bearer Token. Clear Username (and Password) when you intend to use Bearer authentication.
 
 ## Configuration Reference
 

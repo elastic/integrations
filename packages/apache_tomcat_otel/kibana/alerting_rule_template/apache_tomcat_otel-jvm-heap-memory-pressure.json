@@ -1,37 +1,51 @@
 {
-    "id": "apache_tomcat_otel-jvm-heap-memory-pressure",
-    "type": "alerting_rule_template",
-    "managed": true,
-    "attributes": {
-        "name": "[Tomcat OTel] JVM heap memory pressure",
-        "ruleTypeId": ".es-query",
-        "tags": [
-            "observability",
-            "tomcat"
-        ],
-        "schedule": {
-            "interval": "1m"
+  "id": "apache_tomcat_otel-jvm-heap-memory-pressure",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when JVM heap utilization exceeds 85% (`HeapMemoryUsage_used / HeapMemoryUsage_max > 0.85`). Sustained high heap often precedes full GCs and OutOfMemoryError.",
+    "name": "[Tomcat OTel] JVM heap memory pressure",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "tomcat"
+    ],
+    "schedule": {
+      "interval": "1m"
+    },
+    "alertDelay": {
+      "active": 3
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "apache_tomcat_otel-jvm-memory-gc"
         },
-        "alertDelay": {
-            "active": 3
-        },
-        "params": {
-            "searchType": "esqlQuery",
-            "esqlQuery": {
-                "esql": "FROM metrics-tomcat.otel-*\n| WHERE java_lang_Memory_HeapMemoryUsage_used IS NOT NULL\n    AND java_lang_Memory_HeapMemoryUsage_max IS NOT NULL\n| STATS\n    heap_used = MAX(java_lang_Memory_HeapMemoryUsage_used),\n    heap_max = MAX(java_lang_Memory_HeapMemoryUsage_max)\n  BY host.name\n// HeapMemoryUsage_max can be -1 if undefined; filter to valid values\n| WHERE heap_max > 0\n| EVAL heap_pct = ROUND(heap_used / heap_max * 100.0, 2)\n// Heap utilisation threshold \u2014 peaks above 85% indicate memory pressure\n// Sustained high utilisation often precedes OutOfMemoryError\n| WHERE heap_pct > 85.0\n| SORT heap_pct DESC"
-            },
-            "size": 0,
-            "threshold": [
-                0
-            ],
-            "thresholdComparator": ">",
-            "timeField": "@timestamp",
-            "timeWindowSize": 5,
-            "timeWindowUnit": "m",
-            "groupBy": "row",
-            "termField": "host.name",
-            "termSize": 100,
-            "excludeHitsFromPreviousRun": true
+        {
+          "id": "apache_tomcat_otel-overview"
         }
+      ],
+      "investigation_guide": {
+        "blob": "## Tomcat JVM heap memory pressure\n\n### What fired\nHeap utilisation peaked above 85% over the evaluation window.\n\n### Why it matters\nA healthy JVM shows a sawtooth heap pattern. Sustained high peaks indicate the old generation is filling up, old-gen GCs become frequent and long, and eventually the JVM will throw `OutOfMemoryError` and die. Session growth, classloader leaks on redeploy, and undersized heap are typical causes.\n\n### Triage\n1. JVM Memory & GC dashboard: inspect heap trend and old-gen usage.\n2. Check `java_lang_G1_Old_Gen_Usage_used` after old GCs \u2014 a rising post-GC baseline indicates a leak.\n3. Correlate with `Catalina_Manager_activeSessions` (session accumulation is a classic leak vector).\n4. If redeploy cadence is high, suspect classloader leaks / metaspace growth.\n\n### Remediation\n- Raise `-Xmx` if the workload legitimately grew.\n- Take and analyse a heap dump to find the dominant retained objects.\n- Fix leaks (ThreadLocals, unclosed resources, classloader leaks after hot-redeploy).\n\n### Tuning\n- 85% matches the documented warning band. Lower to 80% for earlier warning; raise to 90% for memory-tight steady-state workloads.\n"
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-tomcat.otel-*\n| WHERE java_lang_Memory_HeapMemoryUsage_used IS NOT NULL\n    AND java_lang_Memory_HeapMemoryUsage_max IS NOT NULL\n| STATS\n    heap_used = MAX(java_lang_Memory_HeapMemoryUsage_used),\n    heap_max = MAX(java_lang_Memory_HeapMemoryUsage_max)\n  BY host.name\n// HeapMemoryUsage_max can be -1 if undefined; filter to valid values\n| WHERE heap_max > 0\n| EVAL heap_pct = ROUND(heap_used / heap_max * 100.0, 2)\n// Heap utilisation threshold \u2014 peaks above 85% indicate memory pressure\n// Sustained high utilisation often precedes OutOfMemoryError\n| WHERE heap_pct > 85.0\n| SORT heap_pct DESC"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 5,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "host.name",
+      "termSize": 100,
+      "excludeHitsFromPreviousRun": true
     }
+  }
 }

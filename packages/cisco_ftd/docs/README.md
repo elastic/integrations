@@ -192,7 +192,7 @@ The `log` data stream collects logs from Cisco Firepower Threat Defense (FTD) de
 | cisco.ftd.security_event.file_policy |  | keyword |
 | cisco.ftd.security_event.file_sandbox_status |  | keyword |
 | cisco.ftd.security_event.file_sha256 |  | keyword |
-| cisco.ftd.security_event.file_size |  | integer |
+| cisco.ftd.security_event.file_size |  | long |
 | cisco.ftd.security_event.file_type |  | keyword |
 | cisco.ftd.security_event.first_packet_second |  | date |
 | cisco.ftd.security_event.http_referer |  | keyword |

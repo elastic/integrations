@@ -3,6 +3,7 @@
     "type": "alerting_rule_template",
     "managed": true,
     "attributes": {
+        "description": "Alerts when the proportion of 5xx server error responses (500, 501, 503) exceeds a configurable percentage of total HTTP responses. Sustained 5xx rates indicate the CouchDB server is failing or is overloaded and unable to serve requests.",
         "name": "[CouchDB OTel] High 5xx server error rate",
         "ruleTypeId": ".es-query",
         "tags": [
@@ -16,9 +17,16 @@
             "active": 2
         },
         "flapping": {
-            "enabled": true,
             "lookBackWindow": 6,
             "statusChangeThreshold": 3
+        },
+        "artifacts": {
+            "investigation_guide": {
+                "blob": "## High 5xx Server Error Rate\n\n### Triage Steps\n1. Open the CouchDB overview dashboard and identify which status codes dominate (500 internal error vs 503 unavailable).\n2. Check `couchdb.average_request_time` — rising latency often precedes 5xx as the server becomes overloaded.\n3. Review CouchDB logs (`/var/log/couchdb/couchdb.log`) for stack traces and error messages from the time window.\n4. Verify host resources: CPU, memory, disk I/O, and disk space. CouchDB returns 500 when it cannot write to disk.\n5. Check Erlang VM health (BEAM process count, scheduler utilisation) — process exhaustion causes cascading 5xx.\n\n### Remediation\n- For 503: scale out additional CouchDB nodes or reduce client request rate.\n- For 500: address the underlying cause from logs (e.g. corrupt database file, out of disk, Erlang process limit).\n- Restart the affected node if the issue is transient and persists after immediate causes are ruled out.\n- For sustained issues, raise `max_dbs_open` and Erlang process limits in `local.ini`.\n\n### Threshold Tuning\nThe default of 5% 5xx rate is a balanced threshold. For mission-critical workloads, consider lowering to 1%. The query also requires a minimum of 0.01 responses/sec to suppress noise on idle nodes — raise this if you want to focus only on production-traffic nodes."
+            },
+            "dashboards": [
+                {"id": "couchdb_otel-overview"}
+            ]
         },
         "params": {
             "searchType": "esqlQuery",

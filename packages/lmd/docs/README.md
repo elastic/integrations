@@ -52,7 +52,9 @@ To inspect the installed assets, you can navigate to **Stack Management > Data >
 
 | Transform name         | Purpose                                                | Source index | Destination index | Alias | Supported Platform | Event Category |
 |------------------------|--------------------------------------------------------|--------------|-------------------|-------|--------------------|----------------|
-| lmd.pivot_transform_ea | Collects RDP session information from your environment | logs-*       | ml-rdp-lmd_ea     |       | Windows            | process        |
+| lmd.pivot_transform_ea | Collects RDP session information from your environment | `logs-endpoint.events.process-*` | ml-rdp-lmd_ea     |       | Windows            | process        |
+
+**Source index pattern**: `logs-endpoint.events.process-*` holds endpoint process events collected by the [Elastic Defend](https://www.elastic.co/docs/reference/integrations/endpoint) integration.
 
 When querying the destination index (`ml-rdp-lmd_ea`) for RDP session logs, we advise using the destination index directly. In the event that the underlying package is upgraded, it will aid in maintaining the previous findings.
 

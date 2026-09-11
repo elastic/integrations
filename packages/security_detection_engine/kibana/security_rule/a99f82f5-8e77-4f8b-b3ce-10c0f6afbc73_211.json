@@ -1,0 +1,123 @@
+{
+    "attributes": {
+        "alert_suppression": {
+            "duration": {
+                "unit": "m",
+                "value": 130
+            },
+            "group_by": [
+                "user.email",
+                "google_workspace.admin.org_unit.name",
+                "source.ip"
+            ],
+            "missing_fields_strategy": "suppress"
+        },
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects when a Google Workspace administrator modifies organization password policy settings. Adversaries with administrative access may weaken password requirements, such as disabling strong password enforcement, allowing password reuse, or reducing minimum length, to increase the success of password spraying and credential stuffing against tenant accounts and to sustain access after initial compromise.",
+        "false_positives": [
+            "Password policies may be modified by system administrators. Verify that the configuration change was expected. Exceptions can be added to this rule to filter expected behavior."
+        ],
+        "from": "now-130m",
+        "index": [
+            "filebeat-*",
+            "logs-google_workspace.admin-*"
+        ],
+        "interval": "10m",
+        "investigation_fields": {
+            "field_names": [
+                "user.name",
+                "user.email",
+                "source.ip",
+                "event.action",
+                "google_workspace.admin.setting.name",
+                "google_workspace.admin.org_unit.name",
+                "google_workspace.admin.old_value",
+                "google_workspace.admin.new_value"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "Google Workspace Password Policy Modified",
+        "note": "## Triage and analysis\n\n### Investigating Google Workspace Password Policy Modified\n\nThreat actors with Google Workspace administrative access may modify tenant password policies to weaken authentication\ncontrols across an organizational unit or domain. Relaxing password complexity, reuse, or rotation requirements increases\nthe likelihood of successful password spraying, credential stuffing, and reuse of passwords exposed in third-party\nbreaches. Because policy changes apply to all users in scope, a single modification can materially expand the attack\nsurface for the entire unit.\n\nSaving changes in the Admin console can update multiple password settings at once. Google logs each setting change as a\nseparate `CHANGE_APPLICATION_SETTING` or `CREATE_APPLICATION_SETTING` event (for example, minimum length, maximum\nlength, reset frequency, strong password enforcement, and password reuse). Alert suppression groups by `user.email`,\n`google_workspace.admin.org_unit.name`, and `source.ip` within the rule lookback so analysts receive one alert per\npassword policy modification session instead of one alert per setting.\n\n### Possible investigation steps\n\n- Identify the initiating (actor) administrator by reviewing `user.email` or `user.name`, and note the `source.ip` and `event.ingested` timestamps.\n- Identify the setting changed in the alert by reviewing `google_workspace.admin.setting.name`.\n- Review `google_workspace.admin.old_value` and `google_workspace.admin.new_value` to determine whether the change weakened policy. Examples of high-risk changes include:\n  - `Password Management - Enforce strong password` set to disabled\n  - `Password Management - Enable password reuse` set to enabled\n  - `Password Management - Minimum password length` reduced\n  - `Password Management - Password reset frequency` increased (less frequent rotation)\n- Identify the scope of impact by reviewing `google_workspace.admin.org_unit.name` and determining which users inherit the updated policy.\n- Determine whether the modification is expected and authorized:\n  - If the actor account or `source.ip` is unusual, treat the alert as higher priority until proven benign.\n- Search Kibana for all password settings changed in the session:\n  - In Discover (or the alert investigation workflow), search Google Workspace admin logs with a time range centered on the alert timestamp (\u00b15 minutes).\n  - Use the following KQL example, replacing `<ACTOR_EMAIL>` and `<ORG_UNIT>` as needed:\n    ```\n    data_stream.dataset: \"google_workspace.admin\" and event.action: (\"CHANGE_APPLICATION_SETTING\" or \"CREATE_APPLICATION_SETTING\") and user.email: \"<ACTOR_EMAIL>\" and google_workspace.admin.setting.name: Password Management - *\n    ```\n  - Optionally filter on `google_workspace.admin.org_unit.name: \"<ORG_UNIT>\"` to isolate changes for the same organizational unit.\n  - Review all `google_workspace.admin.setting.name`, `google_workspace.admin.old_value`, and `google_workspace.admin.new_value` fields returned to understand the full scope of the modification.\n- Scope for related activity by searching for the same `user.email` performing other security-weakening admin actions within the last 48 hours, such as MFA enforcement changes, SSO/SAML modifications, or role assignments.\n\n### False positive analysis\n\n- Verify the password policy change aligns with an approved change window, compliance exception, or migration activity.\n- Policy hardening can also generate alerts for this rule \u2014 use `old_value` and `new_value` to distinguish benign hardening from weakening changes.\n\n### Response and remediation\n\n- Initiate the incident response process based on triage findings.\n- If the modification is not clearly authorized, restore password policy settings to their prior values for the affected organizational unit while the investigation proceeds.\n- If the initiating admin account is suspected compromised, reset credentials, revoke active sessions, and review delegated admin roles assigned to that account.\n- Identify the possible impact of the incident and prioritize accordingly; the following actions can help you gain context:\n    - Identify the account role in the cloud environment.\n    - Assess the criticality of affected services and servers.\n    - Work with your IT team to identify and minimize the impact on users.\n    - Identify if the attacker is moving laterally and compromising other accounts, servers, or services.\n    - Identify any regulatory or legal ramifications related to this activity.\n- Investigate credential exposure on systems compromised or used by the attacker to ensure all compromised accounts are identified.\n- Review the permissions assigned to the implicated administrator to ensure that the least privilege principle is being followed.\n- Implement security best practices [outlined](https://support.google.com/a/answer/7587183) by Google.\n- Determine the initial vector abused by the attacker and take action to prevent reinfection via the same vector.\n- Using the incident response data, update logging and audit policies to improve the mean time to detect (MTTD) and the mean time to respond (MTTR).\n\n\n\n### Important Information Regarding Google Workspace Event Lag Times\n- As per Google's documentation, Google Workspace administrators might observe lag times ranging from several minutes to 3 days between the event occurrence time and the event being visible in the Google Workspace admin/audit logs.\n- This rule is configured to run every 10 minutes with a lookback time of 130 minutes.\n- To reduce the risk of false negatives, consider reducing the interval that the Google Workspace (formerly G Suite) Filebeat module polls Google's reporting API for new events.\n- By default, `var.interval` is set to 2 hours (2h). Consider changing this interval to a lower value, such as 10 minutes (10m).\n- See the following references for further information:\n  - https://support.google.com/a/answer/7061566\n  - https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-module-google_workspace.html",
+        "query": "data_stream.dataset:google_workspace.admin and\n  event.action:(CHANGE_APPLICATION_SETTING or CREATE_APPLICATION_SETTING) and\n  google_workspace.admin.setting.name:(\n    \"Password Management - Enforce strong password\" or\n    \"Password Management - Password reset frequency\" or\n    \"Password Management - Enable password reuse\" or\n    \"Password Management - Enforce password policy at next login\" or\n    \"Password Management - Minimum password length\" or\n    \"Password Management - Maximum password length\"\n  )\n",
+        "references": [
+            "https://support.google.com/a/answer/7061566",
+            "https://www.elastic.co/security-labs/google-workspace-attack-surface-part-one",
+            "https://www.elastic.co/security-labs/google-workspace-attack-surface-part-two"
+        ],
+        "related_integrations": [
+            {
+                "package": "google_workspace",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "google_workspace.admin.setting.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "a99f82f5-8e77-4f8b-b3ce-10c0f6afbc73",
+        "setup": "The Google Workspace Fleet integration, the Filebeat module, or data that's similarly structured is required for this rule.",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Data Source: Google Workspace",
+            "Use Case: Identity and Access Audit",
+            "Tactic: Persistence",
+            "Tactic: Defense Evasion",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1098",
+                        "name": "Account Manipulation",
+                        "reference": "https://attack.mitre.org/techniques/T1098/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1484",
+                        "name": "Domain or Tenant Policy Modification",
+                        "reference": "https://attack.mitre.org/techniques/T1484/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 211
+    },
+    "id": "a99f82f5-8e77-4f8b-b3ce-10c0f6afbc73_211",
+    "type": "security-rule"
+}

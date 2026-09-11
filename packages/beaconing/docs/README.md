@@ -34,7 +34,9 @@ To inspect the installed assets, you can navigate to **Stack Management > Data >
 
 | Transform name            | Purpose                                      | Source index | Destination index      | Alias            | Supported Platform    | Event Category |
 |---------------------------|----------------------------------------------|--------------|------------------------|------------------|-----------------------|----------------|
-| beaconing.pivot_transform | Flags beaconing activity in your environment | logs-*       | ml_beaconing-[version] | ml_beaconing.all | Linux, macOS, Windows | network        |
+| beaconing.pivot_transform | Flags beaconing activity in your environment | `logs-endpoint.events.network-*` | ml_beaconing-[version] | ml_beaconing.all | Linux, macOS, Windows | network        |
+
+**Source index patterns**: `logs-endpoint.events.network-*` holds network events collected by the [Elastic Defend](https://www.elastic.co/docs/reference/integrations/endpoint) integration.
 
 When querying the destination index to enquire about beaconing activities, we advise using the alias for the destination index (`ml_beaconing.all`). In the event that the underlying package is upgraded, the alias will aid in maintaining the previous findings.
 

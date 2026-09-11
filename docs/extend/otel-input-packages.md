@@ -30,7 +30,7 @@ Map upstream configuration to [manifest variables](#variable-types):
 | Upstream Go Type | Package Variable Type |
 |------------------|----------------------|
 | `string` | `text` |
-| `string` (secret) | `password` (with `secret: false`) |
+| `string` (secret) | `password` (with `secret: true`; see [version note](#variable-types)) |
 | `bool` | `bool` |
 | `time.Duration` | `duration` |
 | `[]string` | `text` with `multi: true` |
@@ -76,7 +76,7 @@ packages/<name>_input_otel/
 ├── agent/
 │   └── input/
 │       └── input.yml.hbs     # OTel Collector template
-├── sample_event.json         # Optional: Example event (generated via tests)
+├── sample_event.json         # Optional: Example event (generated using tests)
 └── _dev/
     ├── deploy/
     │   └── docker/           # Service deployment for tests
@@ -118,7 +118,8 @@ icons:
     type: image/svg+xml
 policy_templates:
   - name: statsdreceiver       # Usually matches the OTel receiver name
-    type: metrics              # or "logs" depending on data type
+    type: metrics              # "logs", "metrics", or "traces" (traces requires 9.4.0+)
+                               # For multi-signal packages use dynamic_signal_types: true (requires 9.4.0+)
     title: StatsD OpenTelemetry Input
     description: Collect StatsD metrics using OpenTelemetry Collector
     input: otelcol             # Required: specifies OTel Collector input
@@ -136,6 +137,53 @@ owner:
   type: elastic
 ```
 
+### Kibana Version Requirements [kibana-version-requirements]
+
+The minimum required Kibana version depends on the signal types your package collects:
+
+| Signal type | `conditions.kibana.version` |
+|-------------|----------------------------|
+| Logs only | `^9.2.0` |
+| Metrics only | `^9.2.0` |
+| Traces | `^9.4.0` |
+| Multi-signal (`dynamic_signal_types: true`) | `^9.4.0` |
+
+Packages that collect traces, or that support multiple signal types using `dynamic_signal_types: true`, must set `conditions.kibana.version: "^9.4.0"` in their `manifest.yml`.
+
+### Multi-Signal Packages [multi-signal]
+
+Some OTel receivers can emit more than one signal type simultaneously. Instead of a fixed `type: metrics/logs/traces` field, use `dynamic_signal_types: true` in the policy template:
+
+```yaml
+policy_templates:
+  - name: kafkareceiver
+    dynamic_signal_types: true   # replaces "type: metrics/logs/traces"
+    title: Kafka OpenTelemetry Input
+    description: ...
+    input: otelcol
+    template_path: input.yml.hbs
+```
+
+With `dynamic_signal_types: true`, Fleet activates only the pipelines for which the user has configured data. The template's `service.pipelines` section should include all supported signal types:
+
+```handlebars
+service:
+  pipelines:
+    logs:
+      receivers: [<receiver-name>]
+      processors: [resourcedetection/system]
+    metrics:
+      receivers: [<receiver-name>]
+      processors: [resourcedetection/system]
+    traces:
+      receivers: [<receiver-name>]
+      processors: [resourcedetection/system]
+```
+
+::::{note}
+`dynamic_signal_types: true` requires Kibana **9.4.0+**. See [Kibana Version Requirements](#kibana-version-requirements).
+::::
+
 ### Variable Types [variable-types]
 
 OTel Input Packages support these variable types:
@@ -149,7 +197,7 @@ OTel Input Packages support these variable types:
 | `select` | Dropdown with predefined options | Protocol selection |
 | `yaml` | Multi-line YAML configuration | Advanced settings |
 
-**Important:** For `password` fields, use `secret: false` as a workaround until [fleet-server#6277](https://github.com/elastic/fleet-server/issues/6277) is resolved.
+**Important:** For `password` fields, use `secret: true`. This is supported from Kibana **v9.2.7**, **v9.3.2**, and **v9.4.0+** following the fix in [fleet-server#6277](https://github.com/elastic/fleet-server/issues/6277). For packages targeting older Kibana versions, use `secret: false` as a workaround.
 
 ### Variable Options [variable-options]
 
@@ -313,7 +361,7 @@ There is currently a known [bug](https://github.com/elastic/elastic-package/issu
 
 ## Documentation [documentation]
 
-Create a `docs/README.md` following the [Documentation guidelines](./documentation-guidelines.md). For OTel Input Packages, include:
+Create a `docs/README.md` following the [Documentation guidelines](./documentation-guidelines.md). You can either write it directly or use a `_dev/build/docs/README.md` template that is rendered to `docs/README.md` when you run `elastic-package build` — the template approach is only necessary if you need to inject dynamic content (for example, fields tables). For OTel Input Packages, include:
 
 1. **Overview** - What the package does and which OTel receiver it uses
 2. **How it works** - Data flow explanation
@@ -357,12 +405,12 @@ Before submitting your OTel Input Package:
 
 - [ ] `manifest.yml` has `type: input` and `input: otelcol`
 - [ ] `manifest.yml` includes `opentelemetry` in categories
-- [ ] `manifest.yml` has `conditions.kibana.version: "^9.2.0"` or newer
+- [ ] `manifest.yml` has the correct `conditions.kibana.version`: `^9.2.0` for logs/metrics-only packages, `^9.4.0` for packages collecting traces or using `dynamic_signal_types: true` (see [Kibana Version Requirements](#kibana-version-requirements))
 - [ ] `input.yml.hbs` includes `resourcedetection` processor
 - [ ] Policy tests exist and pass (`_dev/test/policy/`)
 - [ ] System tests exist and pass (`_dev/test/system/`)
 - [ ] `sample_event.json` is generated from system tests (use `elastic-package test system --generate`)
-- [ ] `docs/README.md` documents the package
+- [ ] `docs/README.md` exists (written directly or rendered from `_dev/build/docs/README.md` using `elastic-package build`)
 - [ ] `changelog.yml` has an entry for the initial version
 - [ ] Package icon exists in `img/`
 - [ ] `CODEOWNERS` file includes your team for the package path
@@ -376,6 +424,7 @@ Reference these existing packages as examples, or search for packages containing
 |---------|------------|------------------|
 | [statsd_input_otel](https://github.com/elastic/integrations/tree/main/packages/statsd_input_otel) | Basic | Minimal configuration, good starting point |
 | [prometheus_input_otel](https://github.com/elastic/integrations/tree/main/packages/prometheus_input_otel) | Medium | TLS config, authentication, multi-value fields |
+| [kafka_input_otel](https://github.com/elastic/integrations/tree/main/packages/kafka_input_otel) | Medium | Kafka receiver; multi-signal (`dynamic_signal_types: true`) |
 | [hostmetrics_input_otel](https://github.com/elastic/integrations/tree/main/packages/hostmetrics_input_otel) | Complex | Conditional scrapers, YAML configuration |
 
 ## Additional Resources [resources]

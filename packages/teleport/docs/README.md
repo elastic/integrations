@@ -34,8 +34,8 @@ See the [Getting started guide](https://www.elastic.co/guide/en/starting-with-th
 ### Enable the integration in Elastic
 
 1. In Kibana navigate to **Management** > **Integrations**.
-2. In the search top bar, type **Symantec Endpoint Security**.
-3. Select the **Symantec Endpoint Security** integration and add it.
+2. In the search top bar, type **Teleport**.
+3. Select the **Teleport** integration and add it.
 4. Add all the required integration configuration parameters, including Paths.
 5. Save the integration.
 
@@ -187,6 +187,7 @@ An example event for `audit` looks as following:
 | teleport.audit.access_request.reviewer | Reviewer is the author of the review. | keyword |
 | teleport.audit.access_request.roles | Roles is a list of roles for the user. | keyword |
 | teleport.audit.access_request.state | RequestState is access request state | keyword |
+| teleport.audit.addr | Target address for port forwarding events (host:port). | keyword |
 | teleport.audit.app.aws.assumed_role | AWSAssumedRole is the assumed role that signed this request. | keyword |
 | teleport.audit.app.labels | AppLabels are the configured application labels. | flattened |
 | teleport.audit.app.name | AppName is the configured application name. | keyword |
@@ -199,7 +200,7 @@ An example event for `audit` looks as following:
 | teleport.audit.audit_query.query | Query is the query that was run. | keyword |
 | teleport.audit.audit_query.total_execution_time_in_millis | ExecutionTimeInMillis is the total execution time of the query. | long |
 | teleport.audit.certificate.identity.access_requests | AccessRequests is a list of UUIDs of active requests for this Identity. | keyword |
-| teleport.audit.certificate.identity.allowed_resource_ids | AllowedResourceIDs is the list of resources which the identity will be allowed to access. An empty list indicates that no resource-specific restrictions will be applied. | keyword |
+| teleport.audit.certificate.identity.allowed_resource_ids | AllowedResourceIDs is the list of resources which the identity will be allowed to access. Each entry contains cluster, kind, name, and optionally sub_resource fields. An empty list indicates that no resource-specific restrictions will be applied. | flattened |
 | teleport.audit.certificate.identity.aws_role_arns | AWSRoleARNs is a list of allowed AWS role ARNs user can assume. | keyword |
 | teleport.audit.certificate.identity.azure_identities | AzureIdentities is a list of allowed Azure identities user can assume. | keyword |
 | teleport.audit.certificate.identity.bot_name | BotName indicates the name of the Machine ID bot this identity was issued to, if any. | keyword |

@@ -9,12 +9,14 @@ source:
 # us that ability in order to prevent having duplicate IoC data and prevent query
 # time field type conflicts.
 dest:
-  index: "logs-ti_cyware_intel_exchange_latest.dest_indicator-1"
+  index: "logs-ti_cyware_intel_exchange_latest.dest_indicator-2"
   aliases:
     - alias: "logs-ti_cyware_intel_exchange_latest.indicator"
       move_on_creation: true
 latest:
   unique_key:
+    # Namespace is deliberately excluded: threat indicators are global, so the
+    # same indicator from different namespaces should deduplicate to one entry.
     - event.dataset
     - threat.indicator.type
     - event.id
@@ -23,7 +25,7 @@ description: Latest IOC Indicator data retrieved from Cyware Intel Exchange API.
 frequency: 2m
 settings:
   deduce_mappings: false
-  unattended: true
+  num_failure_retries: -1
 sync:
   time:
     field: "event.ingested"
@@ -38,5 +40,5 @@ _meta:
   managed: true
   # Bump this version to delete, reinstall, and restart the transform during
   # package installation.
-  fleet_transform_version: 0.1.0
+  fleet_transform_version: 0.3.0
   run_as_kibana_system: false

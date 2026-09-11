@@ -1,0 +1,20 @@
+input: cel
+service: cel
+data_stream:
+  vars:
+    url: http://{{Hostname}}:{{Port}}/v1/feeds/expired/full?targetFormat=ECSV1&mode=url
+    api_token: test-token
+    interval: 1m
+    http_client_timeout: 5m
+    preserve_original_event: false
+wait_for_data_timeout: 90s
+# Feed delivers 11 indicators (10 active + 1 already-expired). All 11 are indexed
+# into the raw data stream (expiry is not a drop condition at ingest). Expiry is
+# handled downstream by the latest_indicator transform's retention_policy on
+# ticura.indicator.ages_out, which removes expired indicators from the deduplicated
+# logs-ti_ticura_latest.indicator index. Asserting ticura.indicator.ages_out confirms the
+# source-provided expiry timestamp the retention relies on is present.
+assert:
+  hit_count: 11
+  fields_present:
+    - ticura.indicator.ages_out

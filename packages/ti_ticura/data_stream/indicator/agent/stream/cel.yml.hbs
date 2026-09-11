@@ -1,0 +1,108 @@
+config_version: 2
+interval: {{interval}}
+
+resource.url: {{url}}
+resource.timeout: {{http_client_timeout}}
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+# Retry genuinely transient HTTP failures (5xx, connection resets, timeouts) on
+# either the API request or the feed download.
+resource.retry:
+  max_attempts: 5
+  wait_min: 10s
+  wait_max: 1m
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  # The trailing `*` is expanded by the agent to a unique per-input id
+  # (cel-ti_ticura.indicator-<package-policy-id>), so multiple Ticura
+  # integration instances (e.g., one per feed configuration) each write to
+  # their own tracer file without collisions.
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+
+state:
+  api_token: {{api_token}}
+
+redact:
+  fields:
+    - api_token
+  delete: true  # Remove api_token entirely from event documents (not just mask).
+
+program: |
+  state.with(
+    // Step 1: with mode=url the Ticura API returns 200 + {"downloadUrl": "..."}
+    // (a short-lived direct blob URL) instead of a 307 redirect. Auto-following
+    // a 307 to the large feed body fails with "read on closed response body",
+    // so we resolve the URL here and download it directly in step 2.
+    // Append mode=url if it is missing: Fleet keeps a package policy's stored
+    // url across upgrades, so a policy created before mode=url existed would
+    // otherwise send the legacy endpoint (307) that this program cannot process.
+    // This makes such policies self-heal without needing the (hidden) var edited.
+    request("GET", state.url.contains("mode=url") ? state.url : state.url + "&mode=url").with({
+      "Header": {
+        "x-api-key": [state.api_token],
+      }
+    }).do_request().as(meta, meta.StatusCode == 200 ?
+      meta.Body.decode_json().as(m, has(m.downloadUrl) ?
+        // Step 2: download the feed directly from the resolved URL (no redirect).
+        request("GET", m.downloadUrl).do_request().as(resp, resp.StatusCode == 200 ?
+          {
+            "events": string(resp.Body).split("\n")
+              .filter(l, size(l) > 0)
+              .map(l, {"message": l.trim_space()}),
+            "want_more": false,
+          }
+        :
+          {
+            "events": {
+              "error": {
+                "code": string(resp.StatusCode),
+                "id": string(resp.Status),
+                "message": "GET (feed download) " + m.downloadUrl + ": " + (
+                  size(resp.Body) != 0 ? string(resp.Body) : string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                ),
+              },
+            },
+            "want_more": false,
+          }
+        )
+      :
+        {
+          "events": { "error": { "message": "Ticura API response missing downloadUrl: " + string(meta.Body) } },
+          "want_more": false,
+        }
+      )
+    :
+      {
+        "events": {
+          "error": {
+            "code": string(meta.StatusCode),
+            "id": string(meta.Status),
+            "message": "GET " + state.url + ": " + (
+              size(meta.Body) != 0 ? string(meta.Body) : string(meta.Status) + " (" + string(meta.StatusCode) + ")"
+            ),
+          },
+        },
+        "want_more": false,
+      }
+    )
+  )
+
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

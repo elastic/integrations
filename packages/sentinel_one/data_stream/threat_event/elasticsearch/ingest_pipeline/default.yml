@@ -7,26 +7,26 @@ processors:
       if: ctx.message == "retry"
   - set:
       field: ecs.version
-      tag: set_ecs_version
+      tag: set_ecs_version_8efb762c
       value: 9.3.0
   - terminate:
-      tag: data_collection_error
+      tag: data_collection_error_4bdbb3d0
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
       description: error message set and no data to process.
   - set:
       field: event.kind
-      tag: set_event_kind
+      tag: set_event_kind_d452ef2c
       value: event
   - rename:
       field: message
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_176375fd
       target_field: event.original
       ignore_missing: true
       description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_9ecc8509
       ignore_missing: true
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
@@ -37,27 +37,34 @@ processors:
         - team
       ignore_missing: true
       if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
-      tag: remove_agentless_tags
+      tag: remove_agentless_tags_e6856012
       description: >-
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
   - json:
       field: event.original
-      tag: json_event_original
+      tag: json_event_original_74d23cc2
       target_field: json
+  - fingerprint:
+      tag: fingerprint_threat_event_dedup_384b398e
+      fields:
+        - json.id
+        - json.createdAt
+      target_field: _id
+      ignore_missing: true
   - rename:
       field: json.id
-      tag: rename_id
+      tag: rename_id_6e989638
       target_field: sentinel_one.threat_event.id
       ignore_missing: true
   - rename:
       field: json.objectType
-      tag: rename_objectType
+      tag: rename_objectType_af9163d4
       target_field: sentinel_one.threat_event.object_type
       ignore_missing: true
   - date:
       field: json.createdAt
-      tag: date_createdAt
+      tag: date_createdAt_2cb24d3a
       target_field: sentinel_one.threat_event.created_at
       formats:
         - ISO8601
@@ -69,27 +76,27 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.processName
-      tag: rename_processName
+      tag: rename_processName_dc4191b7
       target_field: sentinel_one.threat_event.process.name
       ignore_missing: true
   - rename:
       field: json.agentName
-      tag: rename_agentName
+      tag: rename_agentName_ee4f78c7
       target_field: sentinel_one.threat_event.agent.name
       ignore_missing: true
   - rename:
       field: json.agentGroupId
-      tag: rename_agentGroupId
+      tag: rename_agentGroupId_5416c35e
       target_field: sentinel_one.threat_event.agent.group_id
       ignore_missing: true
   - rename:
       field: json.agentId
-      tag: rename_agentId
+      tag: rename_agentId_1d239edc
       target_field: sentinel_one.threat_event.agent.id
       ignore_missing: true
   - convert:
       field: json.agentIsActive
-      tag: convert_agentIsActive_to_boolean
+      tag: convert_agentIsActive_to_boolean_7d07b7aa
       target_field: sentinel_one.threat_event.agent.is_active
       type: boolean
       ignore_missing: true
@@ -100,7 +107,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.agentIsDecommissioned
-      tag: convert_agentIsDecommissioned_to_boolean
+      tag: convert_agentIsDecommissioned_to_boolean_4186fedc
       target_field: sentinel_one.threat_event.agent.is_decommissioned
       type: boolean
       ignore_missing: true
@@ -111,47 +118,47 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.agentMachineType
-      tag: rename_agentMachineType
+      tag: rename_agentMachineType_6afc112f
       target_field: sentinel_one.threat_event.agent.machine_type
       ignore_missing: true
   - rename:
       field: json.agentNetworkStatus
-      tag: rename_agentNetworkStatus
+      tag: rename_agentNetworkStatus_aa3bc75b
       target_field: sentinel_one.threat_event.agent.network_status
       ignore_missing: true
   - rename:
       field: json.agentOs
-      tag: rename_agentOs
+      tag: rename_agentOs_be712fb5
       target_field: sentinel_one.threat_event.agent.os
       ignore_missing: true
   - rename:
       field: json.agentVersion
-      tag: rename_agentVersion
+      tag: rename_agentVersion_45628e0b
       target_field: sentinel_one.threat_event.agent.version
       ignore_missing: true
   - rename:
       field: json.agentUuid
-      tag: rename_agentUuid
+      tag: rename_agentUuid_e812ea09
       target_field: sentinel_one.threat_event.agent.uuid
       ignore_missing: true
   - rename:
       field: json.siteId
-      tag: rename_siteId
+      tag: rename_siteId_e01544a6
       target_field: sentinel_one.site.id
       ignore_missing: true
   - rename:
       field: json.siteName
-      tag: rename_siteName
+      tag: rename_siteName_cfd69b27
       target_field: sentinel_one.site.name
       ignore_missing: true
   - rename:
       field: json.pid
-      tag: rename_pid
+      tag: rename_pid_4445f466
       target_field: sentinel_one.threat_event.pid
       ignore_missing: true
   - convert:
       field: json.srcIp
-      tag: convert_srcIp_to_ip
+      tag: convert_srcIp_to_ip_0a2570a1
       target_field: sentinel_one.threat_event.src.ip
       type: ip
       if: ctx.json?.srcIp != ''
@@ -163,7 +170,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.srcPort
-      tag: convert_srcPort_to_long
+      tag: convert_srcPort_to_long_132f8f78
       target_field: sentinel_one.threat_event.src.port
       type: long
       ignore_missing: true
@@ -174,7 +181,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.dstIp
-      tag: convert_dstIp_to_ip
+      tag: convert_dstIp_to_ip_9c6c13c3
       target_field: sentinel_one.threat_event.dst.ip
       type: ip
       if: ctx.json?.dstIp != ''
@@ -186,7 +193,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.dstPort
-      tag: convert_dstPort_to_long
+      tag: convert_dstPort_to_long_dd44cd23
       target_field: sentinel_one.threat_event.dst.port
       type: long
       ignore_missing: true
@@ -197,127 +204,127 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.fileSha1
-      tag: rename_fileSha1
+      tag: rename_fileSha1_04c0c383
       target_field: sentinel_one.threat_event.file.sha1
       ignore_missing: true
   - rename:
       field: json.fileSha256
-      tag: rename_fileSha256
+      tag: rename_fileSha256_2de6c440
       target_field: sentinel_one.threat_event.file.sha256
       ignore_missing: true
   - rename:
       field: json.fileMd5
-      tag: rename_fileMd5
+      tag: rename_fileMd5_37ca9c9e
       target_field: sentinel_one.threat_event.file.md5
       ignore_missing: true
   - rename:
       field: json.oldFileSha1
-      tag: rename_oldFileSha1
+      tag: rename_oldFileSha1_c0fe62b0
       target_field: sentinel_one.threat_event.old_file.sha1
       ignore_missing: true
   - rename:
       field: json.oldFileSha256
-      tag: rename_oldFileSha256
+      tag: rename_oldFileSha256_8e75ea03
       target_field: sentinel_one.threat_event.old_file.sha256
       ignore_missing: true
   - rename:
       field: json.oldFileMd5
-      tag: rename_oldFileMd5
+      tag: rename_oldFileMd5_cf501b98
       target_field: sentinel_one.threat_event.old_file.md5
       ignore_missing: true
   - rename:
       field: json.signatureSignedInvalidReason
-      tag: rename_signatureSignedInvalidReason
+      tag: rename_signatureSignedInvalidReason_63a9d652
       target_field: sentinel_one.threat_event.signature_signed_invalid_reason
       ignore_missing: true
   - rename:
       field: json.verifiedStatus
-      tag: rename_verifiedStatus
+      tag: rename_verifiedStatus_ffdba4fb
       target_field: sentinel_one.threat_event.verified_status
       ignore_missing: true
   - rename:
       field: json.signedStatus
-      tag: rename_signedStatus
+      tag: rename_signedStatus_9b39c47b
       target_field: sentinel_one.threat_event.signed_status
       ignore_missing: true
   - rename:
       field: json.sha256
-      tag: rename_sha256
+      tag: rename_sha256_dce3d97d
       target_field: sentinel_one.threat_event.sha256
       ignore_missing: true
   - rename:
       field: json.sha1
-      tag: rename_sha1
+      tag: rename_sha1_3967d97c
       target_field: sentinel_one.threat_event.sha1
       ignore_missing: true
   - rename:
       field: json.md5
-      tag: rename_md5
+      tag: rename_md5_af9c8ac7
       target_field: sentinel_one.threat_event.md5
       ignore_missing: true
   - rename:
       field: json.fileFullName
-      tag: rename_fileFullName
+      tag: rename_fileFullName_8b645a8c
       target_field: sentinel_one.threat_event.file.full_name
       ignore_missing: true
   - rename:
       field: json.oldFileName
-      tag: rename_oldFileName
+      tag: rename_oldFileName_0a71cba6
       target_field: sentinel_one.threat_event.old_file.name
       ignore_missing: true
   - rename:
       field: json.tid
-      tag: rename_tid
+      tag: rename_tid_dc896729
       target_field: sentinel_one.threat_event.tid
       ignore_missing: true
   - rename:
       field: json.rpid
-      tag: rename_rpid
+      tag: rename_rpid_1e254b2a
       target_field: sentinel_one.threat_event.rpid
       ignore_missing: true
   - rename:
       field: json.dnsRequest
-      tag: rename_dnsRequest
+      tag: rename_dnsRequest_3a3010dc
       target_field: sentinel_one.threat_event.dns_request
       ignore_missing: true
   - rename:
       field: json.dnsResponse
-      tag: rename_dnsResponse
+      tag: rename_dnsResponse_b5966b9f
       target_field: sentinel_one.threat_event.dns_response
       ignore_missing: true
   - rename:
       field: json.processCmd
-      tag: rename_processCmd
+      tag: rename_processCmd_abd55ff5
       target_field: sentinel_one.threat_event.process.cmd
       ignore_missing: true
   - rename:
       field: json.processGroupId
-      tag: rename_processGroupId
+      tag: rename_processGroupId_bbf2b6d1
       target_field: sentinel_one.threat_event.process.group_id
       ignore_missing: true
   - rename:
       field: json.processImagePath
-      tag: rename_processImagePath
+      tag: rename_processImagePath_6f76210d
       target_field: sentinel_one.threat_event.process.image_path
       ignore_missing: true
   - rename:
       field: json.processUserName
-      tag: rename_processUserName
+      tag: rename_processUserName_a6b2496d
       target_field: sentinel_one.threat_event.process.user_name
       ignore_missing: true
   - rename:
       field: json.processImageSha1Hash
-      tag: rename_processImageSha1Hash
+      tag: rename_processImageSha1Hash_e014c0ee
       target_field: sentinel_one.threat_event.process.image_sha1_hash
       ignore_missing: true
   - rename:
       field: json.processUniqueKey
-      tag: rename_processUniqueKey
+      tag: rename_processUniqueKey_4a112e4f
       target_field: sentinel_one.threat_event.process.unique_key
       ignore_missing: true
   - date:
       field: json.processStartTime
-      tag: date_processStartTime
+      tag: date_processStartTime_1249a2ef
       target_field: sentinel_one.threat_event.process.start_time
       formats:
         - ISO8601
@@ -329,168 +336,168 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.processSubSystem
-      tag: rename_processSubSystem
+      tag: rename_processSubSystem_8410c6e6
       target_field: sentinel_one.threat_event.process.sub_system
       ignore_missing: true
   - rename:
       field: json.processSessionId
-      tag: rename_processSessionId
+      tag: rename_processSessionId_5a5c661b
       target_field: sentinel_one.threat_event.process.session_id
       ignore_missing: true
   - rename:
       field: json.processIntegrityLevel
-      tag: rename_processIntegrityLevel
+      tag: rename_processIntegrityLevel_ba4b6da5
       target_field: sentinel_one.threat_event.process.integrity_level
       ignore_missing: true
   - rename:
       field: json.processDisplayName
-      tag: rename_processDisplayName
+      tag: rename_processDisplayName_03ff305e
       target_field: sentinel_one.threat_event.process.display_name
       ignore_missing: true
   - rename:
       field: json.processIsWow64
-      tag: rename_processIsWow64
+      tag: rename_processIsWow64_ad0e26bc
       target_field: sentinel_one.threat_event.process.is_wow64
       ignore_missing: true
   - rename:
       field: json.processIsRedirectedCommandProcessor
-      tag: rename_processIsRedirectedCommandProcessor
+      tag: rename_processIsRedirectedCommandProcessor_f80cff06
       target_field: sentinel_one.threat_event.process.is_redirected_command_processor
       ignore_missing: true
   - rename:
       field: json.processRoot
-      tag: rename_processRoot
+      tag: rename_processRoot_219756c6
       target_field: sentinel_one.threat_event.process.root
       ignore_missing: true
   - rename:
       field: json.parentProcessName
-      tag: rename_parentProcessName
+      tag: rename_parentProcessName_0109735e
       target_field: sentinel_one.threat_event.parent_process.name
       ignore_missing: true
   - rename:
       field: json.parentPid
-      tag: rename_parentPid
+      tag: rename_parentPid_d66c08e6
       target_field: sentinel_one.threat_event.parent_pid
       ignore_missing: true
   - rename:
       field: json.parentProcessUniqueKey
-      tag: rename_parentProcessUniqueKey
+      tag: rename_parentProcessUniqueKey_b5b6cb60
       target_field: sentinel_one.threat_event.parent_process.unique_key
       ignore_missing: true
   - rename:
       field: json.networkSource
-      tag: rename_networkSource
+      tag: rename_networkSource_4ed9fcb0
       target_field: sentinel_one.threat_event.network.source
       ignore_missing: true
   - rename:
       field: json.networkUrl
-      tag: rename_networkUrl
+      tag: rename_networkUrl_c91d4e7c
       target_field: sentinel_one.threat_event.network.url
       ignore_missing: true
   - rename:
       field: json.networkMethod
-      tag: rename_networkMethod
+      tag: rename_networkMethod_7e3d15f0
       target_field: sentinel_one.threat_event.network.method
       ignore_missing: true
   - rename:
       field: json.direction
-      tag: rename_direction
+      tag: rename_direction_d462038e
       target_field: sentinel_one.threat_event.direction
       ignore_missing: true
   - rename:
       field: json.eventType
-      tag: rename_eventType
+      tag: rename_eventType_3595803f
       target_field: sentinel_one.threat_event.event_type
       ignore_missing: true
   - rename:
       field: json.registryPath
-      tag: rename_registryPath
+      tag: rename_registryPath_8b2ba501
       target_field: sentinel_one.threat_event.registry.path
       ignore_missing: true
   - rename:
       field: json.registryId
-      tag: rename_registryId
+      tag: rename_registryId_46fc574d
       target_field: sentinel_one.threat_event.registry.id
       ignore_missing: true
   - rename:
       field: json.registryClassification
-      tag: rename_registryClassification
+      tag: rename_registryClassification_019a729d
       target_field: sentinel_one.threat_event.registry.classification
       ignore_missing: true
   - rename:
       field: json.taskName
-      tag: rename_taskName
+      tag: rename_taskName_97d78e76
       target_field: sentinel_one.threat_event.task_name
       ignore_missing: true
   - rename:
       field: json.taskPath
-      tag: rename_taskPath
+      tag: rename_taskPath_8255e63f
       target_field: sentinel_one.threat_event.task_path
       ignore_missing: true
   - rename:
       field: json.trueContext
-      tag: rename_trueContext
+      tag: rename_trueContext_8cfff9da
       target_field: sentinel_one.threat_event.true_context
       ignore_missing: true
   - rename:
       field: json.storyline
-      tag: rename_storyline
+      tag: rename_storyline_ecf4613d
       target_field: sentinel_one.threat_event.storyline
       ignore_missing: true
   - rename:
       field: json.fileId
-      tag: rename_fileId
+      tag: rename_fileId_3c24f864
       target_field: sentinel_one.threat_event.file.id
       ignore_missing: true
   - rename:
       field: json.loginsUserName
-      tag: rename_loginsUserName
+      tag: rename_loginsUserName_e6ee7348
       target_field: sentinel_one.threat_event.logins_user_name
       ignore_missing: true
   - append:
       field: related.user
-      tag: append_logins_user_name_into_related_user
+      tag: append_logins_user_name_into_related_user_5117e1d5
       value: '{{{sentinel_one.threat_event.logins_user_name}}}'
       if: ctx.sentinel_one?.threat_event?.logins_user_name != null
       allow_duplicates: false
   - rename:
       field: json.loginsBaseType
-      tag: rename_loginsBaseType
+      tag: rename_loginsBaseType_74da5830
       target_field: sentinel_one.threat_event.logins_base_type
       ignore_missing: true
   - rename:
       field: json.indicatorCategory
-      tag: rename_indicatorCategory
+      tag: rename_indicatorCategory_5e659039
       target_field: sentinel_one.threat_event.indicator.category
       ignore_missing: true
   - rename:
       field: json.indicatorDescription
-      tag: rename_indicatorDescription
+      tag: rename_indicatorDescription_fb8e3f47
       target_field: sentinel_one.threat_event.indicator.description
       ignore_missing: true
   - rename:
       field: json.indicatorMetadata
-      tag: rename_indicatorMetadata
+      tag: rename_indicatorMetadata_2731e210
       target_field: sentinel_one.threat_event.indicator.metadata
       ignore_missing: true
   - rename:
       field: json.indicatorName
-      tag: rename_indicatorName
+      tag: rename_indicatorName_d7cc0197
       target_field: sentinel_one.threat_event.indicator.name
       ignore_missing: true
   - rename:
       field: json.connectionStatus
-      tag: rename_connectionStatus
+      tag: rename_connectionStatus_c00c85b8
       target_field: sentinel_one.threat_event.connection_status
       ignore_missing: true
   - rename:
       field: json.publisher
-      tag: rename_publisher
+      tag: rename_publisher_71751525
       target_field: sentinel_one.threat_event.publisher
       ignore_missing: true
   - convert:
       field: json.agentInfected
-      tag: convert_agentInfected_to_boolean
+      tag: convert_agentInfected_to_boolean_76858fa3
       target_field: sentinel_one.threat_event.agent.infected
       type: boolean
       ignore_missing: true
@@ -501,12 +508,12 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.agentDomain
-      tag: rename_agentDomain
+      tag: rename_agentDomain_5ae55dec
       target_field: sentinel_one.threat_event.agent.domain
       ignore_missing: true
   - convert:
       field: json.agentIp
-      tag: convert_agentIp_to_ip
+      tag: convert_agentIp_to_ip_28c438b4
       target_field: sentinel_one.threat_event.agent.ip
       type: ip
       if: ctx.json?.agentIp != ''
@@ -518,18 +525,18 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
       field: related.ip
-      tag: append_agent_ip_into_related_ip
+      tag: append_agent_ip_into_related_ip_7e33bfc6
       value: '{{{sentinel_one.threat_event.agent.ip}}}'
       if: ctx.sentinel_one?.threat_event?.agent?.ip != null
       allow_duplicates: false
   - rename:
       field: json.user
-      tag: rename_user
+      tag: rename_user_4cb60c0a
       target_field: sentinel_one.threat_event.user
       ignore_missing: true
   - convert:
       field: json.relatedToThreat
-      tag: convert_relatedToThreat_to_boolean
+      tag: convert_relatedToThreat_to_boolean_deba8194
       target_field: sentinel_one.threat_event.related_to_threat
       type: boolean
       ignore_missing: true
@@ -540,17 +547,17 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.threatStatus
-      tag: rename_threatStatus
+      tag: rename_threatStatus_2706e482
       target_field: sentinel_one.threat_event.threat_status
       ignore_missing: true
   - rename:
       field: json.protocol
-      tag: rename_protocol
+      tag: rename_protocol_9508a067
       target_field: sentinel_one.threat_event.protocol
       ignore_missing: true
   - convert:
       field: json.hasActiveContent
-      tag: convert_hasActiveContent_to_boolean
+      tag: convert_hasActiveContent_to_boolean_cfec1a4c
       target_field: sentinel_one.threat_event.has_active_content
       type: boolean
       ignore_missing: true
@@ -561,22 +568,22 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.activeContentFileId
-      tag: rename_activeContentFileId
+      tag: rename_activeContentFileId_dd9b3f8d
       target_field: sentinel_one.threat_event.active_content.file_id
       ignore_missing: true
   - rename:
       field: json.activeContentPath
-      tag: rename_activeContentPath
+      tag: rename_activeContentPath_ec52490e
       target_field: sentinel_one.threat_event.active_content.path
       ignore_missing: true
   - rename:
       field: json.activeContentHash
-      tag: rename_activeContentHash
+      tag: rename_activeContentHash_dd112ce7
       target_field: sentinel_one.threat_event.active_content.hash
       ignore_missing: true
   - convert:
       field: json.processIsMalicious
-      tag: convert_processIsMalicious_to_boolean
+      tag: convert_processIsMalicious_to_boolean_9b01ec0f
       target_field: sentinel_one.threat_event.process.is_malicious
       type: boolean
       ignore_missing: true
@@ -587,12 +594,12 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.parentProcessGroupId
-      tag: rename_parentProcessGroupId
+      tag: rename_parentProcessGroupId_aa5e130b
       target_field: sentinel_one.threat_event.parent_process.group_id
       ignore_missing: true
   - convert:
       field: json.parentProcessIsMalicious
-      tag: convert_parentProcessIsMalicious_to_boolean
+      tag: convert_parentProcessIsMalicious_to_boolean_622f8fc7
       target_field: sentinel_one.threat_event.parent_process.is_malicious
       type: boolean
       ignore_missing: true
@@ -603,37 +610,37 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.fileSize
-      tag: rename_fileSize
+      tag: rename_fileSize_6976cf0d
       target_field: sentinel_one.threat_event.file.size
       ignore_missing: true
   - rename:
       field: json.fileType
-      tag: rename_fileType
+      tag: rename_fileType_1eca00b6
       target_field: sentinel_one.threat_event.file.type
       ignore_missing: true
   - set:
       field: '@timestamp'
-      tag: set_timestamp
+      tag: set_timestamp_767cd648
       copy_from: sentinel_one.threat_event.created_at
       ignore_empty_value: true
   - set:
       field: event.id
-      tag: set_event_id
+      tag: set_event_id_122408d0
       copy_from: sentinel_one.threat_event.id
       ignore_empty_value: true
   - set:
       field: event.created
-      tag: set_event_created
+      tag: set_event_created_35cb24a2
       copy_from: sentinel_one.threat_event.created_at
       ignore_empty_value: true
   - set:
       field: process.name
-      tag: set_process_name
+      tag: set_process_name_fa7b00b0
       copy_from: sentinel_one.threat_event.process.name
       ignore_empty_value: true
   - convert:
       field: sentinel_one.threat_event.pid
-      tag: convert_event_pid_to_long
+      tag: convert_event_pid_to_long_f9745ea6
       target_field: process.pid
       type: long
       ignore_missing: true
@@ -644,119 +651,119 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: source.ip
-      tag: set_source_ip
+      tag: set_source_ip_f6ff7451
       copy_from: sentinel_one.threat_event.src.ip
       ignore_empty_value: true
   - append:
       field: related.ip
-      tag: append_source_ip_into_related_ip
+      tag: append_source_ip_into_related_ip_c47af1f5
       value: '{{{source.ip}}}'
       if: ctx.source?.ip != null
       allow_duplicates: false
   - set:
       field: source.port
-      tag: set_source_port
+      tag: set_source_port_46019e07
       copy_from: sentinel_one.threat_event.src.port
       ignore_empty_value: true
   - set:
       field: destination.ip
-      tag: set_destination_ip
+      tag: set_destination_ip_1c1b7e60
       copy_from: sentinel_one.threat_event.dst.ip
       ignore_empty_value: true
   - append:
       field: related.ip
-      tag: append_destination_ip_into_related_ip
+      tag: append_destination_ip_into_related_ip_40fd2772
       value: '{{{destination.ip}}}'
       if: ctx.destination?.ip != null
       allow_duplicates: false
   - set:
       field: destination.port
-      tag: set_destination_port
+      tag: set_destination_port_cad96edf
       copy_from: sentinel_one.threat_event.dst.port
       ignore_empty_value: true
   - set:
       field: file.hash.sha1
-      tag: set_file_hash_sha1
+      tag: set_file_hash_sha1_652b04d3
       copy_from: sentinel_one.threat_event.file.sha1
       ignore_empty_value: true
   - append:
       field: related.hash
-      tag: append_file_hash_sha1_into_related_hash
+      tag: append_file_hash_sha1_into_related_hash_9dbd8ee3
       value: '{{{file.hash.sha1}}}'
       if: ctx.file?.hash?.sha1 != null
       allow_duplicates: false
   - set:
       field: file.hash.sha256
-      tag: set_file_hash_sha256
+      tag: set_file_hash_sha256_0377b6e6
       copy_from: sentinel_one.threat_event.file.sha256
       ignore_empty_value: true
   - append:
       field: related.hash
-      tag: append_file_hash_sha256_into_related_hash
+      tag: append_file_hash_sha256_into_related_hash_1921faec
       value: '{{{file.hash.sha256}}}'
       if: ctx.file?.hash?.sha256 != null
       allow_duplicates: false
   - set:
       field: file.hash.md5
-      tag: set_file_hash_md5
+      tag: set_file_hash_md5_a9744537
       copy_from: sentinel_one.threat_event.file.md5
       ignore_empty_value: true
   - append:
       field: related.hash
-      tag: append_file_hash_md5_into_related_hash
+      tag: append_file_hash_md5_into_related_hash_34b7b840
       value: '{{{file.hash.md5}}}'
       if: ctx.file?.hash?.md5 != null
       allow_duplicates: false
   - set:
       field: file.name
-      tag: set_file_name
+      tag: set_file_name_d4f44c00
       copy_from: sentinel_one.threat_event.file.full_name
       ignore_empty_value: true
   - set:
       field: process.command_line
-      tag: set_process_command_line
+      tag: set_process_command_line_003d99b2
       copy_from: sentinel_one.threat_event.process.cmd
       ignore_empty_value: true
   - set:
       field: process.executable
-      tag: set_process_executable
+      tag: set_process_executable_63b38905
       copy_from: sentinel_one.threat_event.process.image_path
       ignore_empty_value: true
   - set:
       field: process.user.name
-      tag: set_process_user_name
+      tag: set_process_user_name_db71a111
       copy_from: sentinel_one.threat_event.process.user_name
       ignore_empty_value: true
   - append:
       field: related.user
-      tag: append_process_user_name_into_related_user
+      tag: append_process_user_name_into_related_user_b32e61f9
       value: '{{{process.user.name}}}'
       if: ctx.process?.user?.name != null
       allow_duplicates: false
   - set:
       field: process.hash.sha1
-      tag: set_process_hash_sha1
+      tag: set_process_hash_sha1_1a765f7d
       copy_from: sentinel_one.threat_event.process.image_sha1_hash
       ignore_empty_value: true
   - append:
       field: related.hash
-      tag: append_process_hash_sha1_into_related_hash
+      tag: append_process_hash_sha1_into_related_hash_d4dc18f5
       value: '{{{process.hash.sha1}}}'
       if: ctx.process?.hash?.sha1 != null
       allow_duplicates: false
   - set:
       field: process.start
-      tag: set_process_start
+      tag: set_process_start_e4ff89c5
       copy_from: sentinel_one.threat_event.process.start_time
       ignore_empty_value: true
   - set:
       field: process.parent.name
-      tag: set_process_parent_name
+      tag: set_process_parent_name_b1021bab
       copy_from: sentinel_one.threat_event.parent_process.name
       ignore_empty_value: true
   - convert:
       field: sentinel_one.threat_event.parent_pid
-      tag: convert_event_parent_pid_to_long
+      tag: convert_event_parent_pid_to_long_8aeb0473
       target_field: process.parent.pid
       type: long
       ignore_missing: true
@@ -767,27 +774,27 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: url.full
-      tag: set_url_full
+      tag: set_url_full_9eda22e0
       copy_from: sentinel_one.threat_event.network.url
       ignore_empty_value: true
   - set:
       field: registry.path
-      tag: set_registry_path
+      tag: set_registry_path_4101305a
       copy_from: sentinel_one.threat_event.registry.path
       ignore_empty_value: true
   - set:
       field: threat.indicator.description
-      tag: set_threat_indicator_description
+      tag: set_threat_indicator_description_f3c18162
       copy_from: sentinel_one.threat_event.indicator.description
       ignore_empty_value: true
   - set:
       field: threat.indicator.name
-      tag: set_threat_indicator_name
+      tag: set_threat_indicator_name_49c8f7dc
       copy_from: sentinel_one.threat_event.indicator.name
       ignore_empty_value: true
   - set:
       field: user.name
-      tag: set_user_name
+      tag: set_user_name_9b610dbc
       copy_from: sentinel_one.threat_event.user
       ignore_empty_value: true
   - dissect:
@@ -798,21 +805,21 @@ processors:
       description: "Split user and domain"
   - append:
       field: related.user
-      tag: append_user_name_into_related_user
+      tag: append_user_name_into_related_user_c32fb91b
       value: '{{{user.name}}}'
       if: ctx.user?.name != null
       allow_duplicates: false
   - lowercase:
       field: sentinel_one.threat_event.protocol
-      tag: lowercase_network_transport
+      tag: lowercase_network_transport_4f255c01
       target_field: network.transport
       ignore_missing: true
   - convert:
       field: sentinel_one.threat_event.file.size
-      tag: convert_file_size_to_long
+      tag: convert_file_size_to_long_85116f69
       target_field: file.size
       type: long
-      if: ctx.sentinel_one?.threat_event?.file.size != ''
+      if: ctx.sentinel_one?.threat_event?.file?.size != ''
       ignore_missing: true
       on_failure:
         - append:
@@ -821,7 +828,7 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: file.type
-      tag: set_file_type
+      tag: set_file_type_ca612c36
       copy_from: sentinel_one.threat_event.file.type
       ignore_empty_value: true
   - remove:
@@ -853,15 +860,15 @@ processors:
         - sentinel_one.threat_event.src.ip
         - sentinel_one.threat_event.src.port
         - sentinel_one.threat_event.user
-      tag: remove_custom_duplicate_fields
+      tag: remove_custom_duplicate_fields_550b9639
       ignore_missing: true
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
   - remove:
       field: json
-      tag: remove_json
+      tag: remove_json_94dc55cd
       ignore_missing: true
   - script:
-      tag: script_to_drop_null_values
+      tag: script_to_drop_null_values_7559f019
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
       source: |-
@@ -888,7 +895,7 @@ processors:
         handleMap(ctx);
   - set:
       field: event.kind
-      tag: set_pipeline_error_into_event_kind
+      tag: set_pipeline_error_into_event_kind_4fd8ffa8
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
@@ -899,16 +906,18 @@ processors:
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message_d916120d
       field: error.message
-      value: |-
+      value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
         {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
         {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

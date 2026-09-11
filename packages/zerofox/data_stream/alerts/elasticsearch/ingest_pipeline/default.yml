@@ -3,22 +3,33 @@ description: Pipeline for parsing zerofox alerts
 processors:
   ## ECS version.
   - set:
+      tag: set_ecs_version_6b2cef5e
       field: ecs.version
       value: '8.11.0'
   ## Event JSON decoding.
   - rename:
+      tag: rename_message_to_event_original_a7b1f822
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message_facc4822
+      ignore_missing: true
+      if: ctx.event?.original != null
+      description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
+      tag: json_event_original_to_zerofox_6d3cbdec
       field: event.original
       target_field: zerofox
   - json:
+      tag: json_zerofox_metadata_7896d79a
       field: zerofox.metadata
       ignore_failure: true
   ## Parse event dates.
   - date:
+      tag: date_zerofox_content_created_at_to_event_created_58828c95
       field: zerofox.content_created_at
       target_field: event.created
       formats:
@@ -26,11 +37,13 @@ processors:
       ignore_failure: true
       if: ctx?.zerofox?.content_created_at != null && ctx.zerofox.content_created_at != ""
   - remove:
+      tag: remove_zerofox_content_created_at_a8159607
       field: zerofox.content_created_at
       ignore_missing: true
       ignore_failure: true
       if: ctx?.event?.created != null
   - date:
+      tag: date_zerofox_timestamp_to_timestamp_4c4288ad
       field: zerofox.timestamp
       target_field: "@timestamp"
       formats:
@@ -39,20 +52,24 @@ processors:
       if: ctx?.zerofox?.timestamp != null && ctx.zerofox.timestamp != ""
   ## Event categorization.
   - convert:
+      tag: convert_zerofox_id_to_event_id_534d02e6
       field: zerofox.id
       target_field: event.id
       type: string
       ignore_failure: true
       if: ctx?.zerofox?.id != null && ctx.zerofox.id != ""
   - set:
+      tag: set_event_kind_ab1166ce
       field: event.kind
       value: alert
   - convert:
+      tag: convert_zerofox_severity_to_event_severity_a4c4c413
       field: zerofox.severity
       target_field: event.severity
       type: long
       ignore_missing: true
   - rename:
+      tag: rename_zerofox_offending_content_url_to_event_url_23cee817
       field: zerofox.offending_content_url
       target_field: event.url
       ignore_missing: true
@@ -60,24 +77,28 @@ processors:
       if: ctx?.zerofox?.offending_content_url != null && ctx.zerofox.offending_content_url != ""
   ## Rule fields.
   - convert:
+      tag: convert_zerofox_rule_id_to_rule_id_8e2b0f41
       field: zerofox.rule_id
       target_field: rule.id
       type: string
       ignore_failure: true
       if: ctx?.zerofox?.rule_id != null && ctx.zerofox.rule_id != ""
   - rename:
+      tag: rename_zerofox_rule_name_to_rule_name_af0af763
       field: zerofox.rule_name
       target_field: rule.name
       ignore_missing: true
       ignore_failure: true
       if: ctx?.zerofox?.rule_name != null && ctx.zerofox.rule_name != ""
   - convert:
+      tag: convert_zerofox_rule_group_id_to_rule_ruleset_bd392745
       field: zerofox.rule_group_id
       target_field: rule.ruleset
       type: string
       ignore_failure: true
       if: ctx?.zerofox?.rule_group_id != null && ctx.zerofox.rule_group_id != ""
   - rename:
+      tag: rename_zerofox_alert_type_to_rule_category_3d0c6c73
       field: zerofox.alert_type
       target_field: rule.category
       ignore_missing: true
@@ -85,18 +106,21 @@ processors:
       if: ctx?.zerofox?.alert_type != null && ctx.zerofox.alert_type != ""
   ## User fields.
   - rename:
+      tag: rename_zerofox_assignee_to_user_name_aa758464
       field: zerofox.assignee
       target_field: user.name
       ignore_missing: true
       ignore_failure: true
       if: ctx?.zerofox?.assignee != null && ctx.zerofox.assignee != ""
   - append:
+      tag: append_user_roles_2f202683
       field: user.roles
       value: assignee
       allow_duplicates: false
       if: ctx?.zerofox?.assignee != null && ctx.zerofox.assignee != ""
   ## Network fields.
   - rename:
+      tag: rename_zerofox_network_to_network_name_c3da7ab3
       field: zerofox.network
       target_field: network.name
       ignore_missing: true
@@ -104,26 +128,31 @@ processors:
       if: ctx?.zerofox?.network != null && ctx.zerofox.network != ""
   ## Type conversions.
   - convert:
+      tag: convert_zerofox_entity_id_b522e489
       field: zerofox.entity.id
       type: string
       ignore_missing: true
       ignore_failure: true
   - convert:
+      tag: convert_zerofox_entity_entity_group_id_4434aecb
       field: zerofox.entity.entity_group.id
       type: string
       ignore_missing: true
       ignore_failure: true
   - convert:
+      tag: convert_zerofox_entity_term_id_c43ae55b
       field: zerofox.entity_term.id
       type: string
       ignore_missing: true
       ignore_failure: true
   - convert:
+      tag: convert_zerofox_perpetrator_id_1a788156
       field: zerofox.perpetrator.id
       type: string
       ignore_missing: true
       ignore_failure: true
   - date:
+      tag: date_zerofox_last_modified_to_zerofox_last_modified_292fcc3f
       field: zerofox.last_modified
       target_field: zerofox.last_modified
       formats:
@@ -131,6 +160,7 @@ processors:
       ignore_failure: true
       if: ctx?.zerofox?.last_modified != null && ctx.zerofox.last_modified != ""
   - date:
+      tag: date_zerofox_perpetrator_timestamp_to_zerofox_perpetrator_timestamp_1ff39d8a
       field: zerofox.perpetrator.timestamp
       target_field: zerofox.perpetrator.timestamp
       formats:
@@ -138,14 +168,17 @@ processors:
       ignore_failure: true
       if: ctx?.zerofox?.perpetrator?.timestamp != null && ctx.zerofox.perpetrator.timestamp != ""
   - foreach:
+      tag: foreach_zerofox_entity_labels_65c7506b
       field: zerofox.entity.labels
       processor:
         convert:
+          tag: convert_ingest_value_id_9eb27549
           field: _ingest._value.id
           type: string
       if: ctx?.zerofox?.entity?.labels != null && ctx.zerofox.entity.labels.size() > 0
   ## Cleanup.
   - remove:
+      tag: remove_cleanup_7ef204cc
       field:
         - _temp
         - zerofox.id
@@ -162,28 +195,34 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - script:
+      tag: script_remove_empty_values_from_zerofox_e69e1319
       description: Remove all empty values from zerofox.perpetrator.
       lang: painless
       if: ctx?.zerofox?.perpetrator != null
       source: ctx.zerofox.perpetrator?.entrySet().removeIf(entry -> entry.getValue() == null || entry.getValue().equals("") || (entry.getValue() instanceof List && entry.getValue().length == 0) || (entry.getValue() instanceof Map && entry.getValue().size() == 0));
   - script:
+      tag: script_remove_empty_values_from_zerofox_066195f3
       description: Remove all empty values from zerofox.metadata.
       lang: painless
       if: ctx?.zerofox?.metadata != null
       source: ctx?.zerofox?.metadata?.entrySet().removeIf(entry -> entry.getValue() == null || entry.getValue().equals("") || (entry.getValue() instanceof List && entry.getValue().length == 0) || (entry.getValue() instanceof Map && entry.getValue().size() == 0));
   - script:
+      tag: script_remove_empty_values_from_zerofox_d2e7e326
       description: Remove all empty values from zerofox.
       lang: painless
       if: ctx?.zerofox != null
       source: ctx?.zerofox?.entrySet().removeIf(entry -> entry.getValue() == null || entry.getValue().equals("") || (entry.getValue() instanceof List && entry.getValue().length == 0) || (entry.getValue() instanceof Map && entry.getValue().size() == 0));
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message_206bb8ac
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'

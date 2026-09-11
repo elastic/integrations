@@ -1,40 +1,56 @@
 {
-    "id": "influxdb_otel-cache-write-errors",
-    "type": "alerting_rule_template",
-    "managed": true,
-    "attributes": {
-        "name": "[InfluxDB OTel] Cache write errors",
-        "ruleTypeId": ".es-query",
-        "tags": [
-            "observability",
-            "influxdb",
-            "storage"
-        ],
-        "schedule": {
-            "interval": "5m"
+  "id": "influxdb_otel-cache-write-errors",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when any cache write errors occur (`storage_cache_writes_err` increases). Indicates memory/cache subsystem issues.",
+    "name": "[InfluxDB OTel] Cache write errors",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "influxdb",
+      "storage"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "lookBackWindow": 8,
+      "statusChangeThreshold": 4
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "influxdb_otel-http-storage"
         },
-        "alertDelay": {
-            "active": 2
-        },
-        "flapping": {
-            "lookBackWindow": 8,
-            "statusChangeThreshold": 4
-        },
-        "params": {
-            "searchType": "esqlQuery",
-            "esqlQuery": {
-                "esql": "FROM metrics-influxdb.otel-*\n// Cache write errors counter (cumulative)\n| WHERE COALESCE(metrics.storage_cache_writes_err, storage_cache_writes_err) IS NOT NULL\n// Detect increase in errors over the window\n| STATS min_err = MIN(COALESCE(metrics.storage_cache_writes_err, storage_cache_writes_err)),\n    max_err = MAX(COALESCE(metrics.storage_cache_writes_err, storage_cache_writes_err))\n  BY host.name\n| EVAL error_increase = max_err - min_err\n// Alert when any new cache write errors occurred\n| WHERE error_increase > 0"
-            },
-            "size": 0,
-            "threshold": [0],
-            "thresholdComparator": ">",
-            "timeField": "@timestamp",
-            "timeWindowSize": 10,
-            "timeWindowUnit": "m",
-            "groupBy": "row",
-            "termField": "host.name",
-            "termSize": 20,
-            "excludeHitsFromPreviousRun": true
+        {
+          "id": "influxdb_otel-overview"
         }
+      ],
+      "investigation_guide": {
+        "blob": "## InfluxDB cache write errors\n\n### What fired\n`storage_cache_writes_err` increased during the window.\n\n### Why it matters\nCache write errors mean InfluxDB failed to buffer incoming writes in memory. They precede shard write errors and user-visible failures.\n\n### Triage\n1. Check host memory utilisation.\n2. Inspect InfluxDB logs for specific error messages.\n\n### Remediation\n- Scale memory.\n- Reduce write volume or shard more aggressively.\n\n### Tuning\n- Fires on any increase.\n"
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-influxdb.otel-*\n// Cache write errors counter (cumulative)\n| WHERE COALESCE(metrics.storage_cache_writes_err, storage_cache_writes_err) IS NOT NULL\n// Detect increase in errors over the window\n| STATS min_err = MIN(COALESCE(metrics.storage_cache_writes_err, storage_cache_writes_err)),\n    max_err = MAX(COALESCE(metrics.storage_cache_writes_err, storage_cache_writes_err))\n  BY host.name\n| EVAL error_increase = max_err - min_err\n// Alert when any new cache write errors occurred\n| WHERE error_increase > 0"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 10,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "host.name",
+      "termSize": 20,
+      "excludeHitsFromPreviousRun": true
     }
+  }
 }

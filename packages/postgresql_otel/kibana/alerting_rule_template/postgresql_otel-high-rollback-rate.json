@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when rollbacks / total > 1% with at least 10 commits. Application errors or contention.",
     "name": "[PostgreSQL OTel] High rollback rate",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -19,6 +20,19 @@
       "enabled": true,
       "lookBackWindow": 6,
       "statusChangeThreshold": 3
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "postgresql_otel-workload"
+        },
+        {
+          "id": "postgresql_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## PostgreSQL high rollback rate\n\n### What fired\nRollback rate exceeded 1% over the window (min 10 commits).\n\n### Why it matters\nRollbacks above baseline indicate application errors, deadlocks, or contention. Healthy systems run at near-zero rollback rate.\n\n### Triage\n1. Correlate with deadlocks and lock waits.\n2. Inspect application logs.\n\n### Remediation\n- Fix application logic.\n\n### Tuning\n- 1% threshold; tighten for critical workloads.\n"
+      }
     },
     "params": {
       "searchType": "esqlQuery",

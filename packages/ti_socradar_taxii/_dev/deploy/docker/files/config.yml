@@ -1,0 +1,140 @@
+rules:
+  # Mock SOCRadar TAXII 2.1 collection objects endpoint
+  # Path matches /radar_alpha/collections/<coll_id>/objects/ (query string stripped)
+  # Returns 8 STIX 2.1 indicators covering all supported indicator types.
+  - path: /radar_alpha/collections/aaaaaaaa-1111-2222-3333-444444444444/objects/
+    methods: ["GET"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/taxii+json;version=2.1"
+          X-Taxii-Date-Added-First:
+            - "2026-02-17T12:00:00.000Z"
+          X-Taxii-Date-Added-Last:
+            - "2026-02-17T12:00:00.000Z"
+        body: |-
+          {
+            "objects": [
+              {
+                "type": "indicator",
+                "spec_version": "2.1",
+                "id": "indicator--11111111-1111-1111-1111-111111111101",
+                "created": "2026-02-17T12:00:00.000Z",
+                "modified": "2026-02-17T12:00:00.000Z",
+                "valid_from": "2026-02-17T12:00:00.000Z",
+                "valid_until": "2026-08-17T12:00:00.000Z",
+                "pattern": "[ipv4-addr:value = '203.0.113.50']",
+                "pattern_type": "stix",
+                "confidence": 75,
+                "labels": ["malicious-activity"],
+                "name": "Malicious IPv4",
+                "description": "Test IP indicator"
+              },
+              {
+                "type": "indicator",
+                "spec_version": "2.1",
+                "id": "indicator--11111111-1111-1111-1111-111111111102",
+                "created": "2026-02-17T12:00:00.000Z",
+                "modified": "2026-02-17T12:00:00.000Z",
+                "valid_from": "2026-02-17T12:00:00.000Z",
+                "pattern": "[domain-name:value = 'malicious-example.com']",
+                "pattern_type": "stix",
+                "confidence": 50,
+                "labels": ["malicious-activity"],
+                "name": "Malicious Domain"
+              },
+              {
+                "type": "indicator",
+                "spec_version": "2.1",
+                "id": "indicator--11111111-1111-1111-1111-111111111103",
+                "created": "2026-02-17T12:00:00.000Z",
+                "modified": "2026-02-17T12:00:00.000Z",
+                "valid_from": "2026-02-17T12:00:00.000Z",
+                "pattern": "[url:value = 'https://malicious-example.com/payload']",
+                "pattern_type": "stix",
+                "confidence": 80,
+                "labels": ["malicious-activity"],
+                "name": "Malicious URL"
+              },
+              {
+                "type": "indicator",
+                "spec_version": "2.1",
+                "id": "indicator--11111111-1111-1111-1111-111111111104",
+                "created": "2026-02-17T12:00:00.000Z",
+                "modified": "2026-02-17T12:00:00.000Z",
+                "valid_from": "2026-02-17T12:00:00.000Z",
+                "pattern": "[email-addr:value = 'phisher@evil-example.com']",
+                "pattern_type": "stix",
+                "confidence": 30,
+                "labels": ["malicious-activity"],
+                "name": "Phishing Email"
+              },
+              {
+                "type": "indicator",
+                "spec_version": "2.1",
+                "id": "indicator--11111111-1111-1111-1111-111111111105",
+                "created": "2026-02-17T12:00:00.000Z",
+                "modified": "2026-02-17T12:00:00.000Z",
+                "valid_from": "2026-02-17T12:00:00.000Z",
+                "pattern": "[file:hashes.'SHA-256' = 'd7a8fbb307d7809469ca5ce888b23a65f06e4563cc956e73e82f5c72c865aab6']",
+                "pattern_type": "stix",
+                "confidence": 90,
+                "labels": ["malicious-activity"],
+                "name": "Malicious File"
+              },
+              {
+                "type": "indicator",
+                "spec_version": "2.1",
+                "id": "indicator--11111111-1111-1111-1111-111111111106",
+                "created": "2026-02-17T12:00:00.000Z",
+                "modified": "2026-02-17T12:00:00.000Z",
+                "valid_from": "2026-02-17T12:00:00.000Z",
+                "pattern": "[autonomous-system:number = 4294967294]",
+                "pattern_type": "stix",
+                "confidence": 60,
+                "labels": ["malicious-activity"],
+                "name": "Malicious ASN"
+              },
+              {
+                "type": "indicator",
+                "spec_version": "2.1",
+                "id": "indicator--11111111-1111-1111-1111-111111111107",
+                "created": "2026-02-17T12:00:00.000Z",
+                "modified": "2026-02-17T12:00:00.000Z",
+                "valid_from": "2026-02-17T12:00:00.000Z",
+                "pattern": "[windows-registry-key:key = 'HKEY_LOCAL_MACHINE\\\\SOFTWARE\\\\Malware']",
+                "pattern_type": "stix",
+                "confidence": 40,
+                "labels": ["malicious-activity"],
+                "name": "Malicious Registry Key"
+              },
+              {
+                "type": "indicator",
+                "spec_version": "2.1",
+                "id": "indicator--11111111-1111-1111-1111-111111111108",
+                "created": "2026-02-17T12:00:00.000Z",
+                "modified": "2026-02-17T12:00:00.000Z",
+                "valid_from": "2026-02-17T12:00:00.000Z",
+                "pattern": "[x509-certificate:hashes.'SHA-256' = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa']",
+                "pattern_type": "stix",
+                "confidence": 70,
+                "labels": ["malicious-activity"],
+                "name": "Malicious X509 Certificate"
+              }
+            ],
+            "more": false
+          }
+  # Empty second collection (multi-collection rotation test, no error)
+  - path: /radar_alpha/collections/bbbbbbbb-2222-3333-4444-555555555555/objects/
+    methods: ["GET"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/taxii+json;version=2.1"
+        body: |-
+          {
+            "objects": [],
+            "more": false
+          }

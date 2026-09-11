@@ -1,0 +1,179 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies potential hijacking of the Microsoft Update Orchestrator Service to establish persistence with an integrity level of SYSTEM.",
+        "from": "now-9m",
+        "index": [
+            "endgame-*",
+            "logs-endpoint.events.process-*",
+            "logs-m365_defender.event-*",
+            "logs-sentinel_one_cloud_funnel.*",
+            "logs-system.security*",
+            "logs-windows.forwarded*",
+            "logs-windows.sysmon_operational-*",
+            "winlogbeat-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "host.id",
+                "user.id",
+                "process.entity_id",
+                "process.pid",
+                "process.executable",
+                "process.command_line",
+                "process.args",
+                "process.hash.sha256",
+                "process.pe.original_file_name",
+                "process.code_signature.subject_name",
+                "process.code_signature.trusted",
+                "process.Ext.token.integrity_level_name",
+                "process.parent.executable",
+                "process.parent.command_line"
+            ]
+        },
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Persistence via Update Orchestrator Service Hijack",
+        "note": "## Triage and analysis\n\n### Investigating Persistence via Update Orchestrator Service Hijack\n\n#### Possible investigation steps\n\n- What did UsoSvc actually launch, and does the child identity fit Windows or Office servicing?\n  - Focus: `process.executable`, `process.pe.original_file_name`, `process.code_signature.subject_name`, and `process.code_signature.trusted`.\n  - Hint: use `process.parent.command_line` to confirm svchost is hosting UsoSvc, not just sharing the name.\n  - Implication: escalate when UsoSvc launches a renamed, user-writable, unsigned, rare, or non-servicing child; lower concern only when path, signer, and parent service context match a recognized Windows Update or Click-to-Run component. Identity alone does not clear it.\n\n- Does the command line show attacker-controlled work running with service-level privilege?\n  - Why: on unpatched hosts, CVE-2020-1313 ScheduleWork can queue signed System32 or Common Files binaries with attacker-controlled arguments.\n  - Focus: `process.command_line`, `process.Ext.token.integrity_level_name`, and `user.id`.\n  - Implication: escalate when \"cmd.exe\", \"rundll32.exe\", \"regsvr32.exe\", a scripting host, or another signed binary runs shell, download, staging, redirection, or persistence arguments under SYSTEM or high integrity; lower concern when arguments fit the exact servicing binary workflow.\n\n- If registry telemetry is available, was matching work queued under the Update Orchestrator UScheduler path?\n  - Focus: same `host.id` registry events for `registry.path` under \"HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\WindowsUpdate\\Orchestrator\\UScheduler\", with `registry.value`, `registry.data.strings`, and writer `process.executable`.\n  - Range: search several days before the alert; queued work can run overnight or after a multi-day service window.\n  - Hint: interpret queued strings with `registry.data.type`, then compare them to `process.command_line` and `process.executable`; missing registry telemetry is unresolved, not benign.\n  - Implication: escalate when the queue names the same unusual child or arguments, especially from a non-servicing writer; absent queue history only limits this corroborator.\n\n- Did the child stage artifacts or spawn follow-on processes that extend the abuse?\n  - Focus: child starts from `process.entity_id`; if file telemetry exists, same-process `file.path`, `file.Ext.original.path`, and `file.origin_url`.\n    - !{investigate{\"description\":\"\",\"label\":\"Child process starts from the launched child\",\"providers\":[[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"process\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.parent.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"}],[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"process\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.parent.pid\",\"queryType\":\"phrase\",\"value\":\"{{process.pid}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n    - !{investigate{\"description\":\"\",\"label\":\"File events for the launched child\",\"providers\":[[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"file\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"}],[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"file\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.pid\",\"queryType\":\"phrase\",\"value\":\"{{process.pid}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Hint: scope file pivots with `host.id` plus `process.entity_id`; use `host.id` plus `process.pid` and a tight alert window only when entity ID is absent. Missing file telemetry limits artifact review, but child-process and command evidence can justify escalation.\n  - Implication: escalate when the child writes executable or scriptable content to user-writable or deceptive paths, renames staged content, or launches written artifacts; lower concern when activity stays inside the recognized servicing path with no follow-on execution.\n\n- If network telemetry is available, does the child contact destinations consistent with servicing?\n  - Focus: process-scoped DNS `dns.question.name` and `dns.resolved_ip`, then connections by `destination.ip`, `destination.port`, and `destination.as.organization.name`. !{investigate{\"description\":\"\",\"label\":\"Network events for the launched child\",\"providers\":[[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"network\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"}],[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"network\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.pid\",\"queryType\":\"phrase\",\"value\":\"{{process.pid}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Hint: use \"lookup_result\" DNS events for populated `dns.resolved_ip`; scope with `host.id` plus `process.entity_id`, or `host.id` plus `process.pid` and a tight alert window. Infrastructure ownership is context, not a verdict; missing network telemetry is unresolved, not benign.\n  - Implication: escalate when the child reaches rare or public infrastructure unrelated to Microsoft servicing, the signer, or recovered queue; lower concern when destinations fit the signed binary's normal update or repair endpoints.\n\n- If local evidence remains suspicious or unresolved, do related alerts change scope?\n  - Focus: compare recent alerts for the same `process.executable`. !{investigate{\"description\":\"\",\"label\":\"Alerts involving the same child executable\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.executable\",\"queryType\":\"phrase\",\"value\":\"{{process.executable}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n  - Hint: review same `host.id` alerts only when child identity, command, queue, artifact, or destination evidence needs scope. !{investigate{\"description\":\"\",\"label\":\"Alerts associated with the host\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n  - Implication: broaden scope when the same child path or host shows repeated privilege-escalation, persistence, staging, or follow-on alerts; keep urgency local when isolated and no corroborating alert history appears.\n\n- Escalate on attacker-controlled UsoSvc child identity or command intent, using queue, artifact, destination, or related-alert evidence as corroboration; close only when alert-local and recovered evidence tie to one exact servicing or authorized validation workflow without contradictions; preserve artifacts and escalate when evidence is mixed, incomplete, or unavailable.\n\n### False positive analysis\n\n- Windows Update, repair, or Office Click-to-Run servicing can trigger this rule when UsoSvc queues a servicing component outside the exclusions. Close from telemetry first: child path, signer, command line, parent service context, UScheduler queue content when available, artifacts, destinations, and `host.id` cohort must align with one recognized servicing workflow. Patch-window or change records may corroborate; prior alerts only prove exception stability after current evidence fits.\n- Authorized exploit-validation or adversary-emulation tests can exercise Update Orchestrator abuse. Confirm stable payload identity such as `process.hash.sha256`, `process.command_line`, expected `host.id` or `user.id` test scope, matching queue content when available, and no spread to unrelated production hosts. Use engagement records or prior test alerts only as corroboration, and do not exception on `process.parent.executable`, \"UsoSvc\", or `process.name` alone.\n\n### Response and remediation\n\n- If confirmed benign:\n  - Record the exact evidence that proved the servicing or test workflow: child identity, command line, parent service context, queue content when available, same-process artifacts or destinations, and recurrence or records. Then reverse temporary containment and build any exception from that minimum pattern plus `host.id`, not from UsoSvc or a generic signed-binary condition.\n- If suspicious but unconfirmed:\n  - Preserve a case export with the alert process instance, process tree, command line, UScheduler queue values when available, writer-process details, written artifacts, destination indicators, and related-alert context before cleanup.\n  - Apply reversible containment tied to the finding, such as blocking the child hash or destination, temporarily disabling the queued work after preservation, or increasing host monitoring. Escalate to host isolation only when host criticality allows it and artifacts, destinations, or related alerts show active follow-on behavior.\n- If confirmed malicious:\n  - Preserve the case export first: child `process.entity_id` or `process.pid`, command line, queue values, writer lineage, payload hashes, artifact paths, and destination indicators. Then isolate the host when the identity, command, queue, artifact, or destination evidence confirms unauthorized UsoSvc execution.\n  - Remove the malicious queued work or restore the Update Orchestrator registry state to known-good, eradicate only payloads and persistence artifacts identified during triage, validate that UsoSvc returns to recognized servicing children, and review other hosts for the same child path or queue pattern before deleting preserved evidence.\n- Post-incident hardening:\n  - Apply the June 2020 or later Windows security updates where still applicable because the fix blocks untrusted caller queuing, retire unsupported builds, restrict write paths that can feed Update Orchestrator abuse, and retain registry/process telemetry for UScheduler queue changes.\n",
+        "query": "process where host.os.type == \"windows\" and event.type == \"start\" and\n  process.parent.executable : \"C:\\\\Windows\\\\System32\\\\svchost.exe\" and\n  process.parent.args : \"UsoSvc\" and\n  not process.executable :\n          (\"?:\\\\ProgramData\\\\Microsoft\\\\Windows\\\\UUS\\\\Packages\\\\*\\\\amd64\\\\MoUsoCoreWorker.exe\",\n          \"?:\\\\Windows\\\\System32\\\\UsoClient.exe\",\n          \"?:\\\\Windows\\\\System32\\\\MusNotification.exe\",\n          \"?:\\\\Windows\\\\System32\\\\MusNotificationUx.exe\",\n          \"?:\\\\Windows\\\\System32\\\\MusNotifyIcon.exe\",\n          \"?:\\\\Windows\\\\System32\\\\WerFault.exe\",\n          \"?:\\\\Windows\\\\System32\\\\WerMgr.exe\",\n          \"?:\\\\Windows\\\\UUS\\\\amd64\\\\MoUsoCoreWorker.exe\",\n          \"?:\\\\Windows\\\\System32\\\\MoUsoCoreWorker.exe\",\n          \"?:\\\\Windows\\\\UUS\\\\amd64\\\\UsoCoreWorker.exe\",\n          \"?:\\\\Windows\\\\System32\\\\UsoCoreWorker.exe\",\n          \"?:\\\\Program Files\\\\Common Files\\\\microsoft shared\\\\ClickToRun\\\\OfficeC2RClient.exe\") and\n  not process.name : (\"MoUsoCoreWorker.exe\", \"OfficeC2RClient.exe\")\n",
+        "references": [
+            "https://github.com/irsl/CVE-2020-1313"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "m365_defender",
+                "version": "^5.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.9.0"
+            },
+            {
+                "package": "system",
+                "version": "^2.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.executable",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "265db8f5-fc73-4d0d-b434-6483b56372e2",
+        "setup": "## Setup\n\nThis rule is designed for data generated by [Elastic Defend](https://www.elastic.co/security/endpoint-security), which provides native endpoint detection and response, along with event enrichments designed to work with our detection rules.\n\nSetup instructions: https://ela.st/install-elastic-defend\n\n### Additional data sources\n\nThis rule also supports the following third-party data sources. For setup instructions, refer to the links below:\n\n- [Microsoft Defender XDR](https://ela.st/m365-defender)\n- [SentinelOne Cloud Funnel](https://ela.st/sentinel-one-cloud-funnel)\n- [Sysmon Event ID 1 - Process Creation](https://ela.st/sysmon-event-1-setup)\n- [Windows Process Creation Logs](https://ela.st/audit-process-creation)\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Persistence",
+            "Use Case: Vulnerability",
+            "Resources: Investigation Guide",
+            "Data Source: Elastic Endgame",
+            "Data Source: Elastic Defend",
+            "Data Source: Microsoft Defender XDR",
+            "Data Source: Sysmon",
+            "Data Source: Windows Security Event Logs",
+            "Data Source: SentinelOne"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1543",
+                        "name": "Create or Modify System Process",
+                        "reference": "https://attack.mitre.org/techniques/T1543/",
+                        "subtechnique": [
+                            {
+                                "id": "T1543.003",
+                                "name": "Windows Service",
+                                "reference": "https://attack.mitre.org/techniques/T1543/003/"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "T1574",
+                        "name": "Hijack Execution Flow",
+                        "reference": "https://attack.mitre.org/techniques/T1574/",
+                        "subtechnique": [
+                            {
+                                "id": "T1574.011",
+                                "name": "Services Registry Permissions Weakness",
+                                "reference": "https://attack.mitre.org/techniques/T1574/011/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0004",
+                    "name": "Privilege Escalation",
+                    "reference": "https://attack.mitre.org/tactics/TA0004/"
+                },
+                "technique": [
+                    {
+                        "id": "T1068",
+                        "name": "Exploitation for Privilege Escalation",
+                        "reference": "https://attack.mitre.org/techniques/T1068/"
+                    },
+                    {
+                        "id": "T1574",
+                        "name": "Hijack Execution Flow",
+                        "reference": "https://attack.mitre.org/techniques/T1574/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 319
+    },
+    "id": "265db8f5-fc73-4d0d-b434-6483b56372e2_319",
+    "type": "security-rule"
+}

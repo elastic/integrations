@@ -1,0 +1,170 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies attempts to coerce local NTLM authentication over HTTP through WebDAV named-pipe paths such as Print Spooler or SRVSVC. Adversaries can combine this primitive with relay tooling to elevate privileges.",
+        "from": "now-9m",
+        "index": [
+            "endgame-*",
+            "logs-crowdstrike.fdr*",
+            "logs-endpoint.events.process-*",
+            "logs-m365_defender.event-*",
+            "logs-sentinel_one_cloud_funnel.*",
+            "logs-system.security*",
+            "logs-windows.forwarded*",
+            "logs-windows.sysmon_operational-*",
+            "winlogbeat-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "host.id",
+                "host.name",
+                "user.id",
+                "user.name",
+                "process.entity_id",
+                "process.pid",
+                "process.executable",
+                "process.command_line",
+                "process.pe.original_file_name",
+                "process.parent.executable",
+                "process.parent.command_line",
+                "process.code_signature.subject_name",
+                "process.code_signature.trusted",
+                "process.Ext.authentication_id"
+            ]
+        },
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Potential Local NTLM Relay via HTTP",
+        "note": "## Triage and analysis\n\n### Investigating Potential Local NTLM Relay via HTTP\n\n#### Possible investigation steps\n\n- Does the alert-local command line confirm WebDAV-to-named-pipe relay behavior?\n  - Focus: `process.command_line` and `process.executable`; confirm rundll32.exe loads davclnt.dll,DavSetCookie and targets HTTP pipe paths: /print/pipe/, /pipe/spoolss, or /pipe/srvsvc.\n  - Implication: escalate when one command combines DavSetCookie with HTTP named-pipe paths, matching NTLMRelay2Self and printerbug-style coercion; close only when exact `process.command_line`, `user.id`, and `host.id` tie to authorized relay testing or explicit WebDAV/print diagnostics intentionally exercising this path.\n\n- Is the binary identity and launch chain consistent with the relay context?\n  - Focus: `process.executable`, `process.pe.original_file_name`, `process.code_signature.subject_name`, `process.parent.executable`, and `process.parent.command_line`.\n  - Implication: escalate when rundll32.exe is renamed, outside a Windows system path, launched by a script, document, remote-management, or user-writable parent, or signer-mismatched; lower suspicion only when identity and parent chain match the authorized test or diagnostic workflow. Identity alone does not clear relay behavior.\n\n- Did the process contact the HTTP listener implied by the relay path?\n  - Focus: if endpoint network telemetry exists, recover process network events with `host.id` plus `process.entity_id`; fallback to `host.id` plus `process.pid` in a tight window. Read DNS via `dns.question.name`; connections via `destination.ip` and `destination.port`. !{investigate{\"description\":\"\",\"label\":\"Network events for the relay process\",\"providers\":[[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"network\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Hint: compare destinations to the HTTP host in `process.command_line`; loopback, same-host aliases, private listeners, or unexpected external HTTP infrastructure are decisive.\n  - Implication: escalate when traffic reaches the listener named by the relay command or an unexplained HTTP endpoint. Missing endpoint network or DNS telemetry is unresolved, not benign.\n\n- Did authentication events explain the local rundll32 session or relay follow-on?\n  - Why: the process alert proves relay intent; Windows Security events can explain the operator session, while relay proof may surface as inbound NTLM on this host, target-host authentication, or DC-side validation.\n  - Focus: for local session context, bridge `process.Ext.authentication_id` to same-host `winlog.event_data.TargetLogonId`; on 4624, read `winlog.event_data.AuthenticationPackageName` and `source.ip`. !{investigate{\"description\":\"\",\"label\":\"Windows Security events for the local process session\",\"providers\":[[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"winlog.event_data.TargetLogonId\",\"queryType\":\"phrase\",\"value\":\"{{process.Ext.authentication_id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.code\",\"queryType\":\"phrase\",\"value\":\"4624\",\"valueType\":\"string\"}],[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"winlog.event_data.SubjectLogonId\",\"queryType\":\"phrase\",\"value\":\"{{process.Ext.authentication_id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.code\",\"queryType\":\"phrase\",\"value\":\"4648\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-24h\",\"relativeTo\":\"now\"}}\n  - Hint: for relay proof, search same-host inbound NTLM without `user.id`, target-host 4624/4625, and DC-side 4776 using the listener, reconstructed targets, or source addresses from command/network evidence. Search 4648 on `winlog.event_data.SubjectLogonId` only for explicit credentials from the local session.\n  - Implication: escalate when the local session origin is unexplained, same-host inbound NTLM appears around the alert, or target/DC authentication shows coerced machine or service-account use tied to the listener or targets. Missing authentication telemetry is unresolved, not benign.\n\n- Is there follow-on execution, tooling, or repeated coercion around the process?\n  - Focus: child processes where `process.parent.entity_id` matches `process.entity_id`, reading `process.Ext.token.integrity_level_name`; if endpoint file telemetry exists, recover files with `host.id` plus `process.entity_id`, or `host.id` plus `process.pid` in a tight window, then read `file.path`. !{investigate{\"description\":\"\",\"label\":\"Child process events for the relay process\",\"providers\":[[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.parent.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"process\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Hint: look for command lines or artifacts naming PetitPotam, printerbug, NTLMRelay2Self, ntlmrelayx, shadow credentials, RBCD, or WebClient/Print Spooler preparation.\n  - Implication: escalate when the window shows dropped tools, secondary scripts, repeated rundll32.exe relay attempts, privileged child processes, or WebClient/Print Spooler preparation. Missing endpoint file telemetry limits corroboration, not the alert-local finding.\n\n- If local evidence is suspicious or unresolved, do related alerts change scope?\n  - Focus: related alerts for `user.id` covering credential access, relay testing, privilege escalation, or lateral movement. !{investigate{\"description\":\"\",\"label\":\"Alerts associated with the user\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"user.id\",\"queryType\":\"phrase\",\"value\":\"{{user.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n  - Hint: compare related alerts for `host.id` for spooler abuse, WebClient activity, remote execution, NTLM relay, or coercion patterns. !{investigate{\"description\":\"\",\"label\":\"Alerts associated with the host\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n  - Implication: broaden when either pivot shows repeated relay/coercion or credential-access activity outside the authorized test or diagnostic; keep local when both stay confined to that activity.\n\n- Escalate when relay-path arguments plus binary lineage, listener contact, NTLM/auth evidence, follow-on tooling, or related alerts indicate unauthorized relay; close only when alert-local evidence and supported recovery fit one authorized workflow; preserve and escalate if evidence is mixed or incomplete.\n\n### False positive analysis\n\n- Authorized red-team, purple-team, relay-lab validation, or explicit WebDAV/print diagnostics can trigger this rule. Confirm that `process.command_line`, `process.parent.executable`, `user.id`, `host.id`, destination evidence if available, and authentication evidence all align with that activity. Routine WebDAV or print troubleshooting is insufficient unless it explains the DavSetCookie-to-HTTP-pipe pattern.\n- Without workflow records, require a telemetry-only match across prior alerts from this rule: same `process.parent.executable`, exact `process.command_line` pattern, `user.id`, `host.id`, and supported destination or authentication pattern. Build exceptions only from that full workflow; avoid exceptions on rundll32.exe, davclnt.dll, or the pipe path alone.\n\n### Response and remediation\n\n- If confirmed benign, release temporary containment and document the workflow anchors: `process.executable`, `process.parent.executable`, exact `process.command_line`, `user.id`, `host.id`, and the recovered destination or authentication evidence. Create an exception only when the same full workflow recurs across prior alerts from this rule.\n- If suspicious but unconfirmed, preserve the alert details, `process.entity_id` or `process.pid`, `process.command_line`, `process.parent.command_line`, process tree, recovered network or DNS records, Windows Security records, and file artifacts before containment. Apply reversible containment first, such as temporary HTTP/WebDAV restrictions or heightened monitoring on the host; isolate only if repeated relay attempts, corroborating NTLM activity, follow-on execution, or exposure on a domain controller, print server, or jump host raises the risk and the asset can tolerate isolation.\n- If confirmed malicious, preserve the command line, process tree, listener details, authentication records, and dropped artifacts first. Then isolate the host through endpoint response when the evidence establishes unauthorized relay, and kill or suspend the responsible process if it is still active. Block confirmed malicious listeners, path fragments, hashes, or follow-on tools before cleanup.\n- If investigation shows successful relay or privileged machine/service-account use, review and rotate affected credentials or secrets according to privilege tier, and coordinate disruptive identity or infrastructure changes before acting on domain controllers, print servers, or jump hosts.\n- Before eradication, scope the same command fragment, listener, `user.id`, `host.id`, authentication indicators, and adjacent tooling across other hosts and sessions so evidence is not destroyed before spread is understood. Then remove the relay tooling and harden the exposed path, including unnecessary WebClient or Print Spooler exposure, NTLM relay mitigations, and service-specific controls identified during the investigation.\n- Post-incident hardening: retain process, endpoint network, endpoint file, and Windows Security telemetry needed for this correlation, and document adjacent PetitPotam, printerbug, NTLMRelay2Self, or alternate coercion evidence for future triage.\n",
+        "query": "process where host.os.type == \"windows\" and event.type == \"start\" and\n  process.name : \"rundll32.exe\" and\n\n  /* Rundll32 WbeDav Client  */\n  process.args : (\"?:\\\\Windows\\\\System32\\\\davclnt.dll,DavSetCookie\", \"?:\\\\Windows\\\\SysWOW64\\\\davclnt.dll,DavSetCookie\") and\n\n  /* Access to named pipe via http */\n  process.args : (\"http*/print/pipe/*\", \"http*/pipe/spoolss\", \"http*/pipe/srvsvc\")\n",
+        "references": [
+            "https://github.com/med0x2e/NTLMRelay2Self",
+            "https://github.com/topotam/PetitPotam",
+            "https://github.com/dirkjanm/krbrelayx/blob/master/printerbug.py"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "system",
+                "version": "^2.0.0"
+            },
+            {
+                "package": "m365_defender",
+                "version": "^5.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.9.0"
+            },
+            {
+                "package": "crowdstrike",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "4682fd2c-cfae-47ed-a543-9bed37657aa6",
+        "setup": "## Setup\n\nThis rule is designed for data generated by [Elastic Defend](https://www.elastic.co/security/endpoint-security), which provides native endpoint detection and response, along with event enrichments designed to work with our detection rules.\n\nSetup instructions: https://ela.st/install-elastic-defend\n\n### Additional data sources\n\nThis rule also supports the following third-party data sources. For setup instructions, refer to the links below:\n\n- [CrowdStrike](https://ela.st/crowdstrike-integration)\n- [Microsoft Defender XDR](https://ela.st/m365-defender)\n- [SentinelOne Cloud Funnel](https://ela.st/sentinel-one-cloud-funnel)\n- [Sysmon Event ID 1 - Process Creation](https://ela.st/sysmon-event-1-setup)\n- [Windows Process Creation Logs](https://ela.st/audit-process-creation)\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Tactic: Defense Evasion",
+            "Data Source: Elastic Endgame",
+            "Data Source: Elastic Defend",
+            "Data Source: Windows Security Event Logs",
+            "Data Source: Microsoft Defender XDR",
+            "Data Source: Sysmon",
+            "Data Source: SentinelOne",
+            "Data Source: Crowdstrike",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1187",
+                        "name": "Forced Authentication",
+                        "reference": "https://attack.mitre.org/techniques/T1187/"
+                    },
+                    {
+                        "id": "T1212",
+                        "name": "Exploitation for Credential Access",
+                        "reference": "https://attack.mitre.org/techniques/T1212/"
+                    },
+                    {
+                        "id": "T1557",
+                        "name": "Adversary-in-the-Middle",
+                        "reference": "https://attack.mitre.org/techniques/T1557/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1218",
+                        "name": "System Binary Proxy Execution",
+                        "reference": "https://attack.mitre.org/techniques/T1218/",
+                        "subtechnique": [
+                            {
+                                "id": "T1218.011",
+                                "name": "Rundll32",
+                                "reference": "https://attack.mitre.org/techniques/T1218/011/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 318
+    },
+    "id": "4682fd2c-cfae-47ed-a543-9bed37657aa6_318",
+    "type": "security-rule"
+}

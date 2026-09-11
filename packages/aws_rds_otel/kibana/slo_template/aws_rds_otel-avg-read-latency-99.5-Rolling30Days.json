@@ -1,0 +1,51 @@
+{
+  "attributes": {
+    "name": "[AWS RDS OTel] Average read latency 99.5% rolling 30 days",
+    "description": "Tracks per-I/O read storage latency from CloudWatch RDS metrics. At least 99.5% of 1-minute intervals per DB instance should show average read latency below 10 milliseconds, protecting read-heavy application workloads from storage bottlenecks.",
+    "indicator": {
+      "type": "sli.metric.timeslice",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset: \"aws.rds.otel\" AND Namespace: \"AWS/RDS\" AND MetricName: \"ReadLatency\" AND stat: \"Average\"",
+        "metric": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "avg",
+              "field": "metrics.amazonaws.com/AWS/RDS/ReadLatency"
+            }
+          ],
+          "equation": "A",
+          "comparator": "LT",
+          "threshold": 0.01
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "timeslices",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.995,
+      "timesliceTarget": 0.95,
+      "timesliceWindow": "1m"
+    },
+    "tags": [
+      "aws_rds",
+      "otel"
+    ],
+    "groupBy": [
+      "cloud.region",
+      "DBInstanceIdentifier"
+    ],
+    "artifacts": {
+      "dashboards": [
+        { "id": "aws_rds_otel-c92e1216-83f6-4de7-9d7f-1bcb42d5988a" }
+      ]
+    }
+  },
+  "id": "aws_rds_otel-avg-read-latency-99.5-Rolling30Days",
+  "type": "slo_template"
+}

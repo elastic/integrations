@@ -1,0 +1,56 @@
+{
+    "id": "supabase_otel-replication-lag",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "description": "Fires when physical replication lag exceeds a freshness target, meaning a read replica is serving materially stale data. Guards the -1 sentinel that these gauges report when no replica is attached, so projects without replication never breach.",
+        "name": "[Supabase OTel] Replication lag is high",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "supabase",
+            "replication",
+            "latency"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 2
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "artifacts": {
+            "dashboards": [
+                {
+                    "id": "supabase_otel-591c7a1f-6ac7-43cb-8ade-9c5684d47f5b"
+                },
+                {
+                    "id": "supabase_otel-7c6a2004-c517-4b50-b70a-2682b7a79228"
+                }
+            ],
+            "investigation_guide": {
+                "blob": "## Replication Lag High\n\nLag means the replica's view of the data is behind the primary. Anything reading from the replica sees stale rows, and a failover from this state would lose the un-replayed writes.\n\n### Triage Steps\n1. Read the `WAL Replay Paused` column. A paused replay is a deliberate state, not a performance problem, and needs to be resumed rather than tuned.\n2. Check whether the replica is still connected to the primary (`physical_replication_lag_is_connected_to_primary`). A disconnected replica does not catch up on its own and its lag will grow without bound.\n3. If replay is running and connected, look for resource exhaustion on the replica: disk IO saturation and CPU saturation both throttle WAL replay.\n4. Check whether the primary is simply generating WAL faster than the replica can apply it, using `pg_wal_size_mb` and the WAL archive pending count.\n5. Check `replication_slots_max_lag_bytes` — sustained lag also means the primary is retaining WAL, which is a disk-space risk on the primary and has its own rule.\n\n### Tuning\nBoth `pg_stat_replication_replay_lag` and the physical lag gauge use `-1` to mean \"not applicable\" rather than reporting nothing, so both are discarded when negative rather than being read as a measurement. The default threshold is 300 seconds; tighten to 60 where replica reads are expected to be near-real-time. Replication series only exist when a replica or slot is attached, so projects without replication return no rows."
+            }
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "TS metrics-supabase.metrics.otel-*\n// Replication series only exist when a replica or slot is attached; the physical lag gauge\n// matches the \"Physical Replication Lag\" dashboard panel aggregation.\n// Both compared gauges use LAST_OVER_TIME so they describe the same instant; peak is context.\n| STATS\n    `Physical Lag (s)` = MAX(LAST_OVER_TIME(physical_replication_lag_physical_replication_lag_seconds)),\n    `Replay Lag (s)` = MAX(LAST_OVER_TIME(pg_stat_replication_replay_lag)),\n    `Peak Replay Lag (s)` = MAX(MAX_OVER_TIME(pg_stat_replication_replay_lag)),\n    `WAL Replay Paused` = MAX(LAST_OVER_TIME(physical_replication_lag_is_wal_replay_paused)),\n    `Connected To Primary` = MIN(LAST_OVER_TIME(physical_replication_lag_is_connected_to_primary))\n  BY resource.attributes.supabase_project_ref\n// Both gauges use -1 to mean \"not applicable\" (no replica attached), so negatives and absent\n// series collapse to 0 rather than being read as measurements.\n| EVAL\n    `Physical Lag (s)` = CASE(`Physical Lag (s)` > 0, `Physical Lag (s)`, 0.0),\n    `Replay Lag (s)` = CASE(`Replay Lag (s)` > 0, `Replay Lag (s)`, 0.0),\n    `Peak Replay Lag (s)` = CASE(`Peak Replay Lag (s)` > 0, `Peak Replay Lag (s)`, 0.0)\n| EVAL `Lag (s)` = CASE(`Physical Lag (s)` >= `Replay Lag (s)`, `Physical Lag (s)`, `Replay Lag (s)`)\n// 300s of lag means a read replica is serving materially stale data. Tighten to 60 where\n// replica reads are expected to be near-real-time.\n| WHERE `Lag (s)` > 300\n| SORT `Lag (s)` DESC"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 10,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "resource.attributes.supabase_project_ref",
+            "termSize": 50
+        }
+    }
+}

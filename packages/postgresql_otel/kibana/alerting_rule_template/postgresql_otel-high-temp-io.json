@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when `postgresql.temp.io > 100 MB` in the window. Queries spilling to disk due to insufficient work_mem.",
     "name": "[PostgreSQL OTel] High temp I/O volume",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -19,6 +20,19 @@
       "enabled": true,
       "lookBackWindow": 6,
       "statusChangeThreshold": 3
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "postgresql_otel-query-performance"
+        },
+        {
+          "id": "postgresql_otel-io-health"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## PostgreSQL high temp I/O volume\n\n### What fired\nTemp bytes written exceeded 100 MB during the window.\n\n### Why it matters\nTemp files mean sort or hash operations exceeded `work_mem` and spilled to disk. Slower by orders of magnitude.\n\n### Triage\n1. Identify the slow queries spilling.\n\n### Remediation\n- Raise `work_mem` for sessions/roles.\n- Rewrite queries to reduce memory need.\n\n### Tuning\n- 100 MB threshold.\n"
+      }
     },
     "params": {
       "searchType": "esqlQuery",

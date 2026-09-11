@@ -2,28 +2,42 @@
 description: Pipeline for parsing DNS data logs.
 processors:
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - set:
+      tag: set_event_category_dbab8a4e
       field: event.category
       value: [network]
   - set:
+      tag: set_event_type_42379782
       field: event.type
       value: [protocol]
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message_facc4822
+      ignore_missing: true
+      if: ctx.event?.original != null
+      description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
+      tag: json_event_original_to_json_5e54dc16
       field: event.original
       target_field: json
   - drop:
+      tag: drop_88d6232c
       if: ctx.json?.results instanceof List && ctx.json.results.length == 0
   - fingerprint:
+      tag: fingerprint_to_id_8b3026d5
       fields:
         - json.created_at
         - json.updated_at
@@ -31,18 +45,22 @@ processors:
       target_field: _id
       ignore_missing: true
   - rename:
+      tag: rename_json_absolute_name_spec_to_infoblox_bloxone_ddi_dns_data_absolute_name_spec_c7c3b188
       field: json.absolute_name_spec
       target_field: infoblox_bloxone_ddi.dns_data.absolute_name.spec
       ignore_missing: true
   - rename:
+      tag: rename_json_absolute_zone_name_to_infoblox_bloxone_ddi_dns_data_absolute_zone_name_6c1f5e94
       field: json.absolute_zone_name
       target_field: infoblox_bloxone_ddi.dns_data.absolute_zone.name
       ignore_missing: true
   - rename:
+      tag: rename_json_comment_to_infoblox_bloxone_ddi_dns_data_comment_d572735f
       field: json.comment
       target_field: infoblox_bloxone_ddi.dns_data.comment
       ignore_missing: true
   - date:
+      tag: date_json_created_at_to_infoblox_bloxone_ddi_dns_data_created_at_9877ee60
       field: json.created_at
       target_field: infoblox_bloxone_ddi.dns_data.created_at
       if: ctx.json?.created_at != null && ctx.json.created_at != ''
@@ -50,17 +68,21 @@ processors:
         - ISO8601
       on_failure:
         - append:
+            tag: append_error_message_0b05c951
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_event_created_4acb9efd
       field: event.created
       copy_from: infoblox_bloxone_ddi.dns_data.created_at
       ignore_failure: true
   - rename:
+      tag: rename_json_delegation_to_infoblox_bloxone_ddi_dns_data_delegation_11353af5
       field: json.delegation
       target_field: infoblox_bloxone_ddi.dns_data.delegation
       ignore_missing: true
   - convert:
+      tag: convert_json_disabled_to_infoblox_bloxone_ddi_dns_data_disabled_ecafe038
       field: json.disabled
       target_field: infoblox_bloxone_ddi.dns_data.disabled
       if: ctx.json?.disabled != ''
@@ -68,45 +90,56 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_8b062cf7
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_dns_absolute_name_spec_to_infoblox_bloxone_ddi_dns_data_absolute_name_spec_1c50309b
       field: json.dns_absolute_name_spec
       target_field: infoblox_bloxone_ddi.dns_data.absolute.name.spec
       ignore_missing: true
   - rename:
+      tag: rename_json_dns_absolute_zone_name_to_infoblox_bloxone_ddi_dns_data_absolute_zone_name_42e7eec7
       field: json.dns_absolute_zone_name
       target_field: infoblox_bloxone_ddi.dns_data.absolute.zone.name
       ignore_missing: true
   - rename:
+      tag: rename_json_dns_name_in_zone_to_infoblox_bloxone_ddi_dns_data_name_in_zone_63cd06d4
       field: json.dns_name_in_zone
       target_field: infoblox_bloxone_ddi.dns_data.name_in.zone
       ignore_missing: true
   - rename:
+      tag: rename_json_dns_rdata_to_infoblox_bloxone_ddi_dns_data_rdata_value_4b61ff1f
       field: json.dns_rdata
       target_field: infoblox_bloxone_ddi.dns_data.rdata_value
       ignore_missing: true
   - rename:
+      tag: rename_json_id_to_infoblox_bloxone_ddi_dns_data_id_d6683119
       field: json.id
       target_field: infoblox_bloxone_ddi.dns_data.id
       ignore_missing: true
   - set:
+      tag: set_event_id_01f980ef
       field: event.id
       copy_from: infoblox_bloxone_ddi.dns_data.id
       ignore_failure: true
   - rename:
+      tag: rename_json_inheritance_sources_ttl_action_to_infoblox_bloxone_ddi_dns_data_inheritance_sources_ttl_action_ef6b29b8
       field: json.inheritance_sources.ttl.action
       target_field: infoblox_bloxone_ddi.dns_data.inheritance.sources.ttl.action
       ignore_missing: true
   - rename:
+      tag: rename_json_inheritance_sources_ttl_display_name_to_infoblox_bloxone_ddi_dns_data_inheritance_sources_ttl_display_name_baf8a949
       field: json.inheritance_sources.ttl.display_name
       target_field: infoblox_bloxone_ddi.dns_data.inheritance.sources.ttl.display.name
       ignore_missing: true
   - rename:
+      tag: rename_json_inheritance_sources_ttl_source_to_infoblox_bloxone_ddi_dns_data_inheritance_sources_ttl_source_7c2700e8
       field: json.inheritance_sources.ttl.source
       target_field: infoblox_bloxone_ddi.dns_data.inheritance.sources.ttl.source
       ignore_missing: true
   - convert:
+      tag: convert_json_inheritance_sources_ttl_value_to_infoblox_bloxone_ddi_dns_data_inheritance_sources_ttl_value_01c9543d
       field: json.inheritance_sources.ttl.value
       target_field: infoblox_bloxone_ddi.dns_data.inheritance.sources.ttl.value
       if: ctx.json?.inheritance_sources?.ttl?.value != ''
@@ -114,21 +147,26 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_d7b52cbe
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_name_in_zone_to_infoblox_bloxone_ddi_dns_data_name_in_zone_5b5277c5
       field: json.name_in_zone
       target_field: infoblox_bloxone_ddi.dns_data.name_in_zone
       ignore_missing: true
   - json:
+      tag: json_json_options_to_json_options_7bbcb358
       field: json.options
       target_field: json.options
       if: ctx.json?.options instanceof String
       on_failure:
         - append:
+            tag: append_error_message_64f0f4f7
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_options_create_ptr_to_infoblox_bloxone_ddi_dns_data_options_create_ptr_4698c12c
       field: json.options.create_ptr
       target_field: infoblox_bloxone_ddi.dns_data.options.create_ptr
       if: ctx.json?.options?.create_ptr != ''
@@ -136,9 +174,11 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_66819d01
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_options_check_rmz_to_infoblox_bloxone_ddi_dns_data_options_check_rmz_62172193
       field: json.options.check_rmz
       target_field: infoblox_bloxone_ddi.dns_data.options.check_rmz
       if: ctx.json?.options?.check_rmz != ''
@@ -146,9 +186,11 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_31d95b9c
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_options_address_to_infoblox_bloxone_ddi_dns_data_options_address_3d1c37a0
       field: json.options.address
       target_field: infoblox_bloxone_ddi.dns_data.options.address
       if: ctx.json?.options?.address != ''
@@ -156,18 +198,22 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_08a2d6c9
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - append:
+      tag: append_related_ip_ff94030f
       field: related.ip
       value: '{{{infoblox_bloxone_ddi.dns_data.options.address}}}'
       allow_duplicates: false
       ignore_failure: true
   - rename:
+      tag: rename_json_provider_metadata_to_infoblox_bloxone_ddi_dns_data_provider_metadata_97dc4243
       field: json.provider_metadata
       target_field: infoblox_bloxone_ddi.dns_data.provider_metadata
       ignore_missing: true
   - convert:
+      tag: convert_json_rdata_address_to_infoblox_bloxone_ddi_dns_data_rdata_address_cef682e8
       field: json.rdata.address
       target_field: infoblox_bloxone_ddi.dns_data.rdata.address
       if: ctx.json?.rdata?.address != ''
@@ -175,42 +221,52 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_33d5b3d5
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - append:
+      tag: append_related_ip_cf143be7
       field: related.ip
       value: '{{{infoblox_bloxone_ddi.dns_data.rdata.address}}}'
       allow_duplicates: false
       ignore_failure: true
   - rename:
+      tag: rename_json_rdata_flags_to_infoblox_bloxone_ddi_dns_data_rdata_flags_17ff8acf
       field: json.rdata.flags
       target_field: infoblox_bloxone_ddi.dns_data.rdata.flags
       ignore_missing: true
   - rename:
+      tag: rename_json_rdata_tag_to_infoblox_bloxone_ddi_dns_data_rdata_tag_14fbe2f9
       field: json.rdata.tag
       target_field: infoblox_bloxone_ddi.dns_data.rdata.tag
       ignore_missing: true
   - rename:
+      tag: rename_json_rdata_value_to_infoblox_bloxone_ddi_dns_data_rdata_value_8588396b
       field: json.rdata.value
       target_field: infoblox_bloxone_ddi.dns_data.rdata.value
       ignore_missing: true
   - rename:
+      tag: rename_json_rdata_cname_to_infoblox_bloxone_ddi_dns_data_rdata_cname_0e0787fd
       field: json.rdata.cname
       target_field: infoblox_bloxone_ddi.dns_data.rdata.cname
       ignore_missing: true
   - rename:
+      tag: rename_json_rdata_target_to_infoblox_bloxone_ddi_dns_data_rdata_target_a93d33a1
       field: json.rdata.target
       target_field: infoblox_bloxone_ddi.dns_data.rdata.target
       ignore_missing: true
   - rename:
+      tag: rename_json_rdata_dhcid_to_infoblox_bloxone_ddi_dns_data_rdata_dhcid_e5746351
       field: json.rdata.dhcid
       target_field: infoblox_bloxone_ddi.dns_data.rdata.dhcid
       ignore_missing: true
   - rename:
+      tag: rename_json_rdata_exchange_to_infoblox_bloxone_ddi_dns_data_rdata_exchange_447d66dd
       field: json.rdata.exchange
       target_field: infoblox_bloxone_ddi.dns_data.rdata.exchange
       ignore_missing: true
   - convert:
+      tag: convert_json_rdata_preference_to_infoblox_bloxone_ddi_dns_data_rdata_preference_b01e05da
       field: json.rdata.preference
       target_field: infoblox_bloxone_ddi.dns_data.rdata.preference
       if: ctx.json?.rdata?.preference != ''
@@ -218,9 +274,11 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_b8bd16c9
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_rdata_order_to_infoblox_bloxone_ddi_dns_data_rdata_order_5f8d80d9
       field: json.rdata.order
       target_field: infoblox_bloxone_ddi.dns_data.rdata.order
       if: ctx.json?.rdata?.order != ''
@@ -228,25 +286,31 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_5c168750
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_rdata_regexp_to_infoblox_bloxone_ddi_dns_data_rdata_regexp_c587cc2d
       field: json.rdata.regexp
       target_field: infoblox_bloxone_ddi.dns_data.rdata.regexp
       ignore_missing: true
   - rename:
+      tag: rename_json_rdata_replacement_to_infoblox_bloxone_ddi_dns_data_rdata_replacement_9d6a6551
       field: json.rdata.replacement
       target_field: infoblox_bloxone_ddi.dns_data.rdata.replacement
       ignore_missing: true
   - rename:
+      tag: rename_json_rdata_services_to_infoblox_bloxone_ddi_dns_data_rdata_services_55dbe8c5
       field: json.rdata.services
       target_field: infoblox_bloxone_ddi.dns_data.rdata.services
       ignore_missing: true
   - rename:
+      tag: rename_json_rdata_dname_to_infoblox_bloxone_ddi_dns_data_rdata_dname_57395dd7
       field: json.rdata.dname
       target_field: infoblox_bloxone_ddi.dns_data.rdata.dname
       ignore_missing: true
   - convert:
+      tag: convert_json_rdata_expire_to_infoblox_bloxone_ddi_dns_data_rdata_expire_b5b46e44
       field: json.rdata.expire
       target_field: infoblox_bloxone_ddi.dns_data.rdata.expire
       if: ctx.json?.rdata?.expire != ''
@@ -254,13 +318,16 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_ed02f9e7
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_rdata_mname_to_infoblox_bloxone_ddi_dns_data_rdata_mname_b86c2101
       field: json.rdata.mname
       target_field: infoblox_bloxone_ddi.dns_data.rdata.mname
       ignore_missing: true
   - convert:
+      tag: convert_json_rdata_negative_ttl_to_infoblox_bloxone_ddi_dns_data_rdata_negative_ttl_50254b8b
       field: json.rdata.negative_ttl
       target_field: infoblox_bloxone_ddi.dns_data.rdata.negative_ttl
       if: ctx.json?.rdata?.negative_ttl != ''
@@ -268,9 +335,11 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_f327d578
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_rdata_refresh_to_infoblox_bloxone_ddi_dns_data_rdata_refresh_c635c204
       field: json.rdata.refresh
       target_field: infoblox_bloxone_ddi.dns_data.rdata.refresh
       if: ctx.json?.rdata?.refresh != ''
@@ -278,9 +347,11 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_20866515
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_rdata_retry_to_infoblox_bloxone_ddi_dns_data_rdata_retry_cef00b23
       field: json.rdata.retry
       target_field: infoblox_bloxone_ddi.dns_data.rdata.retry
       if: ctx.json?.rdata?.retry != ''
@@ -288,13 +359,16 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_03114eca
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_rdata_rname_to_infoblox_bloxone_ddi_dns_data_rdata_rname_5581b567
       field: json.rdata.rname
       target_field: infoblox_bloxone_ddi.dns_data.rdata.rname
       ignore_missing: true
   - convert:
+      tag: convert_json_rdata_serial_to_infoblox_bloxone_ddi_dns_data_rdata_serial_4e1e7f7b
       field: json.rdata.serial
       target_field: infoblox_bloxone_ddi.dns_data.rdata.serial
       if: ctx.json?.rdata?.serial != ''
@@ -302,9 +376,11 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_513bcca8
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_rdata_port_to_infoblox_bloxone_ddi_dns_data_rdata_port_7fdd932c
       field: json.rdata.port
       target_field: infoblox_bloxone_ddi.dns_data.rdata.port
       if: ctx.json?.rdata?.port != ''
@@ -312,9 +388,11 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_b4d4632b
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_rdata_priority_to_infoblox_bloxone_ddi_dns_data_rdata_priority_53dc424b
       field: json.rdata.priority
       target_field: infoblox_bloxone_ddi.dns_data.rdata.priority
       if: ctx.json?.rdata?.priority != ''
@@ -322,9 +400,11 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_968e8cc8
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_rdata_weight_to_infoblox_bloxone_ddi_dns_data_rdata_weight_3cc4931b
       field: json.rdata.weight
       target_field: infoblox_bloxone_ddi.dns_data.rdata.weight
       if: ctx.json?.rdata?.weight != ''
@@ -332,17 +412,21 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_fdfb34bc
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_rdata_text_to_infoblox_bloxone_ddi_dns_data_rdata_text_a393df8d
       field: json.rdata.text
       target_field: infoblox_bloxone_ddi.dns_data.rdata.text
       ignore_missing: true
   - rename:
+      tag: rename_json_rdata_type_to_infoblox_bloxone_ddi_dns_data_rdata_type_df32d01d
       field: json.rdata.type
       target_field: infoblox_bloxone_ddi.dns_data.rdata.type
       ignore_missing: true
   - convert:
+      tag: convert_json_rdata_length_kind_to_infoblox_bloxone_ddi_dns_data_rdata_length_kind_b06e8558
       field: json.rdata.length_kind
       target_field: infoblox_bloxone_ddi.dns_data.rdata.length_kind
       if: ctx.json?.rdata?.length_kind != ''
@@ -350,17 +434,21 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_e3e8e899
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_tags_to_infoblox_bloxone_ddi_dns_data_tags_ebb43a95
       field: json.tags
       target_field: infoblox_bloxone_ddi.dns_data.tags
       ignore_missing: true
   - rename:
+      tag: rename_json_source_to_infoblox_bloxone_ddi_dns_data_source_fabb7ca1
       field: json.source
       target_field: infoblox_bloxone_ddi.dns_data.source
       ignore_missing: true
   - convert:
+      tag: convert_json_ttl_to_infoblox_bloxone_ddi_dns_data_ttl_ab9d1224
       field: json.ttl
       target_field: infoblox_bloxone_ddi.dns_data.ttl
       if: ctx.json?.ttl != ''
@@ -368,13 +456,16 @@ processors:
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_01f5f2bf
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_type_to_infoblox_bloxone_ddi_dns_data_type_b357b9b5
       field: json.type
       target_field: infoblox_bloxone_ddi.dns_data.type
       ignore_missing: true
   - date:
+      tag: date_json_updated_at_to_infoblox_bloxone_ddi_dns_data_updated_at_d8710eaa
       field: json.updated_at
       target_field: infoblox_bloxone_ddi.dns_data.updated_at
       if: ctx.json?.updated_at != null && ctx.json.updated_at != ''
@@ -382,37 +473,46 @@ processors:
         - ISO8601
       on_failure:
         - append:
+            tag: append_error_message_89128807
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_timestamp_e9b4d9b6
       field: '@timestamp'
       copy_from: infoblox_bloxone_ddi.dns_data.updated_at
       ignore_failure: true
   - rename:
+      tag: rename_json_view_to_infoblox_bloxone_ddi_dns_data_view_b3c9af95
       field: json.view
       target_field: infoblox_bloxone_ddi.dns_data.view
       ignore_missing: true
   - rename:
+      tag: rename_json_view_name_to_infoblox_bloxone_ddi_dns_data_view_name_fcd81eff
       field: json.view_name
       target_field: infoblox_bloxone_ddi.dns_data.view_name
       ignore_missing: true
   - rename:
+      tag: rename_json_zone_to_infoblox_bloxone_ddi_dns_data_zone_57c2f2e5
       field: json.zone
       target_field: infoblox_bloxone_ddi.dns_data.zone
       ignore_missing: true
   - set:
+      tag: set_dns_answers_data_dd97ca2a
       field: dns.answers.data
       copy_from: infoblox_bloxone_ddi.dns_data.rdata_value
       ignore_empty_value: true
   - set:
+      tag: set_dns_answers_ttl_a5fe837e
       field: dns.answers.ttl
       copy_from: infoblox_bloxone_ddi.dns_data.ttl
       ignore_empty_value: true
   - set:
+      tag: set_dns_answers_type_571cabca
       field: dns.answers.type
       copy_from: infoblox_bloxone_ddi.dns_data.type
       ignore_empty_value: true
   - script:
+      tag: script_24a2b4bd
       lang: painless
       if: ctx.dns?.answers != null
       source: |
@@ -420,25 +520,31 @@ processors:
         a.add(ctx.dns.answers);
         ctx.dns.answers = a;
   - set:
+      tag: set_dns_question_type_525b0bef
       field: dns.question.type
       copy_from: infoblox_bloxone_ddi.dns_data.type
       ignore_empty_value: true
   - set:
+      tag: set_dns_question_name_8e26b957
       field: dns.question.name
       copy_from: infoblox_bloxone_ddi.dns_data.absolute.name.spec
       ignore_empty_value: true
   - set:
+      tag: set_dns_question_registered_domain_a93b90d2
       field: dns.question.registered_domain
       copy_from: infoblox_bloxone_ddi.dns_data.absolute.zone.name
       ignore_empty_value: true
   - set:
+      tag: set_dns_question_subdomain_5a197dce
       field: dns.question.subdomain
       copy_from: infoblox_bloxone_ddi.dns_data.name_in.zone
       ignore_empty_value: true
   - remove:
+      tag: remove_json_29cdffdc
       field: json
       ignore_missing: true
   - remove:
+      tag: remove_06aa9cba
       field:
         - infoblox_bloxone_ddi.dns_data.updated_at
         - infoblox_bloxone_ddi.dns_data.lame_ttl
@@ -453,6 +559,7 @@ processors:
       ignore_failure: true
       ignore_missing: true
   - script:
+      tag: script_drops_null_empty_values_recursively_e2ccbdd7
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -471,12 +578,18 @@ processors:
         dropEmptyFields(ctx);
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message_206bb8ac
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'

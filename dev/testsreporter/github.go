@@ -35,7 +35,7 @@ func (g *ghRunner) Exec(ctx context.Context, args ...string) (stdout, stdErr byt
 	log.Printf("Running command: %s", strings.Join(args[:4], " "))
 	if g.DryRun {
 		if args[0] != "issue" || args[1] != "list" {
-			log.Printf("DRY-RUN> not run command")
+			log.Printf("DRY-RUN> command not run")
 			return bytes.Buffer{}, bytes.Buffer{}, nil
 		}
 	}

@@ -1,0 +1,93 @@
+- name: message
+  type: text
+  description: The original raw message or a brief summary of the alert.
+- name: event
+  type: group
+  fields:
+    - name: risk_score
+      type: float
+      description: A normalized risk score for the alert.
+    - name: created
+      type: date
+      description: The time the alert was created in the Doppel system.
+    - name: severity
+      type: long
+      description: The numeric severity level of the alert.
+    - name: provider
+      type: keyword
+      description: The source or provider of the event (Doppel).
+    - name: reference
+      type: keyword
+      description: A URL or link referencing the original alert in the Doppel dashboard.
+    - name: url
+      type: keyword
+      description: The URL associated with the event or threat.
+- name: user
+  type: group
+  fields:
+    - name: email
+      type: keyword
+      description: The email address of the user associated with the alert.
+    - name: name
+      type: keyword
+      description: The username or short name of the user.
+    - name: full_name
+      type: keyword
+      description: The full name of the user.
+    - name: id
+      type: keyword
+      description: The unique identifier for the user.
+- name: organization
+  type: group
+  fields:
+    - name: name
+      type: keyword
+      description: The name of the organization or brand targeted by the threat.
+- name: threat
+  type: group
+  fields:
+    - name: indicator
+      type: group
+      fields:
+        - name: name
+          type: keyword
+          description: The name or value of the threat indicator.
+        - name: ip
+          type: ip
+          description: The IP address associated with the threat.
+        - name: url
+          type: group
+          fields:
+            - name: full
+              type: keyword
+              description: The full malicious or suspicious URL.
+            - name: domain
+              type: keyword
+              description: The domain of the malicious or suspicious URL.
+- name: url
+  type: group
+  fields:
+    - name: original
+      type: keyword
+      description: The original URL string provided in the alert.
+    - name: domain
+      type: keyword
+      description: The parsed domain from the original URL.
+- name: related
+  type: group
+  fields:
+    - name: ip
+      type: ip
+      description: All of the IPs seen on the event.
+- name: labels
+  type: group
+  fields:
+    - name: audit_logs
+      type: flattened
+      description: Flattened object containing audit history and state changes for the alert.
+    - name: entity_content
+      type: flattened
+      description: Flattened object containing raw details about the targeted entity.
+    - name: severity
+      type: keyword
+      description: The string representation of the severity level (e.g., high, medium, low).

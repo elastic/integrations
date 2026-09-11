@@ -6,7 +6,12 @@
     "attributes": {
         "description": "Dashboard for RUM events collected by OTEL web agents",
         "kibanaSavedObjectMeta": {
-            "searchSourceJSON": "{\"query\":{\"language\":\"kuery\",\"query\":\"\"}}"
+            "searchSourceJSON": {
+                "query":{
+                    "language": "kuery",
+                    "query": ""
+                }
+            }
         },
         "optionsJSON": {
             "hidePanelTitles": false,
@@ -46,7 +51,7 @@
                             "9f63485d-58ae-42f7-8774-315ff662b7fc": {
                             "index": "cd134c8b4253430b3cccc6739dff6f4e231b07d28098973c9eb599ad3ab1c289",
                             "query": {
-                                "esql": "FROM traces-*.otel-* \n| WHERE service.name IS NOT NULL AND MV_CONTAINS(?service_name, service.name)\n| WHERE browser.name  IS NOT NULL AND MV_CONTAINS(?browser, browser.name)\n| WHERE browser.platform  IS NOT NULL AND MV_CONTAINS(?os, browser.platform)\n| WHERE resource.attributes.telemetry.sdk.language == \"webjs\" \n    AND scope.attributes.service.framework.name == \"@opentelemetry/instrumentation-document-load\" \n    AND transaction.name == \"documentLoad\"\n| STATS `Total Visits` = COUNT(*)"
+                                "esql": "FROM traces-*.otel-* \n| WHERE service.name IS NOT NULL AND MV_CONTAINS(?service_name, service.name)\n| WHERE resource.attributes.user_agent.original IS NOT NULL\n| USER_AGENT userAgent = resource.attributes.user_agent.original\n| WHERE MV_CONTAINS(?browser, userAgent.name)\n| WHERE MV_CONTAINS(?os, userAgent.os.name)\n| WHERE resource.attributes.telemetry.sdk.language == \"webjs\" \n    AND scope.attributes.service.framework.name == \"@opentelemetry/instrumentation-document-load\" \n    AND transaction.name == \"documentLoad\"\n| STATS `Total Visits` = COUNT(*)"
                             },
                             "columns": [
                                 {
@@ -75,7 +80,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "FROM traces-*.otel-* \n| WHERE service.name IS NOT NULL AND MV_CONTAINS(?service_name, service.name)\n| WHERE browser.name  IS NOT NULL AND MV_CONTAINS(?browser, browser.name)\n| WHERE browser.platform  IS NOT NULL AND MV_CONTAINS(?os, browser.platform)\n| WHERE resource.attributes.telemetry.sdk.language == \"webjs\" \n    AND scope.attributes.service.framework.name == \"@opentelemetry/instrumentation-document-load\" \n    AND transaction.name == \"documentLoad\"\n| STATS `Total Visits` = COUNT(*)"
+                        "esql": "FROM traces-*.otel-* \n| WHERE service.name IS NOT NULL AND MV_CONTAINS(?service_name, service.name)\n| WHERE resource.attributes.user_agent.original IS NOT NULL\n| USER_AGENT userAgent = resource.attributes.user_agent.original\n| WHERE MV_CONTAINS(?browser, userAgent.name)\n| WHERE MV_CONTAINS(?os, userAgent.os.name)\n| WHERE resource.attributes.telemetry.sdk.language == \"webjs\" \n    AND scope.attributes.service.framework.name == \"@opentelemetry/instrumentation-document-load\" \n    AND transaction.name == \"documentLoad\"\n| STATS `Total Visits` = COUNT(*)"
                     },
                     "visualization": {
                         "layerId": "9f63485d-58ae-42f7-8774-315ff662b7fc",
@@ -126,7 +131,7 @@
                             "abc70734-dc18-46e5-b881-bd09c2530118": {
                             "index": "cd134c8b4253430b3cccc6739dff6f4e231b07d28098973c9eb599ad3ab1c289",
                             "query": {
-                                "esql": "FROM traces-*.otel-* \n| WHERE service.name IS NOT NULL AND MV_CONTAINS(?service_name, service.name)\n| WHERE browser.name  IS NOT NULL AND MV_CONTAINS(?browser, browser.name)\n| WHERE browser.platform  IS NOT NULL AND MV_CONTAINS(?os, browser.platform)\n| WHERE resource.attributes.telemetry.sdk.language == \"webjs\" \n    AND scope.attributes.service.framework.name == \"@opentelemetry/instrumentation-document-load\" \n    AND transaction.name == \"documentLoad\"\n| STATS `Load Median` = MEDIAN(transaction.duration.us)"
+                                "esql": "FROM traces-*.otel-* \n| WHERE service.name IS NOT NULL AND MV_CONTAINS(?service_name, service.name)\n| WHERE resource.attributes.user_agent.original IS NOT NULL\n| USER_AGENT userAgent = resource.attributes.user_agent.original\n| WHERE MV_CONTAINS(?browser, userAgent.name)\n| WHERE MV_CONTAINS(?os, userAgent.os.name)\n| WHERE resource.attributes.telemetry.sdk.language == \"webjs\" \n    AND scope.attributes.service.framework.name == \"@opentelemetry/instrumentation-document-load\" \n    AND transaction.name == \"documentLoad\"\n| STATS `Load Median` = MEDIAN(transaction.duration.us)"
                             },
                             "columns": [
                                 {
@@ -166,7 +171,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "FROM traces-*.otel-* \n| WHERE service.name IS NOT NULL AND MV_CONTAINS(?service_name, service.name)\n| WHERE browser.name  IS NOT NULL AND MV_CONTAINS(?browser, browser.name)\n| WHERE browser.platform  IS NOT NULL AND MV_CONTAINS(?os, browser.platform)\n| WHERE resource.attributes.telemetry.sdk.language == \"webjs\" \n    AND scope.attributes.service.framework.name == \"@opentelemetry/instrumentation-document-load\" \n    AND transaction.name == \"documentLoad\"\n| STATS `Load Median` = MEDIAN(transaction.duration.us)"
+                        "esql": "FROM traces-*.otel-* \n| WHERE service.name IS NOT NULL AND MV_CONTAINS(?service_name, service.name)\n| WHERE resource.attributes.user_agent.original IS NOT NULL\n| USER_AGENT userAgent = resource.attributes.user_agent.original\n| WHERE MV_CONTAINS(?browser, userAgent.name)\n| WHERE MV_CONTAINS(?os, userAgent.os.name)\n| WHERE resource.attributes.telemetry.sdk.language == \"webjs\" \n    AND scope.attributes.service.framework.name == \"@opentelemetry/instrumentation-document-load\" \n    AND transaction.name == \"documentLoad\"\n| STATS `Load Median` = MEDIAN(transaction.duration.us)"
                     },
                     "visualization": {
                         "layerId": "abc70734-dc18-46e5-b881-bd09c2530118",
@@ -222,7 +227,7 @@
                             "046927b2-a519-46c7-87e5-97d1d8b0729f": {
                             "index": "cd134c8b4253430b3cccc6739dff6f4e231b07d28098973c9eb599ad3ab1c289",
                             "query": {
-                                "esql": "FROM traces-*.otel-* \n| WHERE service.name IS NOT NULL AND MV_CONTAINS(?service_name, service.name)\n| WHERE browser.name  IS NOT NULL AND MV_CONTAINS(?browser, browser.name)\n| WHERE browser.platform  IS NOT NULL AND MV_CONTAINS(?os, browser.platform)\n| WHERE resource.attributes.telemetry.sdk.language == \"webjs\" \n    AND scope.attributes.service.framework.name == \"@opentelemetry/instrumentation-document-load\" \n    AND transaction.name == \"documentLoad\"\n| STATS `95th percentile` = PERCENTILE(transaction.duration.us, 95)"
+                                "esql": "FROM traces-*.otel-* \n| WHERE service.name IS NOT NULL AND MV_CONTAINS(?service_name, service.name)\n| WHERE resource.attributes.user_agent.original IS NOT NULL\n| USER_AGENT userAgent = resource.attributes.user_agent.original\n| WHERE MV_CONTAINS(?browser, userAgent.name)\n| WHERE MV_CONTAINS(?os, userAgent.os.name)\n| WHERE resource.attributes.telemetry.sdk.language == \"webjs\" \n    AND scope.attributes.service.framework.name == \"@opentelemetry/instrumentation-document-load\" \n    AND transaction.name == \"documentLoad\"\n| STATS `95th percentile` = PERCENTILE(transaction.duration.us, 95)"
                             },
                             "columns": [
                                 {
@@ -262,7 +267,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "FROM traces-*.otel-* \n| WHERE service.name IS NOT NULL AND MV_CONTAINS(?service_name, service.name)\n| WHERE browser.name  IS NOT NULL AND MV_CONTAINS(?browser, browser.name)\n| WHERE browser.platform  IS NOT NULL AND MV_CONTAINS(?os, browser.platform)\n| WHERE resource.attributes.telemetry.sdk.language == \"webjs\" \n    AND scope.attributes.service.framework.name == \"@opentelemetry/instrumentation-document-load\" \n    AND transaction.name == \"documentLoad\"\n| STATS `95th percentile` = PERCENTILE(transaction.duration.us, 95)"
+                        "esql": "FROM traces-*.otel-* \n| WHERE service.name IS NOT NULL AND MV_CONTAINS(?service_name, service.name)\n| WHERE resource.attributes.user_agent.original IS NOT NULL\n| USER_AGENT userAgent = resource.attributes.user_agent.original\n| WHERE MV_CONTAINS(?browser, userAgent.name)\n| WHERE MV_CONTAINS(?os, userAgent.os.name)\n| WHERE resource.attributes.telemetry.sdk.language == \"webjs\" \n    AND scope.attributes.service.framework.name == \"@opentelemetry/instrumentation-document-load\" \n    AND transaction.name == \"documentLoad\"\n| STATS `95th percentile` = PERCENTILE(transaction.duration.us, 95)"
                     },
                     "visualization": {
                         "layerId": "046927b2-a519-46c7-87e5-97d1d8b0729f",
@@ -318,7 +323,7 @@
                             "9f63485d-58ae-42f7-8774-315ff662b7fc": {
                             "index": "cd134c8b4253430b3cccc6739dff6f4e231b07d28098973c9eb599ad3ab1c289",
                             "query": {
-                                "esql": "FROM traces-*.otel-* \n| WHERE service.name IS NOT NULL AND MV_CONTAINS(?service_name, service.name)\n| WHERE browser.name  IS NOT NULL AND MV_CONTAINS(?browser, browser.name)\n| WHERE browser.platform  IS NOT NULL AND MV_CONTAINS(?os, browser.platform)\n| WHERE resource.attributes.telemetry.sdk.language == \"webjs\" \n    AND scope.attributes.service.framework.name == \"@opentelemetry/instrumentation-document-load\" \n    AND transaction.name == \"documentLoad\"\n| STATS `Total Visits` = COUNT(*) BY Time = BUCKET(@timestamp, 50, ?_tstart, ?_tend)"
+                                "esql": "FROM traces-*.otel-* \n| WHERE service.name IS NOT NULL AND MV_CONTAINS(?service_name, service.name)\n| WHERE resource.attributes.user_agent.original IS NOT NULL\n| USER_AGENT userAgent = resource.attributes.user_agent.original\n| WHERE MV_CONTAINS(?browser, userAgent.name)\n| WHERE MV_CONTAINS(?os, userAgent.os.name)\n| WHERE resource.attributes.telemetry.sdk.language == \"webjs\" \n    AND scope.attributes.service.framework.name == \"@opentelemetry/instrumentation-document-load\" \n    AND transaction.name == \"documentLoad\"\n| STATS `Total Visits` = COUNT(*) BY Time = BUCKET(@timestamp, 50, ?_tstart, ?_tend)"
                             },
                             "columns": [
                                 {
@@ -368,7 +373,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "FROM traces-*.otel-* \n| WHERE service.name IS NOT NULL AND MV_CONTAINS(?service_name, service.name)\n| WHERE browser.name  IS NOT NULL AND MV_CONTAINS(?browser, browser.name)\n| WHERE browser.platform  IS NOT NULL AND MV_CONTAINS(?os, browser.platform)\n| WHERE resource.attributes.telemetry.sdk.language == \"webjs\" \n    AND scope.attributes.service.framework.name == \"@opentelemetry/instrumentation-document-load\" \n    AND transaction.name == \"documentLoad\"\n| STATS `Total Visits` = COUNT(*) BY Time = BUCKET(@timestamp, 50, ?_tstart, ?_tend)"
+                        "esql": "FROM traces-*.otel-* \n| WHERE service.name IS NOT NULL AND MV_CONTAINS(?service_name, service.name)\n| WHERE resource.attributes.user_agent.original IS NOT NULL\n| USER_AGENT userAgent = resource.attributes.user_agent.original\n| WHERE MV_CONTAINS(?browser, userAgent.name)\n| WHERE MV_CONTAINS(?os, userAgent.os.name)\n| WHERE resource.attributes.telemetry.sdk.language == \"webjs\" \n    AND scope.attributes.service.framework.name == \"@opentelemetry/instrumentation-document-load\" \n    AND transaction.name == \"documentLoad\"\n| STATS `Total Visits` = COUNT(*) BY Time = BUCKET(@timestamp, 50, ?_tstart, ?_tend)"
                     },
                     "visualization": {
                         "legend": {
@@ -474,7 +479,7 @@
                             "12de7445-48de-4845-8200-ee5533cca93e": {
                             "index": "cd134c8b4253430b3cccc6739dff6f4e231b07d28098973c9eb599ad3ab1c289",
                             "query": {
-                                "esql": "FROM traces-*.otel-* \n| WHERE service.name IS NOT NULL AND MV_CONTAINS(?service_name, service.name)\n| WHERE browser.name  IS NOT NULL AND MV_CONTAINS(?browser, browser.name)\n| WHERE browser.platform  IS NOT NULL AND MV_CONTAINS(?os, browser.platform)\n| WHERE resource.attributes.telemetry.sdk.language == \"webjs\" \n    AND scope.attributes.service.framework.name == \"@opentelemetry/instrumentation-document-load\" \n    AND transaction.name == \"documentLoad\"\n| STATS bucket_count = COUNT(attributes.transaction.duration.us) BY Duration = BUCKET(transaction.duration.us, 10000)"
+                                "esql": "FROM traces-*.otel-* \n| WHERE service.name IS NOT NULL AND MV_CONTAINS(?service_name, service.name)\n| WHERE resource.attributes.user_agent.original IS NOT NULL\n| USER_AGENT userAgent = resource.attributes.user_agent.original\n| WHERE MV_CONTAINS(?browser, userAgent.name)\n| WHERE MV_CONTAINS(?os, userAgent.os.name)\n| WHERE resource.attributes.telemetry.sdk.language == \"webjs\" \n    AND scope.attributes.service.framework.name == \"@opentelemetry/instrumentation-document-load\" \n    AND transaction.name == \"documentLoad\"\n| STATS bucket_count = COUNT(attributes.transaction.duration.us) BY Duration = BUCKET(transaction.duration.us, 10000)"
                             },
                             "columns": [
                                 {
@@ -546,7 +551,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "FROM traces-*.otel-* \n| WHERE service.name IS NOT NULL AND MV_CONTAINS(?service_name, service.name)\n| WHERE browser.name  IS NOT NULL AND MV_CONTAINS(?browser, browser.name)\n| WHERE browser.platform  IS NOT NULL AND MV_CONTAINS(?os, browser.platform)\n| WHERE resource.attributes.telemetry.sdk.language == \"webjs\" \n    AND scope.attributes.service.framework.name == \"@opentelemetry/instrumentation-document-load\" \n    AND transaction.name == \"documentLoad\"\n| STATS bucket_count = COUNT(attributes.transaction.duration.us) BY Duration = BUCKET(transaction.duration.us, 10000)"
+                        "esql": "FROM traces-*.otel-* \n| WHERE service.name IS NOT NULL AND MV_CONTAINS(?service_name, service.name)\n| WHERE resource.attributes.user_agent.original IS NOT NULL\n| USER_AGENT userAgent = resource.attributes.user_agent.original\n| WHERE MV_CONTAINS(?browser, userAgent.name)\n| WHERE MV_CONTAINS(?os, userAgent.os.name)\n| WHERE resource.attributes.telemetry.sdk.language == \"webjs\" \n    AND scope.attributes.service.framework.name == \"@opentelemetry/instrumentation-document-load\" \n    AND transaction.name == \"documentLoad\"\n| STATS bucket_count = COUNT(attributes.transaction.duration.us) BY Duration = BUCKET(transaction.duration.us, 10000)"
                     },
                     "visualization": {
                         "legend": {
@@ -701,7 +706,7 @@
                             ],
                             "index": "245afe2a29061cbe2c0bdf95650c8805355fd73f7d720c6aa7840a51fa0e6cc0",
                             "query": {
-                                "esql": "FROM logs-*.otel-* METADATA _index \n| WHERE service.name IS NOT NULL AND MV_CONTAINS(?service_name, service.name)\n| WHERE browser.name  IS NOT NULL AND MV_CONTAINS(?browser, browser.name)\n| WHERE browser.platform  IS NOT NULL AND MV_CONTAINS(?os, browser.platform)\n | WHERE resource.attributes.telemetry.sdk.language == \"webjs\"\n | WHERE attributes.exception.message IS NOT NULL\n | STATS `COUNT`=COUNT(*), example=SAMPLE(attributes.exception.message, 1), browser=SAMPLE(resource.attributes.browser.name, 1) BY ERROR=CATEGORIZE(attributes.exception.stacktrace)\n | SORT COUNT DESC"
+                                "esql": "FROM logs-*.otel-* METADATA _index \n| WHERE service.name IS NOT NULL AND MV_CONTAINS(?service_name, service.name)\n| WHERE resource.attributes.user_agent.original IS NOT NULL\n| USER_AGENT userAgent = resource.attributes.user_agent.original\n| WHERE MV_CONTAINS(?browser, userAgent.name)\n| WHERE MV_CONTAINS(?os, userAgent.os.name)\n| WHERE resource.attributes.telemetry.sdk.language == \"webjs\"\n | WHERE attributes.exception.message IS NOT NULL\n | STATS `COUNT`=COUNT(*), example=SAMPLE(attributes.exception.message, 1), browser=SAMPLE(resource.attributes.browser.name, 1) BY ERROR=CATEGORIZE(attributes.exception.stacktrace)\n | SORT COUNT DESC"
                             },
                             "timeField": "@timestamp"
                             }
@@ -710,7 +715,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "FROM logs-*.otel-* METADATA _index \n| WHERE service.name IS NOT NULL AND MV_CONTAINS(?service_name, service.name)\n| WHERE browser.name  IS NOT NULL AND MV_CONTAINS(?browser, browser.name)\n| WHERE browser.platform  IS NOT NULL AND MV_CONTAINS(?os, browser.platform)\n | WHERE resource.attributes.telemetry.sdk.language == \"webjs\"\n | WHERE attributes.exception.message IS NOT NULL\n | STATS `COUNT`=COUNT(*), example=SAMPLE(attributes.exception.message, 1), browser=SAMPLE(resource.attributes.browser.name, 1) BY ERROR=CATEGORIZE(attributes.exception.stacktrace)\n | SORT COUNT DESC"
+                        "esql": "FROM logs-*.otel-* METADATA _index \n| WHERE service.name IS NOT NULL AND MV_CONTAINS(?service_name, service.name)\n| WHERE resource.attributes.user_agent.original IS NOT NULL\n| USER_AGENT userAgent = resource.attributes.user_agent.original\n| WHERE MV_CONTAINS(?browser, userAgent.name)\n| WHERE MV_CONTAINS(?os, userAgent.os.name)\n| WHERE resource.attributes.telemetry.sdk.language == \"webjs\"\n | WHERE attributes.exception.message IS NOT NULL\n | STATS `COUNT`=COUNT(*), example=SAMPLE(attributes.exception.message, 1), browser=SAMPLE(resource.attributes.browser.name, 1) BY ERROR=CATEGORIZE(attributes.exception.stacktrace)\n | SORT COUNT DESC"
                     },
                     "visualization": {
                         "columns": [
@@ -780,7 +785,7 @@
                             "f177c2df-601e-4516-815b-3ab80eeae1ff": {
                             "index": "cd134c8b4253430b3cccc6739dff6f4e231b07d28098973c9eb599ad3ab1c289",
                             "query": {
-                                "esql": "FROM traces-*.otel-* \n| WHERE service.name IS NOT NULL AND MV_CONTAINS(?service_name, service.name)\n| WHERE browser.name  IS NOT NULL AND MV_CONTAINS(?browser, browser.name)\n| WHERE browser.platform  IS NOT NULL AND MV_CONTAINS(?os, browser.platform)\n| WHERE resource.attributes.telemetry.sdk.language == \"webjs\" \n    AND scope.attributes.service.framework.name == \"@opentelemetry/instrumentation-document-load\" \n    AND transaction.name == \"documentLoad\"\n| STATS bucket_count = COUNT(*) BY Browser = browser.name"
+                                "esql": "FROM traces-*.otel-* \n| WHERE service.name IS NOT NULL AND MV_CONTAINS(?service_name, service.name)\n| WHERE resource.attributes.user_agent.original IS NOT NULL\n| USER_AGENT userAgent = resource.attributes.user_agent.original\n| WHERE MV_CONTAINS(?browser, userAgent.name)\n| WHERE MV_CONTAINS(?os, userAgent.os.name)\n| WHERE resource.attributes.telemetry.sdk.language == \"webjs\" \n    AND scope.attributes.service.framework.name == \"@opentelemetry/instrumentation-document-load\" \n    AND transaction.name == \"documentLoad\"\n| STATS bucket_count = COUNT(*) BY Browser = browser.name"
                             },
                             "columns": [
                                 {
@@ -819,7 +824,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "FROM traces-*.otel-* \n| WHERE service.name IS NOT NULL AND MV_CONTAINS(?service_name, service.name)\n| WHERE browser.name  IS NOT NULL AND MV_CONTAINS(?browser, browser.name)\n| WHERE browser.platform  IS NOT NULL AND MV_CONTAINS(?os, browser.platform)\n| WHERE resource.attributes.telemetry.sdk.language == \"webjs\" \n    AND scope.attributes.service.framework.name == \"@opentelemetry/instrumentation-document-load\" \n    AND transaction.name == \"documentLoad\"\n| STATS bucket_count = COUNT(*) BY Browser = browser.name"
+                        "esql": "FROM traces-*.otel-* \n| WHERE service.name IS NOT NULL AND MV_CONTAINS(?service_name, service.name)\n| WHERE resource.attributes.user_agent.original IS NOT NULL\n| USER_AGENT userAgent = resource.attributes.user_agent.original\n| WHERE MV_CONTAINS(?browser, userAgent.name)\n| WHERE MV_CONTAINS(?os, userAgent.os.name)\n| WHERE resource.attributes.telemetry.sdk.language == \"webjs\" \n    AND scope.attributes.service.framework.name == \"@opentelemetry/instrumentation-document-load\" \n    AND transaction.name == \"documentLoad\"\n| STATS bucket_count = COUNT(*) BY Browser = browser.name"
                     },
                     "visualization": {
                         "shape": "pie",
@@ -905,7 +910,7 @@
                             "456b954f-a8bf-4ff1-acb4-2c5c6c472c7a": {
                             "index": "cd134c8b4253430b3cccc6739dff6f4e231b07d28098973c9eb599ad3ab1c289",
                             "query": {
-                                "esql": "FROM traces-*.otel-* \n| WHERE service.name IS NOT NULL AND MV_CONTAINS(?service_name, service.name)\n| WHERE browser.name  IS NOT NULL AND MV_CONTAINS(?browser, browser.name)\n| WHERE browser.platform  IS NOT NULL AND MV_CONTAINS(?os, browser.platform)\n| WHERE resource.attributes.telemetry.sdk.language == \"webjs\" \n    AND scope.attributes.service.framework.name == \"@opentelemetry/instrumentation-document-load\" \n    AND transaction.name == \"documentLoad\"\n| STATS bucket_count = COUNT(*) BY OS = browser.platform"
+                                "esql": "FROM traces-*.otel-* \n| WHERE service.name IS NOT NULL AND MV_CONTAINS(?service_name, service.name)\n| WHERE resource.attributes.user_agent.original IS NOT NULL\n| USER_AGENT userAgent = resource.attributes.user_agent.original\n| WHERE MV_CONTAINS(?browser, userAgent.name)\n| WHERE MV_CONTAINS(?os, userAgent.os.name)\n| WHERE resource.attributes.telemetry.sdk.language == \"webjs\" \n    AND scope.attributes.service.framework.name == \"@opentelemetry/instrumentation-document-load\" \n    AND transaction.name == \"documentLoad\"\n| STATS bucket_count = COUNT(*) BY OS = browser.platform"
                             },
                             "columns": [
                                 {
@@ -944,7 +949,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "FROM traces-*.otel-* \n| WHERE service.name IS NOT NULL AND MV_CONTAINS(?service_name, service.name)\n| WHERE browser.name  IS NOT NULL AND MV_CONTAINS(?browser, browser.name)\n| WHERE browser.platform  IS NOT NULL AND MV_CONTAINS(?os, browser.platform)\n| WHERE resource.attributes.telemetry.sdk.language == \"webjs\" \n    AND scope.attributes.service.framework.name == \"@opentelemetry/instrumentation-document-load\" \n    AND transaction.name == \"documentLoad\"\n| STATS bucket_count = COUNT(*) BY OS = browser.platform"
+                        "esql": "FROM traces-*.otel-* \n| WHERE service.name IS NOT NULL AND MV_CONTAINS(?service_name, service.name)\n| WHERE resource.attributes.user_agent.original IS NOT NULL\n| USER_AGENT userAgent = resource.attributes.user_agent.original\n| WHERE MV_CONTAINS(?browser, userAgent.name)\n| WHERE MV_CONTAINS(?os, userAgent.os.name)\n| WHERE resource.attributes.telemetry.sdk.language == \"webjs\" \n    AND scope.attributes.service.framework.name == \"@opentelemetry/instrumentation-document-load\" \n    AND transaction.name == \"documentLoad\"\n| STATS bucket_count = COUNT(*) BY OS = browser.platform"
                     },
                     "visualization": {
                         "shape": "pie",
@@ -1030,7 +1035,7 @@
                             "04fe0a36-b41a-42d0-a99c-1d9435dc4e47": {
                             "index": "cd134c8b4253430b3cccc6739dff6f4e231b07d28098973c9eb599ad3ab1c289",
                             "query": {
-                                "esql": "FROM traces-*.otel-* \n| WHERE service.name IS NOT NULL AND MV_CONTAINS(?service_name, service.name)\n| WHERE browser.name  IS NOT NULL AND MV_CONTAINS(?browser, browser.name)\n| WHERE browser.platform  IS NOT NULL AND MV_CONTAINS(?os, browser.platform)\n| WHERE resource.attributes.telemetry.sdk.language == \"webjs\" \n    AND scope.attributes.service.framework.name == \"@opentelemetry/instrumentation-document-load\" \n    AND transaction.name == \"documentLoad\"\n| STATS `99th percentile` = PERCENTILE(transaction.duration.us, 99)"
+                                "esql": "FROM traces-*.otel-* \n| WHERE service.name IS NOT NULL AND MV_CONTAINS(?service_name, service.name)\n| WHERE resource.attributes.user_agent.original IS NOT NULL\n| USER_AGENT userAgent = resource.attributes.user_agent.original\n| WHERE MV_CONTAINS(?browser, userAgent.name)\n| WHERE MV_CONTAINS(?os, userAgent.os.name)\n| WHERE resource.attributes.telemetry.sdk.language == \"webjs\" \n    AND scope.attributes.service.framework.name == \"@opentelemetry/instrumentation-document-load\" \n    AND transaction.name == \"documentLoad\"\n| STATS `99th percentile` = PERCENTILE(transaction.duration.us, 99)"
                             },
                             "columns": [
                                 {
@@ -1070,7 +1075,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "FROM traces-*.otel-* \n| WHERE service.name IS NOT NULL AND MV_CONTAINS(?service_name, service.name)\n| WHERE browser.name  IS NOT NULL AND MV_CONTAINS(?browser, browser.name)\n| WHERE browser.platform  IS NOT NULL AND MV_CONTAINS(?os, browser.platform)\n| WHERE resource.attributes.telemetry.sdk.language == \"webjs\" \n    AND scope.attributes.service.framework.name == \"@opentelemetry/instrumentation-document-load\" \n    AND transaction.name == \"documentLoad\"\n| STATS `99th percentile` = PERCENTILE(transaction.duration.us, 99)"
+                        "esql": "FROM traces-*.otel-* \n| WHERE service.name IS NOT NULL AND MV_CONTAINS(?service_name, service.name)\n| WHERE resource.attributes.user_agent.original IS NOT NULL\n| USER_AGENT userAgent = resource.attributes.user_agent.original\n| WHERE MV_CONTAINS(?browser, userAgent.name)\n| WHERE MV_CONTAINS(?os, userAgent.os.name)\n| WHERE resource.attributes.telemetry.sdk.language == \"webjs\" \n    AND scope.attributes.service.framework.name == \"@opentelemetry/instrumentation-document-load\" \n    AND transaction.name == \"documentLoad\"\n| STATS `99th percentile` = PERCENTILE(transaction.duration.us, 99)"
                     },
                     "visualization": {
                         "layerId": "04fe0a36-b41a-42d0-a99c-1d9435dc4e47",
@@ -1126,7 +1131,7 @@
                             "160b2895-cf47-47f8-8d1d-95f12b69b0b2": {
                             "index": "87ad6212b94bdefe69a07316420e3f5f053441fa1e5479f8aaf66200eea35e72",
                             "query": {
-                                "esql": "FROM logs-*.otel-*\n| WHERE service.name IS NOT NULL AND MV_CONTAINS(?service_name, service.name)\n| WHERE browser.name  IS NOT NULL AND MV_CONTAINS(?browser, browser.name)\n| WHERE browser.platform  IS NOT NULL AND MV_CONTAINS(?os, browser.platform)\n| WHERE browser.web_vital.name == \"lcp\"\n| STATS lcp = ??agg_func(browser.web_vital.value)::double\n| EVAL max_val = CASE(lcp > 6000.0, lcp*1.1, 6000.0) "
+                                "esql": "FROM logs-*.otel-*\n| WHERE service.name IS NOT NULL AND MV_CONTAINS(?service_name, service.name)\n| WHERE resource.attributes.user_agent.original IS NOT NULL\n| USER_AGENT userAgent = resource.attributes.user_agent.original\n| WHERE MV_CONTAINS(?browser, userAgent.name)\n| WHERE MV_CONTAINS(?os, userAgent.os.name)\n| WHERE browser.web_vital.name == \"lcp\"\n| STATS lcp = ??agg_func(browser.web_vital.value)::double\n| EVAL max_val = CASE(lcp > 6000.0, lcp*1.1, 6000.0) "
                             },
                             "columns": [
                                 {
@@ -1194,7 +1199,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "FROM logs-*.otel-*\n| WHERE service.name IS NOT NULL AND MV_CONTAINS(?service_name, service.name)\n| WHERE browser.name  IS NOT NULL AND MV_CONTAINS(?browser, browser.name)\n| WHERE browser.platform  IS NOT NULL AND MV_CONTAINS(?os, browser.platform)\n| WHERE browser.web_vital.name == \"lcp\"\n| STATS lcp = ??agg_func(browser.web_vital.value)::double\n| EVAL max_val = CASE(lcp > 6000.0, lcp*1.1, 6000.0) "
+                        "esql": "FROM logs-*.otel-*\n| WHERE service.name IS NOT NULL AND MV_CONTAINS(?service_name, service.name)\n| WHERE resource.attributes.user_agent.original IS NOT NULL\n| USER_AGENT userAgent = resource.attributes.user_agent.original\n| WHERE MV_CONTAINS(?browser, userAgent.name)\n| WHERE MV_CONTAINS(?os, userAgent.os.name)\n| WHERE browser.web_vital.name == \"lcp\"\n| STATS lcp = ??agg_func(browser.web_vital.value)::double\n| EVAL max_val = CASE(lcp > 6000.0, lcp*1.1, 6000.0) "
                     },
                     "visualization": {
                         "shape": "horizontalBullet",
@@ -1296,7 +1301,7 @@
                             "f5d462e5-2118-44e6-ad6c-5bfc25581baf": {
                             "index": "87ad6212b94bdefe69a07316420e3f5f053441fa1e5479f8aaf66200eea35e72",
                             "query": {
-                                "esql": "FROM logs-*.otel-*\n| WHERE service.name IS NOT NULL AND MV_CONTAINS(?service_name, service.name)\n| WHERE browser.name  IS NOT NULL AND MV_CONTAINS(?browser, browser.name)\n| WHERE browser.platform  IS NOT NULL AND MV_CONTAINS(?os, browser.platform)\n| WHERE browser.web_vital.name == \"lcp\"\n| STATS `min` = MIN(browser.web_vital.value),\n    `avg` = AVG(browser.web_vital.value),\n    `max` = MAX(browser.web_vital.value) BY Time = BUCKET(@timestamp, 50, ?_tstart, ?_tend)"
+                                "esql": "FROM logs-*.otel-*\n| WHERE service.name IS NOT NULL AND MV_CONTAINS(?service_name, service.name)\n| WHERE resource.attributes.user_agent.original IS NOT NULL\n| USER_AGENT userAgent = resource.attributes.user_agent.original\n| WHERE MV_CONTAINS(?browser, userAgent.name)\n| WHERE MV_CONTAINS(?os, userAgent.os.name)\n| WHERE browser.web_vital.name == \"lcp\"\n| STATS `min` = MIN(browser.web_vital.value),\n    `avg` = AVG(browser.web_vital.value),\n    `max` = MAX(browser.web_vital.value) BY Time = BUCKET(@timestamp, 50, ?_tstart, ?_tend)"
                             },
                             "columns": [
                                 {
@@ -1390,7 +1395,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "FROM logs-*.otel-*\n| WHERE service.name IS NOT NULL AND MV_CONTAINS(?service_name, service.name)\n| WHERE browser.name  IS NOT NULL AND MV_CONTAINS(?browser, browser.name)\n| WHERE browser.platform  IS NOT NULL AND MV_CONTAINS(?os, browser.platform)\n| WHERE browser.web_vital.name == \"lcp\"\n| STATS `min` = MIN(browser.web_vital.value),\n    `avg` = AVG(browser.web_vital.value),\n    `max` = MAX(browser.web_vital.value) BY Time = BUCKET(@timestamp, 50, ?_tstart, ?_tend)"
+                        "esql": "FROM logs-*.otel-*\n| WHERE service.name IS NOT NULL AND MV_CONTAINS(?service_name, service.name)\n| WHERE resource.attributes.user_agent.original IS NOT NULL\n| USER_AGENT userAgent = resource.attributes.user_agent.original\n| WHERE MV_CONTAINS(?browser, userAgent.name)\n| WHERE MV_CONTAINS(?os, userAgent.os.name)\n| WHERE browser.web_vital.name == \"lcp\"\n| STATS `min` = MIN(browser.web_vital.value),\n    `avg` = AVG(browser.web_vital.value),\n    `max` = MAX(browser.web_vital.value) BY Time = BUCKET(@timestamp, 50, ?_tstart, ?_tend)"
                     },
                     "visualization": {
                         "legend": {
@@ -1514,7 +1519,7 @@
                     "MAX"
                 ],
                 "control_type": "STATIC_VALUES",
-                "esql_query": "FROM logs-*.otel-*\n| WHERE service.name IS NOT NULL AND MV_CONTAINS(?service_name, service.name)\n| WHERE browser.name  IS NOT NULL AND MV_CONTAINS(?browser, browser.name)\n| WHERE browser.platform  IS NOT NULL AND MV_CONTAINS(?os, browser.platform)\n| WHERE browser.web_vital.name == \"lcp\"\n| STATS lcp = ??(browser.web_vital.value)::double\n| EVAL max_val = CASE(lcp > 6000.0, lcp, 6000.0) ",
+                "esql_query": "FROM logs-*.otel-*\n| WHERE service.name IS NOT NULL AND MV_CONTAINS(?service_name, service.name)\n| WHERE resource.attributes.user_agent.original IS NOT NULL\n| USER_AGENT userAgent = resource.attributes.user_agent.original\n| WHERE MV_CONTAINS(?browser, userAgent.name)\n| WHERE MV_CONTAINS(?os, userAgent.os.name)\n| WHERE browser.web_vital.name == \"lcp\"\n| STATS lcp = ??(browser.web_vital.value)::double\n| EVAL max_val = CASE(lcp > 6000.0, lcp, 6000.0) ",
                 "selected_options": [
                     "MAX"
                 ],
@@ -1595,7 +1600,7 @@
                             "d07922f8-d30b-4c0e-80db-34b5980298fa": {
                             "index": "87ad6212b94bdefe69a07316420e3f5f053441fa1e5479f8aaf66200eea35e72",
                             "query": {
-                                "esql": "FROM logs-*.otel-*\n| WHERE service.name IS NOT NULL AND MV_CONTAINS(?service_name, service.name)\n| WHERE browser.name  IS NOT NULL AND MV_CONTAINS(?browser, browser.name)\n| WHERE browser.platform  IS NOT NULL AND MV_CONTAINS(?os, browser.platform)\n| WHERE browser.web_vital.name == \"inp\"\n| STATS inp = ??agg_func(browser.web_vital.value)::double\n| EVAL max_val = CASE(inp > 750.0, inp * 1.1, 750.0)\n| EVAL min_val = 0 "
+                                "esql": "FROM logs-*.otel-*\n| WHERE service.name IS NOT NULL AND MV_CONTAINS(?service_name, service.name)\n| WHERE resource.attributes.user_agent.original IS NOT NULL\n| USER_AGENT userAgent = resource.attributes.user_agent.original\n| WHERE MV_CONTAINS(?browser, userAgent.name)\n| WHERE MV_CONTAINS(?os, userAgent.os.name)\n| WHERE browser.web_vital.name == \"inp\"\n| STATS inp = ??agg_func(browser.web_vital.value)::double\n| EVAL max_val = CASE(inp > 750.0, inp * 1.1, 750.0)\n| EVAL min_val = 0 "
                             },
                             "columns": [
                                 {
@@ -1680,7 +1685,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "FROM logs-*.otel-*\n| WHERE service.name IS NOT NULL AND MV_CONTAINS(?service_name, service.name)\n| WHERE browser.name  IS NOT NULL AND MV_CONTAINS(?browser, browser.name)\n| WHERE browser.platform  IS NOT NULL AND MV_CONTAINS(?os, browser.platform)\n| WHERE browser.web_vital.name == \"inp\"\n| STATS inp = ??agg_func(browser.web_vital.value)::double\n| EVAL max_val = CASE(inp > 750.0, inp * 1.1, 750.0)\n| EVAL min_val = 0 "
+                        "esql": "FROM logs-*.otel-*\n| WHERE service.name IS NOT NULL AND MV_CONTAINS(?service_name, service.name)\n| WHERE resource.attributes.user_agent.original IS NOT NULL\n| USER_AGENT userAgent = resource.attributes.user_agent.original\n| WHERE MV_CONTAINS(?browser, userAgent.name)\n| WHERE MV_CONTAINS(?os, userAgent.os.name)\n| WHERE browser.web_vital.name == \"inp\"\n| STATS inp = ??agg_func(browser.web_vital.value)::double\n| EVAL max_val = CASE(inp > 750.0, inp * 1.1, 750.0)\n| EVAL min_val = 0 "
                     },
                     "visualization": {
                         "shape": "horizontalBullet",
@@ -1790,7 +1795,7 @@
                             "f5d462e5-2118-44e6-ad6c-5bfc25581baf": {
                             "index": "87ad6212b94bdefe69a07316420e3f5f053441fa1e5479f8aaf66200eea35e72",
                             "query": {
-                                "esql": "FROM logs-*.otel-*\n| WHERE service.name IS NOT NULL AND MV_CONTAINS(?service_name, service.name)\n| WHERE browser.name  IS NOT NULL AND MV_CONTAINS(?browser, browser.name)\n| WHERE browser.platform  IS NOT NULL AND MV_CONTAINS(?os, browser.platform)\n| WHERE browser.web_vital.name == \"inp\"\n| STATS `min` = MIN(browser.web_vital.value),\n    `avg` = AVG(browser.web_vital.value),\n    `max` = MAX(browser.web_vital.value) BY Time = BUCKET(@timestamp, 50, ?_tstart, ?_tend)"
+                                "esql": "FROM logs-*.otel-*\n| WHERE service.name IS NOT NULL AND MV_CONTAINS(?service_name, service.name)\n| WHERE resource.attributes.user_agent.original IS NOT NULL\n| USER_AGENT userAgent = resource.attributes.user_agent.original\n| WHERE MV_CONTAINS(?browser, userAgent.name)\n| WHERE MV_CONTAINS(?os, userAgent.os.name)\n| WHERE browser.web_vital.name == \"inp\"\n| STATS `min` = MIN(browser.web_vital.value),\n    `avg` = AVG(browser.web_vital.value),\n    `max` = MAX(browser.web_vital.value) BY Time = BUCKET(@timestamp, 50, ?_tstart, ?_tend)"
                             },
                             "columns": [
                                 {
@@ -1884,7 +1889,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "FROM logs-*.otel-*\n| WHERE service.name IS NOT NULL AND MV_CONTAINS(?service_name, service.name)\n| WHERE browser.name  IS NOT NULL AND MV_CONTAINS(?browser, browser.name)\n| WHERE browser.platform  IS NOT NULL AND MV_CONTAINS(?os, browser.platform)\n| WHERE browser.web_vital.name == \"inp\"\n| STATS `min` = MIN(browser.web_vital.value),\n    `avg` = AVG(browser.web_vital.value),\n    `max` = MAX(browser.web_vital.value) BY Time = BUCKET(@timestamp, 50, ?_tstart, ?_tend)"
+                        "esql": "FROM logs-*.otel-*\n| WHERE service.name IS NOT NULL AND MV_CONTAINS(?service_name, service.name)\n| WHERE resource.attributes.user_agent.original IS NOT NULL\n| USER_AGENT userAgent = resource.attributes.user_agent.original\n| WHERE MV_CONTAINS(?browser, userAgent.name)\n| WHERE MV_CONTAINS(?os, userAgent.os.name)\n| WHERE browser.web_vital.name == \"inp\"\n| STATS `min` = MIN(browser.web_vital.value),\n    `avg` = AVG(browser.web_vital.value),\n    `max` = MAX(browser.web_vital.value) BY Time = BUCKET(@timestamp, 50, ?_tstart, ?_tend)"
                     },
                     "visualization": {
                         "legend": {
@@ -1995,7 +2000,7 @@
                             "12762e27-a2f5-4aaa-92fa-cb368c1c1bac": {
                             "index": "87ad6212b94bdefe69a07316420e3f5f053441fa1e5479f8aaf66200eea35e72",
                             "query": {
-                                "esql": "FROM logs-*.otel-*\n| WHERE service.name IS NOT NULL AND MV_CONTAINS(?service_name, service.name)\n| WHERE browser.name  IS NOT NULL AND MV_CONTAINS(?browser, browser.name)\n| WHERE browser.platform  IS NOT NULL AND MV_CONTAINS(?os, browser.platform)\n| WHERE browser.web_vital.name == \"cls\"\n| STATS cls = ??agg_func(browser.web_vital.value)::double\n| EVAL max_val = CASE(cls > 0.4, cls * 1.1, 0.4)\n| EVAL min_val = 0"
+                                "esql": "FROM logs-*.otel-*\n| WHERE service.name IS NOT NULL AND MV_CONTAINS(?service_name, service.name)\n| WHERE resource.attributes.user_agent.original IS NOT NULL\n| USER_AGENT userAgent = resource.attributes.user_agent.original\n| WHERE MV_CONTAINS(?browser, userAgent.name)\n| WHERE MV_CONTAINS(?os, userAgent.os.name)\n| WHERE browser.web_vital.name == \"cls\"\n| STATS cls = ??agg_func(browser.web_vital.value)::double\n| EVAL max_val = CASE(cls > 0.4, cls * 1.1, 0.4)\n| EVAL min_val = 0"
                             },
                             "columns": [
                                 {
@@ -2086,7 +2091,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "FROM logs-*.otel-*\n| WHERE service.name IS NOT NULL AND MV_CONTAINS(?service_name, service.name)\n| WHERE browser.name  IS NOT NULL AND MV_CONTAINS(?browser, browser.name)\n| WHERE browser.platform  IS NOT NULL AND MV_CONTAINS(?os, browser.platform)\n| WHERE browser.web_vital.name == \"cls\"\n| STATS cls = ??agg_func(browser.web_vital.value)::double\n| EVAL max_val = CASE(cls > 0.4, cls * 1.1, 0.4)\n| EVAL min_val = 0"
+                        "esql": "FROM logs-*.otel-*\n| WHERE service.name IS NOT NULL AND MV_CONTAINS(?service_name, service.name)\n| WHERE resource.attributes.user_agent.original IS NOT NULL\n| USER_AGENT userAgent = resource.attributes.user_agent.original\n| WHERE MV_CONTAINS(?browser, userAgent.name)\n| WHERE MV_CONTAINS(?os, userAgent.os.name)\n| WHERE browser.web_vital.name == \"cls\"\n| STATS cls = ??agg_func(browser.web_vital.value)::double\n| EVAL max_val = CASE(cls > 0.4, cls * 1.1, 0.4)\n| EVAL min_val = 0"
                     },
                     "visualization": {
                         "shape": "horizontalBullet",
@@ -2188,7 +2193,7 @@
                             "f5d462e5-2118-44e6-ad6c-5bfc25581baf": {
                             "index": "87ad6212b94bdefe69a07316420e3f5f053441fa1e5479f8aaf66200eea35e72",
                             "query": {
-                                "esql": "FROM logs-*.otel-*\n| WHERE service.name IS NOT NULL AND MV_CONTAINS(?service_name, service.name)\n| WHERE browser.name  IS NOT NULL AND MV_CONTAINS(?browser, browser.name)\n| WHERE browser.platform  IS NOT NULL AND MV_CONTAINS(?os, browser.platform)\n| WHERE browser.web_vital.name == \"cls\"\n| STATS `min` = MIN(browser.web_vital.value),\n    `avg` = AVG(browser.web_vital.value),\n    `max` = MAX(browser.web_vital.value) BY Time = BUCKET(@timestamp, 50, ?_tstart, ?_tend)"
+                                "esql": "FROM logs-*.otel-*\n| WHERE service.name IS NOT NULL AND MV_CONTAINS(?service_name, service.name)\n| WHERE resource.attributes.user_agent.original IS NOT NULL\n| USER_AGENT userAgent = resource.attributes.user_agent.original\n| WHERE MV_CONTAINS(?browser, userAgent.name)\n| WHERE MV_CONTAINS(?os, userAgent.os.name)\n| WHERE browser.web_vital.name == \"cls\"\n| STATS `min` = MIN(browser.web_vital.value),\n    `avg` = AVG(browser.web_vital.value),\n    `max` = MAX(browser.web_vital.value) BY Time = BUCKET(@timestamp, 50, ?_tstart, ?_tend)"
                             },
                             "columns": [
                                 {
@@ -2273,7 +2278,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "FROM logs-*.otel-*\n| WHERE service.name IS NOT NULL AND MV_CONTAINS(?service_name, service.name)\n| WHERE browser.name  IS NOT NULL AND MV_CONTAINS(?browser, browser.name)\n| WHERE browser.platform  IS NOT NULL AND MV_CONTAINS(?os, browser.platform)\n| WHERE browser.web_vital.name == \"cls\"\n| STATS `min` = MIN(browser.web_vital.value),\n    `avg` = AVG(browser.web_vital.value),\n    `max` = MAX(browser.web_vital.value) BY Time = BUCKET(@timestamp, 50, ?_tstart, ?_tend)"
+                        "esql": "FROM logs-*.otel-*\n| WHERE service.name IS NOT NULL AND MV_CONTAINS(?service_name, service.name)\n| WHERE resource.attributes.user_agent.original IS NOT NULL\n| USER_AGENT userAgent = resource.attributes.user_agent.original\n| WHERE MV_CONTAINS(?browser, userAgent.name)\n| WHERE MV_CONTAINS(?os, userAgent.os.name)\n| WHERE browser.web_vital.name == \"cls\"\n| STATS `min` = MIN(browser.web_vital.value),\n    `avg` = AVG(browser.web_vital.value),\n    `max` = MAX(browser.web_vital.value) BY Time = BUCKET(@timestamp, 50, ?_tstart, ?_tend)"
                     },
                     "visualization": {
                         "legend": {
@@ -2418,7 +2423,7 @@
                             "f2c974e3-7f79-4a9c-8c63-0aef3fa068e6": {
                             "index": "87ad6212b94bdefe69a07316420e3f5f053441fa1e5479f8aaf66200eea35e72",
                             "query": {
-                                "esql": "FROM logs-*.otel-*\n| WHERE service.name IS NOT NULL AND MV_CONTAINS(?service_name, service.name)\n| WHERE browser.name  IS NOT NULL AND MV_CONTAINS(?browser, browser.name)\n| WHERE browser.platform  IS NOT NULL AND MV_CONTAINS(?os, browser.platform)\n| WHERE browser.web_vital.name == \"fcp\"\n| STATS fcp = ??agg_func(browser.web_vital.value)::double\n| EVAL max_val = CASE(fcp > 5000.0, fcp * 1.1, 5000.0) "
+                                "esql": "FROM logs-*.otel-*\n| WHERE service.name IS NOT NULL AND MV_CONTAINS(?service_name, service.name)\n| WHERE resource.attributes.user_agent.original IS NOT NULL\n| USER_AGENT userAgent = resource.attributes.user_agent.original\n| WHERE MV_CONTAINS(?browser, userAgent.name)\n| WHERE MV_CONTAINS(?os, userAgent.os.name)\n| WHERE browser.web_vital.name == \"fcp\"\n| STATS fcp = ??agg_func(browser.web_vital.value)::double\n| EVAL max_val = CASE(fcp > 5000.0, fcp * 1.1, 5000.0) "
                             },
                             "columns": [
                                 {
@@ -2487,7 +2492,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "FROM logs-*.otel-*\n| WHERE service.name IS NOT NULL AND MV_CONTAINS(?service_name, service.name)\n| WHERE browser.name  IS NOT NULL AND MV_CONTAINS(?browser, browser.name)\n| WHERE browser.platform  IS NOT NULL AND MV_CONTAINS(?os, browser.platform)\n| WHERE browser.web_vital.name == \"fcp\"\n| STATS fcp = ??agg_func(browser.web_vital.value)::double\n| EVAL max_val = CASE(fcp > 5000.0, fcp * 1.1, 5000.0) "
+                        "esql": "FROM logs-*.otel-*\n| WHERE service.name IS NOT NULL AND MV_CONTAINS(?service_name, service.name)\n| WHERE resource.attributes.user_agent.original IS NOT NULL\n| USER_AGENT userAgent = resource.attributes.user_agent.original\n| WHERE MV_CONTAINS(?browser, userAgent.name)\n| WHERE MV_CONTAINS(?os, userAgent.os.name)\n| WHERE browser.web_vital.name == \"fcp\"\n| STATS fcp = ??agg_func(browser.web_vital.value)::double\n| EVAL max_val = CASE(fcp > 5000.0, fcp * 1.1, 5000.0) "
                     },
                     "visualization": {
                         "shape": "horizontalBullet",
@@ -2588,7 +2593,7 @@
                             "f5d462e5-2118-44e6-ad6c-5bfc25581baf": {
                             "index": "87ad6212b94bdefe69a07316420e3f5f053441fa1e5479f8aaf66200eea35e72",
                             "query": {
-                                "esql": "FROM logs-*.otel-*\n| WHERE service.name IS NOT NULL AND MV_CONTAINS(?service_name, service.name)\n| WHERE browser.name  IS NOT NULL AND MV_CONTAINS(?browser, browser.name)\n| WHERE browser.platform  IS NOT NULL AND MV_CONTAINS(?os, browser.platform)\n| WHERE browser.web_vital.name == \"fcp\"\n| STATS `min` = MIN(browser.web_vital.value),\n    `avg` = AVG(browser.web_vital.value),\n    `max` = MAX(browser.web_vital.value) BY Time = BUCKET(@timestamp, 50, ?_tstart, ?_tend)"
+                                "esql": "FROM logs-*.otel-*\n| WHERE service.name IS NOT NULL AND MV_CONTAINS(?service_name, service.name)\n| WHERE resource.attributes.user_agent.original IS NOT NULL\n| USER_AGENT userAgent = resource.attributes.user_agent.original\n| WHERE MV_CONTAINS(?browser, userAgent.name)\n| WHERE MV_CONTAINS(?os, userAgent.os.name)\n| WHERE browser.web_vital.name == \"fcp\"\n| STATS `min` = MIN(browser.web_vital.value),\n    `avg` = AVG(browser.web_vital.value),\n    `max` = MAX(browser.web_vital.value) BY Time = BUCKET(@timestamp, 50, ?_tstart, ?_tend)"
                             },
                             "columns": [
                                 {
@@ -2682,7 +2687,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "FROM logs-*.otel-*\n| WHERE service.name IS NOT NULL AND MV_CONTAINS(?service_name, service.name)\n| WHERE browser.name  IS NOT NULL AND MV_CONTAINS(?browser, browser.name)\n| WHERE browser.platform  IS NOT NULL AND MV_CONTAINS(?os, browser.platform)\n| WHERE browser.web_vital.name == \"fcp\"\n| STATS `min` = MIN(browser.web_vital.value),\n    `avg` = AVG(browser.web_vital.value),\n    `max` = MAX(browser.web_vital.value) BY Time = BUCKET(@timestamp, 50, ?_tstart, ?_tend)"
+                        "esql": "FROM logs-*.otel-*\n| WHERE service.name IS NOT NULL AND MV_CONTAINS(?service_name, service.name)\n| WHERE resource.attributes.user_agent.original IS NOT NULL\n| USER_AGENT userAgent = resource.attributes.user_agent.original\n| WHERE MV_CONTAINS(?browser, userAgent.name)\n| WHERE MV_CONTAINS(?os, userAgent.os.name)\n| WHERE browser.web_vital.name == \"fcp\"\n| STATS `min` = MIN(browser.web_vital.value),\n    `avg` = AVG(browser.web_vital.value),\n    `max` = MAX(browser.web_vital.value) BY Time = BUCKET(@timestamp, 50, ?_tstart, ?_tend)"
                     },
                     "visualization": {
                         "legend": {
@@ -2793,7 +2798,7 @@
                             "c67842ea-b83c-4fca-84e2-20126bb9d4df": {
                             "index": "87ad6212b94bdefe69a07316420e3f5f053441fa1e5479f8aaf66200eea35e72",
                             "query": {
-                                "esql": "FROM logs-*.otel-*\n| WHERE service.name IS NOT NULL AND MV_CONTAINS(?service_name, service.name)\n| WHERE browser.name  IS NOT NULL AND MV_CONTAINS(?browser, browser.name)\n| WHERE browser.platform  IS NOT NULL AND MV_CONTAINS(?os, browser.platform)\n| WHERE browser.web_vital.name == \"ttfb\"\n| STATS ttfb = ??agg_func(browser.web_vital.value)::double\n| EVAL max_val = CASE(ttfb > 2500.0, ttfb * 1.1, 2500.0), min_val = 0"
+                                "esql": "FROM logs-*.otel-*\n| WHERE service.name IS NOT NULL AND MV_CONTAINS(?service_name, service.name)\n| WHERE resource.attributes.user_agent.original IS NOT NULL\n| USER_AGENT userAgent = resource.attributes.user_agent.original\n| WHERE MV_CONTAINS(?browser, userAgent.name)\n| WHERE MV_CONTAINS(?os, userAgent.os.name)\n| WHERE browser.web_vital.name == \"ttfb\"\n| STATS ttfb = ??agg_func(browser.web_vital.value)::double\n| EVAL max_val = CASE(ttfb > 2500.0, ttfb * 1.1, 2500.0), min_val = 0"
                             },
                             "columns": [
                                 {
@@ -2889,7 +2894,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "FROM logs-*.otel-*\n| WHERE service.name IS NOT NULL AND MV_CONTAINS(?service_name, service.name)\n| WHERE browser.name  IS NOT NULL AND MV_CONTAINS(?browser, browser.name)\n| WHERE browser.platform  IS NOT NULL AND MV_CONTAINS(?os, browser.platform)\n| WHERE browser.web_vital.name == \"ttfb\"\n| STATS ttfb = ??agg_func(browser.web_vital.value)::double\n| EVAL max_val = CASE(ttfb > 2500.0, ttfb * 1.1, 2500.0), min_val = 0"
+                        "esql": "FROM logs-*.otel-*\n| WHERE service.name IS NOT NULL AND MV_CONTAINS(?service_name, service.name)\n| WHERE resource.attributes.user_agent.original IS NOT NULL\n| USER_AGENT userAgent = resource.attributes.user_agent.original\n| WHERE MV_CONTAINS(?browser, userAgent.name)\n| WHERE MV_CONTAINS(?os, userAgent.os.name)\n| WHERE browser.web_vital.name == \"ttfb\"\n| STATS ttfb = ??agg_func(browser.web_vital.value)::double\n| EVAL max_val = CASE(ttfb > 2500.0, ttfb * 1.1, 2500.0), min_val = 0"
                     },
                     "visualization": {
                         "shape": "horizontalBullet",
@@ -2991,7 +2996,7 @@
                             "f5d462e5-2118-44e6-ad6c-5bfc25581baf": {
                             "index": "87ad6212b94bdefe69a07316420e3f5f053441fa1e5479f8aaf66200eea35e72",
                             "query": {
-                                "esql": "FROM logs-*.otel-*\n| WHERE service.name IS NOT NULL AND MV_CONTAINS(?service_name, service.name)\n| WHERE browser.name  IS NOT NULL AND MV_CONTAINS(?browser, browser.name)\n| WHERE browser.platform  IS NOT NULL AND MV_CONTAINS(?os, browser.platform)\n| WHERE browser.web_vital.name == \"ttfb\"\n| STATS `min` = MIN(browser.web_vital.value),\n    `avg` = AVG(browser.web_vital.value),\n    `max` = MAX(browser.web_vital.value) BY Time = BUCKET(@timestamp, 50, ?_tstart, ?_tend)"
+                                "esql": "FROM logs-*.otel-*\n| WHERE service.name IS NOT NULL AND MV_CONTAINS(?service_name, service.name)\n| WHERE resource.attributes.user_agent.original IS NOT NULL\n| USER_AGENT userAgent = resource.attributes.user_agent.original\n| WHERE MV_CONTAINS(?browser, userAgent.name)\n| WHERE MV_CONTAINS(?os, userAgent.os.name)\n| WHERE browser.web_vital.name == \"ttfb\"\n| STATS `min` = MIN(browser.web_vital.value),\n    `avg` = AVG(browser.web_vital.value),\n    `max` = MAX(browser.web_vital.value) BY Time = BUCKET(@timestamp, 50, ?_tstart, ?_tend)"
                             },
                             "columns": [
                                 {
@@ -3085,7 +3090,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "FROM logs-*.otel-*\n| WHERE service.name IS NOT NULL AND MV_CONTAINS(?service_name, service.name)\n| WHERE browser.name  IS NOT NULL AND MV_CONTAINS(?browser, browser.name)\n| WHERE browser.platform  IS NOT NULL AND MV_CONTAINS(?os, browser.platform)\n| WHERE browser.web_vital.name == \"ttfb\"\n| STATS `min` = MIN(browser.web_vital.value),\n    `avg` = AVG(browser.web_vital.value),\n    `max` = MAX(browser.web_vital.value) BY Time = BUCKET(@timestamp, 50, ?_tstart, ?_tend)"
+                        "esql": "FROM logs-*.otel-*\n| WHERE service.name IS NOT NULL AND MV_CONTAINS(?service_name, service.name)\n| WHERE resource.attributes.user_agent.original IS NOT NULL\n| USER_AGENT userAgent = resource.attributes.user_agent.original\n| WHERE MV_CONTAINS(?browser, userAgent.name)\n| WHERE MV_CONTAINS(?os, userAgent.os.name)\n| WHERE browser.web_vital.name == \"ttfb\"\n| STATS `min` = MIN(browser.web_vital.value),\n    `avg` = AVG(browser.web_vital.value),\n    `max` = MAX(browser.web_vital.value) BY Time = BUCKET(@timestamp, 50, ?_tstart, ?_tend)"
                     },
                     "visualization": {
                         "legend": {
@@ -3189,11 +3194,8 @@
                 "14159fb2-d5ab-4ba7-b23e-d83810de7bcd": {
                     "config": {
                         "control_type": "VALUES_FROM_QUERY",
-                        "esql_query": "FROM logs-*.otel-* \n| WHERE @timestamp <= ?_tend and @timestamp > ?_tstart\n| WHERE service.name IS NOT NULL AND MV_CONTAINS(?service_name, service.name)\n| WHERE telemetry.sdk.language  == \"webjs\"\n| STATS BY browser.name",
-                        "selected_options": [
-                            "Firefox",
-                            "Chrome"
-                        ],
+                        "esql_query": "FROM logs-*.otel-* \n| WHERE @timestamp <= ?_tend and @timestamp > ?_tstart\n| WHERE telemetry.sdk.language  == \"webjs\"\n| WHERE service.name IS NOT NULL AND MV_CONTAINS(?service_name, service.name)\n| USER_AGENT userAgent = resource.attributes.user_agent.original\n| STATS BY userAgent.name",
+                        "selected_options": null,
                         "single_select": false,
                         "variable_name": "browser",
                         "variable_type": "multi_values"
@@ -3207,8 +3209,7 @@
                     "config": {
                         "control_type": "VALUES_FROM_QUERY",
                         "esql_query": "FROM logs-*.otel-* \n| WHERE @timestamp <= ?_tend and @timestamp > ?_tstart \n| WHERE telemetry.sdk.language  == \"webjs\"\n| STATS BY service.name",
-                        "selected_options": [
-                        ],
+                        "selected_options": null,
                         "single_select": false,
                         "variable_name": "service_name",
                         "variable_type": "multi_values"
@@ -3221,11 +3222,8 @@
                 "f4674dbb-f466-45b7-8795-be2e37d29700": {
                     "config": {
                         "control_type": "VALUES_FROM_QUERY",
-                        "esql_query": "FROM logs-*.otel-* \n| WHERE @timestamp <= ?_tend and @timestamp > ?_tstart\n| WHERE service.name IS NOT NULL AND MV_CONTAINS(?service_name, service.name)\n| WHERE telemetry.sdk.language  == \"webjs\"\n| STATS BY browser.platform",
-                        "selected_options": [
-                            "macOS",
-                            "Windows"
-                        ],
+                        "esql_query": "FROM logs-*.otel-* \n| WHERE @timestamp <= ?_tend and @timestamp > ?_tstart\n| WHERE telemetry.sdk.language  == \"webjs\"\n| WHERE service.name IS NOT NULL AND MV_CONTAINS(?service_name, service.name)\n| USER_AGENT userAgent = resource.attributes.user_agent.original\n| STATS BY userAgent.os.name",
+                        "selected_options": null,
                         "single_select": false,
                         "variable_name": "os",
                         "variable_type": "multi_values"
@@ -3248,7 +3246,7 @@
             }
         ],
         "timeRestore": false,
-        "title": "OpenTelemetry RUM JS"
+        "title": "[RUM OTel] Page Load & WebVitals"
     },
     "coreMigrationVersion": "8.8.0",
     "created_at": "2026-02-25T09:08:58.336Z",

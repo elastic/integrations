@@ -90,54 +90,385 @@
           type: long
     - name: scan_details
       type: group
-      description: Detailed scan information from the WAS v2 scan details API.
+      description: Detailed scan information from the scan details API (GET /scans/{id}).
       fields:
-        - name: scan_id
-          type: keyword
-          description: The unique identifier for the scan.
-        - name: user_id
-          type: keyword
-          description: The unique identifier of the user who created the scan.
-        - name: config_id
-          type: keyword
-          description: The unique identifier of the scan configuration.
-        - name: target
-          type: keyword
-          description: The target URL of the scan.
-        - name: created_at
-          type: date
-          description: The date and time when the scan was created.
-        - name: updated_at
-          type: date
-          description: The date and time when the scan was last updated.
-        - name: requested_action
-          type: keyword
-          description: The action requested for the scan (e.g., start, stop).
-        - name: status
-          type: keyword
-          description: The current status of the scan.
-        - name: metadata
+        - name: info
           type: group
-          description: Metadata about the scan progress and statistics.
+          description: Top-level metadata about the scan run.
           fields:
-            - name: queued_urls
-              type: long
-              description: The number of URLs queued for scanning.
-            - name: scan_status
+            - name: owner
               type: keyword
-              description: The detailed scan status.
-            - name: crawled_urls
+              description: The owner of the scan.
+            - name: name
+              type: keyword
+              description: The name of the scan.
+            - name: no_target
+              type: boolean
+              description: Indicates whether the scan based on this policy can specify targets.
+            - name: folder_id
               type: long
-              description: The number of URLs that have been crawled.
-            - name: queued_pages
+              description: The unique ID of the destination folder for the scan.
+            - name: control
+              type: boolean
+              description: If true, the scan has a schedule and can be launched.
+            - name: user_permissions
               type: long
-              description: The number of pages queued for auditing.
-            - name: audited_pages
+              description: The sharing permissions for the scan.
+            - name: schedule_uuid
+              type: keyword
+              description: The UUID for a specific instance in the scan schedule.
+            - name: edit_allowed
+              type: boolean
+              description: If true, the requesting user can edit this scan configuration.
+            - name: scanner_name
+              type: keyword
+              description: The name of the scanner configured to run the scan.
+            - name: policy
+              type: keyword
+              description: The name of the scan template associated with the scan.
+            - name: shared
+              type: boolean
+              description: If true, the scan is shared with users other than the owner.
+            - name: object_id
               type: long
-              description: The number of pages that have been audited.
-            - name: request_count
+              description: The unique ID of the scan result object.
+            - name: tag_targets
+              type: keyword
+              description: The list of asset tag UUIDs the scan uses to determine which assets it evaluates.
+            - name: hostcount
               type: long
-              description: The total number of requests made during the scan.
-            - name: response_time
+              description: The total number of assets scanned for vulnerabilities.
+            - name: uuid
+              type: keyword
+              description: The UUID of the scan.
+            - name: status
+              type: keyword
+              description: The status of the scan.
+            - name: scan_type
+              type: keyword
+              description: The type of scan (ps, remote, agent, or null).
+            - name: targets
+              type: keyword
+              description: A comma-delimited list of IPv4 addresses configured as targets for the scan.
+            - name: alt_targets_used
+              type: boolean
+              description: If true, Tenable Vulnerability Management did not launch the scan with a target list.
+            - name: pci-can-upload
+              type: boolean
+              description: If true, you can submit the results of the scan for PCI ASV review.
+            - name: scan_start
+              type: date
+              description: The Unix timestamp when the scan run started.
+            - name: timestamp
+              type: date
+              description: The Unix timestamp when the scan run finished.
+            - name: scan_end
+              type: date
+              description: The Unix timestamp when the scan run finished.
+            - name: is_archived
+              type: boolean
+              description: Indicates whether the scan results are older than 35 days.
+            - name: haskb
+              type: boolean
+              description: Indicates whether a scan has a Knowledge Base (KB) associated with it.
+            - name: hasaudittrail
+              type: boolean
+              description: Indicates whether the scan is configured to create an audit trail.
+            - name: scanner_start
+              type: date
+              description: The scan's start time, if the scan is imported.
+            - name: scanner_end
+              type: date
+              description: The scan's end time, if the scan is imported.
+            - name: acls
+              type: group
+              description: An array of objects that control sharing permissions for the scan.
+              fields:
+                - name: permissions
+                  type: long
+                  description: The scan permission.
+                - name: owner
+                  type: long
+                  description: Indicates whether the user or group owns the scan.
+                - name: display_name
+                  type: keyword
+                  description: The name of the user or group as it appears in the UI.
+                - name: name
+                  type: keyword
+                  description: The name of the user or group granted the specified permissions.
+                - name: id
+                  type: long
+                  description: A number representing the display order of the user or group.
+                - name: type
+                  type: keyword
+                  description: The type of scan permissions (default, user, or group).
+        - name: hosts
+          type: group
+          description: A list of hosts targeted by the scan for the specified run. Absent when info.is_archived is true.
+          fields:
+            - name: asset_id
               type: long
-              description: The average response time in milliseconds.
+              description: The unique ID of the asset.
+            - name: host_id
+              type: long
+              description: The unique ID of the host.
+            - name: hostname
+              type: keyword
+              description: The name of the host.
+            - name: host_index
+              type: long
+              description: The index for the host.
+            - name: progress
+              type: keyword
+              description: The scan progress of the host.
+            - name: score
+              type: long
+              description: The overall score for the host.
+            - name: severity
+              type: long
+              description: The total severity count for the host.
+            - name: scanprogresscurrent
+              type: long
+              description: The current scan progress for the host.
+            - name: scanprogresstotal
+              type: long
+              description: The total scan progress for the host.
+            - name: numchecksconsidered
+              type: long
+              description: The number of checks considered on the host.
+            - name: totalchecksconsidered
+              type: long
+              description: The total number of checks considered on the host.
+            - name: info
+              type: long
+              description: The number of informational findings on the host.
+            - name: low
+              type: long
+              description: The number of low-severity findings on the host.
+            - name: medium
+              type: long
+              description: The number of medium-severity findings on the host.
+            - name: high
+              type: long
+              description: The number of high-severity findings on the host.
+            - name: critical
+              type: long
+              description: The number of critical-severity findings on the host.
+            - name: severitycount
+              type: group
+              description: Severity breakdown for the host.
+              fields:
+                - name: item
+                  type: group
+                  description: Array of severity level counts.
+                  fields:
+                    - name: count
+                      type: long
+                      description: The number of findings at this severity level.
+                    - name: severitylevel
+                      type: long
+                      description: The severity level (0=info, 1=low, 2=medium, 3=high, 4=critical).
+        - name: comphosts
+          type: group
+          description: A list of hosts that had compliance checks run against them. Same structure as hosts. Absent when info.is_archived is true.
+          fields:
+            - name: asset_id
+              type: long
+              description: The unique ID of the asset.
+            - name: host_id
+              type: long
+              description: The unique ID of the host.
+            - name: hostname
+              type: keyword
+              description: The name of the host.
+            - name: host_index
+              type: long
+              description: The index for the host.
+            - name: progress
+              type: keyword
+              description: The scan progress of the host.
+            - name: score
+              type: long
+              description: The overall score for the host.
+            - name: severity
+              type: long
+              description: The total severity count for the host.
+            - name: scanprogresscurrent
+              type: long
+              description: The current scan progress for the host.
+            - name: scanprogresstotal
+              type: long
+              description: The total scan progress for the host.
+            - name: numchecksconsidered
+              type: long
+              description: The number of checks considered on the host.
+            - name: totalchecksconsidered
+              type: long
+              description: The total number of checks considered on the host.
+            - name: info
+              type: long
+              description: The number of informational findings on the host.
+            - name: low
+              type: long
+              description: The number of low-severity findings on the host.
+            - name: medium
+              type: long
+              description: The number of medium-severity findings on the host.
+            - name: high
+              type: long
+              description: The number of high-severity findings on the host.
+            - name: critical
+              type: long
+              description: The number of critical-severity findings on the host.
+            - name: severitycount
+              type: group
+              description: Severity breakdown for the host.
+              fields:
+                - name: item
+                  type: group
+                  description: Array of severity level counts.
+                  fields:
+                    - name: count
+                      type: long
+                      description: The number of findings at this severity level.
+                    - name: severitylevel
+                      type: long
+                      description: The severity level (0=info, 1=low, 2=medium, 3=high, 4=critical).
+        - name: vulnerabilities
+          type: group
+          description: A list of vulnerabilities identified on the target hosts. Absent when info.is_archived is true.
+          fields:
+            - name: count
+              type: long
+              description: The number of vulnerabilities found.
+            - name: plugin_id
+              type: long
+              description: The unique ID of the vulnerability plugin.
+            - name: plugin_name
+              type: keyword
+              description: The name of the vulnerability plugin.
+            - name: plugin_family
+              type: keyword
+              description: The parent family of the vulnerability plugin.
+            - name: severity
+              type: long
+              description: The severity rating of the plugin.
+            - name: severity_index
+              type: long
+              description: The severity index order of the plugin.
+            - name: vuln_index
+              type: long
+              description: The index of the vulnerability plugin.
+        - name: compliance
+          type: group
+          description: A list of compliance checks performed during the scan run. Absent when info.is_archived is true.
+          fields:
+            - name: count
+              type: long
+              description: The number of findings.
+            - name: host_id
+              type: long
+              description: The unique ID of the host.
+            - name: hostname
+              type: keyword
+              description: The name of the host.
+            - name: plugin_family
+              type: keyword
+              description: The parent family of the compliance plugin.
+            - name: plugin_id
+              type: keyword
+              description: The unique ID of the compliance plugin (hash string).
+            - name: plugin_name
+              type: keyword
+              description: The name of the compliance plugin.
+            - name: severity
+              type: long
+              description: The severity rating of the plugin.
+            - name: severity_index
+              type: long
+              description: The severity index order of the plugin.
+        - name: history
+          type: group
+          description: A list of details about each time the scan has run.
+          fields:
+            - name: history_id
+              type: long
+              description: The unique ID of the historical data.
+            - name: owner_id
+              type: long
+              description: The unique ID of the owner of the scan.
+            - name: uuid
+              type: keyword
+              description: The UUID of the historical data.
+            - name: type
+              type: keyword
+              description: The type of scan (local, remote, agent, or null).
+            - name: status
+              type: keyword
+              description: The terminal status of the scan run.
+            - name: creation_date
+              type: date
+              description: The creation date for the historical data in Unix time.
+            - name: last_modification_date
+              type: date
+              description: The last modification date for the historical data in Unix time.
+            - name: scheduler
+              type: long
+              description: If true, Tenable Vulnerability Management launched the scan from a schedule.
+            - name: alt_targets_used
+              type: boolean
+              description: If true, the scan was not launched with a target list.
+            - name: is_archived
+              type: boolean
+              description: Indicates whether the scan results are older than 35 days.
+            - name: reporting_mode
+              type: keyword
+              description: Reporting mode for Nessus Agent scans (baseline, differential, or null).
+        - name: notes
+          type: group
+          description: A list of notes about the scan.
+          fields:
+            - name: title
+              type: keyword
+              description: The title of the note.
+            - name: message
+              type: keyword
+              description: The specific message of the note.
+            - name: severity
+              type: long
+              description: The severity of the note.
+        - name: remediations
+          type: group
+          description: Remediation summary for the scan.
+          fields:
+            - name: num_cves
+              type: long
+              description: The number of CVEs addressed by the remediations.
+            - name: num_hosts
+              type: long
+              description: The number of hosts with remediations.
+            - name: num_remediated_cves
+              type: long
+              description: The number of CVEs that have been remediated.
+            - name: num_impacted_hosts
+              type: long
+              description: The number of hosts impacted by the remediations.
+            - name: remediations
+              type: group
+              description: The list of individual remediations.
+              fields:
+                - name: vulns
+                  type: long
+                  description: The number of vulnerabilities addressed by this remediation.
+                - name: value
+                  type: keyword
+                  description: The unique identifier of the remediation.
+                - name: hosts
+                  type: long
+                  description: The number of hosts affected by this remediation.
+                - name: remediation
+                  type: keyword
+                  description: A description of the remediation action.
+        - name: progress
+          type: long
+          description: The progress of the scan ranging from 0 to 100.

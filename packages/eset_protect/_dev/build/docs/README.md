@@ -4,6 +4,12 @@ ESET PROTECT enables you to manage ESET products on workstations and servers in 
 
 ## Data streams
 
+## Agentless Enabled Integration
+
+Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+
+
 The ESET PROTECT integration collects three types of logs: Detection, Device Task and Event.
 
 **[Detection](https://help.eset.com/protect_cloud/en-US/admin_ct.html?threats.html)** is used to retrieve detections via the [Incident Management - List detections v1](https://help.eset.com/eset_connect/en-US/incident_management_v1_detections_get.html) endpoint.

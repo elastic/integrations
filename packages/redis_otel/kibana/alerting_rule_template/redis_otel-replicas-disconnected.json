@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when `redis.slaves.connected == 0`. Primary has no replicas \u2014 HA / read scaling lost.",
     "name": "[Redis OTel] Primary has no connected replicas",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -20,13 +21,25 @@
       "lookBackWindow": 6,
       "statusChangeThreshold": 3
     },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "redis_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## Redis primary has no connected replicas\n\n### What fired\n`redis.slaves.connected == 0` during the window.\n\n### Why it matters\nA primary without replicas cannot fail over and cannot serve replica reads. The failover SLA is compromised.\n\n### Triage\n1. Check replica processes / Sentinel / Cluster state.\n2. Inspect the replication link.\n\n### Remediation\n- Restore replicas or fix replication.\n\n### Tuning\n- Filter out standalone instances.\n"
+      }
+    },
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
         "esql": "FROM metrics-redisreceiver.otel-*\n| WHERE data_stream.dataset == \"redisreceiver.otel\"\n  AND redis.slaves.connected IS NOT NULL\n// Filter to primaries: role is primary when attributes.role exists, or check replication metrics\n// redis.slaves.connected is only relevant on primaries (replicas report 0)\n| STATS connected_replicas = MAX(redis.slaves.connected)\n  BY server.address, server.port\n// Alert when a primary expects replicas but has none (adjust if standalone is acceptable)\n// Use 0 to alert on any instance with zero replicas; for HA setups this indicates risk\n| WHERE connected_replicas == 0\n| SORT server.address ASC"
       },
       "size": 0,
-      "threshold": [0],
+      "threshold": [
+        0
+      ],
       "thresholdComparator": ">",
       "timeField": "@timestamp",
       "timeWindowSize": 15,

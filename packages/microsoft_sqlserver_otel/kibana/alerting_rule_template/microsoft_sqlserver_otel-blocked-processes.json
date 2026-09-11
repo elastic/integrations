@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when `sqlserver.processes.blocked > 0`. Any active blocking chain degrades throughput for multiple sessions.",
     "name": "[SQL Server OTel] Blocked processes",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -19,13 +20,28 @@
       "lookBackWindow": 6,
       "statusChangeThreshold": 3
     },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "microsoft_sqlserver_otel-concurrency-errors"
+        },
+        {
+          "id": "microsoft_sqlserver_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## SQL Server blocked processes\n\n### What fired\n`sqlserver.processes.blocked > 0` during the window.\n\n### Why it matters\nBlocked processes are queries waiting on locks held by others. Long or frequent blocking cascades into thread exhaustion and timeouts.\n\n### Triage\n1. Use the Concurrency dashboard to see blocking chains.\n2. Check `sqlserver.lock.wait.rate` for corroboration.\n\n### Remediation\n- Kill the head blocker if appropriate.\n- Optimise transactions to reduce lock hold time.\n\n### Tuning\n- Fires on any non-zero value.\n"
+      }
+    },
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
         "esql": "FROM metrics-sqlserverreceiver.otel-default\n// Non-zero blocked processes means active blocking chains\n| WHERE metrics.sqlserver.processes.blocked IS NOT NULL\n| STATS max_blocked = MAX(metrics.sqlserver.processes.blocked),\n       instance_id = MAX(resource.attributes.service.instance.id)\n  BY COALESCE(resource.attributes.service.instance.id, host.name, \"unknown\")\n| WHERE max_blocked > 0\n| KEEP instance_id, max_blocked"
       },
       "size": 0,
-      "threshold": [0],
+      "threshold": [
+        0
+      ],
       "thresholdComparator": ">",
       "timeField": "@timestamp",
       "timeWindowSize": 5,

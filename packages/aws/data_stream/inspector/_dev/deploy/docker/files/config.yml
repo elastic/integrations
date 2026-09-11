@@ -1,10 +1,13 @@
 rules:
   - path: /findings/list
     methods: ["POST"]
+    request_headers:
+      Content-Type:
+        - "application/json"
+    request_body: /^\{"filterCriteria":\{"updatedAt":\[\{"endInclusive":.*,"startInclusive":.*\}\]\},"maxResults":100,"sortCriteria":\{"field":"LAST_OBSERVED_AT","sortOrder":"ASC"\}\}/
     responses:
       - status_code: 200
         body: |-
-          {{ minify_json `
           {
             "findings": [
               {
@@ -28,7 +31,7 @@ rules:
                     "version": "3.1"
                   }
                 },
-                "lastObservedAt": 1774048996.162,
+                "lastObservedAt": {{ (now "-720h").Unix }},
                 "packageVulnerabilityDetails": {
                   "cvss": [
                     {
@@ -176,8 +179,84 @@ rules:
                 "status": "ACTIVE",
                 "title": "CVE-2025-22872 - golang.org/x/net, golang.org/x/net and 4 more",
                 "type": "PACKAGE_VULNERABILITY",
-                "updatedAt": 1774048996.162
+                "updatedAt": {{ (now "-720h").Unix }}
+              },
+              {
+                "findingArn": "arn:aws:inspector2:us-east-2:111111111111:finding/00aaa5d725837b5f8b7b6291174a3ef6",
+                "awsAccountId": "111111111111",
+                "type": "PACKAGE_VULNERABILITY",
+                "description": "(*x509.Certificate).VerifyHostname previously called matchHostnames in a loop over all DNS Subject Alternative Name (SAN) entries. This caused strings.Split(host, \".\") to execute repeatedly on the same input hostname. With a large DNS SAN list, verification costs scaled quadratically based on the number of SAN entries multiplied by the hostname's label count. Because x509.Verify validates hostnames before building the certificate chain, this overhead occurred even for untrusted certificates.",
+                "title": "CVE-2026-27145 - go/stdlib",
+                "remediation": {
+                  "recommendation": {
+                    "text": "None Provided"
+                  }
+                },
+                "severity": "UNTRIAGED",
+                "firstObservedAt": {{ (now "-720h").Unix }},
+                "lastObservedAt": {{ (now "-720h").Unix }},
+                "updatedAt": {{ (now "-360h").Unix }},
+                "status": "CLOSED",
+                "resources": [
+                  {
+                    "type": "AWS_LAMBDA_FUNCTION",
+                    "id": "arn:aws:lambda:us-east-2:111111111111:function:sample-lambda-LambdaFunction-ZrQ73XPPyzBk:$LATEST",
+                    "partition": "aws",
+                    "region": "us-east-2",
+                    "tags": {
+                      "aws:cloudformation:logical-id": "LambdaFunction",
+                      "aws:cloudformation:stack-id": "arn:aws:cloudformation:us-east-2:111111111111:stack/sample-lambda/514963c0-1de0-11f1-bf08-06a6e7c834eb",
+                      "aws:cloudformation:stack-name": "sample-lambda",
+                      "division": "divisionname",
+                      "org": "orgname",
+                      "project": "testproject",
+                      "team": "teamname"
+                    },
+                    "details": {
+                      "awsLambdaFunction": {
+                        "functionName": "sample-lambda-LambdaFunction-ZrQ73XPPyzBk",
+                        "runtime": "PYTHON_3_12",
+                        "codeSha256": "37Na3u6vRqL5x4zGLuMY+I2W60JBKITDiHkYR1jd8KA=",
+                        "version": "$LATEST",
+                        "executionRoleArn": "arn:aws:iam::111111111111:role/sample-lambda-LambdaExecutionRole-ArCaA4vbcWEw",
+                        "layers": [
+                          "arn:aws:lambda:us-east-2:111111111111:layer:ecf-beats-compatibility:2"
+                        ],
+                        "packageType": "ZIP",
+                        "architectures": [
+                          "ARM64"
+                        ],
+                        "lastModifiedAt": {{ (now "-720h").Unix }}
+                      }
+                    }
+                  }
+                ],
+                "packageVulnerabilityDetails": {
+                  "vulnerabilityId": "CVE-2026-27145",
+                  "vulnerablePackages": [
+                    {
+                      "name": "go/stdlib",
+                      "version": "1.25.0",
+                      "epoch": 0,
+                      "packageManager": "GENERIC",
+                      "filePath": "collector",
+                      "fixedInVersion": "1.26.4",
+                      "sourceLambdaLayerArn": "arn:aws:lambda:us-east-2:111111111111:layer:ecf-beats-compatibility:2"
+                    }
+                  ],
+                  "source": "NVD",
+                  "cvss": [],
+                  "relatedVulnerabilities": [],
+                  "sourceUrl": "https://nvd.nist.gov/vuln/detail/CVE-2026-27145",
+                  "vendorCreatedAt": {{ (now "-2160h").Unix }},
+                  "vendorUpdatedAt": {{ (now "-2160h").Unix }},
+                  "referenceUrls": [
+                    "https://groups.google.com/g/golang-announce/c/tKs3rmcBcKw",
+                    "https://nvd.nist.gov/vuln/detail/CVE-2026-27145"
+                  ]
+                },
+                "fixAvailable": "YES",
+                "exploitAvailable": "NO"
               }
             ]
           }
-          `}}

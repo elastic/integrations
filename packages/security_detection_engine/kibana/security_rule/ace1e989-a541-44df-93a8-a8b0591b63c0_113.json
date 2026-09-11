@@ -1,0 +1,108 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies a high number of inbound SSH login attempts on a macOS host within a short time window. On macOS, each inbound SSH authentication attempt spawns the sshd-keygen-wrapper process once, whether the login succeeds or fails. Adversaries may perform password brute force or password spraying against exposed SSH services to obtain unauthorized access.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "Potential macOS SSH Brute Force Detected",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Potential macOS SSH Brute Force Detected\n\nSSH (Secure Shell) is a protocol used to securely access remote systems. On macOS, each inbound SSH authentication attempt spawns\n`sshd-keygen-wrapper` once before handing off to `sshd`, regardless of whether the login succeeds or fails. This rule uses that\n1:1 relationship as a proxy for high inbound SSH login attempt volume on a host. It does not detect SSH key generation or\nkey-based brute force activity.\n\n### Possible investigation steps\n\n- Review alert details for `host.os.type:macos`, `process.name:sshd-keygen-wrapper`, and `process.parent.name:launchd`.\n- Examine the frequency and timing of `sshd-keygen-wrapper` process starts to determine if they suggest automated login attempts.\n- Review SSH authentication logs on the affected host for failed and successful logins, source IP addresses, and targeted usernames.\n- Determine whether Remote Login is expected to be enabled on this host (for example, build servers or developer workstations).\n- Correlate the activity with other alerts or logs from the same host to identify additional indicators of compromise.\n- Review user account activity on the host to determine if any accounts were accessed or modified unexpectedly.\n\n### False positive analysis\n\n- Build servers, developer workstations, or CI/CD pipelines that receive many legitimate inbound SSH connections may trigger this rule. Exclude known hosts or maintenance windows if the activity is expected.\n- Automated deployment or configuration management tools that open many SSH sessions in a short period can cause false positives.\n- Internet-facing SSH services may receive high volumes of scanning or credential-stuffing traffic from unrelated sources.\n- Security scanners or health checks that repeatedly test SSH connectivity may generate elevated `sshd-keygen-wrapper` activity.\n\n### Response and remediation\n\n- Review SSH authentication logs to identify source IPs, targeted accounts, and whether any logins succeeded.\n- If unauthorized access is suspected, isolate the affected macOS host from the network.\n- Implement IP blocking or rate limiting on the SSH service to reduce further login attempts.\n- Review and reset credentials for affected user accounts if compromise is confirmed.\n- Conduct a thorough review of the host's SSH configuration and enabled Remote Login settings.\n- Escalate to the security operations team if additional hosts show similar patterns.\n- Enhance monitoring for SSH authentication anomalies across the environment.",
+        "query": "event.category:process and host.os.type:macos and event.type:start and process.name:\"sshd-keygen-wrapper\" and process.parent.name:launchd\n",
+        "references": [
+            "https://themittenmac.com/detecting-ssh-activity-via-process-monitoring/"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "ace1e989-a541-44df-93a8-a8b0591b63c0",
+        "setup": "## Setup\n\nThis rule requires data coming in from Elastic Defend.\n\n### Elastic Defend Integration Setup\nElastic Defend is integrated into the Elastic Agent using Fleet. Upon configuration, the integration allows the Elastic Agent to monitor events on your host and send data to the Elastic Security app.\n\n#### Prerequisite Requirements:\n- Fleet is required for Elastic Defend.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n\n#### The following steps should be executed in order to add the Elastic Defend integration on a macOS System:\n- Go to the Kibana home page and click \"Add integrations\".\n- In the query bar, search for \"Elastic Defend\" and select the integration to see more details about it.\n- Click \"Add Elastic Defend\".\n- Configure the integration name and optionally add a description.\n- Select the type of environment you want to protect, for MacOS it is recommended to select \"Traditional Endpoints\".\n- Select a configuration preset. Each preset comes with different default settings for Elastic Agent, you can further customize these later by configuring the Elastic Defend integration policy. [Helper guide](https://www.elastic.co/guide/en/security/current/configure-endpoint-integration-policy.html).\n- We suggest selecting \"Complete EDR (Endpoint Detection and Response)\" as a configuration setting, that provides \"All events; all preventions\"\n- Enter a name for the agent policy in \"New agent policy name\". If other agent policies already exist, you can click the \"Existing hosts\" tab and select an existing policy instead.\nFor more details on Elastic Agent configuration settings, refer to the [helper guide](https://www.elastic.co/guide/en/fleet/current/agent-policy.html).\n- Click \"Save and Continue\".\n- To complete the integration, select \"Add Elastic Agent to your hosts\" and continue to the next section to install the Elastic Agent on your hosts.\nFor more details on Elastic Defend refer to the [helper guide](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: macOS",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1110",
+                        "name": "Brute Force",
+                        "reference": "https://attack.mitre.org/techniques/T1110/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0001",
+                    "name": "Initial Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0001/"
+                },
+                "technique": [
+                    {
+                        "id": "T1133",
+                        "name": "External Remote Services",
+                        "reference": "https://attack.mitre.org/techniques/T1133/"
+                    }
+                ]
+            }
+        ],
+        "threshold": {
+            "field": [
+                "host.id"
+            ],
+            "value": 20
+        },
+        "timestamp_override": "event.ingested",
+        "type": "threshold",
+        "version": 113
+    },
+    "id": "ace1e989-a541-44df-93a8-a8b0591b63c0_113",
+    "type": "security-rule"
+}

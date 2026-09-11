@@ -283,10 +283,12 @@ This section provides solutions to common issues you might encounter while using
 If you experience delays in the response from the Salesforce server in the `apex`, `login`, `logout`, or `setupaudittrail` data streams, you might encounter a similar error:
 
 ```
-Error while processing http request: failed to execute rf.collectResponse: failed to execute http client.Do: failed to execute http client.Do: failed to read http.response.body
+Error running EventLogFile collection: error reading log file body: context deadline exceeded (Client.Timeout or context cancellation while reading body)
 ```
 
-**Solution:** Consider increasing the `Request timeout` setting in the `Advanced options` section for the affected data stream.
+This is most common in the `apex` data stream, where individual `EventLogFile` downloads can be large.
+
+**Solution:** Consider increasing the `Request timeout` setting in the `Advanced options` section for the affected data stream (it defaults to `30s`). For example, set it to `120s`.
 
 ### Data ingestion error
 

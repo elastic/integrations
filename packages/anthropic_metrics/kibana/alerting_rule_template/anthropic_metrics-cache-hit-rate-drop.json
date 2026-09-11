@@ -1,0 +1,43 @@
+{
+    "id": "anthropic_metrics-cache-hit-rate-drop",
+    "type": "alerting_rule_template",
+    "attributes": {
+        "name": "[Anthropic] Cache Hit Rate Drop",
+        "description": "Alerts when the input token cache hit ratio drops below 30%. A sudden drop means prompts are not hitting cache, which increases cost and latency.",
+        "tags": [
+            "Anthropic",
+            "Usage",
+            "Cost Optimization"
+        ],
+        "ruleTypeId": ".es-query",
+        "schedule": {
+            "interval": "5m"
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "timeWindowSize": 1,
+            "timeWindowUnit": "h",
+            "esqlQuery": {
+                "esql": "// Alert when cache hit ratio drops below a threshold.\n// Requires minimum token volume (50000) to avoid noisy alerts on low-traffic periods.\n// Adjust both the 50000 volume threshold and the 0.30 ratio threshold as needed.\nFROM metrics-anthropic_metrics.usage-*\n| WHERE anthropic.usage.uncached_input_tokens IS NOT NULL\n| STATS uncached = SUM(anthropic.usage.uncached_input_tokens), cached = SUM(anthropic.usage.cached_input_tokens), cache_creation = SUM(anthropic.usage.cache_creation_input_tokens)\n| EVAL total_input = uncached + cached + cache_creation\n| WHERE total_input > 50000\n| EVAL cache_hit_ratio = cached * 1.0 / total_input\n| WHERE cache_hit_ratio < 0.30"
+            },
+            "groupBy": "row",
+            "timeField": "@timestamp"
+        },
+        "alertDelay": {
+            "active": 3
+        },
+        "artifacts": {
+            "dashboards": [
+                {
+                    "id": "anthropic_metrics-602de168-1b42-4dd6-a463-9c4878e5db94"
+                }
+            ],
+            "investigation_guide": {
+                "blob": "## Cache Hit Rate Drop\n\n### Triage Steps\n1. Open the Token Usage dashboard and review the cache hit ratio trend.\n2. Check `anthropic.usage.cached_input_tokens` vs `anthropic.usage.uncached_input_tokens` to see the ratio breakdown.\n3. Identify which models and workspaces have the lowest cache hit rates.\n4. Review recent prompt changes — new system prompts or modified prompt templates can invalidate cached prefixes.\n5. Check if any cache TTL settings or prompt caching configurations were changed.\n\n### Common Causes\n- Prompt template changes that break cache prefix matching\n- New workloads sending unique prompts that cannot be cached\n- A shift to models or configurations that do not support prompt caching\n- High prompt diversity (e.g., many unique user inputs without shared prefixes)\n\n### Tuning\n- The minimum volume threshold of `50000` tokens filters out low-traffic periods. Increase for noisier environments.\n- Adjust the `0.30` cache hit ratio threshold based on your expected cache performance.\n- The `alertDelay` of 3 consecutive checks prevents transient dips from triggering alerts."
+            }
+        }
+    },
+    "managed": true,
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "10.1.0"
+}

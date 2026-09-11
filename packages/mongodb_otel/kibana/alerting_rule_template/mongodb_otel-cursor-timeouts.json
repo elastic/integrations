@@ -2,14 +2,35 @@
   "id": "mongodb_otel-cursor-timeouts",
   "type": "alerting_rule_template",
   "attributes": {
+    "description": "Alerts when `mongodb.cursor.timeout.count` increases. Cursor timeouts mean clients can't consume result batches in time.",
     "name": "[MongoDB OTel] Cursor timeouts",
+    "ruleTypeId": ".es-query",
     "tags": [
       "observability",
       "mongodb"
     ],
-    "ruleTypeId": ".es-query",
     "schedule": {
       "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "mongodb_otel-operations"
+        },
+        {
+          "id": "mongodb_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## MongoDB cursor timeouts\n\n### What fired\n`mongodb.cursor.timeout.count` increased during the window.\n\n### Why it matters\nMongoDB cursors expire after 10 minutes of inactivity. Timeouts mean the application did not iterate fast enough or held the cursor without use.\n\n### Triage\n1. Check application query patterns and batch sizes.\n2. Look for cursor leaks.\n\n### Remediation\n- Fix application to iterate cursors promptly or use `noCursorTimeout` carefully.\n\n### Tuning\n- Fires on any increase.\n"
+      }
     },
     "params": {
       "searchType": "esqlQuery",
@@ -20,13 +41,6 @@
       },
       "groupBy": "row",
       "timeField": "@timestamp"
-    },
-    "alertDelay": {
-      "active": 2
-    },
-    "flapping": {
-      "lookBackWindow": 10,
-      "statusChangeThreshold": 4
     }
   },
   "managed": true,

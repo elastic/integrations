@@ -1,7 +1,7 @@
-# IIS OpenTelemetry Input Package 
+# IIS (OpenTelemetry)
 
 ## Overview
-The IIS OpenTelemetry Input Package for Elastic enables collection of telemetry data from Internet Information Services (IIS) web servers through OpenTelemetry protocols using the [iisreceiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/iisreceiver#iis-receiver).
+This input package enables collection of telemetry data from Internet Information Services (IIS) web servers through OpenTelemetry protocols using the [iisreceiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/iisreceiver#iis-receiver).
 
 
 ### How it works

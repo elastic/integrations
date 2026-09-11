@@ -9,6 +9,7 @@ fields_under_root: true
 keep_null: true
 state:
   initial_interval: {{initial_interval}}
+  finalization_grace: {{finalization_grace}}
   access_token: {{admin_token}}
   page: null
 redact:
@@ -48,17 +49,29 @@ program: |
       }).do_request().as(resp, resp.StatusCode == 200 ?
           bytes(resp.Body).decode_json().as(body,
             {
-              "events": body.data.filter(bucket,
-                    !(body.has_more == false && bucket.start_time >= body.data.map(bucket, bucket.start_time).max()))
+              // When a page contains only buckets still inside finalization_grace, the filter drops
+              // them all and the mapped list is empty while body.has_more is still true. Filebeat's
+              // CEL input ends the polling cycle as soon as an evaluation emits zero events, BEFORE
+              // it reads want_more, so an all-pending page would stall pagination until the next
+              // interval. Emit a keep-alive sentinel (dropped at ingest) to keep the want_more chain
+              // alive. This only arises when the grace spans more than one page of buckets (e.g. a
+              // grace of a couple hours at bucket_width 1m), so it does not trigger with the 0s default.
+              "events": body.data.filter(bucket, bucket.end_time <= int(timestamp(now - duration(state.finalization_grace))))
                   .map(bucket, size(bucket.results) > 0 ? bucket.results.map(result, { "message": result.with({"start_time": bucket.start_time, "end_time": bucket.end_time }).encode_json() }) : [{}]).flatten()
+                  .as(evts, size(evts) == 0 && body.has_more ? [{"message": {"skip": true}.encode_json()}] : evts)
               ,
+              // OpenAI returns buckets ascending by time, so not-yet-finalized (pending) buckets
+              // land on the last has_more page. last_bucket_start rewinds to the earliest pending
+              // bucket so they are re-fetched on the next poll. Correctness hinges on ascending order.
               "cursor": {
-                "last_bucket_start": size(body.data) > 0 ? body.data.map(bucket, bucket.start_time).max() : state.?cursor.last_bucket_start,
+                "last_bucket_start": size(body.data) == 0 ? state.?cursor.last_bucket_start : body.data.filter(bucket, bucket.end_time > int(timestamp(now - duration(state.finalization_grace)))).as(pending, size(pending) > 0 ? pending.map(bucket, bucket.start_time).min() : body.data.map(bucket, bucket.end_time).max()),
                 "last_bucket_end": size(body.data) > 0 ? body.data.map(bucket, bucket.end_time).max() : state.?cursor.last_bucket_end
               },
               "want_more": body.has_more,
               "page": body.has_more ? body.next_page : null,
               "access_token": state.access_token,
+              "finalization_grace": state.finalization_grace,
+              "initial_interval": state.initial_interval,
               "initial_start_time": state.initial_start_time,
               "url": state.url
             }
@@ -73,7 +86,10 @@ program: |
             },
             "want_more": false,
             "access_token": state.access_token,
-            "initial_start_time": state.initial_start_time
+            "finalization_grace": state.finalization_grace,
+            "initial_interval": state.initial_interval,
+            "initial_start_time": state.initial_start_time,
+            ?"cursor": state.?cursor
           }
       )
     )

@@ -1,0 +1,162 @@
+- name: xm_cyber.device
+  type: group
+  description: >
+    Device inventory record from the XM Cyber API. Field names follow the ingest pipeline camelCase-to-snake_case normalization (e.g. deviceId → device_id).
+
+  fields:
+    # ----- Device identity -----
+    - name: device_id
+      type: keyword
+      description: XM Cyber device identifier.
+    - name: device_name
+      type: keyword
+      description: Human-readable device name.
+    - name: device_type
+      type: keyword
+      description: XM Cyber device type classification.
+    - name: type
+      type: keyword
+      description: Device type or category label from the vendor payload.
+    # ----- Network / directory -----
+    - name: ip_address
+      type: ip
+      description: Primary IP address associated with the device.
+    - name: subnet
+      type: keyword
+      description: Subnet associated with the device.
+    - name: fqdn
+      type: keyword
+      description: Fully qualified domain name when present.
+    - name: domain
+      type: keyword
+      description: Active Directory or DNS domain name.
+    - name: ou
+      type: keyword
+      description: Organizational unit path or label.
+    - name: os
+      type: keyword
+      description: Operating system string reported for the device.
+    # ----- Labels -----
+    - name: labels
+      type: keyword
+      description: Vendor-supplied labels attached to the device.
+    - name: enrichment_labels
+      type: keyword
+      description: Enrichment labels applied by XM Cyber.
+    # ----- Choke point / critical asset -----
+    - name: is_choke_point
+      type: boolean
+      description: Whether the device is classified as a choke point.
+    - name: choke_point_score
+      type: long
+      description: Numeric choke-point score from XM Cyber.
+    - name: choke_point_level
+      type: keyword
+      description: Qualitative choke-point level (e.g. text tier from the API).
+    - name: is_critical_asset
+      type: boolean
+      description: Whether the device is treated as a critical asset.
+    # ----- Vulnerability counts (device aggregate) -----
+    - name: critical_vulnerabilities
+      type: long
+      description: Count of critical-severity vulnerabilities on the device.
+    - name: high_vulnerabilities
+      type: long
+      description: Count of high-severity vulnerabilities on the device.
+    - name: medium_vulnerabilities
+      type: long
+      description: Count of medium-severity vulnerabilities on the device.
+    - name: low_vulnerabilities
+      type: long
+      description: Count of low-severity vulnerabilities on the device.
+    - name: unknown_vulnerabilities
+      type: long
+      description: Count of unknown-severity vulnerabilities on the device.
+    - name: enitity_vulnerabilities
+      type: long
+      description: >
+        Entity vulnerability count as returned by the API (vendor field name retains the historical spelling "enitity").
+
+    - name: affected_entities
+      type: long
+      description: Number of related entities affected for this device context.
+    # ----- Max CVSS (device aggregate) -----
+    - name: max_cvss_v2
+      type: double
+      description: Maximum CVSS v2 base score observed on the device.
+    - name: max_cvss_v3
+      type: double
+      description: Maximum CVSS v3.0 base score observed on the device.
+    - name: max_cvss_v31
+      type: double
+      description: Maximum CVSS v3.1 base score observed on the device.
+    - name: max_cvss_v4
+      type: double
+      description: Maximum CVSS v4 base score observed on the device.
+    # ----- Risk / exposure -----
+    - name: critical_assets_at_risk
+      type: long
+      description: Count of critical assets at risk in relation to this device.
+    - name: risk_score
+      type: long
+      description: XM Cyber risk score for the device.
+    - name: products
+      type: long
+      description: Number of distinct products detected on the device.
+    # ----- Timestamps -----
+    - name: last_scan
+      type: date
+      description: Timestamp of the last vulnerability or inventory scan for the device.
+    - name: last_compromised
+      type: date
+      description: Timestamp of the last simulated or observed compromise when provided; may be absent.
+    # ----- Installed applications / products (nested array) -----
+    - name: apps
+      type: group
+      description: Per-application vulnerability and exposure context reported for the device.
+      fields:
+        - name: name
+          type: keyword
+          description: Application or product display name.
+        - name: vendor
+          type: keyword
+          description: Application vendor.
+        - name: version
+          type: keyword
+          description: Installed application version.
+        - name: device_found_on
+          type: long
+          description: Number of devices where this application instance was observed.
+        - name: choke_point_found_on
+          type: keyword
+          description: >
+            Vendor count of choke-point occurrences for this app; may be sent as a numeric string (e.g. "4") from the API.
+
+        - name: affected_critical_assets
+          type: long
+          description: Number of critical assets affected by this application exposure.
+        - name: products_critical_assets_at_risk
+          type: long
+          description: Critical assets at risk attributed to this product context.
+        - name: product_vulnerabilities
+          type: long
+          description: Count of vulnerabilities associated with the product.
+        - name: active_cves
+          type: keyword
+          description: CVE identifiers currently active for this application.
+        - name: closed_cves
+          type: keyword
+          description: CVE identifiers remediated or closed for this application.
+        - name: product_operating_systems
+          type: keyword
+          description: Operating systems on which the product is reported.
+        - name: active_cves_safe_version
+          type: group
+          description: CVE-to-safe-version mappings suggested for active CVEs on this product.
+          fields:
+            - name: cve
+              type: keyword
+              description: CVE identifier.
+            - name: safe_version
+              type: keyword
+              description: Vendor-recommended safe version for the CVE.

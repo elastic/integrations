@@ -1,0 +1,75 @@
+---
+description: >-
+  Normalizes Kolide auth_log objects collected from the Log Pipeline via the
+  aws-s3 input. The S3 envelope is {"type":"auth_log","timestamp":...,"data":{...}};
+  this lifts the `data` object up to json.* so the shared API field-extraction
+  path in default.yml applies, since the S3 `data` field names match the REST API
+  field names. Reference: https://www.kolide.com/docs/admins/auth-logs
+processors:
+  - script:
+      lang: painless
+      tag: lift_s3_data
+      if: ctx.json?.data instanceof Map
+      description: Lift the S3 `data` object up to json.* and drop the routing `type`.
+      source: |-
+        Map data = (Map) ctx.json.remove('data');
+        for (def entry : data.entrySet()) {
+          ctx.json[entry.getKey()] = entry.getValue();
+        }
+        ctx.json.remove('type');
+  # auth_event_type drives event.action, mirroring the API `sub_event_type`.
+  - rename:
+      field: json.auth_event_type
+      target_field: json.sub_event_type
+      tag: rename_auth_event_type
+      ignore_missing: true
+      if: ctx.json?.sub_event_type == null
+  # request_id identifies the auth session/event (used for event.id and dedup).
+  - set:
+      field: json.id
+      tag: set_id_from_request_id
+      copy_from: json.request_id
+      ignore_empty_value: true
+      if: ctx.json?.id == null
+  - remove:
+      field: json.request_id
+      tag: remove_request_id
+      ignore_missing: true
+  # auth_session_summary carries a boolean `succeeded`; map it onto the API
+  # `result` value so default.yml derives event.outcome consistently.
+  - set:
+      field: json.result
+      tag: set_result_success
+      value: Success
+      if: ctx.json?.succeeded == true
+  - set:
+      field: json.result
+      tag: set_result_failure
+      value: Fail
+      if: ctx.json?.succeeded == false
+  - remove:
+      field: json.succeeded
+      tag: remove_succeeded
+      ignore_missing: true
+  # The nested per-event list on auth_session_summary is retained in
+  # event.original; drop the working copy to avoid mapping the variable array.
+  - remove:
+      field: json.authentication_events
+      tag: remove_authentication_events
+      ignore_missing: true
+
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

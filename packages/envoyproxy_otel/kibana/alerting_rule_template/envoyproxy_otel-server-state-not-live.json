@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when `envoy.server.state != 0` (i.e. not LIVE). State 1/2/3 are DRAINING, PRE_INITIALIZING, INITIALIZING.",
     "name": "[Envoy OTel] Server state not LIVE",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -20,13 +21,25 @@
       "lookBackWindow": 5,
       "statusChangeThreshold": 3
     },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "envoyproxy_otel-envoy-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## Envoy server state not LIVE\n\n### What fired\n`envoy.server.state` was non-zero during the window (0 = LIVE).\n\n### Why it matters\nAny non-LIVE state means the proxy cannot serve traffic at full capacity. Draining is expected during rollouts; other states are usually errors.\n\n### Triage\n1. Determine the exact state: DRAINING (1) is benign during rolling deploys; PRE_INITIALIZING (2) / INITIALIZING (3) indicate startup stalls.\n2. Check xDS/SDS connectivity if state is 2 or 3.\n3. Look at cluster rollout events for state 1.\n\n### Remediation\n- Let rolling deploys finish; if state 2/3 persists, restart with corrected bootstrap config.\n\n### Tuning\n- Use alongside the `server-not-live` rule; this one adds state context.\n"
+      }
+    },
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
         "esql": "FROM metrics-statsdreceiver-default\n| WHERE data_stream.dataset == \"statsdreceiver\"\n| WHERE envoy.server.state IS NOT NULL\n// state: 0=LIVE, 1=DRAINING, 2=PRE_INITIALIZING, 3=INITIALIZING\n| STATS max_state = MAX(envoy.server.state)\n| WHERE max_state != 0"
       },
       "size": 0,
-      "threshold": [0],
+      "threshold": [
+        0
+      ],
       "thresholdComparator": ">",
       "timeField": "@timestamp",
       "timeWindowSize": 5,

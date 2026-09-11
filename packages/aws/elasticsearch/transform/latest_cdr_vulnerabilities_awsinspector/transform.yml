@@ -4,8 +4,9 @@ source:
   query:
     bool:
       must:
-        - match:
-            aws.inspector.status: ACTIVE
+        # All finding statuses (ACTIVE, SUPPRESSED, CLOSED) are included so the latest
+        # document per finding reflects the current status. The status is surfaced as
+        # vulnerability.status (CLOSED -> fixed) for filtering on the Findings page.
         - match:
             aws.inspector.type: PACKAGE_VULNERABILITY
         - range:
@@ -19,13 +20,14 @@ source:
               - data_frozen
               - data_cold
 dest:
-  index: "security_solution-awsinspector.vulnerability_latest-v1"
+  index: "security_solution-awsinspector.vulnerability_latest-v2"
   aliases:
     - alias: "security_solution-awsinspector.vulnerability_latest"
       move_on_creation: true
 latest:
   unique_key:
     - aws.inspector.transform_unique_id
+    - data_stream.namespace
   sort: "@timestamp"
 description: Latest Vulnerabilities Findings from Amazon Inspector.
 settings:
@@ -43,4 +45,4 @@ _meta:
   managed: true
   # Bump this version to delete, reinstall, and restart the transform during package.
   # Version bump is needed if there is any code change in transform.
-  fleet_transform_version: 0.2.0
+  fleet_transform_version: 0.4.0

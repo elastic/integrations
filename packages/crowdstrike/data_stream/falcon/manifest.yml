@@ -84,6 +84,42 @@ streams:
         multi: false
         required: true
         show_user: true
+      - name: retry_max_attempts
+        type: integer
+        title: Retry - Maximum Attempts
+        description: >-
+          The maximum number of times a failed connection to the Event Streams API is retried before the input terminates and needs to be restarted. Failures such as a non-200 response or bad credentials count toward this limit. Enable `Retry - Infinite Retries` to never terminate on repeated failures. On Elastic Agent 8.19.19, 9.3.8, 9.4.4, or later, transient connection-level failures (empty responses, network errors, timeouts) are retried indefinitely and do not count toward this limit; values above 10 (and `Retry - Infinite Retries`) also require those agent versions and are silently capped at 10 on earlier agents.
+        multi: false
+        required: false
+        show_user: true
+        default: 5
+      - name: retry_infinite_retries
+        type: bool
+        title: Retry - Infinite Retries
+        description: >-
+          Retry failed connections indefinitely instead of terminating after the maximum number of attempts is reached. When enabled, `Retry - Maximum Attempts` is ignored. Requires Elastic Agent 8.19.19, 9.3.8, 9.4.4, or later; on earlier agents retries are silently capped at 10.
+        multi: false
+        required: false
+        show_user: true
+        default: false
+      - name: retry_wait_min
+        type: text
+        title: Retry - Minimum Wait
+        description: >-
+          The minimum time to wait before retrying a failed connection, as a duration string (for example `1s` or `500ms`). Must be less than or equal to `Retry - Maximum Wait`.
+        multi: false
+        required: false
+        show_user: false
+        default: 1s
+      - name: retry_wait_max
+        type: text
+        title: Retry - Maximum Wait
+        description: >-
+          The maximum time to wait before retrying a failed connection, as a duration string (for example `30s`). Back-off grows exponentially between the minimum and maximum wait.
+        multi: false
+        required: false
+        show_user: false
+        default: 30s
       - name: tags
         type: text
         title: Tags
@@ -109,3 +145,4 @@ streams:
         show_user: false
         description: >
           Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+

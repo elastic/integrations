@@ -1,0 +1,120 @@
+- name: kolide.audit
+  type: group
+  description: Custom fields for Kolide audit logs, collected from the REST API (GET /audit_logs) and the `audit_log.recorded` webhook.
+  fields:
+    - name: actor_type
+      type: keyword
+      description: Type of actor that performed the audited action, one of `User`, `ApiKey`, or `System`.
+    - name: actor_automated
+      type: boolean
+      description: True when the action was performed by a non-human actor (`actor_type` is `ApiKey` or `System`); false for human actors. Useful for filtering automated activity.
+    - name: target
+      type: group
+      description: Subject of the audited action where no ECS field covers the semantic.
+      fields:
+        - name: device_serial
+          type: keyword
+          description: Serial number of the device affected by the action.
+        - name: device_id
+          type: keyword
+          description: Numeric identifier of the device affected by the action.
+        - name: issue_id
+          type: keyword
+          description: Numeric identifier of the issue affected by the action.
+        - name: org_id
+          type: keyword
+          description: Numeric identifier of the organization.
+        - name: idp_url
+          type: keyword
+          description: URL or hostname of the identity provider.
+        - name: provider_name
+          type: keyword
+          description: Name of the device management provider.
+        - name: org_name
+          type: keyword
+          description: Display name of the organization.
+        - name: config_type
+          type: keyword
+          description: Type of the configuration that was updated.
+        - name: api_key_name
+          type: keyword
+          description: Name or label of the API key that was revealed or created.
+        - name: prev_status
+          type: keyword
+          description: Previous status of a reopened device registration or exemption request (for example `denied` or `approved`).
+        - name: platform
+          type: keyword
+          description: Device platform referenced by a device registration configuration change (for example `macOS`, `Windows`).
+        - name: check_names
+          type: keyword
+          description: Names of the checks set as required for device registration.
+        - name: app_name
+          type: keyword
+          description: Name of the managed web application affected by the action.
+        - name: group_name
+          type: keyword
+          description: Name of the device group affected by the action.
+        - name: count
+          type: long
+          description: Count of members or people associated with the audited object.
+        - name: logger_name
+          type: keyword
+          description: Name of the device property logger added or removed.
+        - name: destination_name
+          type: keyword
+          description: Name of the log pipeline destination affected by the action.
+        - name: destination_type
+          type: keyword
+          description: Type of the log pipeline destination (for example `Amazon S3`, `Splunk HEC`).
+        - name: osquery_name
+          type: keyword
+          description: Name of the osquery decorator affected by the action.
+        - name: fim_category
+          type: keyword
+          description: Name of the osquery FIM (file integrity monitoring) category affected by the action.
+        - name: query_name
+          type: keyword
+          description: Name of the osquery discovery or pack query affected by the action.
+        - name: pack_name
+          type: keyword
+          description: Name of the osquery pack affected by the action.
+        - name: campaign_id
+          type: keyword
+          description: Identifier of the live query campaign affected by the action.
+        - name: tables
+          type: keyword
+          description: Osquery tables referenced by a live query campaign.
+        - name: okta_event
+          type: keyword
+          description: Name of the Okta event hook received (for example `saml_idp_factor_setup`).
+        - name: feature
+          type: keyword
+          description: Name of the feature whose restriction was changed for a user.
+        - name: webhook_url
+          type: keyword
+          description: URL of the webhook affected by a developer webhook action.
+    - name: change
+      type: group
+      description: Before/after values for settings changes extracted from the audit description.
+      fields:
+        - name: field
+          type: keyword
+          description: Name of the setting that was changed.
+        - name: from
+          type: keyword
+          description: Previous value of the setting.
+        - name: to
+          type: keyword
+          description: New value of the setting.
+        - name: groups_from
+          type: keyword
+          description: Previous set of allowed groups for a device registration auth mode change.
+        - name: groups_to
+          type: keyword
+          description: New set of allowed groups for a device registration auth mode change.
+    - name: reason
+      type: keyword
+      description: Human-provided reason for an exemption, approval, or denial.
+    - name: expires_at
+      type: keyword
+      description: Expiry date for an exemption, as a human-readable string from the audit log.

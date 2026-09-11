@@ -1,0 +1,69 @@
+type: logs
+title: Doppel Alerts
+streams:
+  - input: cel
+    title: Doppel API Poller
+    description: Periodically polls the Doppel API for new alerts.
+    vars:
+      - name: url
+        type: text
+        title: Doppel API URL
+        description: Base URL of the Doppel API.
+        required: true
+        show_user: true
+        default: https://api.doppel.com
+      - name: api_key
+        type: password
+        title: Doppel API Key
+        description: Doppel API Key for authentication.
+        required: true
+        secret: true
+      - name: x_user_api_key
+        type: password
+        title: Doppel User API Key
+        description: Doppel User API Key for authentication.
+        show_user: true
+        required: false
+        secret: true
+      - name: organization_code
+        type: text
+        title: Organization Code
+        description: Organisation code for authentication if the user is part of multiple organisations.
+        show_user: true
+        required: false
+      - name: initial_interval
+        type: text
+        title: Initial Interval
+        description: How far back to fetch alerts on the first sync when no cursor exists. Supported units are h, m, s.
+        required: false
+        show_user: true
+        default: 720h
+      - name: page_size
+        type: integer
+        title: Page Size
+        description: Number of alerts to request per API page.
+        required: false
+        show_user: false
+        default: 200
+      - name: interval
+        type: text
+        title: Polling Interval
+        description: How often to poll for new alerts.
+        required: false
+        show_user: true
+        default: 5m
+      - name: preserve_original_event
+        type: bool
+        title: Preserve original event
+        description: Preserve the raw API response in event.original.
+        required: false
+        show_user: false
+        default: true
+      - name: enable_request_tracer
+        type: bool
+        title: Enable request tracing
+        multi: false
+        default: false
+        required: false
+        show_user: false
+        description: The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#_resource_tracer_enabled) for details.

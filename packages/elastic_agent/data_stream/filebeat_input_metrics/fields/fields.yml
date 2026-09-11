@@ -13,7 +13,7 @@
     # Common dynamic fields for all inputs
     - name: '*.histogram.count'
       type: long
-      metric_type: gauge
+      metric_type: counter
       description: Map all fields with `path_match:``*.histogram.count` to `long`
     - name: '*.histogram.*'
       type: double
@@ -37,6 +37,7 @@
       description: URL-ish of CEL input resource
     - name: cel_executions
       type: long
+      metric_type: counter
       description: URL-ish of input resource
     # Lumberjack specific fields
     - name: bind_address
@@ -48,6 +49,7 @@
       description: Name of the UDP device being monitored
     - name: system_packet_drops
       type: long
+      metric_type: counter
       description: Number of udp drops noted in /proc/net/udp
 - name: component
   type: group
@@ -59,13 +61,16 @@
       description: Component id
     - name: type
       type: keyword
+      dimension: true
       ignore_above: 1024
       description: The type of the component
     - name: binary
       type: keyword
+      dimension: true
       ignore_above: 1024
       description: The binary that exeuctes the component
       example: filebeat
     - name: dataset
       type: keyword
+      dimension: true
       ignore_above: 1024

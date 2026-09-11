@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when `txnwaitqueue_deadlocks_total` increases on a node, indicating transactions are deadlocking in the wait queue. Deadlocks typically point to application-level ordering issues or long-running transactions holding contended keys.",
     "name": "[CockroachDB OTel] Deadlocks detected",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -20,13 +21,28 @@
       "lookBackWindow": 6,
       "statusChangeThreshold": 3
     },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "cockroachdb_otel-sql-transactions"
+        },
+        {
+          "id": "cockroachdb_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## CockroachDB deadlocks detected\n\n### What fired\nThe counter `txnwaitqueue_deadlocks_total` increased on one or more nodes over the evaluation window.\n\n### Why it matters\nDeadlocks indicate two or more transactions are waiting on each other's locks and CockroachDB had to abort at least one to break the cycle. Application latency and error rates will be affected, and repeated deadlocks often point to a systemic access-ordering problem.\n\n### Triage\n1. Identify affected nodes from the alert context and inspect the SQL & Transactions dashboard.\n2. Correlate with contention signals: `sql_distsql_contended_queries_count`, `kv_concurrency_avg_lock_wait_duration_nanos`, `kv_concurrency_max_lock_wait_duration_nanos`.\n3. Look at `sql_txn_abort_count` and `txn_restarts_serializable` for the same window; deadlock aborts will show up here.\n4. In application logs/traces, find transactions that repeatedly touch the same keys in different orders.\n\n### Remediation\n- Enforce a canonical order for accessing keys across transactions.\n- Keep transactions short; batch reads before writes where possible.\n- Consider `SELECT ... FOR UPDATE` to acquire locks in a predictable order.\n\n### Tuning\n- This rule fires on *any* increase in the counter. If low-rate deadlocks are acceptable, switch the query to threshold on a rate (e.g. `deadlocks > N` per 10m).\n"
+      }
+    },
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
         "esql": "TS metrics-cockroachdb.otel-default*\n| WHERE service.name == \"cockroachdb\"\n  AND txnwaitqueue_deadlocks_total IS NOT NULL\n| WHERE attributes.node_id IS NOT NULL AND attributes.store IS NULL\n// INCREASE for counter: any increase indicates deadlocks detected\n| STATS deadlocks = SUM(INCREASE(txnwaitqueue_deadlocks_total)) BY attributes.node_id, host.name\n| WHERE deadlocks > 0\n| SORT deadlocks DESC"
       },
       "size": 0,
-      "threshold": [0],
+      "threshold": [
+        0
+      ],
       "thresholdComparator": ">",
       "timeField": "@timestamp",
       "timeWindowSize": 10,

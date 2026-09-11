@@ -1,39 +1,61 @@
 {
-    "id": "mysql_otel-thread-saturation",
-    "type": "alerting_rule_template",
-    "managed": true,
-    "attributes": {
-        "name": "[MySQL OTel] Thread saturation",
-        "ruleTypeId": ".es-query",
-        "tags": [
-            "observability",
-            "mysql"
-        ],
-        "schedule": {
-            "interval": "5m"
+  "id": "mysql_otel-thread-saturation",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when `threads_running / threads_connected > 0.9` with at least 5 threads connected. Indicates CPU-bound workload.",
+    "name": "[MySQL OTel] Thread saturation",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "mysql"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 3
+    },
+    "flapping": {
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "mysql_otel-14f9bee0-b03e-4e6d-b386-c89d5e7589c8"
         },
-        "alertDelay": {
-            "active": 3
+        {
+          "id": "mysql_otel-233fa1a2-7c05-46b9-8ae6-112d42610e12"
         },
-        "flapping": {
-            "lookBackWindow": 10,
-            "statusChangeThreshold": 4
+        {
+          "id": "mysql_otel-49452773-8358-4394-827e-d15d1e3f8467"
         },
-        "params": {
-            "searchType": "esqlQuery",
-            "esqlQuery": {
-                "esql": "FROM metrics-mysqlreceiver.otel-*\n// Threads are gauges; pivot running vs connected by instance\n| WHERE metrics.mysql.threads IS NOT NULL\n    AND attributes.kind IN (\"running\", \"connected\")\n| STATS\n    running = MAX(metrics.mysql.threads) WHERE attributes.kind == \"running\",\n    connected = MAX(metrics.mysql.threads) WHERE attributes.kind == \"connected\"\n  BY resource.attributes.mysql.instance.endpoint\n// Saturation = running threads close to connected (CPU-bound workload)\n| EVAL ratio = CASE(connected > 0, running / connected, 0)\n// Alert when ratio > 0.9 and we have meaningful thread count; adjust threshold as needed\n| WHERE ratio > 0.9 AND connected >= 5\n| SORT ratio DESC"
-            },
-            "size": 0,
-            "threshold": [0],
-            "thresholdComparator": ">",
-            "timeField": "@timestamp",
-            "timeWindowSize": 5,
-            "timeWindowUnit": "m",
-            "groupBy": "row",
-            "termField": "resource.attributes.mysql.instance.endpoint",
-            "termSize": 10,
-            "excludeHitsFromPreviousRun": true
+        {
+          "id": "mysql_otel-71977e60-f126-4c18-8769-639e686585a3"
         }
+      ],
+      "investigation_guide": {
+        "blob": "## MySQL thread saturation\n\n### What fired\nRunning threads over connected threads exceeded 90% with at least 5 connections.\n\n### Why it matters\nWhen nearly all connections are actively executing, MySQL is CPU-bound. Query throughput stalls and queues form.\n\n### Triage\n1. Inspect top SQL by CPU.\n2. Look at InnoDB concurrency settings.\n\n### Remediation\n- Tune `innodb_thread_concurrency` / add CPU.\n- Optimise heavy queries.\n\n### Tuning\n- 0.9 threshold; 5 connections minimum avoids noise.\n"
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-mysqlreceiver.otel-*\n// Threads are gauges; pivot running vs connected by instance\n| WHERE metrics.mysql.threads IS NOT NULL\n    AND attributes.kind IN (\"running\", \"connected\")\n| STATS\n    running = MAX(metrics.mysql.threads) WHERE attributes.kind == \"running\",\n    connected = MAX(metrics.mysql.threads) WHERE attributes.kind == \"connected\"\n  BY resource.attributes.mysql.instance.endpoint\n// Saturation = running threads close to connected (CPU-bound workload)\n| EVAL ratio = CASE(connected > 0, running / connected, 0)\n// Alert when ratio > 0.9 and we have meaningful thread count; adjust threshold as needed\n| WHERE ratio > 0.9 AND connected >= 5\n| SORT ratio DESC"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 5,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "resource.attributes.mysql.instance.endpoint",
+      "termSize": 10,
+      "excludeHitsFromPreviousRun": true
     }
+  }
 }

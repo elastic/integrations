@@ -1,6 +1,5 @@
 # Imperva Integration for Elastic
 
-> **Note**: This documentation was generated using AI and should be reviewed for accuracy.
 
 ## Overview
 

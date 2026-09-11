@@ -1,0 +1,39 @@
+{{- $timestamp := generate "timestamp" -}}
+{{- $client_ip_asn := generate "client_ip_asn" -}}
+{{- $client_ip_asn_description := generate "client_ip_asn_description" -}}
+{{- $client_ip_country := generate "client_ip_country" -}}
+{{- $last_known_good_colo_code := generate "last_known_good_colo_code" -}}
+{{- $phase := generate "phase" -}}
+{{- $type := generate "type" -}}
+{
+    "@timestamp": "{{ $timestamp.Format "2006-01-02T15:04:05.999999Z07:00" }}",
+    "agent": {
+        "ephemeral_id": "cdaaaabb-be7e-432f-816b-bda019fd7c15",
+        "id": "da6cb4c8-c84c-4c5f-97c7-f8586a098af4",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.19.7"
+    },
+    "data_stream": {
+        "dataset": "cloudflare_logpush.nel_report",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "elastic_agent": {
+        "id": "da6cb4c8-c84c-4c5f-97c7-f8586a098af4",
+        "snapshot": false,
+        "version": "8.19.7"
+    },
+    "message": "{\"ClientIPASN\":\"{{ $client_ip_asn }}\",\"ClientIPASNDescription\":\"{{ $client_ip_asn_description }}\",\"ClientIPCountry\":\"{{ $client_ip_country }}\",\"LastKnownGoodColoCode\":\"{{ $last_known_good_colo_code }}\",\"Phase\":\"{{ $phase }}\",\"Timestamp\":\"{{ $timestamp.Format "2006-01-02T15:04:05Z07:00" }}\",\"Type\":\"{{ $type }}\"}",
+    "event": {
+        "dataset": "cloudflare_logpush.nel_report"
+    },
+    "input": {
+        "type": "http_endpoint"
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "cloudflare_logpush-nel_report"
+    ]
+}

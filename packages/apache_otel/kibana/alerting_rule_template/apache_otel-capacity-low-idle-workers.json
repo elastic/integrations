@@ -1,0 +1,43 @@
+{
+  "id": "apache_otel-capacity-low-idle-workers",
+  "type": "alerting_rule_template",
+  "attributes": {
+    "description": "Alerts when average idle worker count falls below 5. A low idle pool means the server has no headroom to absorb traffic bursts and is close to worker-pool exhaustion.",
+    "name": "[Apache OTel] Low idle workers",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "Apache",
+      "OTEL",
+      "Capacity"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "apache_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## Apache low idle workers\n\n### What fired\n`apache.workers` with `attributes.state == \"idle\"` averaged below 5 during the evaluation window.\n\n### Why it matters\nApache handles new connections by dispatching them to idle workers. When the idle count dips, any traffic burst leads to queuing or outright connection refusal. This is a leading indicator of worker-pool exhaustion.\n\n### Triage\n1. Overview dashboard: compare idle vs busy workers and observe the trend.\n2. Check `apache.requests` rate \u2014 is traffic spiking, or is each request holding a worker longer than usual?\n3. Look at `apache.request.time` rate divided by `apache.requests` rate for average latency changes.\n4. Inspect upstream/backend health if Apache is acting as a reverse proxy.\n\n### Remediation\n- Increase `MaxRequestWorkers` / `ServerLimit` if host capacity allows.\n- Fix the slow backend that is pinning workers to requests.\n- Scale horizontally by adding Apache instances behind the load balancer.\n\n### Tuning\n- The threshold of 5 idle workers is small-scale; tune it proportionally to your `MaxRequestWorkers` setting (e.g. < 10% of max).\n"
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "timeWindowSize": 5,
+      "timeWindowUnit": "m",
+      "esqlQuery": {
+        "esql": "// Alert triggers when the number of idle workers falls below the threshold.\n// Low idle workers indicate the server is approaching capacity and may not handle new requests efficiently.\n// The alert is grouped by host name.\n// You can adjust the threshold value by modifying the idle_workers in the WHERE clause (default: < 5).\nFROM metrics-apachereceiver.otel-*\n| WHERE attributes.state == \"idle\"\n| STATS idle_workers = AVG(metrics.apache.workers) BY resource.attributes.host.name\n| WHERE idle_workers IS NOT NULL AND idle_workers < 5\n| EVAL idle_workers = ROUND(idle_workers, 2)\n| KEEP resource.attributes.host.name, idle_workers\n| SORT idle_workers ASC"
+      },
+      "groupBy": "row",
+      "timeField": "@timestamp"
+    }
+  },
+  "managed": true,
+  "coreMigrationVersion": "8.8.0",
+  "typeMigrationVersion": "10.1.0"
+}

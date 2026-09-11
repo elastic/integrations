@@ -2,10 +2,10 @@
 
 The Cisco Duo integration collects and parses data from the [Cisco Duo Admin APIs](https://duo.com/docs/adminapi). The Duo Admin API provides programmatic access to the administrative functionality of Duo Security's two-factor authentication platform.
 
-## Agentless Enabled Integration
+## Elastic Managed enabled integration
 
-Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
-Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+Elastic Managed integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Elastic Managed integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Elastic Managed integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+Elastic Managed deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
 
 ## Compatibility
 
@@ -19,6 +19,7 @@ In order to ingest data from the Cisco Duo Admin API you must:
 - Go through following tabs **Application > Protect an Application > Admin API > Protect**
 - Now you will find your **Hostname**, **Integration key** and **Secret key** which will be required while configuring the integration package.
 - For this integration you will require **Grant read information** and **Grant read log** permissions.
+- The Users data stream also requires the **Grant resource - Read** permission.
 - Make sure you have whitelisted your IP Address.
 
 More details for each step can be found at [First steps](https://duo.com/docs/adminapi#first-steps).
@@ -35,6 +36,7 @@ The Cisco Duo integration collects logs for the following types of events.
 - [**Telephony Logs**](https://duo.com/docs/adminapi#telephony-logs)
 - [**Telephony Logs (legacy)**](https://duo.com/docs/adminapi#telephony-logs-(legacy-v1))
 - [**Trust Monitor**](https://duo.com/docs/adminapi#trust-monitor)
+- [**Users**](https://duo.com/docs/adminapi#retrieve-users)
 
 ## V2 Handlers
 
@@ -50,6 +52,18 @@ The following considerations should be taken into account when configuring the i
 - The Duo Admin API retrieves records from the last 180 days up to as recently as two minutes before the API request. Consider this when configuring the `Initial interval` parameter for the v2 API endpoints, as it doesn't support `d` as a suffix, its maximum value is `4320h` which corresponds to that 180 days.
 - For v2 API endpoints, a new parameter `limit` has been added to control the number of records per response. Default value is 100 and can be incresead until 1000.
 - Larger values of interval might cause delay in data ingestion.
+
+## Transforms
+
+This integration installs an [Elastic latest transform](https://www.elastic.co/docs/explore-analyze/transforms/transform-overview#latest-transform-overview) for the Users data stream to maintain a current view of each user. For more details, see [Transform setup and requirements](https://www.elastic.co/docs/explore-analyze/transforms/transform-setup).
+
+The transform writes only the most recent record per user to a destination index, accessible via the `logs-cisco_duo_latest.user` alias.
+
+| Source index | Destination index | Alias |
+|---|---|---|
+| `logs-cisco_duo.user-*` | `logs-cisco_duo_latest.dest_user-1` | `logs-cisco_duo_latest.user` |
+
+The transform requires the built-in `transform_admin` role or equivalent privileges. See [Elastic documentation](https://www.elastic.co/docs/explore-analyze/transforms/transform-setup#transform-privileges) for details.
 
 ## Logs
 
@@ -1095,5 +1109,142 @@ An example event for `trust_monitor` looks as following:
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | input.type | Input type | keyword |
+| log.offset | Log offset | long |
+
+
+### User
+
+This is the `user` dataset.
+
+An example event for `user` looks as following:
+
+```json
+{
+    "@timestamp": "2026-08-19T21:26:25.181Z",
+    "agent": {
+        "ephemeral_id": "9249ba10-5374-4477-8c0b-5149662bb392",
+        "id": "7d8cbbbc-f476-4ce7-be65-7955e6c4bcaf",
+        "name": "elastic-agent-52708",
+        "type": "filebeat",
+        "version": "9.5.0"
+    },
+    "cisco_duo": {
+        "user": {
+            "created": "2021-07-15T12:27:34.000Z",
+            "email": "narroway@example.com",
+            "firstname": "Narrow",
+            "groups": {
+                "group_id": "DGXXXXXXXXXXXXXXXXXX",
+                "name": "Employees",
+                "status": "Active"
+            },
+            "id": "DUJXXXXXXXXXXXXXXXXX",
+            "is_enrolled": true,
+            "last_login": "2021-07-22T11:26:40.000Z",
+            "lastname": "Way",
+            "phones": {
+                "activated": true,
+                "number": "+15555551234",
+                "phone_id": "DPXXXXXXXXXXXXXXXXXX",
+                "platform": "Apple iOS",
+                "type": "mobile"
+            },
+            "realname": "Narrow Way",
+            "status": "active",
+            "username": "narroway"
+        }
+    },
+    "data_stream": {
+        "dataset": "cisco_duo.user",
+        "namespace": "10469",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "7d8cbbbc-f476-4ce7-be65-7955e6c4bcaf",
+        "snapshot": false,
+        "version": "9.5.1"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "iam"
+        ],
+        "dataset": "cisco_duo.user",
+        "id": "DUJXXXXXXXXXXXXXXXXX",
+        "ingested": "2026-08-19T21:26:29Z",
+        "kind": "asset",
+        "module": "cisco_duo",
+        "original": "{\"aliases\":{},\"created\":1626352054,\"custom_attributes\":{},\"email\":\"narroway@example.com\",\"firstname\":\"Narrow\",\"groups\":[{\"desc\":\"\",\"group_id\":\"DGXXXXXXXXXXXXXXXXXX\",\"name\":\"Employees\",\"status\":\"Active\"}],\"is_enrolled\":true,\"last_login\":1626953200,\"lastname\":\"Way\",\"notes\":\"\",\"phones\":[{\"activated\":true,\"number\":\"+15555551234\",\"phone_id\":\"DPXXXXXXXXXXXXXXXXXX\",\"platform\":\"Apple iOS\",\"type\":\"mobile\"}],\"realname\":\"Narrow Way\",\"status\":\"active\",\"tokens\":[],\"user_id\":\"DUJXXXXXXXXXXXXXXXXX\",\"username\":\"narroway\",\"webauthncredentials\":[]}",
+        "type": [
+            "user",
+            "info"
+        ]
+    },
+    "input": {
+        "type": "cel"
+    },
+    "labels": {
+        "is_transform_source": "true"
+    },
+    "related": {
+        "user": [
+            "narroway",
+            "narroway@example.com"
+        ]
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "cisco_duo-user"
+    ],
+    "user": {
+        "email": "narroway@example.com",
+        "full_name": "Narrow Way",
+        "id": "DUJXXXXXXXXXXXXXXXXX",
+        "name": "narroway"
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| cisco_duo.user.aliases | Map of alias usernames for the user. | flattened |
+| cisco_duo.user.created | The date and time the user was created in Duo Security. | date |
+| cisco_duo.user.custom_attributes | Custom attributes for the user. | flattened |
+| cisco_duo.user.email | The user's email address. | keyword |
+| cisco_duo.user.external_id | The user's external ID from a directory service, if applicable. | keyword |
+| cisco_duo.user.firstname | The user's given name. | keyword |
+| cisco_duo.user.groups | List of groups the user belongs to. | flattened |
+| cisco_duo.user.id | The user's ID. | keyword |
+| cisco_duo.user.is_enrolled | Whether the user has completed Duo enrollment. | boolean |
+| cisco_duo.user.last_directory_sync | The date and time of the user's last directory sync. | date |
+| cisco_duo.user.last_login | The date and time of the user's last successful login. | date |
+| cisco_duo.user.lastname | The user's surname. | keyword |
+| cisco_duo.user.lockout_reason | The reason the user was locked out. Present when status is locked_out. | keyword |
+| cisco_duo.user.notes | Notes about the user. | match_only_text |
+| cisco_duo.user.phones | List of phones associated with the user. | flattened |
+| cisco_duo.user.realname | The user's real name (or full name). | keyword |
+| cisco_duo.user.status | The user's status. One of: active, bypass, disabled, or locked out. | keyword |
+| cisco_duo.user.tokens | List of hardware tokens associated with the user. | flattened |
+| cisco_duo.user.u2ftokens | List of U2F tokens associated with the user. | flattened |
+| cisco_duo.user.username | The user's username. | keyword |
+| cisco_duo.user.webauthncredentials | List of WebAuthn credentials associated with the user. | flattened |
+| cloud.image.id | Image ID for the cloud instance. | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| input.type | Input type | keyword |
+| labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
 | log.offset | Log offset | long |
 

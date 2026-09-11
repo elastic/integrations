@@ -2,29 +2,36 @@
 description: Pipeline for processing audit logs.
 processors:
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
   - remove:
+      tag: remove_message_2ee3a7d4
       field: message
       ignore_missing: true
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
+      tag: json_event_original_to_json_cac66847
       field: event.original
       target_field: json
       ignore_failure: true
   - append:
+      tag: append_event_category_b30667d5
       field: event.category
       value: [iam]
   - append:
+      tag: append_event_category_ec4e54a7
       field: event.category
       if: >-
         ctx.json?.action?.type != null && (
@@ -35,60 +42,74 @@ processors:
         )
       value: [configuration]
   - append:
+      tag: append_event_type_d34c7c26
       field: event.type
       if: ctx.json?.action?.type?.toLowerCase()?.contains('created') == true
       value: [creation]
   - append:
+      tag: append_event_type_a6404250
       field: event.type
       if: ctx.json?.action?.type?.toLowerCase()?.contains('deleted') == true
       value: [deletion]
   - append:
+      tag: append_event_type_22235978
       field: event.type
       if: ctx.json?.action?.type?.toLowerCase()?.contains('updated') == true
       value: [change]
   - append:
+      tag: append_event_type_3ba1353f
       field: event.type
       if: ctx.json?.action?.type?.toLowerCase()?.contains('user') == true
       value: [user]
   - append:
+      tag: append_event_type_6fb5b9c5
       field: event.type
       if: ctx.json?.action?.type?.toLowerCase()?.contains('group') == true
       value: [group]
   - append:
+      tag: append_event_type_70d7d723
       field: event.type
       if: ctx.json?.action?.type?.toLowerCase()?.contains('allowed') == true
       value: [info]
   - append:
+      tag: append_event_type_d568ebbb
       field: event.type
       if: ctx.json?.action?.type?.toLowerCase()?.contains('denied') == true
       value: [denied]
   - append:
+      tag: append_event_type_1ed89a58
       field: event.type
       if: ctx.json?.action?.type?.toLowerCase()?.contains('started') == true
       value: [start]
   - append:
+      tag: append_event_type_c0f55558
       field: event.type
       if: ctx.json?.action?.type?.toLowerCase()?.contains('access_allowed') == true
       value: [access]
   - append:
+      tag: append_event_category_537a9202
       field: event.category
       if: ctx.json?.action?.type?.toLowerCase()?.contains('password.check_succeeded') == true
       value: [authentication]
   - append:
+      tag: append_event_category_c07db32b
       field: event.category
       if: ctx.json?.action?.type?.toLowerCase()?.contains('email') == true
       value: [email]
   - set:
+      tag: set_event_type_e4a41200
       field: event.type
       if: ctx.event?.type == null
       value: [info]
   - fingerprint:
+      tag: fingerprint_to_id_629464c5
       fields:
         - json.recordedAt
         - json.id
       target_field: _id
       ignore_missing: true
   - date:
+      tag: date_json_createdAt_to_ping_one_audit_created_at_a0585be1
       field: json.createdAt
       target_field: ping_one.audit.created_at
       if: ctx.json?.createdAt != null && ctx.json?.createdAt != ''
@@ -96,20 +117,25 @@ processors:
         - ISO8601
       on_failure:
         - append:
+            tag: append_error_message_86f232d6
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json__embedded_to_ping_one_audit_embedded_8015058d
       field: json._embedded
       target_field: ping_one.audit.embedded
       ignore_missing: true
   - rename:
+      tag: rename_json_tags_to_ping_one_audit_tags_cf474050
       field: json.tags
       target_field: ping_one.audit.tags
       ignore_missing: true
   - foreach:
+      tag: foreach_ping_one_audit_tags_838fbd8c
       field: ping_one.audit.tags
       processor:
         append:
+          tag: append_tags_d9cb7a7b
           field: tags
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
@@ -117,14 +143,17 @@ processors:
       ignore_failure: true
       if: ctx.ping_one?.audit?.tags != null && ctx.ping_one?.audit?.tags instanceof List
   - rename:
+      tag: rename_json_id_to_ping_one_audit_id_17cbfa30
       field: json.id
       target_field: ping_one.audit.id
       ignore_missing: true
   - set:
+      tag: set_event_id_a500aafc
       field: event.id
       copy_from: ping_one.audit.id
       ignore_failure: true
   - date:
+      tag: date_json_recordedAt_to_ping_one_audit_recorded_at_0c267c45
       field: json.recordedAt
       target_field: ping_one.audit.recorded_at
       if: ctx.json?.recordedAt != null && ctx.json?.recordedAt != ''
@@ -132,222 +161,262 @@ processors:
         - ISO8601
       on_failure:
         - append:
+            tag: append_error_message_60179876
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_timestamp_ce00435e
       field: '@timestamp'
       copy_from: ping_one.audit.recorded_at
       ignore_failure: true
   - rename:
+      tag: rename_json_correlationId_to_ping_one_audit_correlation_id_ba3d2690
       field: json.correlationId
       target_field: ping_one.audit.correlation.id
       ignore_missing: true
   - rename:
+      tag: rename_json_actors_client_id_to_ping_one_audit_actors_client_id_d64ed70a
       field: json.actors.client.id
       target_field: ping_one.audit.actors.client.id
       ignore_missing: true
   - set:
+      tag: set_client_user_id_a07a5407
       field: client.user.id
       copy_from: ping_one.audit.actors.client.id
       ignore_failure: true
   - rename:
+      tag: rename_json_actors_client_name_to_ping_one_audit_actors_client_name_964b26f6
       field: json.actors.client.name
       target_field: ping_one.audit.actors.client.name
       ignore_missing: true
   - set:
+      tag: set_client_user_name_0ace514f
       field: client.user.name
       copy_from: ping_one.audit.actors.client.name
       ignore_failure: true
   - rename:
+      tag: rename_json_actors_client_environment_id_to_ping_one_audit_actors_client_environment_id_778657dc
       field: json.actors.client.environment.id
       target_field: ping_one.audit.actors.client.environment.id
       ignore_missing: true
   - rename:
+      tag: rename_json_actors_client_href_to_ping_one_audit_actors_client_href_8be4422a
       field: json.actors.client.href
       target_field: ping_one.audit.actors.client.href
       ignore_missing: true
   - rename:
+      tag: rename_json_actors_client_type_to_ping_one_audit_actors_client_type_6b36ca0c
       field: json.actors.client.type
       target_field: ping_one.audit.actors.client.type
       ignore_missing: true
   - append:
+      tag: append_related_user_318d2323
       field: related.user
       value: '{{{client.user.id}}}'
       if: ctx.client?.user?.id != null
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_related_user_2353f6bb
       field: related.user
       value: '{{{client.user.name}}}'
       if: ctx.client?.user?.name != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
+      tag: rename_json_actors_user_id_to_ping_one_audit_actors_user_id_7cefcfda
       field: json.actors.user.id
       target_field: ping_one.audit.actors.user.id
       ignore_missing: true
   - set:
+      tag: set_user_id_7d5e659a
       field: user.id
       copy_from: ping_one.audit.actors.user.id
       ignore_failure: true
   - rename:
+      tag: rename_json_actors_user_name_to_ping_one_audit_actors_user_name_0ab42ba6
       field: json.actors.user.name
       target_field: ping_one.audit.actors.user.name
       ignore_missing: true
   - set:
+      tag: set_user_name_755c36e6
       field: user.name
       copy_from: ping_one.audit.actors.user.name
       ignore_failure: true
   - rename:
       field: user.name
       target_field: user.email
-      tag: rename_user_email
+      tag: rename_user_email_455f691a
       if: ctx.user?.name != null && ctx.user.name.indexOf("@") > 0
   - dissect:
       field: user.email
       pattern: '%{user.name}@%{user.domain}'
-      tag: dissect_user_email
+      tag: dissect_user_email_d5fb5c7e
       ignore_missing: true
       ignore_failure: true
       if: ctx.user?.name == null
   - rename:
+      tag: rename_json_actors_user_population_id_to_ping_one_audit_actors_user_population_id_65e76afc
       field: json.actors.user.population.id
       target_field: ping_one.audit.actors.user.population.id
       ignore_missing: true
   - rename:
+      tag: rename_json_actors_user_environment_id_to_ping_one_audit_actors_user_environment_id_6026c35c
       field: json.actors.user.environment.id
       target_field: ping_one.audit.actors.user.environment.id
       ignore_missing: true
   - rename:
+      tag: rename_json_actors_user_href_to_ping_one_audit_actors_user_href_0bd18b62
       field: json.actors.user.href
       target_field: ping_one.audit.actors.user.href
       ignore_missing: true
   - rename:
+      tag: rename_json_actors_user_type_to_ping_one_audit_actors_user_type_b1ddace4
       field: json.actors.user.type
       target_field: ping_one.audit.actors.user.type
       ignore_missing: true
   - append:
+      tag: append_related_user_3b2f7fde
       field: related.user
       value: '{{{user.id}}}'
       if: ctx.user?.id != null
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_related_user_3b423052
       field: related.user
       value: '{{{user.name}}}'
       if: ctx.user?.name != null
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_related_user_36d4b55a
       field: related.user
       value: '{{{user.email}}}'
       if: ctx.user?.email != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
+      tag: rename_json_action_type_to_ping_one_audit_action_type_4a5b9120
       field: json.action.type
       target_field: ping_one.audit.action.type
       ignore_missing: true
   - set:
+      tag: set_event_action_77eae7de
       field: event.action
       copy_from: ping_one.audit.action.type
       ignore_failure: true
   - lowercase:
+      tag: lowercase_event_action_9334b869
       field: event.action
       ignore_missing: true
   - rename:
+      tag: rename_json_action_description_to_ping_one_audit_action_description_e34edbe6
       field: json.action.description
       target_field: ping_one.audit.action.description
       ignore_missing: true
   - foreach:
+      tag: foreach_json_resources_e4692695
       field: json.resources
       processor:
         uri_parts:
+          tag: uri_parts_ingest_value_href_3515307d
           field: _ingest._value.href
           ignore_failure: true
       ignore_failure: true
       if: ctx.json?.resources != null && ctx.json?.resources instanceof List
   - rename:
+      tag: rename_json_resources_to_ping_one_audit_resources_4aed34dc
       field: json.resources
       target_field: ping_one.audit.resources
       ignore_missing: true
   - rename:
+      tag: rename_json_result_id_to_ping_one_audit_result_id_fd7e5a60
       field: json.result.id
       target_field: ping_one.audit.result.id
       ignore_missing: true
   - rename:
+      tag: rename_json_result_status_to_ping_one_audit_result_status_b34e4528
       field: json.result.status
       target_field: ping_one.audit.result.status
       ignore_missing: true
   - set:
+      tag: set_event_outcome_97c2c023
       field: event.outcome
       value: success
       if: ctx.ping_one?.audit?.result?.status == 'SUCCESS' || ctx.ping_one?.audit?.result?.status == 'succeeded'
       ignore_failure: true
   - set:
+      tag: set_event_outcome_91cc7983
       field: event.outcome
       value: failure
       if: ctx.ping_one?.audit?.result?.status == 'FAILURE' || ctx.ping_one?.audit?.result?.status == 'failed'
       ignore_failure: true
   - rename:
+      tag: rename_json_result_description_to_ping_one_audit_result_description_b8c624d0
       field: json.result.description
       target_field: ping_one.audit.result.description
       ignore_missing: true
   - rename:
       field: json.internalCorrelation.transactionId
-      tag: rename_internal_correlation_transaction_id
+      tag: rename_internal_correlation_transaction_id_b734385c
       target_field: ping_one.audit.internal_correlation.transaction_id
       ignore_missing: true
   - convert:
       field: json.source.ipAddress
-      tag: convert_source_ip_address_to_ip
+      tag: convert_source_ip_address_to_ip_2526fa8c
       target_field: ping_one.audit.source.ip_address
       type: ip
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_b539951b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: source.ip
-      tag: set_source_ip_from_source_ip_address
+      tag: set_source_ip_from_source_ip_address_9396ac2a
       copy_from: ping_one.audit.source.ip_address
       ignore_empty_value: true
   - geoip:
       field: source.ip
-      tag: geoip_source_ip
+      tag: geoip_source_ip_9a2d4d31
       target_field: source.geo
       ignore_missing: true
   - append:
       field: related.ip
-      tag: append_source_ip_address_to_related_ip
+      tag: append_source_ip_address_to_related_ip_57531452
       value: '{{{ping_one.audit.source.ip_address}}}'
       if: ctx.ping_one?.audit?.source?.ip_address != null
       allow_duplicates: false
   - rename:
       field: json.source.userAgent
-      tag: rename_source_user_agent
+      tag: rename_source_user_agent_1b6f7a32
       target_field: ping_one.audit.source.user_agent
       ignore_missing: true
   - user_agent:
       field: ping_one.audit.source.user_agent
-      tag: user_agent_source_user_agent
+      tag: user_agent_source_user_agent_4358ceb7
       ignore_missing: true
   - remove:
+      tag: remove_e5a80934
       field:
         - json
       ignore_missing: true
       # Remove ping_one.audit fields that are copied into an ECS field.
   - foreach:
+      tag: foreach_ping_one_audit_resources_2b5431d7
       field: ping_one.audit.resources
       processor:
         remove:
+          tag: remove_ingest_value_href_1f121701
           field: _ingest._value.href
           ignore_failure: true
           ignore_missing: true
       ignore_failure: true
       if: ctx.ping_one?.audit?.resources != null && ctx.ping_one?.audit?.resources instanceof List && (ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields')))
   - remove:
+      tag: remove_d4cb182f
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
       field:
         - ping_one.audit.recorded_at
@@ -363,7 +432,7 @@ processors:
       ignore_failure: true
       ignore_missing: true
   - script:
-      tag: script_to_drop_null_values
+      tag: script_to_drop_null_values_7559f019
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
       source: |-
@@ -390,26 +459,29 @@ processors:
         handleMap(ctx);
   - set:
       field: event.kind
-      tag: set_pipeline_error_into_event_kind
+      tag: set_pipeline_error_into_event_kind_4fd8ffa8
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message_417e65c9
       field: error.message
-      value: |-
+      value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
         {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
         {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
   - append:
+      tag: append_tags_fe74b5ce
       field: tags
       value: preserve_original_event
       allow_duplicates: false

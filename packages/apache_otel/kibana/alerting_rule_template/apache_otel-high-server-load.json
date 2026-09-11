@@ -1,41 +1,52 @@
 {
-    "id": "apache_otel-high-server-load",
-    "type": "alerting_rule_template",
-    "managed": true,
-    "attributes": {
-        "name": "[Apache OTel] High server load",
-        "ruleTypeId": ".es-query",
-        "tags": [
-            "observability",
-            "apache"
-        ],
-        "schedule": {
-            "interval": "1m"
-        },
-        "alertDelay": {
-            "active": 3
-        },
-        "flapping": {
-            "lookBackWindow": 10,
-            "statusChangeThreshold": 4
-        },
-        "params": {
-            "searchType": "esqlQuery",
-            "esqlQuery": {
-                "esql": "FROM metrics-apachereceiver.otel-*\n| WHERE `apache.load.1` IS NOT NULL\n| STATS load_1m = MAX(`apache.load.1`)\n    BY resource.attributes.apache.server.name\n| WHERE load_1m > 5.0\n| SORT load_1m DESC\n| LIMIT 10"
-            },
-            "size": 0,
-            "threshold": [
-                0
-            ],
-            "thresholdComparator": ">",
-            "timeField": "@timestamp",
-            "timeWindowSize": 5,
-            "timeWindowUnit": "m",
-            "groupBy": "row",
-            "termField": "resource.attributes.apache.server.name",
-            "termSize": 10,
-            "excludeHitsFromPreviousRun": true
+  "id": "apache_otel-high-server-load",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when the 1-minute system load average on an Apache host exceeds 5 (`apache.load.1 > 5`). Load spikes above CPU core count imply request handling is CPU-bound or queued.",
+    "name": "[Apache OTel] High server load",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "apache"
+    ],
+    "schedule": {
+      "interval": "1m"
+    },
+    "alertDelay": {
+      "active": 3
+    },
+    "flapping": {
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "apache_otel-overview"
         }
+      ],
+      "investigation_guide": {
+        "blob": "## Apache high server load\n\n### What fired\n`apache.load.1` peaked above 5 during the evaluation window.\n\n### Why it matters\nThe 1-minute load average approximates how many processes are runnable or in uninterruptible sleep. Values consistently higher than the number of CPU cores mean requests are queuing for CPU. Combined with rising latency, this is a classic saturation pattern.\n\n### Triage\n1. Overview dashboard: confirm the server(s) involved and correlate with `apache.load.5` / `apache.load.15` for trend.\n2. Check `apache.cpu.load` and `apache.cpu.time` (by mode) \u2014 is it user CPU (application) or system CPU (syscalls/IO)?\n3. Inspect worker utilization: a pool near exhaustion aggravates load.\n4. Host-level: disk I/O and network metrics often explain elevated load when CPU alone looks healthy.\n\n### Remediation\n- Scale Apache hosts or add cores.\n- Optimise CPU-heavy handlers (cgi-bin, mod_php, mod_ssl work).\n- If load is from I/O wait, look at disk/network rather than Apache tuning.\n\n### Tuning\n- Threshold `> 5` is a generic safety threshold. Tune to roughly the number of CPU cores on the host.\n"
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-apachereceiver.otel-*\n| WHERE `apache.load.1` IS NOT NULL\n| STATS load_1m = MAX(`apache.load.1`)\n    BY resource.attributes.apache.server.name\n| WHERE load_1m > 5.0\n| SORT load_1m DESC\n| LIMIT 10"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 5,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "resource.attributes.apache.server.name",
+      "termSize": 10,
+      "excludeHitsFromPreviousRun": true
     }
+  }
 }

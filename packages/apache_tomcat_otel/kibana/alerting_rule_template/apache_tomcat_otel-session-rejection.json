@@ -1,37 +1,51 @@
 {
-    "id": "apache_tomcat_otel-session-rejection",
-    "type": "alerting_rule_template",
-    "managed": true,
-    "attributes": {
-        "name": "[Tomcat OTel] Session rejection",
-        "ruleTypeId": ".es-query",
-        "tags": [
-            "observability",
-            "tomcat"
-        ],
-        "schedule": {
-            "interval": "5m"
+  "id": "apache_tomcat_otel-session-rejection",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when any HTTP sessions are rejected (`Catalina_Manager_rejectedSessions` increases). Rejection means `maxActiveSessions` was reached \u2014 real users are being turned away.",
+    "name": "[Tomcat OTel] Session rejection",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "tomcat"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "apache_tomcat_otel-sessions-servlets"
         },
-        "alertDelay": {
-            "active": 2
-        },
-        "params": {
-            "searchType": "esqlQuery",
-            "esqlQuery": {
-                "esql": "FROM metrics-tomcat.otel-*\n| WHERE Catalina_Manager_rejectedSessions IS NOT NULL\n| STATS\n    max_rejected = MAX(Catalina_Manager_rejectedSessions),\n    min_rejected = MIN(Catalina_Manager_rejectedSessions)\n  BY host.name, attributes.context, attributes.host\n| EVAL new_rejections = max_rejected - min_rejected\n// Any session rejection means maxActiveSessions has been reached\n// This directly impacts users who cannot establish new sessions\n| WHERE new_rejections > 0\n| SORT new_rejections DESC"
-            },
-            "size": 0,
-            "threshold": [
-                0
-            ],
-            "thresholdComparator": ">",
-            "timeField": "@timestamp",
-            "timeWindowSize": 15,
-            "timeWindowUnit": "m",
-            "groupBy": "row",
-            "termField": "host.name",
-            "termSize": 100,
-            "excludeHitsFromPreviousRun": true
+        {
+          "id": "apache_tomcat_otel-overview"
         }
+      ],
+      "investigation_guide": {
+        "blob": "## Tomcat session rejection\n\n### What fired\n`Catalina_Manager_rejectedSessions` increased on at least one web application during the evaluation window.\n\n### Why it matters\nSessions are rejected when the manager reaches `maxActiveSessions`. Every rejection is a user that cannot establish a session \u2014 likely a login failure or lost shopping cart. Silent session rejection often goes unnoticed until support tickets arrive.\n\n### Triage\n1. Sessions & Applications dashboard: find the affected context.\n2. Compare `activeSessions` vs `maxActiveSessions` and the rate of `sessionCreateRate` / `sessionExpireRate`.\n3. Check for unusually long session TTLs or a recent traffic spike.\n\n### Remediation\n- Raise `maxActiveSessions` (verify heap can tolerate it).\n- Shorten session TTL or promote session expiration.\n- Investigate why sessions accumulate (leaked references, absent logout flows).\n\n### Tuning\n- Fires on any rejection. Lower sensitivity is rarely appropriate since every rejection is a user-visible failure.\n"
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-tomcat.otel-*\n| WHERE Catalina_Manager_rejectedSessions IS NOT NULL\n| STATS\n    max_rejected = MAX(Catalina_Manager_rejectedSessions),\n    min_rejected = MIN(Catalina_Manager_rejectedSessions)\n  BY host.name, attributes.context, attributes.host\n| EVAL new_rejections = max_rejected - min_rejected\n// Any session rejection means maxActiveSessions has been reached\n// This directly impacts users who cannot establish new sessions\n| WHERE new_rejections > 0\n| SORT new_rejections DESC"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "host.name",
+      "termSize": 100,
+      "excludeHitsFromPreviousRun": true
     }
+  }
 }

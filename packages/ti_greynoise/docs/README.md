@@ -329,4 +329,5 @@ An example event for `ip` looks as following:
 | input.type | Type of filebeat input. | keyword |
 | labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
 | log.offset | Log offset. | long |
+| threat.enrichments | A list of associated indicators objects enriching the event, and the context of that association/enrichment. | nested |
 

@@ -1,0 +1,48 @@
+{
+  "id": "aws_ecs_otel-cpu-utilization-high",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when average CPU utilization of reserved task CPU exceeds a threshold. Sustained high CPU throttles workloads and raises application latency.",
+    "name": "[AWS ECS OTel] CPU utilization high",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "aws_ecs",
+      "otel"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 3
+    },
+    "flapping": {
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    },
+    "artifacts": {
+      "investigation_guide": {
+        "blob": "## CPU Utilization High\n\n`CPUUtilization` is the percentage of reserved CPU in use. Fargate throttles CPU at the reservation ceiling, which manifests as rising latency at the ALB/application layer.\n\n### Triage Steps\n1. Correlate with ALB `TargetResponseTime` and application latency metrics.\n2. Check whether traffic increased without a corresponding task count scale-up.\n3. Review task definition CPU reservation — undersized reservations pin near 100%.\n4. Inspect CPU profiles or hot code paths in the container workload.\n5. Compare with `CpuUtilized` / `CpuReserved` from Container Insights for absolute CPU units.\n\n### Customisation\n- Default threshold is 85% of reserved CPU — tune per service SLO and headroom needs.\n- Duplicate with `stat == \"Maximum\"` to catch short CPU spikes."
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-aws.ecs.otel-*\n| WHERE Namespace == \"AWS/ECS\"\n    AND MetricName == \"CPUUtilization\"\n    AND stat == \"Average\"\n| STATS avg_cpu_util = AVG(`metrics.amazonaws.com/AWS/ECS/CPUUtilization`)\n    BY ClusterName, ServiceName, cloud.region\n// Percent of reserved CPU — tune threshold (default: 85%)\n| WHERE avg_cpu_util > 85.0\n| EVAL ecs_service = CONCAT(ClusterName, \"/\", ServiceName, \" (\", cloud.region, \")\")\n| SORT avg_cpu_util DESC"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "ecs_service",
+      "termSize": 100,
+      "excludeHitsFromPreviousRun": true
+    }
+  }
+}

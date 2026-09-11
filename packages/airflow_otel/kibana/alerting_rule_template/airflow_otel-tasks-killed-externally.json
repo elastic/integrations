@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when the scheduler observes any tasks killed externally (`airflow.scheduler.tasks.killed_externally > 0`). External kills usually come from OOM killers, pod evictions, or SIGKILL from autoscalers.",
     "name": "[Airflow OTel] Tasks killed externally",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -20,13 +21,28 @@
       "lookBackWindow": 10,
       "statusChangeThreshold": 4
     },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "airflow_otel-tasks"
+        },
+        {
+          "id": "airflow_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## Airflow tasks killed externally\n\n### What fired\nThe counter `airflow.scheduler.tasks.killed_externally` increased during the evaluation window.\n\n### Why it matters\nAirflow marks a task as externally killed when its state transitions unexpectedly (not by the task itself or the scheduler). The usual cause is infrastructure: the Linux OOM killer, Kubernetes pod evictions, spot/preemptible VM reclamation, or container runtime kills.\n\n### Triage\n1. Tasks dashboard: identify which tasks and when they were killed.\n2. Check host/pod memory and CPU metrics at the kill time.\n3. Review cluster autoscaler / spot reclamation events.\n4. Look at task logs for sudden truncation.\n\n### Remediation\n- Raise worker resource requests / limits.\n- Move sensitive tasks off preemptible infrastructure.\n- Add checkpointing to long-running tasks so they can resume after a kill.\n\n### Tuning\n- Fires on any non-zero value. Raise the threshold only if occasional kills are part of steady-state operation.\n"
+      }
+    },
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
         "esql": "FROM metrics-airflow.otel-default*\n| WHERE data_stream.dataset == \"airflow.otel\"\n| WHERE airflow.scheduler.tasks.killed_externally IS NOT NULL\n// Counter: tasks killed by OOM, node eviction, etc.\n| STATS killed_count = SUM(airflow.scheduler.tasks.killed_externally)\n| WHERE killed_count > 0"
       },
       "size": 0,
-      "threshold": [0],
+      "threshold": [
+        0
+      ],
       "thresholdComparator": ">",
       "timeField": "@timestamp",
       "timeWindowSize": 15,

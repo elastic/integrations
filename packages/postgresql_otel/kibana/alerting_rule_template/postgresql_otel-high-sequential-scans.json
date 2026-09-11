@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when sequential scans exceed 1000 in the window. Missing indexes or bad query plans.",
     "name": "[PostgreSQL OTel] High sequential scans",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -19,6 +20,19 @@
       "enabled": true,
       "lookBackWindow": 6,
       "statusChangeThreshold": 3
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "postgresql_otel-query-performance"
+        },
+        {
+          "id": "postgresql_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## PostgreSQL high sequential scans\n\n### What fired\nSummed sequential scans exceeded 1000 during the window.\n\n### Why it matters\nSustained seqscans on large tables indicate missing indexes or plans that ignore existing indexes. Hurts performance and disk I/O.\n\n### Triage\n1. Identify the top offending tables.\n2. Inspect query plans.\n\n### Remediation\n- Add appropriate indexes.\n- Refresh planner statistics.\n\n### Tuning\n- 1000 threshold; tune to table count.\n"
+      }
     },
     "params": {
       "searchType": "esqlQuery",

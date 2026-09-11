@@ -2,14 +2,35 @@
   "id": "mongodb_otel-high-session-count",
   "type": "alerting_rule_template",
   "attributes": {
+    "description": "Alerts when active sessions exceed 500. Possible connection pool misconfiguration.",
     "name": "[MongoDB OTel] High session count",
+    "ruleTypeId": ".es-query",
     "tags": [
       "observability",
       "mongodb"
     ],
-    "ruleTypeId": ".es-query",
     "schedule": {
       "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "mongodb_otel-capacity"
+        },
+        {
+          "id": "mongodb_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## MongoDB high session count\n\n### What fired\nSession count exceeded 500 during the window.\n\n### Why it matters\nMongoDB opens a logical session per unique driver session. Sustained high counts usually indicate short-lived client sessions without reuse or driver misconfigurations.\n\n### Triage\n1. Inspect client driver versions and settings.\n\n### Remediation\n- Enable session caching / reuse.\n\n### Tuning\n- 500 threshold; tune to driver load.\n"
+      }
     },
     "params": {
       "searchType": "esqlQuery",
@@ -20,13 +41,6 @@
       },
       "groupBy": "row",
       "timeField": "@timestamp"
-    },
-    "alertDelay": {
-      "active": 2
-    },
-    "flapping": {
-      "lookBackWindow": 10,
-      "statusChangeThreshold": 4
     }
   },
   "managed": true,

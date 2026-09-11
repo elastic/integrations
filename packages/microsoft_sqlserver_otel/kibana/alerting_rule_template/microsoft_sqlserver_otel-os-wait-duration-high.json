@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when OS wait time delta exceeds 60 seconds within the window. Sustained waits point to storage/CPU pressure.",
     "name": "[SQL Server OTel] OS wait duration high",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -19,13 +20,28 @@
       "lookBackWindow": 6,
       "statusChangeThreshold": 3
     },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "microsoft_sqlserver_otel-database-io"
+        },
+        {
+          "id": "microsoft_sqlserver_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## SQL Server OS wait duration high\n\n### What fired\n`INCREASE(sqlserver.os.wait.duration) > 60s` during the window.\n\n### Why it matters\nOS wait types (PAGEIOLATCH_SH, WRITELOG, SOS_SCHEDULER_YIELD) expose the dominant resource constraint. Sustained waits mean the DB is I/O- or CPU-bound.\n\n### Triage\n1. Split by wait_type to find the dominant category.\n2. Correlate with disk latency / CPU metrics.\n\n### Remediation\n- Address the underlying resource pressure.\n\n### Tuning\n- 60s across all wait types in the window; dive deeper per wait_type.\n"
+      }
+    },
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
         "esql": "TS metrics-sqlserverreceiver.otel-default\n// Cumulative wait time by wait type (counter); PAGEIOLATCH_SH, WRITELOG, SOS_SCHEDULER_YIELD indicate I/O/CPU pressure\n| WHERE metrics.sqlserver.os.wait.duration IS NOT NULL\n| STATS wait_increase = SUM(INCREASE(metrics.sqlserver.os.wait.duration))\n  BY instance_id = COALESCE(resource.attributes.service.instance.id, host.name, \"unknown\"),\n     wait_type = COALESCE(attributes.wait.type, wait.type, \"\")\n// Alert when wait time increased by > 60s in the window (indicates sustained waits)\n| WHERE wait_increase > 60.0\n| KEEP instance_id, wait_type, wait_increase"
       },
       "size": 0,
-      "threshold": [0],
+      "threshold": [
+        0
+      ],
       "thresholdComparator": ">",
       "timeField": "@timestamp",
       "timeWindowSize": 10,

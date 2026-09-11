@@ -1,0 +1,39 @@
+- name: data_stream.type
+  external: ecs
+- name: data_stream.dataset
+  external: ecs
+- name: data_stream.namespace
+  external: ecs
+- name: '@timestamp'
+  external: ecs
+# event.module and event.dataset are constant for this data stream, so declare
+# them as constant_keyword (value stored once in the mapping, not on every
+# document) instead of stamping them in the ingest pipeline.
+- name: event.module
+  type: constant_keyword
+  description: Event module
+  value: ti_ticura
+- name: event.dataset
+  type: constant_keyword
+  description: Event dataset
+  value: ti_ticura.indicator
+# Declare threat.feed as a group so it can hold multiple feed entries per indicator
+# (the Ticura source may attach one or more feed entries to a single IOC).
+- name: threat.feed
+  type: group
+  fields:
+    - name: name
+      external: ecs
+    - name: description
+      external: ecs
+    - name: reference
+      external: ecs
+    - name: dashboard_id
+      external: ecs
+# labels.is_ioc_transform_source marks raw-stream docs (true) vs the transform's
+# deduplicated _latest destination (false). Kibana/Security query the latest set
+# by filtering labels.is_ioc_transform_source: "false".
+- name: labels.is_ioc_transform_source
+  type: constant_keyword
+  value: "true"
+  description: Indicates whether an IOC is in the raw source data stream, or in the latest destination index.

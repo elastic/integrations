@@ -1,0 +1,39 @@
+{
+  "id": "aws_ec2_otel-high-ebs-write-throughput",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when EBS write throughput exceeds a threshold over the lookback window. The EBSWriteBytes metric measures write activity on the EBS volumes attached to the instance, which is how most EC2 instances store their data. It does NOT measure temporary local disks (instance store) that are physically attached to the host. If your instances use instance store, track that activity using the local disk metrics (DiskWriteBytes) instead.",
+    "name": "[AWS EC2 OTel] High EBS write throughput",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "aws_ec2",
+      "otel"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-aws.ec2.otel-*\n| WHERE Namespace == \"AWS/EC2\"\n    AND MetricName == \"EBSWriteBytes\"\n    AND stat == \"Sum\"\n| EVAL ec2_instance = CONCAT(InstanceId, \" (\", cloud.region, \")\")\n| STATS total_write_bytes = SUM(`metrics.amazonaws.com/AWS/EC2/EBSWriteBytes`) BY ec2_instance\n// Bytes threshold: tune per instance size and workload — Sum stat is bytes per CloudWatch period\n| WHERE total_write_bytes > 536870912\n| SORT total_write_bytes DESC\n| LIMIT 100"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "ec2_instance",
+      "termSize": 100,
+      "excludeHitsFromPreviousRun": true
+    }
+  }
+}

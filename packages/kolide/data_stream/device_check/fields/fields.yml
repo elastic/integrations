@@ -1,0 +1,21 @@
+- name: kolide.device_check
+  type: group
+  description: >-
+    Custom fields for Kolide device check-run results, collected from the Kolide Log Pipeline (S3). Includes every run, not only failures.
+  fields:
+    - name: check_id
+      type: long
+      description: Numeric identifier of the check that was run.
+    - name: check_slug
+      type: keyword
+      description: Slug identifying the check, for example `unencrypted` or `macos_remote_login`.
+    - name: device_id
+      type: long
+      description: Numeric identifier of the device the check was run against.
+    - name: status
+      type: keyword
+      description: Outcome of the check run. One of `passing`, `failing`, `inapplicable`, or `unknown`.
+    - name: check_result_data
+      type: flattened
+      description: >-
+        The per-check result rows produced by the run. The shape varies by check, so the array is stored as a flattened field rather than mapping each key.

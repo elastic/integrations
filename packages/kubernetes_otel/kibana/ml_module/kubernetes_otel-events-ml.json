@@ -1,0 +1,110 @@
+{
+    "id": "kubernetes_otel-events-ml",
+    "type": "ml-module",
+    "migrationVersion": {
+        "search": "7.9.3"
+    },
+    "references": [],
+    "attributes": {
+        "id": "kubernetes_otel-events-ml",
+        "title": "Kubernetes workload events (OpenTelemetry)",
+        "description": "Detect namespaces producing unusual rates of Kubernetes Warning events such as BackOff, CrashLoopBackOff, OOMKilling, FailedScheduling, FailedMount, Unhealthy, Evicted. Uses logs from the OpenTelemetry k8s_events receiver. Modelled per namespace because the involved object names (pods, replicasets) are typically ephemeral; the event reason and object name are surfaced as influencers so anomalies are still attributable.",
+        "type": "Container logs",
+        "logo": {
+            "icon": "logoKubernetes"
+        },
+        "defaultIndexPattern": "logs-k8seventsreceiver.otel-*",
+        "query": {
+            "bool": {
+                "filter": [
+                    {
+                        "exists": {
+                            "field": "k8s.event.reason"
+                        }
+                    }
+                ],
+                "must_not": {
+                    "terms": {
+                        "_tier": [
+                            "data_frozen",
+                            "data_cold"
+                        ]
+                    }
+                }
+            }
+        },
+        "jobs": [
+            {
+                "id": "k8s_workload_event_anomaly",
+                "config": {
+                    "groups": [
+                        "kubernetes",
+                        "otel"
+                    ],
+                    "description": "Kubernetes: detect namespaces producing unusual rates of Warning events (BackOff, CrashLoopBackOff, OOMKilling, FailedScheduling, FailedMount, Unhealthy, Evicted). Per-pod restart storms are covered by the threshold-based alert rules; this job catches namespace-wide elevations that drift below any fixed threshold, with event reason and involved object surfaced as influencers for attribution.",
+                    "analysis_config": {
+                        "bucket_span": "15m",
+                        "detectors": [
+                            {
+                                "detector_description": "High Warning event rate per reason per namespace",
+                                "function": "high_non_zero_count",
+                                "by_field_name": "k8s.event.reason",
+                                "partition_field_name": "k8s.namespace.name"
+                            }
+                        ],
+                        "influencers": [
+                            "k8s.namespace.name",
+                            "k8s.event.reason",
+                            "k8s.object.name"
+                        ]
+                    },
+                    "analysis_limits": {
+                        "model_memory_limit": "64mb"
+                    },
+                    "data_description": {
+                        "time_field": "@timestamp",
+                        "time_format": "epoch_ms"
+                    },
+                    "model_plot_config": {
+                        "enabled": false,
+                        "annotations_enabled": true
+                    },
+                    "custom_settings": {
+                        "created_by": "ml-module-kubernetes-otel-events-ml"
+                    }
+                }
+            }
+        ],
+        "datafeeds": [
+            {
+                "id": "datafeed-k8s_workload_event_anomaly",
+                "job_id": "k8s_workload_event_anomaly",
+                "config": {
+                    "job_id": "k8s_workload_event_anomaly",
+                    "indices": [
+                        "INDEX_PATTERN_NAME"
+                    ],
+                    "indices_options": {
+                        "allow_no_indices": true
+                    },
+                    "query": {
+                        "bool": {
+                            "filter": [
+                                {
+                                    "term": {
+                                        "severity_text": "Warning"
+                                    }
+                                },
+                                {
+                                    "exists": {
+                                        "field": "k8s.object.name"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        ]
+    }
+}

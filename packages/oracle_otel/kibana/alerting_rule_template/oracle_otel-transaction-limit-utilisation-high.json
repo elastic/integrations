@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when transaction utilisation exceeds 85%. Limit exhaustion prevents new transactions.",
     "name": "[Oracle OTel] Transaction limit utilisation high",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -19,13 +20,28 @@
       "lookBackWindow": 8,
       "statusChangeThreshold": 4
     },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "oracle_otel-resource-capacity"
+        },
+        {
+          "id": "oracle_otel-transaction-health"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## Oracle transaction limit utilisation high\n\n### What fired\n`transactions.usage / transactions.limit > 85%`.\n\n### Why it matters\nThe `transactions` init parameter bounds concurrent active transactions. Exhaustion halts new DML.\n\n### Triage\n1. Look at the active transaction pattern.\n\n### Remediation\n- Raise `transactions` init parameter.\n\n### Tuning\n- 85% threshold.\n"
+      }
+    },
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
-        "esql": "FROM metrics-oracledbreceiver.otel-*\n// Transaction usage and limit are in separate TSDB document groups; aggregate across time window\n| STATS usage = MAX(oracledb.transactions.usage),\n        limit_val = MAX(oracledb.transactions.limit)\n        BY oracledb.instance.name, host.name\n// Exclude unlimited (-1)\n| WHERE limit_val > 0\n// Utilisation > 85% — transaction limit exhaustion prevents new transactions\n// Adjust threshold to tune sensitivity\n| EVAL utilisation_pct = ROUND(usage * 100.0 / limit_val, 1)\n| WHERE utilisation_pct > 85\n| SORT utilisation_pct DESC"
+        "esql": "FROM metrics-oracledbreceiver.otel-*\n// Transaction usage and limit are in separate TSDB document groups; aggregate across time window\n| STATS usage = MAX(oracledb.transactions.usage),\n        limit_val = MAX(oracledb.transactions.limit)\n        BY oracledb.instance.name, host.name\n// Exclude unlimited (-1)\n| WHERE limit_val > 0\n// Utilisation > 85% \u2014 transaction limit exhaustion prevents new transactions\n// Adjust threshold to tune sensitivity\n| EVAL utilisation_pct = ROUND(usage * 100.0 / limit_val, 1)\n| WHERE utilisation_pct > 85\n| SORT utilisation_pct DESC"
       },
       "size": 0,
-      "threshold": [0],
+      "threshold": [
+        0
+      ],
       "thresholdComparator": ">",
       "timeField": "@timestamp",
       "timeWindowSize": 15,

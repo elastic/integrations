@@ -43,6 +43,37 @@ For step-by-step instructions on how to set up an integration, see the
 
 ### Advanced options
 
+#### IAM Roles Anywhere
+
+If your Elastic Agent runs outside AWS (for example, on on-premises servers), you can use [AWS IAM Roles Anywhere](https://docs.aws.amazon.com/rolesanywhere/latest/userguide/introduction.html) to authenticate the integration without long-term access keys. IAM Roles Anywhere issues temporary AWS credentials based on an X.509 certificate from a trusted Certificate Authority.
+
+**Prerequisites:** complete the [IAM Roles Anywhere setup](https://docs.aws.amazon.com/rolesanywhere/latest/userguide/getting-started.html) in your AWS account — create a Trust Anchor, a Profile, and an IAM role with the necessary CloudTrail permissions.
+
+**Steps:**
+
+1. [Download and install `aws_signing_helper`](https://docs.aws.amazon.com/rolesanywhere/latest/userguide/credential-helper.html) on the host running Elastic Agent.
+
+2. Add a profile to the AWS shared config file (`~/.aws/config` on Linux/macOS, `%USERPROFILE%\.aws\config` on Windows) that uses the helper as a [`credential_process`](https://docs.aws.amazon.com/sdkref/latest/guide/feature-process-credentials.html):
+
+    ```ini
+    [profile elastic-agent]
+    credential_process = /path/to/aws_signing_helper credential-process \
+        --certificate /path/to/certificate.pem \
+        --private-key /path/to/private-key.pem \
+        --trust-anchor-arn arn:aws:rolesanywhere:region:account:trust-anchor/TA_ID \
+        --profile-arn arn:aws:rolesanywhere:region:account:profile/PROFILE_ID \
+        --role-arn arn:aws:iam::account:role/role-name
+    region = us-east-1
+    ```
+
+    Replace `/path/to/` with the actual path to the binary on your operating system.
+
+3. In the CloudTrail integration configuration, set the **Credential Profile Name** field to the profile name you defined (for example, `elastic-agent`). If you configure the profile as `[default]`, you can leave the field blank.
+
+> **Note:** If **Shared Credential File** is set, the integration loads credentials only from that file and stops reading the default AWS shared config file; ensure the profile with the `credential_process` entry is present in whichever file you specify, or leave the field blank to use the default config file location. **Credential Profile Name** and **Shared Credential File** are integration-wide settings: any value you set here applies to all AWS data streams in this integration, not just CloudTrail.
+
+The credentials are refreshed automatically before they expire. For the full list of `aws_signing_helper` options and examples, see the [IAM Roles Anywhere credential helper documentation](https://docs.aws.amazon.com/rolesanywhere/latest/userguide/credential-helper.html).
+
 #### CloudWatch
 
 The CloudWatch logs input has several advanced options to fit specific use cases.
@@ -60,6 +91,21 @@ If you are collecting log events from multiple log groups using `log_group_name_
 The `number_of_workers` setting defines the number of workers assigned to reading from log groups. **Do not set `number_of_workers` higher than the AWS API rate limit.** The CloudWatch Logs APIs (DescribeLogGroups, FilterLogEvents) are limited to 5 transactions per second (TPS) per AWS account and per region; this limit is shared across all API callers in that account and region. If you run multiple integrations or data streams that collect CloudWatch logs from the same account and region, their workers share the same 5 TPS—so even 5 workers per data stream can cause throttling when combined. Exceeding the limit causes `ThrottlingException: Rate exceeded` errors and may report DEGRADED status in Fleet.
 
 **Recommendation:** Set `number_of_workers` to **5 or less** and `scan_frequency` to **5m or more**, regardless of how many log groups match `log_group_name_prefix`. Workers will iterate through the matching log groups within each scan interval. The default value is `1`.
+
+#### S3 polling mode considerations
+
+When using the "Collect logs via S3 Bucket" option in polling mode, the integration lists and processes all objects in the bucket. For buckets containing large volumes of historical logs, this can cause high memory usage and potential out-of-memory (OOM) errors.
+
+**Important:** If you provide both a bucket ARN and an SQS Queue URL, the integration ignores the SQS URL and operates in polling mode, attempting to process the entire bucket. To use SQS mode, disable "Collect logs via S3 Bucket" and provide only the SQS Queue URL.
+
+**Recommendation:** Use SQS mode when possible to avoid scanning the entire bucket. 
+
+If you must use polling mode, configure these advanced options to limit which S3 objects are processed:
+
+- **Ignore Older Timespan** (`ignore_older`): Skip S3 objects older than the specified duration (for example, `48h`, `30d`).
+- **Start Timestamp** (`start_timestamp`): Only process objects newer than the specified time (`YYYY-MM-DDTHH:MM:SSZ`).
+
+If you experience timeouts (`ListObjectsV2, context canceled`), also consider increasing `bucket_list_interval` to reduce listing frequency.
 
 ## Logs reference
 
@@ -81,6 +127,10 @@ Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ec
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | actor.entity.id | [Deprecated] Legacy field containing the actor entity identifier. For type-specific entities, use user.entity.id, service.entity.id, host.entity.id, or entity.id instead. | keyword |
+| aws.cloudtrail.addendum.original_event_id | The original event ID. This is only provided if the reason is UPDATED_DATA. | keyword |
+| aws.cloudtrail.addendum.original_request_id | The original unique ID of the request. This is only provided if the reason is UPDATED_DATA. | keyword |
+| aws.cloudtrail.addendum.reason | The reason that the event or some of its contents were missing. | keyword |
+| aws.cloudtrail.addendum.updated_fields | The event record fields that are updated by the addendum. This is only provided if the reason is UPDATED_DATA. | keyword |
 | aws.cloudtrail.additional_eventdata | Additional data about the event that was not part of the request or response. | keyword |
 | aws.cloudtrail.additional_eventdata.text | Multi-field of `aws.cloudtrail.additional_eventdata`. | text |
 | aws.cloudtrail.api_version | Identifies the API version associated with the AwsApiCall eventType value. | keyword |
@@ -113,16 +163,33 @@ Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ec
 | aws.cloudtrail.service_event_details.text | Multi-field of `aws.cloudtrail.service_event_details`. | text |
 | aws.cloudtrail.session_credential_from_console |  | keyword |
 | aws.cloudtrail.shared_event_id | GUID generated by CloudTrail to uniquely identify CloudTrail events from the same AWS action that is sent to different AWS accounts. | keyword |
+| aws.cloudtrail.tls_details.key_exchange | The key exchange method used in the TLS handshake. This field indicates whether the connection used classical cryptography or post-quantum cryptography. Example values include X25519MLKEM768 for post-quantum TLS 1.3, x25519 for classical TLS 1.3, and secp256r1 for TLS 1.2. | keyword |
 | aws.cloudtrail.user_identity.access_key_id | The access key ID that was used to sign the request. | keyword |
 | aws.cloudtrail.user_identity.arn | The Amazon Resource Name (ARN) of the principal that made the call. | keyword |
+| aws.cloudtrail.user_identity.credential_id | The credential ID for the request. This is only set when the caller uses a bearer token, such as an IAM Identity Center authorized access token. | keyword |
+| aws.cloudtrail.user_identity.identity_provider | The principal name of the external identity provider. This field appears only for SAMLUser or WebIdentityUser types. | keyword |
+| aws.cloudtrail.user_identity.in_scope_of.credentials_issued_to | The resource related to the environment where the credentials were issued. | keyword |
+| aws.cloudtrail.user_identity.in_scope_of.issuer_type | The resource type of credentialsIssuedTo. For example, AWS::Lambda::Function. | keyword |
+| aws.cloudtrail.user_identity.in_scope_of.source_account | The owner account ID for the sourceArn. It appears together with sourceArn. | keyword |
+| aws.cloudtrail.user_identity.in_scope_of.source_arn | The ARN of the resource that invoked the service-to-service request. | keyword |
 | aws.cloudtrail.user_identity.invoked_by | The name of the AWS service that made the request, such as Amazon EC2 Auto Scaling or AWS Elastic Beanstalk. | keyword |
+| aws.cloudtrail.user_identity.invoked_by_delegate.account_id | The AWS account ID of the product provider that initiated the request. | keyword |
+| aws.cloudtrail.user_identity.on_behalf_of.identity_store_arn | The ARN of the IAM Identity Center identity store that the call was made on behalf of. | keyword |
+| aws.cloudtrail.user_identity.on_behalf_of.user_id | The ID of the IAM Identity Center user who the call was made on behalf of. | keyword |
+| aws.cloudtrail.user_identity.session_context.assumed_root | The value is true for a temporary session when a management account or delegated administrator calls AWS STS AssumeRoot. | boolean |
 | aws.cloudtrail.user_identity.session_context.creation_date | The date and time when the temporary security credentials were issued. | date |
+| aws.cloudtrail.user_identity.session_context.ec2_role_delivery | The value is 1.0 if the credentials were provided by Amazon EC2 Instance Metadata Service Version 1 (IMDSv1). The value is 2.0 if the credentials were provided using the new IMDS scheme. | keyword |
 | aws.cloudtrail.user_identity.session_context.mfa_authenticated | The value is true if the root user or IAM user whose credentials were used for the request also was authenticated with an MFA device; otherwise, false. | keyword |
 | aws.cloudtrail.user_identity.session_context.session_issuer.account_id | The account that owns the entity that was used to get credentials. | keyword |
 | aws.cloudtrail.user_identity.session_context.session_issuer.arn | The ARN of the source (account, IAM user, or role) that was used to get temporary security credentials. | keyword |
 | aws.cloudtrail.user_identity.session_context.session_issuer.principal_id | The internal ID of the entity that was used to get credentials. | keyword |
 | aws.cloudtrail.user_identity.session_context.session_issuer.type | The source of the temporary security credentials, such as Root, IAMUser, or Role. | keyword |
+| aws.cloudtrail.user_identity.session_context.sign_in_session_arn | The ARN of the sign-in session that supports the request. This ARN is the value of the aws:SignInSessionArn global condition key. The key identifies the session more specifically than the principal ARN. | keyword |
+| aws.cloudtrail.user_identity.session_context.source_identity | The sourceIdentity field occurs in events when users assume an IAM role to perform an action. sourceIdentity identifies the original user identity making the request, whether that user's identity is an IAM user, an IAM role, a user authenticated through SAML-based federation, or a user authenticated through OpenID Connect (OIDC)-compliant web identity federation. | keyword |
+| aws.cloudtrail.user_identity.session_context.web_id_federation_data.attributes | The application ID and user ID as reported by the provider (for example, www.amazon.com:app_id and www.amazon.com:user_id for Login with Amazon). | flattened |
+| aws.cloudtrail.user_identity.session_context.web_id_federation_data.federated_provider | The principal name of the identity provider (for example, www.amazon.com for Login with Amazon or accounts.google.com for Google). | keyword |
 | aws.cloudtrail.user_identity.type | The type of the identity | keyword |
+| aws.cloudtrail.vpc_endpoint_account_id | Identifies the AWS account ID of the VPC endpoint owner for the corresponding endpoint for which a request has traversed. | keyword |
 | aws.cloudtrail.vpc_endpoint_id | Identifies the VPC endpoint in which requests were made from a VPC to another AWS service, such as Amazon S3. | keyword |
 | aws.s3.bucket.arn | ARN of the S3 bucket that this log retrieved from. | keyword |
 | aws.s3.bucket.name | Name of a S3 bucket. | keyword |
@@ -156,119 +223,111 @@ An example event for `cloudtrail` looks as following:
 {
     "@timestamp": "2020-09-11T19:36:49.000Z",
     "agent": {
-        "ephemeral_id": "6b4ed425-a0ee-4515-8b8d-e73e018989c2",
-        "id": "449295a1-c91d-4d82-a238-4b90b3da70e8",
-        "name": "elastic-agent-43820",
+        "ephemeral_id": "d6c59888-efba-445b-af31-7a0f07888747",
+        "id": "b0003ed6-b073-43e1-8a0f-48d06e371910",
+        "name": "elastic-agent-48662",
         "type": "filebeat",
-        "version": "8.18.0"
+        "version": "9.4.0"
     },
     "aws": {
         "cloudtrail": {
             "flattened": {
                 "digest": {
                     "end_time": "2020-09-11T19:36:49.000Z",
-                    "log_files": [
-                        {
-                            "hashAlgorithm": "SHA-256",
-                            "hashValue": "420784a5bbc12e9ac442451e8ec1356744fdeabf4fee0d2222508db6d448139c",
-                            "newestEventTime": "2020-09-11T19:26:24Z",
-                            "oldestEventTime": "2020-09-11T19:26:24Z",
-                            "s3Bucket": "alice-bucket",
-                            "s3Object": "AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1930Z_l2pGqVS53QcGdAkp.json.gz"
-                        },
-                        {
-                            "hashAlgorithm": "SHA-256",
-                            "hashValue": "4e1eb2a8b41d032cbb16e5449fc8f3eac304e7d43017a391b37c788c77336196",
-                            "newestEventTime": "2020-09-11T19:11:18Z",
-                            "oldestEventTime": "2020-09-11T19:11:18Z",
-                            "s3Bucket": "alice-bucket",
-                            "s3Object": "AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1915Z_TIKlbLnJ6IwUxqxw.json.gz"
-                        },
-                        {
-                            "hashAlgorithm": "SHA-256",
-                            "hashValue": "2695aeb3b4c1f021fe76e0b36f5ac15e557c41c58af6eef282d77ef056210d70",
-                            "newestEventTime": "2020-09-11T18:32:04Z",
-                            "oldestEventTime": "2020-09-11T18:32:04Z",
-                            "s3Bucket": "alice-bucket",
-                            "s3Object": "AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1835Z_OPJhVNodH1gY760s.json.gz"
-                        },
-                        {
-                            "hashAlgorithm": "SHA-256",
-                            "hashValue": "45a2906f55cbfc912584e9425f8d3d8d6fabf571a45a5ecd7d2a0f4132b81689",
-                            "newestEventTime": "2020-09-11T19:21:28Z",
-                            "oldestEventTime": "2020-09-11T19:21:28Z",
-                            "s3Bucket": "alice-bucket",
-                            "s3Object": "AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1925Z_zJNGzQovyNAImZV9.json.gz"
-                        },
-                        {
-                            "hashAlgorithm": "SHA-256",
-                            "hashValue": "515cc8be750d815266b4fc799c7600765f22502d29f5bb9d5c8969ffc5ab7097",
-                            "newestEventTime": "2020-09-11T18:51:21Z",
-                            "oldestEventTime": "2020-09-11T18:51:21Z",
-                            "s3Bucket": "alice-bucket",
-                            "s3Object": "AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1855Z_RqN9YzoKAJCKbejj.json.gz"
-                        },
-                        {
-                            "hashAlgorithm": "SHA-256",
-                            "hashValue": "18650414e79e084dff02da66253f071347f7bb5c4863279bafe7762a980f7c0b",
-                            "newestEventTime": "2020-09-11T18:46:45Z",
-                            "oldestEventTime": "2020-09-11T18:46:45Z",
-                            "s3Bucket": "alice-bucket",
-                            "s3Object": "AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1850Z_jLldN7U8XrspES8p.json.gz"
-                        },
-                        {
-                            "hashAlgorithm": "SHA-256",
-                            "hashValue": "54050ec665636f1985f5b51ae43c74a58282cb2e500492a45f20a4dc1bf8a6d5",
-                            "newestEventTime": "2020-09-11T19:01:06Z",
-                            "oldestEventTime": "2020-09-11T19:01:06Z",
-                            "s3Bucket": "alice-bucket",
-                            "s3Object": "AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1905Z_jBNdmg4bSGxZ3wC8.json.gz"
-                        },
-                        {
-                            "hashAlgorithm": "SHA-256",
-                            "hashValue": "6e0d8fcbd712d3f6d1caf4a872681f4290b05ed8a8f1c9450a0a6db92ccab4d7",
-                            "newestEventTime": "2020-09-11T19:16:12Z",
-                            "oldestEventTime": "2020-09-11T19:16:12Z",
-                            "s3Bucket": "alice-bucket",
-                            "s3Object": "AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1920Z_bj5DRrmILF6jK23a.json.gz"
-                        },
-                        {
-                            "hashAlgorithm": "SHA-256",
-                            "hashValue": "b2b0e2804d1c6b92d76eee203d7eba32d3d003e6967f175723a83ecc2d7ad4ba",
-                            "newestEventTime": "2020-09-11T18:56:05Z",
-                            "oldestEventTime": "2020-09-11T18:56:05Z",
-                            "s3Bucket": "alice-bucket",
-                            "s3Object": "AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1900Z_6LjrkrhsLQMzCiSN.json.gz"
-                        },
-                        {
-                            "hashAlgorithm": "SHA-256",
-                            "hashValue": "4397a13565a67d9ed6e57737b98eb7e61ca52bb191c9b5da0423136dfc5581c7",
-                            "newestEventTime": "2020-09-11T19:06:31Z",
-                            "oldestEventTime": "2020-09-11T19:06:31Z",
-                            "s3Bucket": "alice-bucket",
-                            "s3Object": "AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1910Z_DLyqye8LaeoD204N.json.gz"
-                        },
-                        {
-                            "hashAlgorithm": "SHA-256",
-                            "hashValue": "94f09d2398632c7b0c0066ed5d56768632dd2e06ed9c80af9d0c2c5f59bd60b6",
-                            "newestEventTime": "2020-09-11T18:41:58Z",
-                            "oldestEventTime": "2020-09-11T18:41:58Z",
-                            "s3Bucket": "alice-bucket",
-                            "s3Object": "AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1845Z_TSDKyASOn2ejOq5n.json.gz"
-                        },
-                        {
-                            "hashAlgorithm": "SHA-256",
-                            "hashValue": "9044f9a05d70688bc6f6048d5f8d00764ab65e132b8ffefb193b22ca4394d771",
-                            "newestEventTime": "2020-09-11T18:37:10Z",
-                            "oldestEventTime": "2020-09-11T18:37:10Z",
-                            "s3Bucket": "alice-bucket",
-                            "s3Object": "AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1840Z_btJydJ2t7hCRnjsN.json.gz"
-                        }
-                    ],
+                    "log_files": {
+                        "hashAlgorithm": [
+                            "SHA-256",
+                            "SHA-256",
+                            "SHA-256",
+                            "SHA-256",
+                            "SHA-256",
+                            "SHA-256",
+                            "SHA-256",
+                            "SHA-256",
+                            "SHA-256",
+                            "SHA-256",
+                            "SHA-256",
+                            "SHA-256"
+                        ],
+                        "hashValue": [
+                            "420784a5bbc12e9ac442451e8ec1356744fdeabf4fee0d2222508db6d448139c",
+                            "4e1eb2a8b41d032cbb16e5449fc8f3eac304e7d43017a391b37c788c77336196",
+                            "2695aeb3b4c1f021fe76e0b36f5ac15e557c41c58af6eef282d77ef056210d70",
+                            "45a2906f55cbfc912584e9425f8d3d8d6fabf571a45a5ecd7d2a0f4132b81689",
+                            "515cc8be750d815266b4fc799c7600765f22502d29f5bb9d5c8969ffc5ab7097",
+                            "18650414e79e084dff02da66253f071347f7bb5c4863279bafe7762a980f7c0b",
+                            "54050ec665636f1985f5b51ae43c74a58282cb2e500492a45f20a4dc1bf8a6d5",
+                            "6e0d8fcbd712d3f6d1caf4a872681f4290b05ed8a8f1c9450a0a6db92ccab4d7",
+                            "b2b0e2804d1c6b92d76eee203d7eba32d3d003e6967f175723a83ecc2d7ad4ba",
+                            "4397a13565a67d9ed6e57737b98eb7e61ca52bb191c9b5da0423136dfc5581c7",
+                            "94f09d2398632c7b0c0066ed5d56768632dd2e06ed9c80af9d0c2c5f59bd60b6",
+                            "9044f9a05d70688bc6f6048d5f8d00764ab65e132b8ffefb193b22ca4394d771"
+                        ],
+                        "newestEventTime": [
+                            "2020-09-11T19:26:24Z",
+                            "2020-09-11T19:11:18Z",
+                            "2020-09-11T18:32:04Z",
+                            "2020-09-11T19:21:28Z",
+                            "2020-09-11T18:51:21Z",
+                            "2020-09-11T18:46:45Z",
+                            "2020-09-11T19:01:06Z",
+                            "2020-09-11T19:16:12Z",
+                            "2020-09-11T18:56:05Z",
+                            "2020-09-11T19:06:31Z",
+                            "2020-09-11T18:41:58Z",
+                            "2020-09-11T18:37:10Z"
+                        ],
+                        "oldestEventTime": [
+                            "2020-09-11T19:26:24Z",
+                            "2020-09-11T19:11:18Z",
+                            "2020-09-11T18:32:04Z",
+                            "2020-09-11T19:21:28Z",
+                            "2020-09-11T18:51:21Z",
+                            "2020-09-11T18:46:45Z",
+                            "2020-09-11T19:01:06Z",
+                            "2020-09-11T19:16:12Z",
+                            "2020-09-11T18:56:05Z",
+                            "2020-09-11T19:06:31Z",
+                            "2020-09-11T18:41:58Z",
+                            "2020-09-11T18:37:10Z"
+                        ],
+                        "s3Bucket": [
+                            "alice-bucket",
+                            "alice-bucket",
+                            "alice-bucket",
+                            "alice-bucket",
+                            "alice-bucket",
+                            "alice-bucket",
+                            "alice-bucket",
+                            "alice-bucket",
+                            "alice-bucket",
+                            "alice-bucket",
+                            "alice-bucket",
+                            "alice-bucket"
+                        ],
+                        "s3Object": [
+                            "AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1930Z_l2pGqVS53QcGdAkp.json.gz",
+                            "AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1915Z_TIKlbLnJ6IwUxqxw.json.gz",
+                            "AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1835Z_OPJhVNodH1gY760s.json.gz",
+                            "AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1925Z_zJNGzQovyNAImZV9.json.gz",
+                            "AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1855Z_RqN9YzoKAJCKbejj.json.gz",
+                            "AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1850Z_jLldN7U8XrspES8p.json.gz",
+                            "AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1905Z_jBNdmg4bSGxZ3wC8.json.gz",
+                            "AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1920Z_bj5DRrmILF6jK23a.json.gz",
+                            "AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1900Z_6LjrkrhsLQMzCiSN.json.gz",
+                            "AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1910Z_DLyqye8LaeoD204N.json.gz",
+                            "AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1845Z_TSDKyASOn2ejOq5n.json.gz",
+                            "AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1840Z_btJydJ2t7hCRnjsN.json.gz"
+                        ]
+                    },
                     "newest_event_time": "2020-09-11T19:26:24.000Z",
                     "oldest_event_time": "2020-09-11T18:32:04.000Z",
                     "previous_hash_algorithm": "SHA-256",
+                    "previous_hash_value": "531914fcfa0dbacf0c9dd1475a1fdcb5dea6e85921409f3c3ec0ba39063c860",
                     "previous_s3_bucket": "alice-bucket",
+                    "previous_s3_object": "AWSLogs/123456789123/CloudTrail-Digest/us-west-2/2020/09/11/123456789123_CloudTrail-Digest_us-west-2_leh-ct-test_us-west-2_20200911T183649Z.json.gz",
+                    "previous_signature": "10e0872f32fa1d299d0cc98e94d4c88a6a2eada9d9fc3ae6d53dfe8d54c7caf807072f1e1eec47efdeecfcc22483887f8fddfc954ae587fba43e7676b5547f432fa8722ba1c5baa6b233bcb528ce7c01e3748aab8f28c16c024de79da820128b4c9e5ce65e98a9c4e631687ecc89c224a11bb3df06ce441ff740e4ac9fbd41159e77f5863550118284121f193e357866fbd0463faffb56e194af196e35a7675c3bbd0a398f43159343c3f59129d6339a281a8fdb3192f3fffea9bd21dbb0a705ebfae1921f2133aab0ad29522aea6df0828c1780d3f3ed6b8270ab3ba24459916b0fbbe82fba6ff9677bafe7306e0f5edcc0f1508cdb4e36f3e3b30e653e9987",
+                    "public_key_fingerprint": "47aaa19f7eec22e9bd0b5e58cfade8cb",
                     "s3_bucket": "alice-bucket",
                     "signature_algorithm": "SHA256withRSA",
                     "start_time": "2020-09-11T18:36:49.000Z"
@@ -277,8 +336,8 @@ An example event for `cloudtrail` looks as following:
         },
         "s3": {
             "bucket": {
-                "arn": "arn:aws:s3:::elastic-package-aws-bucket-22020",
-                "name": "elastic-package-aws-bucket-22020"
+                "arn": "arn:aws:s3:::elastic-package-aws-bucket-44516",
+                "name": "elastic-package-aws-bucket-44516"
             },
             "object": {
                 "key": "cloudtrail-digest.log"
@@ -289,27 +348,29 @@ An example event for `cloudtrail` looks as following:
         "account": {
             "id": "123456789123"
         },
+        "provider": "aws",
         "region": "us-east-1"
     },
     "data_stream": {
         "dataset": "aws.cloudtrail",
-        "namespace": "41832",
+        "namespace": "42454",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "449295a1-c91d-4d82-a238-4b90b3da70e8",
+        "id": "b0003ed6-b073-43e1-8a0f-48d06e371910",
         "snapshot": false,
-        "version": "8.18.0"
+        "version": "9.4.0"
     },
     "event": {
         "agent_id_status": "verified",
-        "created": "2025-09-04T09:55:08.902Z",
+        "created": "2026-08-12T07:26:32.833Z",
         "dataset": "aws.cloudtrail",
-        "ingested": "2025-09-04T09:55:09Z",
+        "ingested": "2026-08-12T07:26:33Z",
         "kind": "event",
+        "module": "aws",
         "original": "{\"awsAccountId\":\"123456789123\",\"digestStartTime\":\"2020-09-11T18:36:49Z\",\"digestEndTime\":\"2020-09-11T19:36:49Z\",\"digestS3Bucket\":\"alice-bucket\",\"digestS3Object\":\"AWSLogs/123456789123/CloudTrail-Digest/us-west-2/2020/09/11/123456789123_CloudTrail-Digest_us-west-2_leh-ct-test_us-west-2_20200911T193649Z.json.gz\",\"digestPublicKeyFingerprint\":\"47aaa19f7eec22e9bd0b5e58cfade8cb\",\"digestSignatureAlgorithm\":\"SHA256withRSA\",\"newestEventTime\":\"2020-09-11T19:26:24Z\",\"oldestEventTime\":\"2020-09-11T18:32:04Z\",\"previousDigestS3Bucket\":\"alice-bucket\",\"previousDigestS3Object\":\"AWSLogs/123456789123/CloudTrail-Digest/us-west-2/2020/09/11/123456789123_CloudTrail-Digest_us-west-2_leh-ct-test_us-west-2_20200911T183649Z.json.gz\",\"previousDigestHashValue\":\"531914fcfa0dbacf0c9dd1475a1fdcb5dea6e85921409f3c3ec0ba39063c860\",\"previousDigestHashAlgorithm\":\"SHA-256\",\"previousDigestSignature\":\"10e0872f32fa1d299d0cc98e94d4c88a6a2eada9d9fc3ae6d53dfe8d54c7caf807072f1e1eec47efdeecfcc22483887f8fddfc954ae587fba43e7676b5547f432fa8722ba1c5baa6b233bcb528ce7c01e3748aab8f28c16c024de79da820128b4c9e5ce65e98a9c4e631687ecc89c224a11bb3df06ce441ff740e4ac9fbd41159e77f5863550118284121f193e357866fbd0463faffb56e194af196e35a7675c3bbd0a398f43159343c3f59129d6339a281a8fdb3192f3fffea9bd21dbb0a705ebfae1921f2133aab0ad29522aea6df0828c1780d3f3ed6b8270ab3ba24459916b0fbbe82fba6ff9677bafe7306e0f5edcc0f1508cdb4e36f3e3b30e653e9987\",\"logFiles\":[{\"s3Bucket\":\"alice-bucket\",\"s3Object\":\"AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1930Z_l2pGqVS53QcGdAkp.json.gz\",\"hashValue\":\"420784a5bbc12e9ac442451e8ec1356744fdeabf4fee0d2222508db6d448139c\",\"hashAlgorithm\":\"SHA-256\",\"newestEventTime\":\"2020-09-11T19:26:24Z\",\"oldestEventTime\":\"2020-09-11T19:26:24Z\"},{\"s3Bucket\":\"alice-bucket\",\"s3Object\":\"AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1915Z_TIKlbLnJ6IwUxqxw.json.gz\",\"hashValue\":\"4e1eb2a8b41d032cbb16e5449fc8f3eac304e7d43017a391b37c788c77336196\",\"hashAlgorithm\":\"SHA-256\",\"newestEventTime\":\"2020-09-11T19:11:18Z\",\"oldestEventTime\":\"2020-09-11T19:11:18Z\"},{\"s3Bucket\":\"alice-bucket\",\"s3Object\":\"AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1835Z_OPJhVNodH1gY760s.json.gz\",\"hashValue\":\"2695aeb3b4c1f021fe76e0b36f5ac15e557c41c58af6eef282d77ef056210d70\",\"hashAlgorithm\":\"SHA-256\",\"newestEventTime\":\"2020-09-11T18:32:04Z\",\"oldestEventTime\":\"2020-09-11T18:32:04Z\"},{\"s3Bucket\":\"alice-bucket\",\"s3Object\":\"AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1925Z_zJNGzQovyNAImZV9.json.gz\",\"hashValue\":\"45a2906f55cbfc912584e9425f8d3d8d6fabf571a45a5ecd7d2a0f4132b81689\",\"hashAlgorithm\":\"SHA-256\",\"newestEventTime\":\"2020-09-11T19:21:28Z\",\"oldestEventTime\":\"2020-09-11T19:21:28Z\"},{\"s3Bucket\":\"alice-bucket\",\"s3Object\":\"AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1855Z_RqN9YzoKAJCKbejj.json.gz\",\"hashValue\":\"515cc8be750d815266b4fc799c7600765f22502d29f5bb9d5c8969ffc5ab7097\",\"hashAlgorithm\":\"SHA-256\",\"newestEventTime\":\"2020-09-11T18:51:21Z\",\"oldestEventTime\":\"2020-09-11T18:51:21Z\"},{\"s3Bucket\":\"alice-bucket\",\"s3Object\":\"AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1850Z_jLldN7U8XrspES8p.json.gz\",\"hashValue\":\"18650414e79e084dff02da66253f071347f7bb5c4863279bafe7762a980f7c0b\",\"hashAlgorithm\":\"SHA-256\",\"newestEventTime\":\"2020-09-11T18:46:45Z\",\"oldestEventTime\":\"2020-09-11T18:46:45Z\"},{\"s3Bucket\":\"alice-bucket\",\"s3Object\":\"AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1905Z_jBNdmg4bSGxZ3wC8.json.gz\",\"hashValue\":\"54050ec665636f1985f5b51ae43c74a58282cb2e500492a45f20a4dc1bf8a6d5\",\"hashAlgorithm\":\"SHA-256\",\"newestEventTime\":\"2020-09-11T19:01:06Z\",\"oldestEventTime\":\"2020-09-11T19:01:06Z\"},{\"s3Bucket\":\"alice-bucket\",\"s3Object\":\"AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1920Z_bj5DRrmILF6jK23a.json.gz\",\"hashValue\":\"6e0d8fcbd712d3f6d1caf4a872681f4290b05ed8a8f1c9450a0a6db92ccab4d7\",\"hashAlgorithm\":\"SHA-256\",\"newestEventTime\":\"2020-09-11T19:16:12Z\",\"oldestEventTime\":\"2020-09-11T19:16:12Z\"},{\"s3Bucket\":\"alice-bucket\",\"s3Object\":\"AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1900Z_6LjrkrhsLQMzCiSN.json.gz\",\"hashValue\":\"b2b0e2804d1c6b92d76eee203d7eba32d3d003e6967f175723a83ecc2d7ad4ba\",\"hashAlgorithm\":\"SHA-256\",\"newestEventTime\":\"2020-09-11T18:56:05Z\",\"oldestEventTime\":\"2020-09-11T18:56:05Z\"},{\"s3Bucket\":\"alice-bucket\",\"s3Object\":\"AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1910Z_DLyqye8LaeoD204N.json.gz\",\"hashValue\":\"4397a13565a67d9ed6e57737b98eb7e61ca52bb191c9b5da0423136dfc5581c7\",\"hashAlgorithm\":\"SHA-256\",\"newestEventTime\":\"2020-09-11T19:06:31Z\",\"oldestEventTime\":\"2020-09-11T19:06:31Z\"},{\"s3Bucket\":\"alice-bucket\",\"s3Object\":\"AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1845Z_TSDKyASOn2ejOq5n.json.gz\",\"hashValue\":\"94f09d2398632c7b0c0066ed5d56768632dd2e06ed9c80af9d0c2c5f59bd60b6\",\"hashAlgorithm\":\"SHA-256\",\"newestEventTime\":\"2020-09-11T18:41:58Z\",\"oldestEventTime\":\"2020-09-11T18:41:58Z\"},{\"s3Bucket\":\"alice-bucket\",\"s3Object\":\"AWSLogs/123456789123/CloudTrail/us-west-2/2020/09/11/123456789123_CloudTrail_us-west-2_20200911T1840Z_btJydJ2t7hCRnjsN.json.gz\",\"hashValue\":\"9044f9a05d70688bc6f6048d5f8d00764ab65e132b8ffefb193b22ca4394d771\",\"hashAlgorithm\":\"SHA-256\",\"newestEventTime\":\"2020-09-11T18:37:10Z\",\"oldestEventTime\":\"2020-09-11T18:37:10Z\"}]}",
         "outcome": "success",
         "type": [
@@ -317,9 +378,6 @@ An example event for `cloudtrail` looks as following:
         ]
     },
     "file": {
-        "hash": {
-            "sha256": "10e0872f32fa1d299d0cc98e94d4c88a6a2eada9d9fc3ae6d53dfe8d54c7caf807072f1e1eec47efdeecfcc22483887f8fddfc954ae587fba43e7676b5547f432fa8722ba1c5baa6b233bcb528ce7c01e3748aab8f28c16c024de79da820128b4c9e5ce65e98a9c4e631687ecc89c224a11bb3df06ce441ff740e4ac9fbd41159e77f5863550118284121f193e357866fbd0463faffb56e194af196e35a7675c3bbd0a398f43159343c3f59129d6339a281a8fdb3192f3fffea9bd21dbb0a705ebfae1921f2133aab0ad29522aea6df0828c1780d3f3ed6b8270ab3ba24459916b0fbbe82fba6ff9677bafe7306e0f5edcc0f1508cdb4e36f3e3b30e653e9987"
-        },
         "path": "AWSLogs/123456789123/CloudTrail-Digest/us-west-2/2020/09/11/123456789123_CloudTrail-Digest_us-west-2_leh-ct-test_us-west-2_20200911T193649Z.json.gz"
     },
     "input": {
@@ -327,13 +385,13 @@ An example event for `cloudtrail` looks as following:
     },
     "log": {
         "file": {
-            "path": "https://elastic-package-aws-bucket-22020.s3.us-east-1.amazonaws.com/cloudtrail-digest.log"
+            "path": "https://elastic-package-aws-bucket-44516.s3.us-east-1.amazonaws.com/cloudtrail-digest.log"
         },
         "offset": 0
     },
     "related": {
         "hash": [
-            "10e0872f32fa1d299d0cc98e94d4c88a6a2eada9d9fc3ae6d53dfe8d54c7caf807072f1e1eec47efdeecfcc22483887f8fddfc954ae587fba43e7676b5547f432fa8722ba1c5baa6b233bcb528ce7c01e3748aab8f28c16c024de79da820128b4c9e5ce65e98a9c4e631687ecc89c224a11bb3df06ce441ff740e4ac9fbd41159e77f5863550118284121f193e357866fbd0463faffb56e194af196e35a7675c3bbd0a398f43159343c3f59129d6339a281a8fdb3192f3fffea9bd21dbb0a705ebfae1921f2133aab0ad29522aea6df0828c1780d3f3ed6b8270ab3ba24459916b0fbbe82fba6ff9677bafe7306e0f5edcc0f1508cdb4e36f3e3b30e653e9987"
+            "531914fcfa0dbacf0c9dd1475a1fdcb5dea6e85921409f3c3ec0ba39063c860"
         ]
     },
     "tags": [

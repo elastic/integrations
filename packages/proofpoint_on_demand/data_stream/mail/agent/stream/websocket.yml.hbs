@@ -1,11 +1,23 @@
 url: {{url}}/v1/stream?cid={{cluster_id}}&type=maillog
+{{#if initial_since_time}}
+url_program: |
+  has(state.?cursor.last_timestamp) ?
+    state.url+"&sinceTime="+state.cursor.last_timestamp
+  :
+    state.url+"&sinceTime={{initial_since_time}}"
+{{/if}}
 auth.bearer_token: {{access_token}}
 redact:
   fields: ~
 program: |
-  bytes(state.response).decode_json().as(body,{
+  state.response.decode_json().as(body,{
+{{#if initial_since_time}}
+    "cursor": {
+      "last_timestamp": body.ts,
+    },
+{{/if}}
     "events": {
-      "message":  body.encode_json(),
+      "message": body.encode_json(),
     }
   })
 {{#if max_reconnect_attempts}}

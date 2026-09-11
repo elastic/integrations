@@ -1,0 +1,145 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic",
+            "Matteo Potito Giorgio"
+        ],
+        "description": "Identifies the load of an untrusted DLL by the Azure AD Connect Authentication Agent, which may indicate an attempt to persist or intercept credentials passing through the Pass-through Authentication service.",
+        "from": "now-9m",
+        "index": [
+            "winlogbeat-*",
+            "logs-endpoint.events.library-*",
+            "logs-windows.sysmon_operational-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "host.name",
+                "host.id",
+                "process.entity_id",
+                "process.executable",
+                "process.command_line",
+                "process.code_signature.subject_name",
+                "process.code_signature.trusted",
+                "process.parent.command_line",
+                "process.Ext.authentication_id",
+                "dll.path",
+                "dll.pe.original_file_name",
+                "dll.code_signature.subject_name",
+                "dll.code_signature.trusted",
+                "dll.Ext.relative_file_creation_time"
+            ]
+        },
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Untrusted DLL Loaded by Azure AD Connect Authentication Agent",
+        "note": "## Triage and analysis\n\n### Investigating Untrusted DLL Loaded by Azure AD Connect Authentication Agent\n\n#### Possible investigation steps\n\n- Is the loader the expected Azure AD Connect PTA service on the expected host?\n  - Focus: `process.name`, `process.executable`, `process.code_signature.subject_name`, `process.code_signature.trusted`, and `host.id`.\n  - Implication: escalate if the loader is not the standard Microsoft PTA service binary or its signer/path differs from the recognized sync-host installation; lower suspicion only when the loader is the expected service on a recognized Entra Connect host. Identity does not clear the DLL load.\n\n- What module loaded, and does its identity and path fit a recognized component?\n  - Focus: `dll.path`, `dll.hash.sha256`, `dll.code_signature.subject_name`, `dll.code_signature.trusted`, and `dll.pe.original_file_name`; compare the module path with the service path from step 1 to assess side-loading from temp, download, user-writable, UNC, or paths outside the expected service directory.\n  - Implication: escalate when the module is untrusted, renamed, newly signed by an unexpected publisher, or outside the service's expected directory tree; lower suspicion only when hash, original name, signer status, and path fit a recognized agent component or security tool loaded by this service.\n\n- Was the module recently dropped, renamed, or placed by a different process?\n  - Focus: `dll.Ext.relative_file_creation_time`, `dll.Ext.relative_file_name_modify_time`, and file events where `file.path` equals the alert `dll.path` on `host.id`. !{investigate{\"description\":\"\",\"label\":\"File events for the loaded module\",\"providers\":[[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"file.path\",\"queryType\":\"phrase\",\"value\":\"{{dll.path}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"file\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-24h\",\"relativeTo\":\"now\"}}\n  - Hint: if recency fields or file events are absent, treat provenance as unresolved rather than benign; expand the time range to the creation or rename time when the recency fields point outside the default pivot.\n  - Implication: escalate when a different process recently wrote, renamed, or timestomped the DLL; lower suspicion when provenance shows a recognized updater or tooling writer that explains this maintenance event on the sync host.\n\n- Does the service's startup and lineage context fit normal Azure AD Connect operations?\n  - Focus: process start event for `process.entity_id`: `process.parent.executable`, `process.parent.command_line`, and `process.command_line`. !{investigate{\"description\":\"\",\"label\":\"Process start for the authentication service\",\"providers\":[[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"process\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Implication: escalate if the service was started, restarted, or manipulated by an unusual parent, script, or interactive admin tool; lower suspicion when lineage matches normal service-control or agent-update activity.\n\n- Was the service handling sign-ins around the load, and which identities may have been exposed?\n  - Focus: if Windows Security authentication telemetry is collected, recover the service session from `process.Ext.authentication_id`, then query events on `host.id` where `winlog.event_data.TargetLogonId` matches it.\n  - Hint: this exposure pivot depends on an additional data source that may not be collected on every PTA host; read `winlog.event_data.TargetUserName`, `source.ip`, `event.outcome`, and `winlog.event_data.AuthenticationPackageName`. Missing authentication telemetry is unresolved, not benign.\n  - Implication: escalate credential exposure when successful sign-ins or repeated attempts overlap the load because a malicious module could access PTA credentials handled by the service; bound exposure as lower only when authentication records show the service was idle and the module, provenance, and lineage evidence also fit benign activity.\n\n- If earlier findings remain suspicious, do additional module loads or related alerts show broader service or host compromise?\n  - Focus: related alerts for the same service `process.entity_id`. !{investigate{\"description\":\"\",\"label\":\"Alerts associated with the same service process instance\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n  - Hint: review related alerts for `host.id` only if local evidence remains suspicious; test one adjacent variant: signed-but-new DLLs in the same PTA service tree. !{investigate{\"description\":\"\",\"label\":\"Alerts associated with the Azure AD Connect host\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n  - Implication: escalate scope when the same service process or host has service-tampering, credential-access, persistence, or unusual module-load alerts; keep scope local only when local evidence is benign and related-alert review is clean; preserve and escalate if related-alert coverage is unavailable and the module remains suspicious.\n\n- Escalate when the PTA service loads an unrecognized module, provenance is suspicious, lineage is abnormal, or sign-ins could have been exposed; close only when loader, module, path, writer, and host context all fit a repeatable maintenance pattern on the sync host; preserve and escalate if mixed or incomplete.\n\n### False positive analysis\n\n- Azure AD Connect upgrades, agent reinstallation, or a recognized endpoint-security component can legitimately load modules into the service. Confirm only when `dll.hash.sha256`, `dll.code_signature.subject_name`, `dll.path`, `process.parent.executable`, writer provenance, and `host.id` align with the same maintenance or tooling workflow, and no adjacent service-tampering alerts appear. If this is a first-seen pattern and records are unavailable, keep it unconfirmed rather than closing on a partial match.\n- Build exceptions only after the benign workflow is fully confirmed, using `host.id`, exact `dll.path`, stable `dll.hash.sha256`, and the recognized `process.parent.executable` or writer process. Avoid exceptions on `process.name`, `user.id`, or all untrusted modules alone.\n\n### Response and remediation\n\n- If confirmed benign, reverse containment and document `host.id`, `process.entity_id`, `dll.path`, `dll.hash.sha256`, and the recognized maintenance or tooling context. Create an exception only if that same pattern recurs across prior alerts.\n- If suspicious but unconfirmed, preserve the alert export, service process identity, loaded DLL sample and hash, writer evidence, and surrounding Windows Security records. Apply reversible containment first, such as removing the host from PTA rotation or restricting administrative access, and escalate to host isolation only if likely credential exposure or broader host tampering is confirmed and the outage impact is acceptable. Do not delete the DLL or stop the service before collecting evidence.\n- If confirmed malicious, use endpoint response to isolate the host if it is available; otherwise escalate with `host.id`, `process.entity_id`, module path and hash, writer process, and the potentially exposed identity set to the team that can remove the server from service. Before stopping the service or deleting files, collect the DLL, any feasible memory capture, and related `dll.path` artifacts. Review other PTA or Azure AD Connect hosts and identities that authenticated around the load before eradicating the unauthorized module and persistence artifacts, then rotate or reset confirmed or likely exposed Azure AD Connect, PTA, or user credentials and revalidate the service configuration before returning the host to rotation.\n- Post-incident hardening: restrict write access to the Azure AD Connect Authentication Agent directories, review administrative access to the PTA host, retain image-load, file, process, and authentication telemetry, and record which telemetry sources limited the investigation.\n",
+        "query": "library where host.os.type == \"windows\" and process.name : \"AzureADConnectAuthenticationAgentService.exe\" and\n\nnot dll.code_signature.trusted == true and\nnot dll.path : (\n    \"?:\\\\Windows\\\\assembly\\\\NativeImages*\",\n    \"?:\\\\Windows\\\\Microsoft.NET\\\\*\",\n    \"?:\\\\Windows\\\\WinSxS\\\\*\",\n    \"?:\\\\Windows\\\\System32\\\\DriverStore\\\\FileRepository\\\\*\"\n)\n",
+        "references": [
+            "https://blog.xpnsec.com/azuread-connect-for-redteam/",
+            "https://medium.com/@breakingmhet/detect-azure-pass-through-authentication-abuse-azure-hybrid-environments-ed4274784252",
+            "https://learn.microsoft.com/en-us/entra/identity/hybrid/connect/tshoot-connect-pass-through-authentication"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "dll.code_signature.trusted",
+                "type": "boolean"
+            },
+            {
+                "ecs": true,
+                "name": "dll.path",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "f909075d-afc7-42d7-b399-600b94352fd9",
+        "setup": "## Setup\n\nThis rule is designed for data generated by [Elastic Defend](https://www.elastic.co/security/endpoint-security), which provides native endpoint detection and response, along with event enrichments designed to work with our detection rules.\n\nSetup instructions: https://ela.st/install-elastic-defend\n\n### Additional data sources\n\nThis rule also supports the following third-party data sources. For setup instructions, refer to the links below:\n\n- [Sysmon Event ID 7 - Image Loaded](https://ela.st/sysmon-event-7-setup)\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Data Source: Elastic Defend",
+            "Data Source: Sysmon",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1003",
+                        "name": "OS Credential Dumping",
+                        "reference": "https://attack.mitre.org/techniques/T1003/"
+                    },
+                    {
+                        "id": "T1556",
+                        "name": "Modify Authentication Process",
+                        "reference": "https://attack.mitre.org/techniques/T1556/",
+                        "subtechnique": [
+                            {
+                                "id": "T1556.007",
+                                "name": "Hybrid Identity",
+                                "reference": "https://attack.mitre.org/techniques/T1556/007/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1574",
+                        "name": "Hijack Execution Flow",
+                        "reference": "https://attack.mitre.org/techniques/T1574/",
+                        "subtechnique": [
+                            {
+                                "id": "T1574.001",
+                                "name": "DLL",
+                                "reference": "https://attack.mitre.org/techniques/T1574/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 107
+    },
+    "id": "f909075d-afc7-42d7-b399-600b94352fd9_107",
+    "type": "security-rule"
+}

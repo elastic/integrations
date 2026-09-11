@@ -1,0 +1,99 @@
+---
+description: >-
+  Pipeline for categorizing ECS event fields for Kolide auth_log events. Maps
+  the resolved event.action to event.kind/category/type/outcome using an exact
+  lookup table. All auth events are event.kind: event under the authentication
+  category; sign-in events also carry session and use event.type start. The
+  table outcome is applied only when event.outcome was not already derived
+  upstream (from the API result / webhook action). Unknown actions fall back to
+  the authentication category with event.type info. For CEL deliveries, the full
+  session events[] array rides along on each expanded sub-event document, so
+  event.type is set positionally: the last sub-event (and a single-event session)
+  is end, the first sub-event that is not also the last is start, and the rest are
+  info. The S3 path is not expanded, so its lookup event.type stands.
+processors:
+  - script:
+      lang: painless
+      tag: set_ecs_categorization
+      description: Map Kolide auth event.action to ECS categorization fields using exact lookups.
+      if: ctx.event?.action != null
+      params:
+        exact:
+          sign_in_attempt: { category: ['authentication', 'session'], type: ['start'] }
+          sign_in_success: { category: ['authentication', 'session'], type: ['start'], outcome: success }
+          auth_logs.success: { category: ['authentication', 'session'], type: ['start'], outcome: success }
+          auth_logs.failure: { category: ['authentication', 'session'], type: ['start'], outcome: failure }
+          auth_session_summary: { category: ['authentication', 'session'], type: ['info'], outcome: success }
+          agent_detection_success: { category: ['authentication', 'session'], type: ['info'], outcome: success }
+          agent_detection_failure: { category: ['authentication', 'session'], type: ['info'], outcome: failure }
+          mobile_agent_detection_success: { category: ['authentication', 'session'], type: ['info'], outcome: success }
+          agent_download_request: { category: ['authentication'], type: ['info'] }
+          device_registration_request: { category: ['authentication'], type: ['info'] }
+          device_registration_successful: { category: ['authentication'], type: ['info'], outcome: success }
+          device_registration_blocked: { category: ['authentication'], type: ['info'], outcome: failure }
+          device_blocked: { category: ['authentication'], type: ['info'], outcome: failure }
+          push_notification_sent: { category: ['authentication'], type: ['info'] }
+          auth_log: { category: ['authentication'], type: ['info'] }
+      source: |-
+        def action = ctx.event.action;
+        ctx.event.kind = 'event';
+
+        def m = params.exact.get(action);
+        if (m != null) {
+          ctx.event.category = new ArrayList(m.category);
+          ctx.event.type = new ArrayList(m.type);
+          if (m.containsKey('outcome') && ctx.event.outcome == null) {
+            ctx.event.outcome = m.outcome;
+          }
+        } else {
+          ctx.event.category = ['authentication'];
+          ctx.event.type = ['info'];
+        }
+
+  # CEL path: each expanded sub-event document carries the full session events[]
+  # array, so event.type is set positionally within the session: the last
+  # sub-event (and a single-event session) is end, the first sub-event that is
+  # not also the last is start, and everything in between is info. This document's
+  # position is located by its sub-event timestamp (event_type is not unique
+  # within a session, but the per-event timestamp is). Setting (not appending)
+  # avoids a contradictory [start, end] and overrides the lookup type above for
+  # CEL sub-events. The S3 path is not expanded (one summary document per session)
+  # so json.events is absent and the lookup type stands.
+  - script:
+      lang: painless
+      tag: set_session_boundary_type
+      description: Set event.type start/end/info by this sub-event's position in the CEL session json.events array.
+      if: ctx.json?.events instanceof List && ctx.json.events.size() > 0 && ctx.json?.timestamp != null
+      source: |-
+        def evs = ctx.json.events;
+        def ts = ctx.json.timestamp;
+        int idx = -1;
+        for (int i = 0; i < evs.size(); i++) {
+          if (evs[i] instanceof Map && evs[i].timestamp == ts) { idx = i; break; }
+        }
+        if (idx != -1) {
+          if (ctx.event == null) { ctx.event = [:]; }
+          if (idx == evs.size() - 1) {
+            ctx.event.type = ['end'];
+          } else if (idx == 0) {
+            ctx.event.type = ['start'];
+          } else {
+            ctx.event.type = ['info'];
+          }
+        }
+
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

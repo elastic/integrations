@@ -1,22 +1,34 @@
 rules:
+  # Page 1: the initial request carries the cursor-derived `since` filter and the
+  # hardcoded `limit=100`, and has no `offset` yet (matched via the empty `offset`
+  # value, which requires the parameter to be absent). The `links.next` URL echoes
+  # the `since` and `limit` filters forward so the collection window stays bounded
+  # across pages, exactly as the real API returns fully-qualified pagination links.
   - path: /activity_logs
     methods: ["GET"]
+    query_params:
+      since: "{since:.*}"
+      limit: "100"
+      offset: ~
     request_headers:
       authorization: Bearer xoxp-1234567890
     responses:
       - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
         body: |-
           {
               "items": [
                   {
                       "actor": {
                           "actor_type": "Lumos user",
-                          "email": "wile.e.coyote@lumos.com",
-                          "family_name": "Wile",
-                          "given_name": "Coyote"
+                          "email": "wile.e.coyote@example.com",
+                          "family_name": "Coyote",
+                          "given_name": "Wile E."
                       },
                       "event_began_at": "2024-03-12T16:09:14",
-                      "event_hash": "630b90cedc35a8a5f43361534099bee51e032f42dd442085fc76ef094d228f543c78fbe59c132df992cf71a6b8496504e8ebbc6020fbae1f34206676985412e7",
+                      "event_hash": "1111111111111111111111111111111111111111111111111111111111111111",
                       "event_metadata": {},
                       "event_type": "SOD_POLICY_DELETED",
                       "event_type_user_friendly": "A user deleted a SOD Policy",
@@ -27,16 +39,155 @@ rules:
                               "target_type": "SOD Policy"
                           }
                       ]
+                  },
+                  {
+                      "actor": {
+                          "actor_type": "Lumos user",
+                          "email": "road.runner@example.com",
+                          "family_name": "Runner",
+                          "given_name": "Road"
+                      },
+                      "event_began_at": "2024-03-12T16:12:41",
+                      "event_hash": "2222222222222222222222222222222222222222222222222222222222222222",
+                      "event_metadata": {},
+                      "event_type": "APP_ACCESS_GRANTED",
+                      "event_type_user_friendly": "A user was granted access to an app",
+                      "outcome": "Succeeded",
+                      "targets": [
+                          {
+                              "name": "Salesforce",
+                              "target_type": "Application"
+                          }
+                      ]
                   }
               ],
-              "limit": 50,
+              "limit": 100,
               "links": {
-                  "first": "/activity_logs?offset=0",
-                  "last": "/activity_logs?offset=1",
-                  "next": null,
+                  "first": "/activity_logs?since=2024-03-12T00:00:00&limit=100&offset=0",
+                  "last": "/activity_logs?since=2024-03-12T00:00:00&limit=100&offset=4",
+                  "next": "/activity_logs?since=2024-03-12T00:00:00&limit=100&offset=2",
                   "prev": null,
-                  "self": "/activity_logs"
+                  "self": "/activity_logs?since=2024-03-12T00:00:00&limit=100&offset=0"
               },
               "offset": 0,
-              "total": 1
+              "total": 5
+          }
+  # Page 2: reached via `links.next` from page 1. The request now carries the same
+  # `since` and `limit` filters plus `offset=2`, proving the window is preserved.
+  - path: /activity_logs
+    methods: ["GET"]
+    query_params:
+      since: "{since:.*}"
+      limit: "100"
+      offset: "2"
+    request_headers:
+      authorization: Bearer xoxp-1234567890
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          {
+              "items": [
+                  {
+                      "actor": {
+                          "actor_type": "Lumos user",
+                          "email": "bugs.bunny@example.com",
+                          "family_name": "Bunny",
+                          "given_name": "Bugs"
+                      },
+                      "event_began_at": "2024-03-12T16:20:03",
+                      "event_hash": "3333333333333333333333333333333333333333333333333333333333333333",
+                      "event_metadata": {},
+                      "event_type": "APP_ACCESS_REVOKED",
+                      "event_type_user_friendly": "A user's access to an app was revoked",
+                      "outcome": "Succeeded",
+                      "targets": [
+                          {
+                              "name": "GitHub",
+                              "target_type": "Application"
+                          }
+                      ]
+                  },
+                  {
+                      "actor": {
+                          "actor_type": "Lumos user",
+                          "email": "daffy.duck@example.com",
+                          "family_name": "Duck",
+                          "given_name": "Daffy"
+                      },
+                      "event_began_at": "2024-03-12T16:25:57",
+                      "event_hash": "4444444444444444444444444444444444444444444444444444444444444444",
+                      "event_metadata": {},
+                      "event_type": "SOD_POLICY_CREATED",
+                      "event_type_user_friendly": "A user created a SOD Policy",
+                      "outcome": "Failed",
+                      "targets": [
+                          {
+                              "name": "Finance SOD",
+                              "target_type": "SOD Policy"
+                          }
+                      ]
+                  }
+              ],
+              "limit": 100,
+              "links": {
+                  "first": "/activity_logs?since=2024-03-12T00:00:00&limit=100&offset=0",
+                  "last": "/activity_logs?since=2024-03-12T00:00:00&limit=100&offset=4",
+                  "next": "/activity_logs?since=2024-03-12T00:00:00&limit=100&offset=4",
+                  "prev": "/activity_logs?since=2024-03-12T00:00:00&limit=100&offset=0",
+                  "self": "/activity_logs?since=2024-03-12T00:00:00&limit=100&offset=2"
+              },
+              "offset": 2,
+              "total": 5
+          }
+  # Page 3: final page. `links.next` is null so pagination terminates here.
+  - path: /activity_logs
+    methods: ["GET"]
+    query_params:
+      since: "{since:.*}"
+      limit: "100"
+      offset: "4"
+    request_headers:
+      authorization: Bearer xoxp-1234567890
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          {
+              "items": [
+                  {
+                      "actor": {
+                          "actor_type": "Lumos user",
+                          "email": "porky.pig@example.com",
+                          "family_name": "Pig",
+                          "given_name": "Porky"
+                      },
+                      "event_began_at": "2024-03-12T16:31:12",
+                      "event_hash": "5555555555555555555555555555555555555555555555555555555555555555",
+                      "event_metadata": {},
+                      "event_type": "USER_LOGIN",
+                      "event_type_user_friendly": "A user logged in",
+                      "outcome": "Succeeded",
+                      "targets": [
+                          {
+                              "name": "Lumos",
+                              "target_type": "Application"
+                          }
+                      ]
+                  }
+              ],
+              "limit": 100,
+              "links": {
+                  "first": "/activity_logs?since=2024-03-12T00:00:00&limit=100&offset=0",
+                  "last": "/activity_logs?since=2024-03-12T00:00:00&limit=100&offset=4",
+                  "next": null,
+                  "prev": "/activity_logs?since=2024-03-12T00:00:00&limit=100&offset=2",
+                  "self": "/activity_logs?since=2024-03-12T00:00:00&limit=100&offset=4"
+              },
+              "offset": 4,
+              "total": 5
           }

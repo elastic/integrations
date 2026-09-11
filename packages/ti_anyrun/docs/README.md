@@ -2,7 +2,7 @@
 
 ## Overview
 
-The [ANY.RUN Threat Intelligence Feeds](https://any.run/threat-intelligence-feeds/?utm_source=anyrungithub&utm_medium=documentation&utm_campaign=elastic_feeds&utm_content=linktofeeds) integration for Elastic provides users with continuously updated, high-fidelity IOCs (malicious IPs, domains, and URLs) extracted from live sandbox analyses across 15,000+ SOCs. This enables proactive defense against emerging threats with rich context including sandbox session links for faster triage and response.
+The [ANY.RUN Threat Intelligence Feeds](https://any.run/threat-intelligence-feeds/?utm_source=elastic_documentation&utm_medium=documentation&utm_campaign=elastic_feeds&utm_content=linktofeeds) integration for Elastic provides users with continuously updated, high-fidelity IOCs (malicious IPs, domains, and URLs) extracted from live sandbox analyses across 15,000+ SOCs. This enables proactive defense against emerging threats with rich context including sandbox session links for faster triage and response.
 
 ### Compatibility
 
@@ -18,12 +18,12 @@ The ANY.RUN Threat Intelligence Feeds integration ingests a single data stream: 
 
 ## What do I need to use this integration?
 
-- Credentials (API Key) are required to access the ANY.RUN TI Feeds API. To use this integration, you need an active [ANY.RUN TI Feeds subscription](https://any.run/demo/?utm_source=anyrungithub&utm_medium=documentation&utm_campaign=elastic_feeds&utm_content=linktodemo)
+- Credentials (API Key) are required to access the ANY.RUN TI Feeds API. To use this integration, you need an active [ANY.RUN TI Feeds subscription](https://any.run/demo/?utm_source=elastic_documentation&utm_medium=documentation&utm_campaign=elastic_feeds&utm_content=linktodemo)
 - Elastic Agent must be installed. For more details, check the Elastic Agent installation instructions. Elastic Agent is required to stream data from the ANY.RUN TI API and ship the data to Elastic, where the events will then be processed via the integration's ingest pipelines
 
 ### Generate API Key
 
-- Follow [ANY.RUN](https://app.any.run/?utm_source=anyrungithub&utm_medium=documentation&utm_campaign=elastic_feeds&utm_content=linktoservice)
+- Follow [ANY.RUN](https://app.any.run/?utm_source=elastic_documentation&utm_medium=documentation&utm_campaign=elastic_feeds&utm_content=linktoservice)
 - Profile > [2] API and Limits > [3] Generate > [4] Copy
 
 ![anyrun_api_token.png](../img/anyrun_api_token.png) 
@@ -41,6 +41,18 @@ To configure the ANY.RUN Threat Intelligence Feeds integration, you will need to
 - **Proxy URL**: Optional. URL to proxy connections in the form of `http[s]://<user>:<password>@<server name/ip>:<port>`.
 
 Once the integration is running and pulling data, it automatically maps threat indicator fields from STIX to ECS. Verify that the imported indicators align with your detection rules.
+
+This integration supports both Elastic Agentless-based and Agent-based installations.
+
+### Agentless-based installation
+
+Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+
+Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+
+### Agent-based installation
+
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md). You can install only one Elastic Agent per host.
 
 ## Expiration of Indicators of Compromise (IOCs)
 

@@ -54,7 +54,7 @@ program: |
       "variables": {
         "after": has(state.cursor) && has(state.cursor.value) ? state.cursor.value : null,
         "first": state.page_size,
-        "orderBy": "modified",
+        "orderBy": "updated_at",
         "orderMode": "asc",
         "filters": {
           "mode": "and",
@@ -184,10 +184,9 @@ program: |
           )),
           "want_more": body.data.indicators.pageInfo.hasNextPage,
           "cursor": { "value": body.data.indicators.pageInfo.endCursor },
-          "last_modified": has(body.data.indicators.edges) && body.data.indicators.edges.size() > 0 ?
-            body.data.indicators.edges.map(e, timestamp(e.node.modified)).max()
-          :
-            state.?last_modified.orValue(null)
+          "last_modified": body.data.indicators.edges
+            .map(e, has(e.node.updated_at) && e.node.updated_at != null, timestamp(e.node.updated_at))
+            .as(ts, ts.size() > 0 ? ts.max() : state.?last_modified.orValue(null))
         })
       )
     )
@@ -203,10 +202,16 @@ state:
   last_modified: null
   # Filter configuration
 {{#if pattern_types}}
-  pattern_types: {{pattern_types}}
+  pattern_types:
+{{#each pattern_types as |v|}}
+    - "{{v}}"
+{{/each}}
 {{/if}}
 {{#if indicator_types}}
-  indicator_types: {{indicator_types}}
+  indicator_types:
+{{#each indicator_types as |v|}}
+    - "{{v}}"
+{{/each}}
 {{/if}}
 {{#if revoked}}
   revoked: {{revoked}}
@@ -218,16 +223,25 @@ state:
   valid_until_end: {{valid_until_end}}
 {{/if}}
 {{#if label_ids}}
-  label_ids: {{label_ids}}
+  label_ids:
+{{#each label_ids as |v|}}
+    - "{{v}}"
+{{/each}}
 {{/if}}
 {{#if confidence_min}}
   confidence_min: {{confidence_min}}
 {{/if}}
 {{#if author_ids}}
-  author_ids: {{author_ids}}
+  author_ids:
+{{#each author_ids as |v|}}
+    - "{{v}}"
+{{/each}}
 {{/if}}
 {{#if creator_ids}}
-  creator_ids: {{creator_ids}}
+  creator_ids:
+{{#each creator_ids as |v|}}
+    - "{{v}}"
+{{/each}}
 {{/if}}
 {{#if created_after}}
   created_after: {{created_after}}
@@ -236,7 +250,10 @@ state:
   modified_after: {{modified_after}}
 {{/if}}
 {{#if marking_ids}}
-  marking_ids: {{marking_ids}}
+  marking_ids:
+{{#each marking_ids as |v|}}
+    - "{{v}}"
+{{/each}}
 {{/if}}
   # How to work with this API: https://docs.opencti.io/latest/deployment/integrations/#graphql-api
   # Relevant schema source: https://github.com/OpenCTI-Platform/opencti/blob/master/opencti-platform/opencti-graphql/config/schema/opencti.graphql
@@ -280,6 +297,7 @@ state:
       lang
       created
       modified
+      updated_at
       pattern_type
       pattern_version
       pattern

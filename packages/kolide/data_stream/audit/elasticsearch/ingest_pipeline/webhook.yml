@@ -1,0 +1,68 @@
+---
+description: >-
+  Webhook-specific field extraction for Kolide audit_log events. Invoked from
+  default.yml when json.event is set (audit_log.recorded). Common envelope
+  handling, geo enrichment, extended-mappings, deduplication, and cleanup remain
+  in default.yml. Event reference:
+  https://www.kolide.com/docs/admins/settings-admin-tools/audit-log.
+processors:
+  # event.action: set to webhook event type if it's something other than `audit_log.recorded`.
+  # To be consistent with the API path ( event.action: 'audit_log').
+  - rename:
+      field: json.event
+      target_field: event.action
+      if: ctx.json?.event != 'audit_log.recorded' && ctx.event?.action == null
+      tag: rename_event_action_webhook
+      ignore_missing: true
+
+  # Actor from webhook payload.
+  - rename:
+      field: json.data.actor_name
+      target_field: user.name
+      tag: rename_user_name_webhook
+      ignore_missing: true
+      if: ctx.user?.name == null
+  - rename:
+      field: json.data.actor_email
+      target_field: user.email
+      tag: rename_user_email_webhook
+      ignore_missing: true
+      if: ctx.user?.email == null
+  - rename:
+      field: json.data.actor_type
+      target_field: kolide.audit.actor_type
+      tag: rename_actor_type_webhook
+      ignore_missing: true
+      if: ctx.kolide?.audit?.actor_type == null
+
+  # Client IP from webhook payload.
+  - rename:
+      field: json.data.ip_address
+      target_field: source.ip
+      tag: rename_source_ip_webhook
+      ignore_missing: true
+      if: ctx.source?.ip == null
+
+  # Human-readable audit description.
+  - rename:
+      field: json.data.description
+      target_field: message
+      tag: rename_message_webhook
+      ignore_missing: true
+      if: ctx.message == null
+
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

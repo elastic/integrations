@@ -1,0 +1,41 @@
+rules:
+  # Collection 1: APT IPs - returns IP + domain indicators
+  - path: /api/threat/intelligence/feed_list/4d7a69ce6e7c49ff8c916da5d7343916.json
+    methods: ["GET"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          [{"feed":"203.0.113.50","feed_type":"ip","first_seen_date":"2026-02-19 10:00:00","latest_seen_date":"2026-02-20 08:30:00","maintainer_name":"SOCRadar","extra_info":null},{"feed":"malicious-example.com","feed_type":"hostname","first_seen_date":"2026-02-18 14:00:00","latest_seen_date":"2026-02-20 06:00:00","maintainer_name":"SOCRadar","extra_info":null}]
+  # Collection 2: APT Hashes - returns hash + URL + email indicators
+  - path: /api/threat/intelligence/feed_list/0cb06558728b4dc296019c93b78360d1.json
+    methods: ["GET"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          [{"feed":"d41d8cd98f00b204e9800998ecf8427e","feed_type":"hash","first_seen_date":"2026-02-10 00:00:00","latest_seen_date":"2026-02-20 22:00:00","maintainer_name":"SOCRadar","extra_info":null},{"feed":"https://malicious-example.com/payload","feed_type":"url","first_seen_date":"2026-02-15 12:00:00","latest_seen_date":"2026-02-20 18:00:00","maintainer_name":"SOCRadar","extra_info":null},{"feed":"bad-actor@evil-example.com","feed_type":"email","first_seen_date":"2026-02-12 08:00:00","latest_seen_date":"2026-02-20 14:00:00","maintainer_name":"SOCRadar","extra_info":null}]
+  # Collection 3: Empty — exercises round-robin handling of a collection with no indicators (no items dropped, no errors, advances to next tick).
+  - path: /api/threat/intelligence/feed_list/9079dcc2f96e4835bb807026d4cdcc86.json
+    methods: ["GET"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          []
+  # Collection 4: Mixed old + new — exercises client-side latest_seen_date filtering. The old indicator (latest_seen_date older than initial_interval) must be filtered out; the new one must pass through.
+  - path: /api/threat/intelligence/feed_list/8742cab86cc4414092217f87298e94a1.json
+    methods: ["GET"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          [{"feed":"5d41402abc4b2a76b9719d911017c592","feed_type":"hash","first_seen_date":"2023-01-01 00:00:00","latest_seen_date":"2023-01-01 00:00:00","maintainer_name":"SOCRadar","extra_info":null},{"feed":"e89ab3b58e174b8c82767088d8e66cae","feed_type":"hash","first_seen_date":"2026-02-01 00:00:00","latest_seen_date":"2026-02-20 10:00:00","maintainer_name":"SOCRadar","extra_info":null}]

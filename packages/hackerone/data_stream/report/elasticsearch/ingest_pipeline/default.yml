@@ -1,0 +1,554 @@
+---
+description: Ingest pipeline for HackerOne report events (JSON API resource documents).
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: '9.3.0'
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is removed when `event.original` is present after rename or upstream staging.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      target_field: hackerone.report
+      tag: parse_json_to_hackerone_report
+      if: ctx.event?.original != null
+      on_failure:
+        - append:
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
+            tag: append_json_parse_failure
+
+  # ---------------------------------------------------------------------------
+  # Static observer / scanner constants
+  # ---------------------------------------------------------------------------
+  - set:
+      field: observer.vendor
+      value: HackerOne
+      tag: set_observer_vendor
+  - set:
+      field: observer.product
+      value: HackerOne
+      tag: set_observer_product
+  - set:
+      field: vulnerability.scanner.vendor
+      value: HackerOne
+      tag: set_vulnerability_scanner_vendor
+
+  # ---------------------------------------------------------------------------
+  # Report identifiers and references derived from the JSON:API resource id
+  # ---------------------------------------------------------------------------
+  - convert:
+      field: hackerone.report.id
+      type: string
+      ignore_missing: true
+      tag: convert_report_id_to_string
+  - rename:
+      field: hackerone.report.id
+      target_field: event.id
+      ignore_missing: true
+      tag: rename_event_id
+  - set:
+      field: event.url
+      value: 'https://hackerone.com/reports/{{{event.id}}}'
+      if: ctx.event?.id != null
+      tag: set_event_url
+  - set:
+      field: vulnerability.report_id
+      copy_from: event.id
+      ignore_empty_value: true
+      tag: set_vulnerability_report_id
+  - set:
+      field: vulnerability.reference
+      value: 'https://hackerone.com/reports/{{{event.id}}}'
+      if: ctx.event?.id != null
+      tag: set_vulnerability_reference
+
+  # ---------------------------------------------------------------------------
+  # Title -> message mirror
+  # ---------------------------------------------------------------------------
+  - set:
+      field: message
+      copy_from: hackerone.report.attributes.title
+      ignore_empty_value: true
+      tag: set_message_from_title
+
+  # ---------------------------------------------------------------------------
+  # Vulnerability description and primary CVE
+  # ---------------------------------------------------------------------------
+  - rename:
+      field: hackerone.report.attributes.vulnerability_information
+      target_field: vulnerability.description
+      ignore_missing: true
+      tag: rename_vulnerability_description
+  - set:
+      field: vulnerability.id
+      value: '{{{hackerone.report.attributes.cve_ids.0}}}'
+      if: ctx.hackerone?.report?.attributes?.cve_ids instanceof List && ((List) ctx.hackerone.report.attributes.cve_ids).isEmpty() == false && ((List) ctx.hackerone.report.attributes.cve_ids).get(0) != null
+      tag: set_vulnerability_id_from_first_cve
+
+  # ---------------------------------------------------------------------------
+  # Severity (relationships.severity.data.attributes)
+  # ---------------------------------------------------------------------------
+  - rename:
+      field: hackerone.report.relationships.severity.data.attributes.rating
+      target_field: vulnerability.severity
+      ignore_missing: true
+      tag: rename_vulnerability_severity
+  - rename:
+      field: hackerone.report.relationships.severity.data.attributes.score
+      target_field: vulnerability.score.base
+      ignore_missing: true
+      tag: rename_vulnerability_score_base
+  - convert:
+      field: vulnerability.score.base
+      type: float
+      ignore_missing: true
+      tag: convert_vulnerability_score_base
+  - set:
+      field: vulnerability.score.version
+      value: '3.0'
+      if: ctx.hackerone?.report?.relationships?.severity?.data?.attributes?.calculation_method == 'cvss_3_0_hackerone'
+      tag: set_score_version_3_0
+  - set:
+      field: vulnerability.score.version
+      value: '3.1'
+      if: ctx.hackerone?.report?.relationships?.severity?.data?.attributes?.calculation_method == 'cvss_3_1'
+      tag: set_score_version_3_1
+  - set:
+      field: vulnerability.score.version
+      value: '4.0'
+      if: ctx.hackerone?.report?.relationships?.severity?.data?.attributes?.calculation_method == 'cvss_4_0' || ctx.hackerone?.report?.relationships?.severity?.data?.attributes?.calculation_method == 'cvss_4_0_metric_set'
+      tag: set_score_version_4_0
+
+  # ---------------------------------------------------------------------------
+  # Weakness (relationships.weakness.data.attributes)
+  # ---------------------------------------------------------------------------
+  - rename:
+      field: hackerone.report.relationships.weakness.data.attributes.name
+      target_field: vulnerability.classification
+      ignore_missing: true
+      tag: rename_vulnerability_classification
+  - set:
+      field: vulnerability.enumeration
+      value: CWE
+      if: ctx.hackerone?.report?.relationships?.weakness?.data?.attributes?.external_id != null && ((String) ctx.hackerone.report.relationships.weakness.data.attributes.external_id).toLowerCase().startsWith('cwe-')
+      tag: set_vulnerability_enumeration_cwe
+  - set:
+      field: vulnerability.enumeration
+      value: CAPEC
+      if: ctx.hackerone?.report?.relationships?.weakness?.data?.attributes?.external_id != null && ((String) ctx.hackerone.report.relationships.weakness.data.attributes.external_id).toLowerCase().startsWith('capec-')
+      tag: set_vulnerability_enumeration_capec
+
+  # ---------------------------------------------------------------------------
+  # Reporter -> ECS user.*
+  # ---------------------------------------------------------------------------
+  - rename:
+      field: hackerone.report.relationships.reporter.data.id
+      target_field: user.id
+      ignore_missing: true
+      tag: rename_user_id
+  - convert:
+      field: user.id
+      type: string
+      ignore_missing: true
+      tag: convert_user_id
+  - rename:
+      field: hackerone.report.relationships.reporter.data.attributes.username
+      target_field: user.name
+      ignore_missing: true
+      tag: rename_user_name
+  - rename:
+      field: hackerone.report.relationships.reporter.data.attributes.name
+      target_field: user.full_name
+      ignore_missing: true
+      tag: rename_user_full_name
+
+  # ---------------------------------------------------------------------------
+  # Program -> ECS organization.*
+  # ---------------------------------------------------------------------------
+  - rename:
+      field: hackerone.report.relationships.program.data.id
+      target_field: organization.id
+      ignore_missing: true
+      tag: rename_organization_id
+  - convert:
+      field: organization.id
+      type: string
+      ignore_missing: true
+      tag: convert_organization_id
+  - rename:
+      field: hackerone.report.relationships.program.data.attributes.handle
+      target_field: organization.name
+      ignore_missing: true
+      tag: rename_organization_name
+
+  # ---------------------------------------------------------------------------
+  # Structured scope -> ECS url.original + related.hosts
+  # ---------------------------------------------------------------------------
+  # URL asset → ECS url.original + related.hosts via uri_parts
+  - rename:
+      field: hackerone.report.relationships.structured_scope.data.attributes.asset_identifier
+      target_field: url.original
+      ignore_missing: true
+      if: ctx.hackerone?.report?.relationships?.structured_scope?.data?.attributes?.asset_identifier != null && ctx.hackerone.report.relationships.structured_scope.data.attributes.asset_type instanceof String && ((String) ctx.hackerone.report.relationships.structured_scope.data.attributes.asset_type).toLowerCase() == 'url'
+      tag: rename_url_original_from_scope
+  - uri_parts:
+      field: url.original
+      target_field: _temp.url_parts
+      keep_original: true
+      ignore_failure: true
+      if: ctx.url?.original != null
+      tag: parse_url_parts
+  - append:
+      field: related.hosts
+      value: '{{{_temp.url_parts.domain}}}'
+      allow_duplicates: false
+      if: ctx._temp?.url_parts?.domain != null
+      tag: append_related_host_from_url
+
+  # Domain asset → strip leading "*." then add to related.hosts
+  - rename:
+      field: hackerone.report.relationships.structured_scope.data.attributes.asset_identifier
+      target_field: _temp.domain_host
+      ignore_missing: true
+      if: ctx.hackerone?.report?.relationships?.structured_scope?.data?.attributes?.asset_identifier != null && ctx.hackerone.report.relationships.structured_scope.data.attributes.asset_type instanceof String && ((String) ctx.hackerone.report.relationships.structured_scope.data.attributes.asset_type).toLowerCase() == 'domain'
+      tag: rename_temp_domain_host
+  - gsub:
+      field: _temp.domain_host
+      pattern: '^\*\.'
+      replacement: ''
+      ignore_missing: true
+      tag: strip_wildcard_prefix
+  - append:
+      field: related.hosts
+      value: '{{{_temp.domain_host}}}'
+      allow_duplicates: false
+      if: ctx._temp?.domain_host != null && ctx._temp.domain_host != ''
+      tag: append_related_host_from_domain
+
+  # ---------------------------------------------------------------------------
+  # related.user aggregation from multiple sources, deduplicated and order-preserving.
+  # ---------------------------------------------------------------------------
+  - script:
+      lang: painless
+      tag: aggregate_related_user
+      description: Aggregate user identifiers from reporter, assignee, collaborators, summaries, and remediation author.
+      source: |-
+        LinkedHashSet users = new LinkedHashSet();
+        if (ctx.user?.name != null) {
+          users.add(String.valueOf(ctx.user.name));
+        }
+        Map rels = ctx.hackerone?.report?.relationships instanceof Map ? (Map) ctx.hackerone.report.relationships : null;
+        if (rels != null) {
+          if (rels.assignee instanceof Map && ((Map) rels.assignee).data instanceof Map) {
+            Map asgData = (Map) ((Map) rels.assignee).data;
+            if ('user'.equals(asgData.type) && asgData.attributes instanceof Map) {
+              Object u = ((Map) asgData.attributes).username;
+              if (u != null) users.add(String.valueOf(u));
+            }
+          }
+          if (rels.collaborators instanceof Map && ((Map) rels.collaborators).data instanceof List) {
+            for (Object r : (List) ((Map) rels.collaborators).data) {
+              if (r instanceof Map) {
+                Map row = (Map) r;
+                if (row.user instanceof Map && ((Map) row.user).attributes instanceof Map) {
+                  Object u = ((Map) ((Map) row.user).attributes).username;
+                  if (u != null) users.add(String.valueOf(u));
+                }
+              }
+            }
+          }
+          if (rels.summaries instanceof Map && ((Map) rels.summaries).data instanceof List) {
+            for (Object r : (List) ((Map) rels.summaries).data) {
+              if (r instanceof Map) {
+                Map row = (Map) r;
+                if (row.relationships instanceof Map) {
+                  Map srels = (Map) row.relationships;
+                  if (srels.user instanceof Map && ((Map) srels.user).data instanceof Map) {
+                    Map udata = (Map) ((Map) srels.user).data;
+                    if (udata.attributes instanceof Map) {
+                      Object u = ((Map) udata.attributes).username;
+                      if (u != null) users.add(String.valueOf(u));
+                    }
+                  }
+                }
+              }
+            }
+          }
+          if (rels.custom_remediation_guidance instanceof Map) {
+            Map crg = (Map) rels.custom_remediation_guidance;
+            if (crg.data instanceof Map) {
+              Map cdata = (Map) crg.data;
+              if (cdata.relationships instanceof Map) {
+                Map crels = (Map) cdata.relationships;
+                if (crels.author instanceof Map && ((Map) crels.author).data instanceof Map) {
+                  Map adata = (Map) ((Map) crels.author).data;
+                  if (adata.attributes instanceof Map) {
+                    Object u = ((Map) adata.attributes).username;
+                    if (u != null) users.add(String.valueOf(u));
+                  }
+                }
+              }
+            }
+          }
+        }
+        if (users.isEmpty()) {
+          return;
+        }
+        if (ctx.related == null) {
+          ctx.related = new HashMap();
+        }
+        Map related = (Map) ctx.related;
+        ArrayList existing = related.user instanceof List ? new ArrayList((List) related.user) : new ArrayList();
+        for (Object u : users) {
+          if (existing.contains(u) == false) {
+            existing.add(u);
+          }
+        }
+        related.user = existing;
+
+  # ---------------------------------------------------------------------------
+  # Date handling (from attributes only — leaves hackerone.report.attributes.* unchanged)
+  # ---------------------------------------------------------------------------
+  - date:
+      field: hackerone.report.attributes.last_activity_at
+      target_field: '@timestamp'
+      formats:
+        - ISO8601
+      tag: timestamp_last_activity_at
+      if: ctx.hackerone?.report?.attributes?.last_activity_at != null
+  - date:
+      field: hackerone.report.attributes.created_at
+      target_field: '@timestamp'
+      formats:
+        - ISO8601
+      tag: timestamp_created_at_fallback
+      if: |-
+        (!(ctx.containsKey('@timestamp')) || ctx['@timestamp'] == null)
+        && ctx.hackerone?.report?.attributes?.created_at != null
+  - date:
+      field: hackerone.report.attributes.created_at
+      target_field: event.created
+      formats:
+        - ISO8601
+      tag: parse_event_created
+      ignore_failure: true
+      if: ctx.hackerone?.report?.attributes?.created_at != null
+  - date:
+      field: hackerone.report.attributes.created_at
+      target_field: event.start
+      formats:
+        - ISO8601
+      tag: parse_event_start
+      ignore_failure: true
+      if: ctx.hackerone?.report?.attributes?.created_at != null
+  - date:
+      field: hackerone.report.attributes.last_activity_at
+      target_field: event.end
+      formats:
+        - ISO8601
+      tag: parse_event_end
+      ignore_failure: true
+      if: ctx.hackerone?.report?.attributes?.last_activity_at != null
+
+  # ---------------------------------------------------------------------------
+  # Bounty handling (from relationships.bounties.data.attributes)
+  # ---------------------------------------------------------------------------
+  - foreach:
+      field: hackerone.report.relationships.bounties.data
+      tag: convert_bounty_amount
+      if: ctx.hackerone?.report?.relationships?.bounties?.data instanceof List
+      ignore_missing: true
+      processor:
+        convert:
+          field: _ingest._value.amount
+          type: double
+          tag: convert_bounty_amount_double
+          ignore_missing: true
+  - foreach:
+      field: hackerone.report.relationships.bounties.data
+      tag: convert_bounty_bonus_amount
+      if: ctx.hackerone?.report?.relationships?.bounties?.data instanceof List
+      ignore_missing: true
+      processor:
+        convert:
+          field: _ingest._value.bonus_amount
+          type: double
+          tag: convert_bounty_bonus_amount_double
+          ignore_missing: true
+  - foreach:
+      field: hackerone.report.relationships.bounties.data
+      tag: convert_bounty_awarded_amount
+      if: ctx.hackerone?.report?.relationships?.bounties?.data instanceof List
+      ignore_missing: true
+      processor:
+        convert:
+          field: _ingest._value.awarded_amount
+          type: double
+          tag: convert_bounty_awarded_amount_double
+          ignore_missing: true
+  - foreach:
+      field: hackerone.report.relationships.bounties.data
+      tag: convert_bounty_awarded_bonus_amount
+      if: ctx.hackerone?.report?.relationships?.bounties?.data instanceof List
+      ignore_missing: true
+      processor:
+        convert:
+          field: _ingest._value.awarded_bonus_amount
+          type: double
+          tag: convert_bounty_awarded_bonus_amount_double
+          ignore_missing: true
+
+  # ---------------------------------------------------------------------------
+  # Recursive null cleanup: drop null entries from hackerone.report (including
+  # within nested maps and lists) so upstream null fields do not collide with
+  # typed mappings (date/long/keyword) when stored.
+  # ---------------------------------------------------------------------------
+  - script:
+      lang: painless
+      tag: prune_null_values_in_hackerone_report
+      description: Recursively remove null-valued entries from hackerone.report.
+      if: ctx.hackerone?.report instanceof Map
+      source: |-
+        ArrayList stack = new ArrayList();
+        stack.add(ctx.hackerone.report);
+        while (stack.isEmpty() == false) {
+          Object node = stack.remove(stack.size() - 1);
+          if (node instanceof Map) {
+            Map current = (Map) node;
+            ArrayList keys = new ArrayList(current.keySet());
+            for (Object k : keys) {
+              Object v = current.get(k);
+              if (v == null) {
+                current.remove(k);
+              } else if (v instanceof Map || v instanceof List) {
+                stack.add(v);
+              }
+            }
+          } else if (node instanceof List) {
+            for (Object item : (List) node) {
+              if (item instanceof Map || item instanceof List) {
+                stack.add(item);
+              }
+            }
+          }
+        }
+
+  # ---------------------------------------------------------------------------
+  # ECS categorization (small lookup-driven script, kept as-is)
+  # ---------------------------------------------------------------------------
+  - script:
+      lang: painless
+      tag: categorize_report_state
+      description: ECS categorization for report workflow state via lookup table on attributes.state.
+      if: ctx.hackerone?.report?.attributes?.state != null
+      params:
+        new:
+          outcome: unknown
+          action: report-new
+        pending-program-review:
+          outcome: unknown
+          action: report-pending-program-review
+        triaged:
+          outcome: unknown
+          action: report-triaged
+        needs-more-info:
+          outcome: unknown
+          action: report-needs-more-info
+        resolved:
+          outcome: success
+          action: report-resolved
+        not-applicable:
+          outcome: failure
+          action: report-not-applicable
+        informative:
+          outcome: unknown
+          action: report-informative
+        duplicate:
+          outcome: failure
+          action: report-duplicate
+        spam:
+          outcome: failure
+          action: report-spam
+        retesting:
+          outcome: unknown
+          action: report-retesting
+      source: |-
+        Object stRaw = ctx.hackerone.report.attributes.state;
+        String st = stRaw instanceof String ? (String) stRaw : String.valueOf(stRaw);
+        if (!params.containsKey(st)) {
+          return;
+        }
+        Map m = params[st] instanceof Map ? (Map) params[st] : null;
+        if (m == null) {
+          return;
+        }
+        Map ev = ctx.containsKey('event') && ctx.event instanceof Map ? (Map) ctx.event : new HashMap();
+        ev.put('kind', 'event');
+        ArrayList ec = new ArrayList();
+        ec.add('vulnerability');
+        ev.put('category', ec);
+        ArrayList et = new ArrayList();
+        et.add('info');
+        ev.put('type', et);
+        ev.put('outcome', m.get('outcome'));
+        ev.put('action', m.get('action'));
+        ctx.event = ev;
+
+  # ---------------------------------------------------------------------------
+  # Cleanup
+  # ---------------------------------------------------------------------------
+  - remove:
+      field:
+        - _temp
+      ignore_missing: true
+      tag: remove_temp_fields
+  - append:
+      field: tags
+      tag: append_preserve_on_collector_error
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      tag: append_pipeline_error_message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      tag: append_preserve_original_event_on_pipeline_failure
+      value: preserve_original_event
+      allow_duplicates: false

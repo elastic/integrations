@@ -8,7 +8,7 @@ processors:
         - team
       ignore_missing: true
       if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
-      tag: remove_agentless_tags
+      tag: remove_agentless_tags_e6856012
       description: >-
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
@@ -17,19 +17,19 @@ processors:
   ####################
   - set:
       field: ecs.version
-      tag: set_ecs_version
+      tag: set_ecs_version_dbf680ba
       value: 8.17.0
   - set:
       field: event.kind
-      tag: set_event_kind
+      tag: set_event_kind_3410a97a
       value: enrichment
   - set:
       field: event.category
-      tag: set_event_category
+      tag: set_event_category_4675e36d
       value: [threat]
   - set:
       field: event.type
-      tag: set_event_type
+      tag: set_event_type_acbc82af
       value: [indicator]
 
   ###############
@@ -37,181 +37,200 @@ processors:
   ###############
   - rename:
       field: message
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_176375fd
       target_field: event.original
       ignore_missing: true
       description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_9ecc8509
       ignore_missing: true
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - json:
       field: event.original
-      tag: json_event_original
+      tag: json_event_original_a68ecd77
       target_field: json
       on_failure:
         - append:
+            tag: append_error_message_b006b7b1
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json
-      tag: rename_json
+      tag: rename_json_93007104
       target_field: threatq
       ignore_missing: true
   - append:
       field: related.hash
-      tag: append_related_hash
+      tag: append_related_hash_169e5920
       value: '{{{threatq.hash}}}'
       allow_duplicates: false
       if: ctx.threatq?.hash != null
   - date:
       field: threatq.updated_at
-      tag: date_updated_at
+      tag: date_updated_at_4f0422a2
       target_field: threatq.updated_at
       formats:
         - 'yyyy-MM-dd HH:mm:ss'
       if: ctx.threatq?.updated_at != null && ctx.threatq.updated_at != ''
       on_failure:
         - remove:
+            tag: remove_threatq_updated_at_f2d784a8
             field: threatq.updated_at
             ignore_missing: true
         - append:
+            tag: append_error_message_ecc9c631
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: '@timestamp'
-      tag: set_@timestamp_from_updated_at
+      tag: set_@timestamp_from_updated_at_46ba3b46
       copy_from: threatq.updated_at
       ignore_empty_value: true
   - date:
       field: threatq.created_at
-      tag: date_created_at
+      tag: date_created_at_f389ebd2
       target_field: threatq.created_at
       formats:
         - 'yyyy-MM-dd HH:mm:ss'
       if: ctx.threatq?.created_at != null && ctx.threatq.created_at != ''
       on_failure:
         - remove:
+            tag: remove_threatq_created_at_f68e84b9
             field: threatq.created_at
             ignore_missing: true
         - append:
+            tag: append_error_message_c59955df
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: threatq.expired_at
-      tag: date_expired_at
+      tag: date_expired_at_6cfa164f
       target_field: threatq.expired_at
       formats:
         - 'yyyy-MM-dd HH:mm:ss'
       if: ctx.threatq?.expired_at != null && ctx.threatq.expired_at != ''
       on_failure:
         - remove:
+            tag: remove_threatq_expired_at_7c0e5d57
             field: threatq.expired_at
             ignore_missing: true
         - append:
+            tag: append_error_message_34f300b5
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: threatq.expires_at
-      tag: date_expires_at
+      tag: date_expires_at_3797e906
       target_field: threatq.expires_at
       formats:
         - 'yyyy-MM-dd HH:mm:ss'
       if: ctx.threatq?.expires_at != null && ctx.threatq.expires_at != ''
       on_failure:
         - remove:
+            tag: remove_threatq_expires_at_9c315d78
             field: threatq.expires_at
             ignore_missing: true
         - append:
+            tag: append_error_message_85505b8e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: threatq.expires_calculated_at
-      tag: date_expires_calculated_at
+      tag: date_expires_calculated_at_b65b65e4
       target_field: threatq.expires_calculated_at
       formats:
         - 'yyyy-MM-dd HH:mm:ss'
       if: ctx.threatq?.expires_calculated_at != null && ctx.threatq.expires_calculated_at != ''
       on_failure:
         - remove:
+            tag: remove_threatq_expires_calculated_at_85e9f668
             field: threatq.expires_calculated_at
             ignore_missing: true
         - append:
+            tag: append_error_message_a596d854
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: threatq.published_at
-      tag: date_published_at
+      tag: date_published_at_8c2fc44f
       target_field: threatq.published_at
       formats:
         - 'yyyy-MM-dd HH:mm:ss'
       if: ctx.threatq?.published_at != null && ctx.threatq.published_at != ''
       on_failure:
         - remove:
+            tag: remove_threatq_published_at_96ec0060
             field: threatq.published_at
             ignore_missing: true
         - append:
+            tag: append_error_message_1fec0e34
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: threatq.touched_at
-      tag: date_touched_at
+      tag: date_touched_at_22298e34
       target_field: threatq.touched_at
       formats:
         - 'yyyy-MM-dd HH:mm:ss'
       if: ctx.threatq?.touched_at != null && ctx.threatq.touched_at != ''
       on_failure:
         - remove:
+            tag: remove_threatq_touched_at_109f9660
             field: threatq.touched_at
             ignore_missing: true
         - append:
+            tag: append_error_message_27872772
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: threatq.id
-      tag: convert_id_to_long
+      tag: convert_id_to_long_d0c568fd
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_threatq_id_0f69ad2e
             field: threatq.id
             ignore_missing: true
         - append:
+            tag: append_error_message_89b91f5a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: threatq.indicator_id
-      tag: convert_indicator_id_to_long
+      tag: convert_indicator_id_to_long_92094b03
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_threatq_indicator_id_58ffd474
             field: threatq.indicator_id
             ignore_missing: true
         - append:
+            tag: append_error_message_79a44596
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: threatq.status.id
-      tag: convert_status_id_to_string
+      tag: convert_status_id_to_string_9413f328
       type: string
       ignore_missing: true
   - convert:
       field: threatq.status_id
-      tag: convert_status_id_to_string
+      tag: convert_status_id_to_string_3abd3ce1
       type: string
       ignore_missing: true
   - convert:
       field: threatq.type.id
-      tag: convert_type_id_to_string
+      tag: convert_type_id_to_string_8dffc130
       type: string
       ignore_missing: true
   - convert:
       field: threatq.type_id
-      tag: convert_type_id_to_string
+      tag: convert_type_id_to_string_32f7f70a
       type: string
       ignore_missing: true
   #####################
@@ -219,24 +238,26 @@ processors:
   #####################
   - convert:
       field: threatq.score
-      tag: convert_score_to_long
+      tag: convert_score_to_long_7ff41cbd
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_threatq_score_67758753
             field: threatq.score
             ignore_missing: true
         - append:
+            tag: append_error_message_3a40360f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: threat.indicator.description
-      tag: set_threat_indicator_description_from_description
+      tag: set_threat_indicator_description_from_description_ce2dc70b
       copy_from: threatq.description
       ignore_empty_value: true
   - script:
       lang: painless
-      tag: set_threat_indicator_confidence
+      tag: set_threat_indicator_confidence_1039e623
       if: ctx.threatq?.score != null
       description: >
         Normalize confidence level.
@@ -263,7 +284,7 @@ processors:
         }
   - rename:
       field: threatq.value
-      tag: rename_value
+      tag: rename_value_8dbff162
       target_field: threatq.indicator_value
       ignore_missing: true
 
@@ -271,30 +292,30 @@ processors:
   # IOC Expiration #
   ##################
 
-# Set threatq.ioc_expired_at from threatq.expires_at or threatq.expired_at (if present). Either `expires_at` or `expired_at` are available in the data.
-# When the datetime threatq.ioc_expired_at is reached, the indicator is deleted using transform's retention policy in the destination index.
+  # Set threatq.ioc_expired_at from threatq.expires_at or threatq.expired_at (if present). Either `expires_at` or `expired_at` are available in the data.
+  # When the datetime threatq.ioc_expired_at is reached, the indicator is deleted using transform's retention policy in the destination index.
   - set:
       field: threatq.ioc_expired_at
-      tag: set_ioc_expired_at_from_expires_at
+      tag: set_ioc_expired_at_from_expires_at_b042fefe
       copy_from: threatq.expires_at
       if: ctx.threatq?.expires_at != null
   - set:
       field: threatq.ioc_expired_at
-      tag: set_ioc_expired_at_from_expired_at
+      tag: set_ioc_expired_at_from_expired_at_98066d93
       copy_from: threatq.expired_at
       if: ctx.threatq?.expired_at != null
       override: true
-# In case threatq.ioc_expired_at is not set at this point, then based on the `threatq.status`, the indicator is assumed to be Active/Expired.
-# Below script checks if indicator is expired based on the value of `threatq.status`. If `threatq.status` == 'Expired', then indicator is expired.
-# The script:
-# 1. Sets `threatq.ioc_expired_at` to `threatq.updated_at` (@timestamp) to delete the indicator using transform's retention policy in destination index.
-    # If the indicator is not expired, set default expiration time to delete indicators after a certain duration. 
-    # This is configurable using _conf.ioc_expiration_duration (default: 90d). Default expiration is required to avoid lingering orphaned indicators in the destination indices. 
-    # If user-provided value of `ioc_expiration_duration` is not in d, h, or m, default to 90d.
-# 2. Sets `threatq.ioc_expiration_reason` indicating the reason for expiry. Possible values are in the script params.
+  # In case threatq.ioc_expired_at is not set at this point, then based on the `threatq.status`, the indicator is assumed to be Active/Expired.
+  # Below script checks if indicator is expired based on the value of `threatq.status`. If `threatq.status` == 'Expired', then indicator is expired.
+  # The script:
+  # 1. Sets `threatq.ioc_expired_at` to `threatq.updated_at` (@timestamp) to delete the indicator using transform's retention policy in destination index.
+  # If the indicator is not expired, set default expiration time to delete indicators after a certain duration. 
+  # This is configurable using _conf.ioc_expiration_duration (default: 90d). Default expiration is required to avoid lingering orphaned indicators in the destination indices. 
+  # If user-provided value of `ioc_expiration_duration` is not in d, h, or m, default to 90d.
+  # 2. Sets `threatq.ioc_expiration_reason` indicating the reason for expiry. Possible values are in the script params.
   - script:
       lang: painless
-      tag: script-expired_ioc
+      tag: script-expired_ioc_058564c5
       if: (ctx._conf?.ioc_expiration_duration != null && ctx._conf.ioc_expiration_duration != '')
       params:
         expires_at: "Expiration set by ThreatQ from expires_at field"
@@ -353,6 +374,7 @@ processors:
         }
       on_failure:
         - append:
+            tag: append_error_message_4916acaf
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
@@ -363,45 +385,45 @@ processors:
   # Indicator type: Email Address
   - set:
       field: threat.indicator.email.address
-      tag: set_indicator_email_address_from_indicator_value
+      tag: set_indicator_email_address_from_indicator_value_6fb50094
       copy_from: threatq.indicator_value
       if: ctx.threatq?.type?.name == 'Email Address'
       ignore_empty_value: true
   - set:
       field: threat.indicator.type
-      tag: set_indicator_type_email_addr
+      tag: set_indicator_type_email_addr_e1ad55c1
       value: email-addr
       if: ctx.threatq?.type?.name == 'Email Address'
 
   # Indicator type: FQDN
   - set:
       field: threat.indicator.url.domain
-      tag: set_indicator_url_domain_from_indicator_value
+      tag: set_indicator_url_domain_from_indicator_value_2701703a
       copy_from: threatq.indicator_value
       if: ctx.threatq?.type?.name == 'FQDN'
       ignore_empty_value: true
   - set:
       field: threat.indicator.type
-      tag: set_indicator_type_domain_name
+      tag: set_indicator_type_domain_name_1b0063ca
       value: domain-name
       if: ctx.threatq?.type?.name == 'FQDN'
 
   # Indicator type: IP Address
   - set:
       field: threat.indicator.ip
-      tag: set_indicator_ip_from_indicator_value
+      tag: set_indicator_ip_from_indicator_value_00364e41
       copy_from: threatq.indicator_value
       if: ctx.threatq?.type?.name == 'IP Address'
       ignore_empty_value: true
 
   - set:
       field: threat.indicator.type
-      tag: set_indicator_type_ipv4_addr
+      tag: set_indicator_type_ipv4_addr_e4f63896
       value: ipv4-addr
       if: ctx.threatq?.type?.name == 'IP Address'
   - append:
       field: related.ip
-      tag: append_related_ip
+      tag: append_related_ip_c55d3a00
       value: '{{{threatq.indicator_value}}}'
       allow_duplicates: false
       if: ctx.threatq?.type?.name == 'IP Address'
@@ -409,18 +431,18 @@ processors:
   # Indicator type: IPv6 Address
   - set:
       field: threat.indicator.ip
-      tag: set_indicator_ip_from_indicator_value
+      tag: set_indicator_ip_from_indicator_value_1edf3979
       copy_from: threatq.indicator_value
       if: ctx.threatq?.type?.name == 'IPv6 Address'
       ignore_empty_value: true
   - set:
       field: threat.indicator.type
-      tag: set_indicator_type_ipv6_addr
+      tag: set_indicator_type_ipv6_addr_068342aa
       value: ipv6-addr
       if: ctx.threatq?.type?.name == 'IPv6 Address'
   - append:
       field: related.ip
-      tag: append_related_ipv6
+      tag: append_related_ipv6_3c0faaaa
       value: '{{{threatq.indicator_value}}}'
       allow_duplicates: false
       if: ctx.threatq?.type?.name == 'IPv6 Address'
@@ -428,18 +450,18 @@ processors:
   # Indicator type: MD5
   - set:
       field: threat.indicator.file.hash.md5
-      tag: set_indicator_file_hash_md5_from_indicator_value
+      tag: set_indicator_file_hash_md5_from_indicator_value_bd24935e
       copy_from: threatq.indicator_value
       if: ctx.threatq?.type?.name == 'MD5'
       ignore_empty_value: true
   - set:
       field: threat.indicator.type
-      tag: set_indicator_type_file
+      tag: set_indicator_type_file_a5ee89a7
       value: file
       if: ctx.threatq?.type?.name == 'MD5'
   - append:
       field: related.hash
-      tag: append_related_hash_md5
+      tag: append_related_hash_md5_1cf1b6e3
       value: '{{{threatq.indicator_value}}}'
       allow_duplicates: false
       if: ctx.threatq?.type?.name == 'MD5'
@@ -447,18 +469,18 @@ processors:
   # Indicator type: SHA-1
   - set:
       field: threat.indicator.file.hash.sha1
-      tag: set_indicator_file_hash_sha1_from_indicator_value
+      tag: set_indicator_file_hash_sha1_from_indicator_value_ad9e74ae
       copy_from: threatq.indicator_value
       if: ctx.threatq?.type?.name == 'SHA-1'
       ignore_empty_value: true
   - set:
       field: threat.indicator.type
-      tag: set_indicator_type_file
+      tag: set_indicator_type_file_73bdf61c
       value: file
       if: ctx.threatq?.type?.name == 'SHA-1'
   - append:
       field: related.hash
-      tag: append_related_hash_sha1
+      tag: append_related_hash_sha1_77428582
       value: '{{{threatq.indicator_value}}}'
       allow_duplicates: false
       if: ctx.threatq?.type?.name == 'SHA-1'
@@ -466,18 +488,18 @@ processors:
   # Indicator type: SHA-256
   - set:
       field: threat.indicator.file.hash.sha256
-      tag: set_indicator_file_hash_sha256_from_indicator_value
+      tag: set_indicator_file_hash_sha256_from_indicator_value_3591a6a4
       copy_from: threatq.indicator_value
       if: ctx.threatq?.type?.name == 'SHA-256'
       ignore_empty_value: true
   - set:
       field: threat.indicator.type
-      tag: set_indicator_type_file
+      tag: set_indicator_type_file_43c117ed
       value: file
       if: ctx.threatq?.type?.name == 'SHA-256'
   - append:
       field: related.hash
-      tag: append_related_hash_sha256
+      tag: append_related_hash_sha256_34ef15de
       value: '{{{threatq.indicator_value}}}'
       allow_duplicates: false
       if: ctx.threatq?.type?.name == 'SHA-256'
@@ -485,18 +507,18 @@ processors:
   # Indicator type: SHA-512
   - set:
       field: threat.indicator.file.hash.sha512
-      tag: set_indicator_file_hash_sha512_from_indicator_value
+      tag: set_indicator_file_hash_sha512_from_indicator_value_2dff9dcf
       copy_from: threatq.indicator_value
       if: ctx.threatq?.type?.name == 'SHA-512'
       ignore_empty_value: true
   - set:
       field: threat.indicator.type
-      tag: set_indicator_type_file
+      tag: set_indicator_type_file_e51163c0
       value: file
       if: ctx.threatq?.type?.name == 'SHA-512'
   - append:
       field: related.hash
-      tag: append_related_hash_sha512
+      tag: append_related_hash_sha512_bcb21467
       value: '{{{threatq.indicator_value}}}'
       allow_duplicates: false
       if: ctx.threatq?.type?.name == 'SHA-512'
@@ -504,44 +526,45 @@ processors:
   # Indicator type: Filename
   - set:
       field: threat.indicator.file.name
-      tag: set_indicator_file_name_from_indicator_value
+      tag: set_indicator_file_name_from_indicator_value_d7f0aa31
       copy_from: threatq.indicator_value
       if: ctx.threatq?.type?.name == 'Filename'
       ignore_empty_value: true
   - set:
       field: threat.indicator.file.type
-      tag: set_indicator_file_type_file
+      tag: set_indicator_file_type_file_a4c18274
       value: file
       if: ctx.threatq?.type?.name == 'Filename'
   - set:
       field: threat.indicator.type
-      tag: set_indicator_type_file
+      tag: set_indicator_type_file_fc6d3b7f
       value: file
       if: ctx.threatq?.type?.name == 'Filename'
 
   # Indicator type: URL
   - uri_parts:
       field: threatq.indicator_value
-      tag: uri_parts_indicator_value
+      tag: uri_parts_indicator_value_0e195d48
       target_field: threat.indicator.url
       if: ctx.threatq?.type?.name == 'URL'
       keep_original: true
       remove_if_successful: true
       on_failure:
         - set:
+            tag: set_threat_indicator_url_full_fc08d209
             field: threat.indicator.url.full
             value: '{{{threatq.indicator_value}}}'
             ignore_empty_value: true
   - set:
       field: threat.indicator.type
-      tag: set_indicator_type_url
+      tag: set_indicator_type_url_5a03d125
       value: url
       if: ctx.threatq?.type?.name == 'URL'
 
   # Indicator type: x509 Serial
   - set:
       field: threat.indicator.x509.serial_number
-      tag: set_indicator_x509_serial_from_indicator_value
+      tag: set_indicator_x509_serial_from_indicator_value_d1b6ba50
       copy_from: threatq.indicator_value
       if: ctx.threatq?.type?.name == 'x509 Serial'
       ignore_empty_value: true
@@ -550,146 +573,162 @@ processors:
   # Map indicator providers and TLP #
   ###################################
   - foreach:
+      tag: foreach_threatq_sources_c7400dd8
       field: threatq.sources
       if: ctx.threatq?.sources instanceof List
       ignore_missing: true
       processor:
         convert:
           field: _ingest._value.indicator_type_id
-          tag: convert_indicator_type_id_to_string
+          tag: convert_indicator_type_id_to_string_ea68d95a
           type: string
           ignore_missing: true
   - foreach:
+      tag: foreach_threatq_sources_b20b6716
       field: threatq.sources
       if: ctx.threatq?.sources instanceof List
       ignore_missing: true
       processor:
         convert:
           field: _ingest._value.indicator_status_id
-          tag: convert_indicator_status_id_to_string
+          tag: convert_indicator_status_id_to_string_a20ea54b
           type: string
           ignore_missing: true
   - foreach:
+      tag: foreach_threatq_sources_dfdca4cb
       field: threatq.sources
       if: ctx.threatq?.sources instanceof List
       ignore_missing: true
       processor:
         convert:
           field: _ingest._value.reference_id
-          tag: convert_reference_id_to_string
+          tag: convert_reference_id_to_string_4656026f
           type: string
           ignore_missing: true
   - foreach:
+      tag: foreach_threatq_sources_9ff512de
       field: threatq.sources
       if: ctx.threatq?.sources instanceof List
       ignore_missing: true
       processor:
         convert:
           field: _ingest._value.creator_source_id
-          tag: convert_creator_source_id_to_string
+          tag: convert_creator_source_id_to_string_4c38c417
           type: string
           ignore_missing: true
   - foreach:
+      tag: foreach_threatq_sources_765c1ff4
       field: threatq.sources
       if: ctx.threatq?.sources instanceof List
       ignore_missing: true
       processor:
         convert:
           field: _ingest._value.id
-          tag: convert_d_to_string
+          tag: convert_d_to_string_d73f870e
           type: string
           ignore_missing: true
   - foreach:
+      tag: foreach_threatq_sources_7809ced1
       field: threatq.sources
       if: ctx.threatq?.sources instanceof List
       ignore_missing: true
       processor:
         convert:
           field: _ingest._value.indicator_id
-          tag: convert_indicator_id_to_string
+          tag: convert_indicator_id_to_string_d8e05120
           type: string
           ignore_missing: true
   - foreach:
+      tag: foreach_threatq_sources_335e18d7
       field: threatq.sources
       if: ctx.threatq?.sources instanceof List
       ignore_missing: true
       processor:
         convert:
           field: _ingest._value.source_id
-          tag: convert_source_id_to_string
+          tag: convert_source_id_to_string_dd6e09ac
           type: string
           ignore_missing: true
   - foreach:
+      tag: foreach_threatq_sources_35b5b7c3
       field: threatq.sources
       if: ctx.threatq?.sources instanceof List
       ignore_missing: true
       processor:
         convert:
           field: _ingest._value.tlp_id
-          tag: convert_tlp_id_to_string
+          tag: convert_tlp_id_to_string_e299c70f
           type: string
           ignore_missing: true
   - foreach:
+      tag: foreach_threatq_sources_a65482fb
       field: threatq.sources
       if: ctx.threatq?.sources instanceof List
       ignore_missing: true
       processor:
         convert:
           field: _ingest._value.source_score
-          tag: convert_source_score_to_long
+          tag: convert_source_score_to_long_92460f4d
           type: long
           on_failure:
             - remove:
+                tag: remove_ingest_value_source_score_9fde69cc
                 field: _ingest._value.source_score
                 ignore_missing: true
   - foreach:
+      tag: foreach_threatq_sources_67934153
       field: threatq.sources
       if: ctx.threatq?.sources instanceof List
       ignore_missing: true
       processor:
         date:
           field: _ingest._value.created_at
-          tag: date_sources_created_at
+          tag: date_sources_created_at_98ccc09e
           target_field: _ingest._value.created_at
           formats:
             - 'yyyy-MM-dd HH:mm:ss'
           on_failure:
             - remove:
+                tag: remove_ingest_value_created_at_00312c10
                 field: _ingest._value.created_at
                 ignore_missing: true
   - foreach:
+      tag: foreach_threatq_sources_365a5e83
       field: threatq.sources
       if: ctx.threatq?.sources instanceof List
       ignore_missing: true
       processor:
         date:
           field: _ingest._value.published_at
-          tag: date_sources_published_at
+          tag: date_sources_published_at_49a2ccd5
           target_field: _ingest._value.published_at
           formats:
             - 'yyyy-MM-dd HH:mm:ss'
           on_failure:
             - remove:
+                tag: remove_ingest_value_published_at_b8a28e64
                 field: _ingest._value.published_at
                 ignore_missing: true
   - foreach:
+      tag: foreach_threatq_sources_6599c135
       field: threatq.sources
       if: ctx.threatq?.sources instanceof List
       ignore_missing: true
       processor:
         date:
           field: _ingest._value.updated_at
-          tag: date_sources_updated_at
+          tag: date_sources_updated_at_06c949de
           target_field: _ingest._value.updated_at
           formats:
             - 'yyyy-MM-dd HH:mm:ss'
           on_failure:
             - remove:
+                tag: remove_ingest_value_updated_at_75f598ce
                 field: _ingest._value.updated_at
                 ignore_missing: true
   - script:
       if: ctx.threatq?.sources instanceof List && ctx.threatq.sources.size() > 0
-      tag: script_to_extract_tlp_and_providers
+      tag: script_to_extract_tlp_and_providers_09635ee5
       lang: painless
       description: "Extract TLP and providers from source"
       source: |-
@@ -724,360 +763,415 @@ processors:
   # Map indicator attributes #
   ############################
   - foreach:
+      tag: foreach_threatq_attributes_ba3f6c87
       description: Change attribute names to lowercase
       field: threatq.attributes
       ignore_missing: true
       processor:
         lowercase:
-          tag: lowercase_attribute_name
+          tag: lowercase_attribute_name_4811e46b
           field: "_ingest._value.name"
   - foreach:
+      tag: foreach_threatq_attributes_c3bcb1bd
       description: Replaces spaces with underscore in attribute names
       field: threatq.attributes
       ignore_missing: true
       processor:
         gsub:
           field: "_ingest._value.name"
-          tag: gsub_attribute_name
+          tag: gsub_attribute_name_8c25b9f1
           pattern: " "
           replacement: "_"
   - foreach:
+      tag: foreach_threatq_attributes_af617019
       field: threatq.attributes
       if: ctx.threatq?.attributes instanceof List
       ignore_missing: true
       processor:
         convert:
           field: _ingest._value.attribute_id
-          tag: convert_attribute_id_to_string
+          tag: convert_attribute_id_to_string_89eeee51
           type: string
           ignore_missing: true
   - foreach:
+      tag: foreach_threatq_attributes_2b21beb1
       field: threatq.attributes
       if: ctx.threatq?.attributes instanceof List
       ignore_missing: true
       processor:
         convert:
           field: _ingest._value.id
-          tag: convert_id_to_string
+          tag: convert_id_to_string_d79d4607
           type: string
           ignore_missing: true
   - foreach:
+      tag: foreach_threatq_attributes_d2e66187
       field: threatq.attributes
       if: ctx.threatq?.attributes instanceof List
       ignore_missing: true
       processor:
         convert:
           field: _ingest._value.indicator_id
-          tag: convert_indicator_id_to_string
+          tag: convert_indicator_id_to_string_9dbd25a8
           type: string
           ignore_missing: true
   - foreach:
+      tag: foreach_threatq_attributes_c4f50528
       field: threatq.attributes
       if: ctx.threatq?.attributes instanceof List
       ignore_missing: true
       processor:
         date:
           field: _ingest._value.created_at
-          tag: date_attributes_created_at
+          tag: date_attributes_created_at_ee131e12
           target_field: _ingest._value.created_at
           formats:
             - 'yyyy-MM-dd HH:mm:ss'
           on_failure:
             - remove:
+                tag: remove_ingest_value_created_at_de873533
                 field: _ingest._value.created_at
                 ignore_missing: true
   - foreach:
+      tag: foreach_threatq_attributes_48cb192d
       field: threatq.attributes
       if: ctx.threatq?.attributes instanceof List
       ignore_missing: true
       processor:
         date:
           field: _ingest._value.updated_at
-          tag: date_attributes_updated_at
+          tag: date_attributes_updated_at_2f6fbca3
           target_field: _ingest._value.updated_at
           formats:
             - 'yyyy-MM-dd HH:mm:ss'
           on_failure:
             - remove:
+                tag: remove_ingest_value_updated_at_842d2139
                 field: _ingest._value.updated_at
                 ignore_missing: true
   - foreach:
+      tag: foreach_threatq_attributes_6f9d6791
       field: threatq.attributes
       if: ctx.threatq?.attributes instanceof List
       ignore_missing: true
       processor:
         date:
           field: _ingest._value.touched_at
-          tag: date_attributes_touched_at
+          tag: date_attributes_touched_at_7b48799d
           target_field: _ingest._value.touched_at
           formats:
             - 'yyyy-MM-dd HH:mm:ss'
           on_failure:
             - remove:
+                tag: remove_ingest_value_touched_at_32f3fa2f
                 field: _ingest._value.touched_at
                 ignore_missing: true
   - convert:
       field: threatq.related_adversary_count
-      tag: convert_related_adversary_count_to_long
+      tag: convert_related_adversary_count_to_long_2873d4a7
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_threatq_related_adversary_count_044dcd15
             field: threatq.related_adversary_count
             ignore_missing: true
         - append:
+            tag: append_error_message_5ab493cf
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: threatq.related_asset_count
-      tag: convert_related_asset_count_to_long
+      tag: convert_related_asset_count_to_long_c79c4695
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_threatq_related_asset_count_7144ee29
             field: threatq.related_asset_count
             ignore_missing: true
         - append:
+            tag: append_error_message_dc8d2f66
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: threatq.related_attachment_count
-      tag: convert_related_attachment_count_to_long
+      tag: convert_related_attachment_count_to_long_4fdde304
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_threatq_related_attachment_count_98905492
             field: threatq.related_attachment_count
             ignore_missing: true
         - append:
+            tag: append_error_message_91aa6881
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: threatq.related_attack_pattern_count
-      tag: convert_related_attack_pattern_count_to_long
+      tag: convert_related_attack_pattern_count_to_long_b84bd820
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_threatq_related_attack_pattern_count_689479cf
             field: threatq.related_attack_pattern_count
             ignore_missing: true
         - append:
+            tag: append_error_message_756686a5
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: threatq.related_campaign_count
-      tag: convert_related_campaign_count_to_long
+      tag: convert_related_campaign_count_to_long_40c679c5
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_threatq_related_campaign_count_546dce6d
             field: threatq.related_campaign_count
             ignore_missing: true
         - append:
+            tag: append_error_message_b5725a1b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: threatq.related_course_of_action_count
-      tag: convert_related_course_of_action_count_to_long
+      tag: convert_related_course_of_action_count_to_long_c1c6704c
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_threatq_related_course_of_action_count_0ed1a468
             field: threatq.related_course_of_action_count
             ignore_missing: true
         - append:
+            tag: append_error_message_979dbd4d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: threatq.related_event_count
-      tag: convert_related_event_count_to_long
+      tag: convert_related_event_count_to_long_552d720d
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_threatq_related_event_count_798a1542
             field: threatq.related_event_count
             ignore_missing: true
         - append:
+            tag: append_error_message_6adb7e0c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: threatq.related_exploit_target_count
-      tag: convert_related_exploit_target_count_to_long
+      tag: convert_related_exploit_target_count_to_long_8a010050
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_threatq_related_exploit_target_count_4b1c2341
             field: threatq.related_exploit_target_count
             ignore_missing: true
         - append:
+            tag: append_error_message_711dc620
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: threatq.related_identity_count
-      tag: convert_related_identity_count_to_long
+      tag: convert_related_identity_count_to_long_e1f834c4
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_threatq_related_identity_count_396c5ed2
             field: threatq.related_identity_count
             ignore_missing: true
         - append:
+            tag: append_error_message_66dfc852
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: threatq.related_incident_count
-      tag: convert_related_incident_count_to_long
+      tag: convert_related_incident_count_to_long_7b6a7bd3
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_threatq_related_incident_count_67f32c8c
             field: threatq.related_incident_count
             ignore_missing: true
         - append:
+            tag: append_error_message_4ef4c55b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: threatq.related_indicator_count
-      tag: convert_related_indicator_count_to_long
+      tag: convert_related_indicator_count_to_long_98e7416b
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_threatq_related_indicator_count_03be5fa5
             field: threatq.related_indicator_count
             ignore_missing: true
         - append:
+            tag: append_error_message_66950a76
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: threatq.related_infrastructure_count
-      tag: convert_related_infrastructure_count_to_long
+      tag: convert_related_infrastructure_count_to_long_79767475
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_threatq_related_infrastructure_count_01033083
             field: threatq.related_infrastructure_count
             ignore_missing: true
         - append:
+            tag: append_error_message_8e59c128
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: threatq.related_intrusion_set_count
-      tag: convert_related_intrusion_set_count_to_long
+      tag: convert_related_intrusion_set_count_to_long_13421faf
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_threatq_related_intrusion_set_count_9e8c30e9
             field: threatq.related_intrusion_set_count
             ignore_missing: true
         - append:
+            tag: append_error_message_2d1c949d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: threatq.related_investigation_count
-      tag: convert_related_investigation_count_to_long
+      tag: convert_related_investigation_count_to_long_2994117d
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_threatq_related_investigation_count_dd1800da
             field: threatq.related_investigation_count
             ignore_missing: true
         - append:
+            tag: append_error_message_7b9e4f45
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: threatq.related_malware_count
-      tag: convert_related_malware_count_to_long
+      tag: convert_related_malware_count_to_long_421a4905
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_threatq_related_malware_count_c5a989dc
             field: threatq.related_malware_count
             ignore_missing: true
         - append:
+            tag: append_error_message_772e0fce
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: threatq.related_note_count
-      tag: convert_related_note_count_to_long
+      tag: convert_related_note_count_to_long_02ba1ecb
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_threatq_related_note_count_889f6289
             field: threatq.related_note_count
             ignore_missing: true
         - append:
+            tag: append_error_message_c90aa8e4
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: threatq.related_report_count
-      tag: convert_related_report_count_to_long
+      tag: convert_related_report_count_to_long_ae4f7aed
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_threatq_related_report_count_3999002b
             field: threatq.related_report_count
             ignore_missing: true
         - append:
+            tag: append_error_message_b46701b3
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: threatq.related_signature_count
-      tag: convert_related_signature_count_to_long
+      tag: convert_related_signature_count_to_long_a340c64c
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_threatq_related_signature_count_9df6efac
             field: threatq.related_signature_count
             ignore_missing: true
         - append:
+            tag: append_error_message_0437f516
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: threatq.related_task_count
-      tag: convert_related_task_count_to_long
+      tag: convert_related_task_count_to_long_18df0fb3
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_threatq_related_task_count_6b87ae27
             field: threatq.related_task_count
             ignore_missing: true
         - append:
+            tag: append_error_message_d40ff95f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: threatq.related_tool_count
-      tag: convert_related_tool_count_to_long
+      tag: convert_related_tool_count_to_long_3821b37b
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_threatq_related_tool_count_cbb9aaf5
             field: threatq.related_tool_count
             ignore_missing: true
         - append:
+            tag: append_error_message_b62753e3
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: threatq.related_ttp_count
-      tag: convert_related_ttp_count_to_long
+      tag: convert_related_ttp_count_to_long_4ded4876
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_threatq_related_ttp_count_cfed34d0
             field: threatq.related_ttp_count
             ignore_missing: true
         - append:
+            tag: append_error_message_4b82f7fa
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: threatq.related_vulnerability_count
-      tag: convert_related_vulnerability_count_to_long
+      tag: convert_related_vulnerability_count_to_long_efdf2b23
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_threatq_related_vulnerability_count_06abcad4
             field: threatq.related_vulnerability_count
             ignore_missing: true
         - append:
+            tag: append_error_message_ce8c983d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   #############################
@@ -1085,24 +1179,24 @@ processors:
   #############################
   - foreach:
       field: threatq.adversaries
-      tag: foreach_adversaries
+      tag: foreach_adversaries_f71fdebc
       ignore_missing: true
       processor:
         convert:
           field: _ingest._value.id
-          tag: convert_adversaries_id_to_string
+          tag: convert_adversaries_id_to_string_b21be078
           type: string
           ignore_missing: true
 
   - foreach:
       field: threatq.adversaries
-      tag: foreach_adversaries
+      tag: foreach_adversaries_e9d0f772
       ignore_missing: true
       processor:
         append:
           field: threatq.adversaries
           value: "{{{ _ingest._value.name }}}"
-          tag: append_adversary_name
+          tag: append_adversary_name_0f7b4618
 
   ######################
   # Cleanup processors #
@@ -1111,7 +1205,7 @@ processors:
   - script:
       lang: painless
       if: ctx.threat != null
-      tag: set_indicator_type_to_unknown
+      tag: set_indicator_type_to_unknown_2429cfdd
       source: |
         void handleMap(Map map) {
           for (def x : map.values()) {
@@ -1136,15 +1230,16 @@ processors:
 
   # Removing fields not needed anymore, either because its copied somewhere else, or is not relevant to this event
   - foreach:
+      tag: foreach_threatq_sources_c17a3b30
       field: threatq.sources
       if: ctx.threatq?.sources instanceof List
       ignore_missing: true
       processor:
         remove:
-          field: 
+          field:
             - _ingest._value.provider
             - _ingest._value.tlp_name
-          tag: remove_custom_duplicate_fields_from_threatq_sources
+          tag: remove_custom_duplicate_fields_from_threatq_sources_9d8983ce
           ignore_missing: true
           if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
   - remove:
@@ -1152,15 +1247,16 @@ processors:
         - threatq.description
         - threatq.score
         - threatq.updated_at
-      tag: remove_custom_duplicate_fields
+      tag: remove_custom_duplicate_fields_e046d1c8
       ignore_missing: true
       if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
   - remove:
+      tag: remove_1277a50c
       field:
         - _conf
       ignore_missing: true
   - script:
-      tag: script_to_drop_null_values
+      tag: script_to_drop_null_values_f6a89620
       lang: painless
       description: Drops null/empty values recursively.
       source: |-
@@ -1179,23 +1275,26 @@ processors:
         drop(ctx);
   - set:
       field: event.kind
-      tag: set_pipeline_error_into_event_kind
+      tag: set_pipeline_error_into_event_kind_4fd8ffa8
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_b6c08950
       field: tags
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message_6906b116
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

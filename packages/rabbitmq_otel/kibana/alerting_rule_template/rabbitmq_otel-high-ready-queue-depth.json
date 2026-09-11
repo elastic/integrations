@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when any queue has more than 1000 ready messages. Consumers are not keeping up.",
     "name": "[RabbitMQ OTel] High ready queue depth",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -20,13 +21,28 @@
       "lookBackWindow": 10,
       "statusChangeThreshold": 4
     },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "rabbitmq_otel-queues"
+        },
+        {
+          "id": "rabbitmq_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## RabbitMQ high ready queue depth\n\n### What fired\nReady message count exceeded 1000 on a queue.\n\n### Why it matters\nReady messages are waiting for a consumer. Growing queue depth means consumption cannot keep up with production.\n\n### Triage\n1. Check consumer count and ack rate.\n2. Inspect flow state (is the queue under back-pressure?).\n\n### Remediation\n- Scale consumers.\n- Fix slow consumers.\n\n### Tuning\n- 1000 threshold; tune to workload.\n"
+      }
+    },
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
         "esql": "FROM metrics-rabbitmqreceiver.otel-default\n// Filter to ready messages (waiting for delivery)\n| WHERE attributes.state == \"ready\"\n  AND metrics.rabbitmq.message.current IS NOT NULL\n// Get max ready count per queue in the time window\n| STATS ready_count = MAX(metrics.rabbitmq.message.current)\n  BY resource.attributes.rabbitmq.queue.name,\n     resource.attributes.rabbitmq.vhost.name,\n     resource.attributes.rabbitmq.node.name\n// Alert threshold: adjust 1000 to tune for expected backlog size\n| WHERE ready_count > 1000\n| SORT ready_count DESC\n| LIMIT 20"
       },
       "size": 0,
-      "threshold": [0],
+      "threshold": [
+        0
+      ],
       "thresholdComparator": ">",
       "timeField": "@timestamp",
       "timeWindowSize": 15,

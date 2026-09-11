@@ -1,0 +1,143 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+{{#if ioc_expiration_duration}}
+fields_under_root: true
+fields:
+  _conf:
+    ioc_expiration_duration: "{{ioc_expiration_duration}}"
+{{/if}}
+resource.rate_limit.limit: 1
+resource.rate_limit.burst: 1
+resource.retry.max_attempts: 3
+resource.retry.wait_min: 5s
+resource.retry.wait_max: 30s
+resource.url: {{url}}
+state:
+  api_key: {{api_key}}
+  url: {{url}}
+  initial_interval: {{initial_interval}}
+  collections:
+    {{collections_config}}
+  collection_index: 0
+redact:
+  fields:
+    - api_key
+program: |-
+  state.collections[state.collection_index].as(current_collection,
+    {
+      "cid": current_collection.id,
+      "cname": current_collection.?name.orValue(current_collection.id),
+      "has_checkpoint": current_collection.?last_processed_date.orValue("") != "",
+      "last_date": current_collection.?last_processed_date.orValue(""),
+    }
+  ).as(cc,
+    request(
+      "GET",
+      state.url + "/api/threat/intelligence/feed_list/" + cc.cid + ".json?" + {
+        "key": [state.api_key],
+        "v": ["2"],
+      }.format_query()
+    ).do_request().as(resp,
+      (int(resp.StatusCode) == 200) ?
+        resp.Body.decode_json().as(body,
+          body.filter(item,
+            has(item.feed) && size(string(item.feed)) > 0 && (
+              !cc.has_checkpoint ?
+                (
+                  item.?latest_seen_date.orValue("") != "" ?
+                    (item.latest_seen_date.parse_time("2006-01-02 15:04:05") >= now - duration(state.initial_interval))
+                  :
+                    true
+                )
+              : item.?latest_seen_date.orValue("") != "" ?
+                (item.latest_seen_date.parse_time("2006-01-02 15:04:05") > cc.last_date.parse_time("2006-01-02 15:04:05"))
+              :
+                true
+            )
+          ).map(item,
+            {
+              "message": item.encode_json(),
+              "_collection_id": cc.cid,
+              "_collection_name": cc.cname,
+            }
+          ).as(filtered_events,
+            {
+              "events": filtered_events,
+              "want_more": false,
+              "collection_index": (int(state.collection_index) + 1) % size(state.collections),
+              "collections": state.collections.map(c,
+                (c.id == cc.cid) ?
+                  {
+                    "id": cc.cid,
+                    "name": cc.cname,
+                    "last_processed_date": now.format("2006-01-02 15:04:05"),
+                  }
+                :
+                  {
+                    "id": c.id,
+                    "name": c.?name.orValue(c.id),
+                    "last_processed_date": c.?last_processed_date.orValue(""),
+                  }
+              ),
+              "api_key": state.api_key,
+              "url": state.url,
+              "initial_interval": state.initial_interval,
+            }
+          )
+        )
+      :
+        {
+          "events": {
+            "error": {
+              "code": string(resp.StatusCode),
+              "id": string(resp.Status),
+              "message": "GET:" + (
+                (size(bytes(resp.Body)) != 0) ?
+                  string(resp.Body)
+                :
+                  string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+              ),
+            },
+          },
+          "want_more": false,
+          "collection_index": (int(state.collection_index) + 1) % size(state.collections),
+          "collections": state.collections.map(c,
+            {
+              "id": string(c.id),
+              "name": c.?name.orValue(c.id),
+              "last_processed_date": c.?last_processed_date.orValue(""),
+            }
+          ),
+          "api_key": state.api_key,
+          "url": state.url,
+          "initial_interval": state.initial_interval,
+        }
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

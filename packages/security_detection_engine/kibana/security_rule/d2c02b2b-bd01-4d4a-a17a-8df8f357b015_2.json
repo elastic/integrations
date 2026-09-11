@@ -1,0 +1,229 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies a Microsoft Entra ID identity-compromise chain in which a single user, within a 10-minute window, authenticates to the Device Registration Service through the Microsoft Authentication Broker (MAB) client, registers a device, and then uses the resulting Primary Refresh Token (PRT) to access a resource other than the Device Registration Service. This sequence is the core post-adversary-in-the-middle (AiTM) persistence pattern used by phishing kits such as Tycoon2FA and Kali365: after capturing a victim session, the kit registers an Azure AD-joined device to obtain a device-bound PRT, which survives user-level session revocation and password resets and grants trusted, MFA-free access. Correlating the broker sign-in, the device-registration audit event, and the follow-on PRT sign-in for the same user within a short window is a high-fidelity indicator of active account takeover.",
+        "false_positives": [
+            "Legitimate device onboarding (for example a user enrolling a new corporate device through Azure AD join) can produce a broker authentication to the Device Registration Service followed by PRT issuance. Validate that the device, source IP/ASN, and user agent are expected, and that the device is managed/compliant.",
+            "Authorized red team or penetration testing engagements that register devices and exercise PRTs will match this sequence. Document the engagement and add scoped exceptions for the involved principals or source addresses."
+        ],
+        "from": "now-15m",
+        "index": [
+            "logs-azure.signinlogs-*",
+            "logs-azure.auditlogs-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "azure.signinlogs.properties.user_principal_name",
+                "azure.signinlogs.properties.user_id",
+                "azure.signinlogs.properties.app_id",
+                "azure.signinlogs.properties.resource_display_name",
+                "azure.signinlogs.properties.incoming_token_type",
+                "azure.signinlogs.properties.device_detail.trust_type",
+                "azure.signinlogs.properties.device_detail.is_managed",
+                "azure.auditlogs.operation_name",
+                "azure.auditlogs.properties.target_resources.0.display_name",
+                "source.ip",
+                "source.as.organization.name",
+                "source.geo.country_name"
+            ]
+        },
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Entra ID AiTM Phishing-Kit Chain Detected",
+        "note": "## Triage and analysis\n\n### Investigating Entra ID AiTM Phishing-Kit Chain Detected\n\nThis rule correlates three events for the same user within a 10-minute window that together represent the canonical post-AiTM identity-compromise chain:\n\n1. A non-interactive sign-in through the Microsoft Authentication Broker (MAB) client (`app_id` `29d9ed98-a469-4536-ade2-f981bc1d605e`) to the `Device Registration Service` resource, with an `unbound` session token (`token_protection_status_details.sign_in_session_status`).\n2. A successful `Register device` audit event initiated by the same user for a target device named `DESKTOP-*`.\n3. An interactive sign-in using a `primaryRefreshToken` (PRT) to a resource other than the Device Registration Service, from an unmanaged device.\n\nAfter an AiTM kit captures a victim session, it registers an Azure AD-joined device to obtain a device-bound PRT. Because the PRT is bound to the device rather than the user session, it survives `revokeSignInSessions` and password resets, providing durable, MFA-free access. Observing the broker-to-DRS auth, the registration, and the first PRT use in quick succession is strong evidence of active account takeover rather than benign onboarding.\n\n### Possible investigation steps\n\n- Identify the user via `azure.signinlogs.properties.user_principal_name` / `azure.signinlogs.properties.user_id` and the registered device via the `Register device` event (`azure.auditlogs.properties.target_resources.0.display_name`). Default `DESKTOP-<random>` names that do not match your convention are suspicious.\n- Review the source of each step: `source.ip`, `source.as.organization.name`, and `source.geo.*`. Hosting/VPS ASNs (for example Tencent or Alibaba) and unexpected geographies, or a single source driving all three steps, are high-fidelity suspicious.\n- Inspect the registration user agent on the `Register device` event (`azure.auditlogs.properties.userAgent`); a spoofed `Dsreg/10.0 (Windows <build>)` string or a raw HTTP client such as `axios/*` or `python-requests/*` indicates tooling.\n- Confirm the PRT step: `azure.signinlogs.properties.incoming_token_type` is `primaryRefreshToken`, the device `trust_type` is `Azure AD joined`, and `device_detail.is_managed` is false (unmanaged), and the `resource_display_name` is a real resource (Microsoft Graph, Office 365 Exchange Online, etc.) rather than the Device Registration Service.\n- Check for additional persistence established in the same window: an attacker-registered MFA method (`User registered security info`), multiple device registrations by the same user, or broker tokens minted for other resources.\n- Review Conditional Access outcomes to determine whether device compliance or MFA was bypassed.\n\n### False positive analysis\n\n- Legitimate Azure AD join / device onboarding can produce a broker-to-DRS auth followed by PRT issuance. Validate the device against inventory and confirm it is managed/compliant and registered from an expected source.\n- Authorized security assessments that register devices and exercise PRTs will match. Document and add scoped exceptions.\n\n### Response and remediation\n\n- Treat as likely account takeover. Remove the rogue device registration BEFORE revoking sessions, because device-bound PRTs survive `revokeSignInSessions` and a device left in place re-establishes access.\n    - `GET /v1.0/users/{id}/registeredDevices` and `/ownedDevices`, then `DELETE /v1.0/devices/{deviceObjectId}` for unrecognized devices.\n- Revoke refresh tokens and sessions, then reset credentials and re-register MFA.\n    - `POST /v1.0/users/{id}/revokeSignInSessions`.\n- Temporarily disable the account if activity must be halted during investigation.\n    - `PATCH /v1.0/users/{id}` with body `{\"accountEnabled\": false}`.\n- Remove other attacker persistence: attacker-registered MFA methods, malicious inbox/forwarding rules, and OAuth consents.\n- Tighten device registration and join controls via Conditional Access (restrict who can register/join devices, require MFA for registration, and require a compliant/managed device for resource access).\n",
+        "query": "sequence with maxspan=3m\n  [authentication where\n    data_stream.dataset == \"azure.signinlogs\" and\n    azure.signinlogs.category == \"NonInteractiveUserSignInLogs\" and\n    azure.signinlogs.properties.app_id == \"29d9ed98-a469-4536-ade2-f981bc1d605e\" and\n    azure.signinlogs.properties.resource_display_name == \"Device Registration Service\" and\n    azure.signinlogs.properties.incoming_token_type == \"refreshToken\" and\n    azure.signinlogs.properties.token_protection_status_details.sign_in_session_status == \"unbound\" and\n    azure.signinlogs.properties.user_type == \"Member\" and\n    azure.signinlogs.result_signature == \"SUCCESS\"\n  ] by azure.signinlogs.properties.user_id\n  [any where\n    data_stream.dataset == \"azure.auditlogs\" and\n    azure.auditlogs.operation_name == \"Register device\" and\n    azure.auditlogs.properties.initiated_by.user.id != null and\n    azure.auditlogs.properties.target_resources.`0`.display_name like \"DESKTOP-*\" and\n    event.outcome == \"success\"\n  ] by azure.auditlogs.properties.initiated_by.user.id\n  [authentication where\n    data_stream.dataset == \"azure.signinlogs\" and\n    azure.signinlogs.properties.incoming_token_type == \"primaryRefreshToken\" and\n    azure.signinlogs.properties.original_transfer_method == \"deviceCodeFlow\" and\n    azure.signinlogs.properties.is_interactive == true and\n    azure.signinlogs.properties.resource_display_name != \"Device Registration Service\" and\n    azure.signinlogs.properties.device_detail.is_managed != true and\n    azure.signinlogs.result_signature == \"SUCCESS\"\n  ] by azure.signinlogs.properties.user_id\n",
+        "references": [
+            "https://any.run/malware-trends/tycoon/",
+            "https://www.huntress.com/blog/kali365-device-code-phishing-kit",
+            "https://any.run/malware-trends/kali365/",
+            "https://arcticwolf.com/resources/blog/token-bingo-dont-let-your-code-be-the-winner/",
+            "https://www.elastic.co/security-labs/tycoon-2fa-aitm-detection-engineering"
+        ],
+        "related_integrations": [
+            {
+                "package": "azure",
+                "version": ">=1.22.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "azure.auditlogs.operation_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.auditlogs.properties.initiated_by.user.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.auditlogs.properties.target_resources.`0`.display_name",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "azure.signinlogs.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.signinlogs.properties.app_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.signinlogs.properties.device_detail.is_managed",
+                "type": "boolean"
+            },
+            {
+                "ecs": false,
+                "name": "azure.signinlogs.properties.incoming_token_type",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.signinlogs.properties.is_interactive",
+                "type": "boolean"
+            },
+            {
+                "ecs": false,
+                "name": "azure.signinlogs.properties.original_transfer_method",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "azure.signinlogs.properties.resource_display_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.signinlogs.properties.token_protection_status_details.sign_in_session_status",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "azure.signinlogs.properties.user_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.signinlogs.properties.user_type",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.signinlogs.result_signature",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "d2c02b2b-bd01-4d4a-a17a-8df8f357b015",
+        "severity": "high",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: Identity",
+            "Data Source: Azure",
+            "Data Source: Microsoft Entra ID",
+            "Data Source: Microsoft Entra ID Sign-In Logs",
+            "Data Source: Microsoft Entra ID Audit Logs",
+            "Use Case: Identity and Access Audit",
+            "Use Case: Threat Detection",
+            "Tactic: Persistence",
+            "Tactic: Credential Access",
+            "Resources: Investigation Guide",
+            "Tactic: Lateral Movement"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1078",
+                        "name": "Valid Accounts",
+                        "reference": "https://attack.mitre.org/techniques/T1078/",
+                        "subtechnique": [
+                            {
+                                "id": "T1078.004",
+                                "name": "Cloud Accounts",
+                                "reference": "https://attack.mitre.org/techniques/T1078/004/"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "T1098",
+                        "name": "Account Manipulation",
+                        "reference": "https://attack.mitre.org/techniques/T1098/",
+                        "subtechnique": [
+                            {
+                                "id": "T1098.005",
+                                "name": "Device Registration",
+                                "reference": "https://attack.mitre.org/techniques/T1098/005/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0008",
+                    "name": "Lateral Movement",
+                    "reference": "https://attack.mitre.org/tactics/TA0008/"
+                },
+                "technique": [
+                    {
+                        "id": "T1550",
+                        "name": "Use Alternate Authentication Material",
+                        "reference": "https://attack.mitre.org/techniques/T1550/",
+                        "subtechnique": [
+                            {
+                                "id": "T1550.001",
+                                "name": "Application Access Token",
+                                "reference": "https://attack.mitre.org/techniques/T1550/001/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1528",
+                        "name": "Steal Application Access Token",
+                        "reference": "https://attack.mitre.org/techniques/T1528/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 2
+    },
+    "id": "d2c02b2b-bd01-4d4a-a17a-8df8f357b015_2",
+    "type": "security-rule"
+}

@@ -1,0 +1,163 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects when a user copies a Google document, spreadsheet, form, or script from an external Drive into their Workspace Drive and shortly after authorizes a custom Google OAuth application. Adversaries may send spearphishing links with a /copy URI parameter so the victim replicates a malicious object locally. Container-bound Apps Script can then execute on open and prompt the user for OAuth consent, granting the attacker's application access to Workspace data.",
+        "false_positives": [
+            "Google Workspace users typically share Drive resources with a shareable link where parameters are edited to indicate when it is viewable or editable by the intended recipient. It is uncommon for a user in an organization to manually copy a Drive object from an external drive to their corporate drive. This may happen where users find a useful spreadsheet in a public drive, for example, and replicate it to their Drive. It is uncommon for the copied object to execute a container-bound script either unless the user was intentionally aware, suggesting the object uses container-bound scripts to accomplish a legitimate task."
+        ],
+        "from": "now-130m",
+        "index": [
+            "logs-google_workspace.*"
+        ],
+        "interval": "10m",
+        "investigation_fields": {
+            "field_names": [
+                "user.name",
+                "user.email",
+                "source.ip"
+            ]
+        },
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Google Workspace Object Copied from External Drive with App Consent",
+        "note": "## Triage and analysis\n\n### Investigating Google Workspace Object Copied from External Drive with App Consent\n\nGoogle Workspace users can receive Drive links with URI parameters such as `view`, `edit`, or `copy`. A `copy` link lets\nthe recipient replicate the object into their own Drive. Documents, spreadsheets, forms, and Apps Script projects can\ninclude container-bound scripts that run when the object is opened. Copying alone does not produce an OAuth event; the\nuser must open the copied object (or trigger an installable `onOpen` handler) before Apps Script can prompt for consent.\n\nThis rule correlates two events for the same `source.user.email` within `maxspan=3m` using `@timestamp` (Google event\ntime). When a user copies a Google document, spreadsheet, form, or script from an external Drive into their Workspace\nDrive and shortly after authorizes a custom Google OAuth application.\n\n### Possible investigation steps\n\n- Identify the affected user from `source.user.email` or `user.email` in the alert. Note `source.ip` and compare\n  `@timestamp` (event time).\n- Drive copy event (`google_workspace.drive`):\n  - Review `file.name`, `file.id`, and `google_workspace.drive.file.type` to identify what was copied.\n  - For deeper review, pivot on `file.id` or `file.name` in Drive audit logs and Admin console Drive investigation.\n- OAuth authorize event (`google_workspace.token`):\n  - Review `google_workspace.token.app_name` and `google_workspace.token.client.id` to identify the application.\n  - Review granted scopes in `google_workspace.token.scope.value` to determine which services the token can access\n    (for example Drive, Gmail, or Calendar scopes beyond identity).\n  - Review `google_workspace.token.client.type` and any `user.domain` context if present.\n- Determine whether the activity is expected:\n  - Contact the user to confirm they intentionally copied an external template and authorized the application.\n  - If timing or `source.ip` is unusual for the user, treat as higher priority until validated.\n- Search Kibana for related activity:\n  - Determine whether other users copied the same external object:\n    ```\n    data_stream.dataset: \"google_workspace.drive\" and event.action: \"copy\" and google_workspace.drive.copy_type: \"external\" and file.name: \"<FILE_NAME>\"\n    ```\n  - Correlate with sign-in activity around the same window:\n    ```\n    data_stream.dataset: \"google_workspace.login\" and user.email: \"<USER_EMAIL>\"\n    ```\n  - Scope for other OAuth grants to the same client across the tenant:\n    ```\n    data_stream.dataset: \"google_workspace.token\" and event.action: \"authorize\" and google_workspace.token.client.id: \"<CLIENT_ID>\"\n    ```\n- If a container-bound script is suspected, locate the copied object in the user's Drive and review Apps Script code\n  for exfiltration, token harvesting, or persistence logic. Remove the object from affected users' Drives.\n\n### False positive analysis\n\n- Users may legitimately copy public templates (spreadsheets, forms, or documents) from external drives for personal or\n  business use; OAuth consent afterward may still be benign if the embedded script is intentional (for example a known\n  add-on or vendor workflow).\n- OAuth consent does not always follow copy immediately; opening the object later can separate the two actions beyond\n  `maxspan=3m`, which would prevent a match even when activity is related.\n\n### Response and remediation\n\n- Initiate the incident response process based on triage findings.\n- If the copy or OAuth grant is not clearly authorized, revoke the application's access for the affected user under\n  Security > Access and data control > API controls (or remove the user token via admin OAuth reports).\n- Remove malicious copied objects from affected users' Drives and report abusive OAuth clients to Google if appropriate.\n- If the user account is suspected compromised, reset credentials, revoke active sessions, and review all OAuth grants\n  for that user.\n- Review activity performed with the authorized token based on scopes in `google_workspace.token.scope.value`.\n- Identify the possible impact of the incident and prioritize accordingly; the following actions can help you gain context:\n    - Identify the account role in the cloud environment.\n    - Assess the criticality of affected services and servers.\n    - Work with your IT team to identify and minimize the impact on users.\n    - Identify if the attacker is moving laterally and compromising other accounts, servers, or services.\n    - Identify any regulatory or legal ramifications related to this activity.\n- Investigate credential exposure on systems compromised or used by the attacker to ensure all compromised accounts are identified. Reset passwords or delete API keys as needed to revoke the attacker's access to the environment. Work with your IT teams to minimize the impact on business operations during these actions.\n- Review the permissions assigned to the implicated user to ensure that the least privilege principle is being followed.\n- Implement security best practices [outlined](https://support.google.com/a/answer/7587183) by Google.\n- Determine the initial vector abused by the attacker and take action to prevent reinfection via the same vector.\n- Using the incident response data, update logging and audit policies to improve the mean time to detect (MTTD) and the mean time to respond (MTTR).\n\n\n\n### Important Information Regarding Google Workspace Event Lag Times\n- As per Google's documentation, Google Workspace administrators may observe lag times ranging from minutes up to 3 days between the time of an event's occurrence and the event being visible in the Google Workspace admin/audit logs.\n- This rule is configured to run every 10 minutes with a lookback time of 130 minutes and uses `timestamp_override: event.ingested` so delayed ingest does not drop events from the execution window. Sequence correlation and `maxspan` still use `@timestamp` event time.\n- Drive and token audit events may arrive on different schedules; the token integration polls Google's API on a longer default interval. To reduce false negatives, consider reducing the poll interval for both Drive and token data sources.\n- By default, `var.interval` is set to 2 hours (2h). Consider changing this interval to a lower value, such as 10 minutes (10m).",
+        "query": "sequence by source.user.email with maxspan=3m\n[file where data_stream.dataset == \"google_workspace.drive\" and event.action == \"copy\" and\n\n    /* Should only match if the object lives in a Drive that is external to the user's GWS organization */\n    google_workspace.drive.owner_is_team_drive == false and google_workspace.drive.copy_type == \"external\" and\n\n    /* Google Script, Forms, Sheets and Document can have container-bound scripts */\n    google_workspace.drive.file.type: (\"script\", \"form\", \"spreadsheet\", \"document\")]\n\n[any where data_stream.dataset == \"google_workspace.token\" and event.action == \"authorize\" and\n\n    /* Ensures application ID references custom app in Google Workspace and not GCP */\n    google_workspace.token.client.id : \"*apps.googleusercontent.com\"]\n",
+        "references": [
+            "https://www.elastic.co/security-labs/google-workspace-attack-surface-part-one",
+            "https://www.elastic.co/security-labs/google-workspace-attack-surface-part-two",
+            "https://developers.google.com/apps-script/guides/bound",
+            "https://developers.google.com/identity/protocols/oauth2",
+            "https://support.google.com/a/users/answer/13004165#share_make_a_copy_links"
+        ],
+        "related_integrations": [
+            {
+                "package": "google_workspace",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "google_workspace.drive.copy_type",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "google_workspace.drive.file.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "google_workspace.drive.owner_is_team_drive",
+                "type": "boolean"
+            },
+            {
+                "ecs": false,
+                "name": "google_workspace.token.client.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.user.email",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "f33e68a4-bd19-11ed-b02f-f661ea17fbcc",
+        "setup": "The Google Workspace Fleet integration or similarly structured data is required to be compatible with this rule.",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Data Source: Google Workspace",
+            "Tactic: Initial Access",
+            "Tactic: Execution",
+            "Tactic: Persistence",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0001",
+                    "name": "Initial Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0001/"
+                },
+                "technique": [
+                    {
+                        "id": "T1566",
+                        "name": "Phishing",
+                        "reference": "https://attack.mitre.org/techniques/T1566/",
+                        "subtechnique": [
+                            {
+                                "id": "T1566.002",
+                                "name": "Spearphishing Link",
+                                "reference": "https://attack.mitre.org/techniques/T1566/002/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1204",
+                        "name": "User Execution",
+                        "reference": "https://attack.mitre.org/techniques/T1204/",
+                        "subtechnique": [
+                            {
+                                "id": "T1204.001",
+                                "name": "Malicious Link",
+                                "reference": "https://attack.mitre.org/techniques/T1204/001/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1098",
+                        "name": "Account Manipulation",
+                        "reference": "https://attack.mitre.org/techniques/T1098/",
+                        "subtechnique": [
+                            {
+                                "id": "T1098.001",
+                                "name": "Additional Cloud Credentials",
+                                "reference": "https://attack.mitre.org/techniques/T1098/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 113
+    },
+    "id": "f33e68a4-bd19-11ed-b02f-f661ea17fbcc_113",
+    "type": "security-rule"
+}

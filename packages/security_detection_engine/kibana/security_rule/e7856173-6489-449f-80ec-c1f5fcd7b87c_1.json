@@ -1,0 +1,141 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects execution of common privilege elevation helpers (su, sudo, pkexec, passwd, chsh, newgrp) under the root effective user when the real user and parent user are not root, combined with minimal argument counts and suspicious parent context (interpreters, short shell -c invocations, or parents running from user-writable paths).",
+        "false_positives": [
+            "Some automation or break-glass tooling may invoke sudo or su from scripts under /home; validate parent identity and change tickets before escalating."
+        ],
+        "from": "now-6m",
+        "index": [
+            "logs-endpoint.events.process*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "Suspicious SUID Binary Execution",
+        "note": "## Triage and analysis\n\n### Investigating Suspicious SUID Binary Execution\n\nConfirm whether the non-root real user should be invoking su, sudo, pkexec, or account utilities as root. Review the\nparent process tree, script path, and any preceding download or decode activity.\n\n### Possible investigation steps\n\n- Inspect `process.parent.command_line` and working directory for obfuscation or one-liners.\n- Check authentication and sudoers policy for the user.\n- Pivot on the host for additional privilege escalation or persistence in the same session.\n\n### Response and remediation\n\n- If unauthorized, contain the session, revoke elevated access, and review sudoers and polkit policy for tampering.\n",
+        "query": "host.os.type:linux and event.category:process and event.action:\"exec\" and\nprocess.name:(\"su\" or \"sudo\" or \"pkexec\" or \"passwd\" or \"chsh\" or \"newgrp\") and\nprocess.user.id:\"0\" and not process.real_user.id:\"0\" and\nnot process.parent.user.id:\"0\" and\n(\n  (process.name:(\"sudo\" or \"pkexec\") and process.args_count:1) or\n  (process.name:(\"su\" or \"passwd\" or \"chsh\" or \"newgrp\") and process.args_count <= 2)\n) and\n(\n  process.parent.name:(python* or perl* or ruby* or node or bun or java or php* or lua* or .*) or\n  process.parent.executable:(/tmp/* or /var/tmp/* or /dev/shm/* or /home/* or /run/user/*) or\n  (process.parent.name:(bash or sh or zsh or dash or fish or ksh) and \n   (process.parent.command_line: (-bash or -sh or -zsh or -dash or -fish or -ksh) or \n   (process.parent.args:(\"-c\" or \"--command\" or \"-ic\" or \"-ci\") and process.parent.args_count <= 4)))\n)\n",
+        "references": [
+            "https://attack.mitre.org/techniques/T1548/"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args_count",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.args_count",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.command_line",
+                "type": "wildcard"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.user.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.real_user.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.user.id",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "e7856173-6489-449f-80ec-c1f5fcd7b87c",
+        "severity": "high",
+        "tags": [
+            "Data Source: Elastic Defend",
+            "Domain: Endpoint",
+            "OS: Linux",
+            "Use Case: Threat Detection",
+            "Tactic: Privilege Escalation",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0004",
+                    "name": "Privilege Escalation",
+                    "reference": "https://attack.mitre.org/tactics/TA0004/"
+                },
+                "technique": [
+                    {
+                        "id": "T1548",
+                        "name": "Abuse Elevation Control Mechanism",
+                        "reference": "https://attack.mitre.org/techniques/T1548/",
+                        "subtechnique": [
+                            {
+                                "id": "T1548.001",
+                                "name": "Setuid and Setgid",
+                                "reference": "https://attack.mitre.org/techniques/T1548/001/"
+                            },
+                            {
+                                "id": "T1548.003",
+                                "name": "Sudo and Sudo Caching",
+                                "reference": "https://attack.mitre.org/techniques/T1548/003/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 1
+    },
+    "id": "e7856173-6489-449f-80ec-c1f5fcd7b87c_1",
+    "type": "security-rule"
+}

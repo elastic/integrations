@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when the DAG file processing queue exceeds 20 (`airflow.dag_processing.file_path_queue_size > 20`), indicating the DAG processor cannot keep up with file parsing.",
     "name": "[Airflow OTel] DAG file processing queue large",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -20,13 +21,28 @@
       "lookBackWindow": 10,
       "statusChangeThreshold": 4
     },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "airflow_otel-dag-processing"
+        },
+        {
+          "id": "airflow_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## Airflow DAG file processing queue large\n\n### What fired\n`airflow.dag_processing.file_path_queue_size` peaked above 20 over the evaluation window.\n\n### Why it matters\nThe DAG processor parses DAG files on a schedule. When the parse queue grows, DAG changes (new DAGs, edits) take longer to appear in the scheduler, and runs begin to lag relative to their schedule. Large backlogs often correlate with slow filesystem operations or heavy DAG files.\n\n### Triage\n1. DAG Processing dashboard: check queue trend and processing rate.\n2. Inspect `airflow.dag_processing.processor_timeouts` and `airflow.dag_processing.import_errors` for correlated issues.\n3. Look at DAG count \u2014 is this just a consequence of growth?\n4. Check filesystem I/O on DAG storage (NFS mounts are notorious for this).\n\n### Remediation\n- Increase `dag_dir_list_interval` and `parsing_processes` in `[scheduler]` config.\n- Move DAGs to faster storage (local disk, efficient remote file systems).\n- Reduce top-level Python work in DAG files (defer imports, avoid expensive calls during parse).\n\n### Tuning\n- Raise the threshold if you have a large DAG inventory; lower it for latency-sensitive DAG updates.\n"
+      }
+    },
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
         "esql": "FROM metrics-airflow.otel-default*\n| WHERE data_stream.dataset == \"airflow.otel\"\n| WHERE airflow.dag_processing.file_path_queue_size IS NOT NULL\n// Gauge: DAG files pending processing; growing queue = processor falling behind\n| STATS max_queue = MAX(airflow.dag_processing.file_path_queue_size)\n// Adjust threshold (20) for your DAG count\n| WHERE max_queue > 20"
       },
       "size": 0,
-      "threshold": [0],
+      "threshold": [
+        0
+      ],
       "thresholdComparator": ">",
       "timeField": "@timestamp",
       "timeWindowSize": 15,

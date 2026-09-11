@@ -1,0 +1,48 @@
+{
+    "id": "aws_elb_metrics_otel-target-response-time-tail-high",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "description": "Alerts when peak (maximum) target response time exceeds a tunable threshold. Serves as a tail-latency proxy where CloudWatch percentiles are unavailable.",
+        "name": "[AWS ELB OTel] High Application Load Balancer target response time (tail)",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "aws",
+            "aws_elb"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 3
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "artifacts": {
+            "investigation_guide": {
+                "blob": "## High Target Response Time (Tail)\n\nPeak `TargetResponseTime` (`Maximum` stat) captures the worst single observation in the window — a proxy for p95/p99 tail latency since percentile statistics are not collected by this source.\n\n### Triage Steps\n1. Identify the affected load balancer, target group, and region.\n2. Look for outlier requests: slow queries, cold starts, GC pauses, or timeout retries.\n3. Compare with the average response time alert — a high tail with normal average suggests a few bad requests; both elevated suggests systemic slowness.\n4. Check target health and whether remaining healthy targets are overloaded.\n\n### Tuning\n- Adjust the `max_response_time > 5.0` threshold (seconds) to approximate your p99 SLO.\n- Pair with the average response time alert for typical vs tail latency visibility."
+            }
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "FROM metrics-aws.elb.otel-*\n| WHERE Namespace == \"AWS/ApplicationELB\"\n    AND MetricName == \"TargetResponseTime\"\n    AND stat == \"Maximum\"\n| STATS max_response_time = MAX(`metrics.amazonaws.com/AWS/ApplicationELB/TargetResponseTime`)\n    BY LoadBalancer, TargetGroup, cloud.region\n// Tail latency threshold in seconds — tune to approximate p99 SLO (default 5.0s)\n| WHERE max_response_time > 5.0\n| SORT max_response_time DESC"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 15,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "TargetGroup",
+            "termSize": 50,
+            "excludeHitsFromPreviousRun": true
+        }
+    }
+}

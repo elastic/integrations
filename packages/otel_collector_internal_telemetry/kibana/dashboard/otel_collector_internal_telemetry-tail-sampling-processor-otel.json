@@ -13,7 +13,7 @@
                 "c0ffee00-0000-4000-8000-000000000001": {
                     "explicitInput": {
                         "controlType": "VALUES_FROM_QUERY",
-                        "esqlQuery": "TS metrics-collectortelemetry.otel.otel-*\n| STATS BY service.instance.id, service.name \n| EVAL identifier = CONCAT(service.instance.id, \" (\",service.name,\")\")\n| KEEP identifier\n| STATS BY identifier\n| STATS identifiers = VALUES(identifier)\n| EVAL identifiers = MV_APPEND(identifiers, \"--ALL--\")\n| MV_EXPAND identifiers\n| RENAME identifiers AS identifier\n| SORT identifier\n",
+                        "esqlQuery": "TS metrics-collectortelemetry.otel-*\n| STATS BY service.instance.id, service.name \n| EVAL identifier = CONCAT(service.instance.id, \" (\",service.name,\")\")\n| KEEP identifier\n| STATS BY identifier\n| STATS identifiers = VALUES(identifier)\n| EVAL identifiers = MV_APPEND(identifiers, \"--ALL--\")\n| MV_EXPAND identifiers\n| RENAME identifiers AS identifier\n| SORT identifier\n",
                         "selectedOptions": [
                             "--ALL--"
                         ],
@@ -30,7 +30,7 @@
                 "c0ffee00-0000-4000-8000-000000000002": {
                     "explicitInput": {
                         "controlType": "VALUES_FROM_QUERY",
-                        "esqlQuery": "TS metrics-collectortelemetry.otel.otel-*\n| WHERE otelcol_processor_tail_sampling_count_traces_sampled IS NOT NULL\n| STATS BY policy\n| KEEP policy\n| STATS policies = VALUES(policy)\n| EVAL policies = MV_APPEND(policies, \"--ALL--\")\n| MV_EXPAND policies\n| RENAME policies AS policy\n| SORT policy\n",
+                        "esqlQuery": "TS metrics-collectortelemetry.otel-*\n| WHERE otelcol_processor_tail_sampling_count_traces_sampled IS NOT NULL\n| STATS BY policy\n| KEEP policy\n| STATS policies = VALUES(policy)\n| EVAL policies = MV_APPEND(policies, \"--ALL--\")\n| MV_EXPAND policies\n| RENAME policies AS policy\n| SORT policy\n",
                         "selectedOptions": [
                             "--ALL--"
                         ],
@@ -130,11 +130,11 @@
                                     "fieldFormats": {},
                                     "id": "a9f3c1e8d7b6543210fedcba9876543210abcdefabcdef0123456789abcd",
                                     "managed": false,
-                                    "name": "metrics-collectortelemetry.otel.otel-*",
+                                    "name": "metrics-collectortelemetry.otel-*",
                                     "runtimeFieldMap": {},
                                     "sourceFilters": [],
                                     "timeFieldName": "@timestamp",
-                                    "title": "metrics-collectortelemetry.otel.otel-*",
+                                    "title": "metrics-collectortelemetry.otel-*",
                                     "type": "esql"
                                 }
                             },
@@ -144,7 +144,7 @@
                                         {
                                             "id": "a9f3c1e8d7b6543210fedcba9876543210abcdefabcdef0123456789abcd",
                                             "timeField": "@timestamp",
-                                            "title": "metrics-collectortelemetry.otel.otel-*"
+                                            "title": "metrics-collectortelemetry.otel-*"
                                         }
                                     ],
                                     "layers": {
@@ -192,7 +192,7 @@
                                             ],
                                             "index": "a9f3c1e8d7b6543210fedcba9876543210abcdefabcdef0123456789abcd",
                                             "query": {
-                                                "esql": "TS metrics-collectortelemetry.otel.otel-*\n| WHERE otelcol_processor_tail_sampling_count_traces_sampled IS NOT NULL\n| WHERE decision == \"sampled\"\n| KEEP @timestamp, otelcol_processor_tail_sampling_count_traces_sampled, policy, service.instance.id, service.name\n| EVAL _collector = CONCAT(service.instance.id, \" (\", service.name, \")\")\n| WHERE ?instance == \"--ALL--\" OR _collector == ?instance\n| WHERE ?tail_policy == \"--ALL--\" OR (policy IS NOT NULL AND ?tail_policy == policy)\n| EVAL series_label = CONCAT(policy, \" · \", _collector)\n| KEEP @timestamp, otelcol_processor_tail_sampling_count_traces_sampled, series_label\n| STATS trace_decisions_per_sec = SUM(RATE(otelcol_processor_tail_sampling_count_traces_sampled)) BY Time = BUCKET(@timestamp, 100, ?_tstart, ?_tend), series_label\n"
+                                                "esql": "TS metrics-collectortelemetry.otel-*\n| WHERE otelcol_processor_tail_sampling_count_traces_sampled IS NOT NULL\n| WHERE decision == \"sampled\"\n| KEEP @timestamp, otelcol_processor_tail_sampling_count_traces_sampled, policy, service.instance.id, service.name\n| EVAL _collector = CONCAT(service.instance.id, \" (\", service.name, \")\")\n| WHERE ?instance == \"--ALL--\" OR _collector == ?instance\n| WHERE ?tail_policy == \"--ALL--\" OR (policy IS NOT NULL AND ?tail_policy == policy)\n| EVAL series_label = CONCAT(policy, \" · \", _collector)\n| KEEP @timestamp, otelcol_processor_tail_sampling_count_traces_sampled, series_label\n| STATS trace_decisions_per_sec = SUM(RATE(otelcol_processor_tail_sampling_count_traces_sampled)) BY Time = BUCKET(@timestamp, 100, ?_tstart, ?_tend), series_label\n"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -202,7 +202,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "TS metrics-collectortelemetry.otel.otel-*\n| WHERE otelcol_processor_tail_sampling_count_traces_sampled IS NOT NULL\n| WHERE decision == \"sampled\"\n| KEEP @timestamp, otelcol_processor_tail_sampling_count_traces_sampled, policy, service.instance.id, service.name\n| EVAL _collector = CONCAT(service.instance.id, \" (\", service.name, \")\")\n| WHERE ?instance == \"--ALL--\" OR _collector == ?instance\n| WHERE ?tail_policy == \"--ALL--\" OR (policy IS NOT NULL AND ?tail_policy == policy)\n| EVAL series_label = CONCAT(policy, \" · \", _collector)\n| KEEP @timestamp, otelcol_processor_tail_sampling_count_traces_sampled, series_label\n| STATS trace_decisions_per_sec = SUM(RATE(otelcol_processor_tail_sampling_count_traces_sampled)) BY Time = BUCKET(@timestamp, 100, ?_tstart, ?_tend), series_label\n"
+                                "esql": "TS metrics-collectortelemetry.otel-*\n| WHERE otelcol_processor_tail_sampling_count_traces_sampled IS NOT NULL\n| WHERE decision == \"sampled\"\n| KEEP @timestamp, otelcol_processor_tail_sampling_count_traces_sampled, policy, service.instance.id, service.name\n| EVAL _collector = CONCAT(service.instance.id, \" (\", service.name, \")\")\n| WHERE ?instance == \"--ALL--\" OR _collector == ?instance\n| WHERE ?tail_policy == \"--ALL--\" OR (policy IS NOT NULL AND ?tail_policy == policy)\n| EVAL series_label = CONCAT(policy, \" · \", _collector)\n| KEEP @timestamp, otelcol_processor_tail_sampling_count_traces_sampled, series_label\n| STATS trace_decisions_per_sec = SUM(RATE(otelcol_processor_tail_sampling_count_traces_sampled)) BY Time = BUCKET(@timestamp, 100, ?_tstart, ?_tend), series_label\n"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -277,7 +277,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "TS metrics-collectortelemetry.otel.otel-*\n| WHERE otelcol_processor_tail_sampling_count_traces_sampled IS NOT NULL\n| WHERE decision == \"sampled\"\n| KEEP @timestamp, otelcol_processor_tail_sampling_count_traces_sampled, policy, service.instance.id, service.name\n| EVAL _collector = CONCAT(service.instance.id, \" (\", service.name, \")\")\n| WHERE ?instance == \"--ALL--\" OR _collector == ?instance\n| WHERE ?tail_policy == \"--ALL--\" OR (policy IS NOT NULL AND ?tail_policy == policy)\n| EVAL series_label = CONCAT(policy, \" · \", _collector)\n| KEEP @timestamp, otelcol_processor_tail_sampling_count_traces_sampled, series_label\n| STATS trace_decisions_per_sec = SUM(RATE(otelcol_processor_tail_sampling_count_traces_sampled)) BY Time = BUCKET(@timestamp, 100, ?_tstart, ?_tend), series_label\n"
+                        "esql": "TS metrics-collectortelemetry.otel-*\n| WHERE otelcol_processor_tail_sampling_count_traces_sampled IS NOT NULL\n| WHERE decision == \"sampled\"\n| KEEP @timestamp, otelcol_processor_tail_sampling_count_traces_sampled, policy, service.instance.id, service.name\n| EVAL _collector = CONCAT(service.instance.id, \" (\", service.name, \")\")\n| WHERE ?instance == \"--ALL--\" OR _collector == ?instance\n| WHERE ?tail_policy == \"--ALL--\" OR (policy IS NOT NULL AND ?tail_policy == policy)\n| EVAL series_label = CONCAT(policy, \" · \", _collector)\n| KEEP @timestamp, otelcol_processor_tail_sampling_count_traces_sampled, series_label\n| STATS trace_decisions_per_sec = SUM(RATE(otelcol_processor_tail_sampling_count_traces_sampled)) BY Time = BUCKET(@timestamp, 100, ?_tstart, ?_tend), series_label\n"
                     },
                     "syncColors": false,
                     "syncCursor": true,
@@ -307,11 +307,11 @@
                                     "fieldFormats": {},
                                     "id": "a9f3c1e8d7b6543210fedcba9876543210abcdefabcdef0123456789abcd",
                                     "managed": false,
-                                    "name": "metrics-collectortelemetry.otel.otel-*",
+                                    "name": "metrics-collectortelemetry.otel-*",
                                     "runtimeFieldMap": {},
                                     "sourceFilters": [],
                                     "timeFieldName": "@timestamp",
-                                    "title": "metrics-collectortelemetry.otel.otel-*",
+                                    "title": "metrics-collectortelemetry.otel-*",
                                     "type": "esql"
                                 }
                             },
@@ -321,7 +321,7 @@
                                         {
                                             "id": "a9f3c1e8d7b6543210fedcba9876543210abcdefabcdef0123456789abcd",
                                             "timeField": "@timestamp",
-                                            "title": "metrics-collectortelemetry.otel.otel-*"
+                                            "title": "metrics-collectortelemetry.otel-*"
                                         }
                                     ],
                                     "layers": {
@@ -369,7 +369,7 @@
                                             ],
                                             "index": "a9f3c1e8d7b6543210fedcba9876543210abcdefabcdef0123456789abcd",
                                             "query": {
-                                                "esql": "TS metrics-collectortelemetry.otel.otel-*\n| WHERE otelcol_processor_tail_sampling_count_traces_sampled IS NOT NULL\n| WHERE decision == \"not_sampled\"\n| KEEP @timestamp, otelcol_processor_tail_sampling_count_traces_sampled, policy, service.instance.id, service.name\n| EVAL _collector = CONCAT(service.instance.id, \" (\", service.name, \")\")\n| WHERE ?instance == \"--ALL--\" OR _collector == ?instance\n| WHERE ?tail_policy == \"--ALL--\" OR (policy IS NOT NULL AND ?tail_policy == policy)\n| EVAL series_label = CONCAT(policy, \" · \", _collector)\n| KEEP @timestamp, otelcol_processor_tail_sampling_count_traces_sampled, series_label\n| STATS trace_decisions_per_sec = SUM(RATE(otelcol_processor_tail_sampling_count_traces_sampled)) BY Time = BUCKET(@timestamp, 100, ?_tstart, ?_tend), series_label\n"
+                                                "esql": "TS metrics-collectortelemetry.otel-*\n| WHERE otelcol_processor_tail_sampling_count_traces_sampled IS NOT NULL\n| WHERE decision == \"not_sampled\"\n| KEEP @timestamp, otelcol_processor_tail_sampling_count_traces_sampled, policy, service.instance.id, service.name\n| EVAL _collector = CONCAT(service.instance.id, \" (\", service.name, \")\")\n| WHERE ?instance == \"--ALL--\" OR _collector == ?instance\n| WHERE ?tail_policy == \"--ALL--\" OR (policy IS NOT NULL AND ?tail_policy == policy)\n| EVAL series_label = CONCAT(policy, \" · \", _collector)\n| KEEP @timestamp, otelcol_processor_tail_sampling_count_traces_sampled, series_label\n| STATS trace_decisions_per_sec = SUM(RATE(otelcol_processor_tail_sampling_count_traces_sampled)) BY Time = BUCKET(@timestamp, 100, ?_tstart, ?_tend), series_label\n"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -379,7 +379,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "TS metrics-collectortelemetry.otel.otel-*\n| WHERE otelcol_processor_tail_sampling_count_traces_sampled IS NOT NULL\n| WHERE decision == \"not_sampled\"\n| KEEP @timestamp, otelcol_processor_tail_sampling_count_traces_sampled, policy, service.instance.id, service.name\n| EVAL _collector = CONCAT(service.instance.id, \" (\", service.name, \")\")\n| WHERE ?instance == \"--ALL--\" OR _collector == ?instance\n| WHERE ?tail_policy == \"--ALL--\" OR (policy IS NOT NULL AND ?tail_policy == policy)\n| EVAL series_label = CONCAT(policy, \" · \", _collector)\n| KEEP @timestamp, otelcol_processor_tail_sampling_count_traces_sampled, series_label\n| STATS trace_decisions_per_sec = SUM(RATE(otelcol_processor_tail_sampling_count_traces_sampled)) BY Time = BUCKET(@timestamp, 100, ?_tstart, ?_tend), series_label\n"
+                                "esql": "TS metrics-collectortelemetry.otel-*\n| WHERE otelcol_processor_tail_sampling_count_traces_sampled IS NOT NULL\n| WHERE decision == \"not_sampled\"\n| KEEP @timestamp, otelcol_processor_tail_sampling_count_traces_sampled, policy, service.instance.id, service.name\n| EVAL _collector = CONCAT(service.instance.id, \" (\", service.name, \")\")\n| WHERE ?instance == \"--ALL--\" OR _collector == ?instance\n| WHERE ?tail_policy == \"--ALL--\" OR (policy IS NOT NULL AND ?tail_policy == policy)\n| EVAL series_label = CONCAT(policy, \" · \", _collector)\n| KEEP @timestamp, otelcol_processor_tail_sampling_count_traces_sampled, series_label\n| STATS trace_decisions_per_sec = SUM(RATE(otelcol_processor_tail_sampling_count_traces_sampled)) BY Time = BUCKET(@timestamp, 100, ?_tstart, ?_tend), series_label\n"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -460,7 +460,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "TS metrics-collectortelemetry.otel.otel-*\n| WHERE otelcol_processor_tail_sampling_count_traces_sampled IS NOT NULL\n| WHERE decision == \"not_sampled\"\n| KEEP @timestamp, otelcol_processor_tail_sampling_count_traces_sampled, policy, service.instance.id, service.name\n| EVAL _collector = CONCAT(service.instance.id, \" (\", service.name, \")\")\n| WHERE ?instance == \"--ALL--\" OR _collector == ?instance\n| WHERE ?tail_policy == \"--ALL--\" OR (policy IS NOT NULL AND ?tail_policy == policy)\n| EVAL series_label = CONCAT(policy, \" · \", _collector)\n| KEEP @timestamp, otelcol_processor_tail_sampling_count_traces_sampled, series_label\n| STATS trace_decisions_per_sec = SUM(RATE(otelcol_processor_tail_sampling_count_traces_sampled)) BY Time = BUCKET(@timestamp, 100, ?_tstart, ?_tend), series_label\n"
+                        "esql": "TS metrics-collectortelemetry.otel-*\n| WHERE otelcol_processor_tail_sampling_count_traces_sampled IS NOT NULL\n| WHERE decision == \"not_sampled\"\n| KEEP @timestamp, otelcol_processor_tail_sampling_count_traces_sampled, policy, service.instance.id, service.name\n| EVAL _collector = CONCAT(service.instance.id, \" (\", service.name, \")\")\n| WHERE ?instance == \"--ALL--\" OR _collector == ?instance\n| WHERE ?tail_policy == \"--ALL--\" OR (policy IS NOT NULL AND ?tail_policy == policy)\n| EVAL series_label = CONCAT(policy, \" · \", _collector)\n| KEEP @timestamp, otelcol_processor_tail_sampling_count_traces_sampled, series_label\n| STATS trace_decisions_per_sec = SUM(RATE(otelcol_processor_tail_sampling_count_traces_sampled)) BY Time = BUCKET(@timestamp, 100, ?_tstart, ?_tend), series_label\n"
                     },
                     "syncColors": false,
                     "syncCursor": true,
@@ -490,11 +490,11 @@
                                     "fieldFormats": {},
                                     "id": "a9f3c1e8d7b6543210fedcba9876543210abcdefabcdef0123456789abcd",
                                     "managed": false,
-                                    "name": "metrics-collectortelemetry.otel.otel-*",
+                                    "name": "metrics-collectortelemetry.otel-*",
                                     "runtimeFieldMap": {},
                                     "sourceFilters": [],
                                     "timeFieldName": "@timestamp",
-                                    "title": "metrics-collectortelemetry.otel.otel-*",
+                                    "title": "metrics-collectortelemetry.otel-*",
                                     "type": "esql"
                                 }
                             },
@@ -504,7 +504,7 @@
                                         {
                                             "id": "a9f3c1e8d7b6543210fedcba9876543210abcdefabcdef0123456789abcd",
                                             "timeField": "@timestamp",
-                                            "title": "metrics-collectortelemetry.otel.otel-*"
+                                            "title": "metrics-collectortelemetry.otel-*"
                                         }
                                     ],
                                     "layers": {
@@ -552,7 +552,7 @@
                                             ],
                                             "index": "a9f3c1e8d7b6543210fedcba9876543210abcdefabcdef0123456789abcd",
                                             "query": {
-                                                "esql": "TS metrics-collectortelemetry.otel.otel-*\n| WHERE otelcol_processor_tail_sampling_count_traces_sampled IS NOT NULL\n| WHERE decision == \"dropped\"\n| KEEP @timestamp, otelcol_processor_tail_sampling_count_traces_sampled, policy, service.instance.id, service.name\n| EVAL _collector = CONCAT(service.instance.id, \" (\", service.name, \")\")\n| WHERE ?instance == \"--ALL--\" OR _collector == ?instance\n| WHERE ?tail_policy == \"--ALL--\" OR (policy IS NOT NULL AND ?tail_policy == policy)\n| EVAL series_label = CONCAT(policy, \" · \", _collector)\n| KEEP @timestamp, otelcol_processor_tail_sampling_count_traces_sampled, series_label\n| STATS trace_decisions_per_sec = SUM(RATE(otelcol_processor_tail_sampling_count_traces_sampled)) BY Time = BUCKET(@timestamp, 100, ?_tstart, ?_tend), series_label\n"
+                                                "esql": "TS metrics-collectortelemetry.otel-*\n| WHERE otelcol_processor_tail_sampling_count_traces_sampled IS NOT NULL\n| WHERE decision == \"dropped\"\n| KEEP @timestamp, otelcol_processor_tail_sampling_count_traces_sampled, policy, service.instance.id, service.name\n| EVAL _collector = CONCAT(service.instance.id, \" (\", service.name, \")\")\n| WHERE ?instance == \"--ALL--\" OR _collector == ?instance\n| WHERE ?tail_policy == \"--ALL--\" OR (policy IS NOT NULL AND ?tail_policy == policy)\n| EVAL series_label = CONCAT(policy, \" · \", _collector)\n| KEEP @timestamp, otelcol_processor_tail_sampling_count_traces_sampled, series_label\n| STATS trace_decisions_per_sec = SUM(RATE(otelcol_processor_tail_sampling_count_traces_sampled)) BY Time = BUCKET(@timestamp, 100, ?_tstart, ?_tend), series_label\n"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -562,7 +562,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "TS metrics-collectortelemetry.otel.otel-*\n| WHERE otelcol_processor_tail_sampling_count_traces_sampled IS NOT NULL\n| WHERE decision == \"dropped\"\n| KEEP @timestamp, otelcol_processor_tail_sampling_count_traces_sampled, policy, service.instance.id, service.name\n| EVAL _collector = CONCAT(service.instance.id, \" (\", service.name, \")\")\n| WHERE ?instance == \"--ALL--\" OR _collector == ?instance\n| WHERE ?tail_policy == \"--ALL--\" OR (policy IS NOT NULL AND ?tail_policy == policy)\n| EVAL series_label = CONCAT(policy, \" · \", _collector)\n| KEEP @timestamp, otelcol_processor_tail_sampling_count_traces_sampled, series_label\n| STATS trace_decisions_per_sec = SUM(RATE(otelcol_processor_tail_sampling_count_traces_sampled)) BY Time = BUCKET(@timestamp, 100, ?_tstart, ?_tend), series_label\n"
+                                "esql": "TS metrics-collectortelemetry.otel-*\n| WHERE otelcol_processor_tail_sampling_count_traces_sampled IS NOT NULL\n| WHERE decision == \"dropped\"\n| KEEP @timestamp, otelcol_processor_tail_sampling_count_traces_sampled, policy, service.instance.id, service.name\n| EVAL _collector = CONCAT(service.instance.id, \" (\", service.name, \")\")\n| WHERE ?instance == \"--ALL--\" OR _collector == ?instance\n| WHERE ?tail_policy == \"--ALL--\" OR (policy IS NOT NULL AND ?tail_policy == policy)\n| EVAL series_label = CONCAT(policy, \" · \", _collector)\n| KEEP @timestamp, otelcol_processor_tail_sampling_count_traces_sampled, series_label\n| STATS trace_decisions_per_sec = SUM(RATE(otelcol_processor_tail_sampling_count_traces_sampled)) BY Time = BUCKET(@timestamp, 100, ?_tstart, ?_tend), series_label\n"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -643,7 +643,7 @@
                     },
                     "filters": [],
                     "query": {
-                        "esql": "TS metrics-collectortelemetry.otel.otel-*\n| WHERE otelcol_processor_tail_sampling_count_traces_sampled IS NOT NULL\n| WHERE decision == \"dropped\"\n| KEEP @timestamp, otelcol_processor_tail_sampling_count_traces_sampled, policy, service.instance.id, service.name\n| EVAL _collector = CONCAT(service.instance.id, \" (\", service.name, \")\")\n| WHERE ?instance == \"--ALL--\" OR _collector == ?instance\n| WHERE ?tail_policy == \"--ALL--\" OR (policy IS NOT NULL AND ?tail_policy == policy)\n| EVAL series_label = CONCAT(policy, \" · \", _collector)\n| KEEP @timestamp, otelcol_processor_tail_sampling_count_traces_sampled, series_label\n| STATS trace_decisions_per_sec = SUM(RATE(otelcol_processor_tail_sampling_count_traces_sampled)) BY Time = BUCKET(@timestamp, 100, ?_tstart, ?_tend), series_label\n"
+                        "esql": "TS metrics-collectortelemetry.otel-*\n| WHERE otelcol_processor_tail_sampling_count_traces_sampled IS NOT NULL\n| WHERE decision == \"dropped\"\n| KEEP @timestamp, otelcol_processor_tail_sampling_count_traces_sampled, policy, service.instance.id, service.name\n| EVAL _collector = CONCAT(service.instance.id, \" (\", service.name, \")\")\n| WHERE ?instance == \"--ALL--\" OR _collector == ?instance\n| WHERE ?tail_policy == \"--ALL--\" OR (policy IS NOT NULL AND ?tail_policy == policy)\n| EVAL series_label = CONCAT(policy, \" · \", _collector)\n| KEEP @timestamp, otelcol_processor_tail_sampling_count_traces_sampled, series_label\n| STATS trace_decisions_per_sec = SUM(RATE(otelcol_processor_tail_sampling_count_traces_sampled)) BY Time = BUCKET(@timestamp, 100, ?_tstart, ?_tend), series_label\n"
                     },
                     "syncColors": false,
                     "syncCursor": true,

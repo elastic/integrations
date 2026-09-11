@@ -59,7 +59,7 @@ As part of the field definition, there are two settings that add metadata which 
 
 The Elasticsearch documentation details the [expected values for these two fields](elasticsearch://reference/elasticsearch/mapping-reference/mapping-field-meta.md).
 
-Other applications, including Kibana, can use the information provided by this metadata when accessing these fields. The `unit` is used when formatting the values of the field, and the `metric_type` can be used to provide better defaults when quering the data.
+Other applications, including Kibana, can use the information provided by this metadata when accessing these fields. The `unit` is used when formatting the values of the field, and the `metric_type` can be used to provide better defaults when querying the data.
 
 
 ### Specify dimensions [_specify_dimensions]
@@ -72,7 +72,7 @@ A field can be configured as a dimension by setting `dimension: true` in its def
 
 Only fields of certain data types can be defined as dimensions. These data types include keywords, IPs and numeric types.
 
-Some guidelines to take into account when chosing dimensions:
+Some guidelines to take into account when choosing dimensions:
 
 * They can affect ingestion performance, it is recommended to have as few dimensions as possible. When selecting dimensions, try to avoid redundant ones, such as unique identifiers and names that refer to the same object.
 * Also be careful with having too few dimensions. There can be only one document with the same timestamp for a given set of dimensions. This can lead to data loss if different objects produce the same dimensions.
@@ -85,7 +85,7 @@ TSDB indexes can be enabled in data streams by setting `elasticsearch.index_mode
 
 ## Logs and Metrics UI compatibility [_logs_and_metrics_ui_compatibility]
 
-When applicable an integrataion package should provide the relevant fields for the Logs and Metrics Apps. This is especially relevant for integrations that are focused on compute-resources (VMs, containers, etc.).
+When applicable an integration package should provide the relevant fields for the Logs and Metrics Apps. This is especially relevant for integrations that are focused on compute-resources (VMs, containers, etc.).
 
 * Keep the [Logs app fields](docs-content://reference/observability/fields-and-object-schemas/logs-app-fields.md) reference up to date.
 * Keep the [Infrastructure app fields](docs-content://reference/observability/fields-and-object-schemas/metrics-app-fields.md) reference up to date.

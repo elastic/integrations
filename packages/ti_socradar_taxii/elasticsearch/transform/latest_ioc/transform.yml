@@ -1,0 +1,30 @@
+source:
+  index:
+    - logs-ti_socradar_taxii.indicator-*
+dest:
+  index: logs-ti_socradar_taxii_latest.indicator-2
+  aliases:
+    - alias: logs-ti_socradar_taxii_latest.indicator
+      move_on_creation: true
+latest:
+  unique_key:
+    # Namespace is deliberately excluded: threat indicators are global, so the
+    # same indicator from different namespaces should deduplicate to one entry.
+    - event.dataset
+    - ti_socradar_taxii.stix.id
+  sort: '@timestamp'
+description: Latest SOCRadar TAXII Threat Intelligence indicators.
+frequency: 60s
+sync:
+  time:
+    field: event.ingested
+    delay: 120s
+retention_policy:
+  time:
+    field: ti_socradar_taxii.stix.ioc_expiration_date
+    max_age: 1m
+_meta:
+  managed: true
+  fleet_transform_version: 0.2.0
+settings:
+  unattended: true

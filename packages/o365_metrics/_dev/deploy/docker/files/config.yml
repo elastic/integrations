@@ -89,6 +89,7 @@ rules:
         body: |-
           {
             "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#communications/callRecords",
+            "@odata.nextLink": "{{ env "SERVER_ADDRESS" }}/communications/callRecords?$skiptoken=1",
             "value": [
               {
                 "id": "a66d-b6f2-443-b12e-5aa1b6",
@@ -120,6 +121,15 @@ rules:
                 }
               }
             ]
+          }
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {
+            "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#communications/callRecords",
+            "value": null
           }
   - path: /communications/callRecords/6ce-b8fa-4d44-a613-7f81/sessions
     methods: ["GET"]

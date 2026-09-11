@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when any server-level `haproxy.failed_checks` increase. Failed health checks precede the server being marked DOWN.",
     "name": "[HAProxy OTel] Server health check failures",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -14,6 +15,19 @@
     },
     "alertDelay": {
       "active": 2
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "haproxy_otel-server"
+        },
+        {
+          "id": "haproxy_otel-backend"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## HAProxy server health check failures\n\n### What fired\n`haproxy.failed_checks` on a server increased during the window.\n\n### Why it matters\nA health-check failure while UP means the check was slow or returned an error. Repeated failures will flip the server to DOWN, removing it from rotation.\n\n### Triage\n1. Check the server's application logs and CPU/memory.\n2. Inspect network latency to the server.\n3. Validate the health-check path is cheap and always available.\n\n### Remediation\n- Fix the server or health-check.\n- Temporarily increase health-check tolerance if it is overly sensitive.\n\n### Tuning\n- Fires on any increase.\n"
+      }
     },
     "params": {
       "searchType": "esqlQuery",

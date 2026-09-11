@@ -273,6 +273,88 @@ NOTE: Configure the `var.paths` setting to point to JSON logs.
 | trace.id | Unique identifier of the trace. A trace groups multiple events like transactions that belong together. For example, a user request handled by multiple inter-connected services. | keyword |
 
 
+### Querylog
+
+Collects [query logs](https://www.elastic.co/docs/deploy-manage/monitor/logging-configuration/query-logs) emitted by Elasticsearch 9.4+.
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| auth.type | Authentication type for the query request | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| elasticsearch.cluster.name | Name of the cluster | keyword |
+| elasticsearch.cluster.uuid | UUID of the cluster | keyword |
+| elasticsearch.component | Elasticsearch component from where the log event originated | keyword |
+| elasticsearch.index.id | Index id | keyword |
+| elasticsearch.index.name | Index name | keyword |
+| elasticsearch.node.id | ID of the node | keyword |
+| elasticsearch.node.name | Name of the node | keyword |
+| elasticsearch.parent.node.id | Parent node id, present together with parent task id | keyword |
+| elasticsearch.parent.task.id | Parent task id when the task has a parent | keyword |
+| elasticsearch.querylog.clusters.failed | Failed cluster count when present in the cluster map | long |
+| elasticsearch.querylog.clusters.partial | Partial cluster count when present in the cluster map | long |
+| elasticsearch.querylog.clusters.remote_count | Number of remote clusters or distinct remote aliases | long |
+| elasticsearch.querylog.clusters.remotes | Remote cluster aliases when remotes exist (DSL/ES&#124;QL/EQL) | keyword |
+| elasticsearch.querylog.clusters.running | Running cluster count when present in the cluster map | long |
+| elasticsearch.querylog.clusters.skipped | Skipped cluster count when present in the cluster map | long |
+| elasticsearch.querylog.clusters.successful | Successful cluster count when present in the cluster map | long |
+| elasticsearch.querylog.clusters.total | Total cluster entries in the map (DSL and ES&#124;QL only; not EQL) | long |
+| elasticsearch.querylog.dsl.total_count | Total hits from TotalHits (DSL only, SearchLogProducer) | long |
+| elasticsearch.querylog.dsl.total_count_partial | True when total hit relation is not EQUAL_TO | boolean |
+| elasticsearch.querylog.esql.profile.analysis.took | ES&#124;QL profile analysis phase duration in nanoseconds | long |
+| elasticsearch.querylog.esql.profile.dependency_resolution.took | ES&#124;QL profile dependency resolution phase duration in nanoseconds | long |
+| elasticsearch.querylog.esql.profile.parsing.took | ES&#124;QL profile parsing phase duration in nanoseconds | long |
+| elasticsearch.querylog.esql.profile.planning.took | ES&#124;QL profile planning phase duration in nanoseconds | long |
+| elasticsearch.querylog.esql.profile.preanalysis.took | ES&#124;QL profile preanalysis phase duration in nanoseconds | long |
+| elasticsearch.querylog.esql.profile.query.took | ES&#124;QL profile query phase duration in nanoseconds | long |
+| elasticsearch.querylog.has_aggregations | True if the search response has aggregations (DSL) | boolean |
+| elasticsearch.querylog.indices | Indices involved (DSL, ES&#124;QL when response present, EQL). Not emitted by SqlLogProducer. | keyword |
+| elasticsearch.querylog.is_remote | True when SearchRequest#getLocalClusterAlias() is set (DSL remote-cluster request) | boolean |
+| elasticsearch.querylog.is_system | True if all resolved indices match the system-index predicate (QueryLogger); omitted when SQL has no indices | boolean |
+| elasticsearch.querylog.query | Query text (DSL JSON, ES&#124;QL, SQL, or EQL) | keyword |
+| elasticsearch.querylog.result_count | Number of rows or hits returned (clamped to int where applicable) | long |
+| elasticsearch.querylog.shards.failed | Failed shards (only emitted if count \> 0) | long |
+| elasticsearch.querylog.shards.skipped | Skipped shards (only emitted if count \> 0) | long |
+| elasticsearch.querylog.shards.successful | Successful shard count when shardInfo() is present | long |
+| elasticsearch.querylog.timed_out | True when the request timed out (e.g. DSL SearchResponse, EQL timeout) | boolean |
+| elasticsearch.querylog.took | Duration in nanoseconds | long |
+| elasticsearch.querylog.took_millis | Duration in milliseconds | long |
+| elasticsearch.querylog.type | Query kind: dsl, esql, sql, or eql | keyword |
+| elasticsearch.shard.id | Id of the shard | keyword |
+| elasticsearch.task.id | Task id for the query task | keyword |
+| error.message | Error message. | match_only_text |
+| error.type | The type of the error, for example the class name of the exception. | keyword |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.created | event.created contains the date/time when the event was first read by an agent, or by your pipeline. This field is distinct from @timestamp in that @timestamp typically contain the time extracted from the original event. In most situations, these two timestamps will be slightly different. The difference can be used to calculate the delay between your source generating an event, and the time when your agent first processed it. This can be used to monitor your agent's or pipeline's ability to keep up with your event source. In case the two timestamps are identical, @timestamp should be used. | date |
+| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |
+| event.ingested | Timestamp when an event arrived in the central data store. This is different from `@timestamp`, which is when the event originally occurred.  It's also different from `event.created`, which is meant to capture the first time an agent saw the event. In normal conditions, assuming no tampering, the timestamps should chronologically look like this: `@timestamp` \< `event.created` \< `event.ingested`. | date |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data coming in at a regular interval or not. | keyword |
+| event.module | Event module | constant_keyword |
+| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
+| event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
+| host.ip | Host ip addresses. | ip |
+| http.request.headers.x_opaque_id | X-Opaque-Id header from the HTTP request when present | keyword |
+| input.type |  | keyword |
+| log.file.path | Full path to the log file this event came from, including the file name. It should include the drive letter, when appropriate. If the event wasn't read from a log file, do not populate this field. | keyword |
+| log.level | Original log level of the log event. If the source of the event provides a log level or textual severity, this is the one that goes in `log.level`. If your source doesn't specify one, you may put your event transport's severity here (e.g. Syslog severity). Some examples are `warn`, `err`, `i`, `informational`. | keyword |
+| log.logger | The name of the logger inside an application. This is usually the name of the class which initialized the logger, or can be a custom name. | keyword |
+| log.offset |  | long |
+| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
+| process.thread.name | Thread name. | keyword |
+| service.name | Name of the service data is collected from. The name of the service is normally user given. This allows for distributed services that run on multiple hosts to correlate the related instances based on the name. In the case of Elasticsearch the `service.name` could contain the cluster name. For Beats the `service.name` is by default a copy of the `service.type` field if no name is specified. | keyword |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |
+| trace.id | Unique identifier of the trace. A trace groups multiple events like transactions that belong together. For example, a user request handled by multiple inter-connected services. | keyword |
+| user.name | Short name or login of the user. | keyword |
+| user.name.text | Multi-field of `user.name`. | match_only_text |
+| user.realm | User authentication realm when present in query logs | keyword |
+
+
 ## Metrics
 
 ### Usage for Stack Monitoring
@@ -2511,6 +2593,163 @@ An example event for `pending_tasks` looks as following:
 | source_node.name |  | alias |
 | source_node.uuid |  | alias |
 | timestamp |  | alias |
+
+
+### Security stats
+
+`security_stats` interrogates the [Security Stats API](https://www.elastic.co/docs/api/doc/elasticsearch/operation/operation-security-get-stats) endpoint to fetch per-node security statistics. Currently this surfaces the Document Level Security (DLS) bitset cache metrics for each node, which are useful for understanding the memory footprint and cache efficiency of DLS enforcement.
+
+This data stream requires Elasticsearch 9.2.0 or later. On earlier versions the Security Stats API is not available and no metrics will be collected.
+
+An example event for `security_stats` looks as following:
+
+```json
+{
+    "@timestamp": "2026-04-27T20:00:00.000Z",
+    "agent": {
+        "hostname": "docker-fleet-agent",
+        "name": "docker-fleet-agent",
+        "id": "60e15e27-7080-4c28-9900-5a087c2ff74c",
+        "type": "metricbeat",
+        "ephemeral_id": "2b6da727-313f-41fc-84af-3cd928f265c1",
+        "version": "9.2.0"
+    },
+    "elastic_agent": {
+        "id": "60e15e27-7080-4c28-9900-5a087c2ff74c",
+        "version": "9.2.0",
+        "snapshot": true
+    },
+    "elasticsearch": {
+        "cluster": {
+            "name": "docker-cluster",
+            "id": "WocBBA0QRma0sGpdQ7vLfQ"
+        },
+        "node": {
+            "id": "f5i3v9hMT_q__q6B9WOo5A",
+            "name": "instance-0000000019",
+            "roles": [
+                "data_hot",
+                "ingest"
+            ],
+            "version": "9.2.0"
+        },
+        "security": {
+            "stats": {
+                "dls": {
+                    "cache": {
+                        "entries": {
+                            "count": 12
+                        },
+                        "memory": {
+                            "bytes": 4096
+                        },
+                        "hits": {
+                            "count": 8421,
+                            "time": {
+                                "ms": 51
+                            }
+                        },
+                        "misses": {
+                            "count": 137,
+                            "time": {
+                                "ms": 219
+                            }
+                        },
+                        "evictions": {
+                            "count": 4
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "service": {
+        "address": "http://elasticsearch:9200",
+        "name": "elasticsearch",
+        "type": "elasticsearch"
+    },
+    "data_stream": {
+        "namespace": "default",
+        "type": "metrics",
+        "dataset": "elasticsearch.stack_monitoring.security_stats"
+    },
+    "host": {
+        "hostname": "docker-fleet-agent",
+        "os": {
+            "kernel": "5.11.10-arch1-1",
+            "codename": "Core",
+            "name": "CentOS Linux",
+            "type": "linux",
+            "family": "redhat",
+            "version": "7 (Core)",
+            "platform": "centos"
+        },
+        "containerized": true,
+        "ip": [
+            "172.18.0.7"
+        ],
+        "name": "docker-fleet-agent",
+        "id": "8979eb4aa312c3dccea3823dd92f92f5",
+        "mac": [
+            "02:42:ac:12:00:07"
+        ],
+        "architecture": "x86_64"
+    },
+    "metricset": {
+        "period": 10000,
+        "name": "security_stats"
+    },
+    "event": {
+        "duration": 115000,
+        "agent_id_status": "verified",
+        "ingested": "2026-04-27T20:00:01.000Z",
+        "module": "elasticsearch",
+        "dataset": "elasticsearch.stack_monitoring.security_stats"
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type | Metric Type |
+|---|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |  |
+| agent.id | Unique identifier of this agent (if one exists). Example: For Beats this would be beat.id. | keyword |  |
+| cluster_uuid |  | alias |  |
+| data_stream.dataset | Data stream dataset. | constant_keyword |  |
+| data_stream.namespace | Data stream namespace. | constant_keyword |  |
+| data_stream.type | Data stream type. | constant_keyword |  |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |  |
+| elasticsearch.cluster.id | Elasticsearch cluster id. | keyword |  |
+| elasticsearch.cluster.name | Elasticsearch cluster name. | keyword |  |
+| elasticsearch.cluster.state.id | Elasticsearch state id. | keyword |  |
+| elasticsearch.node.id | Node ID | keyword |  |
+| elasticsearch.node.master | Is the node the master node? | boolean |  |
+| elasticsearch.node.mlockall | Is mlockall enabled on the node? | boolean |  |
+| elasticsearch.node.name | Node name. | keyword |  |
+| elasticsearch.node.roles | Node roles. | keyword |  |
+| elasticsearch.node.version | Elasticsearch version reported by the node (for example, `9.2.0`). | keyword |  |
+| elasticsearch.security.stats.dls.cache.entries.count | Current number of cached entries on this node. | long | gauge |
+| elasticsearch.security.stats.dls.cache.evictions.count | Number of entries evicted (due to size limit or expiration) since node startup. | long | counter |
+| elasticsearch.security.stats.dls.cache.hits.count | Number of cache lookups served from the cache since node startup. | long | counter |
+| elasticsearch.security.stats.dls.cache.hits.time.ms | Cumulative time spent serving cache hits since node startup, in milliseconds. | long | counter |
+| elasticsearch.security.stats.dls.cache.memory.bytes | Current memory consumed by the DLS cache on this node, in bytes. | long | gauge |
+| elasticsearch.security.stats.dls.cache.misses.count | Number of cache lookups that had to materialize an entry since node startup. | long | counter |
+| elasticsearch.security.stats.dls.cache.misses.time.ms | Cumulative time spent materializing entries on cache misses since node startup, in milliseconds. | long | counter |
+| error.message | Error message. | match_only_text |  |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | keyword |  |
+| event.duration | Duration of the event in nanoseconds. If event.start and event.end are known this value should be the difference between the end and start time. | long |  |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | keyword |  |
+| host.name | Name of the host. It can contain what `hostname` returns on Unix systems, the fully qualified domain name, or a name specified by the user. The sender decides which value to use. | keyword |  |
+| service.address | Service address | keyword |  |
+| service.name | Name of the service data is collected from. The name of the service is normally user given. This allows for distributed services that run on multiple hosts to correlate the related instances based on the name. In the case of Elasticsearch the `service.name` could contain the cluster name. For Beats the `service.name` is by default a copy of the `service.type` field if no name is specified. | keyword |  |
+| service.type | The type of the service data is collected from. The type can be used to group and correlate logs and metrics from one service type. Example: If logs or metrics are collected from Elasticsearch, `service.type` would be `elasticsearch`. | keyword |  |
+| source_node.name |  | alias |  |
+| source_node.uuid |  | alias |  |
+| timestamp |  | alias |  |
 
 
 ### Shard
