@@ -1,0 +1,53 @@
+{
+  "id": "temporal_otel-task-queue-backlog",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when the task queue backlog exceeds 500 pending tasks for any task queue. A growing backlog indicates that tasks are arriving faster than workers can process them — the primary capacity signal for worker health. Left unchecked, backlogs cause workflow timeouts as workflows wait longer than their execution timeout for their tasks to be scheduled.",
+    "name": "[Temporal OTel] Task Queue Backlog Growing",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "temporal",
+      "temporal-cloud"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 3
+    },
+    "flapping": {
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    },
+    "artifacts": {
+      "investigation_guide": {
+        "blob": "## Task Queue Backlog Growing\n\nThis alert fires when the pending task count (`approximate_backlog_count`) exceeds 500 for any task queue. The backlog is a near-real-time gauge of queued work that has not yet been picked up by a worker. A non-zero, growing backlog is the clearest sign that worker capacity is insufficient.\n\n### Understanding the Backlog\n\n- **`task_type = Workflow`**: Workflow tasks (deciding what to do next in a workflow state machine) are pending.\n- **`task_type = Activity`**: Activity tasks (units of side-effect work like API calls) are pending.\n- Separate worker pools handle each — Workflow backlog and Activity backlog may need to be addressed independently.\n\n### Triage Steps\n\n1. **Check for zero pollers first** — if `no_poller_tasks_count > 0` for this queue, no workers are polling at all. The backlog will grow indefinitely until workers reconnect. Treat this as a P1 (see the No Pollers alert).\n\n2. **Check poll success rate**: Compare `poll_success_count` against expected throughput. If polls are succeeding but the backlog is still growing, workers are processing too slowly.\n   ```esql\n   TS metrics-temporal.cloud_metrics.otel-*\n   | STATS poll_rate = SUM(AVG_OVER_TIME(metrics.temporal_cloud_v1_poll_success_count))\n       BY attributes.temporal_namespace, attributes.temporal_task_queue, attributes.task_type\n   | WHERE poll_rate IS NOT NULL\n   | SORT poll_rate DESC\n   ```\n\n3. **Scale workers**: If worker capacity is the bottleneck, scale up the worker fleet for the affected namespace and task queue. For Kubernetes deployments, increase the replica count for the relevant worker deployment.\n\n4. **Check for action rate throttling**: If the namespace is near its `action_limit`, Temporal will throttle event processing. Check the Action Rate Limit alert.\n\n5. **Look for stuck workflows**: Very high backlogs (10,000+) that do not clear even after adding workers may indicate a coding bug causing runaway task scheduling (e.g., an activity that schedules itself in a loop).\n\n6. **Examine `task_priority`**: Higher-priority tasks get preferential dispatch. If normal-priority tasks are growing but high-priority tasks are being served, the issue is prioritisation, not total capacity.\n\n### Thresholds\n\n- **500 tasks**: Alert threshold. Investigate. This may be a normal transient spike for high-throughput queues.\n- **2000+ tasks**: Elevated. Workers are clearly not keeping up. Scale immediately.\n- **5000+ tasks**: Critical. Workflow timeouts are likely already occurring. Escalate.\n\nTune the alert threshold (currently 500) to suit your workload — high-throughput queues may have higher normal backlog levels."
+      },
+      "dashboards": [
+        {
+          "id": "temporal_otel-5e3e5a3c-5eaf-4556-af1e-72a001264380"
+        }
+      ]
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "TS metrics-temporal.cloud_metrics.otel-*\n// approximate_backlog_count is a value gauge; MAX captures the peak within the window\n| STATS max_backlog = MAX(AVG_OVER_TIME(metrics.temporal_cloud_v1_approximate_backlog_count))\n    BY attributes.temporal_namespace, attributes.temporal_task_queue, attributes.task_type\n// Alert when backlog exceeds 500 tasks; tune this threshold for your workload\n| WHERE max_backlog > 500\n| SORT max_backlog DESC\n| LIMIT 20"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 5,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "attributes.temporal_task_queue",
+      "termSize": 20,
+      "excludeHitsFromPreviousRun": true
+    }
+  }
+}

@@ -1,0 +1,95 @@
+# Test that the asset data stream treats benign "error" values (JSON null
+# and empty string) in HTTP 200 responses as success and ingests the data.
+#
+# Nozomi can return {"error":null,"result":[...]} (or "error":"") together
+# with valid results. The CEL program must not emit an error event or fail
+# evaluation in that case; only a non-empty error value is a real failure.
+
+[!external_stack] skip 'Skipping external stack test.'
+[!exec:jq] skip 'Skipping test requiring absent jq command'
+
+use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+install_agent -profile ${CONFIG_PROFILES}/${PROFILE} -network_name NETWORK_NAME
+docker_up -profile ${CONFIG_PROFILES}/${PROFILE} -network ${NETWORK_NAME} nozomi-mock
+add_package -profile ${CONFIG_PROFILES}/${PROFILE}
+add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config.yaml DATA_STREAM_NAME
+
+# Two data documents: one from the "error":null response (first poll) and
+# one from the "error":"" response (second poll, matched on the cursor
+# timestamp of the first record). The confirm window spans further polls to
+# guard against spurious error events or duplicates.
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 2 -confirm 45s -timeout 5m ${DATA_STREAM_NAME}
+cp stdout got_docs.json
+
+# No error events were emitted.
+exec jq '[.hits.hits[]._source.error.message // empty] | flatten | length' got_docs.json
+stdout '^0$'
+
+# Both documents are processed data events.
+exec jq '[.hits.hits[]._source | select(.nozomi_networks.asset != null)] | length' got_docs.json
+stdout '^2$'
+
+remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_NAME}
+uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 1m
+docker_down nozomi-mock
+
+-- test_config.yaml --
+input: cel
+vars:
+  url: http://nozomi-mock:8080
+  username: username
+  password: password
+data_stream:
+  vars:
+    interval: 30s
+    initial_interval: 1h
+    batch_size: 2
+    preserve_original_event: true
+    enable_request_tracer: false
+-- nozomi-mock/docker-compose.yml --
+version: '2.3'
+services:
+  nozomi-mock:
+    image: docker.elastic.co/observability/stream:v0.20.0
+    hostname: nozomi-mock
+    ports:
+      - 8080
+    environment:
+      PORT: "8080"
+    volumes:
+      - ./config.yml:/config.yml
+    command:
+      - http-server
+      - --addr=:8080
+      - --config=/config.yml
+-- nozomi-mock/config.yml --
+rules:
+  # Second poll: the query embeds the first record's cursor timestamp.
+  # Respond with "error" as an empty string plus a second record.
+  - path: /api/open/query/do
+    methods: [GET]
+    query_params:
+      query: '{query:assets \| where created_at > 1681948201431 \| sort created_at asc}'
+    request_headers:
+      Authorization:
+        - "Basic dXNlcm5hbWU6cGFzc3dvcmQ="
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"error":"","result":[{"id":"f855ca08-hy50-4953-ba47-abb18464013e","ip":["67.43.156.0"],"os":"Mac OS X","name":"hostname","risk":2,"time":1746643869542,"type":"typehost","level":"level2","roles":["other"],"zones":["Undefined"],"vendor":"unknown","os:info":{"source":"passive"},"lifecycle":"life-cycle","protocols":["smb","http"],"type:info":{"source":"passive"},"created_at":1681948201431,"mac_vendor":["Cisco Systems, Inc"],"mac_address":["d9:a8:80:ef:9d:d2"],"vendor:info":{"source":"passive"},"product_name":"pname","serial_number":"123456789","capture_device":"demo","is_ai_enriched":false,"lifecycle:info":{"source":"passive"},"os_or_firmware":"fware","appliance_hosts":["Demo Sensor iq e6ef8db9"],"end_of_sale_date":1747994334,"firmware_version":"fv2","mac_address_level":{"d9:a8:80:ef:9d:d2":"unconfirmed"},"product_name:info":{"source":"passive"},"last_activity_time":1746638915000,"serial_number:info":{"source":"passive"},"end_of_support_date":1747004353,"technology_category":"IT","end_of_sale_date:info":{"source":"passive"},"firmware_version:info":{"source":"passive"},"end_of_support_date:info":{"source":"passive"},"os_or_firmware:info":{"source":"none"},"properties":{"81.2.69.192":{"_type.passive":"computer","_type.enrichment":"computer","_vendor.enrichment":"Dell","_product_name.enrichment":"Desktop/Laptop Computer","http.last_client_version":"Chrome 91.0.4472.124"}},"custom_fields":{},"is_sp_enriched":true,"is_ti_enriched":false,"is_arc_enriched":true,"record_created_at":1746643887546,"mobility:info":{"source":"asset-kb","confidence":"medium"},"mobility":"static","mobility_votes":{"asset-kb":"unknown"},"risk_configuration":{"type_weight":0.5,"ai_risk_weight":1,"lifecycle_weight":0.5,"asset_criticality":25,"alerts_risk_weight":0.5,"device_risk_weight":0.5,"open_alerts_weight":0.5,"compensating_control":0,"high_risk_alert_level":7,"unsafe_countries_list":["china","russia","north korea","ukraine","vietnam","indonesia"],"unsafe_protocols_list":["ftp","http","imap","llmnr","ntlm","nfs","pop3","rdp","smb","snmp","smtp","sip","telnet"],"connection_type_weight":0.5,"risk_mitigation_factor":0,"high_risk_alerts_weight":0.5,"network_activity_weight":0.5,"unsafe_countries_weight":0.5,"unsafe_protocols_weight":0.5,"asset_criticality_factor":0,"asset_criticality_weight":0.5,"internet_exposure_weight":0.5,"communication_risk_weight":0.5,"technology_category_weight":0.5,"compensating_control_weight":0.2,"open_vulnerabilities_weight":0.5,"vulnerabilities_risk_weight":0.5,"suboptimal_management_weight":0.5,"critical_vulnerabilities_weight":0.5,"high_risk_vulnerabilities_level":7,"open_vulnerabilities_likelihood":0.7,"exploitable_vulnerabilities_weight":0.5,"exploitable_vulnerabilities_epss_score":0.2},"nozomi_risk":2,"activity_times":{"1746639000000":1},"remediations_signatures":["sign1","sign2"],"has_remediations":false,"latitude":"45.505918","longitude":"-73.614830","location:info":{"lat":"-73.615630","lon":"45.509818"},"tags":["asset1tag"],"_asset_kb_id":"id123","device_id":"0000034-54b3-e7c7-0000-000046bffd97","vlan_id":["10"],"nodes":["production_a"]}],"header":[],"total":1}
+  # Any other poll (including the first): "error" is JSON null.
+  - path: /api/open/query/do
+    methods: [GET]
+    request_headers:
+      Authorization:
+        - "Basic dXNlcm5hbWU6cGFzc3dvcmQ="
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"error":null,"result":[{"id":"f855ca08-ec50-4953-ba47-abb18464013e","ip":["0.0.0.0"],"os":"Mac OS X","name":"0.0.0.0","risk":2,"time":1746643849541,"type":"typehost","level":"level1","roles":["other"],"zones":["Undefined"],"vendor":"unknown","os:info":{"source":"passive"},"lifecycle":"life-cycle","protocols":["smb","http"],"type:info":{"source":"passive"},"created_at":1681948201431,"mac_vendor":["Cisco Systems, Inc"],"mac_address":["d9:a8:80:ef:9d:d2"],"vendor:info":{"source":"passive"},"product_name":"pname","serial_number":"123456789","capture_device":"demo","is_ai_enriched":false,"lifecycle:info":{"source":"passive"},"os_or_firmware":"fware","appliance_hosts":["Demo Sensor iq e6ef8db9"],"end_of_sale_date":1747994353,"firmware_version":"fv2","mac_address_level":{"d9:a8:80:ef:9d:d2":"unconfirmed"},"product_name:info":{"source":"passive"},"last_activity_time":1746638915000,"serial_number:info":{"source":"passive"},"end_of_support_date":1747994353,"technology_category":"IT","end_of_sale_date:info":{"source":"passive"},"firmware_version:info":{"source":"passive"},"end_of_support_date:info":{"source":"passive"},"os_or_firmware:info":{"source":"none"},"properties":{"81.2.69.144":{"_type.passive":"computer","_type.enrichment":"computer","_vendor.enrichment":"Dell","_product_name.enrichment":"Desktop/Laptop Computer","http.last_client_version":"Chrome 91.0.4472.124"}},"custom_fields":{},"is_sp_enriched":true,"is_ti_enriched":false,"is_arc_enriched":true,"record_created_at":1746643849546,"mobility:info":{"source":"asset-kb","confidence":"medium"},"mobility":"static","mobility_votes":{"asset-kb":"unknown"},"risk_configuration":{"type_weight":0.5,"ai_risk_weight":1,"lifecycle_weight":0.5,"asset_criticality":25,"alerts_risk_weight":0.5,"device_risk_weight":0.5,"open_alerts_weight":0.5,"compensating_control":0,"high_risk_alert_level":7,"unsafe_countries_list":["china","russia","north korea","ukraine","vietnam","indonesia"],"unsafe_protocols_list":["ftp","http","imap","llmnr","ntlm","nfs","pop3","rdp","smb","snmp","smtp","sip","telnet"],"connection_type_weight":0.5,"risk_mitigation_factor":0,"high_risk_alerts_weight":0.5,"network_activity_weight":0.5,"unsafe_countries_weight":0.5,"unsafe_protocols_weight":0.5,"asset_criticality_factor":0,"asset_criticality_weight":0.5,"internet_exposure_weight":0.5,"communication_risk_weight":0.5,"technology_category_weight":0.5,"compensating_control_weight":0.2,"open_vulnerabilities_weight":0.5,"vulnerabilities_risk_weight":0.5,"suboptimal_management_weight":0.5,"critical_vulnerabilities_weight":0.5,"high_risk_vulnerabilities_level":7,"open_vulnerabilities_likelihood":0.7,"exploitable_vulnerabilities_weight":0.5,"exploitable_vulnerabilities_epss_score":0.2},"nozomi_risk":2,"activity_times":{"1746639000000":1},"remediations_signatures":["sign1","sign2"],"has_remediations":false,"latitude":"45.505918","longitude":"-73.614830","location:info":{"lat":"-73.614830","lon":"45.505918"},"tags":["asset1tag"],"_asset_kb_id":"id123","device_id":"00000000-54b3-e7c7-0000-000046bffd97","vlan_id":["10"],"nodes":["production_b"]}],"header":[],"total":1}

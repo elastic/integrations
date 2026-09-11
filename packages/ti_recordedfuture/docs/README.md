@@ -1241,6 +1241,13 @@ An example event for `playbook_alert` looks as following:
 | recordedfuture.playbook_alert.panel_evidence_summary.compromised_host.uac |  | keyword |
 | recordedfuture.playbook_alert.panel_evidence_summary.dump.description |  | keyword |
 | recordedfuture.playbook_alert.panel_evidence_summary.dump.name |  | keyword |
+| recordedfuture.playbook_alert.panel_evidence_summary.evidence.assessments.id |  | keyword |
+| recordedfuture.playbook_alert.panel_evidence_summary.evidence.assessments.title |  | keyword |
+| recordedfuture.playbook_alert.panel_evidence_summary.evidence.assessments.value |  | keyword |
+| recordedfuture.playbook_alert.panel_evidence_summary.evidence.content |  | keyword |
+| recordedfuture.playbook_alert.panel_evidence_summary.evidence.published |  | date |
+| recordedfuture.playbook_alert.panel_evidence_summary.evidence.targets.name |  | keyword |
+| recordedfuture.playbook_alert.panel_evidence_summary.evidence.url |  | keyword |
 | recordedfuture.playbook_alert.panel_evidence_summary.explanation |  | keyword |
 | recordedfuture.playbook_alert.panel_evidence_summary.exposed_secret.details.clear_text_hint |  | keyword |
 | recordedfuture.playbook_alert.panel_evidence_summary.exposed_secret.details.clear_text_value |  | keyword |
@@ -1263,6 +1270,9 @@ An example event for `playbook_alert` looks as following:
 | recordedfuture.playbook_alert.panel_evidence_summary.malware_family.id |  | keyword |
 | recordedfuture.playbook_alert.panel_evidence_summary.malware_family.name |  | keyword |
 | recordedfuture.playbook_alert.panel_evidence_summary.phishing_malicious_behavior.threatTypes |  | keyword |
+| recordedfuture.playbook_alert.panel_evidence_summary.repository.id |  | keyword |
+| recordedfuture.playbook_alert.panel_evidence_summary.repository.name |  | keyword |
+| recordedfuture.playbook_alert.panel_evidence_summary.repository.owner.name |  | keyword |
 | recordedfuture.playbook_alert.panel_evidence_summary.reregistration.expiration |  | date |
 | recordedfuture.playbook_alert.panel_evidence_summary.reregistration.registrar |  | keyword |
 | recordedfuture.playbook_alert.panel_evidence_summary.reregistration.registrar_name |  | keyword |
@@ -1373,6 +1383,9 @@ An example event for `playbook_alert` looks as following:
 | recordedfuture.playbook_alert.panel_log_v2.created |  | date |
 | recordedfuture.playbook_alert.panel_log_v2.id |  | keyword |
 | recordedfuture.playbook_alert.panel_status.actions_taken |  | keyword |
+| recordedfuture.playbook_alert.panel_status.alert_rule.id |  | keyword |
+| recordedfuture.playbook_alert.panel_status.alert_rule.label |  | keyword |
+| recordedfuture.playbook_alert.panel_status.alert_rule.name |  | keyword |
 | recordedfuture.playbook_alert.panel_status.assignee_id |  | keyword |
 | recordedfuture.playbook_alert.panel_status.assignee_name |  | keyword |
 | recordedfuture.playbook_alert.panel_status.case_rule_id |  | keyword |
@@ -1385,6 +1398,10 @@ An example event for `playbook_alert` looks as following:
 | recordedfuture.playbook_alert.panel_status.entity_id |  | keyword |
 | recordedfuture.playbook_alert.panel_status.entity_name |  | keyword |
 | recordedfuture.playbook_alert.panel_status.lifecycle_stage |  | keyword |
+| recordedfuture.playbook_alert.panel_status.organisation_id |  | keyword |
+| recordedfuture.playbook_alert.panel_status.organisation_name |  | keyword |
+| recordedfuture.playbook_alert.panel_status.owner_id |  | keyword |
+| recordedfuture.playbook_alert.panel_status.owner_name |  | keyword |
 | recordedfuture.playbook_alert.panel_status.owner_organisation_details.enterprise_id |  | keyword |
 | recordedfuture.playbook_alert.panel_status.owner_organisation_details.enterprise_name |  | keyword |
 | recordedfuture.playbook_alert.panel_status.owner_organisation_details.organisations.organisation_id |  | keyword |
