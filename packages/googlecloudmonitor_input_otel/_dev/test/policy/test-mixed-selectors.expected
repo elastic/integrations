@@ -1,0 +1,58 @@
+connectors:
+    forward/componentid-0: {}
+exporters:
+    elasticsearch/componentid-0:
+        endpoints:
+            - https://elasticsearch:9200
+inputs: []
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - metrics-*-*
+                  privileges:
+                    - auto_configure
+                    - create_doc
+processors:
+    resourcedetection/componentid-0:
+        detectors:
+            - system
+    transform/componentid-1:
+        metric_statements:
+            - context: datapoint
+              statements:
+                - set(attributes["data_stream.type"], "metrics")
+                - set(attributes["data_stream.dataset"], "googlecloudmonitoringreceiver")
+                - set(attributes["data_stream.namespace"], "ep")
+receivers:
+    googlecloudmonitoring/componentid-0:
+        collection_interval: 300s
+        initial_delay: 1s
+        metrics_list:
+            - metric_name: compute.googleapis.com/instance/cpu/utilization
+            - metric_descriptor_filter: metric.type = starts_with("redis.googleapis.com/")
+        project_id: my-gcp-project
+        timeout: 1m
+        universe_domain: googleapis.com
+secret_references: []
+service:
+    pipelines:
+        metrics/componentid-0:
+            exporters:
+                - elasticsearch/componentid-0
+            receivers:
+                - forward/componentid-0
+        metrics/componentid-1:
+            exporters:
+                - forward/componentid-0
+            processors:
+                - resourcedetection/componentid-0
+                - transform/componentid-1
+            receivers:
+                - googlecloudmonitoring/componentid-0
