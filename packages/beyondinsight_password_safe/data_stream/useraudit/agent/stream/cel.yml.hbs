@@ -30,12 +30,13 @@ redact:
 {{!--
 API References:
   https://docs.beyondtrust.com/bips/docs/api#post-authsignappin
+  https://docs.beyondtrust.com/bips/docs/api#post-authsignout
   https://docs.beyondtrust.com/bips/docs/beyondinsight-apis#get-useraudits
 
 Cursor variable definitions:
   newest_event_time: CreateDate of most recent record, only updated from offset=0
   current_startdate: Start of current time window, preserved during pagination
-  current_enddate: End of current time window, preserved during pagination  
+  current_enddate: End of current time window, preserved during pagination
   current_offset: API offset parameter, incremented during pagination, reset on new time window
   in_pagination: Boolean indicating if currently paginating through a time window
 --}}
@@ -66,7 +67,8 @@ program: |-
               (has(state.password) ? (sprintf(" pwd=[%s];", [state.password])) : ""),
             ],
             "Content-Type": ["application/json"],
-            "Cookie": state.cursor.cookies,
+            // Strip Set-Cookie attributes and join multiple cookies into a single header value.
+            "Cookie": [state.cursor.cookies.map(c, c.split(";")[0]).join("; ")],
           },
         }
       ).do_request().as(resp,
@@ -75,77 +77,124 @@ program: |-
           // Records are sorted by CreateDate in descending order (latest entries first).
           resp.Body.decode_json().as(body,
             (int(state.?cursor.current_offset.orValue(0)) == 0 && size(body.Data) > 0) ?
-              // Update newest_event_time only from first page (offset=0) to maintain high water mark
-              {
-                "events": body.Data.map(e,
+              // First page with data: update newest_event_time high-water mark.
+              (
+                (body.TotalCount > size(body.Data)) ?
+                  // More pages in current time window — keep session open.
                   {
-                    "event": {
-                      "original": e.encode_json(),
+                    "events": body.Data.map(e,
+                      {
+                        "event": {
+                          "original": e.encode_json(),
+                        },
+                      }
+                    ),
+                    "want_more": true,
+                    "cursor": {
+                      "cookies": state.cursor.cookies,
+                      "newest_event_time": body.Data[0].CreateDate,
+                      "current_startdate": state.?cursor.current_startdate.orValue((now - duration(state.initial_interval)).format("2006-01-02T15:04:05Z")),
+                      "current_enddate": state.?cursor.current_enddate.orValue(now.format("2006-01-02T15:04:05Z")),
+                      "current_offset": int(state.limit),
+                      "in_pagination": true,
                     },
+                    "retries": 0,
                   }
-                ),
-                "want_more": body.TotalCount > size(body.Data),
-                "cursor": {
-                  "cookies": state.cursor.cookies,
-                  "newest_event_time": body.Data[0].CreateDate,
-                  "current_startdate": (body.TotalCount > size(body.Data)) ?
-                    // More pages in current time window - keep same startdate
-                    state.?cursor.current_startdate.orValue((now - duration(state.initial_interval)).format("2006-01-02T15:04:05Z"))
-                  :
-                    // Finished current time window - move to newest_event_time
-                    body.Data[0].CreateDate,
-                  "current_enddate": (body.TotalCount > size(body.Data)) ?
-                    // More pages in current time window - keep same enddate
-                    state.?cursor.current_enddate.orValue(now.format("2006-01-02T15:04:05Z"))
-                  :
-                    // Finished current time window - move to current time
-                    now.format("2006-01-02T15:04:05Z"),
-                  "current_offset": (body.TotalCount > size(body.Data)) ?
-                    // More pages in current time window - increment offset
-                    int(state.limit)
-                  :
-                    // Finished current time window - reset offset
-                    0,
-                  "in_pagination": body.TotalCount > size(body.Data),
-                },
-                "retries": 0,
-              }
+                :
+                  // Last page of first fetch — sign out and clear the session cookie.
+                  request("POST", state.url.trim_suffix("/") + "/Auth/Signout").with(
+                    {
+                      "Header": {
+                        "Authorization": [
+                          sprintf("PS-Auth key=%s; runas=%s;", [state.apikey, state.username]) +
+                          (has(state.password) ? (sprintf(" pwd=[%s];", [state.password])) : ""),
+                        ],
+                        "Content-Type": ["application/json"],
+                        "Cookie": [state.cursor.cookies.map(c, c.split(";")[0]).join("; ")],
+                      },
+                    }
+                  ).do_request().as(_,
+                    {
+                      "events": body.Data.map(e,
+                        {
+                          "event": {
+                            "original": e.encode_json(),
+                          },
+                        }
+                      ),
+                      "want_more": false,
+                      "cursor": {
+                        "newest_event_time": body.Data[0].CreateDate,
+                        "current_startdate": body.Data[0].CreateDate,
+                        "current_enddate": now.format("2006-01-02T15:04:05Z"),
+                        "current_offset": 0,
+                        "in_pagination": false,
+                      },
+                      "retries": 0,
+                    }
+                  )
+              )
             :
-              // Not first page or no data - don't update newest_event_time
-              {
-                "events": body.Data.map(e,
+              // Not first page or no data: preserve existing newest_event_time.
+              (
+                (body.TotalCount > int(state.?cursor.current_offset.orValue(0)) + size(body.Data)) ?
+                  // More pages in current time window — keep session open.
                   {
-                    "event": {
-                      "original": e.encode_json(),
+                    "events": body.Data.map(e,
+                      {
+                        "event": {
+                          "original": e.encode_json(),
+                        },
+                      }
+                    ),
+                    "want_more": true,
+                    "cursor": {
+                      "cookies": state.cursor.cookies,
+                      "newest_event_time": state.?cursor.newest_event_time.orValue((now - duration(state.initial_interval)).format("2006-01-02T15:04:05Z")),
+                      "current_startdate": state.?cursor.current_startdate.orValue((now - duration(state.initial_interval)).format("2006-01-02T15:04:05Z")),
+                      "current_enddate": state.?cursor.current_enddate.orValue(now.format("2006-01-02T15:04:05Z")),
+                      "current_offset": int(state.?cursor.current_offset.orValue(0)) + int(state.limit),
+                      "in_pagination": true,
                     },
+                    "retries": 0,
                   }
-                ),
-                "want_more": body.TotalCount > int(state.?cursor.current_offset.orValue(0)) + size(body.Data),
-                "cursor": {
-                  "cookies": state.cursor.cookies,
-                  "newest_event_time": state.?cursor.newest_event_time.orValue((now - duration(state.initial_interval)).format("2006-01-02T15:04:05Z")),
-                  "current_startdate": (body.TotalCount > int(state.?cursor.current_offset.orValue(0)) + size(body.Data)) ?
-                    // More pages in current time window - keep same startdate
-                    state.?cursor.current_startdate.orValue((now - duration(state.initial_interval)).format("2006-01-02T15:04:05Z"))
-                  : has(state.?cursor.newest_event_time) ?
-                    state.cursor.newest_event_time
-                  :
-                    (now - duration(state.initial_interval)).format("2006-01-02T15:04:05Z"),
-                  "current_enddate": (body.TotalCount > int(state.?cursor.current_offset.orValue(0)) + size(body.Data)) ?
-                    // More pages in current time window - keep same enddate
-                    state.?cursor.current_enddate.orValue(now.format("2006-01-02T15:04:05Z"))
-                  :
-                    // Finished current time window - move to current time
-                    now.format("2006-01-02T15:04:05Z"),
-                  "current_offset": (body.TotalCount > int(state.?cursor.current_offset.orValue(0)) + size(body.Data)) ?
-                    (int(state.?cursor.current_offset.orValue(0)) + int(state.limit))
-                  :
-                    // Finished current time window - reset offset
-                    0,
-                  "in_pagination": body.TotalCount > int(state.?cursor.current_offset.orValue(0)) + size(body.Data),
-                },
-                "retries": 0,
-              }
+                :
+                  // Last page — sign out and clear the session cookie.
+                  request("POST", state.url.trim_suffix("/") + "/Auth/Signout").with(
+                    {
+                      "Header": {
+                        "Authorization": [
+                          sprintf("PS-Auth key=%s; runas=%s;", [state.apikey, state.username]) +
+                          (has(state.password) ? (sprintf(" pwd=[%s];", [state.password])) : ""),
+                        ],
+                        "Content-Type": ["application/json"],
+                        "Cookie": [state.cursor.cookies.map(c, c.split(";")[0]).join("; ")],
+                      },
+                    }
+                  ).do_request().as(_,
+                    {
+                      "events": body.Data.map(e,
+                        {
+                          "event": {
+                            "original": e.encode_json(),
+                          },
+                        }
+                      ),
+                      "want_more": false,
+                      "cursor": {
+                        "newest_event_time": state.?cursor.newest_event_time.orValue((now - duration(state.initial_interval)).format("2006-01-02T15:04:05Z")),
+                        "current_startdate": has(state.?cursor.newest_event_time) ?
+                          state.cursor.newest_event_time
+                        :
+                          (now - duration(state.initial_interval)).format("2006-01-02T15:04:05Z"),
+                        "current_enddate": now.format("2006-01-02T15:04:05Z"),
+                        "current_offset": 0,
+                        "in_pagination": false,
+                      },
+                      "retries": 0,
+                    }
+                  )
+              )
           )
         : (resp.StatusCode == 401) ?
           (
@@ -178,22 +227,36 @@ program: |-
               }
           )
         :
-          // Handle all other HTTP error responses.
-          {
-            "events": {
-              "error": {
-                "code": string(resp.StatusCode),
-                "id": string(resp.Status),
-                "message": "GET " + state.url.trim_suffix("/") + "/UserAudits: " + (
-                  (size(resp.Body) != 0) ?
-                    string(resp.Body)
-                  :
-                    string(resp.Status) + " (" + string(resp.StatusCode) + ")"
-                ),
+          // Handle all other HTTP error responses. Sign out to release the server-side session.
+          request("POST", state.url.trim_suffix("/") + "/Auth/Signout").with(
+            {
+              "Header": {
+                "Authorization": [
+                  sprintf("PS-Auth key=%s; runas=%s;", [state.apikey, state.username]) +
+                  (has(state.password) ? (sprintf(" pwd=[%s];", [state.password])) : ""),
+                ],
+                "Content-Type": ["application/json"],
+                "Cookie": [state.cursor.cookies.map(c, c.split(";")[0]).join("; ")],
               },
-            },
-            "want_more": false,
-          }
+            }
+          ).do_request().as(_,
+            {
+              "events": {
+                "error": {
+                  "code": string(resp.StatusCode),
+                  "id": string(resp.Status),
+                  "message": "GET " + state.url.trim_suffix("/") + "/UserAudits: " + (
+                    (size(resp.Body) != 0) ?
+                      string(resp.Body)
+                    :
+                      string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                  ),
+                },
+              },
+              "want_more": false,
+              "cursor": (state.?cursor.optMap(c, c.drop("cookies"))).orValue({}),
+            }
+          )
       )
     :
       // Establish new authenticated session.
@@ -201,8 +264,9 @@ program: |-
         {
           "Header": {
             "Authorization": [
-              sprintf("PS-Auth key=%s; runas=%s;", [state.apikey, state.username]) +
-              (has(state.password) ? (sprintf(" pwd=[%s];", [state.password])) : ""),
+              sprintf("PS-Auth key=%s; runas=%s;", [state.apikey, state.username]) + (
+              // pwd is required only if the user password is required on the application API registration.
+              has(state.password) ? (sprintf(" pwd=[%s];", [state.password])) : ""),
             ],
             "Content-Type": ["application/json"],
           },

@@ -1,3 +1,14 @@
+- version: "1.4.1"
+  changes:
+    - description: Fix Cookie request header construction. Raw Set-Cookie response values (including path, HttpOnly, and SameSite attributes) were stored in the cursor and replayed verbatim, causing attributes to be sent as bogus cookie pairs and multiple Cookie header lines to be emitted. RFC 6265 §5.4 forbids multiple Cookie header lines; ASP.NET commonly reads only the first. Attributes are now stripped and all cookies joined into a single header value.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/21183
+    - description: Call POST /Auth/Signout at the end of each poll cycle to release the server-side session, as required by the BeyondInsight API documentation. The integration previously never called Signout, leaving sessions open on the server indefinitely.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/21183
+    - description: Clear the session cookie from the cursor after each completed poll cycle. The cookie was previously retained across polls, causing the next cycle to open with a stale cookie that had already been invalidated by the sign-out.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/21183
 - version: "1.4.0"
   changes:
     - description: Add tags to ingest pipeline processors and add `preserve_original_event` to pipeline-level `on_failure` handlers.
