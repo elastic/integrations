@@ -39,6 +39,34 @@ processors:
         AUDIT_PREFIX: '^(?:%{AUDIT_NODE})?%{AUDIT_TYPE} msg=audit\(%{NUMBER:auditd.log.epoch}:%{NUMBER:auditd.log.sequence}\):'
       patterns:
         - '%{AUDIT_PREFIX}\s*(?<auditd.log.kv>.*?)(?=\x1d%{WORD}=\{ )\x1d%{WORD:auditd.log.original_field}={ (?<auditd.log.sub_kv>.*) }$'
+  # Fast path for record types whose body is always key=value pairs from the first
+  # character. Anything else falls through to grok_audit_original. The %{+kv}=%{+kv}
+  # capture reproduces the body verbatim and fails on a body with no "=".
+  - dissect:
+      tag: dissect_audit_kv
+      if: |-
+        if (ctx.auditd?.log?.record_type != null || ctx.event?.original == null) {
+          return false;
+        }
+        String line = ctx.event.original;
+        int typeKey = line.startsWith('node=') ? line.indexOf(' type=') + 1 : 0;
+        int typeValueEnd = line.indexOf(' msg=audit(', typeKey);
+        if (typeValueEnd < 0 || !line.startsWith('type=', typeKey)) {
+          return false;
+        }
+        String recordType = line.substring(typeKey + 'type='.length(), typeValueEnd);
+        return ['SYSCALL', 'PATH', 'CWD', 'PROCTITLE', 'EXECVE', 'SOCKADDR', 'BPRM_FCAPS', 'LOGIN', 'CONFIG_CHANGE', 'NETFILTER_CFG'].contains(recordType);
+      field: event.original
+      pattern: '%{?prefix}type=%{auditd.log.record_type} msg=audit(%{auditd.log.epoch}:%{auditd.log.sequence}):%{->} %{+auditd.log.kv}=%{+auditd.log.kv}'
+      append_separator: '='
+      ignore_failure: true
+  # Capture the optional node= prefix that the dissect above skipped.
+  - dissect:
+      tag: dissect_audit_node
+      if: ctx.auditd?.log?.record_type != null && ctx.auditd.log.node == null && ctx.event.original.startsWith('node=')
+      field: event.original
+      pattern: 'node=%{auditd.log.node} %{}'
+      ignore_failure: true
   - grok:
       tag: grok_audit_original
       if: ctx.auditd?.log?.record_type == null
@@ -103,10 +131,12 @@ processors:
       field: auditd.log.original_field
       ignore_missing: true
   - rename:
+      ignore_missing: true
       ignore_failure: true
       field: auditd.log.old-auid
       target_field: auditd.log.old_auid
   - rename:
+      ignore_missing: true
       ignore_failure: true
       field: auditd.log.old-ses
       target_field: auditd.log.old_ses
