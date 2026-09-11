@@ -426,6 +426,11 @@ processors:
     value: authentication
     if: ctx.juniper?.srx?.tag == "DOT1XD_USR_AUTHENTICATED"
 - append:
+    tag: append_event_type_dot1xd_authenticated
+    field: event.type
+    value: start
+    if: ctx.juniper?.srx?.tag == "DOT1XD_USR_AUTHENTICATED"
+- append:
     tag: append_event_type_3720ee03
     field: event.type
     value: allowed
@@ -961,7 +966,6 @@ processors:
     - syslog_program
     - syslog_hostname
     - tag
-    - juniper.srx.user_type
     - juniper.srx.destination_port
     - juniper.srx.nat_destination_port
     - juniper.srx.outbound_bytes
