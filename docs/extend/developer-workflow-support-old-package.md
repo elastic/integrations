@@ -242,6 +242,8 @@ Example comment:
 
 Tick the branches you want to backport to. PRs will be created automatically on merge, or when you update this checklist after merge.
 
+Backport a change when it fixes behavior a branch already has; leave new behavior on `main`. See [when and why to backport](https://github.com/elastic/integrations/wiki/Package-Backports) if you are unsure.
+
 **aws**
 - [ ] `backport-aws-1.19` (maintained until 2027-06-30)
 - [ ] `backport-aws-6.x`
