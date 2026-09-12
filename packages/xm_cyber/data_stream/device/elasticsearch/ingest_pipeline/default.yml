@@ -4,7 +4,7 @@ processors:
   - set:
       tag: set_ecs_version_8c2c9474
       field: ecs.version
-      value: 9.4.0
+      value: 9.5.0
   - terminate:
       description: Error message set and no data to process.
       tag: terminate_data_collection_error_b07d8c2c
@@ -62,7 +62,7 @@ processors:
       value: info
   - script:
       description: >
-        Convert field names from camelCase to snake_case recursively under xm_cyber.device (including nested apps and active_cves_safe_version entries).
+        Convert field names from camelCase to snake_case recursively under xm_cyber.device.
       tag: script_convert_camelcase_to_snake_case_ce2de416
       lang: painless
       source: |-
@@ -381,21 +381,6 @@ processors:
 
   # ----- Convert: boolean -----
   - convert:
-      tag: convert_is_choke_point_boolean_bd58fe7f
-      field: xm_cyber.device.is_choke_point
-      type: boolean
-      ignore_missing: true
-      if: ctx.xm_cyber?.device?.is_choke_point != ''
-      on_failure:
-        - remove:
-            tag: remove_is_choke_point_on_failure_2e4b6295
-            field: xm_cyber.device.is_choke_point
-            ignore_missing: true
-        - append:
-            tag: append_error_message_is_choke_point_429e67f5
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - convert:
       tag: convert_is_critical_asset_boolean_b605ad3d
       field: xm_cyber.device.is_critical_asset
       type: boolean
@@ -461,29 +446,6 @@ processors:
       field: vulnerability.classification
       value: CVSS
       if: ctx.vulnerability?.score?.base != null
-  - script:
-      tag: script_vulnerability_id_from_active_cves_4d870e51
-      lang: painless
-      description: Collect unique CVE identifiers from every apps[].active_cves list into vulnerability.id and record the identifier scheme in vulnerability.enumeration.
-      if: ctx.xm_cyber?.device?.apps instanceof List
-      source: |-
-        def cves = new TreeSet();
-        for (def app : ctx.xm_cyber.device.apps) {
-          if (app instanceof Map && app.active_cves instanceof List) {
-            for (def cve : app.active_cves) {
-              if (cve != null && cve != '') {
-                cves.add(cve);
-              }
-            }
-          }
-        }
-        if (!cves.isEmpty()) {
-          if (ctx.vulnerability == null) {
-            ctx.vulnerability = new HashMap();
-          }
-          ctx.vulnerability.id = new ArrayList(cves);
-          ctx.vulnerability.enumeration = 'CVE';
-        }
 
   # ----- ECS host.* / device.* (inventory; device.* is beta per ECS) -----
   - set:
@@ -560,84 +522,6 @@ processors:
       field: '@timestamp'
       copy_from: xm_cyber.device.last_scan
       ignore_empty_value: true
-
-  # ----- apps[]: normalize numeric counters (choke_point_found_on stays keyword per fields.yml) -----
-  - foreach:
-      tag: foreach_apps_device_found_on_long_16ca0b0a
-      field: xm_cyber.device.apps
-      if: ctx.xm_cyber?.device?.apps instanceof List
-      processor:
-        convert:
-          tag: convert_ingest_value_device_found_on_4ca51ee3
-          field: _ingest._value.device_found_on
-          type: long
-          ignore_missing: true
-          on_failure:
-            - remove:
-                tag: remove_ingest_value_device_found_on_a8eb21b4
-                field: _ingest._value.device_found_on
-                ignore_missing: true
-            - append:
-                tag: append_error_message_2fefc4d4
-                field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - foreach:
-      tag: foreach_apps_affected_critical_assets_long_e751b814
-      field: xm_cyber.device.apps
-      if: ctx.xm_cyber?.device?.apps instanceof List
-      processor:
-        convert:
-          tag: convert_ingest_value_affected_critical_assets_378962ce
-          field: _ingest._value.affected_critical_assets
-          type: long
-          ignore_missing: true
-          on_failure:
-            - remove:
-                tag: remove_ingest_value_affected_critical_assets_fca93f60
-                field: _ingest._value.affected_critical_assets
-                ignore_missing: true
-            - append:
-                tag: append_error_message_54d201b9
-                field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - foreach:
-      tag: foreach_apps_products_critical_assets_at_risk_long_49bb2428
-      field: xm_cyber.device.apps
-      if: ctx.xm_cyber?.device?.apps instanceof List
-      processor:
-        convert:
-          tag: convert_ingest_value_products_critical_assets_at_risk_c246f7b7
-          field: _ingest._value.products_critical_assets_at_risk
-          type: long
-          ignore_missing: true
-          on_failure:
-            - remove:
-                tag: remove_ingest_value_products_critical_assets_at_risk_2c59f83c
-                field: _ingest._value.products_critical_assets_at_risk
-                ignore_missing: true
-            - append:
-                tag: append_error_message_6aa41a73
-                field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - foreach:
-      tag: foreach_apps_product_vulnerabilities_long_cf626719
-      field: xm_cyber.device.apps
-      if: ctx.xm_cyber?.device?.apps instanceof List
-      processor:
-        convert:
-          tag: convert_ingest_value_product_vulnerabilities_dd0214dd
-          field: _ingest._value.product_vulnerabilities
-          type: long
-          ignore_missing: true
-          on_failure:
-            - remove:
-                tag: remove_ingest_value_product_vulnerabilities_cb3dc0e6
-                field: _ingest._value.product_vulnerabilities
-                ignore_missing: true
-            - append:
-                tag: append_error_message_c82699e6
-                field: error.message
-                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   # ----- Remove duplicate vendor fields that have been mapped to ECS -----
   - remove:
