@@ -1,0 +1,820 @@
+{
+    "attributes": {
+        "title": "[Logs BloodHound Enterprise] Attack Path & Risk Overview",
+        "description": "BloodHound attack-path alerts from case/alert sync: severity, domain, and finding-type breakdowns.",
+        "hits": 0,
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "query": {
+                    "query": "kibana.alert.rule.name:\"BloodHound Enterprise\"",
+                    "language": "kuery"
+                },
+                "filter": []
+            }
+        },
+        "optionsJSON": {
+            "useMargins": true,
+            "syncColors": true,
+            "hidePanelTitles": false
+        },
+        "panelsJSON": [
+            {
+                "type": "lens",
+                "panelIndex": "panel_over_time",
+                "gridData": {
+                    "x": 0,
+                    "y": 0,
+                    "w": 24,
+                    "h": 14,
+                    "i": "panel_over_time"
+                },
+                "title": "Records over time",
+                "version": "9.3.0",
+                "embeddableConfig": {
+                    "enhancements": {},
+                    "attributes": {
+                        "title": "[Logs BloodHound Enterprise] Records over time",
+                        "description": "BloodHound alert volume over time from case/alert sync",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [
+                            {
+                                "id": "bloodhound_enterprise-alerts",
+                                "name": "indexpattern-datasource-layer-layer_time",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "visualization": {
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide",
+                                "fittingFunction": "Linear",
+                                "axisTitlesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "preferredSeriesType": "area",
+                                "layers": [
+                                    {
+                                        "layerId": "layer_time",
+                                        "accessors": [
+                                            "col_count_time"
+                                        ],
+                                        "position": "top",
+                                        "seriesType": "area",
+                                        "layerType": "data",
+                                        "xAccessor": "col_time",
+                                        "yConfig": [
+                                            {
+                                                "forAccessor": "col_count_time",
+                                                "color": "#5465FF",
+                                                "axisMode": "left"
+                                            }
+                                        ]
+                                    }
+                                ]
+                            },
+                            "query": {
+                                "language": "kuery",
+                                "query": "kibana.alert.rule.name:\"BloodHound Enterprise\""
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "layer_time": {
+                                            "columns": {
+                                                "col_time": {
+                                                    "label": "@timestamp",
+                                                    "dataType": "date",
+                                                    "operationType": "date_histogram",
+                                                    "sourceField": "@timestamp",
+                                                    "isBucketed": true,
+                                                    "params": {
+                                                        "interval": "auto",
+                                                        "includeEmptyRows": true,
+                                                        "dropPartials": false
+                                                    }
+                                                },
+                                                "col_count_time": {
+                                                    "label": "Count of records",
+                                                    "dataType": "number",
+                                                    "operationType": "count",
+                                                    "isBucketed": false,
+                                                    "sourceField": "___records___",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    }
+                                                }
+                                            },
+                                            "columnOrder": [
+                                                "col_time",
+                                                "col_count_time"
+                                            ],
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    }
+                }
+            },
+            {
+                "type": "lens",
+                "panelIndex": "panel_by_severity",
+                "gridData": {
+                    "x": 24,
+                    "y": 0,
+                    "w": 24,
+                    "h": 14,
+                    "i": "panel_by_severity"
+                },
+                "title": "Records by severity",
+                "version": "9.3.0",
+                "embeddableConfig": {
+                    "enhancements": {},
+                    "attributes": {
+                        "title": "[Logs BloodHound Enterprise] Records by severity",
+                        "description": "Distribution of BloodHound alerts by severity",
+                        "visualizationType": "lnsPie",
+                        "type": "lens",
+                        "references": [
+                            {
+                                "id": "bloodhound_enterprise-alerts",
+                                "name": "indexpattern-datasource-layer-layer_panel_by_severity",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "visualization": {
+                                "shape": "donut",
+                                "layers": [
+                                    {
+                                        "layerId": "layer_panel_by_severity",
+                                        "primaryGroups": [
+                                            "terms_panel_by_severity"
+                                        ],
+                                        "metrics": [
+                                            "count_panel_by_severity"
+                                        ],
+                                        "numberDisplay": "percent",
+                                        "categoryDisplay": "default",
+                                        "legendDisplay": "default",
+                                        "nestedLegend": false,
+                                        "layerType": "data",
+                                        "colorMapping": {
+                                            "assignments": [
+                                                {
+                                                    "rules": [
+                                                        {
+                                                            "type": "matchExactString",
+                                                            "value": "critical"
+                                                        }
+                                                    ],
+                                                    "color": {
+                                                        "type": "colorCode",
+                                                        "colorCode": "#EA1412"
+                                                    },
+                                                    "touched": true
+                                                },
+                                                {
+                                                    "rules": [
+                                                        {
+                                                            "type": "matchExactString",
+                                                            "value": "high"
+                                                        }
+                                                    ],
+                                                    "color": {
+                                                        "type": "colorCode",
+                                                        "colorCode": "#F46036"
+                                                    },
+                                                    "touched": true
+                                                },
+                                                {
+                                                    "rules": [
+                                                        {
+                                                            "type": "matchExactString",
+                                                            "value": "medium"
+                                                        }
+                                                    ],
+                                                    "color": {
+                                                        "type": "colorCode",
+                                                        "colorCode": "#5465FF"
+                                                    },
+                                                    "touched": true
+                                                },
+                                                {
+                                                    "rules": [
+                                                        {
+                                                            "type": "matchExactString",
+                                                            "value": "low"
+                                                        }
+                                                    ],
+                                                    "color": {
+                                                        "type": "colorCode",
+                                                        "colorCode": "#05CE8B"
+                                                    },
+                                                    "touched": true
+                                                }
+                                            ],
+                                            "specialAssignments": [
+                                                {
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ]
+                            },
+                            "query": {
+                                "language": "kuery",
+                                "query": "kibana.alert.rule.name:\"BloodHound Enterprise\""
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "layer_panel_by_severity": {
+                                            "columns": {
+                                                "terms_panel_by_severity": {
+                                                    "label": "Severity",
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "operationType": "terms",
+                                                    "sourceField": "kibana.alert.severity",
+                                                    "isBucketed": true,
+                                                    "params": {
+                                                        "size": 10,
+                                                        "orderBy": {
+                                                            "type": "column",
+                                                            "columnId": "count_panel_by_severity"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "missingBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "include": [],
+                                                        "exclude": [],
+                                                        "includeIsRegex": false,
+                                                        "excludeIsRegex": false,
+                                                        "accuracyMode": true
+                                                    }
+                                                },
+                                                "count_panel_by_severity": {
+                                                    "label": "Count of records",
+                                                    "dataType": "number",
+                                                    "operationType": "count",
+                                                    "isBucketed": false,
+                                                    "sourceField": "___records___",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    }
+                                                }
+                                            },
+                                            "columnOrder": [
+                                                "terms_panel_by_severity",
+                                                "count_panel_by_severity"
+                                            ],
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    }
+                }
+            },
+            {
+                "type": "lens",
+                "panelIndex": "panel_by_domain",
+                "gridData": {
+                    "x": 0,
+                    "y": 14,
+                    "w": 24,
+                    "h": 14,
+                    "i": "panel_by_domain"
+                },
+                "title": "Records by domain",
+                "version": "9.3.0",
+                "embeddableConfig": {
+                    "enhancements": {},
+                    "attributes": {
+                        "title": "[Logs BloodHound Enterprise] Records by domain",
+                        "description": "Distribution of BloodHound alerts by domain",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [
+                            {
+                                "id": "bloodhound_enterprise-alerts",
+                                "name": "indexpattern-datasource-layer-layer_panel_by_domain",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "visualization": {
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide",
+                                "preferredSeriesType": "bar_horizontal",
+                                "layers": [
+                                    {
+                                        "layerId": "layer_panel_by_domain",
+                                        "accessors": [
+                                            "count_panel_by_domain"
+                                        ],
+                                        "position": "top",
+                                        "seriesType": "bar_horizontal",
+                                        "layerType": "data",
+                                        "xAccessor": "terms_panel_by_domain"
+                                    }
+                                ]
+                            },
+                            "query": {
+                                "language": "kuery",
+                                "query": "kibana.alert.rule.name:\"BloodHound Enterprise\""
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "layer_panel_by_domain": {
+                                            "columns": {
+                                                "terms_panel_by_domain": {
+                                                    "label": "Domain",
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "operationType": "terms",
+                                                    "sourceField": "source.domain",
+                                                    "isBucketed": true,
+                                                    "params": {
+                                                        "size": 10,
+                                                        "orderBy": {
+                                                            "type": "column",
+                                                            "columnId": "count_panel_by_domain"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "missingBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "include": [],
+                                                        "exclude": [],
+                                                        "includeIsRegex": false,
+                                                        "excludeIsRegex": false,
+                                                        "accuracyMode": true
+                                                    }
+                                                },
+                                                "count_panel_by_domain": {
+                                                    "label": "Count of records",
+                                                    "dataType": "number",
+                                                    "operationType": "count",
+                                                    "isBucketed": false,
+                                                    "sourceField": "___records___",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    }
+                                                }
+                                            },
+                                            "columnOrder": [
+                                                "terms_panel_by_domain",
+                                                "count_panel_by_domain"
+                                            ],
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    }
+                }
+            },
+            {
+                "type": "lens",
+                "panelIndex": "panel_by_category",
+                "gridData": {
+                    "x": 24,
+                    "y": 14,
+                    "w": 24,
+                    "h": 14,
+                    "i": "panel_by_category"
+                },
+                "title": "Records by category",
+                "version": "9.3.0",
+                "embeddableConfig": {
+                    "enhancements": {},
+                    "attributes": {
+                        "title": "[Logs BloodHound Enterprise] Records by category",
+                        "description": "Distribution of BloodHound alerts by finding type",
+                        "visualizationType": "lnsPie",
+                        "type": "lens",
+                        "references": [
+                            {
+                                "id": "bloodhound_enterprise-alerts",
+                                "name": "indexpattern-datasource-layer-layer_panel_by_category",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "visualization": {
+                                "shape": "donut",
+                                "layers": [
+                                    {
+                                        "layerId": "layer_panel_by_category",
+                                        "primaryGroups": [
+                                            "terms_panel_by_category"
+                                        ],
+                                        "metrics": [
+                                            "count_panel_by_category"
+                                        ],
+                                        "numberDisplay": "percent",
+                                        "categoryDisplay": "default",
+                                        "legendDisplay": "default",
+                                        "nestedLegend": false,
+                                        "layerType": "data",
+                                        "colorMapping": {
+                                            "assignments": [
+                                                {
+                                                    "rules": [
+                                                        {
+                                                            "type": "matchExactString",
+                                                            "value": "AzureT0MGAddOwner"
+                                                        }
+                                                    ],
+                                                    "color": {
+                                                        "type": "colorCode",
+                                                        "colorCode": "#5465FF"
+                                                    },
+                                                    "touched": true
+                                                },
+                                                {
+                                                    "rules": [
+                                                        {
+                                                            "type": "matchExactString",
+                                                            "value": "AzureT0MGAddSecret"
+                                                        }
+                                                    ],
+                                                    "color": {
+                                                        "type": "colorCode",
+                                                        "colorCode": "#4A3BD7"
+                                                    },
+                                                    "touched": true
+                                                },
+                                                {
+                                                    "rules": [
+                                                        {
+                                                            "type": "matchExactString",
+                                                            "value": "Okta_Finding_ResourceSetContains"
+                                                        }
+                                                    ],
+                                                    "color": {
+                                                        "type": "colorCode",
+                                                        "colorCode": "#F46036"
+                                                    },
+                                                    "touched": true
+                                                },
+                                                {
+                                                    "rules": [
+                                                        {
+                                                            "type": "matchExactString",
+                                                            "value": "AzureT0MGAddMember"
+                                                        }
+                                                    ],
+                                                    "color": {
+                                                        "type": "colorCode",
+                                                        "colorCode": "#05CE8B"
+                                                    },
+                                                    "touched": true
+                                                },
+                                                {
+                                                    "rules": [
+                                                        {
+                                                            "type": "matchExactString",
+                                                            "value": "AzureT0MGGrantRole"
+                                                        }
+                                                    ],
+                                                    "color": {
+                                                        "type": "colorCode",
+                                                        "colorCode": "#66A3FF"
+                                                    },
+                                                    "touched": true
+                                                },
+                                                {
+                                                    "rules": [
+                                                        {
+                                                            "type": "matchExactString",
+                                                            "value": "Okta_Finding_ApiTokenFor"
+                                                        }
+                                                    ],
+                                                    "color": {
+                                                        "type": "colorCode",
+                                                        "colorCode": "#8E92EB"
+                                                    },
+                                                    "touched": true
+                                                },
+                                                {
+                                                    "rules": [
+                                                        {
+                                                            "type": "matchExactString",
+                                                            "value": "Okta_Finding_IdentityProviderFor"
+                                                        }
+                                                    ],
+                                                    "color": {
+                                                        "type": "colorCode",
+                                                        "colorCode": "#17EAD2"
+                                                    },
+                                                    "touched": true
+                                                }
+                                            ],
+                                            "specialAssignments": [
+                                                {
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ]
+                            },
+                            "query": {
+                                "language": "kuery",
+                                "query": "kibana.alert.rule.name:\"BloodHound Enterprise\""
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "layer_panel_by_category": {
+                                            "columns": {
+                                                "terms_panel_by_category": {
+                                                    "label": "Finding Type",
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "operationType": "terms",
+                                                    "sourceField": "event.action",
+                                                    "isBucketed": true,
+                                                    "params": {
+                                                        "size": 10,
+                                                        "orderBy": {
+                                                            "type": "column",
+                                                            "columnId": "count_panel_by_category"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "missingBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "include": [],
+                                                        "exclude": [],
+                                                        "includeIsRegex": false,
+                                                        "excludeIsRegex": false,
+                                                        "accuracyMode": true
+                                                    }
+                                                },
+                                                "count_panel_by_category": {
+                                                    "label": "Count of records",
+                                                    "dataType": "number",
+                                                    "operationType": "count",
+                                                    "isBucketed": false,
+                                                    "sourceField": "___records___",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    }
+                                                }
+                                            },
+                                            "columnOrder": [
+                                                "terms_panel_by_category",
+                                                "count_panel_by_category"
+                                            ],
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    }
+                }
+            },
+            {
+                "type": "lens",
+                "panelIndex": "panel_top_findings",
+                "gridData": {
+                    "x": 0,
+                    "y": 28,
+                    "w": 48,
+                    "h": 14,
+                    "i": "panel_top_findings"
+                },
+                "title": "Top attack path findings",
+                "version": "9.3.0",
+                "embeddableConfig": {
+                    "enhancements": {},
+                    "attributes": {
+                        "title": "[Logs BloodHound Enterprise] Top attack path findings",
+                        "description": "Top BloodHound finding types from case/alert sync",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [
+                            {
+                                "id": "bloodhound_enterprise-alerts",
+                                "name": "indexpattern-datasource-layer-layer_panel_top_findings",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "visualization": {
+                                "legend": {
+                                    "isVisible": true,
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide",
+                                "preferredSeriesType": "bar_horizontal",
+                                "layers": [
+                                    {
+                                        "layerId": "layer_panel_top_findings",
+                                        "accessors": [
+                                            "count_panel_top_findings"
+                                        ],
+                                        "position": "top",
+                                        "seriesType": "bar_horizontal",
+                                        "layerType": "data",
+                                        "xAccessor": "terms_panel_top_findings"
+                                    }
+                                ]
+                            },
+                            "query": {
+                                "language": "kuery",
+                                "query": "kibana.alert.rule.name:\"BloodHound Enterprise\""
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "layer_panel_top_findings": {
+                                            "columns": {
+                                                "terms_panel_top_findings": {
+                                                    "label": "Finding",
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "operationType": "terms",
+                                                    "sourceField": "event.action",
+                                                    "isBucketed": true,
+                                                    "params": {
+                                                        "size": 10,
+                                                        "orderBy": {
+                                                            "type": "column",
+                                                            "columnId": "count_panel_top_findings"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "missingBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "include": [],
+                                                        "exclude": [],
+                                                        "includeIsRegex": false,
+                                                        "excludeIsRegex": false,
+                                                        "accuracyMode": true
+                                                    }
+                                                },
+                                                "count_panel_top_findings": {
+                                                    "label": "Count of records",
+                                                    "dataType": "number",
+                                                    "operationType": "count",
+                                                    "isBucketed": false,
+                                                    "sourceField": "___records___",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    }
+                                                }
+                                            },
+                                            "columnOrder": [
+                                                "terms_panel_top_findings",
+                                                "count_panel_top_findings"
+                                            ],
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "internalReferences": [],
+                            "adHocDataViews": {}
+                        }
+                    }
+                }
+            }
+        ],
+        "timeRestore": true,
+        "timeFrom": "now-6M",
+        "timeTo": "now",
+        "version": 1
+    },
+    "coreMigrationVersion": "8.8.0",
+    "id": "bloodhound_enterprise-attack-path-overview",
+    "type": "dashboard",
+    "typeMigrationVersion": "10.3.0",
+    "references": [
+        {
+            "id": "bloodhound_enterprise-alerts",
+            "name": "panel_over_time:indexpattern-datasource-layer-layer_time",
+            "type": "index-pattern"
+        },
+        {
+            "id": "bloodhound_enterprise-alerts",
+            "name": "panel_by_severity:indexpattern-datasource-layer-layer_panel_by_severity",
+            "type": "index-pattern"
+        },
+        {
+            "id": "bloodhound_enterprise-alerts",
+            "name": "panel_by_domain:indexpattern-datasource-layer-layer_panel_by_domain",
+            "type": "index-pattern"
+        },
+        {
+            "id": "bloodhound_enterprise-alerts",
+            "name": "panel_by_category:indexpattern-datasource-layer-layer_panel_by_category",
+            "type": "index-pattern"
+        },
+        {
+            "id": "bloodhound_enterprise-alerts",
+            "name": "panel_top_findings:indexpattern-datasource-layer-layer_panel_top_findings",
+            "type": "index-pattern"
+        }
+    ]
+}
