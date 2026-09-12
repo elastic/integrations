@@ -1,0 +1,48 @@
+rules:
+  - path: /api/v1/domain/example.com
+    methods: ["GET"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          [
+            {
+              "hash": "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2",
+              "subject_cn": "www.example.com",
+              "issuer_cn": "E7",
+              "not_before": 1700000000,
+              "not_after": 1731536000,
+              "san_dns_names": [
+                "example.com",
+                "www.example.com",
+                "api.example.com"
+              ]
+            },
+            {
+              "hash": "b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3",
+              "subject_cn": "mail.example.com",
+              "issuer_cn": "E7",
+              "not_before": 1701000000,
+              "not_after": 1732536000,
+              "san_dns_names": [
+                "mail.example.com"
+              ]
+            }
+          ]
+          `}}
+  - path: /api/v1/domain/error.example.com
+    methods: ["GET"]
+    responses:
+      - status_code: 401
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+            "error": "Invalid API key"
+          }
+          `}}

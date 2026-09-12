@@ -1,0 +1,459 @@
+{
+  "attributes": {
+    "description": "Overview of certificate transparency log records collected for monitored domains via Shodan CTL.",
+    "kibanaSavedObjectMeta": {
+      "searchSourceJSON": {
+        "filter": [],
+        "query": {
+          "language": "kuery",
+          "query": ""
+        }
+      }
+    },
+    "optionsJSON": {
+      "hidePanelTitles": false,
+      "syncColors": false,
+      "syncTooltips": false,
+      "useMargins": true
+    },
+    "panelsJSON": [
+      {
+        "embeddableConfig": {
+          "attributes": {
+            "layout": "vertical",
+            "links": [
+              {
+                "id": "297ef5a0-b97a-4af3-8a61-3b68c1b30281",
+                "label": "Host Search Overview",
+                "order": 0,
+                "type": "dashboardLink",
+                "destinationRefName": "link_297ef5a0-b97a-4af3-8a61-3b68c1b30281_dashboard"
+              },
+              {
+                "id": "6686a8fb-650f-415a-b232-e3afbe5a4171",
+                "label": "Certificate Transparency Overview",
+                "order": 1,
+                "type": "dashboardLink",
+                "destinationRefName": "link_6686a8fb-650f-415a-b232-e3afbe5a4171_dashboard"
+              }
+            ]
+          },
+          "title": "Navigation"
+        },
+        "gridData": {
+          "h": 8,
+          "i": "shodan-domain-nav",
+          "w": 12,
+          "x": 0,
+          "y": 0
+        },
+        "panelIndex": "shodan-domain-nav",
+        "type": "links"
+      },
+      {
+        "embeddableConfig": {
+          "hidePanelTitles": false,
+          "savedVis": {
+            "data": {
+              "aggs": [],
+              "searchSource": {
+                "filter": [],
+                "query": {
+                  "language": "kuery",
+                  "query": ""
+                }
+              }
+            },
+            "description": "",
+            "params": {
+              "fontSize": 12,
+              "markdown": "**Certificate Transparency Overview**\n\nThis dashboard shows certificate transparency log records collected for your configured domain via Shodan's free CTL service: certificate volume, discovered subdomains, issuance trends, and top issuing CAs.\n",
+              "openLinksInNewTab": false
+            },
+            "title": "Certificate Transparency Overview Textbox",
+            "type": "markdown",
+            "uiState": {}
+          },
+          "title": "Table of Contents"
+        },
+        "gridData": {
+          "h": 8,
+          "i": "shodan-domain-toc",
+          "w": 36,
+          "x": 12,
+          "y": 0
+        },
+        "panelIndex": "shodan-domain-toc",
+        "type": "visualization"
+      },
+      {
+        "embeddableConfig": {
+          "attributes": {
+            "references": [
+              {
+                "id": "logs-*",
+                "name": "indexpattern-datasource-layer-domain-l1",
+                "type": "index-pattern"
+              }
+            ],
+            "state": {
+              "adHocDataViews": {},
+              "datasourceStates": {
+                "formBased": {
+                  "currentIndexPatternId": "logs-*",
+                  "layers": {
+                    "domain-l1": {
+                      "columnOrder": [
+                        "domain-c1"
+                      ],
+                      "columns": {
+                        "domain-c1": {
+                          "customLabel": true,
+                          "dataType": "number",
+                          "isBucketed": false,
+                          "label": "Total",
+                          "operationType": "count",
+                          "params": {
+                            "emptyAsNull": false,
+                            "format": {
+                              "id": "number",
+                              "params": {
+                                "decimals": 0
+                              }
+                            }
+                          },
+                          "scale": "ratio",
+                          "sourceField": "___records___"
+                        }
+                      },
+                      "incompleteColumns": {},
+                      "indexPatternId": "logs-*",
+                      "sampling": 1
+                    }
+                  }
+                },
+                "indexpattern": {
+                  "layers": {}
+                },
+                "textBased": {
+                  "layers": {}
+                }
+              },
+              "filters": [],
+              "internalReferences": [],
+              "query": {
+                "language": "kuery",
+                "query": "event.dataset : \"shodan.domain\""
+              },
+              "visualization": {
+                "color": "#6092C0",
+                "layerId": "domain-l1",
+                "layerType": "data",
+                "metricAccessor": "domain-c1"
+              }
+            },
+            "title": "Total Certificates",
+            "type": "lens",
+            "visualizationType": "lnsMetric"
+          },
+          "enhancements": {}
+        },
+        "gridData": {
+          "h": 8,
+          "i": "shodan-domain-p1",
+          "w": 12,
+          "x": 0,
+          "y": 8
+        },
+        "panelIndex": "shodan-domain-p1",
+        "title": "Total Certificates",
+        "type": "lens"
+      },
+      {
+        "embeddableConfig": {
+          "attributes": {
+            "references": [
+              {
+                "id": "logs-*",
+                "name": "indexpattern-datasource-layer-domain-l2",
+                "type": "index-pattern"
+              }
+            ],
+            "state": {
+              "adHocDataViews": {},
+              "datasourceStates": {
+                "formBased": {
+                  "currentIndexPatternId": "logs-*",
+                  "layers": {
+                    "domain-l2": {
+                      "columnOrder": [
+                        "domain-c2"
+                      ],
+                      "columns": {
+                        "domain-c2": {
+                          "customLabel": true,
+                          "dataType": "number",
+                          "isBucketed": false,
+                          "label": "Unique Subdomains",
+                          "operationType": "unique_count",
+                          "params": {
+                            "emptyAsNull": false,
+                            "format": {
+                              "id": "number",
+                              "params": {
+                                "decimals": 0
+                              }
+                            }
+                          },
+                          "scale": "ratio",
+                          "sourceField": "threat.indicator.x509.alternative_names"
+                        }
+                      },
+                      "incompleteColumns": {},
+                      "indexPatternId": "logs-*",
+                      "sampling": 1
+                    }
+                  }
+                },
+                "indexpattern": {
+                  "layers": {}
+                },
+                "textBased": {
+                  "layers": {}
+                }
+              },
+              "filters": [],
+              "internalReferences": [],
+              "query": {
+                "language": "kuery",
+                "query": "event.dataset : \"shodan.domain\""
+              },
+              "visualization": {
+                "color": "#6092C0",
+                "layerId": "domain-l2",
+                "layerType": "data",
+                "metricAccessor": "domain-c2"
+              }
+            },
+            "title": "Unique Subdomains Discovered",
+            "type": "lens",
+            "visualizationType": "lnsMetric"
+          },
+          "enhancements": {}
+        },
+        "gridData": {
+          "h": 8,
+          "i": "shodan-domain-p2",
+          "w": 12,
+          "x": 12,
+          "y": 8
+        },
+        "panelIndex": "shodan-domain-p2",
+        "title": "Unique Subdomains Discovered",
+        "type": "lens"
+      },
+      {
+        "embeddableConfig": {
+          "attributes": {
+            "references": [
+              {
+                "id": "logs-*",
+                "name": "indexpattern-datasource-layer-domain-l4",
+                "type": "index-pattern"
+              }
+            ],
+            "state": {
+              "adHocDataViews": {},
+              "datasourceStates": {
+                "formBased": {
+                  "currentIndexPatternId": "logs-*",
+                  "layers": {
+                    "domain-l4": {
+                      "columnOrder": [
+                        "domain-c4b",
+                        "domain-c4m"
+                      ],
+                      "columns": {
+                        "domain-c4b": {
+                          "customLabel": true,
+                          "dataType": "string",
+                          "isBucketed": true,
+                          "label": "Issuer",
+                          "operationType": "terms",
+                          "params": {
+                            "exclude": [],
+                            "excludeIsRegex": false,
+                            "include": [],
+                            "includeIsRegex": false,
+                            "missingBucket": false,
+                            "orderBy": {
+                              "columnId": "domain-c4m",
+                              "type": "column"
+                            },
+                            "orderDirection": "desc",
+                            "otherBucket": false,
+                            "parentFormat": {
+                              "id": "terms"
+                            },
+                            "secondaryFields": [],
+                            "size": 10
+                          },
+                          "scale": "ordinal",
+                          "sourceField": "threat.indicator.x509.issuer.common_name"
+                        },
+                        "domain-c4m": {
+                          "customLabel": true,
+                          "dataType": "number",
+                          "isBucketed": false,
+                          "label": "Count",
+                          "operationType": "count",
+                          "params": {
+                            "emptyAsNull": false,
+                            "format": {
+                              "id": "number",
+                              "params": {
+                                "decimals": 0
+                              }
+                            }
+                          },
+                          "scale": "ratio",
+                          "sourceField": "___records___"
+                        }
+                      },
+                      "incompleteColumns": {},
+                      "indexPatternId": "logs-*",
+                      "sampling": 1
+                    }
+                  }
+                },
+                "indexpattern": {
+                  "layers": {}
+                },
+                "textBased": {
+                  "layers": {}
+                }
+              },
+              "filters": [],
+              "internalReferences": [],
+              "query": {
+                "language": "kuery",
+                "query": "event.dataset : \"shodan.domain\""
+              },
+              "visualization": {
+                "axisTitlesVisibilitySettings": {
+                  "x": true,
+                  "yLeft": true,
+                  "yRight": true
+                },
+                "fittingFunction": "None",
+                "gridlinesVisibilitySettings": {
+                  "x": true,
+                  "yLeft": true,
+                  "yRight": true
+                },
+                "labelsOrientation": {
+                  "x": 0,
+                  "yLeft": 0,
+                  "yRight": 0
+                },
+                "layers": [
+                  {
+                    "accessors": [
+                      "domain-c4m"
+                    ],
+                    "colorMapping": {
+                      "assignments": [],
+                      "colorMode": {
+                        "type": "categorical"
+                      },
+                      "paletteId": "eui_amsterdam_color_blind",
+                      "specialAssignments": [
+                        {
+                          "color": {
+                            "type": "loop"
+                          },
+                          "rule": {
+                            "type": "other"
+                          },
+                          "touched": false
+                        }
+                      ]
+                    },
+                    "layerId": "domain-l4",
+                    "layerType": "data",
+                    "seriesType": "bar_horizontal",
+                    "xAccessor": "domain-c4b"
+                  }
+                ],
+                "legend": {
+                  "isVisible": false,
+                  "position": "right",
+                  "shouldTruncate": false
+                },
+                "preferredSeriesType": "bar_horizontal",
+                "tickLabelsVisibilitySettings": {
+                  "x": true,
+                  "yLeft": true,
+                  "yRight": true
+                },
+                "valueLabels": "hide"
+              }
+            },
+            "title": "Top Issuers",
+            "type": "lens",
+            "visualizationType": "lnsXY"
+          },
+          "enhancements": {}
+        },
+        "gridData": {
+          "h": 15,
+          "i": "shodan-domain-p4",
+          "w": 24,
+          "x": 24,
+          "y": 8
+        },
+        "panelIndex": "shodan-domain-p4",
+        "title": "Top Issuers",
+        "type": "lens"
+      },
+      {
+        "embeddableConfig": {},
+        "gridData": {
+          "h": 20,
+          "i": "shodan-domain-search",
+          "w": 48,
+          "x": 0,
+          "y": 23
+        },
+        "panelIndex": "shodan-domain-search",
+        "panelRefName": "panel_shodan-domain-search",
+        "title": "Certificates",
+        "type": "search"
+      }
+    ],
+    "timeRestore": false,
+    "title": "[Shodan] Certificate Transparency Overview"
+  },
+  "coreMigrationVersion": "8.8.0",
+  "created_at": "2026-07-28T18:16:41.299Z",
+  "id": "shodan-e2f3a4b5-c6d7-4a41-b253-e6f7a8b9c2d3",
+  "references": [
+    {
+      "id": "shodan-af1b2c3d-4e5f-4061-8a71-b2c3d4e5f6a7",
+      "name": "panel_shodan-domain-search",
+      "type": "search"
+    },
+    {
+      "id": "shodan-d1e2f3a4-b5c6-4930-a142-d5e6f7a8b9c2",
+      "name": "shodan-domain-nav:link_297ef5a0-b97a-4af3-8a61-3b68c1b30281_dashboard",
+      "type": "dashboard"
+    },
+    {
+      "id": "shodan-e2f3a4b5-c6d7-4a41-b253-e6f7a8b9c2d3",
+      "name": "shodan-domain-nav:link_6686a8fb-650f-415a-b232-e3afbe5a4171_dashboard",
+      "type": "dashboard"
+    }
+  ],
+  "type": "dashboard",
+  "typeMigrationVersion": "10.3.0"
+}
