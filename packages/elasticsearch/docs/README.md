@@ -893,6 +893,8 @@ An example event for `enrich` looks as following:
 
 ### Index
 
+The `index` metricset is collected by Metricbeat. From package version 1.23.0, the `elasticsearch.index.mode` and `elasticsearch.index.codec` fields are populated when the collecting Metricbeat version includes [beats#49237](https://github.com/elastic/beats/pull/49237) (Metricbeat **8.19** and later). These fields are written to the source indices consumed by the `index_pivot` transform.
+
 An example event for `index` looks as following:
 
 ```json
@@ -1061,10 +1063,10 @@ An example event for `index` looks as following:
 | elasticsearch.cluster.id | Elasticsearch cluster id. | keyword |  |
 | elasticsearch.cluster.name | Elasticsearch cluster name. | keyword |  |
 | elasticsearch.cluster.state.id | Elasticsearch state id. | keyword |  |
-| elasticsearch.index.codec |  | keyword |  |
+| elasticsearch.index.codec | Index codec (for example, `default` or `best_compression`). Collected from index settings by Metricbeat 8.19+ ([beats#49237](https://github.com/elastic/beats/pull/49237)). | keyword |  |
 | elasticsearch.index.creation_date |  | date |  |
 | elasticsearch.index.hidden |  | boolean |  |
-| elasticsearch.index.mode |  | keyword |  |
+| elasticsearch.index.mode | Index mode (for example, `standard`, `logsdb`, or `time_series`). Collected from index settings by Metricbeat 8.19+ ([beats#49237](https://github.com/elastic/beats/pull/49237)). | keyword |  |
 | elasticsearch.index.name | Index name. | keyword |  |
 | elasticsearch.index.primaries.docs.count |  | long | gauge |
 | elasticsearch.index.primaries.docs.deleted |  | long | gauge |
@@ -2912,10 +2914,11 @@ You can then visualize the resulting data in the `[Elasticsearch] Indices & data
 
 ![Indices & data streams usage](../img/indices_datastream_view.png)
 
-Apart from some high-level statistics, such as total query count, total query time and total addressable data, the dashboard surfaces usage information centered on two dimensions:
+Apart from some high-level statistics, such as total query count, total query time and total addressable data, the dashboard surfaces usage information centered on three dimensions:
 
-* The [data tier](https://www.elastic.co/guide/en/elasticsearch/reference/current/data-tiers.html).
-* The data stream (see note below for details about how this is computed).
+* The [data tier](https://www.elastic.co/docs/manage-data/lifecycle/data-tiers).
+* The data stream (see the note later in this section for details about how this is computed).
+* Index mode and codec (for example, LogsDB versus standard, and `best_compression` versus `default`).
 
 #### Tier usage
 
@@ -2926,6 +2929,12 @@ As data ages, it commonly reduces in relative importance and is commonly stored 
 Other visualizations in the dashboard allow you to compare the relative footprint of each data stream, from a storage, querying and indexing perspective. This can help you identify anomalies, stemming from faulty configuration or poor user behavior.
 
 Both approaches can be used in conjunction, allowing you to fine-tune ILM on a data stream basis (if required) to closely match usage patterns.
+
+#### Index mode and codec
+
+From package version 1.23.0, the Consumption dashboard and Index & Shard View also surface index mode and codec. These values come from `elasticsearch.index.mode` and `elasticsearch.index.codec` in the Metricbeat `index` metricset events that the transform reads from (`metrics-elasticsearch.stack_monitoring.index*`, `.monitoring-es-*`, or `metricbeat-*`). Collecting agents must run Metricbeat **8.19** or later, which includes [beats#49237](https://github.com/elastic/beats/pull/49237). When the fields are absent from source documents, ingest pipelines normalize them to `standard` and `default` respectively.
+
+Use these panels to review LogsDB adoption, time series (TSDS) usage, and whether indices use `best_compression`.
 
 ⚠️ Important notes:
 
