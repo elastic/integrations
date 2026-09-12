@@ -1,0 +1,31 @@
+title: "Google Cloud Compute Engine Metrics"
+type: metrics
+# Pins the dataset instead of inheriting the input package default. Without
+# this, Fleet falls back to <package>.<data_stream> and documents land in
+# metrics-gcp_metrics_otel.compute.otel-*.
+dataset: gcp.compute
+streams:
+  - package: googlecloudmonitor_input_otel
+    title: Google Cloud Compute Engine Metrics
+    description: >
+      Compute Engine hypervisor metrics from Cloud Monitoring: CPU, disk
+      throughput and latency, network, firewall drops, memory balloon,
+      uptime, interruptions, and managed instance group size.
+    template_path: stream.yml.hbs
+    vars:
+      # metrics_list and the inherited metric_descriptor_filters both render
+      # into the receiver's metrics_list, and a non-empty value there replaces
+      # the default set from agent/stream/stream.yml.hbs rather than adding to
+      # it. Additions go through additional_metrics instead. Both stay hidden,
+      # which is already the default for inherited vars.
+      - name: additional_metrics
+        type: text
+        title: Additional Metrics
+        required: false
+        multi: true
+        description: >
+          Extra Cloud Monitoring metric type names to collect in addition to the
+          Compute Engine metrics collected by default, for example
+          `compute.googleapis.com/guest/memory/percent_used`. Each entry must be
+          an exact metric type name.
+        show_user: true

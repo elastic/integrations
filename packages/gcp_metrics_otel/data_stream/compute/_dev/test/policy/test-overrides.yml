@@ -1,0 +1,16 @@
+# Checks that additional_metrics is appended to the default metric set from
+# stream.yml.hbs rather than replacing it, and that the receiver settings
+# inherited from googlecloudmonitor_input_otel rather than redeclared here
+# still reach the rendered agent policy.
+vars:
+  project_id: "my-gcp-project"
+  collection_interval: "120s"
+data_stream:
+  vars:
+    additional_metrics:
+      - "compute.googleapis.com/guest/memory/percent_used"
+      - "compute.googleapis.com/guest/disk/percent_used"
+    initial_delay: "5s"
+    timeout: "30s"
+    endpoint: "monitoring.example-universe.com:443"
+    universe_domain: "example-universe.com"
