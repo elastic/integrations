@@ -1,0 +1,23 @@
+---
+description: Pipeline for Elasticsearch stack monitoring index metrics
+processors:
+  - script:
+      source: |
+        if (ctx.elasticsearch?.index == null) {
+          ctx.elasticsearch = ctx.elasticsearch ?: [:];
+          ctx.elasticsearch.index = ctx.elasticsearch.index ?: [:];
+        }
+        def mode = ctx.elasticsearch.index.mode;
+        if (mode == null || mode == '' || mode == 'null') {
+          ctx.elasticsearch.index.mode = 'standard';
+        }
+        def codec = ctx.elasticsearch.index.codec;
+        if (codec == null || codec == '' || codec == 'null') {
+          ctx.elasticsearch.index.codec = 'default';
+        }
+      ignore_failure: true
+      tag: script_normalize_index_mode_codec
+on_failure:
+  - set:
+      field: error.message
+      value: "{{ _ingest.on_failure_message }}"
