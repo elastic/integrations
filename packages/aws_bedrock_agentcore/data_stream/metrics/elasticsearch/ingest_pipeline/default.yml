@@ -2,18 +2,22 @@
 description: Pipeline for Amazon Bedrock AgentCore metrics
 processors:
   - dot_expander:
+      tag: dot_expander_all_fields
       field: "*"
       ignore_failure: true
   - set:
+      tag: set_cloud_account_name
       field: cloud.account.name
       copy_from: cloud.account.id
       override: false
       ignore_empty_value: true
-  - rename:   
+  - rename:
+      tag: rename_bedrock_agentcore_field
       field: aws.bedrock-agentcore
       target_field: aws.bedrock_agentcore
       ignore_missing: true
   - script:
+      tag: script_split_dimensions_name
       lang: painless
       description: Split aws.dimensions.Name into agent_name and endpoint_name
       if: ctx.aws?.dimensions?.Name != null && ctx.aws.dimensions.Name.contains('::') && ctx.aws?.dimensions?.Operation == 'InvokeAgentRuntime'
@@ -28,6 +32,7 @@ processors:
         }
       on_failure:
         - append:
+            tag: append_split_dimensions_name_failure
             field: tags
             value: '_split_dimensions_name_failure'
             allow_duplicates: false
