@@ -1,0 +1,137 @@
+---
+description: Pipeline for processing Resecurity RISK breach records.
+processors:
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null
+      description: error message set and no data to process.
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: '9.4.0'
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      if: ctx.event?.original != null
+      description: The `message` field is no longer required if the document has an `event.original` field.
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: resecurity_risk.breach
+      description: The whole record is kept under its own namespace so that no vendor field collides with an ECS field.
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: enrichment
+  - set:
+      field: event.category
+      tag: set_event_category
+      value: [threat]
+  - set:
+      field: event.type
+      tag: set_event_type
+      value: [indicator]
+  - set:
+      field: event.dataset
+      tag: set_event_dataset
+      value: resecurity_risk.breach
+  - fingerprint:
+      fields:
+        - resecurity_risk.breach.id
+      tag: fingerprint_id
+      target_field: _id
+      if: ctx.resecurity_risk?.breach?.id != null
+  - date:
+      field: resecurity_risk.breach.source.add_date
+      tag: date_source_add_date
+      target_field: resecurity_risk.breach.source.add_date
+      formats:
+        - ISO8601
+        - UNIX
+      if: ctx.resecurity_risk?.breach?.source?.add_date != null
+      on_failure:
+        - remove:
+            field: resecurity_risk.breach.source.add_date
+            tag: remove_unparsable_source_add_date
+            ignore_missing: true
+        - append:
+            field: error.message
+            tag: append_error_source_add_date
+            value: 'failed to parse source.add_date: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: resecurity_risk.breach.source.collect_date
+      tag: date_source_collect_date
+      target_field: resecurity_risk.breach.source.collect_date
+      formats:
+        - ISO8601
+        - UNIX
+      if: ctx.resecurity_risk?.breach?.source?.collect_date != null
+      on_failure:
+        - remove:
+            field: resecurity_risk.breach.source.collect_date
+            tag: remove_unparsable_source_collect_date
+            ignore_missing: true
+        - append:
+            field: error.message
+            tag: append_error_source_collect_date
+            value: 'failed to parse source.collect_date: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      tag: set_timestamp_from_collect_date
+      copy_from: resecurity_risk.breach.source.collect_date
+      if: ctx.resecurity_risk?.breach?.source?.collect_date != null
+  - set:
+      field: '@timestamp'
+      tag: set_timestamp_from_add_date
+      copy_from: resecurity_risk.breach.source.add_date
+      if: ctx.resecurity_risk?.breach?.source?.collect_date == null && ctx.resecurity_risk?.breach?.source?.add_date != null
+      description: Records without a collection date fall back to the date the source was added.
+  - set:
+      field: user.email
+      tag: set_user_email
+      copy_from: resecurity_risk.breach.email
+      if: ctx.resecurity_risk?.breach?.email != null
+  - append:
+      field: related.ip
+      tag: append_related_ip
+      value: '{{{resecurity_risk.breach.ip}}}'
+      if: ctx.resecurity_risk?.breach?.ip != null
+      allow_duplicates: false
+  - set:
+      field: resecurity_risk.breach.source.is_imported
+      tag: set_source_is_imported_true
+      value: true
+      if: ctx.resecurity_risk?.breach?.source?.is_imported != null && ctx.resecurity_risk.breach.source.is_imported != 0
+      description: The API reports this flag as 0 or 1. Records without the flag are left untouched.
+  - set:
+      field: resecurity_risk.breach.source.is_imported
+      tag: set_source_is_imported_false
+      value: false
+      if: ctx.resecurity_risk?.breach?.source?.is_imported == 0
+  - remove:
+      field: event.original
+      tag: remove_event_original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_missing: true
+      description: The `event.original` field is no longer required if the `preserve_original_event` tag is not set.
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{ _ingest.on_failure_processor_type }}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{ _ingest.on_failure_processor_tag }}'{{/_ingest.on_failure_processor_tag}}
+        failed with message '{{ _ingest.on_failure_message }}'
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
