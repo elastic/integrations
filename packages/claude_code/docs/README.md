@@ -8,7 +8,7 @@ Claude Code exports telemetry as OTLP (OpenTelemetry Protocol) logs. Each event 
 
 ### Compatibility
 
-This integration requires Claude Code CLI version 2.1.0 or later, which supports OTLP log export.
+This integration requires Claude Code CLI version 2.1.0 or later for OTLP log export. Trace export requires `CLAUDE_CODE_ENHANCED_TELEMETRY_BETA=1` (introduced in a later CLI version).
 
 ### How it works
 
@@ -19,6 +19,7 @@ Claude Code emits structured OTLP log records during agentic sessions. Each reco
 | Data stream | Description |
 |-------------|-------------|
 | `events`    | All Claude Code OTLP log events — tool executions, API requests, permission decisions, MCP connections, hooks, plugins, and session lifecycle. |
+| `traces`    | Claude Code OTLP trace spans — one root span per prompt turn with child spans for each API call and tool execution. Requires `CLAUDE_CODE_ENHANCED_TELEMETRY_BETA=1`. |
 
 The integration processes these event types:
 
@@ -53,6 +54,7 @@ Claude Code has four environment variables that control how much detail is inclu
 | `OTEL_LOG_TOOL_DETAILS` | Include `tool_parameters` and `tool_input` in tool events. | Off |
 | `OTEL_LOG_TOOL_CONTENT` | Include `tool_result` content in tool events. | Off |
 | `OTEL_LOG_RAW_API_BODIES` | Include raw API request/response bodies. | Off |
+| `CLAUDE_CODE_ENHANCED_TELEMETRY_BETA` | Enable trace (span) export in addition to log events. | Off |
 
 Enabling these gates provides richer forensic data but indexes potentially sensitive content (commands, file contents, prompts). When a gate is disabled, the corresponding fields are absent from the document — the pipeline handles this gracefully.
 
@@ -95,6 +97,33 @@ export OTEL_RESOURCE_ATTRIBUTES="data_stream.dataset=claude_code.events.otel"
 ### Option C: EDOT Collector
 
 Run the [Elastic Distribution of the OpenTelemetry Collector](https://github.com/elastic/elastic-agent) with an `otlp` receiver and an `elasticsearch` exporter. Configure the `data_stream.dataset` resource attribute as above. The collector routes events to `logs-claude_code.events.otel-*`.
+
+### Traces
+
+To enable trace export alongside or instead of logs, set the additional environment variables:
+
+```bash
+export CLAUDE_CODE_ENHANCED_TELEMETRY_BETA=1
+export OTEL_TRACES_EXPORTER=otlp
+export OTEL_EXPORTER_OTLP_TRACES_PROTOCOL=grpc
+export OTEL_EXPORTER_OTLP_TRACES_ENDPOINT="http://<agent-host>:4317"
+```
+
+The `traces` data stream listens on gRPC port 4317 (separate from the logs stream on HTTP port 4318). Both streams can run simultaneously under the same Fleet policy.
+
+#### Span hierarchy
+
+Each user prompt turn produces a root `claude_code.interaction` span:
+
+```
+claude_code.interaction          (root — one per prompt turn)
+├── claude_code.llm_request      (one per API call: tokens, cost, model, stop_reason)
+└── claude_code.tool             (one per tool invocation)
+    ├── claude_code.tool.blocked_on_user   (permission wait time + decision)
+    └── claude_code.tool.execution         (actual execution time + success/error)
+```
+
+Spans are linked by `trace.id` and `parent.id` and stored in `traces-claude_code.traces.otel-*`.
 
 ### Validation
 
@@ -373,4 +402,5 @@ An example event for `events` looks as following:
 | url.full.text | Multi-field of `url.full`. | match_only_text |
 | user.email | User email address. | keyword |
 | user.id | Unique identifier of the user. | keyword |
+
 
