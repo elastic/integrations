@@ -42,11 +42,11 @@ program: |
           }
         }).do_request().as(resp, resp.StatusCode == 200 ?
           resp.Body.decode_json().as(body,
-            body.?error.orValue("") != "" ?
+            body.?error.orValue(null) != null && body.error != "" ?
               {
                 "events": {
                   "error": {
-                    "message": "Nozomi query rejected: " + body.error,
+                    "message": "Nozomi query rejected: " + (type(body.error) == string ? body.error : body.error.encode_json()),
                   },
                 },
                 "want_more": false,
