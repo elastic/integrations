@@ -1,0 +1,695 @@
+config_version: 1
+{{! Interval controls delay between full sync cycles (when want_more is false). During a sync, want_more:true runs steps immediately. }}
+{{#if interval}}
+interval: {{interval}}
+{{else}}
+interval: 1h
+{{/if}}
+max_executions: {{max_executions}}
+{{#if enable_request_tracer}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{/if}}
+resource:
+  url: {{base_url}}
+{{#if ssl}}
+  ssl: {{ssl}}
+{{/if}}
+state:
+  token_id: {{token_id}}
+  token_key: {{token_key}}
+  base_url: {{base_url}}
+  selected_environment: {{selected_environment}}
+  bhe_zones: {{bhe_zones}}
+  kibana_url: {{kibana_url}}
+  kibana_api_key: {{kibana_api_key}}
+  elasticsearch_url: {{elasticsearch_url}}
+  details_limit: {{details_limit}}
+  attach_batch_size: {{attach_batch_size}}
+  pending_alert_ids: []
+  pending_alert_indices: []
+  step: 1
+  case_page: 1
+  existing_cases_all: []
+  domains: []
+  domain_index: 0
+  tag_index: 0
+  process_findings: []
+  finding_index: 0
+  details_skip: 0
+  instance_index: 0
+  current_case_id: ""
+  current_alert_id: ""
+  current_alert_index: ""
+  cases_to_delete: []
+  delete_index: 0
+  existing_bh_cases: []
+  existing_case_titles: []
+  all_current_keys: []
+  case_part: 1
+  alerts_on_case: 0
+  case_created: false
+  sync_mode: cases_only
+  want_more: true
+redact:
+  fields:
+    - token_key
+    - kibana_api_key
+program: |
+  (
+    (size(string(state.base_url)) > 0 && string(state.base_url).substring(int(size(string(state.base_url))) - 1, int(size(string(state.base_url)))) == "/" ?
+      string(state.base_url).substring(0, int(size(string(state.base_url))) - 1) : string(state.base_url)
+  ).as(base_trim,
+    (base_trim.startsWith("https://") ? base_trim.substring(8, int(size(base_trim))) :
+     base_trim.startsWith("http://") ? base_trim.substring(7, int(size(base_trim))) :
+     base_trim).as(no_scheme,
+      (no_scheme.matches("(?i)^[a-z0-9-]+\\.bloodhoundenterprise\\.io$") ?
+         no_scheme.substring(0, int(size(no_scheme)) - 24) : "local")
+    )
+  ).as(tenant_tag,
+  int(state.step).as(current_step,
+  (has(state.process_findings) && size(state.process_findings) > 0 ?
+    state.process_findings[int(state.finding_index)] : {"type": "", "_unique_key": "", "_domain_id": "", "_domain_name": "", "_asset_group_tag_id": ""}
+  ).as(cur_finding,
+
+  (cur_finding._unique_key + (has(state.case_part) && int(state.case_part) > 1 ? " [" + string(state.case_part) + "]" : "")).as(case_key,
+
+  (current_step == 6 && state.existing_case_titles.exists(t, t == case_key) ? "GET" :
+   current_step == 6 ? "POST" :
+   current_step == 7 ? "POST" :
+   current_step == 8 ? "POST" :
+   current_step == 9 ? "DELETE" : "GET").as(method,
+
+  (current_step == 1 ? "/api/v2/available-domains" :
+   current_step == 2 ? "/api/cases/_find?perPage=100&page=" + string(state.case_page) :
+   current_step == 3 ? "/api/v2/domains/" + string(state.domains[int(state.domain_index)].id) + "/available-types?asset_group_tag_id=" + string(state.domains[int(state.domain_index)].tags[int(state.tag_index)].id) :
+   current_step == 4 ? "/api/v2/findings/" + cur_finding.type :
+   current_step == 5 ? "/api/v2/domains/" + string(cur_finding._domain_id) + "/details?finding=" + string(cur_finding.type) + "&skip=" + string(state.details_skip) + "&limit=" + (has(state.sync_mode) && string(state.sync_mode) == "cases_only" ? "1" : string(state.details_limit)) + "&Accepted=eq%3Afalse&asset_group_tag_id=" + string(cur_finding._asset_group_tag_id) :
+   current_step == 6 && state.existing_case_titles.exists(t, t == case_key) ?
+     "/api/cases/" + string(state.existing_bh_cases.filter(c, c.title == case_key).map(c, c.id)[0]) :
+   current_step == 6 ? "/api/cases" :
+   current_step == 7 ?
+     "/.alerts-security.alerts-default/_bulk" :
+   current_step == 8 ?
+     "/api/cases/" + string(state.current_case_id) + "/comments" :
+   "/api/cases?ids=%5B%22" + string(state.cases_to_delete[int(state.delete_index)]) + "%22%5D"
+  ).as(uri,
+
+  (current_step == 6 && !state.existing_case_titles.exists(t, t == case_key) ?
+    {"title": case_key,
+     "category": (has(cur_finding._domain_name) ? string(cur_finding._domain_name) : ""),
+     "severity": (has(cur_finding._severity) ?
+       (string(cur_finding._severity) == "moderate" ? "medium" : string(cur_finding._severity)) : "low"),
+    "tags": ["BloodHound Enterprise", tenant_tag,
+             (has(cur_finding._asset_group_tag_name) && cur_finding._asset_group_tag_name != "" ? string(cur_finding._asset_group_tag_name) :
+              has(cur_finding._tier_tag) && cur_finding._tier_tag != "" ? string(cur_finding._tier_tag) : "hygiene")],
+     "description": "# " + (has(cur_finding.finding_title) && string(cur_finding.finding_title) != "" ? string(cur_finding.finding_title) : string(cur_finding.type)) +
+       "\n\n[View on portal](" +
+       ((size(string(state.base_url)) > 0 && string(state.base_url).substring(int(size(string(state.base_url))) - 1, int(size(string(state.base_url)))) == "/" ?
+          string(state.base_url).substring(0, int(size(string(state.base_url))) - 1) : string(state.base_url)) +
+        "/ui/graphview?environmentId=" + string(cur_finding._domain_id) + "&findingName=" + string(cur_finding.type) + "&assetGroupTagId=" + string(cur_finding._asset_group_tag_id)) +
+       ")" +
+       "\n\n## Type\n\n" + (has(cur_finding.finding_type_label) ? string(cur_finding.finding_type_label) : "") +
+       "\n\n## Short Remediation\n\n" + (has(cur_finding.short_remediation) ? string(cur_finding.short_remediation) : "") +
+       "\n\n## Long Remediation\n\n" + (has(cur_finding.long_remediation) ? string(cur_finding.long_remediation) : "") +
+       "\n\n## Short Description\n\n" + (has(cur_finding.short_description) ? string(cur_finding.short_description) : "") +
+       "\n\n## Long Description\n\n" + (has(cur_finding.long_description) ? string(cur_finding.long_description) : "") +
+       "\n\n## References\n\n" + (has(cur_finding.references) ? string(cur_finding.references) : ""),
+     "owner": "securitySolution",
+     "settings": {"syncAlerts": false},
+     "connector": {"id": "none", "name": "none", "type": ".none", "fields": null},
+     "customFields": []
+    }.encode_json()
+   : current_step == 7 && has(cur_finding._instances) && size(cur_finding._instances) > int(state.instance_index) ?
+    int(state.instance_index).as(start_idx,
+    (size(cur_finding._instances) - start_idx).as(remaining,
+    (int(state.attach_batch_size) < remaining ? int(state.attach_batch_size) : remaining).as(by_attach,
+    ((1000 - int(state.alerts_on_case)) < by_attach ? (1000 - int(state.alerts_on_case)) : by_attach).as(by_case,
+    (by_case < 100 ? by_case : 100).as(batch_size,
+    (batch_size < 1 ? 1 : batch_size).as(batch_n,
+    [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99].filter(i, i < batch_n).map(i, cur_finding._instances[start_idx + i]).as(batch_insts,
+      batch_insts.map(inst,
+        (has(inst.PrincipalName) ? string(inst.PrincipalName) :
+         has(inst.FromPrincipalName) && has(inst.ToPrincipalName) ? string(inst.FromPrincipalName) + " -> " + string(inst.ToPrincipalName) :
+         has(inst.FromPrincipalName) ? string(inst.FromPrincipalName) :
+         has(inst.ToPrincipalName) ? string(inst.ToPrincipalName) :
+         has(inst.Principal) ? string(inst.Principal) :
+         has(inst.FromPrincipal) ? string(inst.FromPrincipal) : "unknown").as(principal_label,
+        (has(inst.FromPrincipalKind) && string(inst.FromPrincipalKind) == "Computer" && has(inst.FromPrincipalName) ? string(inst.FromPrincipalName) :
+         has(inst.ToPrincipalKind) && string(inst.ToPrincipalKind) == "Computer" && has(inst.ToPrincipalName) ? string(inst.ToPrincipalName) :
+         has(inst.PrincipalKind) && string(inst.PrincipalKind) == "Computer" && has(inst.PrincipalName) ? string(inst.PrincipalName) :
+         has(inst.Environment) && string(inst.Environment) != "" ? string(inst.Environment) :
+         has(inst.FromEnvironment) && string(inst.FromEnvironment) != "" ? string(inst.FromEnvironment) :
+         has(inst.FromPrincipalProps) && has(inst.FromPrincipalProps.name) && string(inst.FromPrincipalProps.name) != "" ? string(inst.FromPrincipalProps.name) :
+         has(inst.ToPrincipalProps) && has(inst.ToPrincipalProps.name) && string(inst.ToPrincipalProps.name) != "" ? string(inst.ToPrincipalProps.name) :
+         has(inst.FromPrincipalName) ? string(inst.FromPrincipalName) : "").as(host_name,
+        (has(inst.PrincipalName) ? string(inst.PrincipalName) :
+         has(inst.ToPrincipalKind) && string(inst.ToPrincipalKind) == "User" && has(inst.ToPrincipalName) ? string(inst.ToPrincipalName) :
+         has(inst.FromPrincipalKind) && string(inst.FromPrincipalKind) == "User" && has(inst.FromPrincipalName) ? string(inst.FromPrincipalName) :
+         has(inst.PrincipalKind) && string(inst.PrincipalKind) == "User" && has(inst.PrincipalName) ? string(inst.PrincipalName) :
+         has(inst.ToPrincipalName) ? string(inst.ToPrincipalName) :
+         has(inst.FromPrincipalName) ? string(inst.FromPrincipalName) : principal_label).as(user_name,
+        (has(inst.Severity) ? string(inst.Severity) : (has(cur_finding._severity) ? string(cur_finding._severity) : "low")).as(raw_severity,
+        (raw_severity == "moderate" ? "medium" : raw_severity).as(alert_severity,
+        (has(inst.ImpactPercentage) ?
+          (double(inst.ImpactPercentage) >= 0.95 ? 99 : double(inst.ImpactPercentage) >= 0.75 ? 73 : double(inst.ImpactPercentage) >= 0.5 ? 47 : 21) :
+          (alert_severity == "critical" ? 99 : alert_severity == "high" ? 73 : alert_severity == "medium" ? 47 : 21)).as(alert_risk,
+        (string(cur_finding._domain_id) + "-" + string(cur_finding.type) + "-" + string(inst.id)).as(alert_id,
+        (has(inst.DomainSID) && string(inst.DomainSID) != "" ? string(inst.DomainSID) : string(cur_finding._domain_id)).as(env_id,
+        (size(string(state.base_url)) > 0 && string(state.base_url).substring(int(size(string(state.base_url))) - 1, int(size(string(state.base_url)))) == "/" ?
+          string(state.base_url).substring(0, int(size(string(state.base_url))) - 1) : string(state.base_url)).as(bhe_base,
+        (env_id != "" && string(cur_finding.type) != "" ?
+          bhe_base + "/ui/graphview?environmentId=" + env_id + "&findingName=" + string(cur_finding.type) + "&assetGroupTagId=" + string(cur_finding._asset_group_tag_id) : "").as(explorer_url,
+          {"index": {"_id": alert_id}}.encode_json() + "\n" +
+          {
+           "@timestamp": now.format("2006-01-02T15:04:05Z07:00"),
+           "event": {"kind": "signal", "category": ["intrusion_detection"], "type": ["info"], "module": "bloodhound", "action": string(cur_finding.type), "url": explorer_url},
+           "source": {"domain": string(cur_finding._domain_name)},
+           "rule": {"name": "BloodHound Enterprise", "reference": explorer_url},
+           "kibana.alert.uuid": alert_id,
+           "kibana.alert.rule.uuid": "b0000000-0000-4000-8000-000000000001",
+           "kibana.alert.rule.name": "BloodHound Enterprise",
+           "kibana.alert.rule.rule_type_id": "siem.notifications",
+           "kibana.alert.rule.consumer": "siem",
+           "kibana.alert.rule.references": (explorer_url != "" ? [explorer_url] : []),
+           "kibana.alert.severity": alert_severity,
+           "kibana.alert.risk_score": alert_risk,
+           "kibana.alert.workflow_status": "open",
+           "kibana.alert.status": "active",
+           "kibana.alert.reason": "BloodHound " + string(cur_finding.type) + ": " + principal_label,
+           "bloodhound.finding": string(cur_finding.type),
+           "bloodhound.domain": string(cur_finding._domain_name),
+           "bloodhound.domain_sid": env_id,
+           "bloodhound.explorer_url": explorer_url,
+           "bloodhound.host_name": host_name,
+           "bloodhound.user_name": user_name,
+           "bloodhound.exposure_percentage": (has(inst.ExposurePercentage) ? inst.ExposurePercentage : (has(inst.ImpactPercentage) ? inst.ImpactPercentage : 0)),
+           "bloodhound.severity": alert_severity,
+           "bloodhound.principal": (!has(inst.FromPrincipal) && !has(inst.ToPrincipal) ?
+             (has(inst.Principal) ? string(inst.Principal) :
+              (has(inst.PrincipalName) ? string(inst.PrincipalName) : principal_label)) : ""),
+           "bloodhound.from_principal": (has(inst.FromPrincipal) ? string(inst.FromPrincipal) : ""),
+           "bloodhound.to_principal": (has(inst.ToPrincipal) ? string(inst.ToPrincipal) : ""),
+           "bloodhound.principal_path": ((has(inst.FromPrincipal) ? string(inst.FromPrincipal) : "") +
+             ((has(inst.FromPrincipal) && has(inst.ToPrincipal)) ? " -> " : "") +
+             (has(inst.ToPrincipal) ? string(inst.ToPrincipal) : "")),
+           "bloodhound.impact_count": (has(inst.ImpactCount) ? inst.ImpactCount : (has(inst.ExposureCount) ? inst.ExposureCount : 0)),
+           "bloodhound.instance": inst
+          }.encode_json()
+        ))))))))))
+      ).join("\n") + "\n"
+    )))))))
+  : current_step == 8 && has(state.pending_alert_ids) && size(state.pending_alert_ids) > 0 ?
+    {"type": "alert",
+     "owner": "securitySolution",
+     "alertId": state.pending_alert_ids,
+     "index": state.pending_alert_indices,
+     "rule": {"id": "b0000000-0000-4000-8000-000000000001", "name": "BloodHound Enterprise"}
+    }.encode_json()
+  : "").as(body_data,
+
+  now.format("2006-01-02T15:04:05Z07:00").as(timestamp,
+  timestamp.substring(0, 13).as(date_prefix,
+  hmac(method + uri, "sha256", bytes(state.token_key)).as(op_key,
+  hmac(date_prefix, "sha256", op_key).as(date_key,
+  base64(hmac(bytes(body_data), "sha256", date_key)).as(signature,
+
+  request(method, (current_step == 2 || current_step == 6 || current_step == 8 || current_step == 9 ? state.kibana_url :
+                   current_step == 7 ? state.elasticsearch_url : state.base_url) + uri).with({
+    "Header": (current_step == 2 || current_step == 6 || current_step == 8 || current_step == 9 ?
+      {"Authorization": ["ApiKey " + state.kibana_api_key], "Content-Type": ["application/json"], "kbn-xsrf": ["true"]} :
+      current_step == 7 ?
+      {"Authorization": ["ApiKey " + state.kibana_api_key], "Content-Type": ["application/x-ndjson"], "kbn-xsrf": ["true"]} :
+      {"Authorization": ["bhesignature " + state.token_id], "RequestDate": [timestamp], "Signature": [signature], "Content-Type": ["application/json"], "User-Agent": ["Elastic-Kibana-BloodHound Enterprise-Application/v1.0.0"]}
+    ),
+    "Body": body_data
+  }).do_request().as(resp,
+  bytes(
+    (string(resp.Body).startsWith('{') || string(resp.Body).startsWith('[')) ?
+    string(resp.Body) :
+    "{}"
+  ).decode_json().as(parsed_body,
+
+  current_step == 1 ?
+    ((has(resp.StatusCode) && int(resp.StatusCode) == 401) ?
+      state.with({"events": [{"error": "BloodHound authentication failed (invalid token_id or token_key)", "_step": 1, "_status_code": int(resp.StatusCode), "_raw": string(resp.Body), "story": "Sync stopped because BloodHound API authentication failed. Please verify token_id and token_key."}], "step": 1, "want_more": false}) :
+    (has(resp.StatusCode) && int(resp.StatusCode) == 403) ?
+      state.with({"events": [{"error": "BloodHound authorization failed (token lacks endpoint permissions)", "_step": 1, "_status_code": int(resp.StatusCode), "_raw": string(resp.Body), "story": "Sync stopped because BloodHound API denied access. Please verify token permissions."}], "step": 1, "want_more": false}) :
+    ((has(state.selected_environment) ? string(state.selected_environment) : "").as(selected_env,
+      (has(state.bhe_zones) ? string(state.bhe_zones) : "").as(selected_zones,
+        (has(parsed_body.data) && size(parsed_body.data) > 0 ?
+          parsed_body.data.map(d, {
+            "id": string(d.id),
+            "name": string(d.name),
+            "tags": (has(d.exposures) && size(d.exposures) > 0 ?
+              d.exposures.map(e, {"id": string(e.asset_group_tag.id), "name": string(e.asset_group_tag.name)}) : [{"id": "1", "name": "default"}])
+          }).as(all_domains,
+            (
+              selected_env == "" || selected_env == "*" || selected_env == "All" || selected_env == "all" ||
+              !all_domains.exists(d,
+                ("," + selected_env + ",").contains("," + string(d.name) + ",") ||
+                ("," + selected_env + ",").contains(", " + string(d.name) + ",") ||
+                ("," + selected_env + ",").contains(",\"" + string(d.name) + "\",") ||
+                ("," + selected_env + ",").contains(", \"" + string(d.name) + "\",") ||
+                ("," + selected_env + ",").contains(",'" + string(d.name) + "',") ||
+                ("," + selected_env + ",").contains(", '" + string(d.name) + "',")
+              )
+            ).as(env_is_all,
+            (
+              selected_zones == "" || selected_zones == "*" || selected_zones == "All" || selected_zones == "all" ||
+              !all_domains.exists(d, d.tags.exists(t,
+                ("," + selected_zones + ",").contains("," + string(t.name) + ",") ||
+                ("," + selected_zones + ",").contains(", " + string(t.name) + ",") ||
+                ("," + selected_zones + ",").contains(",\"" + string(t.name) + "\",") ||
+                ("," + selected_zones + ",").contains(", \"" + string(t.name) + "\",") ||
+                ("," + selected_zones + ",").contains(",'" + string(t.name) + "',") ||
+                ("," + selected_zones + ",").contains(", '" + string(t.name) + "',")
+              ))
+            ).as(zones_is_all,
+              all_domains.filter(d,
+                env_is_all ||
+                ("," + selected_env + ",").contains("," + string(d.name) + ",") ||
+                ("," + selected_env + ",").contains(", " + string(d.name) + ",") ||
+                ("," + selected_env + ",").contains(",\"" + string(d.name) + "\",") ||
+                ("," + selected_env + ",").contains(", \"" + string(d.name) + "\",") ||
+                ("," + selected_env + ",").contains(",'" + string(d.name) + "',") ||
+                ("," + selected_env + ",").contains(", '" + string(d.name) + "',")
+              ).map(d,
+                d.with({"tags":
+                  d.tags.filter(t,
+                    zones_is_all ||
+                    ("," + selected_zones + ",").contains("," + string(t.name) + ",") ||
+                    ("," + selected_zones + ",").contains(", " + string(t.name) + ",") ||
+                    ("," + selected_zones + ",").contains(",\"" + string(t.name) + "\",") ||
+                    ("," + selected_zones + ",").contains(", \"" + string(t.name) + "\",") ||
+                    ("," + selected_zones + ",").contains(",'" + string(t.name) + "',") ||
+                    ("," + selected_zones + ",").contains(", '" + string(t.name) + "',")
+                  )})
+              ).filter(d, size(d.tags) > 0).as(domains_list,
+                size(domains_list) > 0 ?
+                  state.with({
+                    "step": 2,
+                    "case_page": 1,
+                    "existing_cases_all": [],
+                    "domains": domains_list,
+                    "want_more": true,
+                    "events": [{
+                      "_step": 1,
+                      "_uri": uri,
+                      "story": "Authentication succeeded for base_url " + string(state.base_url) + ". " +
+                             (env_is_all ?
+                               ((selected_env == "" || selected_env == "*" || selected_env == "All" || selected_env == "all") ?
+                                 "Selected environment input is empty/all, so fetching data for all environments. " :
+                                 "Selected environment input '" + selected_env + "' did not match any domain, so fetching data for all environments. ") :
+                               "Selected environment input provided: '" + selected_env + "', so fetching data only for matching environments. ") +
+                             (zones_is_all ?
+                               ((selected_zones == "" || selected_zones == "*" || selected_zones == "All" || selected_zones == "all") ?
+                                 "BloodHound Enterprise zones input is empty/all, so fetching data for all zones. " :
+                                 "BloodHound Enterprise zones input '" + selected_zones + "' did not match any zone, so fetching data for all zones. ") :
+                               "BloodHound Enterprise zones input provided: '" + selected_zones + "', so fetching data only for matching zones. ") +
+                             "Fetched " + string(size(all_domains)) + " domains and retained " + string(size(domains_list)) + " after applying filters."
+                    }]
+                  }) :
+                  state.with({"events": [{"error": "No domains found after selected_environment/bhe_zones filters", "_step": 1, "story": "Sync stopped because no domains matched selected_environment '" + selected_env + "' and bhe_zones '" + selected_zones + "'."}], "step": 1, "want_more": false})
+              )
+            ))
+          ) :
+          state.with({"events": [{"error": "No domains found", "_step": 1, "_raw": string(resp.Body), "story": "Sync stopped because the available-domains API returned no domains."}], "step": 1, "want_more": false})
+        )
+      )
+    ))) :
+
+  current_step == 2 ?
+    (has(parsed_body.cases) ? parsed_body.cases :
+     has(parsed_body.data) ? parsed_body.data :
+     type(parsed_body) == list ? parsed_body : []).as(existing_cases_page,
+      (state.existing_cases_all + existing_cases_page).as(existing_cases_merged,
+        (has(parsed_body.total) ? int(parsed_body.total) : size(existing_cases_merged)).as(cases_total,
+          (has(parsed_body.perPage) ? int(parsed_body.perPage) : 100).as(cases_per_page,
+            (has(parsed_body.page) ? int(parsed_body.page) : int(state.case_page)).as(cases_page_num,
+              (cases_page_num * cases_per_page < cases_total ?
+                state.with({
+                  "step": 2,
+                  "case_page": cases_page_num + 1,
+                  "existing_cases_all": existing_cases_merged,
+                  "want_more": true,
+                  "events": [{"_step": 2, "story": "Loaded Kibana cases page " + string(cases_page_num) + " (" + string(size(existing_cases_page)) + " cases). Loaded " + string(size(existing_cases_merged)) + " of " + string(cases_total) + " total before stale cleanup."}]
+                }) :
+                existing_cases_merged.filter(c,
+                  has(c.tags) && (
+                    (c.tags.exists(t, t == "BloodHound Enterprise") && c.tags.exists(t, t == tenant_tag)) ||
+                    (c.tags.exists(t, string(t).matches("(?i)^(bloodhound_enterprise|bloodhound)$")) &&
+                      (
+                        c.title.startsWith(string(state.base_url)) ||
+                        c.title.startsWith(
+                          (size(string(state.base_url)) > 0 && string(state.base_url).substring(int(size(string(state.base_url))) - 1, int(size(string(state.base_url)))) == "/" ?
+                            string(state.base_url).substring(0, int(size(string(state.base_url))) - 1) :
+                            string(state.base_url) + "/")
+                        )
+                      ))
+                  )
+                ).as(bh_cases,
+                  state.with({
+                    "step": 3,
+                    "case_page": 1,
+                    "existing_cases_all": [],
+                    "domain_index": 0,
+                    "tag_index": 0,
+                    "existing_bh_cases": bh_cases,
+                    "existing_case_titles": bh_cases.map(c, c.title),
+                    "all_current_keys": [],
+                    "process_findings": [],
+                    "finding_index": 0,
+                    "details_skip": 0,
+                    "instance_index": 0,
+                    "want_more": true,
+                    "events": [{"_step": 2, "story": "Loaded all Kibana cases and isolated " + string(size(bh_cases)) + " cases for this BloodHound Enterprise tenant from " + string(size(existing_cases_merged)) + " total for reconciliation."}]
+                  })
+                )
+              )
+            )
+          )
+        )
+      )
+    ) :
+
+  current_step == 3 ?
+    (has(parsed_body.data) ? parsed_body.data : (type(parsed_body) == list ? parsed_body : [])).as(raw_types,
+    (type(raw_types) == list && size(raw_types) > 0 ?
+      raw_types.map(t, type(t) == string ? t : (has(t.finding_type) ? string(t.finding_type) : (has(t.id) ? string(t.id) : string(t)))).as(types_list,
+        types_list.map(t, "BloodHound Enterprise | " + string(state.domains[int(state.domain_index)].name) + " | " + string(state.domains[int(state.domain_index)].tags[int(state.tag_index)].name) + " | " + t).as(current_keys,
+          (state.all_current_keys + current_keys.filter(k, !state.all_current_keys.exists(ek, ek == k))).as(updated_all_keys,
+            (state.process_findings + types_list.map(t,
+              {
+                "type": t,
+                "_domain_id": string(state.domains[int(state.domain_index)].id),
+                "_domain_name": string(state.domains[int(state.domain_index)].name),
+                "_asset_group_tag_id": string(state.domains[int(state.domain_index)].tags[int(state.tag_index)].id),
+                "_asset_group_tag_name": string(state.domains[int(state.domain_index)].tags[int(state.tag_index)].name),
+                "_unique_key": "BloodHound Enterprise | " + string(state.domains[int(state.domain_index)].name) + " | " + string(state.domains[int(state.domain_index)].tags[int(state.tag_index)].name) + " | " + t
+              }
+            ).filter(f,
+              !state.process_findings.exists(existing, existing._unique_key == f._unique_key) &&
+              (
+                !state.existing_case_titles.exists(title, title == f._unique_key || title.startsWith(f._unique_key + " [")) ||
+                state.existing_bh_cases.exists(c, c.title == f._unique_key && (!has(c.totalAlerts) || int(c.totalAlerts) == 0))
+              )
+            )).as(updated_process_findings,
+              int(state.tag_index) + 1 < size(state.domains[int(state.domain_index)].tags) ?
+                state.with({"step": 3, "tag_index": int(state.tag_index) + 1,
+                  "all_current_keys": updated_all_keys, "process_findings": updated_process_findings,
+                  "want_more": true, "events": [{"_step": 3, "_uri": uri, "story": "Fetched finding types for domain '" + string(state.domains[int(state.domain_index)].name) + "' and BloodHound Enterprise zone '" + string(state.domains[int(state.domain_index)].tags[int(state.tag_index)].name) + "'. Collected " + string(size(types_list)) + " types and queued " + string(size(updated_process_findings)) + " unique findings so far."}]}) :
+              int(state.domain_index) + 1 < size(state.domains) ?
+                state.with({"step": 3, "domain_index": int(state.domain_index) + 1, "tag_index": 0,
+                  "all_current_keys": updated_all_keys, "process_findings": updated_process_findings,
+                  "want_more": true, "events": [{"_step": 3, "_uri": uri, "story": "Fetched finding types for domain '" + string(state.domains[int(state.domain_index)].name) + "' and BloodHound Enterprise zone '" + string(state.domains[int(state.domain_index)].tags[int(state.tag_index)].name) + "'. Collected " + string(size(types_list)) + " types and queued " + string(size(updated_process_findings)) + " unique findings so far."}]}) :
+              state.existing_bh_cases.filter(c,
+                !updated_all_keys.exists(k, c.title == k || c.title.startsWith(k + " ["))
+              ).map(c, c.id).as(stale_ids,
+                size(updated_process_findings) > 0 ?
+                  updated_process_findings.exists(f, !state.existing_case_titles.exists(title, title == f._unique_key || title.startsWith(f._unique_key + " ["))).as(needs_cases,
+                  state.with({"step": 4, "process_findings": updated_process_findings, "finding_index": 0,
+                    "details_skip": 0, "instance_index": 0,
+                    "case_created": false, "sync_mode": (needs_cases ? "cases_only" : "alerts"),
+                    "all_current_keys": updated_all_keys,
+                    "cases_to_delete": stale_ids, "delete_index": 0, "want_more": true,
+                    "events": [{"_step": 3, "finding_count": size(updated_process_findings), "stale_count": size(stale_ids), "story": "Finished discovery with " + string(size(updated_process_findings)) + " findings to process (" + (needs_cases ? "creating missing cases first, then attaching alerts" : "cases already exist; attaching missing alerts") + ") and " + string(size(stale_ids)) + " stale cases prepared for cleanup."}]})) :
+                size(stale_ids) > 0 ?
+                  state.with({"step": 9, "process_findings": [], "cases_to_delete": stale_ids, "delete_index": 0,
+                    "all_current_keys": updated_all_keys,
+                    "want_more": true,
+                    "events": [{"_step": 3, "finding_count": 0, "stale_count": size(stale_ids), "story": "No active findings remained; moving to stale case deletion for " + string(size(stale_ids)) + " cases."}]}) :
+                state.with({"step": 1, "want_more": false, "process_findings": [], "cases_to_delete": [],
+                  "all_current_keys": [],
+                  "events": [{"_step": 3, "info": "All cases in sync, nothing to do", "story": "Sync finished early because existing cases already match current BloodHound findings."}]})
+              )
+            )
+          )
+        )
+      ) :
+      (int(state.tag_index) + 1 < size(state.domains[int(state.domain_index)].tags) ?
+        state.with({"step": 3, "tag_index": int(state.tag_index) + 1, "want_more": true,
+          "events": [{"info": "No types found, advancing tag", "_step": 3, "_domain": string(state.domains[int(state.domain_index)].name), "_raw": string(resp.Body), "story": "No finding types were returned for domain '" + string(state.domains[int(state.domain_index)].name) + "' current zone; advancing to the next tag."}]}) :
+      int(state.domain_index) + 1 < size(state.domains) ?
+        state.with({"step": 3, "domain_index": int(state.domain_index) + 1, "tag_index": 0, "want_more": true,
+          "events": [{"info": "No types found, advancing domain", "_step": 3, "_domain": string(state.domains[int(state.domain_index)].name), "_raw": string(resp.Body), "story": "No finding types were returned for domain '" + string(state.domains[int(state.domain_index)].name) + "'; advancing to the next domain."}]}) :
+      state.existing_bh_cases.filter(c,
+        !state.all_current_keys.exists(k, c.title == k || c.title.startsWith(k + " ["))
+      ).map(c, c.id).as(stale_ids,
+        size(state.process_findings) > 0 ?
+          state.process_findings.exists(f, !state.existing_case_titles.exists(title, title == f._unique_key || title.startsWith(f._unique_key + " ["))).as(needs_cases,
+          state.with({"step": 4, "finding_index": 0, "details_skip": 0, "instance_index": 0,
+            "case_created": false, "sync_mode": (needs_cases ? "cases_only" : "alerts"),
+            "cases_to_delete": stale_ids, "delete_index": 0,
+            "want_more": true,
+            "events": [{"_step": 3, "finding_count": size(state.process_findings), "stale_count": size(stale_ids), "story": "Completed domain scan with " + string(size(state.process_findings)) + " findings to process (" + (needs_cases ? "creating missing cases first, then attaching alerts" : "cases already exist; attaching missing alerts") + ") and " + string(size(stale_ids)) + " stale cases for next steps."}]})) :
+        size(stale_ids) > 0 ?
+          state.with({"step": 9, "process_findings": [], "cases_to_delete": stale_ids, "delete_index": 0,
+            "want_more": true,
+            "events": [{"_step": 3, "stale_count": size(stale_ids), "story": "No active findings remained; moving directly to stale case deletion for " + string(size(stale_ids)) + " cases."}]}) :
+        state.with({"step": 1, "want_more": false, "process_findings": [], "cases_to_delete": [],
+          "all_current_keys": [],
+          "events": [{"_step": 3, "info": "All cases in sync, nothing to do", "story": "Sync finished with no changes because everything is already in sync."}]})
+      ))
+    )) :
+
+  current_step == 4 ?
+    (has(parsed_body.data) ?
+      (type(parsed_body.data) == list ?
+        (size(parsed_body.data) > 0 ? parsed_body.data[0] : {}) :
+        parsed_body.data
+      ) : {}
+    ).as(finding_detail,
+      state.process_findings.map(f,
+        f._unique_key == cur_finding._unique_key ?
+          f.with({
+            "finding_title": (has(finding_detail.title) ? string(finding_detail.title) : ""),
+            "finding_type_label": (has(finding_detail.type) ? string(finding_detail.type) : ""),
+            "short_description": (has(finding_detail.short_description) ? string(finding_detail.short_description) : ""),
+            "long_description": (has(finding_detail.long_description) ? string(finding_detail.long_description) : ""),
+            "short_remediation": (has(finding_detail.short_remediation) ? string(finding_detail.short_remediation) : ""),
+            "long_remediation": (has(finding_detail.long_remediation) ? string(finding_detail.long_remediation) : ""),
+            "references": (has(finding_detail.references) ? string(finding_detail.references) : "")
+          }) : f
+      ).as(updated_findings,
+        state.with({"step": 5, "process_findings": updated_findings, "details_skip": 0, "want_more": true,
+          "events": [{"_step": 4, "_uri": uri, "story": "Loaded finding metadata including title, descriptions, remediation, and references."}]})
+      )
+    ) :
+
+  current_step == 5 ?
+    (has(parsed_body.data) && type(parsed_body.data) == list ?
+      (has(cur_finding._instances) ? cur_finding._instances : []).as(existing_instances,
+        (existing_instances + parsed_body.data).as(merged_instances,
+          (size(merged_instances) > 0 && has(merged_instances[0].Severity) ?
+            (string(merged_instances[0].Severity) == "moderate" ? "medium" : string(merged_instances[0].Severity)) : "low").as(page_severity,
+          (size(merged_instances) > 0 && has(merged_instances[0].finding_info) && has(merged_instances[0].finding_info.tier) ?
+            string(merged_instances[0].finding_info.tier) :
+            (has(cur_finding._asset_group_tag_name) && cur_finding._asset_group_tag_name != "" ?
+              string(cur_finding._asset_group_tag_name) : "")).as(page_tier,
+          state.process_findings.map(f,
+            f._unique_key == cur_finding._unique_key ?
+              f.with({
+                "_instances": (has(state.sync_mode) && string(state.sync_mode) == "cases_only" ? [] : merged_instances),
+                "_instance_count": (has(parsed_body.count) ? int(parsed_body.count) : size(merged_instances)),
+                "_severity": page_severity,
+                "_tier_tag": page_tier
+              }) : f
+          ).as(updated_findings,
+            has(state.sync_mode) && string(state.sync_mode) == "cases_only" ?
+              state.with({"step": 6, "process_findings": updated_findings, "details_skip": 0, "instance_index": 0,
+                "case_part": 1, "alerts_on_case": 0, "case_created": false, "want_more": true,
+                "events": [{"_step": 5, "_uri": uri, "story": "Fetched severity for finding type '" + string(cur_finding.type) + "' (" + string(has(parsed_body.count) ? int(parsed_body.count) : size(merged_instances)) + " instances). Creating the Kibana case now before attaching alerts."}]}) :
+            int(state.details_skip) + size(parsed_body.data) < int(parsed_body.count) ?
+              state.with({"step": 5, "process_findings": updated_findings,
+                "details_skip": int(state.details_skip) + size(parsed_body.data),
+                "want_more": true,
+                "events": [{"_step": 5, "_uri": uri, "story": "Fetched more instances for finding type '" + string(cur_finding.type) + "' in domain '" + string(cur_finding._domain_name) + "' and BloodHound Enterprise zone '" + string(cur_finding._asset_group_tag_name) + "'. Collected " + string(size(merged_instances)) + " of " + string(int(parsed_body.count)) + " instances so far."}]}) :
+              state.with({"step": 6, "process_findings": updated_findings, "details_skip": 0, "instance_index": 0,
+                "case_part": 1, "alerts_on_case": 0, "want_more": true,
+                "events": [{"_step": 5, "_uri": uri, "story": "Finished instance collection for finding type '" + string(cur_finding.type) + "' in domain '" + string(cur_finding._domain_name) + "' and BloodHound Enterprise zone '" + string(cur_finding._asset_group_tag_name) + "'. Total instances collected: " + string(size(merged_instances)) + "."}]})
+          )
+          )
+          )
+        )
+      )
+    :
+      state.process_findings.map(f,
+        f._unique_key == cur_finding._unique_key ?
+          f.with({"_instances": [], "_instance_count": 0, "_severity": "low", "_tier_tag": ""}) : f
+      ).as(updated_findings,
+        state.with({"step": 6, "process_findings": updated_findings, "details_skip": 0, "instance_index": 0,
+          "case_part": 1, "alerts_on_case": 0, "want_more": true,
+          "events": [{"_step": 5, "_uri": uri, "info": "No instances found", "story": "No instances were returned for finding type '" + string(cur_finding.type) + "' in domain '" + string(cur_finding._domain_name) + "' and BloodHound Enterprise zone '" + string(cur_finding._asset_group_tag_name) + "', so sync continues without alert attachments."}]})
+      )
+    ) :
+
+  current_step == 6 ?
+    ((has(parsed_body.id) ?
+      string(parsed_body.id) :
+      (state.existing_case_titles.exists(t, t == case_key) ?
+        string(state.existing_bh_cases.filter(c, c.title == case_key).map(c, c.id)[0]) : "")
+    ).as(resolved_case_id,
+      resolved_case_id != "" && has(state.sync_mode) && string(state.sync_mode) == "cases_only" ?
+        (int(state.finding_index) + 1 < size(state.process_findings) ?
+          state.with({"step": 4, "finding_index": int(state.finding_index) + 1, "details_skip": 0, "instance_index": 0,
+            "case_part": 1, "alerts_on_case": 0, "case_created": false, "current_case_id": "",
+            "existing_case_titles": (state.existing_case_titles.exists(t, t == case_key) ? state.existing_case_titles : state.existing_case_titles + [case_key]),
+            "existing_bh_cases": (state.existing_bh_cases.exists(c, c.id == resolved_case_id) ? state.existing_bh_cases : state.existing_bh_cases + [{"id": resolved_case_id, "title": case_key, "tags": ["BloodHound Enterprise", tenant_tag]}]),
+            "want_more": true,
+            "events": [{"_step": 6, "_uri": uri, "case_id": resolved_case_id, "case_key": case_key, "story": "Created case for finding type '" + string(cur_finding.type) + "'. Moving to the next finding to create remaining cases first."}]}) :
+        state.with({"step": 5, "finding_index": 0, "details_skip": 0, "instance_index": 0,
+          "case_part": 1, "alerts_on_case": 0, "case_created": true, "sync_mode": "alerts", "current_case_id": "",
+          "existing_case_titles": (state.existing_case_titles.exists(t, t == case_key) ? state.existing_case_titles : state.existing_case_titles + [case_key]),
+          "existing_bh_cases": (state.existing_bh_cases.exists(c, c.id == resolved_case_id) ? state.existing_bh_cases : state.existing_bh_cases + [{"id": resolved_case_id, "title": case_key, "tags": ["BloodHound Enterprise", tenant_tag]}]),
+          "want_more": true,
+          "events": [{"_step": 6, "_uri": uri, "case_id": resolved_case_id, "case_key": case_key, "story": "All new cases are created. Starting alert attachment pass for " + string(size(state.process_findings)) + " findings."}]})) :
+      resolved_case_id != "" && has(cur_finding._instances) && size(cur_finding._instances) > 0 ?
+        state.with({"step": 7, "current_case_id": resolved_case_id,
+          "instance_index": int(state.instance_index), "case_created": true,
+          "existing_case_titles": (state.existing_case_titles.exists(t, t == case_key) ? state.existing_case_titles : state.existing_case_titles + [case_key]),
+          "existing_bh_cases": (state.existing_bh_cases.exists(c, c.id == resolved_case_id) ? state.existing_bh_cases : state.existing_bh_cases + [{"id": resolved_case_id, "title": case_key, "tags": ["BloodHound Enterprise", tenant_tag]}]),
+          "pending_alert_ids": [], "pending_alert_indices": [], "want_more": true,
+          "events": [{"_step": 6, "_uri": uri, "case_id": resolved_case_id, "case_key": case_key, "case_part": int(state.case_part), "instance_index": int(state.instance_index), "instances": size(cur_finding._instances), "story": "Resolved the target case (create or reuse) and started indexing instance alerts for attachment."}]}) :
+      resolved_case_id != "" ?
+        (int(state.finding_index) + 1 < size(state.process_findings) ?
+          state.with({"step": 4, "finding_index": int(state.finding_index) + 1, "details_skip": 0, "instance_index": 0,
+            "case_part": 1, "alerts_on_case": 0, "case_created": false, "want_more": true,
+            "events": [{"_step": 6, "_uri": uri, "case_id": resolved_case_id, "info": "No instances to attach", "story": "Case was resolved successfully, but this finding had no instances to attach as alerts."}]}) :
+        size(state.cases_to_delete) > 0 ?
+          state.with({"step": 9, "delete_index": 0, "want_more": true,
+            "events": [{"_step": 6, "_uri": uri, "case_id": resolved_case_id, "story": "Case processing finished and sync moved to stale case cleanup."}]}) :
+          state.with({"step": 1, "want_more": false, "process_findings": [], "cases_to_delete": [],
+            "all_current_keys": [],
+            "events": [{"_step": 6, "_uri": uri, "case_id": resolved_case_id, "story": "Case processing finished and this sync run completed."}]})) :
+        (int(state.finding_index) + 1 < size(state.process_findings) ?
+          state.with({"step": 4, "finding_index": int(state.finding_index) + 1, "details_skip": 0, "instance_index": 0,
+            "case_part": 1, "alerts_on_case": 0, "case_created": false, "want_more": true,
+            "events": [{"error": "Case resolution failed", "_body": string(resp.Body), "_step": 6, "story": "Case creation or lookup failed, so sync skipped this finding and moved on."}]}) :
+        size(state.cases_to_delete) > 0 ?
+          state.with({"step": 9, "delete_index": 0, "want_more": true,
+            "events": [{"error": "Case resolution failed", "_body": string(resp.Body), "_step": 6, "story": "Case creation or lookup failed, then sync moved to stale case deletion."}]}) :
+          state.with({"step": 1, "want_more": false, "process_findings": [], "cases_to_delete": [],
+            "all_current_keys": [],
+            "events": [{"error": "Case resolution failed", "_body": string(resp.Body), "_step": 6, "story": "Case creation or lookup failed and sync ended this run."}]}))
+    )) :
+
+  current_step == 7 ?
+    (has(parsed_body.items) ?
+      parsed_body.items.filter(it, has(it.index) && has(it.index._id) && (!has(it.index.status) || int(it.index.status) < 300)).as(ok_items,
+        ok_items.map(it, string(it.index._id)).as(new_ids,
+        ok_items.map(it, string(it.index._index)).as(new_indices,
+          size(new_ids) > 0 ?
+            state.with({"step": 8,
+              "instance_index": int(state.instance_index) + size(new_ids),
+              "pending_alert_ids": new_ids, "pending_alert_indices": new_indices, "want_more": true,
+              "events": [{"_step": 7, "_uri": uri, "pending": size(new_ids), "info": "Bulk indexed alerts", "story": "Bulk indexed " + string(size(new_ids)) + " alerts and attaching them to the case."}]}) :
+          int(state.instance_index) < size(cur_finding._instances) ?
+            state.with({"step": 7, "instance_index": int(state.instance_index) + 1, "want_more": true,
+              "events": [{"error": "Alert bulk produced no ids", "_body": string(resp.Body), "_step": 7, "story": "Bulk alert indexing returned no usable ids; skipped one instance and continued."}]}) :
+          int(state.finding_index) + 1 < size(state.process_findings) ?
+            state.with({"step": 5, "finding_index": int(state.finding_index) + 1, "details_skip": 0, "instance_index": 0,
+              "case_part": 1, "alerts_on_case": 0, "sync_mode": "alerts",
+              "pending_alert_ids": [], "pending_alert_indices": [], "want_more": true,
+              "events": [{"error": "Alert bulk produced no ids", "_step": 7, "story": "Bulk alert indexing failed for this finding; moving to the next finding."}]}) :
+            state.with({"step": 1, "want_more": false, "process_findings": [], "cases_to_delete": [],
+              "all_current_keys": [], "pending_alert_ids": [], "pending_alert_indices": [],
+              "events": [{"error": "Alert bulk produced no ids", "_step": 7, "story": "Bulk alert indexing failed and no further work remained."}]})
+        ))
+      ) :
+      int(state.finding_index) + 1 < size(state.process_findings) ?
+        state.with({"step": 5, "finding_index": int(state.finding_index) + 1, "details_skip": 0, "instance_index": 0,
+          "case_part": 1, "alerts_on_case": 0, "sync_mode": "alerts",
+          "pending_alert_ids": [], "pending_alert_indices": [], "want_more": true,
+          "events": [{"error": "Alert bulk indexing failed", "_body": string(resp.Body), "_step": 7, "story": "Bulk alert indexing request failed; moving to the next finding."}]}) :
+        state.with({"step": 1, "want_more": false, "process_findings": [], "cases_to_delete": [],
+          "all_current_keys": [], "pending_alert_ids": [], "pending_alert_indices": [],
+          "events": [{"error": "Alert bulk indexing failed", "_body": string(resp.Body), "_step": 7, "story": "Bulk alert indexing failed and sync ended."}]})
+    ) :
+  current_step == 8 ?
+    (has(parsed_body.id) && !has(parsed_body.statusCode) ?
+      (int(parsed_body.totalAlerts) >= 1000 ?
+        (int(state.instance_index) < size(cur_finding._instances) ?
+          state.with({"step": 6, "case_part": int(state.case_part) + 1, "alerts_on_case": 0,
+            "current_case_id": "",
+            "pending_alert_ids": [], "pending_alert_indices": [], "want_more": true,
+            "events": [{"_step": 8, "_uri": uri, "attached_count": size(state.pending_alert_ids), "case_total_alerts": parsed_body.totalAlerts, "next_case_part": int(state.case_part) + 1, "instance_index": int(state.instance_index), "info": "Case at 1000 alert limit, opening overflow case", "story": "Current case hit Kibana's 1000-alert limit, so sync opened an overflow case and continued from the same instance position."}]}) :
+        int(state.finding_index) + 1 < size(state.process_findings) ?
+          state.with({"step": 5, "finding_index": int(state.finding_index) + 1, "details_skip": 0, "instance_index": 0,
+            "case_part": 1, "alerts_on_case": 0, "sync_mode": "alerts",
+            "pending_alert_ids": [], "pending_alert_indices": [], "want_more": true,
+            "events": [{"_step": 8, "_uri": uri, "attached_count": size(state.pending_alert_ids), "case_total_alerts": parsed_body.totalAlerts, "story": "Attached the buffered alerts to the case and moved to the next finding."}]}) :
+        size(state.cases_to_delete) > 0 ?
+          state.with({"step": 9, "delete_index": 0, "pending_alert_ids": [], "pending_alert_indices": [], "want_more": true,
+            "events": [{"_step": 8, "_uri": uri, "attached_count": size(state.pending_alert_ids), "story": "Attached the final alerts and moved to stale case cleanup."}]}) :
+          state.with({"step": 1, "want_more": false, "process_findings": [], "cases_to_delete": [],
+            "all_current_keys": [], "pending_alert_ids": [], "pending_alert_indices": [],
+            "events": [{"_step": 8, "_uri": uri, "attached_count": size(state.pending_alert_ids), "info": "Sync complete", "story": "Attached the final alerts and completed the sync run."}]})) :
+      int(state.instance_index) < size(cur_finding._instances) ?
+        state.with({"step": 7, "alerts_on_case": int(parsed_body.totalAlerts),
+          "pending_alert_ids": [], "pending_alert_indices": [], "want_more": true,
+          "events": [{"_step": 8, "_uri": uri, "attached_count": size(state.pending_alert_ids), "case_total_alerts": parsed_body.totalAlerts, "story": "Attached the current batch and returned to indexing remaining instances for this finding."}]}) :
+      int(state.finding_index) + 1 < size(state.process_findings) ?
+        state.with({"step": 5, "finding_index": int(state.finding_index) + 1, "details_skip": 0, "instance_index": 0,
+          "case_part": 1, "alerts_on_case": 0, "sync_mode": "alerts",
+          "pending_alert_ids": [], "pending_alert_indices": [], "want_more": true,
+          "events": [{"_step": 8, "_uri": uri, "attached_count": size(state.pending_alert_ids), "case_total_alerts": parsed_body.totalAlerts, "story": "Attachment completed for this finding and sync advanced to the next finding."}]}) :
+      size(state.cases_to_delete) > 0 ?
+        state.with({"step": 9, "delete_index": 0, "pending_alert_ids": [], "pending_alert_indices": [], "want_more": true,
+          "events": [{"_step": 8, "_uri": uri, "attached_count": size(state.pending_alert_ids), "story": "Attachment flow finished and sync moved to stale case deletion."}]}) :
+        state.with({"step": 1, "want_more": false, "process_findings": [], "cases_to_delete": [],
+          "all_current_keys": [], "pending_alert_ids": [], "pending_alert_indices": [],
+          "events": [{"_step": 8, "_uri": uri, "attached_count": size(state.pending_alert_ids), "info": "Sync complete", "story": "Attachment flow finished and sync completed successfully."}]})) :
+      (int(state.instance_index) < size(cur_finding._instances) ?
+        state.with({"step": 7,
+          "pending_alert_ids": [], "pending_alert_indices": [], "want_more": true,
+          "events": [{"error": "Alert attach failed", "_body": string(resp.Body), "_step": 8, "story": "Case attachment failed for the current batch, so sync returned to indexing flow to continue safely."}]}) :
+      int(state.finding_index) + 1 < size(state.process_findings) ?
+        state.with({"step": 5, "finding_index": int(state.finding_index) + 1, "details_skip": 0, "instance_index": 0,
+          "case_part": 1, "alerts_on_case": 0, "sync_mode": "alerts",
+          "pending_alert_ids": [], "pending_alert_indices": [], "want_more": true,
+          "events": [{"error": "Alert attach failed", "_body": string(resp.Body), "_step": 8, "story": "Case attachment failed for this finding, so sync moved to the next finding."}]}) :
+      state.with({"step": 1, "want_more": false, "process_findings": [], "cases_to_delete": [],
+        "all_current_keys": [], "pending_alert_ids": [], "pending_alert_indices": [],
+        "events": [{"error": "Alert attach failed", "_body": string(resp.Body), "_step": 8, "story": "Case attachment failed and no additional work remained in this sync run."}]}))
+    ) :
+
+  current_step == 9 ?
+    ((has(parsed_body.errors) && size(parsed_body.errors) > 0) ?
+      (int(state.delete_index) + 1 < size(state.cases_to_delete) ?
+        state.with({"step": 9, "delete_index": int(state.delete_index) + 1, "want_more": true,
+          "events": [{"error": "Stale case delete failed", "_step": 9, "deleted_case_id": string(state.cases_to_delete[int(state.delete_index)]), "_uri": uri, "_body": string(resp.Body), "story": "A stale case delete failed, so sync logged the error and continued cleanup for remaining stale cases."}]}) :
+      state.with({"step": 1, "want_more": false, "process_findings": [], "cases_to_delete": [],
+        "all_current_keys": [],
+        "events": [{"error": "Stale case delete failed", "_step": 9, "deleted_case_id": string(state.cases_to_delete[int(state.delete_index)]), "_body": string(resp.Body), "story": "Stale case cleanup finished with at least one delete failure."}]})) :
+    (int(state.delete_index) + 1 < size(state.cases_to_delete) ?
+      state.with({"step": 9, "delete_index": int(state.delete_index) + 1, "want_more": true,
+        "events": [{"_step": 9, "deleted_case_id": string(state.cases_to_delete[int(state.delete_index)]), "_uri": uri, "story": "Deleted one stale case and continued cleanup for the remaining stale cases."}]}) :
+    state.with({"step": 1, "want_more": false, "process_findings": [], "cases_to_delete": [],
+      "all_current_keys": [],
+      "events": [{"_step": 9, "deleted_case_id": string(state.cases_to_delete[int(state.delete_index)]), "info": "All stale cases deleted", "story": "Stale case cleanup is complete and the sync run is finished."}]}))) :
+
+  state.with({"step": 1, "want_more": false})
+
+  )))))))))))))))
+{{#if preserve_original_event}}
+tags:
+  - preserve_original_event
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{else}}
+tags:
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{/if}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

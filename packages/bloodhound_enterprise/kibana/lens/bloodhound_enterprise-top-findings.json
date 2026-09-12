@@ -1,0 +1,105 @@
+{
+    "id": "bloodhound_enterprise-top-findings",
+    "type": "lens",
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "8.9.0",
+    "attributes": {
+        "title": "[Logs BloodHound Enterprise] Top attack path findings",
+        "description": "Top BloodHound finding types from case/alert sync",
+        "visualizationType": "lnsXY",
+        "state": {
+            "visualization": {
+                "legend": {
+                    "isVisible": true,
+                    "position": "right"
+                },
+                "valueLabels": "hide",
+                "preferredSeriesType": "bar_horizontal",
+                "layers": [
+                    {
+                        "layerId": "layer_panel_top_findings",
+                        "accessors": [
+                            "count_panel_top_findings"
+                        ],
+                        "position": "top",
+                        "seriesType": "bar_horizontal",
+                        "layerType": "data",
+                        "xAccessor": "terms_panel_top_findings"
+                    }
+                ]
+            },
+            "query": {
+                "language": "kuery",
+                "query": "kibana.alert.rule.name:\"BloodHound Enterprise\""
+            },
+            "filters": [],
+            "datasourceStates": {
+                "formBased": {
+                    "layers": {
+                        "layer_panel_top_findings": {
+                            "columns": {
+                                "terms_panel_top_findings": {
+                                    "label": "Finding",
+                                    "customLabel": true,
+                                    "dataType": "string",
+                                    "operationType": "terms",
+                                    "sourceField": "event.action",
+                                    "isBucketed": true,
+                                    "params": {
+                                        "size": 10,
+                                        "orderBy": {
+                                            "type": "column",
+                                            "columnId": "count_panel_top_findings"
+                                        },
+                                        "orderDirection": "desc",
+                                        "otherBucket": true,
+                                        "missingBucket": false,
+                                        "parentFormat": {
+                                            "id": "terms"
+                                        },
+                                        "include": [],
+                                        "exclude": [],
+                                        "includeIsRegex": false,
+                                        "excludeIsRegex": false,
+                                        "accuracyMode": true
+                                    }
+                                },
+                                "count_panel_top_findings": {
+                                    "label": "Count of records",
+                                    "dataType": "number",
+                                    "operationType": "count",
+                                    "isBucketed": false,
+                                    "sourceField": "___records___",
+                                    "params": {
+                                        "emptyAsNull": true
+                                    }
+                                }
+                            },
+                            "columnOrder": [
+                                "terms_panel_top_findings",
+                                "count_panel_top_findings"
+                            ],
+                            "incompleteColumns": {},
+                            "sampling": 1
+                        }
+                    }
+                },
+                "indexpattern": {
+                    "layers": {}
+                },
+                "textBased": {
+                    "layers": {}
+                }
+            },
+            "internalReferences": [],
+            "adHocDataViews": {}
+        }
+    },
+    "references": [
+        {
+            "id": "bloodhound_enterprise-alerts",
+            "name": "indexpattern-datasource-layer-layer_panel_top_findings",
+            "type": "index-pattern"
+        }
+    ]
+}
