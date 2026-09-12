@@ -1,0 +1,63 @@
+format_version: "3.4.2"
+name: mqtt
+title: Custom MQTT Input
+description: Collect logs, metrics or traces from an MQTT broker with Elastic Agent.
+type: integration
+version: "0.1.0"
+source:
+  license: "Elastic-2.0"
+conditions:
+  kibana:
+    version: "^8.19.0 || ^9.1.0"
+  elastic:
+    subscription: "basic"
+categories:
+  - custom
+  - message_queue
+policy_templates:
+  - name: mqtt
+    title: Custom MQTT Input
+    description: Subscribe to topics on an MQTT broker.
+    inputs:
+      - type: mqtt
+        title: Collect data from an MQTT broker
+        description: Subscribe to one or more topics and route each message to the data stream you choose.
+        vars:
+          - name: hosts
+            type: text
+            title: Broker Hosts
+            description: |
+              MQTT broker URIs to connect to, for example `tcp://localhost:1883`. Use the `ssl://` scheme for TLS connections.
+            required: true
+            multi: true
+            show_user: true
+            default:
+              - tcp://localhost:1883
+          - name: username
+            type: text
+            title: Username
+            description: |
+              Username for broker authentication. Leave empty for anonymous access.
+            required: false
+            show_user: true
+          - name: password
+            type: password
+            title: Password
+            description: |
+              Password for broker authentication.
+            required: false
+            secret: true
+            show_user: true
+          - name: ssl
+            type: yaml
+            title: SSL Configuration
+            description: |
+              SSL configuration options. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html#ssl-common-config) for details.
+            required: false
+            show_user: false
+icons:
+  - src: "/img/icon.svg"
+    type: "image/svg+xml"
+owner:
+  github: elastic/integrations-triaging
+  type: elastic
