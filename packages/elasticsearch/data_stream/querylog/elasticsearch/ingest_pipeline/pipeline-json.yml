@@ -1,5 +1,5 @@
 ---
-description: Pipeline for parsing Elasticsearch query log lines as JSON (NDJSON).
+description: Fallback JSON expansion for query log lines that the shipper did not already decode.
 on_failure:
   - set:
       field: error.message
@@ -9,6 +9,7 @@ processors:
       field: message
       target_field: _ecs_json_message
       ignore_missing: true
+      if: ctx.elasticsearch?.querylog == null && ctx.message instanceof String
   - json:
       field: _ecs_json_message
       add_to_root: true
