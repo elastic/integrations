@@ -259,13 +259,15 @@ processors:
   ###
   - grok:
       tag: grok_message_6b8b95f5
-      description: DTL-4-ARP_ORPHANPKT_DETECTED, Dot1x_NW_MsgTask_4
-      field: message
+      description: Strict parsing for ARP orphan and NTP packet rejection messages
+      field: _temp_.full_message
       if: >-
         ctx._temp_?.reason == 'DTL-4-ARP_ORPHANPKT_DETECTED' ||
-        ctx._temp_?.reason == 'LOG-4-Q_IND'
+        ctx._temp_?.reason == 'LOG-4-Q_IND' ||
+        ctx._temp_?.reason == 'SNTP-4-PKT_REJECTED'
       patterns:
-        - "STA\\(Target MAC Address\\) \\[%{MAC:client.mac}.*?\\] %{DATA:event.reason}\\(Source IP Address\\) %{IP:client.ip}%{DATA}\\(Destination IP Address\\) %{IP:server.ip}"
+        - '^(?:DTL-4-ARP_ORPHANPKT_DETECTED|LOG-4-Q_IND): (?:(?:\[PA\])?%{NOTSPACE}:%{NONNEGINT} )?STA\(Target MAC Address\) \[%{MAC:client.mac}.*?\] %{DATA:event.reason}\(Source IP Address\) %{IP:client.ip}%{DATA}\(Destination IP Address\) %{IP:server.ip}(?:\[\.\.\.It occurred %{NONNEGINT} times\.!\])?$'
+        - '^(?:LOG-4-Q_IND|SNTP-4-PKT_REJECTED): (?:(?:\[PA\])?%{NOTSPACE:cisco.sntp.source_file}:%{NONNEGINT:cisco.sntp.source_line:int} )?(?:(?:[^\r\n]+\.)|(?:[^\s.]+\s+))?NTP packet rejected on socket %{NONNEGINT:cisco.sntp.socket_id:int}\.?(?:\[\.\.\.It occurred %{NONNEGINT} times\.!\])?$'
       ignore_failure: false
   - grok:
       tag: grok_message_757b5cf5
