@@ -1,0 +1,200 @@
+[
+  {
+    "id": "dentigrid-rule-internal-lateral-movement",
+    "name": "DentiGrid Deception: Internal Lateral Movement Intercept",
+    "description": "Detects internal hosts interacting with DentiGrid honeynet decoy services (SMB, RDP, SSH, MSRPC). Indicates confirmed lateral movement or internal network compromise with zero false positives.",
+    "risk_score": 95,
+    "severity": "critical",
+    "type": "query",
+    "language": "kuery",
+    "query": "event.dataset: \"dentigrid.threat\" and network.direction: \"internal\" and event.severity >= 7",
+    "index": [
+      "logs-dentigrid.threat-*"
+    ],
+    "interval": "5m",
+    "from": "now-6m",
+    "threat": [
+      {
+        "framework": "MITRE ATT&CK",
+        "tactic": {
+          "id": "TA0008",
+          "name": "Lateral Movement",
+          "reference": "https://attack.mitre.org/tactics/TA0008/"
+        },
+        "technique": [
+          {
+            "id": "T1021.002",
+            "name": "SMB/Windows Admin Shares",
+            "reference": "https://attack.mitre.org/techniques/T1021/002/"
+          },
+          {
+            "id": "T1021.001",
+            "name": "Remote Desktop Protocol",
+            "reference": "https://attack.mitre.org/techniques/T1021/001/"
+          }
+        ]
+      }
+    ],
+    "tags": [
+      "DentiGrid",
+      "Active Deception",
+      "Lateral Movement",
+      "Zero False Positive"
+    ]
+  },
+  {
+    "id": "dentigrid-rule-honey-credential-abuse",
+    "name": "DentiGrid Deception: Honey Credential or Kerberoast SPN Abuse",
+    "description": "Detects authentication attempts utilizing synthetic honey tokens, canary domain admin credentials, or fake Kerberoastable SPNs created by DentiGrid.",
+    "risk_score": 90,
+    "severity": "critical",
+    "type": "query",
+    "language": "kuery",
+    "query": "event.dataset: \"dentigrid.threat\" and threat.indicator.type: \"honeypot_detection\" and user.name: *",
+    "index": [
+      "logs-dentigrid.threat-*"
+    ],
+    "interval": "5m",
+    "from": "now-6m",
+    "threat": [
+      {
+        "framework": "MITRE ATT&CK",
+        "tactic": {
+          "id": "TA0006",
+          "name": "Credential Access",
+          "reference": "https://attack.mitre.org/tactics/TA0006/"
+        },
+        "technique": [
+          {
+            "id": "T1078.002",
+            "name": "Domain Accounts",
+            "reference": "https://attack.mitre.org/techniques/T1078/002/"
+          }
+        ]
+      }
+    ],
+    "tags": [
+      "DentiGrid",
+      "Honey Token",
+      "Credential Access"
+    ]
+  },
+  {
+    "id": "dentigrid-rule-ransomware-staging",
+    "name": "DentiGrid Deception: Ransomware Stager Dropped on Canary Share",
+    "description": "Detects executable payload creation, binary writes, or high-entropy file encryption activity on DentiGrid canary network shares.",
+    "risk_score": 100,
+    "severity": "critical",
+    "type": "query",
+    "language": "kuery",
+    "query": "event.dataset: \"dentigrid.threat\" and (file.path: * or dentigrid.deception.heuristic_classification: *)",
+    "index": [
+      "logs-dentigrid.threat-*"
+    ],
+    "interval": "1m",
+    "from": "now-2m",
+    "threat": [
+      {
+        "framework": "MITRE ATT&CK",
+        "tactic": {
+          "id": "TA0040",
+          "name": "Impact",
+          "reference": "https://attack.mitre.org/tactics/TA0040/"
+        },
+        "technique": [
+          {
+            "id": "T1486",
+            "name": "Data Encrypted for Impact",
+            "reference": "https://attack.mitre.org/techniques/T1486/"
+          },
+          {
+            "id": "T1570",
+            "name": "Lateral Tool Transfer",
+            "reference": "https://attack.mitre.org/techniques/T1570/"
+          }
+        ]
+      }
+    ],
+    "tags": [
+      "DentiGrid",
+      "Ransomware Staging",
+      "Canary Share",
+      "Critical Response"
+    ]
+  },
+  {
+    "id": "dentigrid-rule-recon-port-scan",
+    "name": "DentiGrid Deception: Subnet Port Scan & Reconnaissance Intercept",
+    "description": "Detects host port scanning, SYN sweeps, or service discovery sweeps touching low-interaction DentiGrid deception endpoints.",
+    "risk_score": 50,
+    "severity": "medium",
+    "type": "query",
+    "language": "kuery",
+    "query": "event.dataset: \"dentigrid.threat\" and threat.technique.id: \"T1046\"",
+    "index": [
+      "logs-dentigrid.threat-*"
+    ],
+    "interval": "5m",
+    "from": "now-6m",
+    "threat": [
+      {
+        "framework": "MITRE ATT&CK",
+        "tactic": {
+          "id": "TA0007",
+          "name": "Discovery",
+          "reference": "https://attack.mitre.org/tactics/TA0007/"
+        },
+        "technique": [
+          {
+            "id": "T1046",
+            "name": "Network Service Discovery",
+            "reference": "https://attack.mitre.org/techniques/T1046/"
+          }
+        ]
+      }
+    ],
+    "tags": [
+      "DentiGrid",
+      "Reconnaissance",
+      "Discovery"
+    ]
+  },
+  {
+    "id": "dentigrid-rule-psexec-service-creation",
+    "name": "DentiGrid Deception: Remote Service Creation (PsExec Style) on Decoy Host",
+    "description": "Detects remote service installation or WMI execution attempts directed at emulated DentiGrid Windows Server decoys.",
+    "risk_score": 95,
+    "severity": "critical",
+    "type": "query",
+    "language": "kuery",
+    "query": "event.dataset: \"dentigrid.threat\" and threat.technique.id: \"T1569.002\"",
+    "index": [
+      "logs-dentigrid.threat-*"
+    ],
+    "interval": "2m",
+    "from": "now-3m",
+    "threat": [
+      {
+        "framework": "MITRE ATT&CK",
+        "tactic": {
+          "id": "TA0002",
+          "name": "Execution",
+          "reference": "https://attack.mitre.org/tactics/TA0002/"
+        },
+        "technique": [
+          {
+            "id": "T1569.002",
+            "name": "Service Execution",
+            "reference": "https://attack.mitre.org/techniques/T1569/002/"
+          }
+        ]
+      }
+    ],
+    "tags": [
+      "DentiGrid",
+      "PsExec",
+      "Execution",
+      "Active Deception"
+    ]
+  }
+]

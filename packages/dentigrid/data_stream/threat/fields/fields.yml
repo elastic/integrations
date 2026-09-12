@@ -1,0 +1,61 @@
+- name: dentigrid
+  type: group
+  description: "DentiGrid specific deception and threat telemetry fields."
+  fields:
+    - name: node_id
+      type: keyword
+      description: "Identifier of the DentiGrid deception node or sensor cluster."
+      example: "dg-sensor-east-dc01"
+    - name: sensor_id
+      type: keyword
+      description: "Hardware or container sensor instance ID."
+      example: "dg-node-sec-cluster-04"
+    - name: signature_id
+      type: keyword
+      description: "Unique DentiGrid signature identifier."
+      example: "DG-SIG-1046-SCAN"
+    - name: threat_type
+      type: keyword
+      description: "Classification of deception trap interaction (e.g., honeypot_detection, canary_access)."
+      example: "honeypot_detection"
+    - name: category
+      type: keyword
+      description: "Threat category (reconnaissance, lateral_movement, credential_access, ransomware_staging)."
+      example: "lateral_movement"
+    - name: deception
+      type: group
+      description: "Deep deception context and decoy parameters."
+      fields:
+        - name: honey_service
+          type: keyword
+          description: "Name of the emulated decoy service or fabric component."
+          example: "DentiGrid Active Deception Fabric"
+        - name: trap_type
+          type: keyword
+          description: "Type of active deception trap (e.g., low_interaction_port, canary_share, honey_spn)."
+          example: "canary_share"
+        - name: share_path
+          type: keyword
+          description: "Decoy network share path accessed by attacker."
+          example: '\\\\10.240.12.190\\ADMIN$'
+        - name: raw_payload
+          type: text
+          description: "Raw protocol command, payload, or binary snippet captured by sensor."
+          example: 'SMB2_TREE_CONNECT_REQ Path: \\\\10.240.12.190\\ADMIN$'
+        - name: quarantine_status
+          type: keyword
+          description: "Automated response status (e.g., ISOLATED, BLOCKED, MONITORED)."
+          example: "ISOLATED"
+        - name: heuristic_classification
+          type: keyword
+          description: "Edge-AI classification for staged payloads."
+          example: "Ransomware.Win64.LockBitVariant.Stager"
+
+- name: ecs
+  type: group
+  description: "Elastic Common Schema (ECS) standard mappings."
+  fields:
+    - name: version
+      type: keyword
+      description: "ECS version."
+      example: "8.11.0"
