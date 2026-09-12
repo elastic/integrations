@@ -1,0 +1,321 @@
+rules:
+  # Audit page 3 — cursor termination (partial page, no next link).
+  - path: /api/v1/audit/events
+    methods: ['GET']
+    query_params:
+      limit: "{limit:.*}"
+      sort_by: occurred_at
+      cursor: page3cursor
+    request_headers:
+      Authorization:
+        - 'Bearer xxxx'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {
+            "results": [
+              {
+                "id": "01JNM16ABCDEF012345678901234",
+                "action": "delete",
+                "occurred_at": "2025-03-05T20:51:10.000000Z",
+                "actor_id": "cf40d6e7-20cb-4da9-84a1-9ad0b7003ca5",
+                "actor_type": "user",
+                "target_id": "b1837de4-828e-52c0-b4b0-c8e1c9e1c895",
+                "target_type": "api_token",
+                "target_component": "",
+                "new_state": {
+                  "description": null,
+                  "permissions": [],
+                  "label": "Retired Integration Token"
+                },
+                "metadata": {}
+              }
+            ],
+            "previous": null,
+            "next": null
+          }
+  # Audit page 2 — cursor pagination (full page with next link).
+  - path: /api/v1/audit/events
+    methods: ['GET']
+    query_params:
+      limit: "{limit:.*}"
+      sort_by: occurred_at
+      cursor: page2cursor
+    request_headers:
+      Authorization:
+        - 'Bearer xxxx'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {
+            "results": [
+              {
+                "id": "01JNM1393ZTW3JAPWPRTVNH1JM",
+                "action": "update",
+                "occurred_at": "2025-03-05T20:49:01.319307Z",
+                "actor_id": "cf40d6e7-20cb-4da9-84a1-9ad0b7003ca5",
+                "actor_type": "user",
+                "target_id": "07194cf3-10c1-4b39-aa2b-763133b0347d",
+                "target_type": "library_item",
+                "target_component": "",
+                "new_state": {
+                  "active": false,
+                  "label": null,
+                  "type": "vpp-app",
+                  "name": "Example Podcast App"
+                },
+                "metadata": {}
+              },
+              {
+                "id": "01JNM15XZVZ64S00H7BAZKHE4A",
+                "action": "update",
+                "occurred_at": "2025-03-05T20:50:28.090682Z",
+                "actor_id": "cf40d6e7-20cb-4da9-84a1-9ad0b7003ca5",
+                "actor_type": "user",
+                "target_id": "a0726ca3-717d-41b9-a3af-c7d0bad8b784",
+                "target_type": "api_token",
+                "target_component": "",
+                "new_state": {
+                  "description": null,
+                  "permissions": [
+                    {"path": "/api/v1/audit/events", "http_method": "GET"},
+                    {"path": "/api/v1/devices", "http_method": "GET"}
+                  ],
+                  "label": "Example Integration Token"
+                },
+                "metadata": {}
+              }
+            ],
+            "previous": null,
+            "next": "http://{{ hostname }}:{{ env "PORT" }}/api/v1/audit/events?limit=2&sort_by=occurred_at&cursor=page3cursor"
+          }
+  # Audit page 1 — initial request with start_date watermark.
+  - path: /api/v1/audit/events
+    methods: ['GET']
+    query_params:
+      limit: "{limit:.*}"
+      sort_by: occurred_at
+      start_date: "{start_date:.*}"
+    request_headers:
+      Authorization:
+        - 'Bearer xxxx'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {
+            "results": [
+              {
+                "id": "01JNGZW47KZKPXE1JWCFE4PHDW",
+                "action": "update",
+                "occurred_at": "2025-03-04T16:29:55.253454Z",
+                "actor_id": "cf40d6e7-20cb-4da9-84a1-9ad0b7003ca5",
+                "actor_type": "user",
+                "target_id": "449ec92a-186a-44f2-9421-d5ac6e465eb5",
+                "target_type": "blueprint",
+                "target_component": "library_items",
+                "new_state": {
+                  "name": "Example Blueprint",
+                  "library_items_added": [{"id": "c7a5871a-1683-432f-87d4-30bbd404eb85", "name": "Example App"}],
+                  "library_items_removed": [],
+                  "library_items_scoped": [{"id": "c7a5871a-1683-432f-87d4-30bbd404eb85", "name": "Example App"}]
+                },
+                "metadata": {}
+              },
+              {
+                "id": "01JNGZWQ7WAN45PVTJ3686TXHT",
+                "action": "create",
+                "occurred_at": "2025-03-04T16:30:14.143192Z",
+                "actor_id": "cf40d6e7-20cb-4da9-84a1-9ad0b7003ca5",
+                "actor_type": "user",
+                "target_id": "2b1fd766-3ba4-49ba-9f88-8219d468b34c",
+                "target_type": "blueprint",
+                "target_component": "",
+                "new_state": {
+                  "description": "",
+                  "type": "map",
+                  "name": "Example Assignment Map"
+                },
+                "metadata": {
+                  "source_id": null,
+                  "source": null
+                }
+              }
+            ],
+            "previous": null,
+            "next": "http://{{ hostname }}:{{ env "PORT" }}/api/v1/audit/events?limit=2&sort_by=occurred_at&cursor=page2cursor"
+          }
+  # Device page 3 — offset termination (partial page, fewer than batch_size).
+  - path: /api/v1/devices
+    methods: ['GET']
+    query_params:
+      limit: "{limit:.*}"
+      offset: '4'
+    request_headers:
+      Authorization:
+        - 'Bearer xxxx'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          [
+            {
+              "device_id": "c8a1e240-6b3d-4f91-9e2a-1d5c7b8e4a10",
+              "device_name": "example-iphone",
+              "model": "iPhone 14",
+              "serial_number": "F17L3N00Q6LC",
+              "platform": "iPhone",
+              "os_version": "16.6",
+              "last_check_in": "2024-06-01T09:12:04.221000Z",
+              "user": "",
+              "asset_tag": "",
+              "blueprint_id": "97e4e175-1631-43f6-a02b-33fd1c748ab8",
+              "mdm_enabled": true,
+              "agent_installed": false,
+              "is_missing": false,
+              "is_removed": false,
+              "agent_version": "",
+              "first_enrollment": "2023-11-02 10:00:00.000000+00:00",
+              "last_enrollment": "2023-11-02 10:00:00.000000+00:00",
+              "blueprint_name": "Example Blueprint",
+              "lost_mode_status": "",
+              "tags": []
+            }
+          ]
+  # Device page 2 — offset pagination (full page).
+  - path: /api/v1/devices
+    methods: ['GET']
+    query_params:
+      limit: "{limit:.*}"
+      offset: '2'
+    request_headers:
+      Authorization:
+        - 'Bearer xxxx'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          [
+            {
+              "device_id": "d9b2f351-7c4e-5a02-0f3b-2e6d8c9f5b21",
+              "device_name": "example-imac",
+              "model": "iMac (24-inch, M1, 2021)",
+              "serial_number": "G18M4P00Q7MD",
+              "platform": "Mac",
+              "os_version": "14.5",
+              "last_check_in": "2024-05-15T11:30:00.000000Z",
+              "user": "",
+              "asset_tag": "",
+              "blueprint_id": "97e4e175-1631-43f6-a02b-33fd1c748ab8",
+              "mdm_enabled": true,
+              "agent_installed": true,
+              "is_missing": false,
+              "is_removed": false,
+              "agent_version": "4.4.0 (5000)",
+              "first_enrollment": "2023-09-10 08:00:00.000000+00:00",
+              "last_enrollment": "2024-05-01 12:00:00.000000+00:00",
+              "blueprint_name": "Example Blueprint",
+              "lost_mode_status": "",
+              "tags": ["design"]
+            },
+            {
+              "device_id": "e0c3g462-8d5f-6b13-1g4c-3f7e9d0g6c32",
+              "device_name": "example-mac-mini",
+              "model": "Mac mini (2023)",
+              "serial_number": "H29N5Q00R8NE",
+              "platform": "Mac",
+              "os_version": "14.4",
+              "last_check_in": "2024-04-20T16:45:00.000000Z",
+              "user": "",
+              "asset_tag": "",
+              "blueprint_id": "97e4e175-1631-43f6-a02b-33fd1c748ab8",
+              "mdm_enabled": true,
+              "agent_installed": true,
+              "is_missing": false,
+              "is_removed": false,
+              "agent_version": "4.3.8 (4900)",
+              "first_enrollment": "2023-08-01 14:00:00.000000+00:00",
+              "last_enrollment": "2024-04-10 09:00:00.000000+00:00",
+              "blueprint_name": "Example Blueprint",
+              "lost_mode_status": "",
+              "tags": []
+            }
+          ]
+  # Device page 1 — offset 0.
+  - path: /api/v1/devices
+    methods: ['GET']
+    query_params:
+      limit: "{limit:.*}"
+      offset: '0'
+    request_headers:
+      Authorization:
+        - 'Bearer xxxx'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          [
+            {
+              "device_id": "03f81208-2b6a-4a77-81f5-cf1633bcfb95",
+              "device_name": "example-macbook-pro",
+              "model": "MacBook Pro (14-inch, 2021)",
+              "serial_number": "C02YL00XQ6L4",
+              "platform": "Mac",
+              "os_version": "14.4.1",
+              "last_check_in": "2024-07-23T14:11:37.150080Z",
+              "user": {
+                "email": "user@example.com",
+                "name": "Example User",
+                "id": "5344c996-8823-4b37-8d6e-8515fc7c3a0a",
+                "is_archived": false
+              },
+              "asset_tag": "ASSET-1001",
+              "blueprint_id": "ab102b9d-8e9c-420d-a498-f2a1123091c7",
+              "mdm_enabled": true,
+              "agent_installed": true,
+              "is_missing": false,
+              "is_removed": false,
+              "agent_version": "4.5.9 (5160)",
+              "first_enrollment": "2024-01-26 16:15:36.087016+00:00",
+              "last_enrollment": "2024-05-13 20:09:27.374451+00:00",
+              "blueprint_name": "Example Blueprint",
+              "lost_mode_status": "",
+              "tags": ["engineering"]
+            },
+            {
+              "device_id": "bd4eb679-d679-4071-a395-5855807b6829",
+              "device_name": "example-ipad",
+              "model": "iPad Pro (12.9-inch) (5th generation)",
+              "serial_number": "DMPF2L00Q6LC",
+              "platform": "iPad",
+              "os_version": "16.5.1",
+              "last_check_in": "2023-03-24T00:45:18.674561Z",
+              "user": "",
+              "asset_tag": "",
+              "blueprint_id": "97e4e175-1631-43f6-a02b-33fd1c748ab8",
+              "mdm_enabled": true,
+              "agent_installed": true,
+              "is_missing": false,
+              "is_removed": false,
+              "agent_version": "4.1.3 (3795)",
+              "first_enrollment": "2022-07-21 15:00:06.470889+00:00",
+              "last_enrollment": "2023-03-13 17:29:41.167646+00:00",
+              "blueprint_name": "Example Blueprint",
+              "lost_mode_status": "",
+              "tags": []
+            }
+          ]

@@ -1,0 +1,96 @@
+- name: iru
+  type: group
+  description: Fields from Iru Endpoint.
+  fields:
+    - name: audit
+      type: group
+      description: Fields from Iru tenant Activity audit events.
+      fields:
+        - name: actor
+          type: group
+          description: Actor that performed the audited action.
+          fields:
+            - name: id
+              type: keyword
+              description: Unique identifier of the actor when the actor is not a user.
+            - name: type
+              type: keyword
+              description: Type of actor that performed the action (for example user or api_token).
+        - name: target
+          type: group
+          description: Object that was acted on.
+          fields:
+            - name: component
+              type: keyword
+              description: Sub-section of the target. Empty when the whole object is the target.
+            - name: id
+              type: keyword
+              description: Unique identifier of the object that was acted on.
+            - name: type
+              type: keyword
+              description: Type of object that was acted on (for example blueprint, library_item, or api_token).
+        - name: new_state
+          type: group
+          description: After-state snapshot of the target. Schema varies by target type.
+          fields:
+            - name: active
+              type: boolean
+              description: Whether the target is active.
+            - name: description
+              type: keyword
+              description: Description of the target after the change.
+            - name: label
+              type: keyword
+              description: Label of the target after the change.
+            - name: library_items_added
+              type: group
+              description: Library items added to the target.
+              fields:
+                - name: id
+                  type: keyword
+                  description: Library item identifier.
+                - name: name
+                  type: keyword
+                  description: Library item name.
+            - name: library_items_removed
+              type: group
+              description: Library items removed from the target.
+              fields:
+                - name: id
+                  type: keyword
+                  description: Library item identifier.
+                - name: name
+                  type: keyword
+                  description: Library item name.
+            - name: library_items_scoped
+              type: group
+              description: Library items whose scope changed on the target.
+              fields:
+                - name: id
+                  type: keyword
+                  description: Library item identifier.
+                - name: name
+                  type: keyword
+                  description: Library item name.
+            - name: name
+              type: keyword
+              description: Name of the target after the change.
+            - name: parameters
+              type: flattened
+              description: Blueprint parameters after the change.
+            - name: permissions
+              type: group
+              description: API token permissions after the change.
+              fields:
+                - name: http_method
+                  type: keyword
+                  description: HTTP method granted to the token.
+                - name: path
+                  type: keyword
+                  description: API path granted to the token.
+            - name: type
+              type: keyword
+              description: Vendor type of the target (for example map or vpp-app).
+        - name: metadata
+          type: flattened
+          description: Additional context supplied by the API.

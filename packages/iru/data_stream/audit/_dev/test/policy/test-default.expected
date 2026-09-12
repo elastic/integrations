@@ -1,0 +1,107 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: iru
+      name: test-default-iru
+      streams:
+        - data_stream:
+            dataset: iru.audit
+          interval: 10m
+          program: |-
+            state.with(
+              request(
+                "GET",
+                state.?want_more.orValue(false) ?
+                  state.next_url
+                :
+                  state.url.trim_right("/") + "/api/v1/audit/events?" + {
+                    "limit": [string(int(state.batch_size))],
+                    "sort_by": ["occurred_at"],
+                    "start_date": [state.?cursor.occurred_at.orValue(
+                      string(now - duration(state.initial_interval))
+                    )],
+                  }.format_query()
+              ).with(
+                {
+                  "Header": {
+                    "Authorization": ["Bearer " + state.api_token],
+                    "Accept": ["application/json"],
+                  },
+                }
+              ).do_request().as(resp,resp.StatusCode == 200 ?
+                resp.Body.decode_json().as(body,
+                  {
+                    "events": has(body.results) ?
+                      body.results.map(e, {"message": e.encode_json()})
+                    :
+                      [],
+                    "want_more": has(body.next) && body.next != null && string(body.next) != "",
+                    ?"next_url": has(body.next) && body.next != null && string(body.next) != "" ?
+                      optional.of(string(body.next))
+                    :
+                      optional.none(),
+                    "cursor": {
+                      "occurred_at": (has(body.results) && size(body.results) > 0) ?
+                        body.results.map(e, e.occurred_at).max()
+                      :
+                        state.?cursor.occurred_at.orValue(
+                          string(now - duration(state.initial_interval))
+                        ),
+                    },
+                  }
+                )
+              :
+                {
+                  "events": {
+                    "error": {
+                      "code": string(resp.StatusCode),
+                      "id": resp.Status,
+                      "message": "GET " + state.url.trim_right("/") + "/api/v1/audit/events: " + (
+                        size(resp.Body) != 0 ?
+                          string(resp.Body)
+                        :
+                          resp.Status + ' (' + string(resp.StatusCode) + ')'
+                      ),
+                    },
+                  },
+                  "want_more": false,
+                }
+              )
+            )
+          publisher_pipeline.disable_host: true
+          redact:
+            fields:
+                - api_token
+          resource.ssl: null
+          resource.tracer:
+            enabled: false
+            filename: ../../logs/cel/http-request-trace-*.ndjson
+            maxbackups: 5
+          resource.url: https://example.api.kandji.io
+          state:
+            api_token: ${SECRET_0}
+            batch_size: 500
+            initial_interval: 24h
+          tags:
+            - forwarded
+            - iru-audit
+      type: cel
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-iru.audit-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references:
+    - {}
