@@ -1,0 +1,63 @@
+title: "Machine Identities"
+type: logs
+streams:
+  - input: cel
+    title: SailPoint Identity Security Cloud Machine Identities
+    description: "Collect machine identity records from SailPoint Identity Security Cloud for entity analytics."
+    enabled: true
+    template_path: cel.yml.hbs
+    vars:
+      - name: interval
+        type: text
+        title: Interval
+        description: "How often the API is polled for machine identity records."
+        show_user: true
+        required: true
+        default: "24h"
+      - name: batch_size
+        type: integer
+        title: Batch Size
+        description: "Number of machine identity records to fetch per request (max 250)."
+        show_user: false
+        required: true
+        default: 250
+      - name: tags
+        type: text
+        title: Tags
+        description: "Tags to be applied to events."
+        multi: true
+        show_user: false
+        default:
+          - forwarded
+          - sailpoint_identity_sc.machine_identities
+      - name: preserve_original_event
+        type: bool
+        title: Preserve Original Event
+        description: "When enabled, keeps a raw copy of the original event in the event.original field."
+        required: true
+        show_user: false
+        multi: false
+        default: false
+      - name: enable_request_tracer
+        type: bool
+        title: Enable Request Tracing
+        description: >-
+          The request tracer logs requests and responses to the agent's local file-system for debugging configurations.
+          Enabling this request tracing compromises security and should only be used for debugging.
+          Disabling the request tracer will delete any stored traces.
+          See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#_resource_tracer_enable) for details.
+        default: false
+        multi: false
+        required: false
+        show_user: false
+      - name: processors
+        type: yaml
+        title: Processors
+        description: "Processors can alter the events by reducing the number of fields or adding additional metadata. This is performed in the agent before the logs are parsed."
+        multi: false
+        required: false
+        show_user: false
+elasticsearch:
+  index_template:
+    mappings:
+      subobjects: false
