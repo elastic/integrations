@@ -10,38 +10,57 @@
                 "ignoreValidations": false
             },
             "panelsJSON": {
-                "2bd619cc-478b-4f78-a4cf-e42c23cb2558": {
+                "15974c95-10f0-4d3d-927f-fab62f43636f": {
                     "explicitInput": {
                         "dataViewId": "logs-*",
                         "exclude": false,
                         "existsSelected": false,
-                        "fieldName": "event.action",
+                        "fieldName": "microsoft_defender_endpoint.baseline.is_compliant",
                         "searchTechnique": "prefix",
                         "selectedOptions": [],
                         "sort": {
                             "by": "_count",
                             "direction": "desc"
                         },
-                        "title": "Action Type"
+                        "title": "Compliance Status"
+                    },
+                    "grow": true,
+                    "order": 2,
+                    "type": "optionsListControl",
+                    "width": "medium"
+                },
+                "1f814d59-598f-4eee-a8e2-145563a7e2fe": {
+                    "explicitInput": {
+                        "dataViewId": "logs-*",
+                        "exclude": false,
+                        "existsSelected": false,
+                        "fieldName": "host.name",
+                        "searchTechnique": "prefix",
+                        "selectedOptions": [],
+                        "sort": {
+                            "by": "_count",
+                            "direction": "desc"
+                        },
+                        "title": "Host Name"
                     },
                     "grow": true,
                     "order": 0,
                     "type": "optionsListControl",
                     "width": "medium"
                 },
-                "dd6a586f-ff92-4736-8a20-aef4905fa3c2": {
+                "a6139ad0-d8d0-417a-b2c1-ac9294d74aa9": {
                     "explicitInput": {
                         "dataViewId": "logs-*",
                         "exclude": false,
                         "existsSelected": false,
-                        "fieldName": "microsoft_defender_endpoint.machine_action.status",
+                        "fieldName": "group.name",
                         "searchTechnique": "prefix",
                         "selectedOptions": [],
                         "sort": {
                             "by": "_count",
                             "direction": "desc"
                         },
-                        "title": "Action Status"
+                        "title": "Group Name"
                     },
                     "grow": true,
                     "order": 1,
@@ -51,7 +70,7 @@
             },
             "showApplySelections": false
         },
-        "description": "This dashboard shows machine action logs collected by the Microsoft Defender Endpoint integration.",
+        "description": "This dashboard provides a comprehensive view of security baseline compliance snapshots from Microsoft Defender for Endpoint.",
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
                 "filter": [
@@ -62,18 +81,18 @@
                         "meta": {
                             "alias": null,
                             "disabled": false,
-                            "field": "labels.is_transform_source",
+                            "field": "data_stream.dataset",
                             "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
-                            "key": "labels.is_transform_source",
+                            "key": "data_stream.dataset",
                             "negate": false,
                             "params": {
-                                "query": "false"
+                                "query": "microsoft_defender_endpoint.baseline"
                             },
                             "type": "phrase"
                         },
                         "query": {
                             "match_phrase": {
-                                "labels.is_transform_source": "false"
+                                "data_stream.dataset": "microsoft_defender_endpoint.baseline"
                             }
                         }
                     }
@@ -98,7 +117,154 @@
                         "references": [
                             {
                                 "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-c196d639-0b5f-42a4-9349-e0d466cc3951",
+                                "name": "indexpattern-datasource-layer-688da9b9-49c9-4e59-9021-5737fdf09bb5",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "logs-*",
+                                    "layers": {
+                                        "688da9b9-49c9-4e59-9021-5737fdf09bb5": {
+                                            "columnOrder": [
+                                                "c5332f85-a549-4cc9-8ce7-3a8bc62cc4c2"
+                                            ],
+                                            "columns": {
+                                                "c5332f85-a549-4cc9-8ce7-3a8bc62cc4c2": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Baseline Failures",
+                                                    "operationType": "unique_count",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "sourceField": "event.id"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "logs-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "currentIndexPatternId": "logs-*",
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "logs-*",
+                                            "timeField": "@timestamp",
+                                            "title": "logs-*"
+                                        }
+                                    ],
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "microsoft_defender_endpoint.baseline.is_compliant",
+                                        "index": "a193eba5-8dda-436a-b7ec-fb84ae41300b",
+                                        "key": "microsoft_defender_endpoint.baseline.is_compliant",
+                                        "negate": false,
+                                        "params": {
+                                            "query": false
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "microsoft_defender_endpoint.baseline.is_compliant": false
+                                        }
+                                    }
+                                }
+                            ],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "color": "#E7664C",
+                                "layerId": "688da9b9-49c9-4e59-9021-5737fdf09bb5",
+                                "layerType": "data",
+                                "metricAccessor": "c5332f85-a549-4cc9-8ce7-3a8bc62cc4c2",
+                                "secondaryTrend": {
+                                    "type": "none"
+                                }
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "microsoft_defender_endpoint.baseline.is_compliant",
+                                "index": "a193eba5-8dda-436a-b7ec-fb84ae41300b",
+                                "key": "microsoft_defender_endpoint.baseline.is_compliant",
+                                "negate": false,
+                                "params": {
+                                    "query": false
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "microsoft_defender_endpoint.baseline.is_compliant": false
+                                }
+                            }
+                        }
+                    ],
+                    "hidePanelTitles": true,
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Baseline Failures"
+                },
+                "gridData": {
+                    "h": 8,
+                    "i": "bd6b8b14-52f4-4351-a378-121036c39b50",
+                    "w": 6,
+                    "x": 10,
+                    "y": 0
+                },
+                "panelIndex": "bd6b8b14-52f4-4351-a378-121036c39b50",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-850fd31e-c951-477a-9776-04f28560c87b",
                                 "type": "index-pattern"
                             }
                         ],
@@ -107,58 +273,25 @@
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
-                                        "c196d639-0b5f-42a4-9349-e0d466cc3951": {
+                                        "850fd31e-c951-477a-9776-04f28560c87b": {
                                             "columnOrder": [
-                                                "04ac7d15-ad76-4ef3-8fb9-8e5f8e079e29",
-                                                "8c68f304-8ac2-4494-9fc5-e0f746c12f17",
-                                                "7a5d5d42-fb37-4077-abb3-1227d67d82ea"
+                                                "30e78bce-a360-4340-a3ba-1525d5fc5af9",
+                                                "236bcab5-101c-41b1-a7d6-2a37dae08db3",
+                                                "00c6a601-d57e-4378-873a-97cb55360695"
                                             ],
                                             "columns": {
-                                                "04ac7d15-ad76-4ef3-8fb9-8e5f8e079e29": {
-                                                    "customLabel": true,
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "Action Type",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "exclude": [],
-                                                        "excludeIsRegex": false,
-                                                        "include": [],
-                                                        "includeIsRegex": false,
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "7a5d5d42-fb37-4077-abb3-1227d67d82ea",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": true,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "size": 5
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "event.action"
-                                                },
-                                                "7a5d5d42-fb37-4077-abb3-1227d67d82ea": {
+                                                "00c6a601-d57e-4378-873a-97cb55360695": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
                                                     "label": "Count",
-                                                    "operationType": "count",
+                                                    "operationType": "unique_count",
                                                     "params": {
-                                                        "emptyAsNull": false,
-                                                        "format": {
-                                                            "id": "number",
-                                                            "params": {
-                                                                "decimals": 0
-                                                            }
-                                                        }
+                                                        "emptyAsNull": false
                                                     },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
+                                                    "sourceField": "event.id"
                                                 },
-                                                "8c68f304-8ac2-4494-9fc5-e0f746c12f17": {
+                                                "236bcab5-101c-41b1-a7d6-2a37dae08db3": {
                                                     "customLabel": true,
                                                     "dataType": "date",
                                                     "isBucketed": true,
@@ -169,8 +302,32 @@
                                                         "includeEmptyRows": true,
                                                         "interval": "auto"
                                                     },
-                                                    "scale": "interval",
                                                     "sourceField": "@timestamp"
+                                                },
+                                                "30e78bce-a360-4340-a3ba-1525d5fc5af9": {
+                                                    "customLabel": true,
+                                                    "dataType": "boolean",
+                                                    "isBucketed": true,
+                                                    "label": "IS Compliant",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "00c6a601-d57e-4378-873a-97cb55360695",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 2
+                                                    },
+                                                    "sourceField": "microsoft_defender_endpoint.baseline.is_compliant"
                                                 }
                                             },
                                             "ignoreGlobalFilters": false,
@@ -196,40 +353,75 @@
                                 "layers": [
                                     {
                                         "accessors": [
-                                            "7a5d5d42-fb37-4077-abb3-1227d67d82ea"
+                                            "00c6a601-d57e-4378-873a-97cb55360695"
                                         ],
                                         "colorMapping": {
-                                            "assignments": [],
+                                            "assignments": [
+                                                {
+                                                    "color": {
+                                                        "colorIndex": 0,
+                                                        "paletteId": "eui_amsterdam",
+                                                        "type": "categorical"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "raw",
+                                                            "value": 1
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                },
+                                                {
+                                                    "color": {
+                                                        "colorIndex": 9,
+                                                        "paletteId": "eui_amsterdam",
+                                                        "type": "categorical"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "raw",
+                                                            "value": 0
+                                                        }
+                                                    ],
+                                                    "touched": true
+                                                }
+                                            ],
                                             "colorMode": {
                                                 "type": "categorical"
                                             },
-                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "paletteId": "default",
                                             "specialAssignments": [
                                                 {
                                                     "color": {
                                                         "type": "loop"
                                                     },
-                                                    "rule": {
-                                                        "type": "other"
-                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
                                                     "touched": false
                                                 }
                                             ]
                                         },
-                                        "layerId": "c196d639-0b5f-42a4-9349-e0d466cc3951",
+                                        "layerId": "850fd31e-c951-477a-9776-04f28560c87b",
                                         "layerType": "data",
                                         "position": "top",
                                         "seriesType": "line",
                                         "showGridlines": false,
-                                        "splitAccessor": "04ac7d15-ad76-4ef3-8fb9-8e5f8e079e29",
-                                        "xAccessor": "8c68f304-8ac2-4494-9fc5-e0f746c12f17"
+                                        "splitAccessor": "30e78bce-a360-4340-a3ba-1525d5fc5af9",
+                                        "xAccessor": "236bcab5-101c-41b1-a7d6-2a37dae08db3",
+                                        "yConfig": [
+                                            {
+                                                "color": "#54b399",
+                                                "forAccessor": "00c6a601-d57e-4378-873a-97cb55360695"
+                                            }
+                                        ]
                                     }
                                 ],
                                 "legend": {
                                     "isVisible": true,
-                                    "position": "right",
-                                    "shouldTruncate": false,
-                                    "showSingleSeries": true
+                                    "position": "right"
                                 },
                                 "preferredSeriesType": "line",
                                 "title": "Empty XY chart",
@@ -253,16 +445,16 @@
                     "syncColors": false,
                     "syncCursor": true,
                     "syncTooltips": false,
-                    "title": "Machine Actions over Time by Type [Logs Microsoft Defender Endpoint]"
+                    "title": "Events over Time by Compliance"
                 },
                 "gridData": {
-                    "h": 15,
-                    "i": "1fe71f4e-e415-432f-8113-8b287407de97",
-                    "w": 36,
-                    "x": 12,
+                    "h": 16,
+                    "i": "f4a82766-b738-4fa3-aa09-6dab04cbd605",
+                    "w": 32,
+                    "x": 16,
                     "y": 0
                 },
-                "panelIndex": "1fe71f4e-e415-432f-8113-8b287407de97",
+                "panelIndex": "f4a82766-b738-4fa3-aa09-6dab04cbd605",
                 "type": "lens"
             },
             {
@@ -271,7 +463,7 @@
                         "references": [
                             {
                                 "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-5a363280-a29a-43ba-a4f5-841ef7c28e23",
+                                "name": "indexpattern-datasource-layer-688da9b9-49c9-4e59-9021-5737fdf09bb5",
                                 "type": "index-pattern"
                             }
                         ],
@@ -279,221 +471,31 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
+                                    "currentIndexPatternId": "logs-*",
                                     "layers": {
-                                        "5a363280-a29a-43ba-a4f5-841ef7c28e23": {
+                                        "688da9b9-49c9-4e59-9021-5737fdf09bb5": {
                                             "columnOrder": [
-                                                "f04a7758-315b-401e-b993-092b68c77199",
-                                                "f5edb3ed-5274-4aa1-a31c-15963e375bdd"
+                                                "c5332f85-a549-4cc9-8ce7-3a8bc62cc4c2"
                                             ],
                                             "columns": {
-                                                "f04a7758-315b-401e-b993-092b68c77199": {
-                                                    "customLabel": true,
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "Action Status",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "exclude": [],
-                                                        "excludeIsRegex": false,
-                                                        "include": [],
-                                                        "includeIsRegex": false,
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "f5edb3ed-5274-4aa1-a31c-15963e375bdd",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": true,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "size": 5
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "microsoft_defender_endpoint.machine_action.status"
-                                                },
-                                                "f5edb3ed-5274-4aa1-a31c-15963e375bdd": {
+                                                "c5332f85-a549-4cc9-8ce7-3a8bc62cc4c2": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Count",
-                                                    "operationType": "count",
+                                                    "label": "Baseline Passes",
+                                                    "operationType": "unique_count",
                                                     "params": {
-                                                        "emptyAsNull": false,
-                                                        "format": {
-                                                            "id": "number",
-                                                            "params": {
-                                                                "decimals": 0
-                                                            }
-                                                        }
+                                                        "emptyAsNull": false
                                                     },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
+                                                    "sourceField": "event.id"
                                                 }
                                             },
                                             "ignoreGlobalFilters": false,
                                             "incompleteColumns": {},
+                                            "indexPatternId": "logs-*",
                                             "sampling": 1
                                         }
                                     }
-                                },
-                                "indexpattern": {
-                                    "layers": {}
-                                },
-                                "textBased": {
-                                    "layers": {}
-                                }
-                            },
-                            "filters": [],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "layers": [
-                                    {
-                                        "categoryDisplay": "default",
-                                        "colorMapping": {
-                                            "assignments": [],
-                                            "colorMode": {
-                                                "type": "categorical"
-                                            },
-                                            "paletteId": "eui_amsterdam_color_blind",
-                                            "specialAssignments": [
-                                                {
-                                                    "color": {
-                                                        "type": "loop"
-                                                    },
-                                                    "rule": {
-                                                        "type": "other"
-                                                    },
-                                                    "touched": false
-                                                }
-                                            ]
-                                        },
-                                        "layerId": "5a363280-a29a-43ba-a4f5-841ef7c28e23",
-                                        "layerType": "data",
-                                        "legendDisplay": "show",
-                                        "metrics": [
-                                            "f5edb3ed-5274-4aa1-a31c-15963e375bdd"
-                                        ],
-                                        "nestedLegend": false,
-                                        "numberDisplay": "percent",
-                                        "primaryGroups": [
-                                            "f04a7758-315b-401e-b993-092b68c77199"
-                                        ],
-                                        "truncateLegend": false
-                                    }
-                                ],
-                                "shape": "pie"
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsPie"
-                    },
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
-                    },
-                    "filters": [],
-                    "query": {
-                        "language": "kuery",
-                        "query": ""
-                    },
-                    "syncColors": false,
-                    "syncCursor": true,
-                    "syncTooltips": false,
-                    "title": "Machine Actions by Status [Logs Microsoft Defender Endpoint]"
-                },
-                "gridData": {
-                    "h": 14,
-                    "i": "f8422ae5-caa8-483f-a3e5-2b3f7de0254c",
-                    "w": 18,
-                    "x": 12,
-                    "y": 15
-                },
-                "panelIndex": "f8422ae5-caa8-483f-a3e5-2b3f7de0254c",
-                "type": "lens"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-f2c71f93-69f6-4c6b-b5f3-6dc40e1eb4ee",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "formBased": {
-                                    "layers": {
-                                        "f2c71f93-69f6-4c6b-b5f3-6dc40e1eb4ee": {
-                                            "columnOrder": [
-                                                "1001758b-4db7-4c76-b2dd-b2b7205fd9c8",
-                                                "be92a3dd-826e-46c1-9940-079e131ed799"
-                                            ],
-                                            "columns": {
-                                                "1001758b-4db7-4c76-b2dd-b2b7205fd9c8": {
-                                                    "customLabel": true,
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "Action Scope",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "exclude": [],
-                                                        "excludeIsRegex": false,
-                                                        "include": [],
-                                                        "includeIsRegex": false,
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "be92a3dd-826e-46c1-9940-079e131ed799",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": true,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "size": 5
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "microsoft_defender_endpoint.machine_action.scope"
-                                                },
-                                                "be92a3dd-826e-46c1-9940-079e131ed799": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Count",
-                                                    "operationType": "count",
-                                                    "params": {
-                                                        "emptyAsNull": false,
-                                                        "format": {
-                                                            "id": "number",
-                                                            "params": {
-                                                                "decimals": 0
-                                                            }
-                                                        }
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
-                                                }
-                                            },
-                                            "incompleteColumns": {},
-                                            "sampling": 1
-                                        }
-                                    }
-                                },
-                                "indexpattern": {
-                                    "layers": {}
-                                },
-                                "textBased": {
-                                    "layers": {}
                                 }
                             },
                             "filters": [
@@ -504,18 +506,18 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
-                                        "field": "event.action",
-                                        "index": "21db129e-7b19-460e-9107-624a4a9c21f1",
-                                        "key": "event.action",
+                                        "field": "microsoft_defender_endpoint.baseline.is_compliant",
+                                        "index": "1761dada-0104-46d4-8a0b-a2b867dcf445",
+                                        "key": "microsoft_defender_endpoint.baseline.is_compliant",
                                         "negate": false,
                                         "params": {
-                                            "query": "Isolate"
+                                            "query": true
                                         },
                                         "type": "phrase"
                                     },
                                     "query": {
                                         "match_phrase": {
-                                            "event.action": "Isolate"
+                                            "microsoft_defender_endpoint.baseline.is_compliant": true
                                         }
                                     }
                                 }
@@ -526,47 +528,18 @@
                                 "query": ""
                             },
                             "visualization": {
-                                "layers": [
-                                    {
-                                        "categoryDisplay": "default",
-                                        "colorMapping": {
-                                            "assignments": [],
-                                            "colorMode": {
-                                                "type": "categorical"
-                                            },
-                                            "paletteId": "eui_amsterdam_color_blind",
-                                            "specialAssignments": [
-                                                {
-                                                    "color": {
-                                                        "type": "loop"
-                                                    },
-                                                    "rule": {
-                                                        "type": "other"
-                                                    },
-                                                    "touched": false
-                                                }
-                                            ]
-                                        },
-                                        "layerId": "f2c71f93-69f6-4c6b-b5f3-6dc40e1eb4ee",
-                                        "layerType": "data",
-                                        "legendDisplay": "show",
-                                        "metrics": [
-                                            "be92a3dd-826e-46c1-9940-079e131ed799"
-                                        ],
-                                        "nestedLegend": false,
-                                        "numberDisplay": "percent",
-                                        "primaryGroups": [
-                                            "1001758b-4db7-4c76-b2dd-b2b7205fd9c8"
-                                        ],
-                                        "truncateLegend": false
-                                    }
-                                ],
-                                "shape": "pie"
+                                "color": "#54B399",
+                                "layerId": "688da9b9-49c9-4e59-9021-5737fdf09bb5",
+                                "layerType": "data",
+                                "metricAccessor": "c5332f85-a549-4cc9-8ce7-3a8bc62cc4c2",
+                                "secondaryTrend": {
+                                    "type": "none"
+                                }
                             }
                         },
                         "title": "",
                         "type": "lens",
-                        "visualizationType": "lnsPie"
+                        "visualizationType": "lnsMetric"
                     },
                     "enhancements": {
                         "dynamicActions": {
@@ -581,22 +554,23 @@
                             "meta": {
                                 "alias": null,
                                 "disabled": false,
-                                "field": "event.action",
-                                "index": "21db129e-7b19-460e-9107-624a4a9c21f1",
-                                "key": "event.action",
+                                "field": "microsoft_defender_endpoint.baseline.is_compliant",
+                                "index": "1761dada-0104-46d4-8a0b-a2b867dcf445",
+                                "key": "microsoft_defender_endpoint.baseline.is_compliant",
                                 "negate": false,
                                 "params": {
-                                    "query": "Isolate"
+                                    "query": true
                                 },
                                 "type": "phrase"
                             },
                             "query": {
                                 "match_phrase": {
-                                    "event.action": "Isolate"
+                                    "microsoft_defender_endpoint.baseline.is_compliant": true
                                 }
                             }
                         }
                     ],
+                    "hidePanelTitles": true,
                     "query": {
                         "language": "kuery",
                         "query": ""
@@ -604,16 +578,16 @@
                     "syncColors": false,
                     "syncCursor": true,
                     "syncTooltips": false,
-                    "title": "Machine Network isolation by Scope [Logs Microsoft Defender Endpoint]"
+                    "title": "Baseline Passes"
                 },
                 "gridData": {
-                    "h": 14,
-                    "i": "2769afb3-47ca-4927-a2d6-f1b8dd67cd26",
-                    "w": 18,
-                    "x": 30,
-                    "y": 15
+                    "h": 8,
+                    "i": "4aa61571-8989-489c-b2ba-1a48b6e8a51a",
+                    "w": 6,
+                    "x": 10,
+                    "y": 8
                 },
-                "panelIndex": "2769afb3-47ca-4927-a2d6-f1b8dd67cd26",
+                "panelIndex": "4aa61571-8989-489c-b2ba-1a48b6e8a51a",
                 "type": "lens"
             },
             {
@@ -622,7 +596,7 @@
                         "references": [
                             {
                                 "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-adc7f8ce-47ef-4fc5-8f8c-bc18c060f923",
+                                "name": "indexpattern-datasource-layer-feceb521-827a-4835-be2b-7ffa9957aa26",
                                 "type": "index-pattern"
                             }
                         ],
@@ -630,36 +604,30 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
+                                    "currentIndexPatternId": "logs-*",
                                     "layers": {
-                                        "adc7f8ce-47ef-4fc5-8f8c-bc18c060f923": {
+                                        "feceb521-827a-4835-be2b-7ffa9957aa26": {
                                             "columnOrder": [
-                                                "9f5f7792-188c-4ad6-beef-f5e63fc301cf",
-                                                "47b2587f-fe71-4ad5-928d-e8e561c0913f"
+                                                "f10a27b8-57b9-446c-a3d2-0ba3f6e8a275",
+                                                "d7bfa2d5-ea53-4549-a292-c7cd398c5b51"
                                             ],
                                             "columns": {
-                                                "47b2587f-fe71-4ad5-928d-e8e561c0913f": {
+                                                "d7bfa2d5-ea53-4549-a292-c7cd398c5b51": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
                                                     "label": "Count",
-                                                    "operationType": "count",
+                                                    "operationType": "unique_count",
                                                     "params": {
-                                                        "emptyAsNull": false,
-                                                        "format": {
-                                                            "id": "number",
-                                                            "params": {
-                                                                "decimals": 0
-                                                            }
-                                                        }
+                                                        "emptyAsNull": false
                                                     },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
+                                                    "sourceField": "event.id"
                                                 },
-                                                "9f5f7792-188c-4ad6-beef-f5e63fc301cf": {
+                                                "f10a27b8-57b9-446c-a3d2-0ba3f6e8a275": {
                                                     "customLabel": true,
-                                                    "dataType": "string",
+                                                    "dataType": "boolean",
                                                     "isBucketed": true,
-                                                    "label": "Action Type",
+                                                    "label": "Is Compliant",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -668,7 +636,311 @@
                                                         "includeIsRegex": false,
                                                         "missingBucket": false,
                                                         "orderBy": {
-                                                            "columnId": "47b2587f-fe71-4ad5-928d-e8e561c0913f",
+                                                            "columnId": "d7bfa2d5-ea53-4549-a292-c7cd398c5b51",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 2
+                                                    },
+                                                    "sourceField": "microsoft_defender_endpoint.baseline.is_compliant"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "logs-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "currentIndexPatternId": "logs-*",
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "logs-*",
+                                            "timeField": "@timestamp",
+                                            "title": "logs-*"
+                                        }
+                                    ],
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "default",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "default",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "emptySizeRatio": 0.3,
+                                        "layerId": "feceb521-827a-4835-be2b-7ffa9957aa26",
+                                        "layerType": "data",
+                                        "legendDisplay": "show",
+                                        "metrics": [
+                                            "d7bfa2d5-ea53-4549-a292-c7cd398c5b51"
+                                        ],
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "f10a27b8-57b9-446c-a3d2-0ba3f6e8a275"
+                                        ],
+                                        "truncateLegend": false
+                                    }
+                                ],
+                                "shape": "donut"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsPie"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Events by Complience Status"
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "350ab766-c0bf-4500-b072-316e6d4a85a8",
+                    "w": 19,
+                    "x": 10,
+                    "y": 16
+                },
+                "panelIndex": "350ab766-c0bf-4500-b072-316e6d4a85a8",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-b455ba05-1481-4758-bec3-30fff9f280ae",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "currentIndexPatternId": "logs-*",
+                                    "layers": {
+                                        "b455ba05-1481-4758-bec3-30fff9f280ae": {
+                                            "columnOrder": [
+                                                "6a5ff8a1-f965-4d0f-8feb-503fc449fab6",
+                                                "20d98e77-1f7a-4efe-957f-114afe395480"
+                                            ],
+                                            "columns": {
+                                                "20d98e77-1f7a-4efe-957f-114afe395480": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "unique_count",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "sourceField": "event.id"
+                                                },
+                                                "6a5ff8a1-f965-4d0f-8feb-503fc449fab6": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "OS Platform",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "20d98e77-1f7a-4efe-957f-114afe395480",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 5
+                                                    },
+                                                    "sourceField": "host.os.platform"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "indexPatternId": "logs-*",
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "currentIndexPatternId": "logs-*",
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "logs-*",
+                                            "timeField": "@timestamp",
+                                            "title": "logs-*"
+                                        }
+                                    ],
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [],
+                            "query": {
+                                "language": "kuery",
+                                "query": ""
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "categoryDisplay": "default",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "default",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "emptySizeRatio": 0.3,
+                                        "layerId": "b455ba05-1481-4758-bec3-30fff9f280ae",
+                                        "layerType": "data",
+                                        "legendDisplay": "show",
+                                        "metrics": [
+                                            "20d98e77-1f7a-4efe-957f-114afe395480"
+                                        ],
+                                        "nestedLegend": false,
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "6a5ff8a1-f965-4d0f-8feb-503fc449fab6"
+                                        ],
+                                        "truncateLegend": false
+                                    }
+                                ],
+                                "shape": "donut"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsPie"
+                    },
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "language": "kuery",
+                        "query": ""
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Events by OS Platform"
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "a20359ab-6092-48f6-8e98-42dbdda6b404",
+                    "w": 19,
+                    "x": 29,
+                    "y": 16
+                },
+                "panelIndex": "a20359ab-6092-48f6-8e98-42dbdda6b404",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [
+                            {
+                                "id": "logs-*",
+                                "name": "indexpattern-datasource-layer-c4c8ad6d-bf98-4ea0-8875-45c48a093a61",
+                                "type": "index-pattern"
+                            }
+                        ],
+                        "state": {
+                            "adHocDataViews": {},
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "c4c8ad6d-bf98-4ea0-8875-45c48a093a61": {
+                                            "columnOrder": [
+                                                "2a3b5fe7-0645-4249-a6f9-0bd2f8b57c5e",
+                                                "b1a1eb28-2947-4f2a-8bad-539a715ed75d"
+                                            ],
+                                            "columns": {
+                                                "2a3b5fe7-0645-4249-a6f9-0bd2f8b57c5e": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Group Name",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "b1a1eb28-2947-4f2a-8bad-539a715ed75d",
                                                             "type": "column"
                                                         },
                                                         "orderDirection": "desc",
@@ -678,170 +950,18 @@
                                                         },
                                                         "size": 10
                                                     },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "microsoft_defender_endpoint.machine_action.type"
-                                                }
-                                            },
-                                            "ignoreGlobalFilters": false,
-                                            "incompleteColumns": {},
-                                            "sampling": 1
-                                        }
-                                    }
-                                },
-                                "indexpattern": {
-                                    "layers": {}
-                                },
-                                "textBased": {
-                                    "layers": {}
-                                }
-                            },
-                            "filters": [],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "labelsOrientation": {
-                                    "x": 0,
-                                    "yLeft": 0,
-                                    "yRight": 0
-                                },
-                                "layers": [
-                                    {
-                                        "accessors": [
-                                            "47b2587f-fe71-4ad5-928d-e8e561c0913f"
-                                        ],
-                                        "colorMapping": {
-                                            "assignments": [],
-                                            "colorMode": {
-                                                "type": "categorical"
-                                            },
-                                            "paletteId": "eui_amsterdam_color_blind",
-                                            "specialAssignments": [
-                                                {
-                                                    "color": {
-                                                        "type": "loop"
-                                                    },
-                                                    "rule": {
-                                                        "type": "other"
-                                                    },
-                                                    "touched": false
-                                                }
-                                            ]
-                                        },
-                                        "layerId": "adc7f8ce-47ef-4fc5-8f8c-bc18c060f923",
-                                        "layerType": "data",
-                                        "position": "top",
-                                        "seriesType": "bar_horizontal_stacked",
-                                        "showGridlines": false,
-                                        "xAccessor": "9f5f7792-188c-4ad6-beef-f5e63fc301cf"
-                                    }
-                                ],
-                                "legend": {
-                                    "isVisible": true,
-                                    "position": "right",
-                                    "shouldTruncate": false,
-                                    "showSingleSeries": false
-                                },
-                                "preferredSeriesType": "bar_stacked",
-                                "title": "Empty XY chart",
-                                "valueLabels": "hide"
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsXY"
-                    },
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
-                    },
-                    "filters": [],
-                    "query": {
-                        "language": "kuery",
-                        "query": ""
-                    },
-                    "syncColors": false,
-                    "syncCursor": true,
-                    "syncTooltips": false,
-                    "title": "Machine Actions by Type [Logs Microsoft Defender Endpoint]"
-                },
-                "gridData": {
-                    "h": 15,
-                    "i": "e06d5a62-1dd0-464c-a37c-f4648cd16a17",
-                    "w": 48,
-                    "x": 0,
-                    "y": 29
-                },
-                "panelIndex": "e06d5a62-1dd0-464c-a37c-f4648cd16a17",
-                "type": "lens"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-e78e6ab3-80fb-4872-bb7e-9d8760d47f02",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "formBased": {
-                                    "layers": {
-                                        "e78e6ab3-80fb-4872-bb7e-9d8760d47f02": {
-                                            "columnOrder": [
-                                                "f989468c-2328-4e2e-9016-062618a69309",
-                                                "967247fd-5a02-4e8a-9a5f-828cf3832a69"
-                                            ],
-                                            "columns": {
-                                                "967247fd-5a02-4e8a-9a5f-828cf3832a69": {
+                                                    "sourceField": "group.name"
+                                                },
+                                                "b1a1eb28-2947-4f2a-8bad-539a715ed75d": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
                                                     "label": "Count",
                                                     "operationType": "count",
                                                     "params": {
-                                                        "emptyAsNull": false,
-                                                        "format": {
-                                                            "id": "number",
-                                                            "params": {
-                                                                "decimals": 0
-                                                            }
-                                                        }
+                                                        "emptyAsNull": false
                                                     },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
-                                                },
-                                                "f989468c-2328-4e2e-9016-062618a69309": {
-                                                    "customLabel": true,
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "Host",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "exclude": [],
-                                                        "excludeIsRegex": false,
-                                                        "include": [],
-                                                        "includeIsRegex": false,
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "967247fd-5a02-4e8a-9a5f-828cf3832a69",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": false,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "size": 10
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "host.hostname"
+                                                    "sourceField": "event.id"
                                                 }
                                             },
                                             "ignoreGlobalFilters": false,
@@ -866,17 +986,13 @@
                             "visualization": {
                                 "columns": [
                                     {
-                                        "columnId": "967247fd-5a02-4e8a-9a5f-828cf3832a69",
-                                        "isMetric": true,
-                                        "isTransposed": false
+                                        "columnId": "2a3b5fe7-0645-4249-a6f9-0bd2f8b57c5e"
                                     },
                                     {
-                                        "columnId": "f989468c-2328-4e2e-9016-062618a69309",
-                                        "isMetric": false,
-                                        "isTransposed": false
+                                        "columnId": "b1a1eb28-2947-4f2a-8bad-539a715ed75d"
                                     }
                                 ],
-                                "layerId": "e78e6ab3-80fb-4872-bb7e-9d8760d47f02",
+                                "layerId": "c4c8ad6d-bf98-4ea0-8875-45c48a093a61",
                                 "layerType": "data"
                             }
                         },
@@ -897,16 +1013,16 @@
                     "syncColors": false,
                     "syncCursor": true,
                     "syncTooltips": false,
-                    "title": "Top 10 Machines [Logs Microsoft Defender Endpoint]"
+                    "title": "Top Group Name"
                 },
                 "gridData": {
-                    "h": 15,
-                    "i": "05a3d381-322a-4214-8511-c5e14ede05e3",
+                    "h": 16,
+                    "i": "00289b93-ea1d-4851-bbef-1cdeaef26e49",
                     "w": 24,
                     "x": 0,
-                    "y": 44
+                    "y": 31
                 },
-                "panelIndex": "05a3d381-322a-4214-8511-c5e14ede05e3",
+                "panelIndex": "00289b93-ea1d-4851-bbef-1cdeaef26e49",
                 "type": "lens"
             },
             {
@@ -915,7 +1031,7 @@
                         "references": [
                             {
                                 "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-e78e6ab3-80fb-4872-bb7e-9d8760d47f02",
+                                "name": "indexpattern-datasource-layer-c4c8ad6d-bf98-4ea0-8875-45c48a093a61",
                                 "type": "index-pattern"
                             }
                         ],
@@ -923,36 +1039,19 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
+                                    "currentIndexPatternId": "logs-*",
                                     "layers": {
-                                        "e78e6ab3-80fb-4872-bb7e-9d8760d47f02": {
+                                        "c4c8ad6d-bf98-4ea0-8875-45c48a093a61": {
                                             "columnOrder": [
-                                                "f989468c-2328-4e2e-9016-062618a69309",
-                                                "967247fd-5a02-4e8a-9a5f-828cf3832a69"
+                                                "2a3b5fe7-0645-4249-a6f9-0bd2f8b57c5e",
+                                                "b1a1eb28-2947-4f2a-8bad-539a715ed75d"
                                             ],
                                             "columns": {
-                                                "967247fd-5a02-4e8a-9a5f-828cf3832a69": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Count",
-                                                    "operationType": "count",
-                                                    "params": {
-                                                        "emptyAsNull": false,
-                                                        "format": {
-                                                            "id": "number",
-                                                            "params": {
-                                                                "decimals": 0
-                                                            }
-                                                        }
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
-                                                },
-                                                "f989468c-2328-4e2e-9016-062618a69309": {
+                                                "2a3b5fe7-0645-4249-a6f9-0bd2f8b57c5e": {
                                                     "customLabel": true,
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Requestor",
+                                                    "label": "Host Name",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -961,31 +1060,50 @@
                                                         "includeIsRegex": false,
                                                         "missingBucket": false,
                                                         "orderBy": {
-                                                            "columnId": "967247fd-5a02-4e8a-9a5f-828cf3832a69",
+                                                            "columnId": "b1a1eb28-2947-4f2a-8bad-539a715ed75d",
                                                             "type": "column"
                                                         },
                                                         "orderDirection": "desc",
-                                                        "otherBucket": false,
+                                                        "otherBucket": true,
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
                                                         "secondaryFields": [],
                                                         "size": 10
                                                     },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "user.name"
+                                                    "sourceField": "host.name"
+                                                },
+                                                "b1a1eb28-2947-4f2a-8bad-539a715ed75d": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "sourceField": "event.id"
                                                 }
                                             },
                                             "ignoreGlobalFilters": false,
                                             "incompleteColumns": {},
+                                            "indexPatternId": "logs-*",
                                             "sampling": 1
                                         }
                                     }
                                 },
                                 "indexpattern": {
+                                    "currentIndexPatternId": "logs-*",
                                     "layers": {}
                                 },
                                 "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "logs-*",
+                                            "timeField": "@timestamp",
+                                            "title": "logs-*"
+                                        }
+                                    ],
                                     "layers": {}
                                 }
                             },
@@ -998,17 +1116,13 @@
                             "visualization": {
                                 "columns": [
                                     {
-                                        "columnId": "967247fd-5a02-4e8a-9a5f-828cf3832a69",
-                                        "isMetric": true,
-                                        "isTransposed": false
+                                        "columnId": "2a3b5fe7-0645-4249-a6f9-0bd2f8b57c5e"
                                     },
                                     {
-                                        "columnId": "f989468c-2328-4e2e-9016-062618a69309",
-                                        "isMetric": false,
-                                        "isTransposed": false
+                                        "columnId": "b1a1eb28-2947-4f2a-8bad-539a715ed75d"
                                     }
                                 ],
-                                "layerId": "e78e6ab3-80fb-4872-bb7e-9d8760d47f02",
+                                "layerId": "c4c8ad6d-bf98-4ea0-8875-45c48a093a61",
                                 "layerType": "data"
                             }
                         },
@@ -1029,16 +1143,16 @@
                     "syncColors": false,
                     "syncCursor": true,
                     "syncTooltips": false,
-                    "title": "Top 10 Requestors [Logs Microsoft Defender Endpoint]"
+                    "title": "Top Host Name"
                 },
                 "gridData": {
-                    "h": 15,
-                    "i": "0870fe09-53ef-49f3-a1a5-60ed0b4fdccb",
+                    "h": 16,
+                    "i": "8f8814b5-ae1e-49bf-8651-25077f88de11",
                     "w": 24,
                     "x": 24,
-                    "y": 44
+                    "y": 31
                 },
-                "panelIndex": "0870fe09-53ef-49f3-a1a5-60ed0b4fdccb",
+                "panelIndex": "8f8814b5-ae1e-49bf-8651-25077f88de11",
                 "type": "lens"
             },
             {
@@ -1062,7 +1176,7 @@
                         "description": "",
                         "params": {
                             "fontSize": 12,
-                            "markdown": "This dashboard provides a comprehensive view of machine actions logs from Microsoft Defender for Endpoint integration. It showcases trends in actions over time, distribution by status, type, and network isolation scope. It showcases the top 10 machines and requestors who performed the action.\n\n[Integration Page](/app/integrations/detail/microsoft_defender_endpoint/overview)",
+                            "markdown": "This dashboard provides a comprehensive view of security baseline compliance snapshots from Microsoft Defender for Endpoint. Each record represents the compliance state for a device, profile, and configuration rule. It highlights baseline passes and baseline failures, trends in events over time by compliance status, and breakdowns by compliance status and OS platform. Top device groups and hosts help identify where baseline gaps are concentrated. Use the controls to filter by group name and compliance status.\n \n[Integration Page](/app/integrations/detail/microsoft_defender_endpoint/overview)",
                             "openLinksInNewTab": false
                         },
                         "title": "",
@@ -1072,13 +1186,13 @@
                     "title": "Overview"
                 },
                 "gridData": {
-                    "h": 17,
-                    "i": "7e71ce31-e773-4c68-84c7-0119158052a7",
-                    "w": 12,
+                    "h": 20,
+                    "i": "dc5e26a0-b5c1-47a2-b67f-15dce41d84af",
+                    "w": 10,
                     "x": 0,
                     "y": 11
                 },
-                "panelIndex": "7e71ce31-e773-4c68-84c7-0119158052a7",
+                "panelIndex": "dc5e26a0-b5c1-47a2-b67f-15dce41d84af",
                 "type": "visualization"
             },
             {
@@ -1099,8 +1213,8 @@
                                 "type": "dashboardLink"
                             },
                             {
-                                "destinationRefName": "link_9d682373-64c4-46ea-8bb7-70340f1d9293_dashboard",
-                                "id": "9d682373-64c4-46ea-8bb7-70340f1d9293",
+                                "destinationRefName": "link_e18c79ba-c483-4c2e-aeae-ddeec55309a3_dashboard",
+                                "id": "e18c79ba-c483-4c2e-aeae-ddeec55309a3",
                                 "label": "Configuration",
                                 "options": {
                                     "openInNewTab": false,
@@ -1111,8 +1225,8 @@
                                 "type": "dashboardLink"
                             },
                             {
-                                "destinationRefName": "link_31b8b457-03ec-4814-b9f4-263fb4a80d77_dashboard",
-                                "id": "31b8b457-03ec-4814-b9f4-263fb4a80d77",
+                                "destinationRefName": "link_74dfb88d-4a5d-43c4-88fb-9c896d5c0486_dashboard",
+                                "id": "74dfb88d-4a5d-43c4-88fb-9c896d5c0486",
                                 "label": "Information Gathering",
                                 "options": {
                                     "openInNewTab": false,
@@ -1176,22 +1290,22 @@
                 },
                 "gridData": {
                     "h": 11,
-                    "i": "4339b66a-489c-455c-a18e-3dc341ab573e",
-                    "w": 12,
+                    "i": "bb9ec845-4331-4e8e-a710-685daead4506",
+                    "w": 10,
                     "x": 0,
                     "y": 0
                 },
-                "panelIndex": "4339b66a-489c-455c-a18e-3dc341ab573e",
+                "panelIndex": "bb9ec845-4331-4e8e-a710-685daead4506",
                 "type": "links"
             }
         ],
         "timeRestore": false,
-        "title": "[Logs Microsoft Defender Endpoint] Machine Action Overview",
+        "title": "[Logs Microsoft Defender Endpoint] Baseline Overview",
         "version": 3
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2026-09-08T05:41:53.981Z",
-    "id": "microsoft_defender_endpoint-6a043fee-1e3d-454b-96d1-159e6efce215",
+    "created_at": "2026-09-08T05:41:50.220Z",
+    "id": "microsoft_defender_endpoint-c2846ac8-bdbb-42aa-b35b-2edc3342cf43",
     "references": [
         {
             "id": "logs-*",
@@ -1200,77 +1314,87 @@
         },
         {
             "id": "logs-*",
-            "name": "1fe71f4e-e415-432f-8113-8b287407de97:indexpattern-datasource-layer-c196d639-0b5f-42a4-9349-e0d466cc3951",
+            "name": "bd6b8b14-52f4-4351-a378-121036c39b50:indexpattern-datasource-layer-688da9b9-49c9-4e59-9021-5737fdf09bb5",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "f8422ae5-caa8-483f-a3e5-2b3f7de0254c:indexpattern-datasource-layer-5a363280-a29a-43ba-a4f5-841ef7c28e23",
+            "name": "f4a82766-b738-4fa3-aa09-6dab04cbd605:indexpattern-datasource-layer-850fd31e-c951-477a-9776-04f28560c87b",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "2769afb3-47ca-4927-a2d6-f1b8dd67cd26:indexpattern-datasource-layer-f2c71f93-69f6-4c6b-b5f3-6dc40e1eb4ee",
+            "name": "4aa61571-8989-489c-b2ba-1a48b6e8a51a:indexpattern-datasource-layer-688da9b9-49c9-4e59-9021-5737fdf09bb5",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "e06d5a62-1dd0-464c-a37c-f4648cd16a17:indexpattern-datasource-layer-adc7f8ce-47ef-4fc5-8f8c-bc18c060f923",
+            "name": "350ab766-c0bf-4500-b072-316e6d4a85a8:indexpattern-datasource-layer-feceb521-827a-4835-be2b-7ffa9957aa26",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "05a3d381-322a-4214-8511-c5e14ede05e3:indexpattern-datasource-layer-e78e6ab3-80fb-4872-bb7e-9d8760d47f02",
+            "name": "a20359ab-6092-48f6-8e98-42dbdda6b404:indexpattern-datasource-layer-b455ba05-1481-4758-bec3-30fff9f280ae",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "0870fe09-53ef-49f3-a1a5-60ed0b4fdccb:indexpattern-datasource-layer-e78e6ab3-80fb-4872-bb7e-9d8760d47f02",
+            "name": "00289b93-ea1d-4851-bbef-1cdeaef26e49:indexpattern-datasource-layer-c4c8ad6d-bf98-4ea0-8875-45c48a093a61",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "8f8814b5-ae1e-49bf-8651-25077f88de11:indexpattern-datasource-layer-c4c8ad6d-bf98-4ea0-8875-45c48a093a61",
             "type": "index-pattern"
         },
         {
             "id": "microsoft_defender_endpoint-c2846ac8-bdbb-42aa-b35b-2edc3342cf43",
-            "name": "4339b66a-489c-455c-a18e-3dc341ab573e:link_4f8cde76-8e8c-4842-8f09-8e21210a0ee9_dashboard",
+            "name": "bb9ec845-4331-4e8e-a710-685daead4506:link_4f8cde76-8e8c-4842-8f09-8e21210a0ee9_dashboard",
             "type": "dashboard"
         },
         {
             "id": "microsoft_defender_endpoint-f306ae11-0b08-4b3b-ba14-2c1188d6cbc9",
-            "name": "4339b66a-489c-455c-a18e-3dc341ab573e:link_9d682373-64c4-46ea-8bb7-70340f1d9293_dashboard",
+            "name": "bb9ec845-4331-4e8e-a710-685daead4506:link_e18c79ba-c483-4c2e-aeae-ddeec55309a3_dashboard",
             "type": "dashboard"
         },
         {
             "id": "microsoft_defender_endpoint-a7f3d2e1-6c4b-4a89-9e1f-2d8b5c6a4e70",
-            "name": "4339b66a-489c-455c-a18e-3dc341ab573e:link_31b8b457-03ec-4814-b9f4-263fb4a80d77_dashboard",
+            "name": "bb9ec845-4331-4e8e-a710-685daead4506:link_74dfb88d-4a5d-43c4-88fb-9c896d5c0486_dashboard",
             "type": "dashboard"
         },
         {
             "id": "microsoft_defender_endpoint-c89734ca-ab7f-419d-b665-50076cceee60",
-            "name": "4339b66a-489c-455c-a18e-3dc341ab573e:link_0615c72c-6f0f-41f7-8a0f-56a2fd044f5c_dashboard",
+            "name": "bb9ec845-4331-4e8e-a710-685daead4506:link_0615c72c-6f0f-41f7-8a0f-56a2fd044f5c_dashboard",
             "type": "dashboard"
         },
         {
             "id": "microsoft_defender_endpoint-6a043fee-1e3d-454b-96d1-159e6efce215",
-            "name": "4339b66a-489c-455c-a18e-3dc341ab573e:link_5711c7bf-e741-4fa0-9b86-05376717cf6a_dashboard",
+            "name": "bb9ec845-4331-4e8e-a710-685daead4506:link_5711c7bf-e741-4fa0-9b86-05376717cf6a_dashboard",
             "type": "dashboard"
         },
         {
             "id": "microsoft_defender_endpoint-65402c30-ca6a-11ea-9d4d-9737a63aaa55",
-            "name": "4339b66a-489c-455c-a18e-3dc341ab573e:link_caa6962d-68a6-4d5b-ac97-9252072488ee_dashboard",
+            "name": "bb9ec845-4331-4e8e-a710-685daead4506:link_caa6962d-68a6-4d5b-ac97-9252072488ee_dashboard",
             "type": "dashboard"
         },
         {
             "id": "microsoft_defender_endpoint-afb93ff7-9903-4d91-9028-9fe9c5a434f8",
-            "name": "4339b66a-489c-455c-a18e-3dc341ab573e:link_b85cc2d7-9f40-430f-8c83-2c849d7a0dd0_dashboard",
+            "name": "bb9ec845-4331-4e8e-a710-685daead4506:link_b85cc2d7-9f40-430f-8c83-2c849d7a0dd0_dashboard",
             "type": "dashboard"
         },
         {
             "id": "logs-*",
-            "name": "controlGroup_2bd619cc-478b-4f78-a4cf-e42c23cb2558:optionsListDataView",
+            "name": "controlGroup_1f814d59-598f-4eee-a8e2-145563a7e2fe:optionsListDataView",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "controlGroup_dd6a586f-ff92-4736-8a20-aef4905fa3c2:optionsListDataView",
+            "name": "controlGroup_a6139ad0-d8d0-417a-b2c1-ac9294d74aa9:optionsListDataView",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "controlGroup_15974c95-10f0-4d3d-927f-fab62f43636f:optionsListDataView",
             "type": "index-pattern"
         },
         {
@@ -1280,6 +1404,5 @@
         }
     ],
     "type": "dashboard",
-    "typeMigrationVersion": "10.3.0",
-    "updated_by": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0"
+    "typeMigrationVersion": "10.3.0"
 }
