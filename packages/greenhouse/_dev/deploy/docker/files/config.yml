@@ -27,7 +27,7 @@ rules:
               "size": "500",
               "next_search_after": null
             },
-            "hits": 2,
+            "hits": 4,
             "results": [
               {
                 "request": {
@@ -76,6 +76,110 @@ rules:
                   "type": "data_change_create"
                 },
                 "event_time": "2023-06-02T16:06:19.137Z"
+              },
+              {
+                "request": {
+                  "id": "7890dID",
+                  "type": "people#change_application_state"
+                },
+                "performer": {
+                  "meta": {
+                    "name": "Recruiter One",
+                    "username": "recruiter.one@omniva-corp.com"
+                  },
+                  "id": 22222,
+                  "ip_address": "198.51.100.5",
+                  "type": "user"
+                },
+                "organization_id": 123,
+                "event": {
+                  "meta": null,
+                  "target_type": "Candidate or Prospect rejected",
+                  "type": "action"
+                },
+                "event_time": "2023-06-05T09:00:00.000Z"
+              },
+              {
+                "request": {
+                  "id": "7890dID",
+                  "type": "people#change_application_state"
+                },
+                "performer": {
+                  "meta": {
+                    "name": "Recruiter One",
+                    "username": "recruiter.one@omniva-corp.com"
+                  },
+                  "id": 22222,
+                  "ip_address": "198.51.100.5",
+                  "type": "user"
+                },
+                "organization_id": 123,
+                "event": {
+                  "meta": {
+                    "application_id": 294326368002,
+                    "id": 221864428002
+                  },
+                  "target_id": 221864428002,
+                  "target_type": "RejectionDetails",
+                  "type": "data_change_create"
+                },
+                "event_time": "2023-06-05T09:00:00.048Z"
               }
             ]
           }
+  - path: /v3/rejection_details
+    methods: ["GET"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |
+          [
+            {
+              "id": 221864428002,
+              "application_id": 294326368002,
+              "candidate_id": 123123,
+              "created_at": "2023-06-05T09:00:00.000Z",
+              "updated_at": "2023-06-05T09:00:00.000Z",
+              "rejected_at": "2023-06-05T09:00:00.000Z",
+              "rejected_by_id": 22222,
+              "rejection_reason_id": 555,
+              "rejection_note_id": 789,
+              "question_custom_fields": null
+            }
+          ]
+  - path: /v3/rejection_reasons/555
+    methods: ["GET"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |
+          {
+            "id": 555,
+            "name": "Not a fit",
+            "type": {
+              "id": 1,
+              "key": "we_rejected_them",
+              "name": "We rejected them"
+            }
+          }
+  - path: /v3/notes
+    methods: ["GET"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |
+          [
+            {
+              "id": 789,
+              "subject": null,
+              "body": "Candidate lacked required experience with distributed systems.",
+              "created_at": "2023-06-05T09:00:00.000Z",
+              "updated_at": "2023-06-05T09:00:00.000Z"
+            }
+          ]
