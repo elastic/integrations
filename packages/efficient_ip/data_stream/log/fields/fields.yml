@@ -1,0 +1,98 @@
+- name: efficient_ip.log
+  type: group
+  fields:
+    - name: dhcp
+      type: group
+      description: Fields parsed from EfficientIP DHCP server log messages.
+      fields:
+        - name: client_hostname
+          type: keyword
+          description: Hostname of the DHCP client as reported in the log message.
+        - name: decline
+          type: group
+          description: Details of a DHCPDECLINE message.
+          fields:
+            - name: message
+              type: keyword
+              description: Reason or additional information included in a DHCPDECLINE message.
+        - name: duid
+          type: keyword
+          description: DHCP Unique Identifier (DUID) of the client.
+        - name: discover
+          type: group
+          description: Details of a DHCPDISCOVER message.
+          fields:
+            - name: message
+              type: keyword
+              description: Additional information included in a DHCPDISCOVER message.
+        - name: iaid
+          type: keyword
+          description: Identity Association Identifier (IAID) of the client.
+        - name: interface
+          type: group
+          description: Interface through which the DHCP request was received.
+          fields:
+            - name: ip
+              type: ip
+              description: IP address of the interface that received the DHCP request.
+        - name: ip
+          type: ip
+          description: IP address associated with the DHCP operation.
+        - name: forward_name
+          type: keyword
+          description: Forward DNS name involved in a failed add forward map operation.
+        - name: lease
+          type: group
+          description: Details of the DHCP lease granted to the client.
+          fields:
+            - name: duration
+              type: long
+              description: Duration of the DHCP lease, in seconds.
+        - name: lease_query
+          type: group
+          description: Details of a DHCPLEASEQUERY message.
+          fields:
+            - name: message
+              type: keyword
+              description: Additional information included in a DHCPLEASEQUERY message.
+        - name: link_address
+          type: ip
+          description: Link address of the relay agent in a Relay-forward message.
+        - name: message
+          type: text
+          description: Raw or unparsed DHCP log message.
+        - name: peer_address
+          type: ip
+          description: Peer address of the relay agent in a Relay-forward message.
+        - name: requested_hostname
+          type: keyword
+          description: Hostname of the DHCP client.
+        - name: router
+          type: group
+          description: Router associated with the requested lease.
+          fields:
+            - name: ip
+              type: ip
+              description: IP address of the router associated with the requested lease.
+        - name: trans_id
+          type: keyword
+          description: Transaction ID of the DHCP exchange.
+        - name: validation_second
+          type: long
+          description: Number of seconds for which the assigned address is valid.
+    - name: service_name
+      type: keyword
+      description: Name of the EfficientIP service that generated the log (for example, dhcpd or named).
+    - name: type
+      type: keyword
+      description: Type of EfficientIP log (for example, DHCP or DNS).
+    - name: dns
+      type: group
+      description: Fields parsed from EfficientIP DNS server log messages.
+      fields:
+        - name: category
+          type: keyword
+          description: Category of the DNS log message (for example, query or answer).
+        - name: message
+          type: text
+          description: Raw or unparsed DNS log message.
