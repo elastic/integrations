@@ -1314,9 +1314,18 @@ processors:
             }
         }
         // ssl_protocol_version
-        if (ctx.gigamon.ami.ssl_protocol_version != null) {
-            ctx.gigamon.ami.ssl_protocol_version_value = params['ssl_protocol_version'][ctx.gigamon.ami.ssl_protocol_version];
+        // ssl_protocol_version
+        if (ctx.gigamon?.ami?.ssl_protocol_version != null) {
+            def raw = ctx.gigamon.ami.ssl_protocol_version.toString();
+            def mapped = params['ssl_protocol_version'][raw];
+
+            if (mapped != null) {
+                ctx.gigamon.ami.ssl_protocol_version_value = mapped;
+            } else {
+              ctx.gigamon.ami.ssl_protocol_version_value = raw;
+            }
         }
+
         // ssl_ext_sig_algorithm_hash
         if (ctx.gigamon.ami.ssl_ext_sig_algorithm_hash != null) {
             ctx.gigamon.ami.ssl_ext_sig_algorithm_hash_value = params['ssl_ext_sig_algorithm_hash'][ctx.gigamon.ami.ssl_ext_sig_algorithm_hash];
