@@ -1,0 +1,210 @@
+rules:
+  # Mock Speculus TAXII 2.1 collection objects endpoint
+  # Path matches /api1/collections/<coll_id>/objects/ (query string stripped)
+  # Returns 5 synthetic STIX 2.1 indicators covering the range of
+  # x_speculus_* extension property combinations the real feed emits.
+  - path: /api1/collections/f3a1c2d4-5b6e-4a7f-8c9d-0e1f2a3b4c5d/objects/
+    methods: ["GET"]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/taxii+json;version=2.1"
+          X-Taxii-Date-Added-First:
+            - "2026-02-17T12:00:00.000Z"
+          X-Taxii-Date-Added-Last:
+            - "2026-02-17T12:00:00.000Z"
+        body: |-
+          {
+            "objects": [
+              {
+                "type": "identity",
+                "spec_version": "2.1",
+                "id": "identity--1444bd44-5335-5f48-b93b-99429c4c9ff2",
+                "created": "2025-01-01T00:00:00.000Z",
+                "modified": "2025-01-01T00:00:00.000Z",
+                "name": "Speculus",
+                "identity_class": "organization",
+                "sectors": ["technology"]
+              },
+              {
+                "type": "indicator",
+                "spec_version": "2.1",
+                "id": "indicator--11111111-1111-1111-1111-111111111101",
+                "created_by_ref": "identity--1444bd44-5335-5f48-b93b-99429c4c9ff2",
+                "created": "2026-02-17T12:00:00.000Z",
+                "modified": "2026-02-17T12:00:00.000Z",
+                "modified_at": "2026-02-17T12:00:00.000Z",
+                "name": "Speculus: residential proxy - 203.0.113.10",
+                "description": "This IP is a residential proxy node in Berlin, Germany.",
+                "indicator_types": ["anomalous-activity"],
+                "pattern": "[ipv4-addr:value = '203.0.113.10']",
+                "pattern_type": "stix",
+                "valid_from": "2026-02-17T12:00:00.000Z",
+                "labels": ["speculus:risk:low", "speculus:proxy:residential"],
+                "object_marking_refs": ["marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"],
+                "x_speculus_risk": "low",
+                "x_speculus_residential_proxy": {
+                  "type": "residential",
+                  "provider": "Test Proxy Co",
+                  "first_seen": "2025-09-17T06:00:00Z",
+                  "last_seen": "2026-02-16T21:00:00Z",
+                  "days_seen": 27
+                },
+                "x_speculus_identity": {
+                  "ip": "203.0.113.10",
+                  "isp": "Test ISP GmbH",
+                  "org": "Test Org",
+                  "asn": 64500
+                },
+                "x_speculus_location": {
+                  "city": "Berlin",
+                  "country": "Germany",
+                  "country_code": "DE",
+                  "lat": 52.52,
+                  "lon": 13.405
+                }
+              },
+              {
+                "type": "indicator",
+                "spec_version": "2.1",
+                "id": "indicator--11111111-1111-1111-1111-111111111102",
+                "created_by_ref": "identity--1444bd44-5335-5f48-b93b-99429c4c9ff2",
+                "created": "2026-02-17T12:00:00.000Z",
+                "modified": "2026-02-17T12:00:00.000Z",
+                "modified_at": "2026-02-17T12:00:00.000Z",
+                "name": "Speculus IOC: TestLoader - 203.0.113.20",
+                "description": "This IP has been identified as C2 infrastructure.",
+                "indicator_types": ["malicious-activity"],
+                "pattern": "[ipv4-addr:value = '203.0.113.20']",
+                "pattern_type": "stix",
+                "valid_from": "2026-02-17T12:00:00.000Z",
+                "confidence": 80,
+                "labels": ["speculus:risk:very-high", "speculus:activity:c2"],
+                "object_marking_refs": ["marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"],
+                "x_speculus_score": 80,
+                "x_speculus_risk": "very high",
+                "x_speculus_activity": "C2",
+                "x_speculus_attribution": "TestLoader",
+                "x_speculus_first_seen": "2026-02-10T00:00:00Z",
+                "x_speculus_last_seen": "2026-02-17T00:00:00Z",
+                "x_speculus_identity": {
+                  "ip": "203.0.113.20",
+                  "isp": "Test Hosting Ltd",
+                  "org": "Test Hosting Ltd",
+                  "asn": 64501
+                },
+                "x_speculus_location": {
+                  "city": "Amsterdam",
+                  "country": "Netherlands",
+                  "country_code": "NL",
+                  "lat": 52.3676,
+                  "lon": 4.9041
+                }
+              },
+              {
+                "type": "indicator",
+                "spec_version": "2.1",
+                "id": "indicator--11111111-1111-1111-1111-111111111103",
+                "created_by_ref": "identity--1444bd44-5335-5f48-b93b-99429c4c9ff2",
+                "created": "2026-02-17T12:00:00.000Z",
+                "modified": "2026-02-17T12:00:00.000Z",
+                "modified_at": "2026-02-17T12:00:00.000Z",
+                "name": "Speculus: Tor exit node - 203.0.113.30",
+                "description": "This IP is a known Tor exit node.",
+                "indicator_types": ["anomalous-activity"],
+                "pattern": "[ipv4-addr:value = '203.0.113.30']",
+                "pattern_type": "stix",
+                "valid_from": "2026-02-17T12:00:00.000Z",
+                "labels": ["speculus:risk:medium", "speculus:tor"],
+                "object_marking_refs": ["marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da"],
+                "x_speculus_risk": "medium",
+                "x_speculus_is_tor_node": true,
+                "x_speculus_identity": {
+                  "ip": "203.0.113.30",
+                  "isp": "Test Tor Relay Operator",
+                  "org": "Test Tor Relay Operator",
+                  "asn": 64502
+                },
+                "x_speculus_location": {
+                  "city": "Paris",
+                  "country": "France",
+                  "country_code": "FR",
+                  "lat": 48.8566,
+                  "lon": 2.3522
+                }
+              },
+              {
+                "type": "indicator",
+                "spec_version": "2.1",
+                "id": "indicator--11111111-1111-1111-1111-111111111104",
+                "created_by_ref": "identity--1444bd44-5335-5f48-b93b-99429c4c9ff2",
+                "created": "2026-02-17T12:00:00.000Z",
+                "modified": "2026-02-17T12:00:00.000Z",
+                "modified_at": "2026-02-17T12:00:00.000Z",
+                "name": "Speculus: data_center proxy - 198.51.100.10",
+                "description": "This IP is a datacenter proxy in Singapore.",
+                "indicator_types": ["anomalous-activity"],
+                "pattern": "[ipv4-addr:value = '198.51.100.10']",
+                "pattern_type": "stix",
+                "valid_from": "2026-02-17T12:00:00.000Z",
+                "labels": ["speculus:risk:medium", "speculus:proxy:data-center", "speculus:datacenter", "speculus:vpn-or-proxy"],
+                "object_marking_refs": ["marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"],
+                "x_speculus_risk": "medium",
+                "x_speculus_is_datacenter": true,
+                "x_speculus_vpn_proxy": true,
+                "x_speculus_cloud_provider": {
+                  "provider": "Test Cloud",
+                  "region": "ap-southeast-1",
+                  "service": "compute"
+                },
+                "x_speculus_identity": {
+                  "ip": "198.51.100.10",
+                  "isp": "Test Cloud, LLC",
+                  "org": "Test Cloud, LLC",
+                  "asn": 64503
+                },
+                "x_speculus_location": {
+                  "city": "Singapore",
+                  "country": "Singapore",
+                  "country_code": "SG",
+                  "lat": 1.3521,
+                  "lon": 103.8198
+                }
+              },
+              {
+                "type": "indicator",
+                "spec_version": "2.1",
+                "id": "indicator--11111111-1111-1111-1111-111111111105",
+                "created_by_ref": "identity--1444bd44-5335-5f48-b93b-99429c4c9ff2",
+                "created": "2026-02-17T12:00:00.000Z",
+                "modified": "2026-02-17T12:00:00.000Z",
+                "modified_at": "2026-02-17T12:00:00.000Z",
+                "name": "Speculus: blacklisted IP - 198.51.100.20",
+                "description": "This IP is a residential connection flagged on third-party blacklists.",
+                "indicator_types": ["malicious-activity"],
+                "pattern": "[ipv4-addr:value = '198.51.100.20']",
+                "pattern_type": "stix",
+                "valid_from": "2026-02-17T12:00:00.000Z",
+                "labels": ["speculus:risk:low", "speculus:blacklisted"],
+                "object_marking_refs": ["marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"],
+                "x_speculus_risk": "low",
+                "x_speculus_is_blacklisted": true,
+                "x_speculus_identity": {
+                  "ip": "198.51.100.20",
+                  "connection_type": "dsl",
+                  "isp": "Test Broadband Co",
+                  "org": "Test Broadband Co",
+                  "asn": 64504
+                },
+                "x_speculus_location": {
+                  "city": "Pattaya",
+                  "country": "Thailand",
+                  "country_code": "TH",
+                  "lat": 12.9333,
+                  "lon": 100.883
+                }
+              }
+            ],
+            "more": false
+          }
