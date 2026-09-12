@@ -1,0 +1,114 @@
+---
+description: Route HarfangLab syslog events by log_type.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: '9.3.0'
+  - set:
+      field: event.timezone
+      tag: set_event_timezone
+      value: '{{{_conf.tz_offset}}}'
+      if: ctx._conf?.tz_offset != null && ctx._conf.tz_offset != ''
+  - json:
+      field: message
+      target_field: harfang_labs
+      tag: parse_message_json
+      if: ctx.message != null
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: >-
+        Renames the parsed `message` field (the JSON body of the syslog record) to `event.original` only when the agent stream did not preserve the raw line. When the `preserve_original_event` option is enabled, the raw RFC 5424 line is already in `event.original` and this rename is skipped.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: >-
+        The `message` field is no longer required once the JSON body has been parsed into `harfang_labs` and the raw line is preserved in `event.original`.
+      if: ctx.event?.original != null
+  - set:
+      field: harfang_labs.event.log_type
+      tag: set_event_log_type
+      copy_from: harfang_labs.log_type
+      if: ctx.harfang_labs?.log_type != null
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline-alert" }}'
+      if: ctx.harfang_labs?.log_type == 'alert'
+      tag: route_alert
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline-threat" }}'
+      if: ctx.harfang_labs?.log_type == 'threat'
+      tag: route_threat
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline-agent" }}'
+      if: ctx.harfang_labs?.log_type == 'agent' || ctx.harfang_labs?.log_type == 'agentlog'
+      tag: route_agent
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline-process" }}'
+      if: ctx.harfang_labs?.log_type == 'process' || ctx.harfang_labs?.log_type == 'powershell'
+      tag: route_process
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline-network" }}'
+      if: ctx.harfang_labs?.log_type == 'network' || ctx.harfang_labs?.log_type == 'dns_resolution'
+      tag: route_network
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline-file" }}'
+      if: ctx.harfang_labs?.log_type == 'file'
+      tag: route_file
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline-driverload" }}'
+      if: ctx.harfang_labs?.log_type == 'driverload'
+      tag: route_driverload
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline-injectedthread" }}'
+      if: ctx.harfang_labs?.log_type == 'injectedthread' || ctx.harfang_labs?.log_type == 'thread'
+      tag: route_injectedthread
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline-eventlog" }}'
+      if: ctx.harfang_labs?.log_type == 'eventlog' || ctx.harfang_labs?.log_type == 'authentication'
+      tag: route_eventlog
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline-auditlog" }}'
+      if: ctx.harfang_labs?.log_type == 'auditlog' || ctx.harfang_labs?.log_type == 'audit'
+      tag: route_auditlog
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline-connectionlog" }}'
+      if: ctx.harfang_labs?.log_type == 'connectionlog'
+      tag: route_connectionlog
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline-investigation" }}'
+      if: ctx.harfang_labs?.log_type == 'investigation'
+      tag: route_investigation
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline-fallback" }}'
+      if: ctx.harfang_labs?.log_type != null && ctx.event?.kind == null
+      tag: route_fallback
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline-prune-vendor-fields" }}'
+      if: ctx.harfang_labs != null
+      tag: prune_vendor_fields
+  - append:
+      field: tags
+      tag: append_preserve_original_event_tag
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

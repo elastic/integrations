@@ -1,0 +1,164 @@
+---
+description: Parse HarfangLab syslog network telemetry events.
+processors:
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline-common-agent" }}'
+      tag: map_common_agent
+  - rename:
+      field: harfang_labs.saddr
+      target_field: source.ip
+      ignore_missing: true
+      tag: rename_source_ip
+  - rename:
+      field: harfang_labs.daddr
+      target_field: destination.ip
+      ignore_missing: true
+      tag: rename_destination_ip
+  - rename:
+      field: harfang_labs.sport
+      target_field: source.port
+      ignore_missing: true
+      tag: rename_source_port
+  - rename:
+      field: harfang_labs.dport
+      target_field: destination.port
+      ignore_missing: true
+      tag: rename_destination_port
+  - rename:
+      field: harfang_labs.direction
+      target_field: network.direction
+      ignore_missing: true
+      tag: rename_network_direction
+  - script:
+      lang: painless
+      tag: normalize_network_direction
+      if: ctx.network?.direction != null
+      source: |-
+        def direction = ctx.network.direction.toString().toLowerCase();
+        if (direction == 'out') {
+          ctx.network.direction = 'egress';
+        } else if (direction == 'in') {
+          ctx.network.direction = 'ingress';
+        }
+  - rename:
+      field: harfang_labs.pid
+      target_field: process.pid
+      ignore_missing: true
+      tag: rename_process_pid
+  - rename:
+      field: harfang_labs.process_unique_id
+      target_field: process.entity_id
+      ignore_missing: true
+      tag: rename_process_entity_id
+  - rename:
+      field: harfang_labs.image_name
+      target_field: process.executable
+      ignore_missing: true
+      tag: rename_process_executable
+  - script:
+      lang: painless
+      tag: split_network_username
+      description: Split DOMAIN\user network username into user.domain and user.name.
+      if: ctx.harfang_labs?.username != null
+      source: |-
+        def username = ctx.harfang_labs.username;
+        if (username == null) {
+          return;
+        }
+        ctx.user = ctx.user ?: [:];
+        int idx = username.indexOf('\\');
+        if (idx > 0) {
+          ctx.user.domain = username.substring(0, idx);
+          ctx.user.name = username.substring(idx + 1);
+        } else {
+          ctx.user.name = username;
+        }
+  - rename:
+      field: harfang_labs.event_id
+      target_field: harfang_labs.event.network.event_id
+      ignore_missing: true
+      tag: rename_network_event_id
+  - rename:
+      field: harfang_labs.conn_type
+      target_field: harfang_labs.event.network.conn_type
+      ignore_missing: true
+      tag: rename_conn_type
+  - rename:
+      field: harfang_labs.initiated
+      target_field: harfang_labs.event.network.initiated
+      ignore_missing: true
+      tag: rename_initiated
+  - rename:
+      field: harfang_labs.is_ipv6
+      target_field: harfang_labs.event.network.is_ipv6
+      ignore_missing: true
+      tag: rename_is_ipv6
+  - rename:
+      field: harfang_labs.query_name
+      target_field: dns.question.name
+      ignore_missing: true
+      tag: rename_dns_question
+  - rename:
+      field: harfang_labs.query_results
+      target_field: harfang_labs.event.network.query_results
+      ignore_missing: true
+      tag: rename_dns_query_results
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+  - append:
+      field: event.category
+      tag: append_event_category
+      value: network
+  - append:
+      field: event.type
+      tag: append_event_type_connection
+      value: connection
+  - append:
+      field: event.type
+      tag: append_event_type_protocol
+      value: protocol
+      if: ctx.harfang_labs?.log_type == 'dns_resolution'
+  - set:
+      field: event.outcome
+      tag: set_event_outcome
+      value: unknown
+  - append:
+      field: related.ip
+      tag: append_source_ip_to_related
+      value: '{{{source.ip}}}'
+      allow_duplicates: false
+      if: ctx.source?.ip != null
+  - append:
+      field: related.ip
+      tag: append_destination_ip_to_related
+      value: '{{{destination.ip}}}'
+      allow_duplicates: false
+      if: ctx.destination?.ip != null
+  - append:
+      field: related.user
+      tag: append_user_name_to_related
+      value: '{{{user.name}}}'
+      allow_duplicates: false
+      if: ctx.user?.name != null
+  - remove:
+      field:
+        - _temp
+      ignore_missing: true
+      tag: remove_temp_fields
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

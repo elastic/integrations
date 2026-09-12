@@ -1,0 +1,115 @@
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+state:
+  api_token: {{api_token}}
+  page_size: {{page_size}}
+  initial_interval: {{initial_interval}}
+  threat_statuses: {{threat_statuses}}
+  threat_levels: {{threat_levels}}
+redact:
+  fields:
+    - api_token
+max_executions: 5000
+program: |-
+  state.?cursor.last_creation_date.orValue(
+    string(now - duration(state.initial_interval))
+  ).as(since,
+    (
+      (has(state.?cursor.next_url) && string(state.cursor.next_url) != "") ?
+        string(state.cursor.next_url)
+      :
+        state.url.trim_right("/") + "/api/data/alert/alert/Threat/?" + {
+          "limit": [string(int(state.page_size))],
+          "offset": ["0"],
+          "ordering": ["creation_date"],
+          "status": [state.threat_statuses],
+          "level": [state.threat_levels],
+          "creation_date__gte": [since],
+        }.format_query()
+    ).as(req_url,
+      state.with(
+        request("GET", req_url).with(
+          {
+            "Header": {
+              "Authorization": ["Token " + state.api_token],
+              "Accept": ["application/json"],
+            },
+          }
+        ).do_request().as(resp,
+          (resp.StatusCode == 200) ?
+            resp.Body.decode_json().as(body,
+              body.?results.orValue([]).map(e, {"message": e.encode_json()}).as(events,
+                (
+                  (size(events) > 0) ?
+                    body.results.map(e, e.creation_date)
+                  :
+                    [state.?cursor.last_creation_date.orValue(since)]
+                ).max().as(latest,
+                  (body.?next.orValue(null) != null && size(body.?results.orValue([])) > 0) ?
+                    {
+                      "events": (size(events) > 0) ? dyn(events) : dyn([{"retry": true}]),
+                      "cursor": {
+                        "last_creation_date": latest,
+                        "next_url": state.url.trim_right("/") + string(body.next),
+                      },
+                      "want_more": true,
+                    }
+                  :
+                    {
+                      "events": (size(events) > 0) ? dyn(events) : dyn([{"retry": true}]),
+                      "cursor": {
+                        "last_creation_date": latest,
+                      },
+                      "want_more": false,
+                    }
+                )
+              )
+            )
+          :
+            {
+              "events": {
+                "error": {
+                  "code": string(resp.StatusCode),
+                  "id": string(resp.Status),
+                  "message": "GET /api/data/alert/alert/Threat/: " + (
+                    (size(resp.Body) != 0) ?
+                      string(resp.Body)
+                    :
+                      string(resp.Status)
+                  ),
+                },
+              },
+              "want_more": false,
+            }
+        )
+      )
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+processors:
+- drop_event.when.equals.retry: true
+{{#if processors}}
+{{processors}}
+{{/if}}

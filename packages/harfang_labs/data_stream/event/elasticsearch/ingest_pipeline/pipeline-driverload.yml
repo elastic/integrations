@@ -1,0 +1,158 @@
+---
+description: Parse HarfangLab syslog driver load telemetry events.
+processors:
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline-common-agent" }}'
+      tag: map_common_agent
+  - rename:
+      field: harfang_labs.imagepath
+      target_field: file.path
+      ignore_missing: true
+      tag: rename_file_path
+  - rename:
+      field: harfang_labs.imagename
+      target_field: file.name
+      ignore_missing: true
+      tag: rename_file_name
+  - rename:
+      field: harfang_labs.size
+      target_field: file.size
+      ignore_missing: true
+      tag: rename_file_size
+  - rename:
+      field: harfang_labs.hashes.md5
+      target_field: file.hash.md5
+      ignore_missing: true
+      tag: rename_file_hash_md5
+  - rename:
+      field: harfang_labs.hashes.sha1
+      target_field: file.hash.sha1
+      ignore_missing: true
+      tag: rename_file_hash_sha1
+  - rename:
+      field: harfang_labs.hashes.sha256
+      target_field: file.hash.sha256
+      ignore_missing: true
+      tag: rename_file_hash_sha256
+  - rename:
+      field: harfang_labs.pe_imphash
+      target_field: file.pe.imphash
+      ignore_missing: true
+      tag: rename_file_pe_imphash
+  - rename:
+      field: harfang_labs.pe_info.original_filename
+      target_field: file.pe.original_file_name
+      ignore_missing: true
+      tag: rename_file_pe_original_filename
+  - rename:
+      field: harfang_labs.pe_info.product_name
+      target_field: file.pe.product
+      ignore_missing: true
+      tag: rename_file_pe_product
+  - rename:
+      field: harfang_labs.pe_info.file_description
+      target_field: file.pe.description
+      ignore_missing: true
+      tag: rename_file_pe_description
+  - rename:
+      field: harfang_labs.pe_info.company_name
+      target_field: file.pe.company
+      ignore_missing: true
+      tag: rename_file_pe_company
+  - rename:
+      field: harfang_labs.pe_info.file_version
+      target_field: file.pe.file_version
+      ignore_missing: true
+      tag: rename_file_pe_file_version
+  - rename:
+      field: harfang_labs.signed
+      target_field: file.code_signature.valid
+      ignore_missing: true
+      tag: rename_file_signed
+  - rename:
+      field: harfang_labs.signature_info.signer_info.display_name
+      target_field: file.code_signature.subject_name
+      ignore_missing: true
+      tag: rename_file_code_signature_subject
+  - set:
+      field: file.code_signature.exists
+      tag: set_file_code_signature_exists
+      value: true
+      if: ctx.harfang_labs?.signature_info?.signed_authenticode == true || ctx.harfang_labs?.signature_info?.signed_catalog == true
+  - rename:
+      field: harfang_labs.imagesize
+      target_field: harfang_labs.event.driverload.image_size
+      ignore_missing: true
+      tag: rename_image_size
+  - script:
+      lang: painless
+      tag: stringify_image_base
+      description: Stringify driver image base address to avoid BigInteger ingest issues.
+      if: ctx.harfang_labs?.imagebase != null
+      source: |-
+        ctx.harfang_labs.event = ctx.harfang_labs.event ?: [:];
+        ctx.harfang_labs.event.driverload = ctx.harfang_labs.event.driverload ?: [:];
+        ctx.harfang_labs.event.driverload.image_base = ctx.harfang_labs.imagebase.toString();
+        ctx.harfang_labs.remove('imagebase');
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+  - append:
+      field: event.category
+      tag: append_event_category_driver
+      value: driver
+  - append:
+      field: event.category
+      tag: append_event_category_process
+      value: process
+  - append:
+      field: event.type
+      tag: append_event_type_start
+      value: start
+  - append:
+      field: event.type
+      tag: append_event_type_info
+      value: info
+  - set:
+      field: event.outcome
+      tag: set_event_outcome
+      value: unknown
+  - append:
+      field: related.hash
+      tag: append_file_hash_md5_to_related
+      value: '{{{file.hash.md5}}}'
+      allow_duplicates: false
+      if: ctx.file?.hash?.md5 != null
+  - append:
+      field: related.hash
+      tag: append_file_hash_sha1_to_related
+      value: '{{{file.hash.sha1}}}'
+      allow_duplicates: false
+      if: ctx.file?.hash?.sha1 != null
+  - append:
+      field: related.hash
+      tag: append_file_hash_sha256_to_related
+      value: '{{{file.hash.sha256}}}'
+      allow_duplicates: false
+      if: ctx.file?.hash?.sha256 != null
+  - remove:
+      field:
+        - _temp
+      ignore_missing: true
+      tag: remove_temp_fields
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
