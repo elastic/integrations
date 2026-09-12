@@ -1,0 +1,90 @@
+title: "evcc logs"
+type: logs
+streams:
+  - input: journald
+    title: Collect evcc logs via journald
+    description: Collect evcc application logs from the systemd journal.
+    template_path: journald.yml.hbs
+    vars:
+      - name: include_matches
+        type: text
+        title: Include Matches
+        multi: true
+        required: false
+        show_user: true
+        default:
+          - _SYSTEMD_UNIT=evcc.service
+        description: >
+          A list of filter expressions used to select the logs to read (e.g. `_SYSTEMD_UNIT=evcc.service`). See [include_matches](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-journald.html#filebeat-input-journald-include-matches) for details.
+
+      - name: paths
+        type: text
+        title: Journal paths
+        multi: true
+        required: false
+        show_user: false
+        description: >
+          List of journals to read from. Defaults to the system journal.
+
+      - name: seek
+        type: text
+        title: Seek
+        required: false
+        show_user: false
+        default: cursor
+        description: >
+          Position to start reading from: `head` (oldest retained entry), `tail` (only new entries), or `cursor` (resume where the previous run stopped). With `cursor` and no stored position, **Cursor Seek Fallback** decides. See [seek](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-journald.html#filebeat-input-journald-seek) for details.
+
+      - name: cursor_seek_fallback
+        type: text
+        title: Cursor Seek Fallback
+        required: false
+        show_user: false
+        default: tail
+        description: >
+          Where to start when **Seek** is `cursor` but no usable position is stored — on first collection, or after the journal rotated past the last position. Defaults to `tail` so a first install does not replay evcc's entire retained journal at once. Set to `head` to backfill that history instead.
+
+      - name: drop_debug_logs
+        type: bool
+        title: Drop debug-level logs
+        required: false
+        description: >
+          evcc emits a very high volume of DEBUG-level telemetry (power, current, and SoC readings) that duplicates the metrics already collected by the site and loadpoint data streams. Enable this to drop DEBUG events before they are shipped, keeping only INFO level and above.
+
+        default: false
+        show_user: true
+      - name: preserve_original_event
+        type: bool
+        title: Preserve Original Event
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
+        required: true
+        show_user: true
+        default: false
+      - name: tags
+        type: text
+        title: Tags
+        description: Tags to include in the published event.
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - evcc-log
+          - forwarded
+      - name: condition
+        title: Condition
+        description: Condition to filter when to run this input. See [Dynamic Input Configuration](https://www.elastic.co/guide/en/fleet/current/dynamic-input-configuration.html) for details.
+        type: text
+        required: false
+        show_user: false
+      - name: processors
+        type: yaml
+        title: Processors
+        required: false
+        show_user: false
+        description: >
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+
+elasticsearch:
+  index_template:
+    mappings:
+      subobjects: false
