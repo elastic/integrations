@@ -1,0 +1,825 @@
+---
+description: Pipeline for Datadog audit trail logs (Log Archives via S3/SQS) with ECS mapping
+processors:
+  - set:
+      field: ecs.version
+      value: "9.4.0"
+      tag: set_ecs_version
+
+  - json:
+      field: message
+      target_field: json
+      tag: json_parse_message
+
+  # event.original is populated here, not agent-side: aws-s3.yml.hbs emits no
+  # copy_fields processor. The copy is guarded on event.original == null so a
+  # future agent-side copy would not be overwritten, and so the `remove: message`
+  # in the cleanup block below has the same effect in tests as in production.
+  #
+  # Retention is gated separately: .fleet_final_pipeline-1 strips event.original
+  # from any document whose tags lack preserve_original_event, which the
+  # preserve_original_event stream variable controls.
+  - set:
+      field: event.original
+      copy_from: message
+      if: ctx.event?.original == null && ctx.message != null
+      tag: event_original_from_message
+
+  # === Timestamp ===
+  # `date` and `attributes.timestamp` are the same instant on every observed
+  # event; the string mismatches are trailing-zero serialization only
+  # (.560Z vs .56Z). strict_date_optional_time accepts both precisions.
+  - date:
+      field: json.date
+      target_field: '@timestamp'
+      formats:
+        - strict_date_optional_time
+      if: ctx.json?.date != null
+      tag: date_from_root
+      on_failure:
+        - append:
+            field: tags
+            value: datadog.timestamp_parse_failed
+            allow_duplicates: false
+  - date:
+      field: json.attributes.timestamp
+      target_field: '@timestamp'
+      formats:
+        - strict_date_optional_time
+      if: ctx.json?.attributes?.timestamp != null && ctx['@timestamp'] == null
+      tag: date_fallback_attributes_timestamp
+      on_failure:
+        - append:
+            field: tags
+            value: datadog.timestamp_parse_failed
+            allow_duplicates: false
+  - set:
+      field: '@timestamp'
+      value: '{{{_ingest.timestamp}}}'
+      if: ctx['@timestamp'] == null
+      ignore_failure: true
+      tag: set_timestamp_defaulted_to_ingest_time
+
+  # === Event core ===
+  - set:
+      field: event.kind
+      value: event
+      tag: set_event_kind
+  - set:
+      field: event.module
+      value: datadog
+      tag: set_event_module
+  - set:
+      field: event.dataset
+      value: datadog.audit
+      tag: set_event_dataset
+  - set:
+      field: event.id
+      copy_from: json._id
+      ignore_empty_value: true
+      tag: set_event_id
+
+  # event.action = "<surface>_<verb>", lowercased, non-alphanumerics collapsed
+  # to a single underscore. Built with lowercase+gsub rather than Painless:
+  # script.painless.regex.enabled is off by default, so String.replaceAll
+  # would throw at runtime.
+  - set:
+      field: event.action
+      value: "{{{json.attributes.evt.name}}}_{{{json.attributes.action}}}"
+      if: ctx.json?.attributes?.evt?.name != null && ctx.json?.attributes?.action != null
+      tag: event_action_composite
+  - lowercase:
+      field: event.action
+      ignore_missing: true
+      tag: lowercase_event_action
+  - gsub:
+      field: event.action
+      pattern: '[^a-z0-9]+'
+      replacement: '_'
+      ignore_missing: true
+      tag: gsub_event_action_non_alnum_to_underscore
+  - gsub:
+      field: event.action
+      pattern: '(^_+)|(_+$)'
+      replacement: ''
+      ignore_missing: true
+      tag: gsub_event_action_trim_underscores
+
+  # === Outcome ===
+  # Ordered: vendor status first, then the HTTP override, then the fallback.
+  - set:
+      field: event.outcome
+      value: success
+      if: ctx.json?.status == 'info' || ctx.json?.attributes?.status == 'info'
+      tag: set_event_outcome_success
+  - set:
+      field: event.outcome
+      value: unknown
+      if: ctx.json?.status == 'warn' || ctx.json?.attributes?.status == 'warn'
+      tag: set_event_outcome_unknown
+  - set:
+      field: event.outcome
+      value: failure
+      if: ctx.json?.status == 'error' || ctx.json?.attributes?.status == 'error'
+      tag: set_event_outcome_failure
+  - set:
+      field: event.outcome
+      value: failure
+      if: >-
+        ctx.json?.attributes?.http?.status_code instanceof Number &&
+        ctx.json.attributes.http.status_code >= 400
+      tag: outcome_http_error
+  - set:
+      field: event.outcome
+      value: unknown
+      if: ctx.event?.outcome == null
+      tag: outcome_fallback
+
+  # === log.level ===
+  # Root `status` is byte-identical to attributes.status on all sampled events.
+  - set:
+      field: log.level
+      copy_from: json.status
+      ignore_empty_value: true
+      tag: set_log_level
+
+  # === datadog.* scalars ===
+  - set:
+      field: datadog.event.name
+      copy_from: json.attributes.evt.name
+      ignore_empty_value: true
+      tag: set_datadog_event_name
+  - set:
+      field: datadog.event.uuid
+      copy_from: json.attributes.uuid
+      ignore_empty_value: true
+      tag: set_datadog_event_uuid
+  - set:
+      field: datadog.action
+      copy_from: json.attributes.action
+      ignore_empty_value: true
+      tag: set_datadog_action
+  - set:
+      field: datadog.actor.type
+      copy_from: json.attributes.evt.actor.type
+      ignore_empty_value: true
+      tag: set_datadog_actor_type
+  - set:
+      field: datadog.auth_method
+      copy_from: json.attributes.auth_method
+      ignore_empty_value: true
+      tag: set_datadog_auth_method
+  - set:
+      field: datadog.emitted_source
+      copy_from: json.attributes.emitted_source
+      ignore_empty_value: true
+      tag: set_datadog_emitted_source
+  - set:
+      field: datadog.route.path
+      copy_from: json.attributes.route.path
+      ignore_empty_value: true
+      tag: set_datadog_route_path
+  - set:
+      field: datadog.http.level
+      copy_from: json.attributes.http.level
+      ignore_empty_value: true
+      tag: set_datadog_http_level
+
+  # === Actor and organization ===
+  # Only Datadog's usr object populates ECS user.*. Other actor identities
+  # remain searchable via related.user below.
+  - set:
+      field: user.name
+      copy_from: json.attributes.usr.id
+      ignore_empty_value: true
+      tag: set_user_name
+  - set:
+      field: user.id
+      copy_from: json.attributes.usr.uuid
+      ignore_empty_value: true
+      tag: set_user_id
+  - set:
+      field: user.email
+      copy_from: json.attributes.usr.email
+      ignore_empty_value: true
+      tag: set_user_email
+  - set:
+      field: user.full_name
+      copy_from: json.attributes.usr.name
+      ignore_empty_value: true
+      tag: set_user_full_name
+  - date:
+      field: json.attributes.usr.created
+      target_field: datadog.user.created
+      formats: [strict_date_optional_time]
+      if: ctx.json?.attributes?.usr?.created != null
+      ignore_failure: true
+      tag: date_datadog_user_created
+  - set:
+      field: organization.id
+      copy_from: json.attributes.org.uuid
+      ignore_empty_value: true
+      tag: set_organization_id
+  - set:
+      field: organization.name
+      copy_from: json.attributes.org.name
+      ignore_empty_value: true
+      tag: set_organization_name
+  - set:
+      field: datadog.org.id
+      copy_from: json.attributes.metadata.org_id
+      ignore_empty_value: true
+      tag: set_datadog_org_id
+  - convert:
+      field: json.attributes.metadata.user_id
+      target_field: _tmp.metadata_user_id
+      type: string
+      ignore_missing: true
+      tag: convert_tmp_metadata_user_id
+  - append:
+      field: related.user
+      value: "{{{user.name}}}"
+      allow_duplicates: false
+      if: ctx.user?.name != null
+      tag: append_related_user_user_name
+  - append:
+      field: related.user
+      value: "{{{user.email}}}"
+      allow_duplicates: false
+      if: ctx.user?.email != null
+      tag: append_related_user_user_email
+  - append:
+      field: related.user
+      value: "{{{_tmp.metadata_user_id}}}"
+      allow_duplicates: false
+      if: ctx._tmp?.metadata_user_id != null
+      tag: append_related_user_tmp_metadata_user_id
+  - append:
+      field: related.user
+      value: "{{{json.attributes.metadata.user_uuid}}}"
+      allow_duplicates: false
+      if: ctx.json?.attributes?.metadata?.user_uuid != null
+      tag: append_related_user_dd_attributes_metadata_user_uuid
+  - append:
+      field: related.user
+      value: "{{{json.attributes.metadata.api_key.id}}}"
+      allow_duplicates: false
+      if: ctx.json?.attributes?.metadata?.api_key?.id != null
+      tag: append_related_user_dd_attributes_metadata_api_key_id
+  - append:
+      field: related.user
+      value: "{{{json.attributes.metadata.application_key.id}}}"
+      allow_duplicates: false
+      if: ctx.json?.attributes?.metadata?.application_key?.id != null
+      tag: append_related_user_dd_attributes_metadata_application_key_id
+  - append:
+      field: related.user
+      value: "{{{json.attributes.metadata.oauth_client.name}}}"
+      allow_duplicates: false
+      if: ctx.json?.attributes?.metadata?.oauth_client?.name != null
+      tag: append_related_user_dd_attributes_metadata_oauth_client_name
+  - append:
+      field: related.user
+      value: "{{{json.attributes.metadata.run_as_user.id}}}"
+      allow_duplicates: false
+      if: ctx.json?.attributes?.metadata?.run_as_user?.id != null
+      tag: append_related_user_dd_attributes_metadata_run_as_user_id
+  - append:
+      field: related.user
+      value: "{{{json.attributes.metadata.run_as_user.name}}}"
+      allow_duplicates: false
+      if: ctx.json?.attributes?.metadata?.run_as_user?.name != null
+      tag: append_related_user_dd_attributes_metadata_run_as_user_name
+
+  # === HTTP, URL, user-agent, source IP, and geo ===
+  - set:
+      field: http.request.method
+      copy_from: json.attributes.http.method
+      ignore_empty_value: true
+      tag: set_http_request_method
+  - set:
+      field: http.response.status_code
+      copy_from: json.attributes.http.status_code
+      ignore_empty_value: true
+      tag: set_http_response_status_code
+  - set:
+      field: url.domain
+      copy_from: json.attributes.http.url_details.host
+      ignore_empty_value: true
+      tag: set_url_domain
+  - set:
+      field: url.path
+      copy_from: json.attributes.http.url_details.path
+      ignore_empty_value: true
+      tag: set_url_path
+  - set:
+      field: url.full
+      value: "https://{{{json.attributes.http.url_details.host}}}{{{json.attributes.http.url_details.path}}}"
+      if: >-
+        ctx.json?.attributes?.http?.url_details?.host != null &&
+        ctx.json?.attributes?.http?.url_details?.path != null
+      tag: set_url_full
+  - append:
+      field: related.hosts
+      value: "{{{url.domain}}}"
+      allow_duplicates: false
+      if: ctx.url?.domain != null
+      tag: append_related_hosts_url_domain
+  - set:
+      field: user_agent.original
+      copy_from: json.attributes.http.useragent
+      ignore_empty_value: true
+      tag: set_user_agent_original
+  - user_agent:
+      field: user_agent.original
+      ignore_missing: true
+      tag: user_agent_user_agent_original
+  - set:
+      field: source.ip
+      copy_from: json.attributes.network.client.ip
+      ignore_empty_value: true
+      tag: set_source_ip
+  - append:
+      field: related.ip
+      value: "{{{source.ip}}}"
+      allow_duplicates: false
+      if: ctx.source?.ip != null
+      tag: append_related_ip_source_ip
+  - set:
+      field: source.geo.city_name
+      copy_from: json.attributes.network.client.geoip.city.name
+      ignore_empty_value: true
+      tag: set_source_geo_city_name
+  - set:
+      field: source.geo.country_name
+      copy_from: json.attributes.network.client.geoip.country.name
+      ignore_empty_value: true
+      tag: set_source_geo_country_name
+  - set:
+      field: source.geo.country_iso_code
+      copy_from: json.attributes.network.client.geoip.country.iso_code
+      ignore_empty_value: true
+      tag: set_source_geo_country_iso_code
+  - set:
+      field: source.geo.region_name
+      copy_from: json.attributes.network.client.geoip.subdivision.name
+      ignore_empty_value: true
+      tag: set_source_geo_region_name
+  - set:
+      field: source.geo.region_iso_code
+      copy_from: json.attributes.network.client.geoip.subdivision.iso_code
+      ignore_empty_value: true
+      tag: set_source_geo_region_iso_code
+  - set:
+      field: source.geo.continent_name
+      copy_from: json.attributes.network.client.geoip.continent.name
+      ignore_empty_value: true
+      tag: set_source_geo_continent_name
+  - set:
+      field: source.geo.continent_code
+      copy_from: json.attributes.network.client.geoip.continent.code
+      ignore_empty_value: true
+      tag: set_source_geo_continent_code
+  - set:
+      field: source.geo.timezone
+      copy_from: json.attributes.network.client.geoip.timezone
+      ignore_empty_value: true
+      tag: set_source_geo_timezone
+  - set:
+      field: source.geo.location.lat
+      copy_from: json.attributes.network.client.geoip.location.latitude
+      ignore_empty_value: true
+      tag: set_source_geo_location_lat
+  - set:
+      field: source.geo.location.lon
+      copy_from: json.attributes.network.client.geoip.location.longitude
+      ignore_empty_value: true
+      tag: set_source_geo_location_lon
+  - set:
+      field: _tmp.as_number
+      copy_from: json.attributes.network.client.geoip.as.number
+      ignore_empty_value: true
+      tag: set_tmp_as_number
+  - gsub:
+      field: _tmp.as_number
+      pattern: '^AS'
+      replacement: ''
+      ignore_missing: true
+      tag: gsub_tmp_as_number
+  - convert:
+      field: _tmp.as_number
+      target_field: source.as.number
+      type: long
+      ignore_missing: true
+      ignore_failure: true
+      tag: convert_source_as_number
+  - set:
+      field: source.as.organization.name
+      copy_from: json.attributes.network.client.geoip.as.name
+      ignore_empty_value: true
+      tag: set_source_as_organization_name
+  - set:
+      field: datadog.source.as.domain
+      copy_from: json.attributes.network.client.geoip.as.domain
+      ignore_empty_value: true
+      tag: set_datadog_source_as_domain
+  - set:
+      field: datadog.source.as.route
+      copy_from: json.attributes.network.client.geoip.as.route
+      ignore_empty_value: true
+      tag: set_datadog_source_as_route
+  - set:
+      field: datadog.source.as.type
+      copy_from: json.attributes.network.client.geoip.as.type
+      ignore_empty_value: true
+      tag: set_datadog_source_as_type
+
+  # === ECS categorization ===
+  - append:
+      field: event.category
+      value: api
+      allow_duplicates: false
+      tag: append_event_category_api
+  - append:
+      field: event.category
+      value: web
+      allow_duplicates: false
+      if: >-
+        ctx.http?.request?.method != null &&
+        ctx.http?.response?.status_code != null && ctx.url?.full != null
+      tag: append_event_category_web
+  - append:
+      field: event.category
+      value: configuration
+      allow_duplicates: false
+      if: >-
+        ['modified', 'created'].contains(ctx.json?.attributes?.action) ||
+        ctx.json?.attributes?.asset?.type != null
+      tag: append_event_category_configuration
+  - append:
+      field: event.category
+      value: iam
+      allow_duplicates: false
+      if: >-
+        ctx.user?.name != null &&
+        (ctx.json?.attributes?.evt?.name == 'Organization Management' ||
+         ctx.json?.attributes?.asset?.type == 'email_domain_allowlist')
+      tag: append_event_category_iam
+  - append:
+      field: event.type
+      value: access
+      allow_duplicates: false
+      if: "['accessed', 'queried', 'authorized', 'executed'].contains(ctx.json?.attributes?.action)"
+      tag: append_event_type_access
+  - append:
+      field: event.type
+      value: change
+      allow_duplicates: false
+      if: ctx.json?.attributes?.action == 'modified'
+      tag: append_event_type_change
+  - append:
+      field: event.type
+      value: creation
+      allow_duplicates: false
+      if: ctx.json?.attributes?.action == 'created'
+      tag: append_event_type_creation
+  - append:
+      field: event.type
+      value: start
+      allow_duplicates: false
+      if: ctx.json?.attributes?.action == 'started'
+      tag: append_event_type_start
+  - append:
+      field: event.type
+      value: end
+      allow_duplicates: false
+      if: ctx.json?.attributes?.action == 'completed'
+      tag: append_event_type_end
+  - append:
+      field: event.type
+      value: error
+      allow_duplicates: false
+      if: >-
+        ctx.event?.category instanceof List && ctx.event.category.contains('web') &&
+        ctx.event?.outcome == 'failure'
+      tag: append_event_type_error
+  - append:
+      field: event.type
+      value: info
+      allow_duplicates: false
+      if: ctx.event?.type == null
+      tag: append_event_type_info
+
+  # === Asset and curated metadata ===
+  - set:
+      field: datadog.asset.id
+      copy_from: json.attributes.asset.id
+      ignore_empty_value: true
+      tag: set_datadog_asset_id
+  - set:
+      field: datadog.asset.name
+      copy_from: json.attributes.asset.name
+      ignore_empty_value: true
+      tag: set_datadog_asset_name
+  - set:
+      field: datadog.asset.type
+      copy_from: json.attributes.asset.type
+      ignore_empty_value: true
+      tag: set_datadog_asset_type
+  - set:
+      field: datadog.asset.path
+      copy_from: json.attributes.asset.path
+      ignore_empty_value: true
+      tag: set_datadog_asset_path
+  - set:
+      field: datadog.asset.version_uuid
+      copy_from: json.attributes.asset.version_uuid
+      ignore_empty_value: true
+      tag: set_datadog_asset_version_uuid
+  - set:
+      field: datadog.request_id
+      copy_from: json.attributes.metadata.dd.request_id
+      ignore_empty_value: true
+      tag: set_datadog_request_id
+  - set:
+      field: datadog.track
+      copy_from: json.attributes.metadata.track
+      ignore_empty_value: true
+      tag: set_datadog_track
+  - set:
+      field: datadog.session_id
+      copy_from: json.attributes.metadata.session_id
+      ignore_empty_value: true
+      tag: set_datadog_session_id
+  - set:
+      field: datadog.workflow.id
+      copy_from: json.attributes.metadata.workflow_id
+      ignore_empty_value: true
+      tag: set_datadog_workflow_id
+  - set:
+      field: datadog.workflow.name
+      copy_from: json.attributes.metadata.workflow_name
+      ignore_empty_value: true
+      tag: set_datadog_workflow_name
+  - set:
+      field: datadog.workflow.instance_id
+      copy_from: json.attributes.metadata.instance_id
+      ignore_empty_value: true
+      tag: set_datadog_workflow_instance_id
+  - set:
+      field: datadog.workflow.step_name
+      copy_from: json.attributes.metadata.step_name
+      ignore_empty_value: true
+      tag: set_datadog_workflow_step_name
+  - set:
+      field: datadog.workflow.step_execution_id
+      copy_from: json.attributes.metadata.step_execution_id
+      ignore_empty_value: true
+      tag: set_datadog_workflow_step_execution_id
+  - set:
+      field: datadog.workflow.trigger
+      copy_from: json.attributes.metadata.workflow_trigger
+      ignore_empty_value: true
+      tag: set_datadog_workflow_trigger
+  - set:
+      field: datadog.workflow.parent_id
+      copy_from: json.attributes.metadata.parent_workflow_id
+      ignore_empty_value: true
+      tag: set_datadog_workflow_parent_id
+  - set:
+      field: datadog.workflow.parent_instance_id
+      copy_from: json.attributes.metadata.parent_workflow_instance_id
+      ignore_empty_value: true
+      tag: set_datadog_workflow_parent_instance_id
+  - gsub:
+      field: json.attributes.metadata.workflow_createdAt
+      pattern: '^(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2}:\d{2})(\.\d+)? \+0000 \+0000$'
+      replacement: '$1T$2$3Z'
+      ignore_missing: true
+      tag: normalize_workflow_created_at
+  - date:
+      field: json.attributes.metadata.workflow_createdAt
+      target_field: datadog.workflow.created_at
+      formats:
+      - strict_date_optional_time
+      if: ctx.json?.attributes?.metadata?.workflow_createdAt != null
+      tag: date_workflow_created_at
+  - set:
+      field: datadog.agent.version
+      copy_from: json.attributes.metadata.agent_metadata.agent_version
+      ignore_empty_value: true
+      tag: set_datadog_agent_version
+  - set:
+      field: datadog.agent.flavor
+      copy_from: json.attributes.metadata.agent_metadata.flavor
+      ignore_empty_value: true
+      tag: set_datadog_agent_flavor
+  - set:
+      field: datadog.agent.install_method_tool
+      copy_from: json.attributes.metadata.agent_metadata.install_method_tool
+      ignore_empty_value: true
+      tag: set_datadog_agent_install_method_tool
+  - set:
+      field: datadog.agent.remote_updates_enabled
+      copy_from: json.attributes.metadata.agent_metadata.remote_updates_enabled
+      ignore_empty_value: true
+      tag: set_datadog_agent_remote_updates_enabled
+  - set:
+      field: host.name
+      copy_from: json.attributes.metadata.host_metadata.hostname
+      ignore_empty_value: true
+      tag: set_host_name
+  - set:
+      field: host.os.full
+      copy_from: json.attributes.metadata.host_metadata.os
+      ignore_empty_value: true
+      tag: set_host_os_full
+  - set:
+      field: datadog.oauth_client.name
+      copy_from: json.attributes.metadata.oauth_client.name
+      ignore_empty_value: true
+      tag: set_datadog_oauth_client_name
+  - set:
+      field: datadog.oauth_client.id
+      copy_from: json.attributes.metadata.oauth_client.uuid
+      ignore_empty_value: true
+      tag: set_datadog_oauth_client_id
+  - set:
+      field: datadog.api_key.id
+      copy_from: json.attributes.metadata.api_key.id
+      ignore_empty_value: true
+      tag: set_datadog_api_key_id
+  - set:
+      field: datadog.application_key.id
+      copy_from: json.attributes.metadata.application_key.id
+      ignore_empty_value: true
+      tag: set_datadog_application_key_id
+  - set:
+      field: datadog.client.name
+      copy_from: json.attributes.metadata.client.name
+      ignore_empty_value: true
+      tag: set_datadog_client_name
+  - set:
+      field: datadog.client.version
+      copy_from: json.attributes.metadata.client.version
+      ignore_empty_value: true
+      tag: set_datadog_client_version
+  - set:
+      field: datadog.tool.name
+      copy_from: json.attributes.metadata.tool.name
+      ignore_empty_value: true
+      tag: set_datadog_tool_name
+  - convert:
+      field: json.attributes.metadata.mcp.request_id
+      target_field: datadog.mcp.request_id
+      type: string
+      ignore_missing: true
+      tag: convert_datadog_mcp_request_id
+  - set:
+      field: datadog.event_name
+      copy_from: json.attributes.metadata.event_name
+      ignore_empty_value: true
+      tag: set_datadog_event_name_dd_attributes_metadata_event_name
+  - set:
+      field: datadog.fqn
+      copy_from: json.attributes.metadata.fqn
+      ignore_empty_value: true
+      tag: set_datadog_fqn
+  - set:
+      field: datadog.integration_name
+      copy_from: json.attributes.metadata.integration_name
+      ignore_empty_value: true
+      tag: set_datadog_integration_name
+  - set:
+      field: datadog.action_name
+      copy_from: json.attributes.metadata.action_name
+      ignore_empty_value: true
+      tag: set_datadog_action_name
+  - set:
+      field: datadog.bundle_id
+      copy_from: json.attributes.metadata.bundle_id
+      ignore_empty_value: true
+      tag: set_datadog_bundle_id
+  - set:
+      field: datadog.configuration_type
+      copy_from: json.attributes.metadata.configuration_type
+      ignore_empty_value: true
+      tag: set_datadog_configuration_type
+  - set:
+      field: datadog.connection_id
+      copy_from: json.attributes.metadata.connection_id
+      ignore_empty_value: true
+      tag: set_datadog_connection_id
+  - set:
+      field: datadog.request_endpoint
+      copy_from: json.attributes.metadata.request_endpoint
+      ignore_empty_value: true
+      tag: set_datadog_request_endpoint
+  - set:
+      field: datadog.usage.duration
+      copy_from: json.attributes.metadata.usage.duration
+      ignore_empty_value: true
+      tag: set_datadog_usage_duration
+  - set:
+      field: datadog.run_as_user.id
+      copy_from: json.attributes.metadata.run_as_user.id
+      ignore_empty_value: true
+      tag: set_datadog_run_as_user_id
+  - set:
+      field: datadog.run_as_user.name
+      copy_from: json.attributes.metadata.run_as_user.name
+      ignore_empty_value: true
+      tag: set_datadog_run_as_user_name
+  - set:
+      field: datadog.run_as_user.is_service_account
+      copy_from: json.attributes.metadata.run_as_user.is_service_account
+      ignore_empty_value: true
+      tag: set_datadog_run_as_user_is_service_account
+  - set:
+      field: datadog.metadata
+      copy_from: json.attributes.metadata
+      ignore_empty_value: true
+      tag: set_datadog_metadata
+  - set:
+      field: datadog.asset.new_value
+      copy_from: json.attributes.asset.new_value
+      ignore_empty_value: true
+      tag: set_datadog_asset_new_value
+  - set:
+      field: datadog.asset.prev_value
+      copy_from: json.attributes.asset.prev_value
+      ignore_empty_value: true
+      tag: set_datadog_asset_prev_value
+
+  # === Threat intel ===
+  - set:
+      field: datadog.threat_intel
+      copy_from: json.attributes.threat_intel
+      ignore_empty_value: true
+      tag: set_datadog_threat_intel
+
+  # === Source tags and cleanup ===
+  # Preserve source tags under the vendor namespace; ECS tags are agent-owned.
+  - set:
+      field: datadog.tags
+      copy_from: json.tags
+      ignore_empty_value: true
+      tag: set_datadog_tags
+  - set:
+      field: datadog.notable_event
+      value: true
+      if: ctx.json?.tags instanceof List && ctx.json.tags.contains('is_notable_event:true')
+      tag: set_datadog_notable_event_true
+  - set:
+      field: datadog.notable_event
+      value: false
+      if: ctx.json?.tags instanceof List && ctx.json.tags.contains('is_notable_event:false')
+      tag: set_datadog_notable_event_false
+  - set:
+      field: datadog.mcp_call
+      value: true
+      if: ctx.json?.tags instanceof List && ctx.json.tags.contains('is_mcp_call:true')
+      tag: set_datadog_mcp_call_true
+  - set:
+      field: datadog.mcp_call
+      value: false
+      if: ctx.json?.tags instanceof List && ctx.json.tags.contains('is_mcp_call:false')
+      tag: set_datadog_mcp_call_false
+  - set:
+      field: datadog.previewable_event
+      value: true
+      if: ctx.json?.tags instanceof List && ctx.json.tags.contains('is_previewable_event:true')
+      tag: set_datadog_previewable_event_true
+  - set:
+      field: datadog.previewable_event
+      value: false
+      if: ctx.json?.tags instanceof List && ctx.json.tags.contains('is_previewable_event:false')
+      tag: set_datadog_previewable_event_false
+  - remove:
+      field: json
+      ignore_missing: true
+      tag: remove_dd
+  - remove:
+      field: _tmp
+      ignore_missing: true
+      tag: remove_tmp
+  - remove:
+      field: message
+      ignore_missing: true
+      if: ctx.event?.original != null
+      tag: remove_message
+
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'
