@@ -1,0 +1,50 @@
+# Feed failures must remain actionable errors, never breach alerts.
+# The pipeline runner rejects every error.message by design, so use the
+# official script runner to assert this intentional failure path.
+use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+install_pipelines -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT}
+simulate -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT} default feed-error.json
+cp stdout actual.json
+exec jq -e --slurpfile expected expected.json -f assertion.jq actual.json
+stdout true
+uninstall_pipelines -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT}
+
+-- assertion.jq --
+(del(.event.ingested) == $expected[0]) and (.event.ingested | test("^[0-9]{4}-[0-9]{2}-[0-9]{2}T.*Z$"))
+-- feed-error.json --
+{
+  "@timestamp": "2026-08-14T10:05:00.000Z",
+  "ecs": {
+    "version": "8.0.0"
+  },
+  "error": {
+    "code": "403",
+    "id": "403 Forbidden",
+    "message": "GET LeakData feed: connector access is unavailable"
+  },
+  "tags": [
+    "forwarded",
+    "leakdata"
+  ]
+}
+-- expected.json --
+{
+  "@timestamp": "2026-08-14T10:05:00.000Z",
+  "ecs": {
+    "version": "8.0.0"
+  },
+  "error": {
+    "code": "403",
+    "id": "403 Forbidden",
+    "message": "GET LeakData feed: connector access is unavailable"
+  },
+  "tags": [
+    "forwarded",
+    "leakdata"
+  ],
+  "event": {
+    "kind": "pipeline_error",
+    "module": "leakdata",
+    "dataset": "leakdata.exposure"
+  }
+}

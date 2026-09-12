@@ -1,0 +1,56 @@
+title: "LeakData verified exposure alerts"
+type: logs
+streams:
+  - input: cel
+    title: "LeakData alerts via CEL"
+    description: |-
+      Polls the dedicated LeakData Elastic Security feed. LeakData emits only
+      verified, privacy-minimized alerts for exact email addresses whose
+      ownership remains verified at delivery time.
+    template_path: cel.yml.hbs
+    vars:
+      - name: url
+        type: url
+        title: LeakData URL
+        description: Base URL of the LeakData service. Keep the default for production.
+        default: "https://leakdata.io"
+        required: true
+        show_user: true
+      - name: token
+        type: password
+        title: Connector token
+        description: One-time token generated in the LeakData dashboard. Store it as a Fleet secret.
+        required: true
+        show_user: true
+        secret: true
+      - name: interval
+        type: text
+        title: Poll interval
+        description: How often Elastic Agent polls for newly verified alerts.
+        default: 5m
+        required: true
+        show_user: true
+      - name: batch_size
+        type: integer
+        title: Batch size
+        description: Number of alerts requested per page. LeakData allows 1 to 100.
+        default: 100
+        required: true
+        show_user: false
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        default:
+          - forwarded
+          - leakdata
+          - verified-exposure
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Optional Elastic Agent processors. They execute after LeakData has
+          applied its verified-email and privacy boundaries.
