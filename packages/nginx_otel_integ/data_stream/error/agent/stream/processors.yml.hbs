@@ -1,0 +1,24 @@
+processors:
+  transform/parse_nginx_error:
+    error_mode: ignore
+    log_statements:
+      - context: log
+        conditions:
+          - IsMatch(body, "^\\d{4}/\\d{2}/\\d{2} \\d{2}:\\d{2}:\\d{2} \\[.+\\]")
+        statements:
+          - 'set(body, ExtractGrokPatterns(body, "%{DATA:nginx.error.time} \\[%{LOGLEVEL:log.level}\\] %{NUMBER:process.pid:long}#%{NUMBER:process.thread.id:long}: (\\*%{NUMBER:nginx.error.connection_id:long} )?%{GREEDYMULTILINE:message}", true, ["GREEDYMULTILINE=(.|\\n)*", "LOGLEVEL=[a-zA-Z]+"]))'
+          - set(attributes["event.name"], "nginx.error")
+          - set(severity_text, body["log.level"])
+          - set(attributes["log.level"], body["log.level"])
+          - set(attributes["message"], body["message"])
+          - set(attributes["process.pid"], body["process.pid"])
+  resourcedetection/system:
+    detectors: ["system"]
+    system:
+      hostname_sources: ["os"]
+service:
+  pipelines:
+    logs:
+      processors:
+        - transform/parse_nginx_error
+        - resourcedetection/system
