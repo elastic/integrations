@@ -348,6 +348,12 @@ processors:
       if: ctx.client?.ip != null
   - append:
       field: related.ip
+      tag: append_network_forwarded_ip_into_related_ip
+      value: '{{{network.forwarded_ip}}}'
+      allow_duplicates: false
+      if: ctx.network?.forwarded_ip != null
+  - append:
+      field: related.ip
       tag: append_ip_address_into_related_ip
       value: '{{{citrix_adc.log.ip_address}}}'
       allow_duplicates: false
@@ -436,6 +442,7 @@ processors:
         - citrix_adc.log.username
         - citrix_adc.log.vserver.ip
         - citrix_adc.log.vserver.port
+        - citrix_adc.log.x_forwarded_for_ip
       tag: remove_custom_duplicate_fields
       ignore_missing: true
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
