@@ -33,6 +33,14 @@ processors:
       field: event.original
       target_field: socradar_alert
       tag: json_decode_event_original
+  - drop:
+      tag: drop_cursor_placeholder
+      if: ctx.socradar_alert?.cursor_placeholder == true
+      description: >-
+        Drop the zero-alarm cursor placeholder emitted by the CEL input. The
+        input only persists the cursor when it publishes at least one event, so
+        a quiet poll emits a single placeholder to make the cursor write stick;
+        it carries no alarm data and must not be indexed.
   - fingerprint:
       fields:
         - socradar_alert.alarm_id

@@ -22,55 +22,68 @@ redact:
   fields:
     - api_key
 program: |-
-  state.with(
-    request(
-      "GET",
-      state.url + "?" + {
-        "limit": [string(state.limit)],
-        "include_total_records": ["true"],
-        "show_page_in_response": ["true"],
-        "page": [string(int(state.?current_page.orValue(1)))],
-        "include_alarm_details": ["true"],
-        "include_company_id": ["true"],
-        "start_date": [
-          state.?cursor.last_requested_at.orValue(
-            (now - duration(state.initial_lookback)).format("2006-01-02 15:04:05")
-          ),
-        ],
-      }.format_query()
-    ).with(
-      {"Header": {"Api-Key": [state.api_key]}}
-    ).do_request().as(resp,
-      (resp.StatusCode == 200) ?
-        resp.Body.decode_json().as(body,
-          (int(state.?current_page.orValue(1)) < int(body.?data.?total_pages.orValue(1))) ?
-            {
-              "events": body.?data.alarms.orValue([]).map(a, {"message": a.encode_json()}),
-              "want_more": true,
-              "current_page": int(state.?current_page.orValue(1)) + 1,
-            }
-          :
-            {
-              "events": body.?data.alarms.orValue([]).map(a, {"message": a.encode_json()}),
-              "want_more": false,
-              "current_page": 1,
-              "cursor": {"last_requested_at": now.format("2006-01-02 15:04:05")},
-            }
-        )
-      :
-        {
-          "events": [
-            {
-              "error": {
-                "code": string(resp.StatusCode),
-                "id": string(resp.Status),
-                "message": "GET " + string(resp.StatusCode) + ": " + ((size(resp.Body) != 0) ? string(resp.Body) : string(resp.Status)),
+  (
+    state.?want_more.orValue(false) ?
+      state.start_date
+    :
+      state.?cursor.last_requested_at.orValue(
+        (now - duration(state.initial_lookback)).format("2006-01-02 15:04:05")
+      )
+  ).as(start_date,
+    state.with(
+      request(
+        "GET",
+        state.url + "?" + {
+          "limit": [string(state.limit)],
+          "include_total_records": ["true"],
+          "show_page_in_response": ["true"],
+          "page": [string(int(state.?current_page.orValue(1)))],
+          "include_alarm_details": ["true"],
+          "include_company_id": ["true"],
+          "start_date": [start_date],
+        }.format_query()
+      ).with(
+        {"Header": {"Api-Key": [state.api_key]}}
+      ).do_request().as(resp,
+        (resp.StatusCode == 200) ?
+          resp.Body.decode_json().as(body,
+            body.?data.alarms.orValue([]).as(alarms,
+              (int(state.?current_page.orValue(1)) < int(body.?data.?total_pages.orValue(1))) ?
+                {
+                  "events": alarms.map(a, {"message": a.encode_json()}),
+                  "want_more": true,
+                  "current_page": int(state.?current_page.orValue(1)) + 1,
+                  "start_date": start_date,
+                }
+              :
+                {
+                  "events": (alarms.size() != 0) ?
+                    alarms.map(a, {"message": a.encode_json()})
+                  :
+                    [{"message": "{\"cursor_placeholder\":true}"}],
+                  "want_more": false,
+                  "current_page": 1,
+                  "start_date": start_date,
+                  "cursor": {"last_requested_at": (now - duration("5m")).format("2006-01-02 15:04:05")},
+                }
+            )
+          )
+        :
+          {
+            "events": [
+              {
+                "error": {
+                  "code": string(resp.StatusCode),
+                  "id": string(resp.Status),
+                  "message": "GET " + string(resp.StatusCode) + ": " + ((size(resp.Body) != 0) ? string(resp.Body) : string(resp.Status)),
+                },
               },
-            },
-          ],
-          "want_more": false,
-          "current_page": 1,
-        }
+            ],
+            "want_more": false,
+            "current_page": 1,
+            "start_date": start_date,
+          }
+      )
     )
   )
 {{#if tags}}
