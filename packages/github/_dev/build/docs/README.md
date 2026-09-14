@@ -130,7 +130,7 @@ The data stream issues two GraphQL queries per collection cycle against `POST ht
 1. **`organization.membersWithRole`** — paginated list of all org members with their role and 2FA status.
 2. **`organization.teams`** (with nested `team.members`) — paginated list of all teams and their members, used to populate team membership and entity relationship fields.
 
-**Authentication:** This data stream requires a **Classic Personal Access Token (PAT)**. Fine-grained PATs do not support the `admin:org` scope or the `membersWithRole` GraphQL query reliably and must not be used.
+**Authentication:** This data stream requires a **Classic Personal Access Token (PAT)**. Fine-grained PATs do not support the `admin:org` scope or the `membersWithRole` GraphQL query reliably and cannot be used.
 
 The required scopes depend on which fields you want to collect:
 
@@ -150,7 +150,7 @@ Refer to [Creating a personal access token (classic)](https://docs.github.com/en
 
 **Note:** The `billing_manager` organization role is only available via the REST API (`GET /orgs/{org}/memberships/{username}`) and is not returned by the GraphQL `membersWithRole` query. Members with this role appear with role `MEMBER` in this data stream.
 
-**Note:** For GitHub Enterprise Server, override the **API URL** setting to point to your GHES instance (e.g. `https://github.example.com/api/v3`).
+**Note:** For GitHub Enterprise Server, override the **API URL** setting to point to your GHES instance (e.g. `https://github.example.com/api`). This data stream appends `/graphql` to the API URL, and GHES serves GraphQL at `<HOSTNAME>/api/graphql` — the `/api/v3` prefix used by the REST-based data streams does not apply here.
 
 {{fields "members"}}
 
