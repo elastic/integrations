@@ -11,6 +11,8 @@ Agentless deployments are only supported in Elastic Serverless and Elastic Cloud
 
 - **`events`**: Provides audit data that includes actions such as `USER_MANAGEMENT`, `PASSWORD_ACTIVITY`, `PROVISIONING`, `ACCESS_ITEM`, `SOURCE_MANAGEMENT`, `CERTIFICATION`, `AUTH`, `SYSTEM_CONFIG`, `ACCESS_REQUEST`, `SSO`, `WORKFLOW`, `SEGMENT` and more. [Audit Events](https://community.sailpoint.com/t5/IdentityNow-Wiki/Audit-Events-in-Cloud-Audit/ta-p/218727) are records that a user took action in an [IdentityNow](https://www.sailpoint.com/products/identitynow) tenant, or other service like [IdentityAI](https://www.sailpoint.com/products/ai-driven-identity-security). This data stream leverages the [/v2026/search](https://developer.sailpoint.com/docs/api/v2026/search-post) endpoint.
 
+- **`identities`**: Collects human identity records (employees, contractors, and external users) governed by SailPoint ISC. Each document represents the current governance state of an identity including their access entitlements, owned governance objects, manager relationships, and segment memberships. Designed for entity analytics, user risk scoring, and identity-correlated security detections. Uses incremental collection via the [Search API](https://developer.sailpoint.com/docs/api/v2026/search-post) with a `searchAfter` cursor so only identities modified since the last run are fetched.
+
 ## Requirements
 
 ### Create an OAuth2 API Client
@@ -20,7 +22,7 @@ This integration uses OAuth2 `client_credentials` to authenticate against the Sa
 1. Log in to the SailPoint ISC admin console.
 2. Navigate to **Admin → Security Settings → API Management**.
 3. Click **Create API Client**, select **Client Credentials** as grant type, and grant the following scopes:
-   - `sp:search:read` — required for the `events`data stream
+   - `sp:search:read` — required for the `events` and `identities` data streams
 4. Note the generated **Client ID** and **Client Secret** for use in the integration configuration.
 
 For further details see the official [Authentication documentation](https://developer.sailpoint.com/docs/api/authentication).
@@ -38,24 +40,24 @@ An example event for `events` looks as following:
 {
     "@timestamp": "2024-12-12T10:58:27.962Z",
     "agent": {
-        "ephemeral_id": "b6ceb572-1179-4497-84df-0207501ecaeb",
-        "id": "f0a879aa-5075-4959-a069-27ed3f2fcca1",
-        "name": "elastic-agent-20285",
+        "ephemeral_id": "f7c9ed4a-2f7e-44b0-8b64-a860ca47b6de",
+        "id": "b1537110-453a-4e7a-9523-15d60cb34be2",
+        "name": "elastic-agent-35846",
         "type": "filebeat",
-        "version": "9.4.1"
+        "version": "9.4.4"
     },
     "data_stream": {
         "dataset": "sailpoint_identity_sc.events",
-        "namespace": "75813",
+        "namespace": "19971",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "f0a879aa-5075-4959-a069-27ed3f2fcca1",
+        "id": "b1537110-453a-4e7a-9523-15d60cb34be2",
         "snapshot": false,
-        "version": "9.4.1"
+        "version": "9.4.4"
     },
     "event": {
         "agent_id_status": "verified",
@@ -63,7 +65,7 @@ An example event for `events` looks as following:
             "iam"
         ],
         "dataset": "sailpoint_identity_sc.events",
-        "ingested": "2026-07-17T12:44:00Z",
+        "ingested": "2026-08-27T07:08:39Z",
         "kind": "event",
         "module": "sailpoint_identity_sc",
         "type": [
@@ -161,7 +163,7 @@ An example event for `events` looks as following:
 
 **ECS Field Reference**
 
-Please refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
 
 The following non-ECS fields are used in events documents:
 
@@ -263,4 +265,220 @@ The following non-ECS fields are used in events documents:
 | user.entity.name | The name of the entity. The keyword field enables exact matches for filtering and aggregations, while the text field enables full-text search. For entities with dedicated field sets (for example, `host`), this field should mirrors the corresponding \*.name value. | keyword |
 | user.entity.name.text | Multi-field of `user.entity.name`. | match_only_text |
 | user.entity.type | A standardized high-level classification of the entity. This provides a normalized way to group similar entities across different providers or systems. Example values: `bucket`, `database`, `container`, `function`, `queue`, `host`, `user`, `application`, `session`, `cloud`, `orchestrator`, etc. If an entity is nested under a top-level namespace like `host` or `cloud`, or similar, its type array should include the matching value — for example, `host` or `cloud`. | keyword |
+
+
+### Identities
+
+Identity documents can be found by setting the following filter:
+`event.dataset : "sailpoint_identity_sc.identities"`
+
+Identity documents carry ECS entity fields (`user.entity.*`) that enable Entity Analytics, user risk scoring, and identity-correlated detections.
+An example event for `identities` looks as following:
+
+```json
+{
+    "@timestamp": "2025-01-10T00:00:00.000Z",
+    "agent": {
+        "ephemeral_id": "75822001-4ff1-4f0c-8749-cb9b61a28b51",
+        "id": "18bf65b0-7070-442d-a068-6d326c139556",
+        "name": "elastic-agent-99659",
+        "type": "filebeat",
+        "version": "9.4.4"
+    },
+    "data_stream": {
+        "dataset": "sailpoint_identity_sc.identities",
+        "namespace": "94826",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "9.4.0"
+    },
+    "elastic_agent": {
+        "id": "18bf65b0-7070-442d-a068-6d326c139556",
+        "snapshot": false,
+        "version": "9.4.4"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "iam"
+        ],
+        "dataset": "sailpoint_identity_sc.identities",
+        "ingested": "2026-08-27T07:10:28Z",
+        "kind": "asset",
+        "module": "sailpoint_identity_sc",
+        "original": "{\"_type\":\"identity\",\"created\":\"2024-04-04T21:36:00.000Z\",\"disabled\":false,\"displayName\":\"Alice Johnson\",\"email\":\"alice.johnson@example.com\",\"firstName\":\"Alice\",\"id\":\"identity-id-001\",\"inactive\":false,\"isManager\":true,\"lastName\":\"Johnson\",\"locked\":false,\"modified\":\"2025-01-10T00:00:00.000Z\",\"name\":\"alice.johnson\",\"protected\":false,\"status\":\"ACTIVE\",\"synced\":\"2025-01-10T01:00:00.000Z\",\"type\":\"identity\"}",
+        "type": [
+            "info"
+        ]
+    },
+    "input": {
+        "type": "cel"
+    },
+    "related": {
+        "user": [
+            "alice.johnson",
+            "Alice Johnson"
+        ]
+    },
+    "sailpoint_identity_sc": {
+        "identity": {
+            "created": "2024-04-04T21:36:00.000Z",
+            "disabled": false,
+            "inactive": false,
+            "is_manager": true,
+            "locked": false,
+            "protected": false,
+            "status": "ACTIVE"
+        }
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "sailpoint_identity_sc.identities"
+    ],
+    "user": {
+        "domain": "example.com",
+        "email": "alice.johnson@example.com",
+        "entity": {
+            "id": "identity-id-001",
+            "name": "Alice Johnson",
+            "type": [
+                "user"
+            ]
+        },
+        "full_name": "Alice Johnson",
+        "id": "identity-id-001",
+        "name": "alice.johnson"
+    }
+}
+```
+
+**ECS Field Reference**
+
+Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ecs-field-reference.html) for detailed information on ECS fields.
+
+The following non-ECS fields are used in identities documents:
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| error.message | Error message. | match_only_text |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
+| input.type | Input type. | keyword |
+| related.user | All the user names or other user identifiers seen on the event. | keyword |
+| sailpoint_identity_sc.identity.access.attribute | Attribute name for entitlement-type access items. | keyword |
+| sailpoint_identity_sc.identity.access.cloud_eligible | Indicates whether the access item is cloud-eligible. | boolean |
+| sailpoint_identity_sc.identity.access.cloud_governed | Indicates whether the access item is cloud-governed. | boolean |
+| sailpoint_identity_sc.identity.access.description | Description of the access item. | keyword |
+| sailpoint_identity_sc.identity.access.disabled | Indicates whether the access item is disabled. | boolean |
+| sailpoint_identity_sc.identity.access.display_name | Display name of the access item. | keyword |
+| sailpoint_identity_sc.identity.access.enabled | Indicates whether the access item is enabled. | boolean |
+| sailpoint_identity_sc.identity.access.id | Access item ID. | keyword |
+| sailpoint_identity_sc.identity.access.name | Access item name. | keyword |
+| sailpoint_identity_sc.identity.access.owner.display_name | Display name of the owner of this access item. | keyword |
+| sailpoint_identity_sc.identity.access.owner.id | ID of the owner of this access item. | keyword |
+| sailpoint_identity_sc.identity.access.owner.name | Username of the owner of this access item. | keyword |
+| sailpoint_identity_sc.identity.access.privileged | Indicates whether the access item grants privileged access. | boolean |
+| sailpoint_identity_sc.identity.access.request_comments_required | Indicates whether comments are required when requesting this access item. | boolean |
+| sailpoint_identity_sc.identity.access.requestable | Indicates whether the access item can be requested. | boolean |
+| sailpoint_identity_sc.identity.access.revocable | Indicates whether the access item can be revoked. | boolean |
+| sailpoint_identity_sc.identity.access.schema | Schema name for entitlement-type access items. | keyword |
+| sailpoint_identity_sc.identity.access.source.id | ID of the source system for this access item. | keyword |
+| sailpoint_identity_sc.identity.access.source.name | Name of the source system for this access item. | keyword |
+| sailpoint_identity_sc.identity.access.standalone | Indicates whether the access item is standalone. | boolean |
+| sailpoint_identity_sc.identity.access.type | Type of access item (ENTITLEMENT, ROLE, ACCESS_PROFILE). | keyword |
+| sailpoint_identity_sc.identity.access.value | Attribute value for entitlement-type access items. | keyword |
+| sailpoint_identity_sc.identity.access_count | Number of access items assigned to this identity. | long |
+| sailpoint_identity_sc.identity.access_profile_count | Number of access profiles assigned to this identity. | long |
+| sailpoint_identity_sc.identity.account_count | Number of accounts associated with this identity. | long |
+| sailpoint_identity_sc.identity.accounts.account_id | Account identifier on the source system. | keyword |
+| sailpoint_identity_sc.identity.accounts.created | When the account was created. | date |
+| sailpoint_identity_sc.identity.accounts.disabled | Indicates whether the account is disabled. | boolean |
+| sailpoint_identity_sc.identity.accounts.entitlement_attributes | Entitlement attributes on the account (for example, memberOf groups). | flattened |
+| sailpoint_identity_sc.identity.accounts.id | Account ID. | keyword |
+| sailpoint_identity_sc.identity.accounts.locked | Indicates whether the account is locked. | boolean |
+| sailpoint_identity_sc.identity.accounts.manually_correlated | Indicates whether the account was manually correlated to this identity. | boolean |
+| sailpoint_identity_sc.identity.accounts.name | Account display name. | keyword |
+| sailpoint_identity_sc.identity.accounts.password_last_set | When the account password was last set. | date |
+| sailpoint_identity_sc.identity.accounts.privileged | Indicates whether the account has privileged access. | boolean |
+| sailpoint_identity_sc.identity.accounts.source.id | ID of the source system for this account. | keyword |
+| sailpoint_identity_sc.identity.accounts.source.name | Name of the source system for this account. | keyword |
+| sailpoint_identity_sc.identity.accounts.source.type | Type of the source system for this account. | keyword |
+| sailpoint_identity_sc.identity.accounts.supports_password_change | Indicates whether the account supports password changes. | boolean |
+| sailpoint_identity_sc.identity.apps.account.account_id | Account identifier on the source system for this application. | keyword |
+| sailpoint_identity_sc.identity.apps.account.id | ID of the account linked to this application. | keyword |
+| sailpoint_identity_sc.identity.apps.id | Application ID. | keyword |
+| sailpoint_identity_sc.identity.apps.name | Application name. | keyword |
+| sailpoint_identity_sc.identity.apps.source.id | ID of the source associated with this application. | keyword |
+| sailpoint_identity_sc.identity.apps.source.name | Name of the source associated with this application. | keyword |
+| sailpoint_identity_sc.identity.attributes | Free-form identity attributes from the authoritative source (tenant-specific keys). | flattened |
+| sailpoint_identity_sc.identity.created | When the identity was created in SailPoint Identity Security Cloud. | date |
+| sailpoint_identity_sc.identity.disabled | Indicates whether this identity is disabled. | boolean |
+| sailpoint_identity_sc.identity.employee_number | Employee number assigned to the identity. | keyword |
+| sailpoint_identity_sc.identity.entitlement_count | Number of entitlements assigned to this identity. | long |
+| sailpoint_identity_sc.identity.identity_profile.id | ID of the identity profile this identity belongs to. | keyword |
+| sailpoint_identity_sc.identity.identity_profile.name | Name of the identity profile this identity belongs to. | keyword |
+| sailpoint_identity_sc.identity.inactive | Indicates whether this identity is inactive. | boolean |
+| sailpoint_identity_sc.identity.is_manager | Indicates whether this identity is a manager. | boolean |
+| sailpoint_identity_sc.identity.locked | Indicates whether this identity account is locked. | boolean |
+| sailpoint_identity_sc.identity.manager.display_name | Display name of the identity's manager. | keyword |
+| sailpoint_identity_sc.identity.manager.id | ID of the identity's manager. | keyword |
+| sailpoint_identity_sc.identity.manager.name | Username of the identity's manager. | keyword |
+| sailpoint_identity_sc.identity.org | Organization (tenant) identifier for this identity. | keyword |
+| sailpoint_identity_sc.identity.owns.access_profiles.id | ID of an owned access profile. | keyword |
+| sailpoint_identity_sc.identity.owns.access_profiles.name | Name of an owned access profile. | keyword |
+| sailpoint_identity_sc.identity.owns.apps.id | ID of an owned application. | keyword |
+| sailpoint_identity_sc.identity.owns.apps.name | Name of an owned application. | keyword |
+| sailpoint_identity_sc.identity.owns.entitlements.id | ID of an owned entitlement. | keyword |
+| sailpoint_identity_sc.identity.owns.entitlements.name | Name of an owned entitlement. | keyword |
+| sailpoint_identity_sc.identity.owns.governance_groups.id | ID of an owned governance group. | keyword |
+| sailpoint_identity_sc.identity.owns.governance_groups.name | Name of an owned governance group. | keyword |
+| sailpoint_identity_sc.identity.owns.roles.id | ID of an owned role. | keyword |
+| sailpoint_identity_sc.identity.owns.roles.name | Name of an owned role. | keyword |
+| sailpoint_identity_sc.identity.owns.sources.id | ID of an administered source. | keyword |
+| sailpoint_identity_sc.identity.owns.sources.name | Name of an administered source. | keyword |
+| sailpoint_identity_sc.identity.owns_count | Number of access items owned by this identity. | long |
+| sailpoint_identity_sc.identity.pod | Pod (deployment region) where this identity is hosted. | keyword |
+| sailpoint_identity_sc.identity.processing_state | Processing state of the identity (null when not in a special state). | keyword |
+| sailpoint_identity_sc.identity.protected | Indicates whether this identity is protected from modification. | boolean |
+| sailpoint_identity_sc.identity.role_count | Number of roles assigned to this identity. | long |
+| sailpoint_identity_sc.identity.source.id | ID of the authoritative source for this identity. | keyword |
+| sailpoint_identity_sc.identity.source.name | Name of the authoritative source for this identity. | keyword |
+| sailpoint_identity_sc.identity.status | Identity lifecycle status (for example, ACTIVE). | keyword |
+| sailpoint_identity_sc.identity.supervises_error | Error from the supervises enrichment call. Set when the direct reports lookup returned a non-200 response; absent when enrichment succeeded or was not attempted. | keyword |
+| sailpoint_identity_sc.identity.tags | Tags applied to this identity. | keyword |
+| sailpoint_identity_sc.identity.visible_segments | List of segment names visible to this identity. | keyword |
+| tags | List of keywords used to tag each event. | keyword |
+| user.domain | Name of the directory the user is a member of. For example, an LDAP or Active Directory domain name. | keyword |
+| user.email | User email address. | keyword |
+| user.entity.id | A unique identifier for the entity. When multiple identifiers exist, this should be the most stable and commonly used identifier that: 1) persists across the entity's lifecycle, 2) ensures uniqueness within its scope, 3) is commonly used for queries and correlation, and 4) is readily available in most observations (logs/events). For entities with dedicated field sets (for example, host, user), this value should match the corresponding \*.id field. Alternative identifiers (for example, ARNs values in AWS, URLs) can be preserved in the raw field. | keyword |
+| user.entity.name | The name of the entity. The keyword field enables exact matches for filtering and aggregations, while the text field enables full-text search. For entities with dedicated field sets (for example, `host`), this field should mirrors the corresponding \*.name value. | keyword |
+| user.entity.name.text | Multi-field of `user.entity.name`. | match_only_text |
+| user.entity.relationships.administers.service.id | Referenced service ids. | keyword |
+| user.entity.relationships.administers.service.name | Referenced service names. | keyword |
+| user.entity.relationships.owns.service.id | Referenced service ids. | keyword |
+| user.entity.relationships.owns.service.name | Referenced service names. | keyword |
+| user.entity.relationships.supervises.user.email | Referenced user email addresses. | keyword |
+| user.entity.relationships.supervises.user.id | Referenced user ids. | keyword |
+| user.entity.relationships.supervises.user.name | Referenced user short names or logins. | keyword |
+| user.entity.type | A standardized high-level classification of the entity. This provides a normalized way to group similar entities across different providers or systems. Example values: `bucket`, `database`, `container`, `function`, `queue`, `host`, `user`, `application`, `session`, `cloud`, `orchestrator`, etc. If an entity is nested under a top-level namespace like `host` or `cloud`, or similar, its type array should include the matching value — for example, `host` or `cloud`. | keyword |
+| user.full_name | User's full name, if available. | keyword |
+| user.full_name.text | Multi-field of `user.full_name`. | match_only_text |
+| user.group.name | Name of the group. | keyword |
+| user.id | Unique identifier of the user. | keyword |
+| user.name | Short name or login of the user. | keyword |
+| user.name.text | Multi-field of `user.name`. | match_only_text |
+| user.roles | Array of user roles at the time of the event. | keyword |
 
