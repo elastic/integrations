@@ -87,7 +87,7 @@ func TestBuildPRTitle(t *testing.T) {
 
 func TestPickAssignee(t *testing.T) {
 	yes := func(string) bool { return true }
-	no  := func(string) bool { return false }
+	no := func(string) bool { return false }
 
 	t.Run("author is not bot and has write access — use author", func(t *testing.T) {
 		assert.Equal(t, "author", pickAssignee(
