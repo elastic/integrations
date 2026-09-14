@@ -10,6 +10,7 @@ Metrics are stored with native OTel schema — no field renaming or custom mappi
 
 | Data stream | Dataset | Contents |
 |---|---|---|
+| Cloud Run | `gcp.cloudrun.otel` | Request count and latency, container startup latency, instance count, CPU and memory utilization and allocation, request concurrency, billable instance time, and network throughput |
 | Compute Engine | `gcp.compute.otel` | Hypervisor CPU, disk, network, firewall, memory balloon, uptime, interruption, and instance group metrics |
 
 Additional Google Cloud services will be added as further data streams.
@@ -41,12 +42,56 @@ Additional Google Cloud services will be added as further data streams.
    - Fill in:
      - **GCP Project ID**: the project to query Cloud Monitoring metrics from
      - **Collection Interval**: `300s` (default)
-     - **Additional Metrics**: leave empty unless you need metric types beyond the default set
+   - Enable the data stream for each service you want to collect, and leave its **Additional Metrics** empty unless you need metric types beyond the default set.
 
-   The default Compute Engine metric set is collected automatically and does not need to be configured.
+   Each data stream's default metric set is collected automatically and does not need to be configured.
 
 3. **Verify data**:
-   - Discover filter `data_stream.dataset: "gcp.compute.otel"`
+   - Discover filter `data_stream.dataset: "gcp.cloudrun.otel"` or `data_stream.dataset: "gcp.compute.otel"`
+
+## Cloud Run metrics
+
+Every metric type is prefixed with `run.googleapis.com/`. See the [Cloud Run metrics catalog](https://cloud.google.com/monitoring/api/metrics_gcp_p_z#gcp-run) and [Monitor Cloud Run](https://cloud.google.com/run/docs/monitoring) for units, sampling periods, and resource labels.
+
+### Default metric set
+
+The integration always collects the metric set below, which covers the golden signals for Cloud Run services: traffic, errors, latency, saturation, cold starts, and cost. Anything added to **Additional Metrics** is collected on top of this set.
+
+| Category | Metric types |
+|---|---|
+| Traffic and errors | `request_count` |
+| Latency | `request_latencies`, `container/startup_latencies` |
+| Scale | `container/instance_count` |
+| Saturation | `container/cpu/utilizations`, `container/memory/utilizations`, `container/max_request_concurrencies` |
+| Cost and allocation | `container/billable_instance_time`, `container/cpu/allocation_time`, `container/memory/allocation_time` |
+| Network | `container/network/received_bytes_count`, `container/network/sent_bytes_count` |
+
+Error rates come from the `response_code` and `response_code_class` attributes on `request_count` rather than from a separate metric. `request_latencies` measures in-container time and excludes cold start, which `container/startup_latencies` reports separately. `container/instance_count` is broken down by the `state` attribute, either `active` or `idle`.
+
+`request_latencies`, `container/startup_latencies`, `container/cpu/utilizations`, `container/memory/utilizations`, and `container/max_request_concurrencies` are distribution-valued in Cloud Monitoring and arrive as OpenTelemetry histograms, so percentiles are derived from the histogram rather than read from a precomputed p95 or p99 field.
+
+### Jobs and worker pools
+
+Three Cloud Run products share the `run.googleapis.com/` prefix: services (`cloud_run_revision`), jobs (`cloud_run_job`), and worker pools (`cloud_run_worker_pool`). The default set targets services. Jobs and worker pools report no `request_count` or `request_latencies`, but they do report the container CPU, memory, startup latency, and billable time metrics above.
+
+To monitor jobs, add these to **Additional Metrics**:
+
+| Metric type | Contents |
+|---|---|
+| `run.googleapis.com/job/completed_execution_count` | Completions by `result`, either success or failure |
+| `run.googleapis.com/job/completed_task_attempt_count` | Task attempts and retries |
+| `run.googleapis.com/job/running_executions` | Currently running executions |
+| `run.googleapis.com/job/running_task_attempts` | Currently running tasks |
+
+### Field names
+
+Metric type names are preserved verbatim under `metrics`, including the `run.googleapis.com/` prefix and the slashes, so queries use the full path:
+
+```
+metrics.run.googleapis.com/request_count
+```
+
+`project_id`, `service_name`, `revision_name`, `location`, `configuration_name`, and `gcp.resource_type` arrive as resource attributes under `resource.attributes.*`, while metric labels such as `response_code`, `response_code_class`, and `state` are datapoint attributes under `attributes.*`.
 
 ## Compute Engine metrics
 
@@ -81,7 +126,7 @@ metrics.compute.googleapis.com/instance/cpu/utilization
 
 ## Cost and quota
 
-The receiver issues one time series query per collected metric type on every collection cycle: 29 queries per project per cycle by default, or every five minutes at the default interval, plus one per entry in **Additional Metrics**. Review [Cloud Monitoring pricing](https://cloud.google.com/stackdriver/pricing#monitoring-costs) and [API quotas](https://cloud.google.com/monitoring/quotas#api_quotas) before lowering **Collection Interval** or adding metrics.
+The receiver issues one time series query per collected metric type on every collection cycle, for every enabled data stream: 29 queries for Compute Engine and 12 for Cloud Run, so 41 per project per cycle with both enabled, or every five minutes at the default interval, plus one per entry in **Additional Metrics**. Review [Cloud Monitoring pricing](https://cloud.google.com/stackdriver/pricing#monitoring-costs) and [API quotas](https://cloud.google.com/monitoring/quotas#api_quotas) before lowering **Collection Interval** or adding metrics.
 
 ## Troubleshooting
 
@@ -89,8 +134,8 @@ The receiver issues one time series query per collected metric type on every col
 
 1. Check the Elastic Agent logs for `failed to find default credentials` — the collector host has no usable ADC.
 2. Confirm the credentials carry `roles/monitoring.viewer` on the configured project.
-3. Confirm the project actually runs Compute Engine instances in the region you expect.
-4. Allow time for the first collection cycle. Compute Engine metrics reach Cloud Monitoring with up to several minutes of ingest delay.
+3. Confirm the project actually runs the service you enabled, Compute Engine instances or Cloud Run revisions, in the region you expect.
+4. Allow time for the first collection cycle. Metrics reach Cloud Monitoring with up to several minutes of ingest delay.
 5. If a metric added to **Additional Metrics** is missing, confirm it is an exact, existing metric type name. A typo yields an empty result for that metric rather than an error.
 
 ### Startup errors
