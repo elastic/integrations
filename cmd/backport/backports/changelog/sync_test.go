@@ -84,3 +84,24 @@ func TestBuildPRTitle(t *testing.T) {
 	entries := []tsvEntry{{pkg: "gcp", version: "3.1.0", entryFile: "/tmp/e.yml"}}
 	assert.Equal(t, buildCommitMessage(entries, "99"), buildPRTitle(entries, "99"))
 }
+
+func TestPickAssignee(t *testing.T) {
+	member := func(string) bool { return true }
+	nonMember := func(string) bool { return false }
+
+	t.Run("author is org member — use author", func(t *testing.T) {
+		assert.Equal(t, "author-login", pickAssignee("author-login", "merger-login", member))
+	})
+
+	t.Run("author is not org member — fall back to merger", func(t *testing.T) {
+		assert.Equal(t, "merger-login", pickAssignee("author-login", "merger-login", nonMember))
+	})
+
+	t.Run("empty author — fall back to merger regardless of membership", func(t *testing.T) {
+		assert.Equal(t, "merger-login", pickAssignee("", "merger-login", member))
+	})
+
+	t.Run("empty merger and non-member author — returns empty string", func(t *testing.T) {
+		assert.Equal(t, "", pickAssignee("author-login", "", nonMember))
+	})
+}
