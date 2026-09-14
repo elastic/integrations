@@ -564,16 +564,228 @@ rules:
           "EVENT_TYPE","TIMESTAMP","REQUEST_ID","ORGANIZATION_ID","USER_ID","RUN_TIME","CPU_TIME","DB_TOTAL_TIME","URI","SESSION_KEY","LOGIN_KEY","USER_TYPE","REQUEST_STATUS","REQUEST_METHOD","ACTION_MESSAGE","ACTION_MESSAGE_LENGTH","EASY_SUITE_VALUE","USER_AGENT","TIMESTAMP_DERIVED","USER_ID_DERIVED","CLIENT_IP","URI_ID_DERIVED"
           "AuraRequest","20260803061845.933","SLB:9b1c4de8f0a2b3c4d5e6f708192a3b4c","00D5j000000VI3n","0055j000000utlP","677","372","167546388","/aura","WvtsJ1235oW24EbH","Obv9123BzbaxqCo1","Standard","S","POST","1$serviceComponent://ui.force.components.controllers.hoverAction.HoverActionController/ACTION$getActions=52;2$aura://RecordUiController/ACTION$getRecordWithFields=118","10098","C360SuiteEE","Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36","2026-08-03T06:18:45.933Z","0055j000000utlPAAQ","81.2.69.142",""
           "AuraRequest","20260803061851.204","TID:1f2e3d4c5b6a7980","00D5j000000VI3n","0055j000000utlP","94","41","5734027","/lightning/r/Account/0015j00000AbCdEAAQ/view","WvtsJ1235oW24EbH","Obv9123BzbaxqCo1","Standard","","GET","","","","Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36","2026-08-03T06:18:51.204Z","0055j000000utlPAAQ","81.2.69.142","0015j00000AbCdEAAQ"
-  # AuraRequest Object
+  # AuraRequest Object (base success: every bounded window returns one row)
   - path: /services/data/v61.0/query/
     methods: ["GET"]
     query_params:
-      q: ["SELECT FIELDS(STANDARD) FROM AuraRequestEventLog ORDER BY Timestamp ASC NULLS FIRST"]
+      q: ['{soql:SELECT FIELDS\(STANDARD\) FROM AuraRequestEventLog WHERE Timestamp > \S+ AND Timestamp <= \S+ ORDER BY Timestamp ASC NULLS FIRST}']
     responses:
       - status_code: 200
-        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"AuraRequestEventLog","url":"/services/data/v61.0/sobjects/AuraRequestEventLog/000000000000000AAA"},"Id":"000000000000000AAA","ActionMessage":"1$serviceComponent://ui.instrumentation.components.beacon.InstrumentationBeaconController/ACTION$sendData=6","ClientIp":"81.2.69.142","CpuTime":267,"DatabaseTotalTime":369420065,"LoginKey":"Obv9123BzbaxqCo1","RequestIdentifier":"TID:1a2b3c4d5e6f7890","RequestMethod":"POST","RunTime":638,"SessionKey":"WvtsJ1235oW24EbH","Timestamp":"2026-08-05T02:52:53.911+0000","Uri":"/aura","UserAgent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36","UserIdentifier":"0055j000000utlPAAQ","UserType":"Standard"}]}'
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"AuraRequestEventLog","url":"/services/data/v61.0/sobjects/AuraRequestEventLog/000000000000000AAA"},"Id":"000000000000000AAA","ActionMessage":"1$serviceComponent://ui.instrumentation.components.beacon.InstrumentationBeaconController/ACTION$sendData=6","ClientIp":"81.2.69.142","CpuTime":267,"DatabaseTotalTime":369420065,"LoginKey":"Obv9123BzbaxqCo1","RequestIdentifier":"TID:1a2b3c4d5e6f7890","RequestMethod":"POST","RequestStatus":"S","RunTime":638,"SessionKey":"WvtsJ1235oW24EbH","Timestamp":"2026-08-05T02:52:53.911+0000","Uri":"/aura","UserAgent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36","UserIdentifier":"0055j000000utlPAAQ","UserType":"Standard"}]}'
         headers:
           content-type: ["text/json"]
+  # AuraRequest Object: empty windows then one row (api 69.0). Sequence is 2 empty, 1 row, 9 empty.
+  - path: /services/data/v69.0/query/
+    methods: ["GET"]
+    query_params:
+      q: ['{soql:SELECT FIELDS\(STANDARD\) FROM AuraRequestEventLog WHERE Timestamp > \S+ AND Timestamp <= \S+ ORDER BY Timestamp ASC NULLS FIRST}']
+    as_sequence: true
+    responses:
+      - &aura_empty_soql
+        status_code: 200
+        headers:
+          content-type: ["text/json"]
+        body: '{"totalSize":0,"done":true,"records":[]}'
+      - *aura_empty_soql
+      - status_code: 200
+        headers:
+          content-type: ["text/json"]
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"AuraRequestEventLog","url":"/services/data/v69.0/sobjects/AuraRequestEventLog/000000000000000AAA"},"Id":"000000000000000AAA","ClientIp":"81.2.69.142","CpuTime":21,"DatabaseTotalTime":12346362,"LoginKey":"Obv9123BzbaxqCo1","RequestIdentifier":"SLB:empty-windows-aura-0001","RequestMethod":"GET","RequestStatus":"S","RunTime":37,"SessionKey":"WvtsJ1235oW24EbH","Timestamp":"2026-08-05T02:41:17.937+0000","Uri":"/one/one.app#","UserAgent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36","UserIdentifier":"0055j000000utlPAAQ","UserType":"Standard"}]}'
+      - *aura_empty_soql
+      - *aura_empty_soql
+      - *aura_empty_soql
+      - *aura_empty_soql
+      - *aura_empty_soql
+      - *aura_empty_soql
+      - *aura_empty_soql
+      - *aura_empty_soql
+      - *aura_empty_soql
+  # AuraRequest Object: first window succeeds, next window fails (api 70.0).
+  - path: /services/data/v70.0/query/
+    methods: ["GET"]
+    query_params:
+      q: ['{soql:SELECT FIELDS\(STANDARD\) FROM AuraRequestEventLog WHERE Timestamp > \S+ AND Timestamp <= \S+ ORDER BY Timestamp ASC NULLS FIRST}']
+    as_sequence: true
+    responses:
+      - status_code: 200
+        headers:
+          content-type: ["text/json"]
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"AuraRequestEventLog","url":"/services/data/v70.0/sobjects/AuraRequestEventLog/000000000000000AAA"},"Id":"000000000000000AAA","ClientIp":"81.2.69.142","CpuTime":41,"DatabaseTotalTime":5734027,"LoginKey":"Obv9123BzbaxqCo1","RequestIdentifier":"TID:window-failure-aura-0001","RequestMethod":"GET","RequestStatus":"S","RunTime":94,"SessionKey":"WvtsJ1235oW24EbH","Timestamp":"2026-08-05T02:41:17.937+0000","Uri":"/lightning","UserAgent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36","UserIdentifier":"0055j000000utlPAAQ","UserType":"Standard"}]}'
+      - status_code: 500
+        headers:
+          content-type: ["text/json"]
+        body: '[{"message":"query timeout","errorCode":"QUERY_TIMEOUT"}]'
+  # AuraRequest Object: one bounded window, two SOQL pages (api 71.0).
+  - path: /services/data/v71.0/query/
+    methods: ["GET"]
+    query_params:
+      q: ['{soql:SELECT FIELDS\(STANDARD\) FROM AuraRequestEventLog WHERE Timestamp > \S+ AND Timestamp <= \S+ ORDER BY Timestamp ASC NULLS FIRST}']
+    responses:
+      - status_code: 200
+        headers:
+          content-type: ["text/json"]
+        body: '{"totalSize":2,"done":false,"nextRecordsUrl":"/nextRecords/AuraRequest/OBJECTBATCHPAGE","records":[{"attributes":{"type":"AuraRequestEventLog","url":"/services/data/v71.0/sobjects/AuraRequestEventLog/000000000000000AAA"},"Id":"000000000000000AAA","ClientIp":"81.2.69.142","CpuTime":30,"DatabaseTotalTime":5191104,"LoginKey":"Obv9123BzbaxqCo1","RequestIdentifier":"SLB:pagination-aura-page-1","RequestMethod":"GET","RequestStatus":"S","RunTime":47,"SessionKey":"WvtsJ1235oW24EbH","Timestamp":"2026-08-05T02:41:17.937+0000","Uri":"/lightning","UserAgent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36","UserIdentifier":"0055j000000utlPAAQ","UserType":"Standard"}]}'
+  - path: /nextRecords/AuraRequest/OBJECTBATCHPAGE
+    methods: ["GET"]
+    responses:
+      - status_code: 200
+        headers:
+          content-type: ["text/json"]
+        body: '{"totalSize":2,"done":true,"records":[{"attributes":{"type":"AuraRequestEventLog","url":"/services/data/v71.0/sobjects/AuraRequestEventLog/000000000000000AAA"},"Id":"000000000000000AAA","ClientIp":"81.2.69.142","CpuTime":33,"DatabaseTotalTime":5191104,"LoginKey":"Obv9123BzbaxqCo1","RequestIdentifier":"SLB:pagination-aura-page-2","RequestMethod":"POST","RequestStatus":"S","RunTime":52,"SessionKey":"WvtsJ1235oW24EbH","Timestamp":"2026-08-05T02:41:16.937+0000","Uri":"/aura","UserAgent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36","UserIdentifier":"0055j000000utlPAAQ","UserType":"Standard"}]}'
+  # AuraRequest Object: three rows in one bounded window (api 72.0).
+  - path: /services/data/v72.0/query/
+    methods: ["GET"]
+    query_params:
+      q: ['{soql:SELECT FIELDS\(STANDARD\) FROM AuraRequestEventLog WHERE Timestamp > \S+ AND Timestamp <= \S+ ORDER BY Timestamp ASC NULLS FIRST}']
+    responses:
+      - status_code: 200
+        headers:
+          content-type: ["text/json"]
+        body: '{"totalSize":3,"done":true,"records":[{"attributes":{"type":"AuraRequestEventLog","url":"/services/data/v72.0/sobjects/AuraRequestEventLog/000000000000000AAA"},"Id":"000000000000000AAA","ClientIp":"81.2.69.142","CpuTime":8,"DatabaseTotalTime":22050513,"LoginKey":"Obv9123BzbaxqCo1","RequestIdentifier":"SLB:multi-record-aura-1","RequestMethod":"POST","RequestStatus":"S","RunTime":27,"SessionKey":"WvtsJ1235oW24EbH","Timestamp":"2026-08-05T02:41:17.937+0000","Uri":"/aura","UserAgent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36","UserIdentifier":"0055j000000utlPAAQ","UserType":"Standard"},{"attributes":{"type":"AuraRequestEventLog","url":"/services/data/v72.0/sobjects/AuraRequestEventLog/000000000000000AAA"},"Id":"000000000000000AAA","ClientIp":"81.2.69.142","CpuTime":44,"DatabaseTotalTime":23832664,"LoginKey":"Obv9123BzbaxqCo1","RequestIdentifier":"SLB:multi-record-aura-2","RequestMethod":"POST","RequestStatus":"S","RunTime":76,"SessionKey":"WvtsJ1235oW24EbH","Timestamp":"2026-08-05T02:41:16.937+0000","Uri":"/aura","UserAgent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36","UserIdentifier":"0055j000000utlPAAQ","UserType":"Standard"},{"attributes":{"type":"AuraRequestEventLog","url":"/services/data/v72.0/sobjects/AuraRequestEventLog/000000000000000AAA"},"Id":"000000000000000AAA","ClientIp":"81.2.69.142","CpuTime":91,"DatabaseTotalTime":46703280,"LoginKey":"Obv9123BzbaxqCo1","RequestIdentifier":"SLB:multi-record-aura-3","RequestMethod":"GET","RequestStatus":"S","RunTime":140,"SessionKey":"WvtsJ1235oW24EbH","Timestamp":"2026-08-05T02:41:15.937+0000","Uri":"/auraResource","UserAgent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36","UserIdentifier":"0055j000000utlPAAQ","UserType":"Standard"}]}'
+  # AuraRequest Object: first page succeeds, next page HTTP 500 (api 73.0).
+  - path: /services/data/v73.0/query/
+    methods: ["GET"]
+    query_params:
+      q: ['{soql:SELECT FIELDS\(STANDARD\) FROM AuraRequestEventLog WHERE Timestamp > \S+ AND Timestamp <= \S+ ORDER BY Timestamp ASC NULLS FIRST}']
+    responses:
+      - status_code: 200
+        headers:
+          content-type: ["text/json"]
+        body: '{"totalSize":2,"done":false,"nextRecordsUrl":"/nextRecords/AuraRequest/OBJECTBATCHFAIL","records":[{"attributes":{"type":"AuraRequestEventLog","url":"/services/data/v73.0/sobjects/AuraRequestEventLog/000000000000000AAA"},"Id":"000000000000000AAA","ClientIp":"81.2.69.142","CpuTime":31,"DatabaseTotalTime":9214477,"LoginKey":"Obv9123BzbaxqCo1","RequestIdentifier":"TID:pagination-failure-aura-0001","RequestMethod":"POST","RequestStatus":"S","RunTime":104,"SessionKey":"WvtsJ1235oW24EbH","Timestamp":"2026-08-05T02:41:17.937+0000","Uri":"/aura","UserAgent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36","UserIdentifier":"0055j000000utlPAAQ","UserType":"Standard"}]}'
+  - path: /nextRecords/AuraRequest/OBJECTBATCHFAIL
+    methods: ["GET"]
+    responses:
+      - status_code: 500
+        headers:
+          content-type: ["text/json"]
+        body: '[{"message":"query timeout","errorCode":"QUERY_TIMEOUT"}]'
+  # AuraRequest Object: sparse catch-up (api 74.0). Sequence is empty, row, empty, row, then empties.
+  - path: /services/data/v74.0/query/
+    methods: ["GET"]
+    query_params:
+      q: ['{soql:SELECT FIELDS\(STANDARD\) FROM AuraRequestEventLog WHERE Timestamp > \S+ AND Timestamp <= \S+ ORDER BY Timestamp ASC NULLS FIRST}']
+    as_sequence: true
+    responses:
+      - *aura_empty_soql
+      - status_code: 200
+        headers:
+          content-type: ["text/json"]
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"AuraRequestEventLog","url":"/services/data/v74.0/sobjects/AuraRequestEventLog/000000000000000AAA"},"Id":"000000000000000AAA","ClientIp":"81.2.69.142","CpuTime":143,"DatabaseTotalTime":48014861,"LoginKey":"Obv9123BzbaxqCo1","RequestIdentifier":"SLB:sparse-windows-aura-1","RequestMethod":"GET","RequestStatus":"S","RunTime":207,"SessionKey":"WvtsJ1235oW24EbH","Timestamp":"2026-08-05T02:41:17.937+0000","Uri":"/lightning","UserAgent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36","UserIdentifier":"0055j000000utlPAAQ","UserType":"Standard"}]}'
+      - *aura_empty_soql
+      - status_code: 200
+        headers:
+          content-type: ["text/json"]
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"AuraRequestEventLog","url":"/services/data/v74.0/sobjects/AuraRequestEventLog/000000000000000AAA"},"Id":"000000000000000AAA","ClientIp":"81.2.69.142","CpuTime":33,"DatabaseTotalTime":5191104,"LoginKey":"Obv9123BzbaxqCo1","RequestIdentifier":"SLB:sparse-windows-aura-2","RequestMethod":"POST","RequestStatus":"S","RunTime":47,"SessionKey":"WvtsJ1235oW24EbH","Timestamp":"2026-08-05T02:41:16.937+0000","Uri":"/auraAnalytics","UserAgent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36","UserIdentifier":"0055j000000utlPAAQ","UserType":"Standard"}]}'
+      - *aura_empty_soql
+      - *aura_empty_soql
+      - *aura_empty_soql
+      - *aura_empty_soql
+      - *aura_empty_soql
+      - *aura_empty_soql
+      - *aura_empty_soql
+      - *aura_empty_soql
+  # AuraRequest Object: full catch-up drains 12 bounded windows, one distinct row each (api 75.0).
+  - path: /services/data/v75.0/query/
+    methods: ["GET"]
+    query_params:
+      q: ['{soql:SELECT FIELDS\(STANDARD\) FROM AuraRequestEventLog WHERE Timestamp > \S+ AND Timestamp <= \S+ ORDER BY Timestamp ASC NULLS FIRST}']
+    as_sequence: true
+    responses:
+      - status_code: 200
+        headers: {content-type: ["text/json"]}
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"AuraRequestEventLog"},"Id":"000000000000000AAA","ClientIp":"81.2.69.142","CpuTime":10,"DatabaseTotalTime":100001,"LoginKey":"Obv9123BzbaxqCo1","RequestIdentifier":"TID:catchup-aura-01","RequestMethod":"POST","RequestStatus":"S","RunTime":20,"SessionKey":"WvtsJ1235oW24EbH","Timestamp":"2026-08-05T02:41:17.937+0000","Uri":"/aura","UserAgent":"Mozilla/5.0","UserIdentifier":"0055j000000utlPAAQ","UserType":"Standard"}]}'
+      - status_code: 200
+        headers: {content-type: ["text/json"]}
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"AuraRequestEventLog"},"Id":"000000000000000AAA","ClientIp":"81.2.69.142","CpuTime":10,"DatabaseTotalTime":100002,"LoginKey":"Obv9123BzbaxqCo1","RequestIdentifier":"TID:catchup-aura-02","RequestMethod":"POST","RequestStatus":"S","RunTime":20,"SessionKey":"WvtsJ1235oW24EbH","Timestamp":"2026-08-05T02:41:16.937+0000","Uri":"/aura","UserAgent":"Mozilla/5.0","UserIdentifier":"0055j000000utlPAAQ","UserType":"Standard"}]}'
+      - status_code: 200
+        headers: {content-type: ["text/json"]}
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"AuraRequestEventLog"},"Id":"000000000000000AAA","ClientIp":"81.2.69.142","CpuTime":10,"DatabaseTotalTime":100003,"LoginKey":"Obv9123BzbaxqCo1","RequestIdentifier":"TID:catchup-aura-03","RequestMethod":"POST","RequestStatus":"S","RunTime":20,"SessionKey":"WvtsJ1235oW24EbH","Timestamp":"2026-08-05T02:41:15.937+0000","Uri":"/aura","UserAgent":"Mozilla/5.0","UserIdentifier":"0055j000000utlPAAQ","UserType":"Standard"}]}'
+      - status_code: 200
+        headers: {content-type: ["text/json"]}
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"AuraRequestEventLog"},"Id":"000000000000000AAA","ClientIp":"81.2.69.142","CpuTime":10,"DatabaseTotalTime":100004,"LoginKey":"Obv9123BzbaxqCo1","RequestIdentifier":"TID:catchup-aura-04","RequestMethod":"POST","RequestStatus":"S","RunTime":20,"SessionKey":"WvtsJ1235oW24EbH","Timestamp":"2026-08-05T02:41:14.937+0000","Uri":"/aura","UserAgent":"Mozilla/5.0","UserIdentifier":"0055j000000utlPAAQ","UserType":"Standard"}]}'
+      - status_code: 200
+        headers: {content-type: ["text/json"]}
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"AuraRequestEventLog"},"Id":"000000000000000AAA","ClientIp":"81.2.69.142","CpuTime":10,"DatabaseTotalTime":100005,"LoginKey":"Obv9123BzbaxqCo1","RequestIdentifier":"TID:catchup-aura-05","RequestMethod":"POST","RequestStatus":"S","RunTime":20,"SessionKey":"WvtsJ1235oW24EbH","Timestamp":"2026-08-05T02:41:13.937+0000","Uri":"/aura","UserAgent":"Mozilla/5.0","UserIdentifier":"0055j000000utlPAAQ","UserType":"Standard"}]}'
+      - status_code: 200
+        headers: {content-type: ["text/json"]}
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"AuraRequestEventLog"},"Id":"000000000000000AAA","ClientIp":"81.2.69.142","CpuTime":10,"DatabaseTotalTime":100006,"LoginKey":"Obv9123BzbaxqCo1","RequestIdentifier":"TID:catchup-aura-06","RequestMethod":"POST","RequestStatus":"S","RunTime":20,"SessionKey":"WvtsJ1235oW24EbH","Timestamp":"2026-08-05T02:41:12.937+0000","Uri":"/aura","UserAgent":"Mozilla/5.0","UserIdentifier":"0055j000000utlPAAQ","UserType":"Standard"}]}'
+      - status_code: 200
+        headers: {content-type: ["text/json"]}
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"AuraRequestEventLog"},"Id":"000000000000000AAA","ClientIp":"81.2.69.142","CpuTime":10,"DatabaseTotalTime":100007,"LoginKey":"Obv9123BzbaxqCo1","RequestIdentifier":"TID:catchup-aura-07","RequestMethod":"POST","RequestStatus":"S","RunTime":20,"SessionKey":"WvtsJ1235oW24EbH","Timestamp":"2026-08-05T02:41:11.937+0000","Uri":"/aura","UserAgent":"Mozilla/5.0","UserIdentifier":"0055j000000utlPAAQ","UserType":"Standard"}]}'
+      - status_code: 200
+        headers: {content-type: ["text/json"]}
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"AuraRequestEventLog"},"Id":"000000000000000AAA","ClientIp":"81.2.69.142","CpuTime":10,"DatabaseTotalTime":100008,"LoginKey":"Obv9123BzbaxqCo1","RequestIdentifier":"TID:catchup-aura-08","RequestMethod":"POST","RequestStatus":"S","RunTime":20,"SessionKey":"WvtsJ1235oW24EbH","Timestamp":"2026-08-05T02:41:10.937+0000","Uri":"/aura","UserAgent":"Mozilla/5.0","UserIdentifier":"0055j000000utlPAAQ","UserType":"Standard"}]}'
+      - status_code: 200
+        headers: {content-type: ["text/json"]}
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"AuraRequestEventLog"},"Id":"000000000000000AAA","ClientIp":"81.2.69.142","CpuTime":10,"DatabaseTotalTime":100009,"LoginKey":"Obv9123BzbaxqCo1","RequestIdentifier":"TID:catchup-aura-09","RequestMethod":"POST","RequestStatus":"S","RunTime":20,"SessionKey":"WvtsJ1235oW24EbH","Timestamp":"2026-08-05T02:41:09.937+0000","Uri":"/aura","UserAgent":"Mozilla/5.0","UserIdentifier":"0055j000000utlPAAQ","UserType":"Standard"}]}'
+      - status_code: 200
+        headers: {content-type: ["text/json"]}
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"AuraRequestEventLog"},"Id":"000000000000000AAA","ClientIp":"81.2.69.142","CpuTime":10,"DatabaseTotalTime":100010,"LoginKey":"Obv9123BzbaxqCo1","RequestIdentifier":"TID:catchup-aura-10","RequestMethod":"POST","RequestStatus":"S","RunTime":20,"SessionKey":"WvtsJ1235oW24EbH","Timestamp":"2026-08-05T02:41:08.937+0000","Uri":"/aura","UserAgent":"Mozilla/5.0","UserIdentifier":"0055j000000utlPAAQ","UserType":"Standard"}]}'
+      - status_code: 200
+        headers: {content-type: ["text/json"]}
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"AuraRequestEventLog"},"Id":"000000000000000AAA","ClientIp":"81.2.69.142","CpuTime":10,"DatabaseTotalTime":100011,"LoginKey":"Obv9123BzbaxqCo1","RequestIdentifier":"TID:catchup-aura-11","RequestMethod":"POST","RequestStatus":"S","RunTime":20,"SessionKey":"WvtsJ1235oW24EbH","Timestamp":"2026-08-05T02:41:07.937+0000","Uri":"/aura","UserAgent":"Mozilla/5.0","UserIdentifier":"0055j000000utlPAAQ","UserType":"Standard"}]}'
+      - status_code: 200
+        headers: {content-type: ["text/json"]}
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"AuraRequestEventLog"},"Id":"000000000000000AAA","ClientIp":"81.2.69.142","CpuTime":10,"DatabaseTotalTime":100012,"LoginKey":"Obv9123BzbaxqCo1","RequestIdentifier":"TID:catchup-aura-12","RequestMethod":"POST","RequestStatus":"S","RunTime":20,"SessionKey":"WvtsJ1235oW24EbH","Timestamp":"2026-08-05T02:41:06.937+0000","Uri":"/aura","UserAgent":"Mozilla/5.0","UserIdentifier":"0055j000000utlPAAQ","UserType":"Standard"}]}'
+      - *aura_empty_soql
+      - *aura_empty_soql
+  # AuraRequest Object: per-poll cap of 2 windows, one distinct row each (api 76.0).
+  - path: /services/data/v76.0/query/
+    methods: ["GET"]
+    query_params:
+      q: ['{soql:SELECT FIELDS\(STANDARD\) FROM AuraRequestEventLog WHERE Timestamp > \S+ AND Timestamp <= \S+ ORDER BY Timestamp ASC NULLS FIRST}']
+    as_sequence: true
+    responses:
+      - status_code: 200
+        headers: {content-type: ["text/json"]}
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"AuraRequestEventLog"},"Id":"000000000000000AAA","ClientIp":"81.2.69.142","CpuTime":10,"DatabaseTotalTime":200001,"LoginKey":"Obv9123BzbaxqCo1","RequestIdentifier":"TID:catchup-capped-aura-1","RequestMethod":"POST","RequestStatus":"S","RunTime":20,"SessionKey":"WvtsJ1235oW24EbH","Timestamp":"2026-08-05T02:41:17.937+0000","Uri":"/aura","UserAgent":"Mozilla/5.0","UserIdentifier":"0055j000000utlPAAQ","UserType":"Standard"}]}'
+      - status_code: 200
+        headers: {content-type: ["text/json"]}
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"AuraRequestEventLog"},"Id":"000000000000000AAA","ClientIp":"81.2.69.142","CpuTime":10,"DatabaseTotalTime":200002,"LoginKey":"Obv9123BzbaxqCo1","RequestIdentifier":"TID:catchup-capped-aura-2","RequestMethod":"POST","RequestStatus":"S","RunTime":20,"SessionKey":"WvtsJ1235oW24EbH","Timestamp":"2026-08-05T02:41:16.937+0000","Uri":"/aura","UserAgent":"Mozilla/5.0","UserIdentifier":"0055j000000utlPAAQ","UserType":"Standard"}]}'
+      - *aura_empty_soql
+      - *aura_empty_soql
+  # AuraRequest Object: window width follows the period, 4 windows over a 1h lookback (api 77.0).
+  - path: /services/data/v77.0/query/
+    methods: ["GET"]
+    query_params:
+      q: ['{soql:SELECT FIELDS\(STANDARD\) FROM AuraRequestEventLog WHERE Timestamp > \S+ AND Timestamp <= \S+ ORDER BY Timestamp ASC NULLS FIRST}']
+    as_sequence: true
+    responses:
+      - status_code: 200
+        headers: {content-type: ["text/json"]}
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"AuraRequestEventLog"},"Id":"000000000000000AAA","ClientIp":"81.2.69.142","CpuTime":10,"DatabaseTotalTime":300001,"LoginKey":"Obv9123BzbaxqCo1","RequestIdentifier":"TID:window-size-aura-1","RequestMethod":"POST","RequestStatus":"S","RunTime":20,"SessionKey":"WvtsJ1235oW24EbH","Timestamp":"2026-08-05T02:41:17.937+0000","Uri":"/aura","UserAgent":"Mozilla/5.0","UserIdentifier":"0055j000000utlPAAQ","UserType":"Standard"}]}'
+      - status_code: 200
+        headers: {content-type: ["text/json"]}
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"AuraRequestEventLog"},"Id":"000000000000000AAA","ClientIp":"81.2.69.142","CpuTime":10,"DatabaseTotalTime":300002,"LoginKey":"Obv9123BzbaxqCo1","RequestIdentifier":"TID:window-size-aura-2","RequestMethod":"POST","RequestStatus":"S","RunTime":20,"SessionKey":"WvtsJ1235oW24EbH","Timestamp":"2026-08-05T02:41:16.937+0000","Uri":"/aura","UserAgent":"Mozilla/5.0","UserIdentifier":"0055j000000utlPAAQ","UserType":"Standard"}]}'
+      - status_code: 200
+        headers: {content-type: ["text/json"]}
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"AuraRequestEventLog"},"Id":"000000000000000AAA","ClientIp":"81.2.69.142","CpuTime":10,"DatabaseTotalTime":300003,"LoginKey":"Obv9123BzbaxqCo1","RequestIdentifier":"TID:window-size-aura-3","RequestMethod":"POST","RequestStatus":"S","RunTime":20,"SessionKey":"WvtsJ1235oW24EbH","Timestamp":"2026-08-05T02:41:15.937+0000","Uri":"/aura","UserAgent":"Mozilla/5.0","UserIdentifier":"0055j000000utlPAAQ","UserType":"Standard"}]}'
+      - status_code: 200
+        headers: {content-type: ["text/json"]}
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"AuraRequestEventLog"},"Id":"000000000000000AAA","ClientIp":"81.2.69.142","CpuTime":10,"DatabaseTotalTime":300004,"LoginKey":"Obv9123BzbaxqCo1","RequestIdentifier":"TID:window-size-aura-4","RequestMethod":"POST","RequestStatus":"S","RunTime":20,"SessionKey":"WvtsJ1235oW24EbH","Timestamp":"2026-08-05T02:41:14.937+0000","Uri":"/aura","UserAgent":"Mozilla/5.0","UserIdentifier":"0055j000000utlPAAQ","UserType":"Standard"}]}'
+      - *aura_empty_soql
+      - *aura_empty_soql
+  # AuraRequest Object: window overridden below the poll period, 4 windows over a 1h lookback (api 78.0).
+  - path: /services/data/v78.0/query/
+    methods: ["GET"]
+    query_params:
+      q: ['{soql:SELECT FIELDS\(STANDARD\) FROM AuraRequestEventLog WHERE Timestamp > \S+ AND Timestamp <= \S+ ORDER BY Timestamp ASC NULLS FIRST}']
+    as_sequence: true
+    responses:
+      - status_code: 200
+        headers: {content-type: ["text/json"]}
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"AuraRequestEventLog"},"Id":"000000000000000AAA","ClientIp":"81.2.69.142","CpuTime":10,"DatabaseTotalTime":400001,"LoginKey":"Obv9123BzbaxqCo1","RequestIdentifier":"TID:independent-window-aura-1","RequestMethod":"POST","RequestStatus":"S","RunTime":20,"SessionKey":"WvtsJ1235oW24EbH","Timestamp":"2026-08-05T02:41:17.937+0000","Uri":"/aura","UserAgent":"Mozilla/5.0","UserIdentifier":"0055j000000utlPAAQ","UserType":"Standard"}]}'
+      - status_code: 200
+        headers: {content-type: ["text/json"]}
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"AuraRequestEventLog"},"Id":"000000000000000AAA","ClientIp":"81.2.69.142","CpuTime":10,"DatabaseTotalTime":400002,"LoginKey":"Obv9123BzbaxqCo1","RequestIdentifier":"TID:independent-window-aura-2","RequestMethod":"POST","RequestStatus":"S","RunTime":20,"SessionKey":"WvtsJ1235oW24EbH","Timestamp":"2026-08-05T02:41:16.937+0000","Uri":"/aura","UserAgent":"Mozilla/5.0","UserIdentifier":"0055j000000utlPAAQ","UserType":"Standard"}]}'
+      - status_code: 200
+        headers: {content-type: ["text/json"]}
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"AuraRequestEventLog"},"Id":"000000000000000AAA","ClientIp":"81.2.69.142","CpuTime":10,"DatabaseTotalTime":400003,"LoginKey":"Obv9123BzbaxqCo1","RequestIdentifier":"TID:independent-window-aura-3","RequestMethod":"POST","RequestStatus":"S","RunTime":20,"SessionKey":"WvtsJ1235oW24EbH","Timestamp":"2026-08-05T02:41:15.937+0000","Uri":"/aura","UserAgent":"Mozilla/5.0","UserIdentifier":"0055j000000utlPAAQ","UserType":"Standard"}]}'
+      - status_code: 200
+        headers: {content-type: ["text/json"]}
+        body: '{"totalSize":1,"done":true,"records":[{"attributes":{"type":"AuraRequestEventLog"},"Id":"000000000000000AAA","ClientIp":"81.2.69.142","CpuTime":10,"DatabaseTotalTime":400004,"LoginKey":"Obv9123BzbaxqCo1","RequestIdentifier":"TID:independent-window-aura-4","RequestMethod":"POST","RequestStatus":"S","RunTime":20,"SessionKey":"WvtsJ1235oW24EbH","Timestamp":"2026-08-05T02:41:14.937+0000","Uri":"/aura","UserAgent":"Mozilla/5.0","UserIdentifier":"0055j000000utlPAAQ","UserType":"Standard"}]}'
+      - *aura_empty_soql
+      - *aura_empty_soql
   # Apex ELF
   - path: /services/data/v56.0/query/
     methods: ["GET"]
