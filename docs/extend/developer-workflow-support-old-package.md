@@ -206,7 +206,7 @@ Sometimes, when we drop the support for an earlier version of the stack and late
 
     After the workflow runs, a comment is posted on the merged backport PR linking to the sync PR or reporting a failure. No manual action is needed.
 
-    **Retrying a failed sync:** if the workflow fails for any reason, the failure comment includes a `/sync-changelog` retry hint. Any repository member with write access can re-trigger the sync by commenting `/sync-changelog` on the original merged backport PR — no dummy commit required. The workflow will overwrite any stale working branch left by the previous attempt and open the sync PR. Commenting on an unmerged PR exits silently with no side effects.
+    **Retrying a failed sync:** if the workflow fails for any reason, the failure comment includes a `/sync-changelog` retry hint. Any repository member with write or maintain access can re-trigger the sync by commenting `/sync-changelog` on the original merged backport PR — no dummy commit required. The workflow will overwrite any stale working branch left by the previous attempt and open the sync PR. Commenting on an unmerged PR exits silently with no side effects.
 
 ## Package owner synchronization
 
@@ -216,7 +216,7 @@ Two mechanisms keep owners in sync.
 
 ### Automatic sync during apply
 
-When `backport_apply.sh` (or `mage applyBackport`) creates a backport PR, it automatically syncs the package's owners from `main` as a separate commit on top of the cherry-pick:
+When `backport_apply.sh` (or `backport apply`) creates a backport PR, it automatically syncs the package's owners from `main` as a separate commit on top of the cherry-pick:
 
 - **What is synced:** the `owner.github` field in `manifest.yml`, the package's own `.github/CODEOWNERS` line, and any sub-path entries nested under the package (data streams, `kibana/` directory, and other subdirectory overrides).
 - **Commit message:** `Sync <package> package owners from main`
