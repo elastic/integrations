@@ -72,6 +72,12 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 
 After the integration is running, open **Discover** in Kibana and search for `event.dataset: "hackerone.report"`. You should see reports within one polling interval (default: 5 minutes) after they are created or updated in HackerOne.
 
+### Query-time report enrichment (LOOKUP JOIN)
+
+When the integration is installed, a transform maintains the latest state of each HackerOne report in a lookup index (`logs-hackerone_latest.report`). You can enrich other security data with HackerOne report metadata at query time using ES|QL [`LOOKUP JOIN`](https://www.elastic.co/docs/reference/query-languages/esql/commands/lookup-join) on fields such as `event.id`, `vulnerability.id`, or `vulnerability.report_id`.
+
+**Elasticsearch 9.1+** is required for `LOOKUP JOIN` against a lookup index. On releases before 9.1, `LOOKUP JOIN` must target the concrete transform destination index instead: in Kibana go to **Stack Management** → **Transforms**, open the HackerOne latest report transform, and use the **destination_index** name shown there (that name can change with the integration version).
+
 ## Troubleshooting
 
 For help with Elastic ingest tools, check [Common problems](https://www.elastic.co/docs/troubleshoot/ingest/fleet/common-problems).
