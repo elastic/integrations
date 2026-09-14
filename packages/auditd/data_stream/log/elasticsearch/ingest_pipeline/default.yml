@@ -2048,6 +2048,24 @@ processors:
           field: "{{{_ingest._value.target}}}"
           value: "{{{_ingest._value.value}}}"
   - set:
+      # shadow-utils before 4.9 (RHEL 8, Ubuntu 20.04, Debian 11) logs most usermod(8) and chage(1)
+      # operations as USER_CHAUTHTOK, with the real operation only in `op` (e.g. "adding user to
+      # shadow group", "changing uid", "change max age"). Newer shadow-utils logs those as
+      # USER_MGMT, which maps to modified-user-account. Keep changed-password when `op` mentions the
+      # password in any spelling ("changing password", "updating passwd" for usermod -L,
+      # "PAM:chauthtok"); otherwise use modified-user-account to match the newer record type.
+      # Records without `op` are left alone.
+      description: Reclassify USER_CHAUTHTOK records whose op is not a password change.
+      tag: set_user_chauthtok_action_from_op
+      if: >-
+        ctx.auditd.log?.record_type == 'USER_CHAUTHTOK' &&
+        ctx.auditd.log?.op instanceof String &&
+        !ctx.auditd.log.op.toLowerCase().contains('password') &&
+        !ctx.auditd.log.op.toLowerCase().contains('passwd') &&
+        !ctx.auditd.log.op.toLowerCase().contains('chauthtok')
+      field: event.action
+      value: modified-user-account
+  - set:
       if: "ctx.auditd.log?.record_type == 'SYSTEM_BOOT' || ctx.auditd.log?.record_type == 'SYSTEM_SHUTDOWN'"
       field: event.category
       value: host
