@@ -86,22 +86,36 @@ func TestBuildPRTitle(t *testing.T) {
 }
 
 func TestPickAssignee(t *testing.T) {
-	member := func(string) bool { return true }
-	nonMember := func(string) bool { return false }
+	yes := func(string) bool { return true }
+	no  := func(string) bool { return false }
 
-	t.Run("author is org member — use author", func(t *testing.T) {
-		assert.Equal(t, "author-login", pickAssignee("author-login", "merger-login", member))
+	t.Run("author is not bot and has write access — use author", func(t *testing.T) {
+		assert.Equal(t, "author", pickAssignee(
+			prActor{Login: "author", IsBot: false},
+			prActor{Login: "merger", IsBot: false}, yes))
 	})
 
-	t.Run("author is not org member — fall back to merger", func(t *testing.T) {
-		assert.Equal(t, "merger-login", pickAssignee("author-login", "merger-login", nonMember))
+	t.Run("author is bot — fall back to mergedBy", func(t *testing.T) {
+		assert.Equal(t, "merger", pickAssignee(
+			prActor{Login: "app/some-bot", IsBot: true},
+			prActor{Login: "merger", IsBot: false}, yes))
 	})
 
-	t.Run("empty author — fall back to merger regardless of membership", func(t *testing.T) {
-		assert.Equal(t, "merger-login", pickAssignee("", "merger-login", member))
+	t.Run("author has no write access (external contributor) — fall back to mergedBy", func(t *testing.T) {
+		assert.Equal(t, "merger", pickAssignee(
+			prActor{Login: "external-contributor", IsBot: false},
+			prActor{Login: "merger", IsBot: false}, no))
 	})
 
-	t.Run("empty merger and non-member author — returns empty string", func(t *testing.T) {
-		assert.Equal(t, "", pickAssignee("author-login", "", nonMember))
+	t.Run("author is bot and mergedBy is bot — return empty string", func(t *testing.T) {
+		assert.Equal(t, "", pickAssignee(
+			prActor{Login: "app/bot-a", IsBot: true},
+			prActor{Login: "app/bot-b", IsBot: true}, yes))
+	})
+
+	t.Run("author is bot and mergedBy is empty — return empty string", func(t *testing.T) {
+		assert.Equal(t, "", pickAssignee(
+			prActor{Login: "app/bot", IsBot: true},
+			prActor{}, yes))
 	})
 }

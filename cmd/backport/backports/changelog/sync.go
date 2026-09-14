@@ -118,37 +118,53 @@ func CreateSyncPR(workDir, entriesTSV, workingBranch, backportPRNumber, backport
 	return &SyncResult{NotFoundPackages: notFound, Outcome: "success"}, nil
 }
 
+type prActor struct {
+	Login string `json:"login"`
+	IsBot bool   `json:"is_bot"`
+}
+
 // resolveAssignee returns the login that should be set as assignee on the sync
-// PR. It prefers the backport PR author when they are an elastic org member,
-// and falls back to whoever merged the PR. Returns an empty string on any
-// lookup failure so the caller can skip the --assignee flag gracefully.
+// PR. It prefers the backport PR author when they are not a bot and have repo
+// write access, and falls back to whoever merged the PR when they are not a
+// bot. Returns an empty string on any lookup failure so the caller can skip
+// the --assignee flag gracefully.
 func resolveAssignee(prNumber, repository string) string {
 	stdout, _, err := gh.Exec("pr", "view", prNumber, "--repo", repository,
 		"--json", "author,mergedBy")
 	if err != nil {
 		return ""
 	}
-	var actors struct {
-		Author   struct{ Login string } `json:"author"`
-		MergedBy struct{ Login string } `json:"mergedBy"`
+	var data struct {
+		Author   prActor `json:"author"`
+		MergedBy prActor `json:"mergedBy"`
 	}
-	if err := json.Unmarshal(stdout.Bytes(), &actors); err != nil {
+	if err := json.Unmarshal(stdout.Bytes(), &data); err != nil {
 		return ""
 	}
-	isOrgMember := func(login string) bool {
-		_, _, err := gh.Exec("api", fmt.Sprintf("orgs/elastic/members/%s", login), "--silent")
-		return err == nil
+	hasWriteAccess := func(login string) bool {
+		out, _, err := gh.Exec("api",
+			fmt.Sprintf("repos/%s/collaborators/%s/permission", repository, login),
+			"--jq", ".permission")
+		if err != nil {
+			return false
+		}
+		perm := strings.TrimSpace(out.String())
+		return perm == "write" || perm == "maintain" || perm == "admin"
 	}
-	return pickAssignee(actors.Author.Login, actors.MergedBy.Login, isOrgMember)
+	return pickAssignee(data.Author, data.MergedBy, hasWriteAccess)
 }
 
-// pickAssignee returns author when isOrgMember(author) is true, otherwise
-// mergedBy. Returns mergedBy also when author is empty.
-func pickAssignee(author, mergedBy string, isOrgMember func(string) bool) string {
-	if author != "" && isOrgMember(author) {
-		return author
+// pickAssignee returns the author login when the author is not a bot and has
+// repo write access. Falls back to mergedBy when the author check fails, as
+// long as mergedBy is not a bot. Returns empty string if neither qualifies.
+func pickAssignee(author, mergedBy prActor, hasWriteAccess func(string) bool) string {
+	if !author.IsBot && author.Login != "" && hasWriteAccess(author.Login) {
+		return author.Login
 	}
-	return mergedBy
+	if !mergedBy.IsBot && mergedBy.Login != "" {
+		return mergedBy.Login
+	}
+	return ""
 }
 
 type tsvEntry struct{ pkg, version, entryFile string }
