@@ -79,17 +79,6 @@ metrics.compute.googleapis.com/instance/cpu/utilization
 
 `instance_id`, `zone`, `project_id`, and `gcp.resource_type` arrive as resource attributes under `resource.attributes.*`, while `instance_name` is a datapoint attribute under `attributes.*`.
 
-### Guest metrics
-
-In-guest memory and filesystem usage are not visible to the hypervisor, so they are not collected by default. Instances only report the metrics below when they run [Container-Optimized OS health monitoring](https://cloud.google.com/container-optimized-os/docs/how-to/monitoring) or the [Ops Agent](https://cloud.google.com/stackdriver/docs/solutions/agents/ops-agent). Add the ones you need to **Additional Metrics** once the instances emit them; until then the receiver returns empty results for these metric types.
-
-| Category | Metric types |
-|---|---|
-| Memory | `guest/memory/percent_used`, `guest/memory/bytes_used` |
-| Disk | `guest/disk/percent_used`, `guest/disk/bytes_used`, `guest/disk/queue_length` |
-| CPU | `guest/cpu/load_1m`, `guest/cpu/runnable_task_count` |
-| System | `guest/system/problem_count`, `guest/system/uptime` |
-
 ## Cost and quota
 
 The receiver issues one time series query per collected metric type on every collection cycle: 29 queries per project per cycle by default, or every five minutes at the default interval, plus one per entry in **Additional Metrics**. Review [Cloud Monitoring pricing](https://cloud.google.com/stackdriver/pricing#monitoring-costs) and [API quotas](https://cloud.google.com/monitoring/quotas#api_quotas) before lowering **Collection Interval** or adding metrics.
