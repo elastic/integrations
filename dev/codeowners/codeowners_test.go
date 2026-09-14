@@ -5,48 +5,21 @@
 package codeowners
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-// Tests for the exported Owners API (ParseOwners, LoadOwners, Resolve,
-// EntriesUnder, ExplicitEntry, PackageOwnersByPath). These mirror the
-// behaviours the dev/backports/owners package relies on, ensuring the shared
-// implementation stays consistent.
+// Tests for the exported Owners API (LoadOwners, Resolve,
+// EntriesUnder, ExplicitEntry, PackageOwnersByPath).
 
-func TestParseOwners(t *testing.T) {
-	t.Run("valid content parses successfully", func(t *testing.T) {
-		const content = `/packages/aws @elastic/obs-infraobs-integrations
-/packages/aws/data_stream/cloudtrail @elastic/security-service-integrations
-# a comment line is skipped
-`
-		o, err := ParseOwners(content)
-		require.NoError(t, err)
-		owners, ok := o.ExplicitEntry("/packages/aws")
-		require.True(t, ok)
-		assert.Equal(t, []string{"@elastic/obs-infraobs-integrations"}, owners)
-	})
-
-	t.Run("single-field exclusion rule that removes owners from a defined path is rejected", func(t *testing.T) {
-		// checkSingleField must reject any exclusion-only line that would strip
-		// ownership from a path already covered by an explicit entry — same
-		// validation readGithubOwners performs when reading from disk.
-		const content = `/packages/aws @elastic/obs-infraobs-integrations
-/packages/aws/data_stream/cloudtrail
-`
-		_, err := ParseOwners(content)
-		assert.Error(t, err)
-	})
-
-	t.Run("trailing slash on path is stripped", func(t *testing.T) {
-		const content = "/packages/aws/ @elastic/obs-infraobs-integrations\n"
-		o, err := ParseOwners(content)
-		require.NoError(t, err)
-		_, ok := o.ExplicitEntry("/packages/aws")
-		assert.True(t, ok)
-	})
+func mustParseOwners(t *testing.T, content string) *Owners {
+	t.Helper()
+	inner, err := scanGithubOwners(strings.NewReader(content), "<in-memory>")
+	require.NoError(t, err)
+	return &Owners{inner: inner}
 }
 
 func TestResolve(t *testing.T) {
@@ -55,8 +28,7 @@ func TestResolve(t *testing.T) {
 /packages/aws/data_stream/cloudtrail @elastic/security-service-integrations
 /packages/nested/foo @elastic/ecosystem
 `
-	o, err := ParseOwners(content)
-	require.NoError(t, err)
+	o := mustParseOwners(t, content)
 
 	cases := []struct {
 		name     string
@@ -113,8 +85,7 @@ func TestEntriesUnder(t *testing.T) {
 /packages/aws/kibana @elastic/obs-infraobs-integrations
 /packages/awsome @elastic/unrelated-team
 `
-	o, err := ParseOwners(content)
-	require.NoError(t, err)
+	o := mustParseOwners(t, content)
 
 	got := o.EntriesUnder("/packages/aws")
 	assert.ElementsMatch(t, []string{
@@ -128,8 +99,7 @@ func TestExplicitEntry(t *testing.T) {
 /packages/aws @elastic/obs-infraobs-integrations
 /packages/aws/data_stream/cloudtrail @elastic/security-service-integrations
 `
-	o, err := ParseOwners(content)
-	require.NoError(t, err)
+	o := mustParseOwners(t, content)
 
 	t.Run("returns entry for an explicitly defined path", func(t *testing.T) {
 		got, ok := o.ExplicitEntry("/packages/aws/data_stream/cloudtrail")

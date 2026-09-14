@@ -1,0 +1,56 @@
+{
+    "id": "supabase_otel-host-memory-pressure",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "description": "Fires when available memory on the project node falls to a small fraction of total memory. Low available memory squeezes the PostgreSQL buffer cache, which amplifies disk IO, and is the precursor to an OOM kill.",
+        "name": "[Supabase OTel] Host memory pressure",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "supabase",
+            "host",
+            "saturation"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 2
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "artifacts": {
+            "dashboards": [
+                {
+                    "id": "supabase_otel-7c6a2004-c517-4b50-b70a-2682b7a79228"
+                },
+                {
+                    "id": "supabase_otel-591c7a1f-6ac7-43cb-8ade-9c5684d47f5b"
+                }
+            ],
+            "investigation_guide": {
+                "blob": "## Host Memory Pressure\n\nEverything in a Supabase project shares one node: PostgreSQL, PostgREST, GoTrue, the poolers and Realtime. Memory pressure in one of them surfaces as latency in the others.\n\n### Triage Steps\n1. Read the `Swap Used %` column. Swapping is a strong precursor to an OOM kill; corroborate with `node_vmstat_pswpin` and `node_vmstat_pswpout`.\n2. Check the buffer cache hit ratio (`pg_stat_database_blks_hit_total` versus `pg_stat_database_blks_read_total`). A falling ratio confirms the working set has outgrown memory and reads are going to disk, which then shows up as disk IO saturation.\n3. Check the Go services for a leak: `go_memstats_heap_inuse_bytes` and `process_resident_memory_bytes` by `attributes.service_type`.\n4. Read the `Dirty Bytes` column for writeback backlog, which indicates memory held by pages waiting to be flushed.\n\n### Tuning\nThe rule deliberately uses `node_memory_MemAvailable_bytes`, never `MemFree`. PostgreSQL relies on the page cache, so free memory is expected to sit near zero while available memory is healthy; alerting on `MemFree` would fire constantly. `MemTotal` uses the same aggregation as the `Total Memory` dashboard panel. Raise the 10% threshold to 15% on memory-tight compute tiers for earlier warning."
+            }
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "TS metrics-supabase.metrics.otel-*\n// MemAvailable, never MemFree: PostgreSQL relies on the page cache, so free memory is\n// expected to sit near zero while available memory is healthy. MIN() on the available\n// side and MAX() on the capacity side give the worst-case headroom in the window.\n| STATS\n    `Available Bytes` = MIN(LAST_OVER_TIME(node_memory_MemAvailable_bytes)),\n    `Total Bytes` = MAX(LAST_OVER_TIME(node_memory_MemTotal_bytes)),\n    `Swap Total Bytes` = MAX(LAST_OVER_TIME(node_memory_SwapTotal_bytes)),\n    `Swap Free Bytes` = MIN(LAST_OVER_TIME(node_memory_SwapFree_bytes)),\n    `Dirty Bytes` = MAX(MAX_OVER_TIME(node_memory_Dirty_bytes))\n  BY resource.attributes.supabase_project_ref\n| WHERE `Total Bytes` > 0\n| EVAL `Available Memory %` = ROUND(`Available Bytes` / `Total Bytes` * 100, 1)\n// Swap usage is diagnostic context; null when the node has no swap configured.\n| EVAL `Swap Used %` = CASE(\n    `Swap Total Bytes` > 0, ROUND((1 - `Swap Free Bytes` / `Swap Total Bytes`) * 100, 1)\n  )\n// Below 10% available the buffer cache is being squeezed and an OOM kill is the next step.\n// Raise to 15 on memory-tight compute tiers for earlier warning.\n| WHERE `Available Memory %` < 10"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 15,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "resource.attributes.supabase_project_ref",
+            "termSize": 50
+        }
+    }
+}

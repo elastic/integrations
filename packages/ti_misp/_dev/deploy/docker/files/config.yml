@@ -404,7 +404,38 @@ rules:
               }
             ]
           }
-  - path: /attributes/restSearch # sequence 3, page 1 (repeats)
+  # =============================================================================================
+  # /attributes/restSearch  (threat_attributes data stream)
+  # =============================================================================================
+  #
+  # A FULL fetch always sends `timestamp = now - initial_interval` (a large, "current" epoch), so it
+  # only matches the catch-all `timestamp":"\d+"` rule at the very BOTTOM ("fresh full-fetch").
+  # Incremental polls send a fixed historical cursor value and match the SPECIFIC rules above it.
+  # That is why the fresh-full-fetch rule is listed last.
+  #
+  # REQUEST TIMELINE for the daily-refetch test (interval=1s, initial_interval=10s, refetch_interval=5s
+  # -> a refetch fires ~5s after the first poll):
+  #
+  #   STEP 1  (t~0s, page 1) first poll, no cursor -> FULL fetch -> "fresh full-fetch" rule,
+  #           rolling response[0] = dataset A (ids 1-2). cursor.timestamp -> 1412320446 (A's max ts).
+  #   STEP 1b (t~0s, page 2) -> "full-fetch page 2" rule -> empty -> stops pagination.
+  #   STEP 2  (t~1s, page 1) not yet time to refetch -> cursor 1412320446 -> "STEP 2" rule ->
+  #           8 attributes. cursor.timestamp -> 1700667505 (their max ts).
+  #   STEP 2b (t~1s, page 2) -> "STEP 2 page 2" rule -> empty -> stops pagination.
+  #   STEP 3  (t~2-4s, page 1) not yet time to refetch -> cursor 1700667505 -> "STEP 3" rule -> empty.
+  #   STEP 4  (t~5s, page 1) refetch_interval elapsed -> FULL fetch -> "fresh full-fetch" rule,
+  #           rolling response[1] = dataset B (ids 9001-9003). cursor.timestamp -> 1750000002.
+  #   STEP 4b (t~5s, page 2) -> "full-fetch page 2" rule -> empty -> stops pagination.
+  #   STEP 5  (t~6-9s, page 1) not yet time to refetch -> cursor 1750000002 -> "STEP 5" rule -> empty.
+  #   STEP 6  (t~10s) next refetch -> "fresh full-fetch" rolls back to dataset A (same _ids -> overwrite,
+  #           no new docs); the cycle repeats. Total unique docs stays 13.
+  #
+  # Indexed unique docs: dataset A (2) + STEP 2 attributes (8) + dataset B (3) = 13 => assert.hit_count.
+  #
+  # The default (non-refetch) test runs STEP 1 -> STEP 2 -> STEP 3 only, never advances the rolling
+  # response to dataset B, and asserts hit_count = 10.
+  # ---------------------------------------------------------------------------------------------
+  - path: /attributes/restSearch # STEP 3: incremental polls, cursor=1700667505 (max ts of STEP 2) -> empty (repeats)
     methods: ["POST"]
     request_headers:
       Authorization: "test"
@@ -420,7 +451,7 @@ rules:
           X-Rate-Limit-Reset:
             - "60"
         body: "{\n  \"response\": {\n    \"Attribute\": []\n  }\n}  "
-  - path: /attributes/restSearch # sequence 2, page 2
+  - path: /attributes/restSearch # STEP 2b: pagination page 2 for STEP 2 (cursor=1412320446) -> empty
     methods: ["POST"]
     request_headers:
       Authorization: "test"
@@ -436,7 +467,7 @@ rules:
           X-Rate-Limit-Reset:
             - "60"
         body: "{\n  \"response\": {\n    \"Attribute\": []\n  }\n}  "
-  - path: /attributes/restSearch # sequence 2, page 1
+  - path: /attributes/restSearch # STEP 2: first incremental poll, cursor=1412320446 (max ts of dataset A) -> 8 attributes
     methods: ["POST"]
     request_headers:
       Authorization: "test"
@@ -998,7 +1029,7 @@ rules:
               ]
             }
           }
-  - path: /attributes/restSearch # sequence 1, page 2
+  - path: /attributes/restSearch # STEP 1b/4b: pagination page 2 of every full fetch -> empty (stops pagination)
     methods: ["POST"]
     request_headers:
       Authorization: "test"
@@ -1014,7 +1045,27 @@ rules:
           X-Rate-Limit-Reset:
             - "60"
         body: "{\n  \"response\": {\n    \"Attribute\": []\n  }\n}  "
-  - path: /attributes/restSearch # sequence 1, page 1
+  - path: /attributes/restSearch # STEP 5: incremental polls after the refetch, cursor=1750000002 (max ts of dataset B) -> empty
+    methods: ["POST"]
+    request_headers:
+      Authorization: "test"
+      Content-Type: application/json
+    request_body: /^{"includeDecayScore":"true","limit":"10","order":"timestamp","page":"1","returnFormat":"json","timestamp":"1750000002"/
+    responses:
+      - status_code: 200
+        headers:
+          X-Rate-Limit-Limit:
+            - "10"
+          X-Rate-Limit-Remaining:
+            - "100"
+          X-Rate-Limit-Reset:
+            - "60"
+        body: "{\n  \"response\": {\n    \"Attribute\": []\n  }\n}  "
+  # "fresh full-fetch" rule: served on STEP 1 (first poll) and STEP 4 (each refetch). Both send
+  # timestamp = now - initial_interval, which only this catch-all `\d+` rule matches, so it must be
+  # LAST (below every specific incremental rule). Its responses roll: response[0] = dataset A on the
+  # first full-fetch, response[1] = dataset B on the refetch. See the timeline above.
+  - path: /attributes/restSearch # STEP 1 & STEP 4: fresh full-fetch page 1 (rolling: dataset A, then dataset B on the refetch)
     methods: ["POST"]
     request_headers:
       Authorization: "test"
@@ -1085,6 +1136,102 @@ rules:
                     "info": "OSINT ShellShock scanning IPs from OpenDNS",
                     "orgc_id": "2",
                     "uuid": "542e4c9c-cadc-4f8f-bb11-6d13950d210b"
+                  }
+                }
+              ]
+            }
+          }
+      - status_code: 200
+        headers:
+          X-Rate-Limit-Limit:
+            - "10"
+          X-Rate-Limit-Remaining:
+            - "100"
+          X-Rate-Limit-Reset:
+            - "60"
+        body: |-
+          {
+            "response": {
+              "Attribute": [
+                {
+                  "id": "9001",
+                  "event_id": "9001",
+                  "object_id": "0",
+                  "object_relation": null,
+                  "category": "External analysis",
+                  "type": "link",
+                  "to_ids": false,
+                  "uuid": "9a1b2c3d-0001-4a57-bfb8-1fda950d2101",
+                  "timestamp": "1750000000",
+                  "distribution": "5",
+                  "sharing_group_id": "0",
+                  "comment": "refetch cycle test attribute 1",
+                  "deleted": false,
+                  "disable_correlation": false,
+                  "first_seen": null,
+                  "last_seen": null,
+                  "value": "http://refetch.example.test/one",
+                  "Event": {
+                    "org_id": "1",
+                    "distribution": "3",
+                    "id": "9001",
+                    "info": "Refetch cycle test event",
+                    "orgc_id": "2",
+                    "uuid": "9a1b2c3d-0000-4f8f-bb11-6d13950d2100"
+                  }
+                },
+                {
+                  "id": "9002",
+                  "event_id": "9001",
+                  "object_id": "0",
+                  "object_relation": null,
+                  "category": "External analysis",
+                  "type": "text",
+                  "to_ids": false,
+                  "uuid": "9a1b2c3d-0002-4a57-bfb8-1fda950d2102",
+                  "timestamp": "1750000001",
+                  "distribution": "5",
+                  "sharing_group_id": "0",
+                  "comment": "refetch cycle test attribute 2",
+                  "deleted": false,
+                  "disable_correlation": false,
+                  "first_seen": null,
+                  "last_seen": null,
+                  "value": "Refetch cycle test text",
+                  "Event": {
+                    "org_id": "1",
+                    "distribution": "3",
+                    "id": "9001",
+                    "info": "Refetch cycle test event",
+                    "orgc_id": "2",
+                    "uuid": "9a1b2c3d-0000-4f8f-bb11-6d13950d2100"
+                  }
+                },
+                {
+                  "id": "9003",
+                  "event_id": "9001",
+                  "object_id": "0",
+                  "object_relation": null,
+                  "category": "External analysis",
+                  "type": "comment",
+                  "to_ids": false,
+                  "uuid": "9a1b2c3d-0003-4a57-bfb8-1fda950d2103",
+                  "timestamp": "1750000002",
+                  "distribution": "5",
+                  "sharing_group_id": "0",
+                  "comment": "refetch cycle test attribute 3",
+                  "deleted": false,
+                  "disable_correlation": false,
+                  "first_seen": null,
+                  "last_seen": null,
+                  "value": "Refetch cycle test comment",
+                  "Event": {
+                    "org_id": "1",
+                    "distribution": "3",
+                    "id": "9001",
+                    "info": "Refetch cycle test event",
+                    "orgc_id": "2",
+                    "uuid": "9a1b2c3d-0000-4f8f-bb11-6d13950d2100"
                   }
                 }
               ]

@@ -1,0 +1,107 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects an SES email identity being verified and subsequently deleted within a 30-minute window, performed by the same AWS identity. Amazon SES requires email addresses and domains to be verified before they can be used as senders. An adversary who obtains SES credentials may verify a domain or address they control, use it to send phishing or spam email, then delete the identity to remove evidence of the sending domain from the account's verified identity list. This verify-use-delete pattern is a recognized attacker technique for SES abuse.",
+        "false_positives": [
+            "Testing workflows that verify a sandbox email address and then clean it up may trigger this rule. Confirm that the email identity verified and deleted corresponds to a planned test rather than a production or attacker-controlled domain."
+        ],
+        "from": "now-60m",
+        "interval": "30m",
+        "investigation_fields": {
+            "field_names": [
+                "aws.cloudtrail.user_identity.arn",
+                "Esql.ses_verify_count",
+                "Esql.ses_delete_count",
+                "Esql.ses_verify_timestamp_min",
+                "Esql.ses_delete_timestamp_max",
+                "Esql.event_action_values",
+                "Esql_priv.user_name_values",
+                "Esql.cloud_account_id_values"
+            ]
+        },
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "AWS SES Email Identity Verified Then Deleted",
+        "note": "## Triage and analysis\n\n### Investigating AWS SES Email Identity Verified Then Deleted\n\nAmazon SES requires that email addresses and domains be verified (via DNS record or a verification email) before they can be used as `From:` addresses. An adversary who obtains SES write credentials can verify a domain they control, send bulk email from that domain using the victim account's sending quota and reputation, then delete the identity to hide the sending domain from security reviews.\n\nThe verify-then-delete sequence is the evidence-destruction component of the SES phishing technique: it removes the compromised identity from `ListIdentities` output, making post-incident attribution harder.\n\nThis is an ES|QL rule that aggregates SES verification and deletion events per calling identity within 30-minute windows and alerts when the same identity performed both, with the verification preceding the deletion.\n\n### Possible investigation steps\n\n- Identify the caller from `aws.cloudtrail.user_identity.arn` and the aggregated `user_names` column.\n- Pivot to the raw CloudTrail events for this ARN in the `first_verify` to `last_delete` time range to determine the verified identity from the `VerifyEmailIdentity` or `VerifyDomainIdentity` request parameters and the deleted identity from the `DeleteIdentity` request parameters.\n- Query SES `SendEmail` / `SendRawEmail` CloudTrail events (if CloudTrail management events are being collected) or SES sending statistics between the verification and deletion timestamps to determine whether email was sent from the verified identity.\n- Check your email service provider's delivery logs for any email sourced from the SES identity.\n- Review all SES actions taken by this identity in the surrounding time window.\n\n### Response and remediation\n\n- If unauthorized email was sent, notify affected recipients and file an SES abuse report.\n- Rotate all IAM credentials that had SES write access during the incident window.\n- Enable SES sending quotas and alerts to detect unusual send volume in real time.\n- Restrict `ses:VerifyEmailIdentity`, `ses:VerifyDomainIdentity`, and `ses:DeleteIdentity` to a dedicated SES-management role via IAM policy.\n",
+        "query": "from logs-aws.cloudtrail-* metadata _id, _version, _index\n| where data_stream.dataset == \"aws.cloudtrail\"\n    and event.provider == \"ses.amazonaws.com\"\n    and event.action in (\"VerifyEmailIdentity\", \"VerifyDomainIdentity\", \"VerifyEmailAddress\", \"VerifyDomainDkim\", \"DeleteIdentity\")\n    and event.outcome == \"success\"\n    and aws.cloudtrail.user_identity.arn is not null\n| eval Esql.ses_verify_flag = case(event.action != \"DeleteIdentity\", 1, 0),\n       Esql.ses_delete_flag = case(event.action == \"DeleteIdentity\", 1, 0)\n| stats Esql.ses_verify_count = sum(Esql.ses_verify_flag),\n        Esql.ses_delete_count = sum(Esql.ses_delete_flag),\n        Esql.ses_verify_timestamp_min = min(case(Esql.ses_verify_flag == 1, @timestamp)),\n        Esql.ses_delete_timestamp_max = max(case(Esql.ses_delete_flag == 1, @timestamp)),\n        Esql.event_action_values = values(event.action),\n        Esql_priv.user_name_values = values(user.name),\n        Esql.cloud_account_id_values = values(cloud.account.id)\n    by aws.cloudtrail.user_identity.arn\n| where Esql.ses_verify_count > 0 and Esql.ses_delete_count > 0\n    and Esql.ses_verify_timestamp_min < Esql.ses_delete_timestamp_max\n    and date_diff(\"minutes\", Esql.ses_verify_timestamp_min, Esql.ses_delete_timestamp_max) <= 30\n| keep aws.cloudtrail.user_identity.arn, Esql.ses_verify_count, Esql.ses_delete_count, Esql.ses_verify_timestamp_min, Esql.ses_delete_timestamp_max, Esql.event_action_values, Esql_priv.user_name_values, Esql.cloud_account_id_values\n",
+        "references": [
+            "https://docs.aws.amazon.com/ses/latest/APIReference/API_VerifyEmailIdentity.html",
+            "https://docs.aws.amazon.com/ses/latest/APIReference/API_DeleteIdentity.html",
+            "https://permiso.io/blog/s/aws-ses-pionage-detecting-ses-abuse/"
+        ],
+        "related_integrations": [
+            {
+                "integration": "cloudtrail",
+                "package": "aws",
+                "version": ">=6.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "aws.cloudtrail.user_identity.arn",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "8e4bde35-125d-4eb3-9a2e-d7e77a053a08",
+        "setup": "The AWS integration must be ingesting management events into `logs-aws.cloudtrail-*`. SES management APIs are logged by default.",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Platform: AWS",
+            "Data Source: AWS CloudTrail",
+            "Service: AWS SES",
+            "Rule Type: ESQL",
+            "Tactic: Resource Development",
+            "Resources: Investigation Guide",
+            "Tactic: Stealth"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0042",
+                    "name": "Resource Development",
+                    "reference": "https://attack.mitre.org/tactics/TA0042/"
+                },
+                "technique": [
+                    {
+                        "id": "T1583",
+                        "name": "Acquire Infrastructure",
+                        "reference": "https://attack.mitre.org/techniques/T1583/",
+                        "subtechnique": [
+                            {
+                                "id": "T1583.001",
+                                "name": "Domains",
+                                "reference": "https://attack.mitre.org/techniques/T1583/001/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Stealth",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1070",
+                        "name": "Indicator Removal",
+                        "reference": "https://attack.mitre.org/techniques/T1070/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 2
+    },
+    "id": "8e4bde35-125d-4eb3-9a2e-d7e77a053a08_2",
+    "type": "security-rule"
+}

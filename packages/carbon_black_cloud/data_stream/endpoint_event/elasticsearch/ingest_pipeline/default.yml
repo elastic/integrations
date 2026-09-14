@@ -2,32 +2,40 @@
 description: Pipeline for parsing Carbon Black Cloud Endpoint Events.
 processors:
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
   - remove:
+      tag: remove_message_2ee3a7d4
       field: message
       ignore_missing: true
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
+      tag: json_event_original_to_json_cac66847
       field: event.original
       target_field: json
       ignore_failure: true
   - set:
+      tag: set__temp__device_timestamp_58cddea7
       field: _temp_.device_timestamp
       copy_from: json.device_timestamp
       on_failure:
         - remove:
+            tag: remove_json_device_timestamp_20e3a9d2
             field: json.device_timestamp
         - append:
+            tag: append_error_message_bfc22fd0
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
+      tag: date_json_device_timestamp_2ea1217f
       field: json.device_timestamp
       if: ctx.json?.device_timestamp != null && ctx.json.device_timestamp != ''
       formats:
@@ -42,11 +50,14 @@ processors:
         - 'yyyy-MM-dd HH:mm:ss.SSSSSSS Z z'
       on_failure:
         - remove:
+            tag: remove_json_device_timestamp_18eb17ac
             field: json.device_timestamp
         - append:
+            tag: append_error_message_fe5a299a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
+      tag: script_64aa551f
       lang: painless
       params:
         type_mapping:
@@ -87,82 +98,104 @@ processors:
         ctx.event.type = mapping.type;
       ignore_failure: true
   - rename:
+      tag: rename_json_action_to_event_action_6ebb0784
       field: json.action
       target_field: event.action
       ignore_missing: true
   - rename:
+      tag: rename_json_event_id_to_event_id_2f7e12eb
       field: json.event_id
       target_field: event.id
       ignore_missing: true
   - rename:
+      tag: rename_json_event_description_to_event_reason_d11bf969
       field: json.event_description
       target_field: event.reason
       ignore_missing: true
   - rename:
+      tag: rename_json_filemod_name_to_file_path_c219371b
       field: json.filemod_name
       target_field: file.path
       ignore_missing: true
   - rename:
+      tag: rename_json_modload_name_to_dll_path_bc0b0c53
       field: json.modload_name
       target_field: dll.path
       ignore_missing: true
   - set:
+      tag: set_network_transport_45fbc44f
       field: network.transport
       value: udp
       if: ctx.json?.netconn_protocol == 'PROTO_UDP'
   - set:
+      tag: set_network_transport_5a8959fb
       field: network.transport
       value: tcp
       if: ctx.json?.netconn_protocol == 'PROTO_TCP'
   - set:
+      tag: set_network_direction_9b3902e0
       field: network.direction
       value: inbound
       if: ctx.json?.netconn_inbound == true
   - set:
+      tag: set_network_direction_204fa2ee
       field: network.direction
       value: outbound
       if: ctx.json?.netconn_inbound == false
   - convert:
+      tag: convert_json_remote_port_762216d6
       field: json.remote_port
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_remote_port_f4464cde
             field: json.remote_port
         - append:
+            tag: append_error_message_406bb00d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_remote_ip_5c2fd30b
       field: json.remote_ip
       type: ip
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_remote_ip_c9171671
             field: json.remote_ip
         - append:
+            tag: append_error_message_63034fe4
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_local_port_fa86e864
       field: json.local_port
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_local_port_e0b8157b
             field: json.local_port
         - append:
+            tag: append_error_message_1f0b2617
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_local_ip_caa4f9c1
       field: json.local_ip
       type: ip
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_local_ip_2682bf60
             field: json.local_ip
         - append:
+            tag: append_error_message_c1abac9e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
+      tag: script_c016e17f
       lang: painless
       source: |
         // These allocations may be futile, but will be cleaned up in the postamble.
@@ -192,74 +225,84 @@ processors:
           ctx.destination.domain = ctx.json?.netconn_domain;
         }     
   - append:
+      tag: append_related_ip_30d15214
       field: related.ip
       value: '{{{source.ip}}}'
       if: ctx.source?.ip != null
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_related_ip_c5270880
       field: related.ip
       value: '{{{client.ip}}}'
       if: ctx.client?.ip != null
       allow_duplicates: false
       ignore_failure: true
   - convert:
+      tag: convert_json_device_id_to_host_id_0442f346
       field: json.device_id
       target_field: host.id
       type: string
       ignore_missing: true
       ignore_failure: true
   - set:
+      tag: set_host_os_type_b1a2b9f6
       field: host.os.type
       value: windows
       if: ctx.json?.device_os == 'WINDOWS'
   - set:
+      tag: set_host_os_type_72cb5d5c
       field: host.os.type
       value: linux
       if: ctx.json?.device_os == 'LINUX'
   - set:
+      tag: set_host_os_type_d13aee80
       field: host.os.type
       value: macos
       if: ctx.json?.device_os == 'MAC'
   - rename:
+      tag: rename_json_device_name_to_host_hostname_b3415577
       field: json.device_name
       target_field: host.hostname
       ignore_missing: true
   - grok:
+      tag: grok_host_hostname_d32c58c6
       field: host.hostname
       patterns:
         - '^(%{DATA:user.domain})\\(%{GREEDYDATA:host.hostname})$'
       ignore_missing: true
       ignore_failure: true
   - set:
+      tag: set_host_name_9e5d6d7d
       field: host.name
       value: '{{{host.hostname}}}'
       ignore_failure: true
   - append:
+      tag: append_related_hosts_e6462550
       field: related.hosts
       value: '{{{host.hostname}}}'
       if: ctx.host?.hostname != null
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_related_hosts_6782fd8a
       field: related.hosts
       value: '{{{user.domain}}}'
       if: ctx.user?.domain != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
+      tag: rename_json_device_group_to_host_os_family_23384838
       field: json.device_group
       target_field: host.os.family
       ignore_missing: true
   - rename:
-      field: json.device_group
-      target_field: host.os.family
-      ignore_missing: true
-  - rename:
+      tag: rename_json_regmod_name_to_registry_path_89f78f34
       field: json.regmod_name
       target_field: registry.path
       ignore_missing: true
   - script:
+      tag: script_dynamically_map_md5_sha256_hash_a8b8bfce
       description: Dynamically map MD5 and SHA256 hash.
       lang: painless
       source: |
@@ -289,152 +332,183 @@ processors:
         }
 
   - pipeline:
-      tag: pipeline_process_non_procstart
+      tag: pipeline_process_non_procstart_c889941b
       name: '{{ IngestPipeline "process_other" }}'
       if: ctx.json?.type != null && ctx.json.type != 'endpoint.event.procstart'
       ignore_missing_pipeline: true
   - pipeline:
-      tag: pipeline_process_procstart
+      tag: pipeline_process_procstart_15fe8ae7
       name: '{{ IngestPipeline "process_procstart" }}'
       if: ctx.json?.type == 'endpoint.event.procstart'
       ignore_missing_pipeline: true
 
   - append:
+      tag: append_related_hash_9e7f2cde
       field: related.hash
       value: '{{{process.hash.md5}}}'
       if: ctx.process?.hash?.md5 != null
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_related_hash_e166b0da
       field: related.hash
       value: '{{{process.hash.sha256}}}'
       if: ctx.process?.hash?.sha256 != null
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_related_hash_e2cba043
       field: related.hash
       value: '{{{process.parent.hash.md5}}}'
       if: ctx.process?.parent?.hash?.md5 != null
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_related_hash_a4d8af2d
       field: related.hash
       value: '{{{process.parent.hash.sha256}}}'
       if: ctx.process?.parent?.hash?.sha256 != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
+      tag: rename_json_backend_timestamp_to_carbon_black_cloud_endpoint_event_backend_timestamp_0cc7dde8
       field: json.backend_timestamp
       target_field: carbon_black_cloud.endpoint_event.backend.timestamp
       ignore_missing: true
   - set:
+      tag: set_carbon_black_cloud_endpoint_event_device_timestamp_6895ccf3
       field: carbon_black_cloud.endpoint_event.device.timestamp
       copy_from: _temp_.device_timestamp
       ignore_empty_value: true
       on_failure:
         - remove:
+            tag: remove_carbon_black_cloud_endpoint_event_device_timestamp_ed761024
             field: carbon_black_cloud.endpoint_event.device.timestamp
         - append:
+            tag: append_error_message_21dd5584
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_create_time_to_carbon_black_cloud_endpoint_event_create_time_2ce6b26d
       field: json.create_time
       target_field: carbon_black_cloud.endpoint_event.create_time
       ignore_missing: true
   - rename:
+      tag: rename_json_device_os_to_carbon_black_cloud_endpoint_event_device_os_ca8da78a
       field: json.device_os
       target_field: carbon_black_cloud.endpoint_event.device.os
       ignore_missing: true
   - rename:
+      tag: rename_json_org_key_to_carbon_black_cloud_endpoint_event_organization_key_66f8c9d4
       field: json.org_key
       target_field: carbon_black_cloud.endpoint_event.organization_key
       ignore_missing: true
   - append:
+      tag: append_related_user_c4050fa5
       field: related.user
       value: '{{{process.user.name}}}'
       if: ctx.process?.user?.name != null
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_related_user_8d81da12
       field: related.user
       value: '{{{carbon_black_cloud.endpoint_event.process.username}}}'
       if: ctx.carbon_black_cloud?.endpoint_event?.process?.username != null
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_related_user_9cf80ddd
       field: related.user
       value: '{{{carbon_black_cloud.endpoint_event.process.parent.username}}}'
       if: ctx.carbon_black_cloud?.endpoint_event?.process?.parent?.username != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
+      tag: rename_json_target_cmdline_to_carbon_black_cloud_endpoint_event_target_cmdline_378a5d41
       field: json.target_cmdline
       target_field: carbon_black_cloud.endpoint_event.target_cmdline
       ignore_missing: true
   - rename:
+      tag: rename_json_type_to_carbon_black_cloud_endpoint_event_type_09749531
       field: json.type
       target_field: carbon_black_cloud.endpoint_event.type
       ignore_missing: true
       # Mapping for endpoint.event.crossproc event type
   - rename:
+      tag: rename_json_crossproc_action_to_carbon_black_cloud_endpoint_event_crossproc_action_9f57f88c
       field: json.crossproc_action
       target_field: carbon_black_cloud.endpoint_event.crossproc.action
       ignore_missing: true
   - rename:
+      tag: rename_json_crossproc_api_to_carbon_black_cloud_endpoint_event_crossproc_api_a370b558
       field: json.crossproc_api
       target_field: carbon_black_cloud.endpoint_event.crossproc.api
       ignore_missing: true
   - rename:
+      tag: rename_json_crossproc_guid_to_carbon_black_cloud_endpoint_event_crossproc_guid_b56f7a54
       field: json.crossproc_guid
       target_field: carbon_black_cloud.endpoint_event.crossproc.guid
       ignore_missing: true
   - rename:
+      tag: rename_json_crossproc_name_to_carbon_black_cloud_endpoint_event_crossproc_name_4f9e1f8c
       field: json.crossproc_name
       target_field: carbon_black_cloud.endpoint_event.crossproc.name
       ignore_missing: true
   - convert:
+      tag: convert_json_crossproc_target_to_carbon_black_cloud_endpoint_event_crossproc_target_9161d72e
       field: json.crossproc_target
       target_field: carbon_black_cloud.endpoint_event.crossproc.target
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_crossproc_target_de6bf3e0
             field: json.crossproc_target
         - append:
+            tag: append_error_message_8c8f800b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_crossproc_reputation_to_carbon_black_cloud_endpoint_event_crossproc_reputation_7b1fb3b8
       field: json.crossproc_reputation
       target_field: carbon_black_cloud.endpoint_event.crossproc.reputation
       ignore_missing: true
   - foreach:
+      tag: foreach_json_crossproc_publisher_21388b76
       field: json.crossproc_publisher
       processor:
         split:
+          tag: split_ingest_value_state_b9a35d04
           field: _ingest._value.state
           separator: " \\| "
           ignore_missing: true
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_crossproc_publisher_to_carbon_black_cloud_endpoint_event_crossproc_publisher_76392684
       field: json.crossproc_publisher
       target_field: carbon_black_cloud.endpoint_event.crossproc.publisher
       ignore_missing: true
   - rename:
+      tag: rename_json_crossproc_hash_md5_to_carbon_black_cloud_endpoint_event_crossproc_hash_md5_e2b5387f
       field: json.crossproc_hash_md5
       target_field: carbon_black_cloud.endpoint_event.crossproc.hash.md5
       ignore_missing: true
   - append:
+      tag: append_related_hash_cdad2de6
       field: related.hash
       value: '{{{carbon_black_cloud.endpoint_event.crossproc.hash.md5}}}'
       if: ctx.carbon_black_cloud?.endpoint_event?.crossproc?.hash?.md5 != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
+      tag: rename_json_crossproc_hash_sha256_to_carbon_black_cloud_endpoint_event_crossproc_hash_sha256_769225ad
       field: json.crossproc_hash_sha256
       target_field: carbon_black_cloud.endpoint_event.crossproc.hash.sha256
       ignore_missing: true
   - append:
+      tag: append_related_hash_9f39850e
       field: related.hash
       value: '{{{carbon_black_cloud.endpoint_event.crossproc.hash.sha256}}}'
       if: ctx.carbon_black_cloud?.endpoint_event?.crossproc?.hash?.sha256 != null
@@ -442,49 +516,59 @@ processors:
       ignore_failure: true
       # Mapping for endpoint.event.filemod event type
   - rename:
+      tag: rename_json_filemod_hash_md5_to_file_hash_md5_91c9cb60
       field: json.filemod_hash_md5
       target_field: file.hash.md5
       ignore_missing: true
   - append:
+      tag: append_related_hash_aac341aa
       field: related.hash
       value: '{{{file.hash.md5}}}'
       if: ctx.file?.hash?.md5 != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
+      tag: rename_json_filemod_hash_sha256_to_file_hash_sha256_dba21d0e
       field: json.filemod_hash_sha256
       target_field: file.hash.sha256
       ignore_missing: true
   - append:
+      tag: append_related_hash_a68213b6
       field: related.hash
       value: '{{{file.hash.sha256}}}'
       if: ctx.file?.hash?.sha256 != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
+      tag: rename_json_fileless_scriptload_cmdline_to_carbon_black_cloud_endpoint_event_fileless_scriptload_cmdline_b003397a
       field: json.fileless_scriptload_cmdline
       target_field: carbon_black_cloud.endpoint_event.fileless_scriptload.cmdline
       ignore_missing: true
       # Mapping for endpoint.event.fileless_scriptload event type
   - rename:
+      tag: rename_json_fileless_scriptload_cmdline_length_to_carbon_black_cloud_endpoint_event_fileless_scriptload_cmdline_length_68496238
       field: json.fileless_scriptload_cmdline_length
       target_field: carbon_black_cloud.endpoint_event.fileless_scriptload.cmdline_length
       ignore_missing: true
   - rename:
+      tag: rename_json_fileless_scriptload_hash_md5_to_carbon_black_cloud_endpoint_event_fileless_scriptload_hash_md5_baa0f10f
       field: json.fileless_scriptload_hash_md5
       target_field: carbon_black_cloud.endpoint_event.fileless_scriptload.hash.md5
       ignore_missing: true
   - append:
+      tag: append_related_hash_334e8062
       field: related.hash
       value: '{{{carbon_black_cloud.endpoint_event.fileless_scriptload.hash.md5}}}'
       if: ctx.carbon_black_cloud?.endpoint_event?.fileless_scriptload?.hash?.md5 != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
+      tag: rename_json_fileless_scriptload_hash_sha256_to_carbon_black_cloud_endpoint_event_fileless_scriptload_hash_sha256_c14c3b63
       field: json.fileless_scriptload_hash_sha256
       target_field: carbon_black_cloud.endpoint_event.fileless_scriptload.hash.sha256
       ignore_missing: true
   - append:
+      tag: append_related_hash_cdf4a4ac
       field: related.hash
       value: '{{{carbon_black_cloud.endpoint_event.fileless_scriptload.hash.sha256}}}'
       if: ctx.carbon_black_cloud?.endpoint_event?.fileless_scriptload?.hash?.sha256 != null
@@ -492,194 +576,238 @@ processors:
       ignore_failure: true
       # Mapping for endpoint.event.moduleload event type
   - rename:
+      tag: rename_json_modload_md5_to_dll_hash_md5_1e12d52d
       field: json.modload_md5
       target_field: dll.hash.md5
       ignore_missing: true
   - append:
+      tag: append_related_hash_22728a22
       field: related.hash
       value: '{{{dll.hash.md5}}}'
       if: ctx.dll?.hash?.md5 != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
+      tag: rename_json_modload_sha256_to_dll_hash_sha256_51667bad
       field: json.modload_sha256
       target_field: dll.hash.sha256
       ignore_missing: true
   - append:
+      tag: append_related_hash_c3b4de18
       field: related.hash
       value: '{{{dll.hash.sha256}}}'
       if: ctx.dll?.hash?.sha256 != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
+      tag: rename_json_modload_effective_reputation_to_carbon_black_cloud_endpoint_event_modload_effective_reputation_1c2d287c
       field: json.modload_effective_reputation
       target_field: carbon_black_cloud.endpoint_event.modload.effective_reputation
       ignore_missing: true
   - convert:
+      tag: convert_json_modload_count_to_carbon_black_cloud_endpoint_event_modload_count_7718670c
       field: json.modload_count
       target_field: carbon_black_cloud.endpoint_event.modload.count
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_modload_count_b0638170
             field: json.modload_count
         - append:
+            tag: append_error_message_c920421d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_json_modload_publisher_349b690e
       field: json.modload_publisher
       processor:
         split:
+          tag: split_ingest_value_state_3ee9725b
           field: _ingest._value.state
           separator: " \\| "
           ignore_missing: true
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_modload_publisher_to_carbon_black_cloud_endpoint_event_modload_publisher_0d563074
       field: json.modload_publisher
       target_field: carbon_black_cloud.endpoint_event.modload.publisher
       ignore_missing: true
       # Mapping for endpoint.event.netconn_proxy event type
   - rename:
+      tag: rename_json_netconn_proxy_domain_to_carbon_black_cloud_endpoint_event_netconn_proxy_domain_db582439
       field: json.netconn_proxy_domain
       target_field: carbon_black_cloud.endpoint_event.netconn.proxy.domain
       ignore_missing: true
   - rename:
+      tag: rename_json_netconn_proxy_port_to_carbon_black_cloud_endpoint_event_netconn_proxy_port_042a8565
       field: json.netconn_proxy_port
       target_field: carbon_black_cloud.endpoint_event.netconn.proxy.port
       ignore_missing: true
   - convert:
+      tag: convert_json_netconn_proxy_ip_to_carbon_black_cloud_endpoint_event_netconn_proxy_ip_dd5ec416
       field: json.netconn_proxy_ip
       target_field: carbon_black_cloud.endpoint_event.netconn.proxy.ip
       type: ip
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_netconn_proxy_ip_9382cdfe
             field: json.netconn_proxy_ip
         - append:
+            tag: append_error_message_e0fb2a15
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
+      tag: append_related_ip_6cecbe89
       field: related.ip
       value: '{{{carbon_black_cloud.endpoint_event.netconn.proxy.ip}}}'
       if: ctx.carbon_black_cloud?.endpoint_event?.netconn?.proxy?.ip != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
+      tag: rename_json_scriptload_name_to_carbon_black_cloud_endpoint_event_scriptload_name_d862ef66
       field: json.scriptload_name
       target_field: carbon_black_cloud.endpoint_event.scriptload.name
       ignore_missing: true
       # Mapping for NGAV endpoint.event.scriptload event type
   - foreach:
+      tag: foreach_json_scriptload_publisher_6720a69b
       field: json.scriptload_publisher
       processor:
         split:
+          tag: split_ingest_value_state_2f21cbd0
           field: _ingest._value.state
           separator: " \\| "
           ignore_missing: true
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_scriptload_publisher_to_carbon_black_cloud_endpoint_event_scriptload_publisher_153a90c6
       field: json.scriptload_publisher
       target_field: carbon_black_cloud.endpoint_event.scriptload.publisher
       ignore_missing: true
   - convert:
+      tag: convert_json_scriptload_count_to_carbon_black_cloud_endpoint_event_scriptload_count_f559bf29
       field: json.scriptload_count
       target_field: carbon_black_cloud.endpoint_event.scriptload.count
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_scriptload_count_3ef61a7a
             field: json.scriptload_count
         - append:
+            tag: append_error_message_e0ce5cf6
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_scriptload_hash_md5_to_carbon_black_cloud_endpoint_event_scriptload_hash_md5_9e29f00d
       field: json.scriptload_hash_md5
       target_field: carbon_black_cloud.endpoint_event.scriptload.hash.md5
       ignore_missing: true
   - append:
+      tag: append_related_hash_c010b9aa
       field: related.hash
       value: '{{{carbon_black_cloud.endpoint_event.scriptload.hash.md5}}}'
       if: ctx.carbon_black_cloud?.endpoint_event?.scriptload?.hash?.md5 != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
+      tag: rename_json_scriptload_hash_sha256_to_carbon_black_cloud_endpoint_event_scriptload_hash_sha256_406c936f
       field: json.scriptload_hash_sha256
       target_field: carbon_black_cloud.endpoint_event.scriptload.hash.sha256
       ignore_missing: true
   - append:
+      tag: append_related_hash_95bb711a
       field: related.hash
       value: '{{{carbon_black_cloud.endpoint_event.scriptload.hash.sha256}}}'
       if: ctx.carbon_black_cloud?.endpoint_event?.scriptload?.hash?.sha256 != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
+      tag: rename_json_scriptload_effective_reputation_to_carbon_black_cloud_endpoint_event_scriptload_effective_reputation_c65c62fa
       field: json.scriptload_effective_reputation
       target_field: carbon_black_cloud.endpoint_event.scriptload.effective_reputation
       ignore_missing: true
   - rename:
+      tag: rename_json_scriptload_reputation_to_carbon_black_cloud_endpoint_event_scriptload_reputation_375527ae
       field: json.scriptload_reputation
       target_field: carbon_black_cloud.endpoint_event.scriptload.reputation
       ignore_missing: true
   - convert:
+      tag: convert_json_device_internal_ip_to_carbon_black_cloud_endpoint_event_device_internal_ip_2dc00785
       field: json.device_internal_ip
       target_field: carbon_black_cloud.endpoint_event.device.internal_ip
       type: ip
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_device_internal_ip_55eb9bb5
             field: json.device_internal_ip
         - append:
+            tag: append_error_message_0678ca6a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
+      tag: append_host_ip_7b0aef71
       field: host.ip
       value: '{{{carbon_black_cloud.endpoint_event.device.internal_ip}}}'
       if: ctx.carbon_black_cloud?.endpoint_event?.device?.internal_ip != null
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_related_ip_419acf90
       field: related.ip
       value: '{{{carbon_black_cloud.endpoint_event.device.internal_ip}}}'
       if: ctx.carbon_black_cloud?.endpoint_event?.device?.internal_ip != null
       allow_duplicates: false
       ignore_failure: true
   - convert:
+      tag: convert_json_device_external_ip_to_carbon_black_cloud_endpoint_event_device_external_ip_c82a5e97
       field: json.device_external_ip
       target_field: carbon_black_cloud.endpoint_event.device.external_ip
       type: ip
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_device_external_ip_c7fec069
             field: json.device_external_ip
         - append:
+            tag: append_error_message_4616cf58
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_schema_to_carbon_black_cloud_endpoint_event_schema_f87e521e
       field: json.schema
       target_field: carbon_black_cloud.endpoint_event.schema
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_schema_416ceb4d
             field: json.schema
         - append:
+            tag: append_error_message_398cc5b1
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
+      tag: append_host_ip_669d10a5
       field: host.ip
       value: '{{{carbon_black_cloud.endpoint_event.device.external_ip}}}'
       if: ctx.carbon_black_cloud?.endpoint_event?.device?.external_ip != null
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_related_ip_871c46f4
       field: related.ip
       value: '{{{carbon_black_cloud.endpoint_event.device.external_ip}}}'
       if: ctx.carbon_black_cloud?.endpoint_event?.device?.external_ip != null
       allow_duplicates: false
       ignore_failure: true
   - remove:
+      tag: remove_f53f593b
       field:
         - json.remote_port
         - json.local_port
@@ -713,6 +841,7 @@ processors:
         - _temp_
       ignore_missing: true
   - script:
+      tag: script_adds_remaining_fields_fields_under_1bbee248
       description: Adds all the remaining fields in fields under carbon_black_cloud.endpoint_event.
       lang: painless
       if: ctx.json != null
@@ -721,9 +850,11 @@ processors:
           ctx.carbon_black_cloud.endpoint_event[m.getKey()] = m.getValue();
         }
   - remove:
+      tag: remove_json_29cdffdc
       field: json
       ignore_missing: true
   - script:
+      tag: script_drops_null_empty_values_recursively_e2ccbdd7
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -741,6 +872,7 @@ processors:
         }
         dropEmptyFields(ctx);
   - script:
+      tag: script_remove_duplicate_values_ecea2a9a
       description: Remove duplicate values.
       lang: painless
       source: |
@@ -770,12 +902,15 @@ processors:
         }
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message_1dc99c45
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'

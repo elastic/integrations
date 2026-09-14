@@ -3,22 +3,22 @@ description: Pipeline for processing server activities logs.
 processors:
   - set:
       field: ecs.version
-      tag: set_ecs_version
+      tag: set_ecs_version_dbf680ba
       value: 8.17.0
   - terminate:
-      tag: data_collection_error
+      tag: data_collection_error_4bdbb3d0
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
       description: error message set and no data to process.
   - rename:
       field: message
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_176375fd
       target_field: event.original
       ignore_missing: true
       description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_9ecc8509
       ignore_missing: true
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
@@ -29,108 +29,111 @@ processors:
         - team
       ignore_missing: true
       if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
-      tag: remove_agentless_tags
+      tag: remove_agentless_tags_e6856012
       description: >-
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
   - json:
       field: event.original
-      tag: json_event_original
+      tag: json_event_original_74d23cc2
       target_field: json
   - set:
       field: event.kind
-      tag: set_event_kind
+      tag: set_event_kind_d452ef2c
       value: event
   - append:
       field: event.type
-      tag: append_info_into_event_type
+      tag: append_info_into_event_type_5eab37e6
       value: info
   - append:
       field: event.category
-      tag: append_host_into_event_category
+      tag: append_host_into_event_category_5098f71a
       value: host
   - rename:
       field: json.checkpoint
-      tag: rename_checkpoint
+      tag: rename_checkpoint_57ea5063
       target_field: airlock_digital.server_activities.checkpoint
       ignore_missing: true
   - set:
       field: event.id
-      tag: set_event_id_from_server_activities_checkpoint
+      tag: set_event_id_from_server_activities_checkpoint_5ccc427a
       copy_from: airlock_digital.server_activities.checkpoint
       ignore_empty_value: true
   - date:
       field: json.datetime
-      tag: date_datetime
+      tag: date_datetime_ef5a0a7c
       target_field: airlock_digital.server_activities.datetime
       formats:
         - ISO8601
       if: ctx.json?.datetime != null && ctx.json.datetime != ''
       on_failure:
         - append:
+            tag: append_error_message_d6ac50ef
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: '@timestamp'
-      tag: set_@timestamp_from_server_activities_datetime
+      tag: set_@timestamp_from_server_activities_datetime_0dd2dc44
       copy_from: airlock_digital.server_activities.datetime
       ignore_empty_value: true
   - rename:
       field: json.description
-      tag: rename_description
+      tag: rename_description_081a9254
       target_field: airlock_digital.server_activities.description
       ignore_missing: true
   - set:
       field: message
-      tag: set_message_from_server_activities_description
+      tag: set_message_from_server_activities_description_13bec3fb
       copy_from: airlock_digital.server_activities.description
       ignore_empty_value: true
   - rename:
       field: json.task
-      tag: rename_task
+      tag: rename_task_122619d3
       target_field: airlock_digital.server_activities.task
       ignore_missing: true
   - set:
       field: event.action
-      tag: set_event_action_from_server_activities_task
+      tag: set_event_action_from_server_activities_task_063258c2
       copy_from: airlock_digital.server_activities.task
       ignore_empty_value: true
   - lowercase:
       field: event.action
-      tag: lowercase_event_action
+      tag: lowercase_event_action_945f0fcf
       ignore_missing: true
   - split:
       field: event.action
-      tag: split_event_action
+      tag: split_event_action_ee0a3f8a
       separator: \s+
       ignore_missing: true
       if: ctx.event?.action != ''
       on_failure:
         - append:
+            tag: append_error_message_40560a09
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - join:
       field: event.action
-      tag: join_event_action
+      tag: join_event_action_c8e6fa50
       separator: '-'
       if: ctx.event?.action != ''
       on_failure:
         - append:
+            tag: append_error_message_e5e219ba
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.user
-      tag: rename_user
+      tag: rename_user_3676fc99
       target_field: airlock_digital.server_activities.user
       ignore_missing: true
   - set:
       field: user.name
-      tag: set_user_name_from_server_activities_user
+      tag: set_user_name_from_server_activities_user_95fdc118
       copy_from: airlock_digital.server_activities.user
       ignore_empty_value: true
   - append:
       field: related.user
-      tag: append_server_activities_user_into_related_user
+      tag: append_server_activities_user_into_related_user_c14da2e9
       value: '{{{airlock_digital.server_activities.user}}}'
       allow_duplicates: false
       if: ctx.airlock_digital?.server_activities?.user != null
@@ -140,15 +143,15 @@ processors:
         - airlock_digital.server_activities.datetime
         - airlock_digital.server_activities.description
         - airlock_digital.server_activities.user
-      tag: remove_custom_duplicate_fields
+      tag: remove_custom_duplicate_fields_5b3934ca
       ignore_missing: true
       if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
   - remove:
       field: json
-      tag: remove_json
+      tag: remove_json_94dc55cd
       ignore_missing: true
   - script:
-      tag: script_to_drop_null_values
+      tag: script_to_drop_null_values_7559f019
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
       source: |-
@@ -175,16 +178,18 @@ processors:
         handleMap(ctx);
   - set:
       field: event.kind
-      tag: set_pipeline_error_into_event_kind
+      tag: set_pipeline_error_into_event_kind_4fd8ffa8
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_b6c08950
       field: tags
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message_417e65c9
       field: error.message
       value: |-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
@@ -192,9 +197,10 @@ on_failure:
         {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

@@ -9,9 +9,6 @@ add_bin_path
 with_yq
 with_mage
 
-echo "--- List all directories"
-PACKAGE_LIST=$(list_all_directories)
-
 PIPELINE_FILE="packages_pipeline.yml"
 touch packages_pipeline.yml
 
@@ -46,6 +43,35 @@ if [[ "${BUILDKITE_PIPELINE_SLUG}" == "integrations-test-stack" && "${GITHUB_PR_
     STACK_VERSION=$(echo "$GITHUB_PR_TRIGGER_COMMENT" | cut -d " " -f 3)
     export STACK_VERSION
     echo "Use Elastic stack version from Github comment: ${STACK_VERSION}"
+fi
+
+echo "--- Compute affected packages from git diff"
+COMMIT_MERGE=$(git merge-base "${from}" "${to}")
+export COMMIT_MERGE
+changed_files=$(git diff --name-only "${COMMIT_MERGE}" "${to}")
+
+if [[ "${FORCE_CHECK_ALL}" == "true" ]] || echo "${changed_files}" | pr_has_package_related_files; then
+    echo "Non-package files changed or FORCE_CHECK_ALL set: scanning all packages"
+    PACKAGE_LIST=$(list_all_directories)
+else
+    PACKAGE_LIST=$(
+        {
+            # Use list_all_directories (mage listPackages) instead of grepping ^packages/[^/]+
+            # directly from the diff output: the regex would only capture the first path segment
+            # and break for nested packages (e.g. packages/technology/foo → packages/technology,
+            # which has no manifest.yml). mage listPackages discovers valid package roots at any
+            # depth via WalkDir, so we cross-reference its output against the changed files.
+            all_pkgs=$(list_all_directories)
+            while IFS= read -r pkg_path; do
+                if echo "${changed_files}" | grep -q "^${pkg_path}/"; then
+                    echo "${pkg_path}"
+                elif echo "${changed_files}" | grep -q "^\.buildkite/scripts/${pkg_path}\.sh$"; then
+                    echo "${pkg_path}"
+                fi
+            done <<< "${all_pkgs}"
+        } | sort -u | grep -v '^$' || true
+    )
+    echo "Packages affected by diff: $(echo "${PACKAGE_LIST}" | tr '\n' ' ')"
 fi
 
 packages_to_test=0

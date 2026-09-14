@@ -2,39 +2,46 @@
 description: Pipeline for parsing GitHub audit logs
 processors:
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - rename:
       field: message
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_176375fd
       target_field: event.original
       ignore_missing: true
       description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_9ecc8509
       ignore_missing: true
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - json:
+      tag: json_event_original_to_github_secret_scanning_a20274e1
       field: event.original
       target_field: github.secret_scanning
   - fail:
+      tag: fail_missing_json_object_79b9a090
       if: "!(ctx.github.secret_scanning instanceof Map)"
       message: Missing JSON object
   - set:
+      tag: set_event_kind_39295792
       field: event.kind
       value: alert
   - append:
+      tag: append_event_type_6c34b6ef
       field: event.type
       value: creation
       if: ctx.github?.secret_scanning?.resolved_at == null
   - append:
+      tag: append_event_type_edf0ab96
       field: event.type
       value: deletion
       if: ctx.github?.secret_scanning?.resolved_at != null
   - fingerprint:
+      tag: fingerprint_to_id_1a586380
       fields:
         - github.secret_scanning.number
         - github.secret_scanning.updated_at
@@ -42,10 +49,12 @@ processors:
       target_field: "_id"
       ignore_missing: true
   - set:
+      tag: set_event_created_7d3e3ade
       copy_from: github.secret_scanning.created_at
       field: event.created
       if: ctx.github.secret_scanning.created_at != null
   - date:
+      tag: date_github_secret_scanning_created_at_to_timestamp_1f72e0a4
       field: github.secret_scanning.created_at
       formats:
         - ISO8601
@@ -53,6 +62,7 @@ processors:
       target_field: "@timestamp"
       if: ctx.github.secret_scanning.created_at != null && ctx.github.secret_scanning.updated_at == null && ctx.github.secret_scanning.resolved_at == null
   - date:
+      tag: date_github_secret_scanning_updated_at_to_timestamp_6213f1bc
       field: github.secret_scanning.updated_at
       formats:
         - ISO8601
@@ -60,6 +70,7 @@ processors:
       target_field: "@timestamp"
       if: ctx.github.secret_scanning.updated_at != null && ctx.github.secret_scanning.resolved_at == null
   - date:
+      tag: date_github_secret_scanning_resolved_at_to_timestamp_32015ab3
       field: github.secret_scanning.resolved_at
       formats:
         - ISO8601
@@ -67,176 +78,219 @@ processors:
       target_field: "@timestamp"
       if: ctx.github.secret_scanning.resolved_at != null
   - rename:
+      tag: rename_github_secret_scanning_repository_to__temp_repository_f94e7b96
       target_field: _temp.repository
       field: github.secret_scanning.repository
       ignore_missing: true
   - rename:
+      tag: rename__temp_repository_id_to_github_repository_id_629a4bda
       field: _temp.repository.id
       target_field: github.repository.id
       ignore_missing: true
   - rename:
+      tag: rename__temp_repository_name_to_github_repository_name_aa4bc352
       field: _temp.repository.name
       target_field: github.repository.name
       ignore_missing: true
   - rename:
+      tag: rename__temp_repository_full_name_to_github_repository_full_name_0eb51a94
       field: _temp.repository.full_name
       target_field: github.repository.full_name
       ignore_missing: true
   - rename:
+      tag: rename__temp_repository_private_to_github_repository_private_60e9cd10
       field: _temp.repository.private
       target_field: github.repository.private
       ignore_missing: true
   - rename:
+      tag: rename__temp_repository_html_url_to_github_repository_html_url_e875fa96
       field: _temp.repository.html_url
       target_field: github.repository.html_url
       ignore_missing: true
   - rename:
+      tag: rename__temp_repository_url_to_github_repository_url_c4b2aae4
       field: _temp.repository.url
       target_field: github.repository.url
       ignore_missing: true
   - rename:
+      tag: rename__temp_repository_description_to_github_repository_description_8723e3be
       field: _temp.repository.description
       target_field: github.repository.description
       ignore_missing: true
   - rename:
+      tag: rename__temp_repository_fork_to_github_repository_fork_67150e06
       field: _temp.repository.fork
       target_field: github.repository.fork
       ignore_missing: true
   - rename:
+      tag: rename__temp_repository_owner_login_to_github_repository_owner_login_34d0c8f2
       field: _temp.repository.owner.login
       target_field: github.repository.owner.login
       ignore_missing: true
   - rename:
+      tag: rename__temp_repository_owner_id_to_github_repository_owner_id_b47cec1e
       field: _temp.repository.owner.id
       target_field: github.repository.owner.id
       ignore_missing: true
   - rename:
+      tag: rename__temp_repository_owner_url_to_github_repository_owner_url_e1dc208a
       field: _temp.repository.owner.url
       target_field: github.repository.owner.url
       ignore_missing: true
   - rename:
+      tag: rename__temp_repository_owner_html_url_to_github_repository_owner_html_url_0a189a6a
       field: _temp.repository.owner.html_url
       target_field: github.repository.owner.html_url
       ignore_missing: true
   - rename:
+      tag: rename__temp_repository_owner_type_to_github_repository_owner_type_1f6b99fa
       field: _temp.repository.owner.type
       target_field: github.repository.owner.type
       ignore_missing: true
   - rename:
+      tag: rename__temp_repository_owner_site_admin_to_github_repository_owner_site_admin_101e642e
       field: _temp.repository.owner.site_admin
       target_field: github.repository.owner.site_admin
       ignore_missing: true
   - rename:
+      tag: rename_github_secret_scanning_resolved_by_to__temp_resolved_by_0aff0496
       target_field: _temp.resolved_by
       field: github.secret_scanning.resolved_by
       ignore_missing: true
   - rename:
+      tag: rename__temp_resolved_by_name_to_github_secret_scanning_resolved_by_name_58362464
       field: _temp.resolved_by.name
       target_field: github.secret_scanning.resolved_by.name
       ignore_missing: true
   - rename:
+      tag: rename__temp_resolved_by_email_to_github_secret_scanning_resolved_by_email_78c81d86
       field: _temp.resolved_by.email
       target_field: github.secret_scanning.resolved_by.email
       ignore_missing: true
   - rename:
+      tag: rename__temp_resolved_by_login_to_github_secret_scanning_resolved_by_login_b7e91d5e
       field: _temp.resolved_by.login
       target_field: github.secret_scanning.resolved_by.login
       ignore_missing: true
   - rename:
+      tag: rename__temp_resolved_by_id_to_github_secret_scanning_resolved_by_id_04123504
       field: _temp.resolved_by.id
       target_field: github.secret_scanning.resolved_by.id
       ignore_missing: true
   - rename:
+      tag: rename__temp_resolved_by_node_id_to_github_secret_scanning_resolved_by_node_id_5a6a502a
       field: _temp.resolved_by.node_id
       target_field: github.secret_scanning.resolved_by.node_id
       ignore_missing: true
   - rename:
+      tag: rename__temp_resolved_by_url_to_github_secret_scanning_resolved_by_url_d1f226f6
       field: _temp.resolved_by.url
       target_field: github.secret_scanning.resolved_by.url
       ignore_missing: true
   - rename:
+      tag: rename__temp_resolved_by_html_url_to_github_secret_scanning_resolved_by_html_url_540ceef4
       field: _temp.resolved_by.html_url
       target_field: github.secret_scanning.resolved_by.html_url
       ignore_missing: true
   - rename:
+      tag: rename__temp_resolved_by_type_to_github_secret_scanning_resolved_by_type_f1518322
       field: _temp.resolved_by.type
       target_field: github.secret_scanning.resolved_by.type
       ignore_missing: true
   - rename:
+      tag: rename__temp_resolved_by_site_admin_to_github_secret_scanning_resolved_by_site_admin_3b3ac740
       field: _temp.resolved_by.site_admin
       target_field: github.secret_scanning.resolved_by.site_admin
       ignore_missing: true
   - dissect:
+      tag: dissect_github_secret_scanning_url_5cf2126e
       field: github.secret_scanning.url
       pattern: "https://api.github.com/repos/%{_temp.owner}/%{_temp.repository}/secret-scanning/alerts/%{_temp.number}"
       ignore_missing: true
   - set:
+      tag: set_github_repository_html_url_ec5e1981
       field: github.repository.html_url
       value: "https://github.com/{{{_temp.owner}}}/{{{_temp.repository}}}"
       if: "ctx.github.repository?.html_url == null && ctx._temp?.owner != null && ctx._temp?.repository != null"
   - set:
+      tag: set_github_repository_url_f0b322a3
       field: github.repository.url
       value: "https://api.github.com/repos/{{{_temp.owner}}}/{{{_temp.repository}}}"
       if: "ctx.github.repository?.url == null && ctx._temp?.owner != null && ctx._temp?.repository != null"
   - rename:
+      tag: rename__temp_repository_to_github_repository_name_c2e74f39
       field: _temp.repository
       target_field: github.repository.name
       if: ctx.github.repository?.name == null
       ignore_missing: true
   - rename:
+      tag: rename__temp_owner_to_github_repository_owner_login_f9ff210d
       field: _temp.owner
       target_field: github.repository.owner.login
       if: ctx.github.repository?.owner?.login == null
       ignore_missing: true
   - rename:
+      tag: rename__temp_number_to_github_secret_scanning_number_39346671
       field: _temp.number
       target_field: github.secret_scanning.number
       if: ctx.github.secret_scanning.number == null
       ignore_missing: true
   - lowercase:
+      tag: lowercase_github_secret_scanning_state_9adb8e01
       field: github.secret_scanning.state
       ignore_missing: true
   - rename:
+      tag: rename_github_secret_scanning_push_protection_bypassed_by_to__temp_push_protection_bypassed_by_22c4274e
       target_field: _temp.push_protection_bypassed_by
       field: github.secret_scanning.push_protection_bypassed_by
       ignore_missing: true
   - rename:
+      tag: rename__temp_push_protection_bypassed_by_name_to_github_secret_scanning_push_protection_bypassed_by_name_87e0dffc
       field: _temp.push_protection_bypassed_by.name
       target_field: github.secret_scanning.push_protection_bypassed_by.name
       ignore_missing: true
   - rename:
+      tag: rename__temp_push_protection_bypassed_by_email_to_github_secret_scanning_push_protection_bypassed_by_email_c936ae6e
       field: _temp.push_protection_bypassed_by.email
       target_field: github.secret_scanning.push_protection_bypassed_by.email
       ignore_missing: true
   - rename:
+      tag: rename__temp_push_protection_bypassed_by_login_to_github_secret_scanning_push_protection_bypassed_by_login_6dab27be
       field: _temp.push_protection_bypassed_by.login
       target_field: github.secret_scanning.push_protection_bypassed_by.login
       ignore_missing: true
   - rename:
+      tag: rename__temp_push_protection_bypassed_by_id_to_github_secret_scanning_push_protection_bypassed_by_id_a022b15c
       field: _temp.push_protection_bypassed_by.id
       target_field: github.secret_scanning.push_protection_bypassed_by.id
       ignore_missing: true
   - rename:
+      tag: rename__temp_push_protection_bypassed_by_node_id_to_github_secret_scanning_push_protection_bypassed_by_node_id_90665176
       field: _temp.push_protection_bypassed_by.node_id
       target_field: github.secret_scanning.push_protection_bypassed_by.node_id
       ignore_missing: true
   - rename:
+      tag: rename__temp_push_protection_bypassed_by_url_to_github_secret_scanning_push_protection_bypassed_by_url_4f762c8e
       field: _temp.push_protection_bypassed_by.url
       target_field: github.secret_scanning.push_protection_bypassed_by.url
       ignore_missing: true
   - rename:
+      tag: rename__temp_push_protection_bypassed_by_html_url_to_github_secret_scanning_push_protection_bypassed_by_html_url_910114c8
       field: _temp.push_protection_bypassed_by.html_url
       target_field: github.secret_scanning.push_protection_bypassed_by.html_url
       ignore_missing: true
   - rename:
+      tag: rename__temp_push_protection_bypassed_by_type_to_github_secret_scanning_push_protection_bypassed_by_type_2319312e
       field: _temp.push_protection_bypassed_by.type
       target_field: github.secret_scanning.push_protection_bypassed_by.type
       ignore_missing: true
   - rename:
+      tag: rename__temp_push_protection_bypassed_by_site_admin_to_github_secret_scanning_push_protection_bypassed_by_site_admin_45393240
       field: _temp.push_protection_bypassed_by.site_admin
       target_field: github.secret_scanning.push_protection_bypassed_by.site_admin
       ignore_missing: true
   - script:
+      tag: script_mask_secret_hide_secret_true_68516911
       lang: painless
       description: Mask the secret if hide_secret is true
       if: ctx.tags != null && ctx.tags.contains('hide_secret') && ctx.github.secret_scanning.secret != null
@@ -249,6 +303,7 @@ processors:
         masked_secret = secret.substring(0,num_start) + masked_value + secret.substring(secret.length()-num_end);
         ctx.github.secret_scanning.secret = masked_secret;
   - script:
+      tag: script_calculate_time_taken_to_resolve_5d972797
       lang: painless
       description: Calculate time taken to resolve the secrets
       if: ctx.github.secret_scanning.resolved_at != null
@@ -266,10 +321,12 @@ processors:
       # Cleanup #
       ###########
   - remove:
+      tag: remove_cleanup_1f8c5875
       field:
         - _temp
       ignore_missing: true
   - script:
+      tag: script_processor_iterates_over_whole_document_4d6993cb
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
       source: |
@@ -296,12 +353,18 @@ processors:
         handleMap(ctx);
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message_206bb8ac
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'

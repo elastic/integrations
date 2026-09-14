@@ -69,9 +69,89 @@
                   type: keyword
                   description: >-
                     The account that owns the entity that was used to get credentials.
+            - name: ec2_role_delivery
+              type: keyword
+              description: >-
+                The value is 1.0 if the credentials were provided by Amazon EC2 Instance Metadata
+                Service Version 1 (IMDSv1). The value is 2.0 if the credentials were provided using
+                the new IMDS scheme.
+            - name: source_identity
+              type: keyword
+              description: >-
+                The sourceIdentity field occurs in events when users assume an IAM role to perform
+                an action. sourceIdentity identifies the original user identity making the request,
+                whether that user's identity is an IAM user, an IAM role, a user authenticated
+                through SAML-based federation, or a user authenticated through OpenID Connect
+                (OIDC)-compliant web identity federation.
+            - name: web_id_federation_data
+              type: group
+              fields:
+                - name: federated_provider
+                  type: keyword
+                  description: >-
+                    The principal name of the identity provider (for example, www.amazon.com for
+                    Login with Amazon or accounts.google.com for Google).
+                - name: attributes
+                  type: flattened
+                  description: >-
+                    The application ID and user ID as reported by the provider (for example,
+                    www.amazon.com:app_id and www.amazon.com:user_id for Login with Amazon).
+            - name: assumed_root
+              type: boolean
+              description: >-
+                The value is true for a temporary session when a management account or delegated
+                administrator calls AWS STS AssumeRoot.
+            - name: sign_in_session_arn
+              type: keyword
+              description: >-
+                The ARN of the sign-in session that supports the request. This ARN is the value of
+                the aws:SignInSessionArn global condition key. The key identifies the session more
+                specifically than the principal ARN.
         - name: invoked_by
           type: keyword
           description: The name of the AWS service that made the request, such as Amazon EC2 Auto Scaling or AWS Elastic Beanstalk.
+        - name: invoked_by_delegate
+          type: group
+          fields:
+            - name: account_id
+              type: keyword
+              description: The AWS account ID of the product provider that initiated the request.
+        - name: credential_id
+          type: keyword
+          description: >-
+            The credential ID for the request. This is only set when the caller uses a bearer
+            token, such as an IAM Identity Center authorized access token.
+        - name: identity_provider
+          type: keyword
+          description: >-
+            The principal name of the external identity provider. This field appears only for
+            SAMLUser or WebIdentityUser types.
+        - name: in_scope_of
+          type: group
+          fields:
+            - name: issuer_type
+              type: keyword
+              description: >-
+                The resource type of credentialsIssuedTo. For example, AWS::Lambda::Function.
+            - name: credentials_issued_to
+              type: keyword
+              description: The resource related to the environment where the credentials were issued.
+            - name: source_arn
+              type: keyword
+              description: The ARN of the resource that invoked the service-to-service request.
+            - name: source_account
+              type: keyword
+              description: The owner account ID for the sourceArn. It appears together with sourceArn.
+        - name: on_behalf_of
+          type: group
+          fields:
+            - name: user_id
+              type: keyword
+              description: The ID of the IAM Identity Center user who the call was made on behalf of.
+            - name: identity_store_arn
+              type: keyword
+              description: >-
+                The ARN of the IAM Identity Center identity store that the call was made on behalf of.
     - name: error_code
       type: keyword
       description: The AWS service error if the request returns an error.
@@ -144,6 +224,41 @@
     - name: vpc_endpoint_id
       type: keyword
       description: Identifies the VPC endpoint in which requests were made from a VPC to another AWS service, such as Amazon S3.
+    - name: vpc_endpoint_account_id
+      type: keyword
+      description: >-
+        Identifies the AWS account ID of the VPC endpoint owner for the corresponding endpoint for
+        which a request has traversed.
+    - name: tls_details
+      type: group
+      fields:
+        - name: key_exchange
+          type: keyword
+          description: >-
+            The key exchange method used in the TLS handshake. This field indicates whether the
+            connection used classical cryptography or post-quantum cryptography. Example values
+            include X25519MLKEM768 for post-quantum TLS 1.3, x25519 for classical TLS 1.3, and
+            secp256r1 for TLS 1.2.
+    - name: addendum
+      type: group
+      fields:
+        - name: reason
+          type: keyword
+          description: The reason that the event or some of its contents were missing.
+        - name: updated_fields
+          type: keyword
+          description: >-
+            The event record fields that are updated by the addendum. This is only provided if the
+            reason is UPDATED_DATA.
+        - name: original_request_id
+          type: keyword
+          description: >-
+            The original unique ID of the request. This is only provided if the reason is
+            UPDATED_DATA.
+        - name: original_event_id
+          type: keyword
+          description: >-
+            The original event ID. This is only provided if the reason is UPDATED_DATA.
     - name: console_login
       type: group
       fields:

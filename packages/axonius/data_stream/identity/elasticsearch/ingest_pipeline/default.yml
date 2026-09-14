@@ -3,17 +3,17 @@ description: Pipeline for processing identity logs.
 processors:
   - set:
       field: ecs.version
-      tag: set_ecs_version
+      tag: set_ecs_version_8efb762c
       value: 9.3.0
   - terminate:
       description: error message set and no data to process.
-      tag: terminate_data_collection_error
+      tag: terminate_data_collection_error_f2e4d3c3
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
 
   # remove agentless metadata
   - remove:
       description: Removes the fields added by Agentless as metadata, as they can collide with ECS fields.
-      tag: remove_agentless_tags
+      tag: remove_agentless_tags_457d239b
       if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
       field:
         - organization
@@ -22,55 +22,57 @@ processors:
       ignore_missing: true
   - rename:
       field: message
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_176375fd
       target_field: event.original
       ignore_missing: true
       description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_9ecc8509
       ignore_missing: true
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - json:
       field: event.original
-      tag: json_event_original
+      tag: json_event_original_d49138bb
       target_field: axonius.identity
   # Fingerprint the full raw payload because the Axonius API does not expose a stable entity ID for identity assets; the transform keys on this value for deduplication.
   - fingerprint:
       fields:
         - event.original
-      tag: fingerprint_event_original
+      tag: fingerprint_event_original_0a91af1f
       target_field: axonius.identity.transform_unique_id
       ignore_missing: true
   - set:
-      tag: set_event_kind
+      tag: set_event_kind_d452ef2c
       field: event.kind
       value: event
   - append:
       field: event.category
       value: iam
-      tag: category_iam
+      tag: category_iam_0eb47497
   - append:
       field: event.type
       value: info
-      tag: type_info
+      tag: type_info_5eab37e6
 
   - convert:
       field: axonius.identity.adapter_list_length
-      tag: convert_adapter_list_length_to_long
+      tag: convert_adapter_list_length_to_long_bf653dd4
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_axonius_identity_adapter_list_length_79547e3b
             field: axonius.identity.adapter_list_length
             ignore_missing: true
         - append:
+            tag: append_error_message_91c1eb5c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
-      tag: script_rename_fields
+      tag: script_rename_fields_ab2feed7
       lang: painless
       description: Renames all axonius.identity.event.data.* fields to root level (removes event.data prefix). Prefixes conflicting keys with 'data_' to avoid overwriting custom data-stream-root-level fields.
       source: |-
@@ -87,7 +89,7 @@ processors:
         }
   - date:
       field: axonius.identity.event.accurate_for_datetime
-      tag: date_event_accurate_for_datetime
+      tag: date_event_accurate_for_datetime_fe4b8a9d
       target_field: axonius.identity.event.accurate_for_datetime
       formats:
         - EEE, dd MMM yyyy HH:mm:ss 'GMT'
@@ -96,46 +98,50 @@ processors:
       if: ctx.axonius?.identity?.event?.accurate_for_datetime != null && ctx.axonius.identity.event.accurate_for_datetime != ''
       on_failure:
         - remove:
+            tag: remove_axonius_identity_event_accurate_for_datetime_979a740e
             field: axonius.identity.event.accurate_for_datetime
             ignore_missing: true
         - append:
+            tag: append_error_message_aab7e57a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: '@timestamp'
-      tag: set_@timestamp_from_identity_event_accurate_for_datetime
+      tag: set_@timestamp_from_identity_event_accurate_for_datetime_12c4d731
       copy_from: axonius.identity.event.accurate_for_datetime
       ignore_empty_value: true
   - set:
       field: event.action
-      tag: set_event_action_from_identity_event_action_if_exists
+      tag: set_event_action_from_identity_event_action_if_exists_758671e0
       copy_from: axonius.identity.event.action_if_exists
       ignore_empty_value: true
   - lowercase:
       field: event.action
-      tag: lowercase_event_action
+      tag: lowercase_event_action_945f0fcf
       ignore_missing: true
   - split:
       field: event.action
-      tag: split_event_action
+      tag: split_event_action_28f18f4b
       separator: \s+
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_5ce21b99
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - join:
       field: event.action
-      tag: join_event_action
+      tag: join_event_action_274941b9
       separator: '-'
       if: ctx.event?.action != null && ctx.event.action != ''
       on_failure:
         - append:
+            tag: append_error_message_372e475e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: axonius.identity.accurate_for_datetime
-      tag: date_accurate_for_datetime
+      tag: date_accurate_for_datetime_34e378d7
       target_field: axonius.identity.accurate_for_datetime
       formats:
         - EEE, dd MMM yyyy HH:mm:ss 'GMT'
@@ -144,42 +150,46 @@ processors:
       if: ctx.axonius?.identity?.accurate_for_datetime != null && ctx.axonius.identity.accurate_for_datetime != ''
       on_failure:
         - remove:
+            tag: remove_axonius_identity_accurate_for_datetime_241f5acc
             field: axonius.identity.accurate_for_datetime
             ignore_missing: true
         - append:
+            tag: append_error_message_ba5ae88a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: user.name
-      tag: set_user_email_from_display_name
+      tag: set_user_email_from_display_name_01fe035c
       copy_from: axonius.identity.display_name
       ignore_empty_value: true
   - append:
       field: related.user
-      tag: append_display_name_into_related_user
+      tag: append_display_name_into_related_user_6299f010
       value: '{{{axonius.identity.display_name}}}'
       allow_duplicates: false
       if: ctx.axonius?.identity?.display_name != null
   - foreach:
       field: axonius.identity.tenant_number
-      tag: foreach_identity_tenant_number
+      tag: foreach_identity_tenant_number_cbe7d4c6
       if: ctx.axonius?.identity?.tenant_number instanceof List
       processor:
         convert:
           field: _ingest._value
-          tag: convert_identity_tenant_number_to_long
+          tag: convert_identity_tenant_number_to_long_f4831133
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_d19328c7
                 field: _ingest._value
                 ignore_missing: true
             - append:
+                tag: append_error_message_7c7aa5c6
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: axonius.identity.fetch_time
-      tag: date_fetch_time
+      tag: date_fetch_time_8196d4b1
       target_field: axonius.identity.fetch_time
       formats:
         - EEE, dd MMM yyyy HH:mm:ss 'GMT'
@@ -188,14 +198,16 @@ processors:
       if: ctx.axonius?.identity?.fetch_time != null && ctx.axonius.identity.fetch_time != ''
       on_failure:
         - remove:
+            tag: remove_axonius_identity_fetch_time_1ef4863a
             field: axonius.identity.fetch_time
             ignore_missing: true
         - append:
+            tag: append_error_message_dbe4f82e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: axonius.identity.first_fetch_time
-      tag: date_first_fetch_time
+      tag: date_first_fetch_time_378be919
       target_field: axonius.identity.first_fetch_time
       formats:
         - EEE, dd MMM yyyy HH:mm:ss 'GMT'
@@ -204,256 +216,290 @@ processors:
       if: ctx.axonius?.identity?.first_fetch_time != null && ctx.axonius.identity.first_fetch_time != ''
       on_failure:
         - remove:
+            tag: remove_axonius_identity_first_fetch_time_f780a9cd
             field: axonius.identity.first_fetch_time
             ignore_missing: true
         - append:
+            tag: append_error_message_c6c0a0a8
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: axonius.identity.from_last_fetch
-      tag: convert_from_last_fetch_to_boolean
+      tag: convert_from_last_fetch_to_boolean_2f767eb3
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_axonius_identity_from_last_fetch_75d2a5ab
             field: axonius.identity.from_last_fetch
             ignore_missing: true
         - append:
+            tag: append_error_message_45b9d185
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: axonius.identity.has_administrative_permissions
-      tag: convert_has_administrative_permissions_to_boolean
+      tag: convert_has_administrative_permissions_to_boolean_454049f4
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_axonius_identity_has_administrative_permissions_69b30d89
             field: axonius.identity.has_administrative_permissions
             ignore_missing: true
         - append:
+            tag: append_error_message_ce70579d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: axonius.identity.is_admin
-      tag: convert_is_admin_to_boolean
+      tag: convert_is_admin_to_boolean_bef6941b
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_axonius_identity_is_admin_436360ed
             field: axonius.identity.is_admin
             ignore_missing: true
         - append:
+            tag: append_error_message_6a2f07d1
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: axonius.identity.is_built_in
-      tag: convert_is_built_in_to_boolean
+      tag: convert_is_built_in_to_boolean_0e0e4f6e
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_axonius_identity_is_built_in_6d96df4b
             field: axonius.identity.is_built_in
             ignore_missing: true
         - append:
+            tag: append_error_message_018835ba
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: axonius.identity.is_fetched_from_adapter
-      tag: convert_is_fetched_from_adapter_to_boolean
+      tag: convert_is_fetched_from_adapter_to_boolean_eb463fa5
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_axonius_identity_is_fetched_from_adapter_afec5073
             field: axonius.identity.is_fetched_from_adapter
             ignore_missing: true
         - append:
+            tag: append_error_message_5441be02
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: axonius.identity.is_managed_by_sso
-      tag: convert_is_managed_by_sso_to_boolean
+      tag: convert_is_managed_by_sso_to_boolean_16a6a204
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_axonius_identity_is_managed_by_sso_9da60b8b
             field: axonius.identity.is_managed_by_sso
             ignore_missing: true
         - append:
+            tag: append_error_message_e90e2d11
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: axonius.identity.is_privileged
-      tag: convert_is_privileged_to_boolean
+      tag: convert_is_privileged_to_boolean_81ba692c
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_axonius_identity_is_privileged_148c6397
             field: axonius.identity.is_privileged
             ignore_missing: true
         - append:
+            tag: append_error_message_46329cef
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: axonius.identity.nested_applications
-      tag: foreach_nested_applications_active_from_direct_adapter
+      tag: foreach_nested_applications_active_from_direct_adapter_a3511e64
       if: ctx.axonius?.identity?.nested_applications instanceof List
       processor:
         convert:
           field: _ingest._value.active_from_direct_adapter
-          tag: convert_nested_applications_active_from_direct_adapter_to_boolean
+          tag: convert_nested_applications_active_from_direct_adapter_to_boolean_f3a25c4c
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_active_from_direct_adapter_cf366bba
                 field: _ingest._value.active_from_direct_adapter
                 ignore_missing: true
             - append:
+                tag: append_error_message_2928839a
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: axonius.identity.nested_applications
-      tag: foreach_nested_applications_has_administrative_permissions
+      tag: foreach_nested_applications_has_administrative_permissions_d4d933ba
       if: ctx.axonius?.identity?.nested_applications instanceof List
       processor:
         convert:
           field: _ingest._value.has_administrative_permissions
-          tag: convert_nested_applications_has_administrative_permissions_to_boolean
+          tag: convert_nested_applications_has_administrative_permissions_to_boolean_3cd685ec
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_has_administrative_permissions_a89b94b0
                 field: _ingest._value.has_administrative_permissions
                 ignore_missing: true
             - append:
+                tag: append_error_message_dfc6ed8c
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: axonius.identity.nested_applications
-      tag: foreach_nested_applications_is_deleted
+      tag: foreach_nested_applications_is_deleted_654eb7c5
       if: ctx.axonius?.identity?.nested_applications instanceof List
       processor:
         convert:
           field: _ingest._value.is_deleted
-          tag: convert_nested_applications_is_deleted_to_boolean
+          tag: convert_nested_applications_is_deleted_to_boolean_ab1e904b
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_is_deleted_6704a5fb
                 field: _ingest._value.is_deleted
                 ignore_missing: true
             - append:
+                tag: append_error_message_8e083f7c
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: axonius.identity.nested_applications
-      tag: foreach_nested_applications_is_from_direct_adapter
+      tag: foreach_nested_applications_is_from_direct_adapter_5ce98f10
       if: ctx.axonius?.identity?.nested_applications instanceof List
       processor:
         convert:
           field: _ingest._value.is_from_direct_adapter
-          tag: convert_nested_applications_is_from_direct_adapter_to_boolean
+          tag: convert_nested_applications_is_from_direct_adapter_to_boolean_2d0186a6
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_is_from_direct_adapter_3186ec7d
                 field: _ingest._value.is_from_direct_adapter
                 ignore_missing: true
             - append:
+                tag: append_error_message_54765ac9
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: axonius.identity.nested_applications
-      tag: foreach_nested_applications_is_managed
+      tag: foreach_nested_applications_is_managed_2835a075
       if: ctx.axonius?.identity?.nested_applications instanceof List
       processor:
         convert:
           field: _ingest._value.is_managed
-          tag: convert_nested_applications_is_managed_to_boolean
+          tag: convert_nested_applications_is_managed_to_boolean_dd66ee05
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_is_managed_e0063e04
                 field: _ingest._value.is_managed
                 ignore_missing: true
             - append:
+                tag: append_error_message_eea803da
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: axonius.identity.nested_applications
-      tag: foreach_nested_applications_is_suspended
+      tag: foreach_nested_applications_is_suspended_c992739f
       if: ctx.axonius?.identity?.nested_applications instanceof List
       processor:
         convert:
           field: _ingest._value.is_suspended
-          tag: convert_nested_applications_is_suspended_to_boolean
+          tag: convert_nested_applications_is_suspended_to_boolean_35c18cf3
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_is_suspended_4a899c35
                 field: _ingest._value.is_suspended
                 ignore_missing: true
             - append:
+                tag: append_error_message_67839dc2
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: axonius.identity.nested_applications
-      tag: foreach_nested_applications_is_unmanaged_extension
+      tag: foreach_nested_applications_is_unmanaged_extension_2c1660c3
       if: ctx.axonius?.identity?.nested_applications instanceof List
       processor:
         convert:
           field: _ingest._value.is_unmanaged_extension
-          tag: convert_nested_applications_is_unmanaged_extension_to_boolean
+          tag: convert_nested_applications_is_unmanaged_extension_to_boolean_c71f0305
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_is_unmanaged_extension_cfcfb3b6
                 field: _ingest._value.is_unmanaged_extension
                 ignore_missing: true
             - append:
+                tag: append_error_message_f51c7267
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: axonius.identity.nested_applications
-      tag: foreach_nested_applications_is_user_external
+      tag: foreach_nested_applications_is_user_external_2ce323dc
       if: ctx.axonius?.identity?.nested_applications instanceof List
       processor:
         convert:
           field: _ingest._value.is_user_external
-          tag: convert_nested_applications_is_user_external_to_boolean
+          tag: convert_nested_applications_is_user_external_to_boolean_cf95d443
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_is_user_external_ca4dc5fe
                 field: _ingest._value.is_user_external
                 ignore_missing: true
             - append:
+                tag: append_error_message_f00f0f97
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: axonius.identity.nested_applications
-      tag: foreach_nested_applications_is_user_paid
+      tag: foreach_nested_applications_is_user_paid_4acb1f51
       if: ctx.axonius?.identity?.nested_applications instanceof List
       processor:
         convert:
           field: _ingest._value.is_user_paid
-          tag: convert_nested_applications_is_user_paid_to_boolean
+          tag: convert_nested_applications_is_user_paid_to_boolean_ab4a41e8
           type: boolean
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_is_user_paid_2f37d338
                 field: _ingest._value.is_user_paid
                 ignore_missing: true
             - append:
+                tag: append_error_message_c86379f1
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: axonius.identity.nested_applications
-      tag: foreach_nested_applications_last_access
+      tag: foreach_nested_applications_last_access_cd9fa816
       if: ctx.axonius?.identity?.nested_applications instanceof List
       processor:
         date:
           field: _ingest._value.last_access
-          tag: date_nested_applications_last_access
+          tag: date_nested_applications_last_access_c18bc378
           target_field: _ingest._value.last_access
           formats:
             - EEE, dd MMM yyyy HH:mm:ss 'GMT'
@@ -461,62 +507,69 @@ processors:
             - EEE,dd MMM yyyy HH:mm:ss 'GMT'
           on_failure:
             - remove:
+                tag: remove_ingest_value_last_access_a057caaa
                 field: _ingest._value.last_access
                 ignore_missing: true
   - foreach:
       field: axonius.identity.nested_applications
-      tag: foreach_nested_applications_last_access_count
+      tag: foreach_nested_applications_last_access_count_79551c33
       if: ctx.axonius?.identity?.nested_applications instanceof List
       processor:
         convert:
           field: _ingest._value.last_access_count
-          tag: convert_nested_applications_last_access_count_to_long
+          tag: convert_nested_applications_last_access_count_to_long_e2b90e42
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_last_access_count_d2e5f914
                 field: _ingest._value.last_access_count
                 ignore_missing: true
             - append:
+                tag: append_error_message_167bd391
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: axonius.identity.nested_applications
-      tag: foreach_nested_applications_last_access_count_60_days
+      tag: foreach_nested_applications_last_access_count_60_days_53b3420b
       if: ctx.axonius?.identity?.nested_applications instanceof List
       processor:
         convert:
           field: _ingest._value.last_access_count_60_days
-          tag: convert_nested_applications_last_access_count_60_days_to_long
+          tag: convert_nested_applications_last_access_count_60_days_to_long_ad5df2bc
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_last_access_count_60_days_6166bd9e
                 field: _ingest._value.last_access_count_60_days
                 ignore_missing: true
             - append:
+                tag: append_error_message_c9dd4330
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: axonius.identity.nested_applications
-      tag: foreach_nested_applications_last_access_count_90_days
+      tag: foreach_nested_applications_last_access_count_90_days_d6fd8f48
       if: ctx.axonius?.identity?.nested_applications instanceof List
       processor:
         convert:
           field: _ingest._value.last_access_count_90_days
-          tag: convert_nested_applications_last_access_count_90_days_to_long
+          tag: convert_nested_applications_last_access_count_90_days_to_long_d3872478
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_last_access_count_90_days_75fdf9e9
                 field: _ingest._value.last_access_count_90_days
                 ignore_missing: true
             - append:
+                tag: append_error_message_1f2361a9
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: axonius.identity.nested_grants_last_updated
-      tag: date_nested_grants_last_updated
+      tag: date_nested_grants_last_updated_6f3d8ffe
       target_field: axonius.identity.nested_grants_last_updated
       formats:
         - EEE, dd MMM yyyy HH:mm:ss 'GMT'
@@ -525,97 +578,108 @@ processors:
       if: ctx.axonius?.identity?.nested_grants_last_updated != null && ctx.axonius.identity.nested_grants_last_updated != ''
       on_failure:
         - remove:
+            tag: remove_axonius_identity_nested_grants_last_updated_779703c6
             field: axonius.identity.nested_grants_last_updated
             ignore_missing: true
         - append:
+            tag: append_error_message_02c96512
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: axonius.identity.nested_resources
-      tag: foreach_nested_resources_value
+      tag: foreach_nested_resources_value_bdc8e443
       if: ctx.axonius?.identity?.nested_resources instanceof List
       processor:
         convert:
           field: _ingest._value.value
-          tag: convert_nested_resources_value_to_keyword
+          tag: convert_nested_resources_value_to_keyword_b05f78f9
           type: string
           ignore_missing: true
   - convert:
       field: axonius.identity.not_fetched_count
-      tag: convert_not_fetched_count_to_long
+      tag: convert_not_fetched_count_to_long_038c19c3
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_axonius_identity_not_fetched_count_cf719ef3
             field: axonius.identity.not_fetched_count
             ignore_missing: true
         - append:
+            tag: append_error_message_01cbae1a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: axonius.identity.operational_users_count
-      tag: convert_operational_users_count_to_long
+      tag: convert_operational_users_count_to_long_0e92fc3c
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_axonius_identity_operational_users_count_56127937
             field: axonius.identity.operational_users_count
             ignore_missing: true
         - append:
+            tag: append_error_message_02297462
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: axonius.identity.total_users_count
-      tag: convert_total_users_count_to_long
+      tag: convert_total_users_count_to_long_8e3288c5
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_axonius_identity_total_users_count_c9129d93
             field: axonius.identity.total_users_count
             ignore_missing: true
         - append:
+            tag: append_error_message_bff8a588
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: axonius.identity.event.hidden_for_gui
-      tag: convert_event_hidden_for_gui_to_boolean
+      tag: convert_event_hidden_for_gui_to_boolean_51c0a548
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_axonius_identity_event_hidden_for_gui_ef6d2f08
             field: axonius.identity.event.hidden_for_gui
             ignore_missing: true
         - append:
+            tag: append_error_message_2fe7a072
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: axonius.identity.permissions
-      tag: convert_permissions_to_long
+      tag: convert_permissions_to_long_446d0d6c
       type: long
       ignore_missing: true
       on_failure:
         - rename:
+            tag: rename_axonius_identity_permissions_to_axonius_identity_permissions_list_78a8af07
             field: axonius.identity.permissions
             target_field: axonius.identity.permissions_list
             ignore_missing: true
   - pipeline:
       name: '{{ IngestPipeline "pipeline-account" }}'
-      tag: pipeline-account
+      tag: pipeline-account_da4983ff
       if: >-
         ctx.axonius?.identity?.asset_type == 'accounts'
   - pipeline:
       name: '{{ IngestPipeline "pipeline-group" }}'
-      tag: pipeline-group
+      tag: pipeline-group_9c565c42
       if: >-
         ctx.axonius?.identity?.asset_type == 'groups'
   - pipeline:
       name: '{{ IngestPipeline "pipeline-certificate" }}'
-      tag: pipeline-certificate
+      tag: pipeline-certificate_52f64c54
       if: >-
         ctx.axonius?.identity?.asset_type == 'certificates'
   - pipeline:
       name: '{{ IngestPipeline "pipeline-user" }}'
-      tag: pipeline-user
+      tag: pipeline-user_601f7d59
       if: >-
         ctx.axonius?.identity?.asset_type == 'users'
   - remove:
@@ -644,14 +708,14 @@ processors:
         - axonius.identity.user_created
         - axonius.identity.user_full_name
         - axonius.identity.username
-      tag: remove_identity_fields_mapped_to_ecs
+      tag: remove_identity_fields_mapped_to_ecs_0666e9f6
       ignore_missing: true
   - remove:
       field: json
-      tag: remove_json
+      tag: remove_json_94dc55cd
       ignore_missing: true
   - script:
-      tag: script_to_drop_null_values
+      tag: script_to_drop_null_values_7559f019
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
       source: |-
@@ -678,11 +742,12 @@ processors:
         handleMap(ctx);
   - set:
       field: event.kind
-      tag: set_pipeline_error_into_event_kind
+      tag: set_pipeline_error_into_event_kind_4fd8ffa8
       value: pipeline_error
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message_417e65c9
       field: error.message
       value: |-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
@@ -690,5 +755,10 @@ on_failure:
         {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
+  - append:
+      tag: append_tags_279d5a5c
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

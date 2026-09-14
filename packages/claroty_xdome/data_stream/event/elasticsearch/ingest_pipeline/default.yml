@@ -3,10 +3,10 @@ description: Pipeline for processing event logs.
 processors:
   - set:
       field: ecs.version
-      tag: set_ecs_version
+      tag: set_ecs_version_dbf680ba
       value: 8.17.0
   - terminate:
-      tag: data_collection_error
+      tag: data_collection_error_4bdbb3d0
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
       description: error message set and no data to process.
   - remove:
@@ -16,83 +16,84 @@ processors:
         - team
       ignore_missing: true
       if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
-      tag: remove_agentless_tags
+      tag: remove_agentless_tags_e6856012
       description: >-
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
   - rename:
       field: message
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_176375fd
       target_field: event.original
       ignore_missing: true
       description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_9ecc8509
       ignore_missing: true
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - json:
       field: event.original
-      tag: json_event_original
+      tag: json_event_original_a68ecd77
       target_field: json
       on_failure:
         - append:
+            tag: append_error_message_cea45f41
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.kind
-      tag: set_event_kind
+      tag: set_event_kind_d452ef2c
       value: event
   - append:
       field: event.category
-      tag: set_event_category_network
+      tag: append_event_category_network_a9b06a9f
       value: network
   - append:
       field: event.category
-      tag: set_event_category_host
+      tag: append_event_category_host_5098f71a
       value: host
   - append:
       field: event.category
-      tag: set_event_category_host
+      tag: append_event_category_host_5bc3dda0
       value: configuration
   - append:
       field: event.type
-      tag: set_event_type
+      tag: append_event_type_5eab37e6
       value: info
   - set:
       field: observer.vendor
-      tag: set_observer_vendor
+      tag: set_observer_vendor_db4dfc51
       value: Claroty
   - set:
       field: observer.product
-      tag: set_observer_product
+      tag: set_observer_product_ccb07618
       value: xDome
   - rename:
       field: json.description
-      tag: rename_description
+      tag: rename_description_1cf9a478
       target_field: claroty_xdome.event.description
       ignore_missing: true
   - set:
       field: message
-      tag: set_message_from_event_description
+      tag: set_message_from_event_description_d14021ae
       copy_from: claroty_xdome.event.description
       ignore_empty_value: true
   - rename:
       field: json.dest_asset_id
-      tag: rename_dest_asset_id
+      tag: rename_dest_asset_id_851665fa
       target_field: claroty_xdome.event.destination.asset_id
       ignore_missing: true
   - append:
       field: related.hosts
-      tag: append_claroty_xdome_event_dest_asset_id_into_related_hosts
+      tag: append_claroty_xdome_event_dest_asset_id_into_related_hosts_b3426cd4
       value: '{{{claroty_xdome.event.destination.asset_id}}}'
       allow_duplicates: false
       if: ctx.claroty_xdome?.event?.destination?.asset_id != null
   - convert:
       field: json.dest_device_name
-      tag: convert_dest_device_name_to_ip
+      tag: convert_dest_device_name_to_ip_750872ec
       target_field: claroty_xdome.event.destination.device.ip
       type: ip
       ignore_missing: true
@@ -100,206 +101,211 @@ processors:
       on_failure:
         - rename:
             field: json.dest_device_name
-            tag: rename_dest_device_name
+            tag: rename_dest_device_name_e1d945f2
             target_field: claroty_xdome.event.destination.device.name
             ignore_missing: true
   - append:
       field: related.ip
-      tag: append_related_ip_from_dest_device_ip
+      tag: append_related_ip_from_dest_device_ip_cadc9a4f
       value: '{{{claroty_xdome.event.destination.device.ip}}}'
       allow_duplicates: false
       if: ctx.claroty_xdome?.event?.destination?.device?.ip != null
   - append:
       field: related.hosts
-      tag: append_related_hosts_from_dest_device_name
+      tag: append_related_hosts_from_dest_device_name_034694a4
       value: '{{{claroty_xdome.event.destination.device.name}}}'
       allow_duplicates: false
       if: ctx.claroty_xdome?.event?.destination?.device?.name != null
   - rename:
       field: json.dest_device_type
-      tag: rename_dest_device_type
+      tag: rename_dest_device_type_9c2e781f
       target_field: claroty_xdome.event.destination.device.type
       ignore_missing: true
   - convert:
       field: json.dest_ip
-      tag: convert_dest_ip_to_ip
+      tag: convert_dest_ip_to_ip_9f1b0ef8
       target_field: claroty_xdome.event.destination.ip
       type: ip
       ignore_missing: true
       if: ctx.json?.dest_ip != ''
       on_failure:
         - append:
+            tag: append_error_message_1a173394
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: destination.ip
-      tag: set_destination_ip_from_event_dest_ip
+      tag: set_destination_ip_from_event_dest_ip_5152c243
       copy_from: claroty_xdome.event.destination.ip
       ignore_empty_value: true
   - geoip:
       field: destination.ip
-      tag: geoip_destination_ip
+      tag: geoip_destination_ip_71881fab
       target_field: destination.geo
       ignore_missing: true
   - append:
       field: related.ip
-      tag: append_claroty_xdome_event_dest_ip_into_related_ip
+      tag: append_claroty_xdome_event_dest_ip_into_related_ip_59258fd4
       value: '{{{claroty_xdome.event.destination.ip}}}'
       allow_duplicates: false
       if: ctx.claroty_xdome?.event?.destination?.ip != null
   - rename:
       field: json.dest_network
-      tag: rename_dest_network
+      tag: rename_dest_network_5740cb2e
       target_field: claroty_xdome.event.destination.network
       ignore_missing: true
   - convert:
       field: json.dest_port
-      tag: convert_dest_port_to_long
+      tag: convert_dest_port_to_long_65c27c30
       target_field: claroty_xdome.event.destination.port
       type: long
       ignore_missing: true
       if: ctx.json?.dest_port != ''
       on_failure:
         - append:
+            tag: append_error_message_48dc2a48
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: destination.port
-      tag: set_destination_port_from_event_dest_port
+      tag: set_destination_port_from_event_dest_port_a873769f
       copy_from: claroty_xdome.event.destination.port
       ignore_empty_value: true
   - rename:
       field: json.dest_site_name
-      tag: rename_dest_site_name
+      tag: rename_dest_site_name_76e5dcd4
       target_field: claroty_xdome.event.destination.site_name
       ignore_missing: true
   - date:
       field: json.detection_time
-      tag: date_detection_time
+      tag: date_detection_time_ecd54e78
       target_field: claroty_xdome.event.detection_time
       formats:
         - ISO8601
       if: ctx.json?.detection_time != null && ctx.json.detection_time != ''
       on_failure:
         - append:
+            tag: append_error_message_b617a124
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: '@timestamp'
-      tag: set_@timestamp_from_event_detection_time
+      tag: set_@timestamp_from_event_detection_time_34da16af
       copy_from: claroty_xdome.event.detection_time
       ignore_empty_value: true
   - convert:
       field: json.event_id
-      tag: convert_event_id_to_string
+      tag: convert_event_id_to_string_56a06ed0
       type: string
       target_field: claroty_xdome.event.id
       ignore_missing: true
   - set:
       field: event.id
-      tag: set_event_id_from_event_id
+      tag: set_event_id_from_event_id_f2cc1831
       copy_from: claroty_xdome.event.id
       ignore_empty_value: true
   - rename:
       field: json.event_type
-      tag: rename_event_type
+      tag: rename_event_type_fb677ac9
       target_field: claroty_xdome.event.type
       ignore_missing: true
   - set:
       field: event.action
-      tag: set_event_action_from_event_type
+      tag: set_event_action_from_event_type_ef2c3c06
       copy_from: claroty_xdome.event.type
       ignore_empty_value: true
   - lowercase:
       field: event.action
-      tag: lowercase_event_action
+      tag: lowercase_event_action_945f0fcf
       ignore_missing: true
   - split:
       field: event.action
-      tag: split_event_action
+      tag: split_event_action_ee0a3f8a
       separator: \s+
       ignore_missing: true
       if: ctx.event?.action != ''
       on_failure:
         - append:
+            tag: append_error_message_ce1e3af4
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - join:
       field: event.action
-      tag: join_event_action
+      tag: join_event_action_45ca9d3c
       separator: '-'
       if: ctx.event?.action instanceof List
       on_failure:
         - append:
+            tag: append_error_message_b7327b72
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.ip_protocol
-      tag: rename_ip_protocol
+      tag: rename_ip_protocol_fbc629eb
       target_field: claroty_xdome.event.ip_protocol
       ignore_missing: true
   - set:
       field: network.transport
-      tag: set_network_transport_from_event_ip_protocol
+      tag: set_network_transport_from_event_ip_protocol_61cc0794
       copy_from: claroty_xdome.event.ip_protocol
       ignore_empty_value: true
   - lowercase:
       field: network.transport
-      tag: lowercase_network_transport
+      tag: lowercase_network_transport_f67defdb
       ignore_missing: true
   - rename:
       field: json.mode
-      tag: rename_mode
+      tag: rename_mode_a5ec622a
       target_field: claroty_xdome.event.mode
       ignore_missing: true
   - rename:
       field: json.protocol
-      tag: rename_protocol
+      tag: rename_protocol_27ea8064
       target_field: claroty_xdome.event.protocol
       ignore_missing: true
   - set:
       field: network.protocol
-      tag: set_network_protocol_from_event_protocol
+      tag: set_network_protocol_from_event_protocol_01c5a47a
       copy_from: claroty_xdome.event.protocol
       ignore_empty_value: true
   - lowercase:
       field: network.protocol
-      tag: lowercase_network_protocol
+      tag: lowercase_network_protocol_12733ef1
       ignore_missing: true
   - foreach:
       field: json.related_alert_ids
-      tag: foreach_related_alert_ids
+      tag: foreach_related_alert_ids_f15ed2f8
       if: ctx.json?.related_alert_ids instanceof List
       processor:
         convert:
           field: _ingest._value
-          tag: convert related_alert_ids_to_string
+          tag: convert_related_alert_ids_to_string_f48f99f2
           type: string
           ignore_missing: true
   - rename:
       field: json.related_alert_ids
-      tag: rename_related_alert_ids
+      tag: rename_related_alert_ids_5896fa27
       target_field: claroty_xdome.event.related_alert_ids
       ignore_missing: true
   - rename:
       field: json.source_asset_id
-      tag: rename_source_asset_id
+      tag: rename_source_asset_id_df5bd6c5
       target_field: claroty_xdome.event.source.asset_id
       ignore_missing: true
   - set:
       field: host.id
-      tag: set_host_id_from_source_asset_id
+      tag: set_host_id_from_source_asset_id_7d0aa350
       copy_from: claroty_xdome.event.source.asset_id
       ignore_empty_value: true
   - append:
       field: related.hosts
-      tag: append_claroty_xdome_event_source_asset_id_into_related_hosts
+      tag: append_claroty_xdome_event_source_asset_id_into_related_hosts_9fd87532
       value: '{{{claroty_xdome.event.source.asset_id}}}'
       allow_duplicates: false
       if: ctx.claroty_xdome?.event?.source?.asset_id != null
   - convert:
       field: json.source_device_name
-      tag: convert_source_device_name_to_ip
+      tag: convert_source_device_name_to_ip_1e13f37e
       target_field: claroty_xdome.event.source.device.ip
       type: ip
       ignore_missing: true
@@ -307,107 +313,110 @@ processors:
       on_failure:
         - rename:
             field: json.source_device_name
-            tag: rename_source_device_name
+            tag: rename_source_device_name_87c69476
             target_field: claroty_xdome.event.source.device.name
             ignore_missing: true
   - set:
       field: host.name
-      tag: set_host_name_from_source_device_name
+      tag: set_host_name_from_source_device_name_4d081ac8
       copy_from: claroty_xdome.event.source.device.name
       ignore_empty_value: true
   - append:
       field: host.ip
-      tag: append_host_ip_from_source_device_ip
+      tag: append_host_ip_from_source_device_ip_0979a553
       value: '{{{claroty_xdome.event.source.device.ip}}}'
       allow_duplicates: false
       if: ctx.claroty_xdome?.event?.source?.device?.ip != null
   - geoip:
+      tag: geoip_host_ip_to_host_geo_d8a29594
       field: host.ip
       target_field: host.geo
       ignore_missing: true
   - append:
       field: related.ip
-      tag: append_related_ip_from_source_device_ip
+      tag: append_related_ip_from_source_device_ip_b17525de
       value: '{{{claroty_xdome.event.source.device.ip}}}'
       allow_duplicates: false
       if: ctx.claroty_xdome?.event?.source?.device?.ip != null
   - append:
       field: related.hosts
-      tag: append_related_hosts_from_source_device_name
+      tag: append_related_hosts_from_source_device_name_4a45b442
       value: '{{{claroty_xdome.event.source.device.name}}}'
       allow_duplicates: false
       if: ctx.claroty_xdome?.event?.source?.device?.name != null
   - rename:
       field: json.source_device_type
-      tag: rename_source_device_type
+      tag: rename_source_device_type_dc617692
       target_field: claroty_xdome.event.source.device.type
       ignore_missing: true
   - convert:
       field: json.source_ip
-      tag: convert_source_ip_to_ip
+      tag: convert_source_ip_to_ip_c8127626
       target_field: claroty_xdome.event.source.ip
       type: ip
       ignore_missing: true
       if: ctx.json?.source_ip != ''
       on_failure:
         - append:
+            tag: append_error_message_739824dc
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: source.ip
-      tag: set_source_ip_from_event_source_ip
+      tag: set_source_ip_from_event_source_ip_6d9768ee
       copy_from: claroty_xdome.event.source.ip
       ignore_empty_value: true
   - geoip:
       field: source.ip
-      tag: geoip_source_ip
+      tag: geoip_source_ip_9a2d4d31
       target_field: source.geo
       ignore_missing: true
   - append:
       field: related.ip
-      tag: append_claroty_xdome_event_source_ip_into_related_ip
+      tag: append_claroty_xdome_event_source_ip_into_related_ip_3da7421a
       value: '{{{claroty_xdome.event.source.ip}}}'
       allow_duplicates: false
       if: ctx.claroty_xdome?.event?.source?.ip != null
   - rename:
       field: json.source_network
-      tag: rename_source_network
+      tag: rename_source_network_c4cbb102
       target_field: claroty_xdome.event.source.network
       ignore_missing: true
   - convert:
       field: json.source_port
-      tag: convert_source_port_to_long
+      tag: convert_source_port_to_long_ee451ea4
       target_field: claroty_xdome.event.source.port
       type: long
       ignore_missing: true
       if: ctx.json?.source_port != ''
       on_failure:
         - append:
+            tag: append_error_message_1f0b61f2
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: source.port
-      tag: set_source_port_from_event_source_port
+      tag: set_source_port_from_event_source_port_4067557c
       copy_from: claroty_xdome.event.source.port
       ignore_empty_value: true
   - rename:
       field: json.source_site_name
-      tag: rename_source_site_name
+      tag: rename_source_site_name_ba38d77b
       target_field: claroty_xdome.event.source.site_name
       ignore_missing: true
   - rename:
       field: json.source_username
-      tag: rename_source_username
+      tag: rename_source_username_9819b577
       target_field: claroty_xdome.event.source.username
       ignore_missing: true
   - set:
       field: source.user.name
-      tag: set_source_user_name_from_event_source_username
+      tag: set_source_user_name_from_event_source_username_4222008e
       copy_from: claroty_xdome.event.source.username
       ignore_empty_value: true
   - append:
       field: related.user
-      tag: append_claroty_xdome_event_source_username_into_related_user
+      tag: append_claroty_xdome_event_source_username_into_related_user_9b2024e5
       value: '{{{claroty_xdome.event.source.username}}}'
       allow_duplicates: false
       if: ctx.claroty_xdome?.event?.source?.username != null
@@ -424,15 +433,15 @@ processors:
         - claroty_xdome.event.source.port
         - claroty_xdome.event.source.username
         - claroty_xdome.event.source.asset_id
-      tag: remove_custom_duplicate_fields
+      tag: remove_custom_duplicate_fields_b3315cb8
       ignore_missing: true
       if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
   - remove:
       field: json
-      tag: remove_json
+      tag: remove_json_94dc55cd
       ignore_missing: true
   - script:
-      tag: script_to_drop_null_values
+      tag: script_to_drop_null_values_f6a89620
       lang: painless
       description: Drops null/empty values recursively.
       source: |-
@@ -451,16 +460,18 @@ processors:
         drop(ctx);
   - set:
       field: event.kind
-      tag: set_pipeline_error_into_event_kind
+      tag: set_pipeline_error_into_event_kind_4fd8ffa8
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message_d916120d
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
@@ -468,9 +479,10 @@ on_failure:
         {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

@@ -1,0 +1,97 @@
+# Verify that events are correctly routed from the event data stream to
+# category-specific data streams via routing rules when rerouting is enabled.
+#
+# The test data in minio provides:
+#   - 2 dns events        → sentinel_one_cloud_funnel.dns (rerouted)
+#   - 1 process event     → sentinel_one_cloud_funnel.process (rerouted)
+#   - 1 file event        → sentinel_one_cloud_funnel.event (retained, reroute_file not enabled)
+
+[!external_stack] skip 'Skipping external stack test.'
+[!exec:jq] skip 'Skipping test requiring absent jq command'
+
+# Connect to the running stack.
+use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+
+# Install an agent.
+install_agent -profile ${CONFIG_PROFILES}/${PROFILE} -network_name NETWORK_NAME
+
+# Start the minio service with pre-loaded test data.
+docker_up -profile ${CONFIG_PROFILES}/${PROFILE} -network ${NETWORK_NAME} s1cf-minio
+
+# Add the package resources.
+add_package -profile ${CONFIG_PROFILES}/${PROFILE}
+
+# Add the data stream policy with S3 polling against minio.
+add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config.yaml EVENT_DS
+
+# The file event should remain in the event data stream (reroute_file not enabled).
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -confirm 5s -timeout 5m ${EVENT_DS}
+cp stdout event_docs.json
+exec jq '.hits.hits[0]._source.sentinel_one_cloud_funnel.event.category' event_docs.json
+stdout 'file'
+
+# DNS events should be routed to the dns data stream.
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 2 -confirm 5s -timeout 2m logs-sentinel_one_cloud_funnel.dns-*
+cp stdout dns_docs.json
+exec jq -c '[.hits.hits[]._source.sentinel_one_cloud_funnel.event.category] | unique' dns_docs.json
+stdout '\["dns"\]'
+
+# Process events should be routed to the process data stream.
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -confirm 5s -timeout 2m logs-sentinel_one_cloud_funnel.process-*
+cp stdout proc_docs.json
+exec jq '.hits.hits[0]._source.sentinel_one_cloud_funnel.event.category' proc_docs.json
+stdout 'process'
+
+# Clean up.
+remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${EVENT_DS}
+uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 1m
+docker_down s1cf-minio
+
+-- test_config.yaml --
+input: aws-s3
+vars:
+  collect_s3_logs: true
+  non_aws_bucket_name: test-bucket
+  endpoint: http://svc-s1cf-minio:9000
+  access_key_id: minioadmin
+  secret_access_key: minioadmin
+  path_style: true
+  region: us-east-1
+  reroute_dns: true
+  reroute_process: true
+data_stream:
+  vars:
+    preserve_original_event: true
+    interval: 10s
+
+-- s1cf-minio/docker-compose.yml --
+services:
+  s1cf-minio:
+    image: minio/minio:RELEASE.2024-06-13T22-53-53Z
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    entrypoint: /bin/sh
+    command:
+      - -c
+      - |
+        minio server /data &
+        MINIO_PID=$$!
+        until curl -sf http://localhost:9000/minio/health/live; do sleep 1; done
+        mc alias set local http://localhost:9000 minioadmin minioadmin
+        mc mb local/test-bucket
+        mc cp /testdata/events.ndjson local/test-bucket/s1/cloud_funnel/events.ndjson
+        wait $$MINIO_PID
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    volumes:
+      - ./testdata:/testdata:ro
+
+-- s1cf-minio/testdata/events.ndjson --
+{"event.category":"dns","event.time":1664811149495,"event.id":"TEST_DNS_001","event.type":"DNS Resolved","meta.event.name":"DNS","site.id":"123456789","account.id":"123456789","endpoint.name":"test-host","endpoint.os":"windows","endpoint.type":"laptop","agent.uuid":"test-agent-1","agent.version":"22.1.2.217","mgmt.id":"1337","mgmt.url":"test.sentinelone.org","os.name":"Windows10Pro","src.process.name":"chrome.exe","src.process.pid":1234,"src.process.uid":"AAAA0000","process.unique.key":"AAAA0000","trace.id":"TEST_DNS_001","packet.id":"PKT001","event.dns.request":"example.com","event.dns.response":"93.184.216.34","dataSource.name":"SentinelOne","dataSource.category":"security","i.scheme":"edr","i.version":"preprocess-lib-1.0","site.name":"TEST","group.id":"test-group","sca:atlantisIngestTime":1664811166298,"sca:ingestTime":1664811166,"timestamp":"18:32:29.495"}
+{"event.category":"dns","event.time":1664811150000,"event.id":"TEST_DNS_002","event.type":"DNS Resolved","meta.event.name":"DNS","site.id":"123456789","account.id":"123456789","endpoint.name":"test-host","endpoint.os":"windows","endpoint.type":"laptop","agent.uuid":"test-agent-1","agent.version":"22.1.2.217","mgmt.id":"1337","mgmt.url":"test.sentinelone.org","os.name":"Windows10Pro","src.process.name":"firefox.exe","src.process.pid":5678,"src.process.uid":"BBBB0000","process.unique.key":"BBBB0000","trace.id":"TEST_DNS_002","packet.id":"PKT002","event.dns.request":"elastic.co","event.dns.response":"34.120.115.39","dataSource.name":"SentinelOne","dataSource.category":"security","i.scheme":"edr","i.version":"preprocess-lib-1.0","site.name":"TEST","group.id":"test-group","sca:atlantisIngestTime":1664811166298,"sca:ingestTime":1664811166,"timestamp":"18:32:30.000"}
+{"event.category":"process","event.time":1664811149470,"event.id":"TEST_PROC_001","event.type":"ProcessCreation","meta.event.name":"PROCESSCREATION","site.id":"123456789","account.id":"123456789","endpoint.name":"test-host","endpoint.os":"windows","endpoint.type":"server","agent.uuid":"test-agent-1","agent.version":"22.1.2.217","mgmt.id":"1337","mgmt.url":"test.sentinelone.org","os.name":"WindowsServer2019","src.process.name":"svchost.exe","src.process.pid":776,"src.process.uid":"CCCC0000","process.unique.key":"CCCC0000","trace.id":"TEST_PROC_001","packet.id":"PKT003","tgt.process.name":"notepad.exe","tgt.process.pid":9999,"tgt.process.uid":"DDDD0000","dataSource.name":"SentinelOne","dataSource.category":"security","i.scheme":"edr","i.version":"preprocess-lib-1.0","site.name":"TEST","group.id":"test-group","sca:atlantisIngestTime":1664811166298,"sca:ingestTime":1664811166,"timestamp":"18:32:29.470"}
+{"event.category":"file","event.time":1664811149488,"event.id":"TEST_FILE_001","event.type":"FileCreation","meta.event.name":"FILECREATION","site.id":"123456789","account.id":"123456789","endpoint.name":"test-host","endpoint.os":"windows","endpoint.type":"desktop","agent.uuid":"test-agent-1","agent.version":"22.1.2.217","mgmt.id":"1337","mgmt.url":"test.sentinelone.org","os.name":"Windows10Pro","src.process.name":"explorer.exe","src.process.pid":2222,"src.process.uid":"EEEE0000","process.unique.key":"EEEE0000","trace.id":"TEST_FILE_001","packet.id":"PKT004","tgt.file.path":"C:\\Users\\test\\Documents\\test.txt","tgt.file.type":"UNKNOWN","dataSource.name":"SentinelOne","dataSource.category":"security","i.scheme":"edr","i.version":"preprocess-lib-1.0","site.name":"TEST","group.id":"test-group","sca:atlantisIngestTime":1664811166298,"sca:ingestTime":1664811166,"timestamp":"18:32:29.488"}

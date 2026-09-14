@@ -4,9 +4,10 @@
 
 [Google Threat Intelligence](https://gtidocs.virustotal.com/) is a security solution that helps organizations detect, analyze, and mitigate threats. It leverages Google's global telemetry, advanced analytics, and vast infrastructure to provide actionable insights. Key features include threat detection, malware and phishing analysis, and real-time threat alerts.
 
-Google Threat Intelligence integration offers support for two APIs:
+Google Threat Intelligence integration offers support for three APIs:
 1. **[Threat List API](https://gtidocs.virustotal.com/reference/get-hourly-threat-list)** to deliver hourly data chunks. The Threat Lists feature allows customers to consume **Indicators of Compromise (IOCs)** categorized by various threat types.
 2. **[IOC Stream API](https://gtidocs.virustotal.com/reference/get-objects-from-the-ioc-stream)** to deliver various types of **Indicators of Compromise (IOCs)** originating from multiple sources. Depending on the source of the notification, different context-specific attributes are added to the IOCs.
+3. **[Vulnerability API](https://gtidocs.virustotal.com/reference/list-vulnerabilities)** to deliver **Vulnerability** objects enriched with GTI's assessment data, such as CVSS scores, EPSS, exploitation status, and CISA Known Exploited Vulnerabilities (KEV) information. Requires an **Enterprise Plus** subscription.
 
 ## Threat List API Feeds
 
@@ -34,6 +35,8 @@ Customers can access a subset of the available threat lists based on their **Goo
 - **GTI Standard**: Ransomware, Malicious Network Infrastructure
 - **GTI Enterprise**: Ransomware, Malicious Network Infrastructure, Malware, Threat Actor, Daily Top Trending
 - **GTI Enterprise+**: Access to all available threat lists
+
+**Note:** The **Vulnerability** data stream is a separate API from the Threat List API above and requires an **Enterprise Plus** subscription.
 
 ## Data Streams
 
@@ -71,6 +74,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
    - Initial Interval
    - Interval
    - (Optional) Query to add custom query filtering on relationship, GTI score, and positives. (not applicable to IOC Stream)
+   - (Optional, Vulnerability only) Filter to add custom query filtering on the collected vulnerabilities. By default, this is set to `origin:"Google Threat Intelligence" cvss_3x_base_score:5+`, which limits collection to vulnerabilities curated by Google Threat Intelligence with a CVSS v3 base score of at least 5. Clear this setting to collect all vulnerabilities instead.
 6. Click on **Save and Continue** to save the integration.
 **Note:** Please make only the threat feed types you have the privilege to access are enabled.
 
@@ -82,7 +86,7 @@ Users can view the transforms by navigating to **Management > Stack Management >
 
 Here, users can see continuously running transforms and also view the latest transformed GTI data in the **Discover** section.
 
-Currently, 10 transforms are available across all GTI integration data streams.
+Currently, 12 transforms are available across all GTI integration data streams.
 
 The following list contains the transforms and their associated pipelines:
 
@@ -96,10 +100,12 @@ The following list contains the transforms and their associated pipelines:
 | URL IOC Stream Transform  (ID: `logs-ti_google_threat_intelligence.url_ioc_st`, Pipeline: `ti_google_threat_intelligence-latest_url_ioc_st-transform-pipeline`)                     | Keeps URL entity type data up to date for IOC Stream.                           |
 | Domain IOC Stream Transform  (ID: `logs-ti_google_threat_intelligence.domain_ioc_st`, Pipeline: `ti_google_threat_intelligence-latest_domain_ioc_st-transform-pipeline`)            | Keeps Domain entity type data up to date for IOC Stream.                        |
 | File IOC Stream Transform  (ID: `logs-ti_google_threat_intelligence.file_ioc_st`, Pipeline: `ti_google_threat_intelligence-latest_file_ioc_st-transform-pipeline`)                  | Keeps File entity type data up to date for IOC Stream.                          |
+| Vulnerability Transform (ID: `logs-ti_google_threat_intelligence.vulnerability`)                                                                                                    | Keeps Vulnerability data up to date.                                            |
 | Detected IOC Transform (ID: `logs-ti_google_threat_intelligence.rule`, Pipeline: `ti_google_threat_intelligence-correlation_detection_rule-pipeline`)                               | Filters and extracts necessary information from Detected IOCs from threat feed. |
 | Detected IOC from IOC stream Transform (ID: `logs-ti_google_threat_intelligence.rule_ioc_st`, Pipeline: `ti_google_threat_intelligence-correlation_detection_rule_ioc_st-pipeline`) | Filters and extracts necessary information from Detected IOCs from IOC stream.  |
+| Detected Vulnerability Transform (ID: `logs-ti_google_threat_intelligence.rule_vuln`, Pipeline: `ti_google_threat_intelligence-correlation_detection_rule_vulnerability-pipeline`)  | Filters and extracts necessary information from Detected Vulnerabilities.       |
 
-All the GTI transforms are automatically started and the dashboards `Threat Feed Overview` and `IOC Stream Overview` are populated.
+All the GTI transforms are automatically started and the dashboards `Threat Feed Overview`, `IOC Stream Overview`, and `Vulnerability Overview` are populated.
 
 The `labels.is_transform_source` field indicates log origin:
 - **False** for transformed index
@@ -120,7 +126,7 @@ Detection Rules match the user's data with GTI data, generating an alert if a ma
 
 1. Navigate to **Security > Rules > Detection Rules** and click on **Add Elastic Rules**.
 2. Search for **Google Threat Intelligence** to find prebuilt Elastic detection rules.
-3. Four detection rules are available for **IP, URL, File, and Domain**. Users can install one or more rules as needed.
+3. Detection rules are available for **IP, URL, File, and Domain**, each with a Threat List and an IOC Stream variant. A separate detection rule is also available for **Vulnerability**. Users can install one or more rules as needed.
 
 To customize a rule for your Elastic environment:
 
@@ -136,7 +142,7 @@ To customize a rule for your Elastic environment:
 
 Once saved, successfully executed rules will generate alerts. Users can view these alerts in the **Alerts** section.
 
-The following are the names of the eight sample rules:
+The following are the names of the nine sample rules:
 
 | Sample Rule Name                                             | Description                                                                                                                           |
 | ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
@@ -148,13 +154,15 @@ The following are the names of the eight sample rules:
 | Google Threat Intelligence Domain IOC Stream Correlation     | Detects and alerts on matches between Domain IOCs collected by GTI IOC Stream data with user's selected Elastic environment data.     |
 | Google Threat Intelligence File IOC Stream Correlation       | Detects and alerts on matches between File IOCs collected by GTI IOC Stream data with user's selected Elastic environment data.       |
 | Google Threat Intelligence IP Address IOC Stream Correlation | Detects and alerts on matches between IP Address IOCs collected by GTI IOC Stream data with user's selected Elastic environment data. |
+| Google Threat Intelligence Vulnerability Correlation         | Detects and alerts on matches between Vulnerabilities collected by GTI data with user's selected Elastic environment data.            |
 
-**Note:** The following two transforms are available to filter relevant data from alerts.
+**Note:** The following three transforms are available to filter relevant data from alerts.
 
 - Detected IOC Transform (ID: `logs-ti_google_threat_intelligence.rule`)
 - Detected IOC from IOC stream Transform (ID: `logs-ti_google_threat_intelligence.rule_ioc_st`)
+- Detected Vulnerability Transform (ID: `logs-ti_google_threat_intelligence.rule_vuln`)
 
-These transforms are automatically started to populate `Threat Intelligence`, `Adversary Intelligence` and `IOC Stream Threat Intelligence` dashboards. The `data_stream.dataset: ti_google_threat_intelligence.enriched_ioc` and `data_stream.dataset: ti_google_threat_intelligence.enriched_ioc_stream` field represents logs for current threat intelligence data, which can be analyzed in the **Discover** section.
+These transforms are automatically started to populate `Threat Intelligence`, `Adversary Intelligence`, `IOC Stream Threat Intelligence`, and `Vulnerability Intelligence` dashboards. The `data_stream.dataset: ti_google_threat_intelligence.enriched_ioc`, `data_stream.dataset: ti_google_threat_intelligence.enriched_ioc_stream`, and `data_stream.dataset: ti_google_threat_intelligence.enriched_vulnerability` fields represent logs for current threat intelligence data, which can be analyzed in the **Discover** section.
 
 ## Limitations
 
@@ -3486,6 +3494,416 @@ An example event for `trending` looks as following:
 | gti.trending.relationships.vulnerabilities.id | Unique identifier for the vulnerability associated with the entity. | keyword |
 | gti.trending.relationships.vulnerabilities.type | The category of relationship. | keyword |
 | gti.trending.type | Specifies the nature of the entity, such as file, domain, IP, or URL. | keyword |
+| input.type | Type of filebeat input. | keyword |
+| labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
+| log.offset | Log offset. | long |
+| threat.enrichments | A list of associated indicators objects enriching the event, and the context of that association/enrichment. | nested |
+
+
+### Vulnerability
+
+This is the `Vulnerability` dataset.
+
+#### Example
+
+An example event for `vulnerability` looks as following:
+
+```json
+{
+    "@timestamp": "2026-07-20T13:01:39.000Z",
+    "agent": {
+        "ephemeral_id": "45bd2222-d7ef-4458-952d-da4e0f4ee871",
+        "id": "5fb54009-8529-498f-b8f5-1cd07522abee",
+        "name": "elastic-agent-69346",
+        "type": "filebeat",
+        "version": "8.16.0"
+    },
+    "data_stream": {
+        "dataset": "ti_google_threat_intelligence.vulnerability",
+        "namespace": "87944",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.17.0"
+    },
+    "elastic_agent": {
+        "id": "5fb54009-8529-498f-b8f5-1cd07522abee",
+        "snapshot": false,
+        "version": "8.16.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "vulnerability"
+        ],
+        "created": "2026-07-20T20:45:08.000Z",
+        "dataset": "ti_google_threat_intelligence.vulnerability",
+        "ingested": "2026-08-07T10:22:13Z",
+        "kind": "enrichment",
+        "original": "{\"attributes\":{\"aggregations\":{},\"alt_names\":[],\"alt_names_details\":[],\"autogenerated_tags\":[],\"available_mitigation\":[],\"capabilities\":[],\"collection_links\":[],\"collection_type\":\"vulnerability\",\"counters\":{\"attack_techniques\":0,\"domains\":0,\"files\":0,\"iocs\":0,\"ip_addresses\":0,\"subscribers\":0,\"urls\":0},\"creation_date\":1784580308,\"cve_id\":\"CVE-2026-63730\",\"cvss\":{\"cvssv3_x\":{\"base_score\":5,\"temporal_score\":4.6,\"vector\":\"CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:C/C:L/I:N/A:N/E:U/RL:U/RC:C\"},\"cvssv3_x_translated\":{\"base_score\":0,\"temporal_score\":0,\"vector\":\"CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:C/C:N/I:N/A:N\"},\"cvssv4_x\":{\"score\":1.3,\"supplemental\":{\"automatable\":null,\"provider_urgency\":null,\"recovery\":null,\"response_effort\":null,\"safety\":null,\"value_density\":null},\"threat\":{\"exploit_maturity\":\"Unreported\"},\"vector\":\"CVSS:4.0/AV:N/AC:L/AT:N/PR:L/UI:N/VC:N/SC:L/VI:N/SI:N/VA:N/SA:N/E:U\"}},\"cwe\":{\"id\":\"CWE-918\",\"title\":\"Server-Side Request Forgery (SSRF)\"},\"date_of_disclosure\":1784505600,\"description\":\"Mitre Corporation has provided the following description:   \\n*HyperDX before 2.31.0 contains a server-side request forgery vulnerability that allows authenticated team members to direct the server to make requests to arbitrary internal network destinations by supplying a caller-controlled URL to the webhook test endpoint. Attackers can bypass the insufficient hostname blacklist validation in the webhook handler to enumerate internal services, interact with internal containers, or access cloud instance metadata services including provider metadata endpoints.*\",\"detection_names\":[],\"domains_count\":0,\"epss\":{\"percentile\":null,\"score\":null},\"executive_summary\":\"* A Server-Side Request Forgery (SSRF) vulnerability exists that, when exploited, allows a privileged attacker to achieve unknown impacts.\\n* We are currently unaware of exploitation activity in the wild. Exploit code is not publicly available.\\n* Google Threat Intelligence Group (GTIG) considers this a Low-risk vulnerability due to unknown impacts.\\n* There are currently no mitigation options available for this issue.\",\"exploit_availability\":\"No Known\",\"exploitation\":{\"exploit_release_date\":null,\"first_exploitation\":null,\"tech_details_release_date\":null},\"exploitation_consequence\":\"\",\"exploitation_state\":\"No Known\",\"exploitation_vectors\":[],\"field_sources\":[{\"field\":\"cvss.cvssv4_x.vector\",\"source\":{\"field_type\":\"Ranked\",\"source_name\":\"Mitre Corporation\",\"source_url\":\"\",\"sources\":[]}}],\"files_count\":0,\"first_seen_details\":[],\"ip_addresses_count\":0,\"last_modification_date\":1784552499,\"last_seen_details\":[],\"malware_roles\":[],\"mati_genids_dict\":{\"cve_id\":\"vulnerability--1a9c1e42-f50c-5629-ade2-53739090bf7e\",\"mve_id\":\"vulnerability--11f92668-33b9-5562-be9f-ccaea589a04c\",\"report_id\":null},\"merged_actors\":[],\"motivations\":[],\"mve_id\":\"MVE-2026-43838\",\"name\":\"CVE-2026-63730\",\"operating_systems\":[],\"origin\":\"Google Threat Intelligence\",\"predicted_risk_rating\":\"LOW\",\"priority\":\"P4\",\"private\":false,\"references_count\":0,\"risk_factors\":[],\"risk_rating\":\"Medium\",\"source_regions_hierarchy\":[],\"sources\":[{\"cvss\":{\"cvssv2_0\":null,\"cvssv3_x\":{\"base_score\":5,\"temporal_score\":null,\"vector\":\"CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:C/C:L/I:N/A:N\"},\"cvssv3_x_translated\":null,\"cvssv4_x\":{\"score\":5.3,\"supplemental\":null,\"threat\":null,\"vector\":\"CVSS:4.0/AV:N/AC:L/AT:N/PR:L/UI:N/VC:N/SC:L/VI:N/SI:N/VA:N/SA:N\"}},\"md5\":\"e39e72ab729af6010b060045a7ac9024\",\"name\":\"Mitre Corporation\",\"published_date\":1784573062,\"source_description\":null,\"title\":null,\"unique_id\":null,\"url\":\"https://github.com/CVEProject/cvelistV5/blob/main/cves/2026/63xxx/CVE-2026-63730.json\"}],\"status\":\"COMPUTED\",\"subscribers_count\":0,\"tags\":[],\"tags_details\":[],\"targeted_industries\":[],\"targeted_industries_tree\":[],\"targeted_regions\":[],\"targeted_regions_hierarchy\":[],\"top_icon_md5\":[],\"urls_count\":0,\"vendor_fix_references\":[],\"version_history\":[{\"date\":1784552499,\"version_notes\":[\"cvss.cvssv4_x.score: Added\"]}],\"workarounds\":[]},\"context_attributes\":{\"role\":\"viewer\",\"shared_with_me\":false},\"id\":\"vulnerability--cve-2026-63730\",\"links\":{\"self\":\"https://www.virustotal.com/api/v3/collections/vulnerability--cve-2026-63730\"},\"type\":\"collection\"}",
+        "type": [
+            "info"
+        ],
+        "url": "https://www.virustotal.com/api/v3/collections/vulnerability--cve-2026-63730"
+    },
+    "gti": {
+        "vulnerability": {
+            "attributes": {
+                "collection_type": "vulnerability",
+                "counters": {
+                    "attack_techniques": 0,
+                    "domains": 0,
+                    "files": 0,
+                    "iocs": 0,
+                    "ip_addresses": 0,
+                    "subscribers": 0,
+                    "urls": 0
+                },
+                "creation_date": "2026-07-20T20:45:08.000Z",
+                "cve_id": "CVE-2026-63730",
+                "cvss": {
+                    "cvssv3_x": {
+                        "base_score": 5,
+                        "temporal_score": 4.6,
+                        "vector": "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:C/C:L/I:N/A:N/E:U/RL:U/RC:C"
+                    },
+                    "cvssv3_x_translated": {
+                        "base_score": 0,
+                        "temporal_score": 0,
+                        "vector": "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:C/C:N/I:N/A:N"
+                    },
+                    "cvssv4_x": {
+                        "score": 1.3,
+                        "threat": {
+                            "exploit_maturity": "Unreported"
+                        },
+                        "vector": "CVSS:4.0/AV:N/AC:L/AT:N/PR:L/UI:N/VC:N/SC:L/VI:N/SI:N/VA:N/SA:N/E:U"
+                    }
+                },
+                "cwe": {
+                    "id": "CWE-918",
+                    "title": "Server-Side Request Forgery (SSRF)"
+                },
+                "date_of_disclosure": "2026-07-20T00:00:00.000Z",
+                "description": "Mitre Corporation has provided the following description:   \n*HyperDX before 2.31.0 contains a server-side request forgery vulnerability that allows authenticated team members to direct the server to make requests to arbitrary internal network destinations by supplying a caller-controlled URL to the webhook test endpoint. Attackers can bypass the insufficient hostname blacklist validation in the webhook handler to enumerate internal services, interact with internal containers, or access cloud instance metadata services including provider metadata endpoints.*",
+                "domains_count": 0,
+                "executive_summary": "* A Server-Side Request Forgery (SSRF) vulnerability exists that, when exploited, allows a privileged attacker to achieve unknown impacts.\n* We are currently unaware of exploitation activity in the wild. Exploit code is not publicly available.\n* Google Threat Intelligence Group (GTIG) considers this a Low-risk vulnerability due to unknown impacts.\n* There are currently no mitigation options available for this issue.",
+                "exploit_availability": "No Known",
+                "exploitation_state": "No Known",
+                "field_sources": [
+                    {
+                        "field": "cvss.cvssv4_x.vector",
+                        "source": {
+                            "field_type": "Ranked",
+                            "source_name": "Mitre Corporation"
+                        }
+                    }
+                ],
+                "files_count": 0,
+                "ip_addresses_count": 0,
+                "last_modification_date": "2026-07-20T13:01:39.000Z",
+                "mati_genids_dict": {
+                    "cve_id": "vulnerability--1a9c1e42-f50c-5629-ade2-53739090bf7e",
+                    "mve_id": "vulnerability--11f92668-33b9-5562-be9f-ccaea589a04c"
+                },
+                "mve_id": "MVE-2026-43838",
+                "name": "CVE-2026-63730",
+                "origin": "Google Threat Intelligence",
+                "predicted_risk_rating": "LOW",
+                "priority": "P4",
+                "private": false,
+                "references_count": 0,
+                "risk_rating": "Medium",
+                "sources": [
+                    {
+                        "cvss": {
+                            "cvssv3_x": {
+                                "base_score": 5,
+                                "vector": "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:C/C:L/I:N/A:N"
+                            },
+                            "cvssv4_x": {
+                                "score": 5.3,
+                                "vector": "CVSS:4.0/AV:N/AC:L/AT:N/PR:L/UI:N/VC:N/SC:L/VI:N/SI:N/VA:N/SA:N"
+                            }
+                        },
+                        "md5": "e39e72ab729af6010b060045a7ac9024",
+                        "name": "Mitre Corporation",
+                        "published_date": "2026-07-20T18:44:22.000Z",
+                        "url": "https://github.com/CVEProject/cvelistV5/blob/main/cves/2026/63xxx/CVE-2026-63730.json"
+                    }
+                ],
+                "status": "COMPUTED",
+                "subscribers_count": 0,
+                "urls_count": 0,
+                "version_history": [
+                    {
+                        "date": "2026-07-20T13:01:39.000Z",
+                        "version_notes": [
+                            "cvss.cvssv4_x.score: Added"
+                        ]
+                    }
+                ]
+            },
+            "context_attributes": {
+                "role": "viewer",
+                "shared_with_me": false
+            },
+            "id": "vulnerability--cve-2026-63730",
+            "links": {
+                "self": "https://www.virustotal.com/api/v3/collections/vulnerability--cve-2026-63730"
+            },
+            "type": "collection"
+        }
+    },
+    "input": {
+        "type": "cel"
+    },
+    "message": "Mitre Corporation has provided the following description:   \n*HyperDX before 2.31.0 contains a server-side request forgery vulnerability that allows authenticated team members to direct the server to make requests to arbitrary internal network destinations by supplying a caller-controlled URL to the webhook test endpoint. Attackers can bypass the insufficient hostname blacklist validation in the webhook handler to enumerate internal services, interact with internal containers, or access cloud instance metadata services including provider metadata endpoints.*",
+    "observer": {
+        "product": "Threat Intelligence",
+        "vendor": "Google"
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "google_threat_intelligence-vulnerability"
+    ],
+    "user": {
+        "roles": [
+            "viewer"
+        ]
+    },
+    "vulnerability": {
+        "classification": "CVSS",
+        "description": "Mitre Corporation has provided the following description:   \n*HyperDX before 2.31.0 contains a server-side request forgery vulnerability that allows authenticated team members to direct the server to make requests to arbitrary internal network destinations by supplying a caller-controlled URL to the webhook test endpoint. Attackers can bypass the insufficient hostname blacklist validation in the webhook handler to enumerate internal services, interact with internal containers, or access cloud instance metadata services including provider metadata endpoints.*",
+        "enumeration": "CVE",
+        "id": "CVE-2026-63730",
+        "reference": "https://www.virustotal.com/api/v3/collections/vulnerability--cve-2026-63730",
+        "scanner": {
+            "vendor": "Google"
+        },
+        "score": {
+            "version": "4.0"
+        },
+        "severity": "Medium"
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| gti.vulnerability.attributes.aggregations.domains | technical commonalities among all domains tied to the vulnerability. | flattened |
+| gti.vulnerability.attributes.aggregations.files | technical commonalities among all files tied to the vulnerability. | flattened |
+| gti.vulnerability.attributes.aggregations.ip_addresses | technical commonalities among all IP addresses tied to the vulnerability. | flattened |
+| gti.vulnerability.attributes.aggregations.urls | technical commonalities among all URLs tied to the vulnerability. | flattened |
+| gti.vulnerability.attributes.alt_names |  | keyword |
+| gti.vulnerability.attributes.alt_names_details.confidence | confidence on the information or the attribution of the alternative name to the vulnerability. | keyword |
+| gti.vulnerability.attributes.alt_names_details.description | additional information related to the alternative name. | keyword |
+| gti.vulnerability.attributes.alt_names_details.description.text | Multi-field of `gti.vulnerability.attributes.alt_names_details.description`. | match_only_text |
+| gti.vulnerability.attributes.alt_names_details.first_seen | the first time that alternative name was attributed to the vulnerability (UTC timestamp). | date |
+| gti.vulnerability.attributes.alt_names_details.last_seen | the last time that alternative name was attributed to the vulnerability (UTC timestamp). | date |
+| gti.vulnerability.attributes.alt_names_details.value | alternative name / alias. | keyword |
+| gti.vulnerability.attributes.analysis | comment made by the analyst on the vulnerability. | keyword |
+| gti.vulnerability.attributes.analysis.text | Multi-field of `gti.vulnerability.attributes.analysis`. | match_only_text |
+| gti.vulnerability.attributes.autogenerated_tags |  | keyword |
+| gti.vulnerability.attributes.available_mitigation | list of available ways to reduce / mitigate the vulnerability. | keyword |
+| gti.vulnerability.attributes.capabilities |  | keyword |
+| gti.vulnerability.attributes.cisa_known_exploited.added_date | the date when the vulnerability was added to KEV (UTC timestamp). | date |
+| gti.vulnerability.attributes.cisa_known_exploited.due_date | required remediation date of the vulnerability (UTC timestamp). | date |
+| gti.vulnerability.attributes.cisa_known_exploited.ransomware_use | whether the vulnerability has been used in a ransomware campaign or not. | keyword |
+| gti.vulnerability.attributes.collection_links |  | keyword |
+| gti.vulnerability.attributes.collection_type | identifies the type of the object. For vulnerabilities the value of this attribute is vulnerability. | keyword |
+| gti.vulnerability.attributes.counters.attack_techniques | number of MITRE ATT&CK techniques associated with the vulnerability. | long |
+| gti.vulnerability.attributes.counters.domains | number of domains related to the vulnerability. | long |
+| gti.vulnerability.attributes.counters.files | number of files related to the vulnerability. | long |
+| gti.vulnerability.attributes.counters.iocs | number of IoCs (files + URLs + domains + IP addresses) related to the vulnerability. | long |
+| gti.vulnerability.attributes.counters.ip_addresses | number of IP addresses related to the vulnerability. | long |
+| gti.vulnerability.attributes.counters.subscribers | number of users subscribed to the vulnerability. | long |
+| gti.vulnerability.attributes.counters.urls | number of URLs related to the vulnerability. | long |
+| gti.vulnerability.attributes.cpes.end_cpe.product |  | keyword |
+| gti.vulnerability.attributes.cpes.end_cpe.uri |  | keyword |
+| gti.vulnerability.attributes.cpes.end_cpe.vendor |  | keyword |
+| gti.vulnerability.attributes.cpes.end_cpe.version |  | keyword |
+| gti.vulnerability.attributes.cpes.end_rel | operator representing the relationship to end. | keyword |
+| gti.vulnerability.attributes.cpes.start_cpe.product | product's name. | keyword |
+| gti.vulnerability.attributes.cpes.start_cpe.uri | CPE URI. | keyword |
+| gti.vulnerability.attributes.cpes.start_cpe.vendor | vendor's name. | keyword |
+| gti.vulnerability.attributes.cpes.start_cpe.version | version. | keyword |
+| gti.vulnerability.attributes.cpes.start_rel | operator representing the relationship to start. | keyword |
+| gti.vulnerability.attributes.creation_date | vulnerability object creation date (UTC timestamp). | date |
+| gti.vulnerability.attributes.cve_id | vulnerability CVE standard identifier. | keyword |
+| gti.vulnerability.attributes.cvss.cvssv2_0.base_score | base score of CVSS2.0. | float |
+| gti.vulnerability.attributes.cvss.cvssv2_0.temporal_score | temporal score of CVSS2.0. | float |
+| gti.vulnerability.attributes.cvss.cvssv2_0.vector | full vector of CVSS2.0. | keyword |
+| gti.vulnerability.attributes.cvss.cvssv3_x.base_score |  | float |
+| gti.vulnerability.attributes.cvss.cvssv3_x.temporal_score |  | float |
+| gti.vulnerability.attributes.cvss.cvssv3_x.vector |  | keyword |
+| gti.vulnerability.attributes.cvss.cvssv3_x_translated.base_score |  | float |
+| gti.vulnerability.attributes.cvss.cvssv3_x_translated.temporal_score |  | float |
+| gti.vulnerability.attributes.cvss.cvssv3_x_translated.vector |  | keyword |
+| gti.vulnerability.attributes.cvss.cvssv4_x.score | CVSSv4-BT score. | float |
+| gti.vulnerability.attributes.cvss.cvssv4_x.supplemental.automatable | CVSSv4 "Automatable" metric. | keyword |
+| gti.vulnerability.attributes.cvss.cvssv4_x.supplemental.provider_urgency | CVSSV4 "Provider Urgency" metric. | keyword |
+| gti.vulnerability.attributes.cvss.cvssv4_x.supplemental.recovery | CVSSv4 "Recovery" metric. | keyword |
+| gti.vulnerability.attributes.cvss.cvssv4_x.supplemental.response_effort | CVSSv4 "Vulnerability Response Effort" metric. | keyword |
+| gti.vulnerability.attributes.cvss.cvssv4_x.supplemental.safety | CVSSv4 "Safety" metric. | keyword |
+| gti.vulnerability.attributes.cvss.cvssv4_x.supplemental.value_density | CVSSv4 "Value Density" metric. | keyword |
+| gti.vulnerability.attributes.cvss.cvssv4_x.threat.exploit_maturity | CVSSv4 "Exploit Maturity" metric. | keyword |
+| gti.vulnerability.attributes.cvss.cvssv4_x.vector | full vector of CVSS 4. | keyword |
+| gti.vulnerability.attributes.cwe.id | CWE identifier of the vulnerability. | keyword |
+| gti.vulnerability.attributes.cwe.title | CWE title / name of the vulnerability. | keyword |
+| gti.vulnerability.attributes.date_of_disclosure | vulnerability disclosure date (UTC timestamp). | date |
+| gti.vulnerability.attributes.days_to_patch |  | long |
+| gti.vulnerability.attributes.days_to_report | number of days between the date of disclosure and publication. | long |
+| gti.vulnerability.attributes.description | description / context about the vulnerability. | keyword |
+| gti.vulnerability.attributes.description.text | Multi-field of `gti.vulnerability.attributes.description`. | match_only_text |
+| gti.vulnerability.attributes.detection_names |  | keyword |
+| gti.vulnerability.attributes.domains_count |  | long |
+| gti.vulnerability.attributes.epss.percentile | percentile of that score in the data. | double |
+| gti.vulnerability.attributes.epss.score | probability of the exploitation of the vulnerability in the next 30 days. | double |
+| gti.vulnerability.attributes.executive_summary | summary of the available information around the vulnerability. | keyword |
+| gti.vulnerability.attributes.exploit_availability | vulnerability exploit availability. | keyword |
+| gti.vulnerability.attributes.exploitation.exploit_release_date | first publicly available exploit / PoC release date (UTC timestamp). | date |
+| gti.vulnerability.attributes.exploitation.first_exploitation | earliest known exploitation date (UTC timestamp). | date |
+| gti.vulnerability.attributes.exploitation.tech_details_release_date | first technical details release date. This date is the published date of the earliest source tagged as "techinical-details" (UTC timestamp). | date |
+| gti.vulnerability.attributes.exploitation_consequence | consequences of exploiting the vulnerability. | keyword |
+| gti.vulnerability.attributes.exploitation_state | the exploitation status of the vulnerability. | keyword |
+| gti.vulnerability.attributes.exploitation_vectors | list of ways in which the vulnerabilities can be exploited. | keyword |
+| gti.vulnerability.attributes.field_sources.field | field value such as the "description" of the vulnerability, the "date_of_disclosure" or the "cwe". | keyword |
+| gti.vulnerability.attributes.field_sources.source.field_type | the type of aggregation performed on field. | keyword |
+| gti.vulnerability.attributes.field_sources.source.source_name | the name of the organization that provided the field information. | keyword |
+| gti.vulnerability.attributes.field_sources.source.source_url | URL from where that field information was extracted. | keyword |
+| gti.vulnerability.attributes.field_sources.source.sources.source_names | list of organizations names that provided the information at the corresponding index for a field. | keyword |
+| gti.vulnerability.attributes.field_sources.source.sources.source_urls | list of urls from where the information at the corresponding index for a field was extracted. | keyword |
+| gti.vulnerability.attributes.files_count |  | long |
+| gti.vulnerability.attributes.first_seen_details.confidence | confidence on the information or the attribution of the first activity seen related to the vulnerability. | keyword |
+| gti.vulnerability.attributes.first_seen_details.description | description / additional information about the first activity seen related to the vulnerability. | keyword |
+| gti.vulnerability.attributes.first_seen_details.description.text | Multi-field of `gti.vulnerability.attributes.first_seen_details.description`. | match_only_text |
+| gti.vulnerability.attributes.first_seen_details.first_seen | the first time this first activity date has been attributed to the malware family (UTC timestamp). | date |
+| gti.vulnerability.attributes.first_seen_details.last_seen | the last time this first activity date has been attributed to the vulnerability (UTC timestamp). | date |
+| gti.vulnerability.attributes.first_seen_details.value | date when the first observation about that vulnerability was made ("YYYY-MM-DDTHH:mm:ssZ" format). | date |
+| gti.vulnerability.attributes.ip_addresses_count |  | long |
+| gti.vulnerability.attributes.last_modification_date | last time when the vulnerability's information was updated (UTC timestamp). | date |
+| gti.vulnerability.attributes.last_seen_details.confidence | confidence on the information or the attribution of the last activity seen related to the vulnerability. | keyword |
+| gti.vulnerability.attributes.last_seen_details.description | description / additional information about the last activity seen related to the vulnerability. | keyword |
+| gti.vulnerability.attributes.last_seen_details.description.text | Multi-field of `gti.vulnerability.attributes.last_seen_details.description`. | match_only_text |
+| gti.vulnerability.attributes.last_seen_details.first_seen | the first time this last activity date has been attributed to the vulnerability (UTC timestamp). | date |
+| gti.vulnerability.attributes.last_seen_details.last_seen | the last time this last activity date has been attributed to the vulnerability (UTC timestamp). | date |
+| gti.vulnerability.attributes.last_seen_details.value | date when the last observation about that vulnerability was made ("YYYY-MM-DDTHH:mm:ssZ" format). | date |
+| gti.vulnerability.attributes.malware_roles |  | keyword |
+| gti.vulnerability.attributes.mati_genids_dict.cve_id |  | keyword |
+| gti.vulnerability.attributes.mati_genids_dict.mve_id |  | keyword |
+| gti.vulnerability.attributes.mati_genids_dict.report_id |  | keyword |
+| gti.vulnerability.attributes.merged_actors |  | keyword |
+| gti.vulnerability.attributes.motivations |  | keyword |
+| gti.vulnerability.attributes.mve_id | internal Mandiant Vulnerability and Exposure ID. | keyword |
+| gti.vulnerability.attributes.name | vulnerability's name. | keyword |
+| gti.vulnerability.attributes.operating_systems |  | keyword |
+| gti.vulnerability.attributes.origin | identifies the source of the information. Google Threat Intelligence for curated objects from our Google TI experts. | keyword |
+| gti.vulnerability.attributes.predicted_risk_rating | vulnerability's predicted risk rating. | keyword |
+| gti.vulnerability.attributes.priority | priority of the remediation of the vulnerability. | keyword |
+| gti.vulnerability.attributes.private | whether the vulnerability object is private or not. | boolean |
+| gti.vulnerability.attributes.recent_activity_relative_change | ratio of change between the last two "recent activity" periods. | double |
+| gti.vulnerability.attributes.recent_activity_summary | time series representing the activity of the IoCs related to the vulnerability. | long |
+| gti.vulnerability.attributes.references_count |  | long |
+| gti.vulnerability.attributes.risk_factors | list of factors that impacted the vulnerability's risk_rating (positively or negative). | keyword |
+| gti.vulnerability.attributes.risk_rating | risk rating of the vulnerability. | keyword |
+| gti.vulnerability.attributes.source_regions_hierarchy.confidence | confidence on the information related to the source region of the vulnerability. | keyword |
+| gti.vulnerability.attributes.source_regions_hierarchy.country | country from which vulnerability is known to originate. | keyword |
+| gti.vulnerability.attributes.source_regions_hierarchy.country_iso2 | source country in ISO 3166 Alpha2 - code format. | keyword |
+| gti.vulnerability.attributes.source_regions_hierarchy.description | description / additional information about the source region of the vulnerability. | keyword |
+| gti.vulnerability.attributes.source_regions_hierarchy.description.text | Multi-field of `gti.vulnerability.attributes.source_regions_hierarchy.description`. | match_only_text |
+| gti.vulnerability.attributes.source_regions_hierarchy.first_seen | the first time this source region was attributed to the vulnerability (UTC timestamp). | date |
+| gti.vulnerability.attributes.source_regions_hierarchy.last_seen | the last time this source region was attributed to the vulnerability (UTC timestamp). | date |
+| gti.vulnerability.attributes.source_regions_hierarchy.region | region from which the vulnerability is known to originate. | keyword |
+| gti.vulnerability.attributes.source_regions_hierarchy.source | information's supplier. | keyword |
+| gti.vulnerability.attributes.source_regions_hierarchy.sub_region | subregion from which the vulnerability is known to originate. | keyword |
+| gti.vulnerability.attributes.sources.cvss.cvssv2_0.base_score | CVSS2.0 base score provided by the supplier. | double |
+| gti.vulnerability.attributes.sources.cvss.cvssv2_0.temporal_score |  | double |
+| gti.vulnerability.attributes.sources.cvss.cvssv2_0.vector | full vector of CVSS2.0 provided by the supplier. | keyword |
+| gti.vulnerability.attributes.sources.cvss.cvssv3_x.base_score |  | double |
+| gti.vulnerability.attributes.sources.cvss.cvssv3_x.temporal_score |  | double |
+| gti.vulnerability.attributes.sources.cvss.cvssv3_x.vector |  | keyword |
+| gti.vulnerability.attributes.sources.cvss.cvssv4_x.score | CVSS 4 Base Score provided by the supplier. | double |
+| gti.vulnerability.attributes.sources.cvss.cvssv4_x.supplemental.automatable |  | keyword |
+| gti.vulnerability.attributes.sources.cvss.cvssv4_x.supplemental.provider_urgency |  | keyword |
+| gti.vulnerability.attributes.sources.cvss.cvssv4_x.supplemental.recovery |  | keyword |
+| gti.vulnerability.attributes.sources.cvss.cvssv4_x.supplemental.response_effort |  | keyword |
+| gti.vulnerability.attributes.sources.cvss.cvssv4_x.supplemental.safety |  | keyword |
+| gti.vulnerability.attributes.sources.cvss.cvssv4_x.supplemental.value_density |  | keyword |
+| gti.vulnerability.attributes.sources.cvss.cvssv4_x.threat.exploit_maturity |  | keyword |
+| gti.vulnerability.attributes.sources.cvss.cvssv4_x.vector | full vector of CVSS 4 provided by the supplier. | keyword |
+| gti.vulnerability.attributes.sources.md5 | md5 of url / pdf of the source of the information when it was collected. | keyword |
+| gti.vulnerability.attributes.sources.name | supplier's name. | keyword |
+| gti.vulnerability.attributes.sources.published_date | datetime when the information was first published (UTC timestamp). | date |
+| gti.vulnerability.attributes.sources.source_description | the description of the url / pdf from where the information was collected. | keyword |
+| gti.vulnerability.attributes.sources.title | the title of the url / pdf from where the information was collected. | keyword |
+| gti.vulnerability.attributes.sources.unique_id | unique identifier provided by the supplier. | keyword |
+| gti.vulnerability.attributes.sources.url | the URL of the source of the information. | keyword |
+| gti.vulnerability.attributes.status | indicates if the object has attributes pending to be computed again (e.g. top_icon_md5 after making changes). The possible values are PENDING_RECOMPUTE and COMPUTED. | keyword |
+| gti.vulnerability.attributes.subscribers_count |  | long |
+| gti.vulnerability.attributes.summary_stats.files_detections.avg |  | double |
+| gti.vulnerability.attributes.summary_stats.files_detections.max |  | double |
+| gti.vulnerability.attributes.summary_stats.files_detections.min |  | double |
+| gti.vulnerability.attributes.summary_stats.first_submission_date.avg |  | date |
+| gti.vulnerability.attributes.summary_stats.first_submission_date.max |  | date |
+| gti.vulnerability.attributes.summary_stats.first_submission_date.min |  | date |
+| gti.vulnerability.attributes.summary_stats.last_submission_date.avg |  | date |
+| gti.vulnerability.attributes.summary_stats.last_submission_date.max |  | date |
+| gti.vulnerability.attributes.summary_stats.last_submission_date.min |  | date |
+| gti.vulnerability.attributes.tags | tags associated with the vulnerability. | keyword |
+| gti.vulnerability.attributes.tags_details.confidence |  | keyword |
+| gti.vulnerability.attributes.tags_details.description |  | keyword |
+| gti.vulnerability.attributes.tags_details.description.text | Multi-field of `gti.vulnerability.attributes.tags_details.description`. | match_only_text |
+| gti.vulnerability.attributes.tags_details.first_seen |  | date |
+| gti.vulnerability.attributes.tags_details.last_seen |  | date |
+| gti.vulnerability.attributes.tags_details.value |  | keyword |
+| gti.vulnerability.attributes.targeted_industries |  | keyword |
+| gti.vulnerability.attributes.targeted_industries_tree.confidence | confidence on the information related to the industry targeted by the vulnerability's exploits. | keyword |
+| gti.vulnerability.attributes.targeted_industries_tree.description | description / additional information about the industry targeted by the vulnerability's exploits. | keyword |
+| gti.vulnerability.attributes.targeted_industries_tree.description.text | Multi-field of `gti.vulnerability.attributes.targeted_industries_tree.description`. | match_only_text |
+| gti.vulnerability.attributes.targeted_industries_tree.first_seen | the first time this targeted industry was associated with the vulnerability (UTC timestamp). | date |
+| gti.vulnerability.attributes.targeted_industries_tree.industry | sub-industry targeted by the vulnerability's exploits. | keyword |
+| gti.vulnerability.attributes.targeted_industries_tree.industry_group | industry group targeted by the vulnerability's exploits. | keyword |
+| gti.vulnerability.attributes.targeted_industries_tree.last_seen | the last time this targeted industry was associated with the vulnerability (UTC timestamp). | date |
+| gti.vulnerability.attributes.targeted_industries_tree.source | information's supplier. | keyword |
+| gti.vulnerability.attributes.targeted_regions |  | keyword |
+| gti.vulnerability.attributes.targeted_regions_hierarchy.confidence | confidence on the information related to the region targeted by the vulnerability. | keyword |
+| gti.vulnerability.attributes.targeted_regions_hierarchy.country | country targeted by the vulnerability. | keyword |
+| gti.vulnerability.attributes.targeted_regions_hierarchy.country_iso2 | targeted country in ISO 3166 Alpha2 - code format. | keyword |
+| gti.vulnerability.attributes.targeted_regions_hierarchy.description | description / additional information about the region targeted by the vulnerability. | keyword |
+| gti.vulnerability.attributes.targeted_regions_hierarchy.description.text | Multi-field of `gti.vulnerability.attributes.targeted_regions_hierarchy.description`. | match_only_text |
+| gti.vulnerability.attributes.targeted_regions_hierarchy.first_seen | the first time this targeted region was associated with the vulnerability (UTC timestamp). | date |
+| gti.vulnerability.attributes.targeted_regions_hierarchy.last_seen | the last time this targeted region was associated with the vulnerability (UTC timestamp). | date |
+| gti.vulnerability.attributes.targeted_regions_hierarchy.region | region targeted by the vulnerability. | keyword |
+| gti.vulnerability.attributes.targeted_regions_hierarchy.source | information's supplier. | keyword |
+| gti.vulnerability.attributes.targeted_regions_hierarchy.sub_region | sub-region targeted by the vulnerability. | keyword |
+| gti.vulnerability.attributes.top_icon_md5 |  | keyword |
+| gti.vulnerability.attributes.urls_count |  | long |
+| gti.vulnerability.attributes.vendor_fix_references.cvss | vulnerability's associated cvss. | keyword |
+| gti.vulnerability.attributes.vendor_fix_references.md5 | the md5 hash of the file fix. | keyword |
+| gti.vulnerability.attributes.vendor_fix_references.name | name of the supplier of the fix. | keyword |
+| gti.vulnerability.attributes.vendor_fix_references.published_date | publication date of the fix (UTC timestamp). | date |
+| gti.vulnerability.attributes.vendor_fix_references.source_description | description of the fix. | keyword |
+| gti.vulnerability.attributes.vendor_fix_references.title | title of the fix's publication website. | keyword |
+| gti.vulnerability.attributes.vendor_fix_references.unique_id | unique identifier of the fix. | keyword |
+| gti.vulnerability.attributes.vendor_fix_references.url | URL of the web site with the fix publication. | keyword |
+| gti.vulnerability.attributes.version_history.date | the date when the new information was added to the vulnerability object (UTC timestamp). | date |
+| gti.vulnerability.attributes.version_history.version_notes | new information around the vulnerability. | keyword |
+| gti.vulnerability.attributes.workarounds | list of strings explaining vulnerability's workaround / alternative fixes. | keyword |
+| gti.vulnerability.context_attributes.role |  | keyword |
+| gti.vulnerability.context_attributes.shared_with_me |  | boolean |
+| gti.vulnerability.id |  | keyword |
+| gti.vulnerability.links.self |  | keyword |
+| gti.vulnerability.type |  | keyword |
 | input.type | Type of filebeat input. | keyword |
 | labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
 | log.offset | Log offset. | long |

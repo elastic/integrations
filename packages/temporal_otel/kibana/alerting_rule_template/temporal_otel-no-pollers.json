@@ -1,0 +1,53 @@
+{
+  "id": "temporal_otel-no-pollers",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when tasks are being dispatched to a task queue that has zero active workers (pollers). no_poller_tasks_count > 0 means tasks are arriving but no worker is listening — all new work for that queue is immediately stuck. This is the most critical worker health signal: the worker fleet for this queue is effectively absent.",
+    "name": "[Temporal OTel] No Pollers on Task Queue",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "temporal",
+      "temporal-cloud"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 3
+    },
+    "flapping": {
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    },
+    "artifacts": {
+      "investigation_guide": {
+        "blob": "## No Pollers on Task Queue — Worker Outage\n\nThis is a critical alert. `no_poller_tasks_count > 0` means Temporal Cloud is dispatching tasks to a queue where **no worker is currently polling**. Every task sent to this queue will sit unprocessed. Workflows waiting on tasks from this queue will eventually time out.\n\n### Immediate Actions\n\n1. **Identify the affected queue and task type** from the alert row (`attributes.temporal_task_queue`, `attributes.task_type`). A queue may have both Workflow and Activity task types — check both.\n\n2. **Check worker process health** for the service registered to this task queue:\n   - Are worker pods/containers running and passing health checks?\n   - Have any worker deployments been rolled back or scaled to zero?\n   - Are worker processes crashing on startup (check application logs)?\n\n3. **Verify network connectivity**: Workers long-poll the Temporal Cloud gRPC endpoint. Check:\n   - DNS resolution for the Temporal Cloud endpoint\n   - TLS certificate validity\n   - Firewall/security-group rules\n   - Temporal Cloud service status (https://status.temporal.io)\n\n4. **Check the task namespace and region**: Confirm workers are configured with the correct namespace and Temporal Cloud region. A misconfigured namespace or wrong gRPC endpoint will result in workers polling a different queue than expected.\n\n5. **Quantify the damage**: Check `approximate_backlog_count` for the same queue — the backlog shows how many tasks have accumulated since workers went offline.\n   ```esql\n   TS metrics-temporal.cloud_metrics.otel-*\n   | STATS backlog = MAX(AVG_OVER_TIME(metrics.temporal_cloud_v1_approximate_backlog_count))\n       BY attributes.temporal_namespace, attributes.temporal_task_queue, attributes.task_type\n   | SORT backlog DESC\n   | LIMIT 10\n   ```\n\n6. **Recovery**: Once workers are restored, monitor `poll_success_count` to confirm tasks are being claimed. The backlog should begin draining within seconds of workers reconnecting.\n\n### False Positives\n\n- A brief no-poller condition during a rolling worker deployment is normal. The `alertDelay.active: 3` setting requires the condition to be true for 3 consecutive evaluation periods (15 minutes at 5m interval) before alerting.\n- Queues that process low-frequency events may legitimately have periods with no polls if there are no tasks — `no_poller_tasks_count` only triggers when tasks actually arrive with no poller, so this is a true signal of both task arrival and worker absence.\n\n### Escalation\n\nIf workers cannot be restored within 10 minutes and `workflow_timeout_count` is rising, notify the on-call SRE and consider whether affected workflows need to be terminated and restarted once workers recover."
+      },
+      "dashboards": [
+        {
+          "id": "temporal_otel-5e3e5a3c-5eaf-4556-af1e-72a001264380"
+        }
+      ]
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "TS metrics-temporal.cloud_metrics.otel-*\n// no_poller_tasks_count only emits when tasks arrive with zero workers; any non-zero value is critical\n| STATS no_poller_rate = SUM(AVG_OVER_TIME(metrics.temporal_cloud_v1_no_poller_tasks_count))\n    BY attributes.temporal_namespace, attributes.temporal_task_queue, attributes.task_type\n// Any task arriving with no poller is a signal of worker absence\n| WHERE no_poller_rate > 0\n| SORT no_poller_rate DESC\n| LIMIT 20"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 5,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "attributes.temporal_task_queue",
+      "termSize": 20,
+      "excludeHitsFromPreviousRun": true
+    }
+  }
+}

@@ -35,11 +35,35 @@ processors:
       if: ctx.event?.original != null
       patterns:
         - "%{SYSLOG_HEADER}%{GREEDYDATA:message}"
+        - "^%{BSD_SYSLOG_HEADER}%{GREEDYDATA:message}"
       pattern_definitions:
         SYSLOG_HEADER: "%{OPTIONAL_PRIORITY}%{TIMESTAMP_ISO8601:@timestamp}\\s+%{USER:aruba.hardware.device}\\s+%{DATA:log.syslog.appname}%{PROC_ID}\\s+%{WORD:aruba.event_type}\\|(?:%{OPTIONAL_HEADER})?"
-        PROC_ID: "(\\[%{POSINT:log.syslog.procid}\\]:|\\s+%{POSINT:log.syslog.procid}\\s+- -)"
+        PROC_ID: "(\\[%{POSINT:log.syslog.procid}\\]:?|\\s+%{POSINT:log.syslog.procid}\\s+- -)"
         OPTIONAL_HEADER: "%{POSINT:event.code}\\|%{USER:log.level}\\|(?:%{USER:aruba.component.category})?\\|(?:%{DATA:aruba.sequence})?\\|"
         OPTIONAL_PRIORITY: "(?:<%{NONNEGINT:log.syslog.priority:long}>(?:%{NONNEGINT})?\\s+)?"
+        BSD_PRIORITY: "(?:<%{NONNEGINT:log.syslog.priority:long}>)?"
+        BSD_APPNAME: "[^:\\s]+"
+        BSD_SYSLOG_HEADER: "%{BSD_PRIORITY}%{SYSLOGTIMESTAMP:_temp.timestamp}\\s+%{USER:aruba.hardware.device}\\s+(?:%{NONNEGINT:log.syslog.procid}\\s+)?%{BSD_APPNAME:log.syslog.appname}:\\s+"
+  - rename:
+      tag: rename_tz_offset_bsd
+      if: ctx._temp?.timestamp != null
+      field: _conf.tz_offset
+      target_field: event.timezone
+      ignore_missing: true
+  - set:
+      tag: set_timezone_bsd
+      if: ctx._temp?.timestamp != null && ctx.event?.timezone == null
+      field: event.timezone
+      value: UTC
+  - date:
+      tag: date_bsd_timestamp
+      if: ctx._temp?.timestamp != null
+      field: _temp.timestamp
+      target_field: "@timestamp"
+      formats:
+        - "MMM d HH:mm:ss"
+        - "MMM  d HH:mm:ss"
+      timezone: "{{{event.timezone}}}"
   - grok:
       field: aruba.sequence
       if: ctx.aruba?.sequence != null && ctx.aruba.sequence.contains("/")
@@ -1072,6 +1096,7 @@ processors:
         - "^BPDU received on admin edge port %{GREEDYDATA:aruba.port}"
         - "^Port %{DATA:aruba.port} (un)?blocked on CIST"
         - "^Port %{DATA:aruba.port} (un)?blocked on MST%{GREEDYDATA:aruba.instance.id}"
+        - "^Throttled %{NUMBER:aruba.throttle_count:long} Messages"
   - dissect:
       field: message
       tag: mstp_event_2019
@@ -6017,6 +6042,8 @@ processors:
       tag: remove_17ab9d7b
       field:
         - _temp.config
+        - _temp.timestamp
+        - _conf
       ignore_missing: true
 
   - remove:

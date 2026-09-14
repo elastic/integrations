@@ -15,20 +15,20 @@ pass=0
 fail=0
 
 # ---------------------------------------------------------------------------
-# Mock: mage — per-target exit code control.
-#   MOCK_MAGE_VALIDATE_EXIT controls ValidateBackportsInventory (default 0 = pass)
-#   MOCK_MAGE_CHECK_EXIT    controls CheckBackportBranchActive  (default 0 = active,
-#                                                                        1 = inactive,
-#                                                                        2 = error)
+# Mock: backport binary — per-subcommand exit code control.
+#   MOCK_BACKPORT_VALIDATE_EXIT controls validate-inventory (default 0 = pass)
+#   MOCK_BACKPORT_CHECK_EXIT    controls check-active       (default 0 = active,
+#                                                                    1 = inactive,
+#                                                                    2 = error)
 # ---------------------------------------------------------------------------
-mage() {
+backport() {
     case "$1" in
-        ValidateBackportsInventory) return "${MOCK_MAGE_VALIDATE_EXIT:-0}" ;;
-        CheckBackportBranchActive)  return "${MOCK_MAGE_CHECK_EXIT:-0}" ;;
+        validate-inventory) return "${MOCK_BACKPORT_VALIDATE_EXIT:-0}" ;;
+        check-active)       return "${MOCK_BACKPORT_CHECK_EXIT:-0}" ;;
     esac
 }
-MOCK_MAGE_VALIDATE_EXIT=0
-MOCK_MAGE_CHECK_EXIT=0
+MOCK_BACKPORT_VALIDATE_EXIT=0
+MOCK_BACKPORT_CHECK_EXIT=0
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -132,7 +132,7 @@ run_generate "${OLD}" "${NEW}" "true" "" "${OUT}"
 assert_equals "existing entry: no steps generated" "" "$(cat "${OUT}")"
 
 # ---------------------------------------------------------------------------
-# Test: inactive entry (mage returns 1) is skipped
+# Test: inactive entry (backport check-active returns 1) is skipped
 # ---------------------------------------------------------------------------
 echo "--- inactive entry skipped"
 
@@ -142,16 +142,16 @@ write_inventory "${NEW}" \
     "backport-aws-1.19" "aws" "1.19.5" "abc123" "false" \
     "backport-aws-2.0"  "aws" "2.0.0"  "def456" "true"
 
-MOCK_MAGE_CHECK_EXIT=1
+MOCK_BACKPORT_CHECK_EXIT=1
 run_generate "${OLD}" "${NEW}" "true" "" "${OUT}"
-MOCK_MAGE_CHECK_EXIT=0
+MOCK_BACKPORT_CHECK_EXIT=0
 
 assert_equals "inactive entry: no steps generated" "" "$(cat "${OUT}")"
 
 # ---------------------------------------------------------------------------
-# Test: mage error (exit code 2) causes function to return non-zero
+# Test: backport check-active error (exit code 2) causes function to return non-zero
 # ---------------------------------------------------------------------------
-echo "--- mage error propagated"
+echo "--- backport error propagated"
 
 write_inventory "${OLD}" \
     "backport-aws-1.19" "aws" "1.19.5" "abc123" "false"
@@ -159,16 +159,16 @@ write_inventory "${NEW}" \
     "backport-aws-1.19" "aws" "1.19.5" "abc123" "false" \
     "backport-aws-2.0"  "aws" "2.0.0"  "def456" "false"
 
-MOCK_MAGE_CHECK_EXIT=2
+MOCK_BACKPORT_CHECK_EXIT=2
 err_exit=0
 : > "${OUT}"
 generate_trigger_pipeline "${OLD}" "${NEW}" "true" "" "${OUT}" "" "" || err_exit=$?
-MOCK_MAGE_CHECK_EXIT=0
+MOCK_BACKPORT_CHECK_EXIT=0
 
-assert_exit_code "mage error: non-zero exit returned" "1" "${err_exit}"
+assert_exit_code "backport error: non-zero exit returned" "1" "${err_exit}"
 
 # ---------------------------------------------------------------------------
-# Test: ValidateBackportsInventory failure causes function to return non-zero
+# Test: validate-inventory failure causes function to return non-zero
 # ---------------------------------------------------------------------------
 echo "--- validate inventory failure returns non-zero"
 
@@ -178,11 +178,11 @@ write_inventory "${NEW}" \
     "backport-aws-1.19" "aws" "1.19.5" "abc123" "false" \
     "backport-aws-2.0"  "aws" "2.0.0"  "def456" "false"
 
-MOCK_MAGE_VALIDATE_EXIT=1
+MOCK_BACKPORT_VALIDATE_EXIT=1
 val_exit=0
 : > "${OUT}"
 generate_trigger_pipeline "${OLD}" "${NEW}" "true" "" "${OUT}" "" "" || val_exit=$?
-MOCK_MAGE_VALIDATE_EXIT=0
+MOCK_BACKPORT_VALIDATE_EXIT=0
 
 assert_exit_code "validate failure: non-zero exit returned" "1" "${val_exit}"
 

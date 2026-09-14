@@ -729,13 +729,20 @@ processors:
       lang: painless
       if: ctx.event.code == "7"
       source: |-
+        def status = null;
         if (ctx.winlog?.event_data?.Signed == 'true') {
-          ctx.dll.code_signature.status = "trusted";
+          status = "trusted";
         } else if (ctx.winlog?.event_data?.SignatureStatus == "Unavailable") {
-          ctx.dll.code_signature.status = "Unavailable";
+          status = "Unavailable";
         } else if (ctx.winlog?.event_data?.Signed instanceof String && ctx.winlog.event_data.Signed.startsWith("failed:")) {
-          ctx.dll.code_signature.status = ctx.winlog.event_data.Signed;
+          status = ctx.winlog.event_data.Signed;
         }
+        if (status == null) {
+          return;
+        }
+        ctx.dll = ctx.dll ?: [:];
+        ctx.dll.code_signature = ctx.dll.code_signature ?: [:];
+        ctx.dll.code_signature.status = status;
   - set:
       field: dll.hash
       copy_from: _temp.hashes
