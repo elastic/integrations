@@ -5,15 +5,15 @@ go 1.26.0
 require (
 	github.com/Masterminds/semver/v3 v3.5.0
 	github.com/blang/semver v3.5.1+incompatible
-	github.com/cli/go-gh/v2 v2.13.0
-	github.com/elastic/elastic-package v0.126.3
+	github.com/cli/go-gh/v2 v2.16.0
+	github.com/elastic/elastic-package v0.126.4
 	github.com/elastic/go-licenser v0.4.2
 	github.com/elastic/go-ucfg v0.9.1
 	github.com/elastic/package-registry v1.40.0
 	github.com/magefile/mage v1.17.2
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.12.1
-	golang.org/x/mod v0.40.0
+	golang.org/x/mod v0.41.0
 	golang.org/x/tools v0.49.0
 	gopkg.in/yaml.v3 v3.0.1
 	gotest.tools/gotestsum v1.13.0
@@ -50,18 +50,18 @@ require (
 	github.com/bitfield/gotestdox v0.2.2 // indirect
 	github.com/blang/semver/v4 v4.0.0 // indirect
 	github.com/brianvoe/gofakeit/v7 v7.1.2 // indirect
-	github.com/cbroglie/mustache v1.4.1 // indirect
+	github.com/cbroglie/mustache v1.4.2 // indirect
 	github.com/cenkalti/backoff/v5 v5.0.3 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/chai2010/gettext-go v1.0.2 // indirect
 	github.com/charmbracelet/bubbles v1.0.0 // indirect
 	github.com/charmbracelet/bubbletea v1.3.10 // indirect
 	github.com/charmbracelet/colorprofile v0.4.1 // indirect
-	github.com/charmbracelet/lipgloss v1.1.1-0.20250319133953-166f707985bc // indirect
+	github.com/charmbracelet/lipgloss v1.1.1-0.20250404203927-76690c660834 // indirect
 	github.com/charmbracelet/x/ansi v0.11.6 // indirect
 	github.com/charmbracelet/x/cellbuf v0.0.15 // indirect
 	github.com/charmbracelet/x/term v0.2.2 // indirect
-	github.com/cli/safeexec v1.0.0 // indirect
+	github.com/cli/safeexec v1.0.1 // indirect
 	github.com/clipperhouse/displaywidth v0.10.0 // indirect
 	github.com/clipperhouse/uax29/v2 v2.6.0 // indirect
 	github.com/cloudflare/circl v1.6.3 // indirect
@@ -240,7 +240,7 @@ require (
 	google.golang.org/genproto v0.0.0-20260526163538-3dc84a4a5aaa // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20260819154853-08b0e4226688 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20260819154853-08b0e4226688 // indirect
-	google.golang.org/grpc v1.83.1 // indirect
+	google.golang.org/grpc v1.83.2 // indirect
 	google.golang.org/protobuf v1.36.12 // indirect
 	gopkg.in/evanphx/json-patch.v4 v4.13.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
