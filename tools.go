@@ -7,7 +7,9 @@
 package main
 
 import (
+	_ "github.com/magefile/mage"
 	_ "golang.org/x/tools/cmd/goimports"
+	_ "gotest.tools/gotestsum"
 
 	_ "github.com/elastic/elastic-package"
 	_ "github.com/elastic/go-licenser"
