@@ -50,10 +50,9 @@ processors:
         }
         String line = ctx.event.original;
         int typeKey = line.startsWith('node=') ? line.indexOf(' type=') + 1 : 0;
+        if (!line.startsWith('type=', typeKey)) return false;
         int typeValueEnd = line.indexOf(' msg=audit(', typeKey);
-        if (typeValueEnd < 0 || !line.startsWith('type=', typeKey)) {
-          return false;
-        }
+        if (typeValueEnd < 0) return false;
         String recordType = line.substring(typeKey + 'type='.length(), typeValueEnd);
         return ['SYSCALL', 'PATH', 'CWD', 'PROCTITLE', 'EXECVE', 'SOCKADDR', 'BPRM_FCAPS', 'LOGIN', 'CONFIG_CHANGE', 'NETFILTER_CFG'].contains(recordType);
       field: event.original
