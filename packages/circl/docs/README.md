@@ -15,11 +15,11 @@ This integration works against the free public instance at `https://vulnerabilit
 
 This integration is compatible with Vulnerability-Lookup **v3.0.0 and later**, which is when the `/api/kev/` endpoint first shipped. **v4.0.0 or later is strongly recommended**: earlier releases lacked the unique tiebreaker in the pagination sort order, and because bulk imports share a single assertion timestamp, paginating over that data could silently produce duplicate and skipped records.
 
-The public CIRCL instance runs v5.5.0. You can check the version of any instance by reading `info.version` from `{url}/api/swagger.json`.
+The public CIRCL instance runs v5.5.0. You can check the version of any instance by reading `info.version` from `<instance-url>/api/swagger.json`.
 
 ### How it works
 
-The integration polls `GET {url}/api/kev/` on a schedule using the Common Expression Language (CEL) input, walking the paginated result set until the catalog is exhausted.
+The integration polls `GET <instance-url>/api/kev/` on a schedule using the Common Expression Language (CEL) input, walking the paginated result set until the catalog is exhausted.
 
 On the **first run** the integration performs a complete catalog backfill, collecting every assertion the instance holds. On **subsequent runs** it requests only records created on or after the date of the previous poll, which keeps steady-state collection to a small number of requests.
 
@@ -63,9 +63,9 @@ No setup is required in Vulnerability-Lookup. The KEV endpoints are readable wit
 
 Optionally, you may supply an API key. A key does not grant access to any additional KEV data — it only moves the client from the anonymous rate-limit tier of 20 requests per minute to the per-key tier of 40 requests per minute. Since a complete catalog backfill takes only a handful of requests, most deployments do not need one. To obtain a key on the public instance:
 
-1. Register an account at `{url}/user/signup`.
+1. Register an account at `<instance-url>/user/signup`.
 2. Confirm your email address. An unconfirmed account returns HTTP 403 `Account is not confirmed` even though a key has already been generated for it.
-3. Read the key from `{url}/user/profile`.
+3. Read the key from `<instance-url>/user/profile`.
 
 Keys do not expire and are rotated rather than renewed. No role or permission is needed to read KEV data.
 
@@ -98,7 +98,7 @@ A note on **Initial Interval**, because it does not behave the way the name sugg
 
 ## Troubleshooting
 
-- No data is being collected: Confirm the agent host can reach the instance over HTTPS on port 443, and that the configured URL is the base URL of the instance without the `/api` suffix. Verify the endpoint is reachable with `curl "{url}/api/kev/?per_page=1"`, which should return JSON without requiring any credential.
+- No data is being collected: Confirm the agent host can reach the instance over HTTPS on port 443, and that the configured URL is the base URL of the instance without the `/api` suffix. Verify the endpoint is reachable with `curl "<instance-url>/api/kev/?per_page=1"`, which should return JSON without requiring any credential.
 
 - Collection stalls and then reports an error after about 30 seconds: The public instance sits behind a cache whose backend-fetch timeout is 30 seconds, and a small fraction of cache-miss requests return a transient HTTP 503 after stalling for that long. These recover on the next attempt. This is why the HTTP client timeout defaults to `120s` — do not lower it below 30 seconds.
 
@@ -155,7 +155,7 @@ To collect logs via API endpoint, configure the following parameters:
 
 This integration uses the following API:
 
-* `GET {url}/api/kev/` — lists GCVE-BCP-07 KEV assertions across every catalog on the instance, with offset pagination and an optional day-granular date filter. This is the same endpoint and pagination pattern that Vulnerability-Lookup's own instance-to-instance synchronization service uses.
+* `GET <instance-url>/api/kev/` — lists GCVE-BCP-07 KEV assertions across every catalog on the instance, with offset pagination and an optional day-granular date filter. This is the same endpoint and pagination pattern that Vulnerability-Lookup's own instance-to-instance synchronization service uses.
 
 ### Vendor documentation links
 
@@ -168,7 +168,7 @@ This integration uses the following API:
 
 #### KEV
 
-The `kev` data stream provides Known Exploited Vulnerability assertions from `GET {url}/api/kev/`, in the GCVE-BCP-07 format, covering every KEV catalog present on the instance.
+The `kev` data stream provides Known Exploited Vulnerability assertions from `GET <instance-url>/api/kev/`, in the GCVE-BCP-07 format, covering every KEV catalog present on the instance.
 
 Fields that are common to all assertions are mapped to ECS. Evidence supplied by the asserting catalog varies in shape from one catalog to the next, so the highest-value keys are promoted to named fields under `circl.kev.*` and the remainder are retained in the flattened `circl.kev.evidence.details` object.
 
