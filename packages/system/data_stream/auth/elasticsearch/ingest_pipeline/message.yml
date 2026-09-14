@@ -573,7 +573,12 @@ processors:
           ctx.event = [:];
         }
         ctx.event.action = action;
-        ctx.event.type = [eventType];
+        if (ctx.event.type == null) {
+          ctx.event.type = [];
+        }
+        if (!ctx.event.type.contains(eventType)) {
+          ctx.event.type.add(eventType);
+        }
   - convert:
       tag: convert_dropped-ip
       field: system.auth.ssh.dropped_ip
@@ -716,6 +721,12 @@ processors:
           }
           if (msg.startsWith('new group:') || msg.startsWith('group added to ')) {
             ctx.event.action = 'group-created';
+            int userTypeIndex = ctx.event.type.indexOf('user');
+            if (userTypeIndex >= 0) {
+              ctx.event.type.set(userTypeIndex, 'group');
+            } else if (!ctx.event.type.contains('group')) {
+              ctx.event.type.add('group');
+            }
             return;
           }
           if (msg.startsWith("delete user ")) {
@@ -724,6 +735,12 @@ processors:
           }
           if (msg.startsWith("group '") || msg.startsWith('removed group ') || msg.startsWith('removed shadow group ')) {
             ctx.event.action = 'group-deleted';
+            int userTypeIndex = ctx.event.type.indexOf('user');
+            if (userTypeIndex >= 0) {
+              ctx.event.type.set(userTypeIndex, 'group');
+            } else if (!ctx.event.type.contains('group')) {
+              ctx.event.type.add('group');
+            }
             return;
           }
         }
