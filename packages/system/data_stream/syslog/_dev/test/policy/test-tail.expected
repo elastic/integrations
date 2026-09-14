@@ -1,0 +1,44 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: system
+      name: test-tail-system
+      streams:
+        - condition: true
+          data_stream:
+            dataset: system.syslog
+          include_matches:
+            - SYSLOG_FACILITY=0
+            - SYSLOG_FACILITY=1
+            - SYSLOG_FACILITY=2
+            - SYSLOG_FACILITY=3
+            - SYSLOG_FACILITY=5
+            - SYSLOG_FACILITY=6
+            - SYSLOG_FACILITY=7
+            - SYSLOG_FACILITY=8
+            - SYSLOG_FACILITY=9
+            - SYSLOG_FACILITY=11
+            - SYSLOG_FACILITY=12
+            - SYSLOG_FACILITY=15
+          seek: tail
+          tags: null
+          type: journald
+      type: journald
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-system.syslog-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references: []
