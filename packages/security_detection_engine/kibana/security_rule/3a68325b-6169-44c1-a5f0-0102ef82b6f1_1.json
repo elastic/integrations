@@ -1,0 +1,129 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects successful GKE pod exec sessions where the executed command implies curl or wget fetching an HTTPS URL. Attackers with pods/exec often run one-liners to stage tooling, pull scripts or binaries, or exfiltrate data over HTTPS\u2014activity that should be rare compared to shells, debuggers, or expected health checks. Common cluster health, localhost, and OIDC/JWKS endpoint patterns are excluded to reduce benign automation noise. GKE records the command in gcp.audit.labels.command.gke.io/command when an explicit command is passed to exec.",
+        "false_positives": [
+            "Approved runbooks or support sessions may use kubectl exec with curl/wget to test egress or download vendor tools."
+        ],
+        "from": "now-6m",
+        "index": [
+            "logs-gcp.audit-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "client.user.email",
+                "source.ip",
+                "user_agent.original",
+                "event.action",
+                "event.outcome",
+                "event.type",
+                "gcp.audit.labels.command.gke.io/command",
+                "gcp.audit.resource_name",
+                "data_stream.namespace"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "GKE Pod Exec with Curl or Wget to HTTPS",
+        "note": "## Triage and analysis\n\n### Investigating GKE Pod Exec with Curl or Wget to HTTPS\n\nThis alert fires when a successful pods/exec API call includes a curl or wget command targeting HTTPS.\nReview `gcp.audit.labels.command.gke.io/command` for the full command and destination URL.\n\n### Possible investigation steps\n\n- Confirm who may exec into the target namespace: `client.user.email`, source IP, and user agent (kubectl, CI, automation).\n- Map `gcp.audit.resource_name` to the pod/workload owner and retrieve the exact command from the alert document.\n- Search for adjacent audit events from the same identity: secret reads, additional execs, RBAC changes, or anonymous access.\n- If malicious, revoke credentials used for exec, review RoleBindings for pods/exec, and inspect the pod for dropped artifacts.\n\n### False positive analysis\n\n- Approved egress or tool-download tests may match; allowlist those identities after validation.\n- Some cluster components use HTTPS to kubernetes.default.svc or .well-known endpoints; expand exclusions if needed.\n\n### Response and remediation\n\n- Rotate secrets accessible from the pod, cordon or delete the workload if compromised, and tighten RBAC so only\n  required principals retain pods/exec on sensitive namespaces.\n",
+        "query": "data_stream.dataset:gcp.audit and service.name:\"k8s.io\" and event.outcome:success and\nevent.type:start and\nevent.action:(\"io.k8s.core.v1.pods.exec.create\" or \"io.k8s.core.v1.pods.exec.get\") and\ngcp.audit.labels.command.gke.io/command:(\n  (*curl*https* or *wget*https*) and not (\n    */.well-known/jwks.json* or */.well-known/openid-configuration* or\n    */api/v1/health* or */healthz* or */livez* or */readyz* or\n    */openid-connect/certs* or */openid/v1/jwks* or\n    *127.0.0.1* or *kubernetes.default.svc* or *localhost*\n  )\n)\n",
+        "references": [
+            "https://attack.mitre.org/techniques/T1609/",
+            "https://attack.mitre.org/techniques/T1105/"
+        ],
+        "related_integrations": [
+            {
+                "integration": "audit",
+                "package": "gcp",
+                "version": ">=2.41.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "gcp.audit.labels.command.gke.io/command",
+                "type": "unknown"
+            },
+            {
+                "ecs": true,
+                "name": "service.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "3a68325b-6169-44c1-a5f0-0102ef82b6f1",
+        "setup": "The GCP Fleet integration with GKE audit logs enabled is required to be compatible with this rule.",
+        "severity": "high",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: Kubernetes",
+            "Data Source: GCP",
+            "Data Source: GCP Audit Logs",
+            "Data Source: Google Cloud Platform",
+            "Use Case: Threat Detection",
+            "Tactic: Execution",
+            "Tactic: Command and Control",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1609",
+                        "name": "Container Administration Command",
+                        "reference": "https://attack.mitre.org/techniques/T1609/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0011",
+                    "name": "Command and Control",
+                    "reference": "https://attack.mitre.org/tactics/TA0011/"
+                },
+                "technique": [
+                    {
+                        "id": "T1105",
+                        "name": "Ingress Tool Transfer",
+                        "reference": "https://attack.mitre.org/techniques/T1105/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 1
+    },
+    "id": "3a68325b-6169-44c1-a5f0-0102ef82b6f1_1",
+    "type": "security-rule"
+}

@@ -147,6 +147,16 @@ NOTE: The indices stats are node-specific. That means for example the total numb
 
 {{fields "pending_tasks"}}
 
+### Security stats
+
+`security_stats` interrogates the [Security Stats API](https://www.elastic.co/docs/api/doc/elasticsearch/operation/operation-security-get-stats) endpoint to fetch per-node security statistics. Currently this surfaces the Document Level Security (DLS) bitset cache metrics for each node, which are useful for understanding the memory footprint and cache efficiency of DLS enforcement.
+
+This data stream requires Elasticsearch 9.2.0 or later. On earlier versions the Security Stats API is not available and no metrics will be collected.
+
+{{event "security_stats"}}
+
+{{fields "security_stats"}}
+
 ### Shard
 
 `shard` interrogates the

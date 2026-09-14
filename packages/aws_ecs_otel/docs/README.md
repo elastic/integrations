@@ -36,7 +36,9 @@ Alert rule templates require Elastic Stack version 9.2.0 or later.
 
 | Name | Description |
 |---|---|
+| [AWS ECS OTel] CPU reservation high | Alerts when the percentage of CPU units reserved by running tasks approaches the cluster's total registered CPU capacity. High reservation means new tasks cannot be placed without adding capacity. |
 | [AWS ECS OTel] CPU utilization high | Alerts when average CPU utilization of reserved task CPU exceeds a threshold. Sustained high CPU throttles workloads and raises application latency. |
+| [AWS ECS OTel] Memory reservation high | Alerts when the percentage of memory reserved by running tasks approaches the cluster's total registered memory capacity. High reservation means new tasks cannot be placed without adding capacity. |
 | [AWS ECS OTel] Memory utilization high | Alerts when average memory utilization of reserved task memory exceeds a threshold. Sustained high memory risks OOM kills and task churn. |
 
 </details>

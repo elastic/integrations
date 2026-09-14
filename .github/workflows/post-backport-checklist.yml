@@ -28,12 +28,13 @@ jobs:
       - uses: actions/checkout@v7
 
       - name: Set up Go
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@v7
         with:
-          go-version-file: .go-version
+          # Use the backport tool's own Go version (pinned to main's version).
+          go-version-file: cmd/backport/.go-version
 
-      - name: Install mage
-        run: go install github.com/magefile/mage
+      - name: Build backport tool
+        run: mkdir -p "$GITHUB_WORKSPACE/build" && go build -C cmd/backport -o "$GITHUB_WORKSPACE/build/backport" .
 
       - name: Download artifact
         # continue-on-error so a missing artifact (e.g. detect job was skipped due to
@@ -96,10 +97,10 @@ jobs:
           fi
 
           # Render the new comment body. The existing body is piped into stdin so
-          # the mage target can parse previously-checked branches and preserve their
-          # state. Prints nothing when no package has any active branch.
+          # the backport tool can parse previously-checked branches and preserve
+          # their state. Prints nothing when no package has any active branch.
           NEW_BODY=$(printf '%s' "$EXISTING_BODY" | \
-            mage -d "$GITHUB_WORKSPACE" renderBackportChecklist "$ARTIFACT")
+            "$GITHUB_WORKSPACE/build/backport" render-checklist "$ARTIFACT")
 
           if [[ -z "$NEW_BODY" ]]; then
             echo "No active backport branches — nothing to post"
@@ -112,13 +113,9 @@ jobs:
           printf '%s' "$NEW_BODY" > "$BODY_FILE"
 
           if [[ -n "$COMMENT_ID" ]]; then
-            gh api --method PATCH \
-              "repos/$REPOSITORY/issues/comments/$COMMENT_ID" \
-              --field body=@"$BODY_FILE"
-            echo "Updated checklist comment #$COMMENT_ID on PR #$PR_NUMBER"
-          else
-            gh api --method POST \
-              "repos/$REPOSITORY/issues/$PR_NUMBER/comments" \
-              --field body=@"$BODY_FILE"
-            echo "Created checklist comment on PR #$PR_NUMBER"
+            gh api --method DELETE "repos/$REPOSITORY/issues/comments/$COMMENT_ID"
           fi
+          gh api --method POST \
+            "repos/$REPOSITORY/issues/$PR_NUMBER/comments" \
+            --field body=@"$BODY_FILE"
+          echo "Recreated checklist comment on PR #$PR_NUMBER"

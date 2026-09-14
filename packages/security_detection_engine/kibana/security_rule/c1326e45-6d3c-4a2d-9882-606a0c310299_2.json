@@ -1,0 +1,98 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies GenAI agent CLIs started with permission-bypass or auto-approval flags that disable human-in-the-loop guardrails. These modes are intended for isolated sandboxes but are frequently misused on internet-connected developer workstations, allowing prompt injection, compromised dependencies, or malicious skills to execute commands, modify files, or reach sensitive paths without confirmation.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.process-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "GenAI CLI Started with Unsafe Permission Bypass",
+        "note": "## Triage and analysis\n\n### Investigating GenAI CLI Started with Unsafe Permission Bypass\n\nGenAI coding agents normally prompt before running shell commands or editing files. Vendor-supplied bypass flags remove\nthose controls entirely or auto-approve all tool calls. On a networked host this materially increases blast radius from\nprompt injection, poisoned MCP servers, malicious project configs, and autonomous agent workflows.\n\n### Possible investigation steps\n\n- Identify which GenAI tool and bypass flag were used from `process.command_line` and `process.executable`.\n- Determine whether the session was intentional (CI/CD, isolated lab VM) or an interactive developer workstation.\n- Review child processes spawned after startup for credential access, network exfiltration, or persistence.\n- Check for recent GenAI config changes (MCP servers, skills, `.claude/settings.json`, `~/.codex/config.toml`).\n- Correlate with other GenAI-related alerts on the same host and user.\n\n### False positive analysis\n\n- Deliberate use in approved sandbox/CI images with no outbound network access.\n- Internal automation scripts that wrap GenAI CLIs with bypass flags; scope exceptions by host or user group.\n- Each matching process start produces one alert; habitual bypass use in CI or developer workflows may need host or user exceptions.\n\n### Response and remediation\n\n- Remove bypass flags from scripts, shell profiles, and CI job definitions; use default or plan-only permission modes.\n- Rotate API keys and cloud credentials accessible to the user account that ran the agent.\n- Audit GenAI tool configs and MCP servers loaded during the session.\n- Restrict GenAI agent usage policies to disallow permission bypass on production endpoints.\n",
+        "query": "process where event.type == \"start\" and event.action in (\"exec\", \"start\") and\n(\n  (\n    process.args in (\n      \"--dangerously-skip-permissions\",\n      \"--allow-dangerously-skip-permissions\",\n      \"--permission-mode=bypassPermissions\"\n    ) or\n    (process.args == \"--permission-mode\" and process.args == \"bypassPermissions\")\n  ) and\n  (\n    process.name in (\"claude\", \"claude.exe\") or\n    process.executable : (\n      \"*/.local/share/claude/versions/*\",\n      \"*/.claude/downloads/*\",\n      \"*Caskroom/claude-code/*\",\n      \"*\\\\Claude\\\\versions\\\\*\"\n    ) or\n    (process.name in (\"node\", \"node.exe\") and process.args : \"*@anthropic-ai/claude-code*\")\n  )\n) or\n(\n  (\n    process.args in (\"--dangerously-bypass-approvals-and-sandbox\", \"--full-auto\", \"--yolo\") or\n    process.command_line : (\n      \"* -s danger-full-access*\",\n      \"*--sandbox danger-full-access*\",\n      \"*--sandbox=danger-full-access*\",\n      \"*--ask-for-approval never*\",\n      \"*--ask-for-approval=never*\"\n    )\n  ) and\n  (\n    process.name in (\n      \"codex\", \"codex.exe\", \"codex-exec\",\n      \"codex-aarch64-apple-darwin\", \"codex-x86_64-apple-darwin\",\n      \"codex-linux-arm64\", \"codex-linux-x64\"\n    ) or\n    (process.name in (\"node\", \"node.exe\") and process.args : (\"*@openai/codex*\", \"*/codex\", \"*\\\\codex*\"))\n  )\n) or\n(\n  (\n    process.args in (\"--yolo\", \"-y\") or\n    (process.args == \"--approval-mode\" and process.args == \"yolo\") or\n    process.args == \"--approval-mode=yolo\"\n  ) and\n  (\n    process.name in (\"gemini\", \"gemini-cli\", \"gemini.exe\", \"gemini-cli.exe\") or\n    (process.name in (\"node\", \"node.exe\") and process.args : (\"*@google/gemini-cli*\", \"*/gemini\", \"*\\\\gemini*\"))\n  )\n) or\n(\n  (\n    process.args in (\n      \"--yolo\",\n      \"--autopilot\",\n      \"--allow-all\",\n      \"--allow-all-tools\",\n      \"--allow-all-paths\",\n      \"--allow-all-urls\"\n    )\n  ) and\n  (\n    process.name in (\"copilot\", \"copilot.exe\") or\n    (process.name in (\"node\", \"node.exe\") and process.args : (\"*@github/copilot*\", \"*/copilot\", \"*\\\\copilot*\"))\n  )\n) or\n(\n  process.args == \"--dangerously-skip-permissions\" and\n  (\n    process.name in (\"opencode\", \"opencode.exe\", \".opencode\") or\n    process.executable : (\"*opencode-ai*\", \"*\\\\.opencode*\") or\n    (process.name in (\"node\", \"node.exe\") and process.args : (\"*opencode-ai*\", \"*/opencode\", \"*\\\\opencode*\"))\n  )\n)\n",
+        "references": [
+            "https://code.claude.com/docs/en/permission-modes",
+            "https://developers.openai.com/codex/cli/reference",
+            "https://developers.openai.com/codex/agent-approvals-security",
+            "https://google-gemini.github.io/gemini-cli/docs/get-started/configuration.html",
+            "https://specterops.io/blog/2025/11/21/an-evening-with-claude-code/"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": ">=9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.command_line",
+                "type": "wildcard"
+            },
+            {
+                "ecs": true,
+                "name": "process.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "c1326e45-6d3c-4a2d-9882-606a0c310299",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Linux",
+            "OS: macOS",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide",
+            "Domain: LLM",
+            "Tactic: Defense Impairment"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0112",
+                    "name": "Defense Impairment",
+                    "reference": "https://attack.mitre.org/tactics/TA0112/"
+                },
+                "technique": [
+                    {
+                        "id": "T1685",
+                        "name": "Disable or Modify Tools",
+                        "reference": "https://attack.mitre.org/techniques/T1685/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 2
+    },
+    "id": "c1326e45-6d3c-4a2d-9882-606a0c310299_2",
+    "type": "security-rule"
+}

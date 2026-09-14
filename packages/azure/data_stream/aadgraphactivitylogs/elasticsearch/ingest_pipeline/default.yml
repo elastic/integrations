@@ -16,21 +16,22 @@ processors:
   - set:
       field: ecs.version
       value: '8.11.0'
-      tag: set-ecs_version
+      tag: set-ecs_version_6b2cef5e
   - set:
       field: event.kind
       value: event
-      tag: set-event_kind
+      tag: set-event_kind_d452ef2c
   - append:
       field: event.type
       value: access
-      tag: append-event_type
+      tag: append-event_type_f15e15ba
   - rename:
       field: azure
       target_field: azure-eventhub
       ignore_missing: true
-      tag: rename-azure
+      tag: rename-azure_aac23e8a
   - remove:
+      tag: remove_routing_category_681b150d
       field: routing.category
       ignore_missing: true
       description: Remove the routing.category field if it exists.
@@ -39,21 +40,21 @@ processors:
       target_field: event.original
       ignore_missing: true
       if: 'ctx.event?.original == null'
-      tag: rename-message
+      tag: rename-message_4217da53
       description: 'Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.'
   - remove:
       field: message
       ignore_missing: true
       if: 'ctx.event?.original != null'
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
-      tag: remove-message
+      tag: remove-message_facc4822
   - json:
       field: event.original
       target_field: azure.aadgraphactivitylogs
-      tag: json-event_original
+      tag: json-event_original_ec13f69b
   - script:
       description: Convert Azure JSON keys to snake case.
-      tag: azure-json-keys-to-snake-case
+      tag: azure-json-keys-to-snake-case_013f6646
       lang: painless
       source: |
         Map keysToSnakeCase(Map m) {
@@ -94,12 +95,12 @@ processors:
         - azure.aadgraphactivitylogs.properties.__udi_required_fields_tenant_id
         - azure.aadgraphactivitylogs.properties.__udi_required_fields_unique_id
       ignore_missing: true
-      tag: remove-udi_required_fields
+      tag: remove-udi_required_fields_c72ae49a
   - date:
       field: azure.aadgraphactivitylogs.properties.time_generated
       target_field: '@timestamp'
       if: ctx.azure?.aadgraphactivitylogs?.properties?.time_generated != null
-      tag: date-timestamp_from_time_generated
+      tag: date-timestamp_from_time_generated_16ab3aaf
       # ISO8601 is the canonical event-hub shape. Other formats are kept as
       # defensive fallbacks for tenant variants seen in sibling Azure
       # categories.
@@ -116,17 +117,18 @@ processors:
       field: azure.aadgraphactivitylogs.properties.issued_at
       target_field: azure.aadgraphactivitylogs.properties.token_issued_at
       ignore_missing: true
-      tag: rename-properties_issued_at
+      tag: rename-properties_issued_at_fa94cf01
   - date:
       field: azure.aadgraphactivitylogs.properties.token_issued_at
       target_field: azure.aadgraphactivitylogs.properties.token_issued_at
       if: ctx.azure?.aadgraphactivitylogs?.properties?.token_issued_at != null
-      tag: date-token_issued_at
+      tag: date-token_issued_at_65e4cef3
       formats:
         - "M/d/yyyy h:mm:ss a"
         - ISO8601
       on_failure:
         - append:
+            tag: append_error_message_d228018c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   # In the live event-hub shape callerIpAddress is nested under properties.
@@ -135,51 +137,52 @@ processors:
       target_field: source.ip
       type: ip
       ignore_missing: true
-      tag: convert-properties_caller_ip_address
+      tag: convert-properties_caller_ip_address_1e4bb708
       on_failure:
         - rename:
             field: azure.aadgraphactivitylogs.properties.caller_ip_address
             target_field: source.address
             ignore_missing: true
-            tag: rename-properties_caller_ip_address
+            tag: rename-properties_caller_ip_address_4a46fd96
             on_failure:
               - append:
+                  tag: append_error_message_33c5e5f2
                   field: error.message
                   value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - remove:
       field: azure.aadgraphactivitylogs.properties.caller_ip_address
       if: 'ctx.source?.ip != null'
-      tag: remove-properties_caller_ip_address
+      tag: remove-properties_caller_ip_address_76f949b5
       ignore_missing: true
   - set:
       field: client.ip
       value: '{{source.ip}}'
-      tag: set-client_ip
+      tag: set-client_ip_f85c2091
       ignore_empty_value: true
   - set:
       field: service.id
       copy_from: azure.aadgraphactivitylogs.properties.service_principal_id
-      tag: set_service_id
+      tag: set_service_id_447187d0
       ignore_empty_value: true
   - set:
       field: user.id
       copy_from: azure.aadgraphactivitylogs.properties.service_principal_id
-      tag: set_user_id_from_service_principal_id
+      tag: set_user_id_from_service_principal_id_3268a725
       if: ctx.user?.id == null
       ignore_empty_value: true
   - set:
       field: device.id
       copy_from: azure.aadgraphactivitylogs.properties.device_id
-      tag: set_device_id
+      tag: set_device_id_420f4b4c
       ignore_empty_value: true
   - set:
       field: session.id
       copy_from: azure.aadgraphactivitylogs.properties.session_id
-      tag: set_session_id
+      tag: set_session_id_8a8683d2
       ignore_empty_value: true
   - append:
       field: related.ip
-      tag: append-related_ip
+      tag: append-related_ip_7dea03f7
       value: '{{source.ip}}'
       allow_duplicates: false
       if: 'ctx.source?.ip != null'
@@ -188,14 +191,14 @@ processors:
       target_field: event.duration
       type: long
       if: ctx.azure?.aadgraphactivitylogs?.duration_ms != null
-      tag: convert-duration_ms
+      tag: convert-duration_ms_229e89b4
       ignore_failure: true
   - convert:
       field: azure.aadgraphactivitylogs.properties.duration_ms
       target_field: event.duration
       type: long
       if: ctx.azure?.aadgraphactivitylogs?.properties?.duration_ms != null && ctx.event?.duration == null
-      tag: convert-properties-duration_ms
+      tag: convert-properties-duration_ms_74fa7d66
       ignore_failure: true
   - script:
       lang: painless
@@ -204,29 +207,29 @@ processors:
           ctx.event.duration = ctx.event.duration * 1000000;
         }
       ignore_failure: true
-      tag: script-duration
+      tag: script-duration_4552d49c
   - remove:
       field:
         - azure.aadgraphactivitylogs.duration_ms
         - azure.aadgraphactivitylogs.properties.duration_ms
-      tag: remove-duration_ms
+      tag: remove-duration_ms_80e5c546
       if: ctx.event?.duration != null
       ignore_missing: true
   - rename:
       field: azure.aadgraphactivitylogs.location
       target_field: destination.geo.region_name
       ignore_missing: true
-      tag: rename-location
+      tag: rename-location_25518b46
   - rename:
       field: azure.aadgraphactivitylogs.properties.location
       target_field: destination.geo.region_name
       if: ctx.destination?.geo?.region_name == null && ctx.azure?.aadgraphactivitylogs?.properties?.location != null
-      tag: rename-properties-location
+      tag: rename-properties-location_0be49a47
   - remove:
       field:
         - azure.aadgraphactivitylogs.location
         - azure.aadgraphactivitylogs.properties.location
-      tag: remove-location
+      tag: remove-location_26290cea
       if: ctx.destination?.geo?.region_name != null
       ignore_missing: true
   - convert:
@@ -234,63 +237,65 @@ processors:
       target_field: event.action
       type: string
       ignore_missing: true
-      tag: convert-operation_name
+      tag: convert-operation_name_8fc1e25c
       on_failure:
         - append:
+            tag: append_error_message_2b5c5bff
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: azure.aadgraphactivitylogs.tenant_id
       target_field: azure.tenant_id
       ignore_missing: true
-      tag: rename-tenant_id
+      tag: rename-tenant_id_46619137
   - rename:
       field: azure.aadgraphactivitylogs.properties.tenant_id
       target_field: azure.tenant_id
       ignore_missing: true
       if: ctx.azure?.tenant_id == null
-      tag: rename-properties_tenant_id
+      tag: rename-properties_tenant_id_f4e63696
   - remove:
       field:
         - azure.aadgraphactivitylogs.tenant_id
         - azure.aadgraphactivitylogs.properties.tenant_id
-      tag: remove-tenant_id
+      tag: remove-tenant_id_62b20021
       if: ctx.azure?.tenant_id != null
       ignore_missing: true
   - rename:
       field: azure.aadgraphactivitylogs.properties.request_id
       target_field: http.request.id
       ignore_missing: true
-      tag: rename-properties_request_id
+      tag: rename-properties_request_id_72345134
   - rename:
       field: azure.aadgraphactivitylogs.properties.http_method
       target_field: http.request.method
       ignore_missing: true
-      tag: rename-properties_http_method
+      tag: rename-properties_http_method_e9fa1f75
   - uri_parts:
       field: azure.aadgraphactivitylogs.properties.request_uri
       if: ctx.azure?.aadgraphactivitylogs?.properties?.request_uri != null
       keep_original: true
-      tag: uri_parts-properties-request_uri
+      tag: uri_parts-properties-request_uri_037f77f7
       on_failure:
         - append:
+            tag: append_error_message_1e522ba7
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - remove:
       field: azure.aadgraphactivitylogs.properties.request_uri
-      tag: remove-properties_request_uri
+      tag: remove-properties_request_uri_d8cdef48
       if: ctx.url?.original != null
       ignore_missing: true
   - rename:
       field: azure.aadgraphactivitylogs.properties.response_size_bytes
       target_field: http.response.bytes
       ignore_missing: true
-      tag: rename-properties_response_bytes
+      tag: rename-properties_response_bytes_dfcb6397
   - rename:
       field: azure.aadgraphactivitylogs.properties.http_status_code
       target_field: http.response.status_code
       ignore_missing: true
-      tag: rename-properties_http_status_code
+      tag: rename-properties_http_status_code_5bf90f5d
   # `roles` and `wids` arrive as comma-delimited strings with frequent leading
   # whitespace and trailing commas (e.g. " Group.Read.All," or
   # " 0997a1d0-...,"). Normalize first (strip surrounding whitespace/commas)
@@ -301,24 +306,26 @@ processors:
       pattern: '^[\s,]+|[\s,]+$'
       replacement: ''
       if: ctx.azure?.aadgraphactivitylogs?.properties?.roles != null && ctx.azure.aadgraphactivitylogs.properties.roles != ''
-      tag: gsub-properties_roles
+      tag: gsub-properties_roles_95aa7007
       ignore_missing: true
   - split:
       field: azure.aadgraphactivitylogs.properties.roles
       if: ctx.azure?.aadgraphactivitylogs?.properties?.roles != null && ctx.azure.aadgraphactivitylogs.properties.roles != ''
       separator: '\s*,\s*'
-      tag: split-properties_roles
+      tag: split-properties_roles_236f9f58
       on_failure:
         - append:
+            tag: append_error_message_d143d77e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - split:
       field: azure.aadgraphactivitylogs.properties.scopes
       if: ctx.azure?.aadgraphactivitylogs?.properties?.scopes != null && ctx.azure.aadgraphactivitylogs.properties.scopes != ''
       separator: ' '
-      tag: split-properties_scopes
+      tag: split-properties_scopes_f76a0092
       on_failure:
         - append:
+            tag: append_error_message_5c7eae86
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - gsub:
@@ -326,85 +333,89 @@ processors:
       pattern: '^[\s,]+|[\s,]+$'
       replacement: ''
       if: ctx.azure?.aadgraphactivitylogs?.properties?.wids != null && ctx.azure.aadgraphactivitylogs.properties.wids != ''
-      tag: gsub-properties_wids
+      tag: gsub-properties_wids_1d6e24be
       ignore_missing: true
   - split:
       field: azure.aadgraphactivitylogs.properties.wids
       if: ctx.azure?.aadgraphactivitylogs?.properties?.wids != null && ctx.azure.aadgraphactivitylogs.properties.wids != ''
       separator: '\s*,\s*'
-      tag: split-properties_wids
+      tag: split-properties_wids_6695e4b1
       on_failure:
         - append:
+            tag: append_error_message_64ee61cc
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - user_agent:
       field: azure.aadgraphactivitylogs.properties.user_agent
       if: ctx.azure?.aadgraphactivitylogs?.properties?.user_agent != null && ctx.azure.aadgraphactivitylogs.properties.user_agent != ''
-      tag: user_agent-properties_user_agent
+      tag: user_agent-properties_user_agent_197716a5
       on_failure:
         - append:
+            tag: append_error_message_ac5874af
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - remove:
       field: azure.aadgraphactivitylogs.properties.user_agent
-      tag: remove-properties_user_agent
+      tag: remove-properties_user_agent_c211516f
       if: ctx.user_agent != null
       ignore_missing: true
   - rename:
       field: azure.aadgraphactivitylogs.properties.user_id
       target_field: user.id
-      tag: rename-properties_user_id
+      tag: rename-properties_user_id_c44612d3
       if: ctx.azure?.aadgraphactivitylogs?.properties?.user_id != null && ctx.azure.aadgraphactivitylogs.properties.user_id != ''
   - set:
       field: client.user.id
       value: '{{user.id}}'
-      tag: set-client_user_id
+      tag: set-client_user_id_60ed6bdf
       ignore_empty_value: true
   - append:
       field: related.user
       value: '{{user.id}}'
-      tag: append-related_user
+      tag: append-related_user_1a61b0c8
       allow_duplicates: false
       if: 'ctx.user?.id != null'
   - rename:
       field: azure.aadgraphactivitylogs.properties._billed_size
       target_field: azure.aadgraphactivitylogs.properties.billed_size
       if: ctx.azure?.aadgraphactivitylogs?.properties?._billed_size != null
-      tag: rename-properties_billed_size
+      tag: rename-properties_billed_size_672ee31d
   - rename:
       field: azure.aadgraphactivitylogs.properties._is_billable
       target_field: azure.aadgraphactivitylogs.properties.is_billable
       if: ctx.azure?.aadgraphactivitylogs?.properties?._is_billable != null
-      tag: rename-properties_is_billable
+      tag: rename-properties_is_billable_6cc91f51
   - convert:
       field: azure.aadgraphactivitylogs.properties.is_billable
       type: boolean
-      tag: convert-properties_is_billable
+      tag: convert-properties_is_billable_658c8e4f
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_31e88a7d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: azure.aadgraphactivitylogs.properties.client_auth_method
       type: integer
-      tag: convert-properties_client_auth_method
+      tag: convert-properties_client_auth_method_c1fc8118
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_12fccb61
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: azure.aadgraphactivitylogs.properties.time_generated
       target_field: azure.aadgraphactivitylogs.properties.time_generated
       if: ctx.azure?.aadgraphactivitylogs?.properties?.time_generated != null
-      tag: date-properties_time_generated
+      tag: date-properties_time_generated_74d4d99a
       # Order is prioritized by observed frequency for this log
       # category.
       # We expect the first format to be used in 99% of cases.
       # However, we include the other formats seen in other
       # categories as a necessary fallback.
-      formats: 
+      formats:
         - ISO8601
         - "M/d/yyyy h:mm:ss a XXX"
         - "M/d/yyyy h:mm:ss a"
@@ -412,6 +423,7 @@ processors:
         - yyyy-MM-dd'T'H:mm:ss.SSS'Z'
       on_failure:
         - append:
+            tag: append_error_message_70f1acc2
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   # ECS enrichment. Runs after url.path, http.request.method, and
@@ -426,47 +438,47 @@ processors:
       value:
         - iam
         - web
-      tag: set-event_category
+      tag: set-event_category_40181ec2
   - set:
       field: event.type
       value:
         - access
         - info
-      tag: set-event_type-info
+      tag: set-event_type-info_0a1f28d9
       if: ctx.http?.request?.method == null || ctx.http.request.method == 'GET' || ctx.http.request.method == 'HEAD'
   - set:
       field: event.type
       value:
         - access
         - change
-      tag: set-event_type-change
+      tag: set-event_type-change_2ef5d4c5
       if: ctx.http?.request?.method == 'POST' || ctx.http?.request?.method == 'PATCH' || ctx.http?.request?.method == 'PUT'
   - set:
       field: event.type
       value:
         - access
         - deletion
-      tag: set-event_type-deletion
+      tag: set-event_type-deletion_55af211e
       if: ctx.http?.request?.method == 'DELETE'
   - set:
       field: event.outcome
       value: success
-      tag: set-event_outcome-success
+      tag: set-event_outcome-success_1778cb48
       if: ctx.http?.response?.status_code != null && ctx.http.response.status_code >= 200 && ctx.http.response.status_code < 300
   - set:
       field: event.outcome
       value: failure
-      tag: set-event_outcome-failure
+      tag: set-event_outcome-failure_920d8a8a
       if: ctx.http?.response?.status_code != null && ctx.http.response.status_code >= 400
   - set:
       field: event.outcome
       value: unknown
-      tag: set-event_outcome-unknown
+      tag: set-event_outcome-unknown_80b00a90
       if: ctx.http?.response?.status_code != null && ctx.http.response.status_code >= 300 && ctx.http.response.status_code < 400
   - set:
       field: event.id
       copy_from: http.request.id
-      tag: set-event_id
+      tag: set-event_id_db5d8138
       ignore_empty_value: true
 
   # actor_type and app_id stay in azure.aadgraphactivitylogs.properties.* —
@@ -481,12 +493,12 @@ processors:
   - append:
       field: related.user
       value: '{{{azure.aadgraphactivitylogs.properties.app_id}}}'
-      tag: append-related_user-app_id
+      tag: append-related_user-app_id_a1742246
       allow_duplicates: false
       if: ctx.azure?.aadgraphactivitylogs?.properties?.app_id != null && ctx.azure.aadgraphactivitylogs.properties.app_id != ''
   - script:
       lang: painless
-      tag: derive-event_action
+      tag: derive-event_action_3212a66e
       description: >-
         Derive event.action from HTTP method + directory collection in the
         request URI. Examples:
@@ -533,7 +545,7 @@ processors:
 
   - pipeline:
       name: '{{ IngestPipeline "azure-shared-pipeline" }}'
-      tag: pipeline-azure-shared-pipeline
+      tag: pipeline-azure-shared-pipeline_431c6aae
   # url.original is populated by the uri_parts processor above
   # (keep_original: true) and carries the same value that
   # properties.request_uri held before it was removed.
@@ -545,32 +557,35 @@ processors:
         - azure.aadgraphactivitylogs.properties.time_generated
       target_field: _id
       ignore_missing: true
-      tag: fingerprint-id
+      tag: fingerprint-id_8fd61902
   - set:
       field: cloud.account.id
       value: '{{azure.tenant_id}}'
-      tag: set-cloud_account_id
+      tag: set-cloud_account_id_a16bbfe4
       ignore_empty_value: true
   - set:
       field: cloud.region
       value: '{{destination.geo.region_name}}'
-      tag: set-cloud_region
+      tag: set-cloud_region_d432e8db
       ignore_empty_value: true
   - set:
       field: cloud.service.name
       value: 'Azure AD Graph'
-      tag: set-cloud_service_name
+      tag: set-cloud_service_name_46ab0d6f
       ignore_empty_value: true
   - geoip:
+      tag: geoip_client_ip_to_client_geo_90831252
       field: client.ip
       target_field: client.geo
       ignore_missing: true
   - geoip:
+      tag: geoip_source_ip_to_source_geo_da2e41b2
       field: source.ip
       target_field: source.geo
       ignore_missing: true
   # IP Autonomous System (AS) Lookup
   - geoip:
+      tag: geoip_source_ip_to_source_as_28d69883
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
       target_field: source.as
@@ -579,6 +594,7 @@ processors:
         - organization_name
       ignore_missing: true
   - geoip:
+      tag: geoip_client_ip_to_client_as_f17fb2b3
       database_file: GeoLite2-ASN.mmdb
       field: client.ip
       target_field: client.as
@@ -587,23 +603,27 @@ processors:
         - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_source_as_asn_to_source_as_number_a917047d
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
   - rename:
+      tag: rename_source_as_organization_name_to_source_as_organization_name_f1362d0b
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
   - rename:
+      tag: rename_client_as_asn_to_client_as_number_a6e30d01
       field: client.as.asn
       target_field: client.as.number
       ignore_missing: true
   - rename:
+      tag: rename_client_as_organization_name_to_client_as_organization_name_817a526f
       field: client.as.organization_name
       target_field: client.as.organization.name
       ignore_missing: true
   - script:
-      tag: script_to_drop_null_values
+      tag: script_to_drop_null_values_50c8d6aa
       lang: painless
       description: Drops null/empty values recursively.
       source: |-
@@ -623,22 +643,26 @@ processors:
   - set:
       field: event.kind
       value: pipeline_error
-      tag: set_pipeline_error
+      tag: set_pipeline_error_4fd8ffa8
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message_fb774d38
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'

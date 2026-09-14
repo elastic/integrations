@@ -4,9 +4,16 @@ type: journald
 # /var/log/auth.log*, /var/log/secure*
 # This is the equivalent to the filter used by rsyslog:
 # auth,authpriv.*                 /var/log/auth.log
-facilities:
-  - 4
-  - 10
+# SYSLOG_FACILITY field matches are used instead of the `facilities`
+# option because the latter relies on `journalctl --facility`, which
+# requires systemd >= 245 (RHEL 8 ships 239). journalctl ORs matches
+# on the same field, so this is equivalent to the facility filter.
+include_matches:
+  - SYSLOG_FACILITY=4
+  - SYSLOG_FACILITY=10
+{{#each include_matches as |include_match i|}}
+  - '{{include_match}}'
+{{/each}}
 
 {{#if condition }}
 condition: {{condition}}
@@ -16,13 +23,6 @@ condition: {{condition}}
 paths:
 {{#each paths as |path i|}}
   - {{path}}
-{{/each}}
-{{/if}}
-
-{{#if include_matches}}
-include_matches:
-{{#each include_matches as |include_match i|}}
-  - '{{include_match}}'
 {{/each}}
 {{/if}}
 

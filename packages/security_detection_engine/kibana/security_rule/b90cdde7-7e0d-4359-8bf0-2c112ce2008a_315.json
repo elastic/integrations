@@ -1,0 +1,162 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies attempts to bypass User Account Control (UAC) by abusing an elevated COM Interface to launch a rogue Windows ClipUp program. Attackers may attempt to bypass UAC to stealthily execute code with elevated permissions.",
+        "from": "now-9m",
+        "index": [
+            "winlogbeat-*",
+            "logs-endpoint.events.process-*",
+            "logs-windows.sysmon_operational-*",
+            "endgame-*",
+            "logs-m365_defender.event-*",
+            "logs-sentinel_one_cloud_funnel.*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "host.id",
+                "user.id",
+                "process.pid",
+                "process.entity_id",
+                "process.executable",
+                "process.command_line",
+                "process.pe.original_file_name",
+                "process.code_signature.subject_name",
+                "process.code_signature.trusted",
+                "process.hash.sha256",
+                "process.parent.executable",
+                "process.parent.args",
+                "process.Ext.token.elevation_level",
+                "process.Ext.token.integrity_level_name"
+            ]
+        },
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "UAC Bypass Attempt with IEditionUpgradeManager Elevated COM Interface",
+        "note": "## Triage and analysis\n\n### Investigating UAC Bypass Attempt with IEditionUpgradeManager Elevated COM Interface\n\n#### Possible investigation steps\n\n- Does the alert show the IEditionUpgradeManager ClipUp bypass path?\n  - Focus: `process.name`, `process.executable`, `process.parent.name`, `process.parent.args`, and `process.Ext.token.elevation_level`.\n  - Hint: absent token metadata does not lower suspicion; the path and COM parent args still define the bypass path.\n  - Implication: a \"dllhost.exe\" broker, IEditionUpgradeManager CLSID, \"ClipUp.exe\" name, and non-System32 path warrant UAC bypass investigation; high or full elevation raises priority. Concern drops only when later identity and child checks bind to exact servicing or authorized testing.\n\n- Is the non-system ClipUp image a genuine Microsoft servicing component or an attacker-defined payload?\n  - Focus: `process.executable`, `process.hash.sha256`, `process.pe.original_file_name`, `process.code_signature.subject_name`, and `process.code_signature.trusted`.\n  - Hint: absent hash, signature, or PE metadata does not lower suspicion; fall back to path, COM args, command line, and child behavior.\n  - Implication: treat the image as attacker-controlled when unsigned, not Microsoft-signed, mismatched to \"ClipUp.exe\", or in a user-writable root. A Microsoft signer, matching original name, and stable hash reduce suspicion only when the same path ties to the servicing package under review.\n\n- Does the path or runtime metadata fit system-directory spoofing or lookalike staging?\n  - Why: the alert already proves ClipUp ran outside genuine System32; a writable root ending in \"\\system32\\clipup.exe\" is the staging clue.\n  - Focus: `process.executable`, `process.Ext.relative_file_creation_time`, `process.Ext.relative_file_name_modify_time`, and `process.command_line`.\n  - Hint: absent relative timing fields leave the issue unresolved; use path root, command line, signer/hash, and local process history.\n  - Implication: temp, profile, writable-share, or other non-Windows roots ending in \"\\system32\\clipup.exe\" indicate system-directory spoofing, especially with recent create or rename timing. Stable path age and servicing arguments reduce concern only after image identity also fits.\n\n- Did the elevated ClipUp instance start follow-on tooling?\n  - Focus: child process starts where `process.parent.entity_id` matches `process.entity_id`, reviewing `process.name`, `process.executable`, `process.command_line`, and `process.Ext.token.integrity_level_name`. !{investigate{\"description\":\"\",\"label\":\"Child processes launched by the rogue ClipUp instance\",\"providers\":[[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.parent.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"process\",\"valueType\":\"string\"}],[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.parent.pid\",\"queryType\":\"phrase\",\"value\":\"{{process.pid}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"process\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Hint: if `process.entity_id` is absent, recover children with `host.id` + `process.pid` in a tight alert-time window; an empty child search is unresolved, not benign.\n  - Implication: shells, script hosts, LOLBins, installers, or security-control tooling turn the alert into post-elevation execution. No visible child keeps the case scoped to the bypass launch, not closed.\n\n- Where else did this exact ClipUp pattern run?\n  - Focus: matching process starts by `process.hash.sha256`, `process.executable`, `process.parent.args`, and `process.Ext.token.elevation_level`, scoped by `host.id` and `user.id`.\n  - Hint: if the hash or elevation field is absent, pivot on the exact `process.executable` + `process.parent.args` pair and keep the time window tight. !{investigate{\"description\":\"\",\"label\":\"Process events for the same ClipUp path and COM interface\",\"providers\":[[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"process\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.executable\",\"queryType\":\"phrase\",\"value\":\"{{process.executable}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.parent.args\",\"queryType\":\"phrase\",\"value\":\"{{process.parent.args}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n  - Implication: after local evidence remains suspicious or unresolved, use matching path, hash, COM args, and elevation state to scope hosts or users; recurrence is supporting context, not a reason to close over contradictory local evidence.\n\n- Escalate when the COM-brokered non-system ClipUp launch pairs with attacker-defined identity, system-directory spoofing clues, unexpected elevation, or suspicious children. Close only when alert-local process evidence and supported child/history recovery bind to one confirmed servicing package or authorized OS-image test; require external confirmation when telemetry cannot prove that exact activity. Preserve evidence and escalate when answers remain mixed or incomplete.\n\n### False positive analysis\n\n- Windows edition upgrade, activation, or repair servicing can explain ClipUp activity only when evidence converges on one workflow: Microsoft-signed `process.hash.sha256`, expected `process.executable`, IEditionUpgradeManager `process.parent.args`, compatible `process.Ext.token.integrity_level_name` when present, and no suspicious children. If change records are unavailable, require telemetry confirmation from the same signed hash, path, parent args, `host.id`, and `user.id` pattern on the same host.\n- Treat non-System32 ClipUp as an operational anti-pattern outside servicing. The only other benign path is an authorized OS-image or lab test where `process.executable`, `process.hash.sha256`, `process.command_line`, `process.parent.executable`, `process.parent.args`, and `user.id` all match the exact test case. Any unsigned image, writable-profile path, or elevated child tooling contradicts this explanation.\n- Before creating an exception, require a stable benign pattern for `process.executable`, `process.hash.sha256`, `process.parent.args`, `process.Ext.token.integrity_level_name`, and relevant `host.id` or `user.id`. Avoid exceptions on `process.name`, `process.parent.name`, or the COM CLSID alone.\n\n### Response and remediation\n\n- If confirmed benign, reverse temporary containment and record the image identity, broker context, token state, `host.id`, and `user.id` that proved the servicing or deployment workflow. Create an exception only after the same full pattern repeats benignly.\n- If suspicious but unconfirmed, preserve the alert, endpoint timeline export, process tree, non-system ClipUp path and hash, IEditionUpgradeManager parent context, token details, and recovered child-process evidence before containment.\n- If suspicious but unconfirmed, apply reversible containment tied to the findings: block the non-system ClipUp path or hash, end the associated user session when needed, or raise monitoring on the affected `host.id`. Isolate the host only if elevated children, control tampering, or broader suspicious process history raises impact.\n- If confirmed malicious, isolate the host, terminate the rogue ClipUp instance and elevated children after recording their process identifiers, and block the confirmed path or hash. Review the same hash, path, COM parent args, and user across other hosts before deleting artifacts.\n- Eradicate only the staged ClipUp copy, launched payloads, persistence, or launcher artifacts identified during the investigation, then restore affected controls and validate that the Windows servicing path uses the genuine System32 binary.\n- Post-incident hardening: restrict system-binary lookalikes from user-writable paths with WDAC or AppLocker, retain process lineage and token telemetry for elevated COM abuse, and document any missing telemetry or uncovered variant with the preserved evidence set.\n",
+        "query": "process where host.os.type == \"windows\" and event.type == \"start\" and process.name : \"Clipup.exe\" and\n  not process.executable : \"C:\\\\Windows\\\\System32\\\\ClipUp.exe\" and process.parent.name : \"dllhost.exe\" and\n  /* CLSID of the Elevated COM Interface IEditionUpgradeManager */\n  process.parent.args : \"/Processid:{BD54C901-076B-434E-B6C7-17C531F4AB41}\"\n",
+        "references": [
+            "https://github.com/hfiref0x/UACME"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": ">=9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": ">=3.0.0"
+            },
+            {
+                "package": "m365_defender",
+                "version": ">=5.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": ">=1.9.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "b90cdde7-7e0d-4359-8bf0-2c112ce2008a",
+        "setup": "## Setup\n\nThis rule is designed for data generated by [Elastic Defend](https://www.elastic.co/security/endpoint-security), which provides native endpoint detection and response, along with event enrichments designed to work with our detection rules.\n\nSetup instructions: https://ela.st/install-elastic-defend\n\n### Additional data sources\n\nThis rule also supports the following third-party data sources. For setup instructions, refer to the links below:\n\n- [Microsoft Defender XDR](https://ela.st/m365-defender)\n- [SentinelOne Cloud Funnel](https://ela.st/sentinel-one-cloud-funnel)\n- [Sysmon Event ID 1 - Process Creation](https://ela.st/sysmon-event-1-setup)\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Privilege Escalation",
+            "Data Source: Elastic Endgame",
+            "Data Source: Elastic Defend",
+            "Data Source: Sysmon",
+            "Data Source: Microsoft Defender XDR",
+            "Data Source: SentinelOne",
+            "Resources: Investigation Guide",
+            "Tactic: Execution"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0004",
+                    "name": "Privilege Escalation",
+                    "reference": "https://attack.mitre.org/tactics/TA0004/"
+                },
+                "technique": [
+                    {
+                        "id": "T1548",
+                        "name": "Abuse Elevation Control Mechanism",
+                        "reference": "https://attack.mitre.org/techniques/T1548/",
+                        "subtechnique": [
+                            {
+                                "id": "T1548.002",
+                                "name": "Bypass User Account Control",
+                                "reference": "https://attack.mitre.org/techniques/T1548/002/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1559",
+                        "name": "Inter-Process Communication",
+                        "reference": "https://attack.mitre.org/techniques/T1559/",
+                        "subtechnique": [
+                            {
+                                "id": "T1559.001",
+                                "name": "Component Object Model",
+                                "reference": "https://attack.mitre.org/techniques/T1559/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 315
+    },
+    "id": "b90cdde7-7e0d-4359-8bf0-2c112ce2008a_315",
+    "type": "security-rule"
+}

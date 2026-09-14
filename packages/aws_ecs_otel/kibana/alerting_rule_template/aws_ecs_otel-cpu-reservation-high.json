@@ -1,0 +1,48 @@
+{
+  "id": "aws_ecs_otel-cpu-reservation-high",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when the percentage of CPU units reserved by running tasks approaches the cluster's total registered CPU capacity. High reservation means new tasks cannot be placed without adding capacity.",
+    "name": "[AWS ECS OTel] CPU reservation high",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "aws_ecs",
+      "otel"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 3
+    },
+    "flapping": {
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    },
+    "artifacts": {
+      "investigation_guide": {
+        "blob": "## CPU Reservation High\n\n`CPUReservation` is the percentage of total registered CPU units in the cluster that are reserved by running tasks. When this is high, the cluster scheduler cannot place new tasks even if existing tasks are not fully utilising their reserved CPU.\n\nThis is a **cluster-level** metric, distinct from the service-level `CPUUtilization` alert. A cluster can be at 100% reservation while actual CPU utilisation remains low if tasks over-provision their CPU requests.\n\n### Triage Steps\n1. Identify which services are consuming the most CPU reservation — compare task definition CPU values against `CpuUtilized` / `CpuReserved` from Container Insights for actual usage.\n2. Check for pending tasks failing to place due to insufficient CPU — review service events in the ECS console.\n3. For EC2-backed clusters, verify capacity provider auto-scaling is configured and triggering correctly.\n4. Consider right-sizing task CPU reservations if actual utilisation is consistently much lower than the reservation.\n\n### Customisation\n- Default threshold is 80% (AWS recommendation) — lower to 70% for clusters where capacity provider scaling events take longer than a few minutes to add instances.\n- Fargate clusters provision capacity per-task and are not subject to this constraint; this alert is most relevant for EC2-backed ECS clusters."
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "TS metrics-aws.ecs.otel-*\n| WHERE Namespace == \"AWS/ECS\"\n    AND MetricName == \"CPUReservation\"\n    AND stat == \"Average\"\n| STATS avg_cpu_res = AVG(AVG_OVER_TIME(`metrics.amazonaws.com/AWS/ECS/CPUReservation`))\n    BY ClusterName, cloud.region\n// Percent of registered cluster CPU reserved — tune threshold (default: 80%)\n| WHERE avg_cpu_res > 80.0\n| EVAL ecs_cluster = CONCAT(ClusterName, \" (\", cloud.region, \")\")\n| SORT avg_cpu_res DESC"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "ecs_cluster",
+      "termSize": 100,
+      "excludeHitsFromPreviousRun": true
+    }
+  }
+}

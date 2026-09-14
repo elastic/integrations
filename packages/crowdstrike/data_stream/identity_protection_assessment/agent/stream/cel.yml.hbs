@@ -37,6 +37,7 @@ state:
   domains_query: "{ domains }"
 {{/if}}
   assessment_query: "query GetAssessment($domain: String!) { securityAssessment(domain: $domain) { overallScore overallScoreLevel assessmentFactors { riskFactorType likelihood severity } } }"
+  user_agent: Elastic-crowdstrike/{{#if _meta.package.version}}{{_meta.package.version}}{{else}}unknown{{/if}}
 redact:
   fields: ~
 program: |-
@@ -54,7 +55,11 @@ program: |-
           :
             {"query": string(state.domains_query)}
         ).encode_json()
-      ).do_request().as(resp, (resp.StatusCode == 200) ?
+      ).as(req, req.with(
+        {
+          "Header": req.Header.with({"User-Agent": [state.user_agent]}),
+        }
+      )).do_request().as(resp, (resp.StatusCode == 200) ?
         resp.Body.decode_json().as(body,
           (size(body.?errors.orValue([])) > 0) ?
             state.with(
@@ -150,7 +155,11 @@ program: |-
             "domain": string(state.worklist[int(state.next)]),
           },
         }.encode_json()
-      ).do_request().as(resp, (resp.StatusCode == 200) ?
+      ).as(req, req.with(
+        {
+          "Header": req.Header.with({"User-Agent": [state.user_agent]}),
+        }
+      )).do_request().as(resp, (resp.StatusCode == 200) ?
         resp.Body.decode_json().as(body,
           (size(body.?errors.orValue([])) > 0) ?
             state.with(

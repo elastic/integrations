@@ -92,17 +92,6 @@ func LoadOwners(codeownersPath string) (*Owners, error) {
 	return &Owners{inner: inner}, nil
 }
 
-// ParseOwners parses CODEOWNERS content from a string, applying the same
-// single-field exclusion-rule validation that readGithubOwners does when
-// reading from disk. A file that passes mage check never triggers this error.
-func ParseOwners(content string) (*Owners, error) {
-	o, err := scanGithubOwners(strings.NewReader(content), "<in-memory>")
-	if err != nil {
-		return nil, err
-	}
-	return &Owners{inner: o}, nil
-}
-
 // Resolve returns the owners that apply to p, walking up parent directories
 // until an explicit CODEOWNERS entry is found. p must be a CODEOWNERS-style
 // slash-prefixed path (e.g. "/packages/aws/data_stream/cloudtrail"). Returns

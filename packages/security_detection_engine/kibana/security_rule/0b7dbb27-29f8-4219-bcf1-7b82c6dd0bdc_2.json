@@ -1,0 +1,125 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects a successful sign-in by a Member user principal through a legacy authentication client (such as Authenticated SMTP, IMAP4, POP3, Exchange ActiveSync, Exchange Web Services, or other basic-authentication clients) in Microsoft Entra ID, where the user principal has not been seen using a legacy client in the last 7 days. Legacy authentication clients rely on basic authentication, do not support modern authentication or interactive multi-factor authentication, and are frequently abused by adversaries for password spraying and account takeover because they translate into single-factor Resource Owner Password Credentials (ROPC) grants. This is a New Terms rule that surfaces the first occurrence of legacy client authentication for a given user, which is unusual in most modern environments.",
+        "from": "now-9m",
+        "history_window_start": "now-7d",
+        "index": [
+            "logs-azure.signinlogs-*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "Entra ID User Sign-In via Unusual Legacy Authentication Client",
+        "new_terms_fields": [
+            "azure.signinlogs.properties.user_principal_name"
+        ],
+        "note": "## Triage and analysis\n\n### Investigating Entra ID User Sign-In via Unusual Legacy Authentication Client\n\nLegacy authentication clients use basic authentication and do not support modern authentication or interactive multi-factor authentication. Microsoft Entra ID classifies these clients under `client_app_used` values such as Authenticated SMTP, IMAP4, POP3, Exchange ActiveSync, Exchange Web Services, MAPI Over HTTP, Outlook Anywhere, and Other clients (as opposed to the modern values Browser and Mobile Apps and Desktop clients). Adversaries prefer these clients because they translate into single-factor ROPC grants that bypass interactive MFA, making them effective for password spraying and account takeover.\n\nThis rule is a New Terms detection that fires when a Member user principal is first seen authenticating with a legacy client in the last 7 days. In environments that have largely moved to modern authentication, a new legacy-client sign-in for a user is unusual and warrants review. It is a broader companion to the targeted ROPC detections and catches legacy protocols beyond Authenticated SMTP.\n\n### Possible investigation steps\n- Review `azure.signinlogs.properties.client_app_used` to identify which legacy protocol was used and whether the user is expected to use it.\n- Review `azure.signinlogs.properties.user_principal_name` to determine whether the account is a human user, a service account, or a shared mailbox, and whether legacy authentication is part of its normal behavior.\n- Review `azure.signinlogs.properties.client_ip` / `source.ip`, geolocation, and ASN to determine whether the source is expected. Correlate with known-malicious infrastructure.\n- Inspect `user_agent.original`. Values such as `BAV2ROPC`, `python-requests`, `curl`, or other scripting-tool agents are highly suspicious.\n- Check `azure.signinlogs.properties.applied_conditional_access_policies` to determine whether legacy-authentication blocking was expected to apply and why it did not.\n- Look for a preceding burst of failed authentications (password spraying) from the same source or against the same account, and for post-authentication actions such as mailbox rule creation, mail forwarding, or OAuth consent.\n\n### False positive analysis\n- Legitimate legacy applications, service accounts, multifunction printers, scan-to-email appliances, and monitoring tools may still use legacy authentication clients such as Authenticated SMTP. These are typically stable in source IP and account and can be excluded once verified.\n- Migrations, onboarding of older mail clients, or line-of-business applications that have not yet moved to modern authentication can generate first-occurrence sign-ins. Validate the business context and exclude confirmed benign accounts.\n\n### Response and remediation\n- If the sign-in is confirmed malicious, disable the account, revoke active sessions and refresh tokens, and reset the password.\n- Disable the specific legacy protocol for the affected mailbox (for example `Set-CASMailbox -SmtpClientAuthenticationDisabled $true`) and, where feasible, block legacy authentication tenant-wide with Conditional Access.\n- Enforce MFA for the affected user and investigate the source IP and any preceding failed-authentication activity to scope a potential password-spray campaign.\n- Review the account's activity after the sign-in (mailbox rules, forwarding, delegate changes, OAuth grants) and remediate any unauthorized changes.\n",
+        "query": "data_stream.dataset: \"azure.signinlogs\" and\n    event.action: \"Sign-in activity\" and\n    event.outcome: \"success\" and\n    azure.signinlogs.properties.user_type: \"Member\" and\n    azure.signinlogs.properties.client_app_used: (\n        \"Authenticated SMTP\" or\n        \"Autodiscover\" or\n        \"Exchange ActiveSync\" or\n        \"Exchange Online PowerShell\" or\n        \"Exchange Web Services\" or\n        \"IMAP4\" or\n        \"MAPI Over HTTP\" or\n        \"Offline Address Book\" or\n        \"Outlook Anywhere\" or\n        \"Outlook Service\" or\n        \"POP3\" or\n        \"Reporting Web Services\" or\n        \"Other clients\"\n    )\n",
+        "references": [
+            "https://learn.microsoft.com/en-us/entra/identity/conditional-access/policy-block-legacy-authentication",
+            "https://learn.microsoft.com/en-us/entra/identity-platform/v2-oauth-ropc",
+            "https://www.proofpoint.com/us/blog/threat-insight/attackers-unleash-teamfiltration-account-takeover-campaign",
+            "https://redcanary.com/blog/threat-detection/bav2ropc/"
+        ],
+        "related_integrations": [
+            {
+                "package": "azure",
+                "version": ">=1.22.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "azure.signinlogs.properties.client_app_used",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.signinlogs.properties.user_type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "0b7dbb27-29f8-4219-bcf1-7b82c6dd0bdc",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: Identity",
+            "Data Source: Azure",
+            "Data Source: Microsoft Entra ID",
+            "Data Source: Microsoft Entra ID Sign-In Logs",
+            "Use Case: Identity and Access Audit",
+            "Tactic: Initial Access",
+            "Resources: Investigation Guide",
+            "Tactic: Stealth"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0001",
+                    "name": "Initial Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0001/"
+                },
+                "technique": [
+                    {
+                        "id": "T1078",
+                        "name": "Valid Accounts",
+                        "reference": "https://attack.mitre.org/techniques/T1078/",
+                        "subtechnique": [
+                            {
+                                "id": "T1078.004",
+                                "name": "Cloud Accounts",
+                                "reference": "https://attack.mitre.org/techniques/T1078/004/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Stealth",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1078",
+                        "name": "Valid Accounts",
+                        "reference": "https://attack.mitre.org/techniques/T1078/",
+                        "subtechnique": [
+                            {
+                                "id": "T1078.004",
+                                "name": "Cloud Accounts",
+                                "reference": "https://attack.mitre.org/techniques/T1078/004/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "new_terms",
+        "version": 2
+    },
+    "id": "0b7dbb27-29f8-4219-bcf1-7b82c6dd0bdc_2",
+    "type": "security-rule"
+}

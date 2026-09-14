@@ -1,0 +1,129 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects creation or modification of a GKE Service with type NodePort. NodePort exposes a static port on every worker node that hosts matching pods, which widens the cluster's external attack surface and can bypass load-balancer and firewall controls. Attackers may create NodePort Services to intercept traffic or establish a direct path into the cluster.",
+        "false_positives": [
+            "Developers may legitimately use NodePort for frontends without cloud load balancers, or for nonstandard networking. system:addon-manager patch reconciliation of existing NodePort Services is excluded; create and update from addon-manager still alert."
+        ],
+        "from": "now-6m",
+        "index": [
+            "logs-gcp.audit-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "client.user.email",
+                "source.ip",
+                "user_agent.original",
+                "event.action",
+                "event.outcome",
+                "gcp.audit.resource_name",
+                "gcp.audit.request.spec.type",
+                "gcp.audit.request",
+                "data_stream.namespace"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "GKE Exposed Service Created With Type NodePort",
+        "note": "## Triage and analysis\n\n### Investigating GKE Exposed Service Created With Type NodePort\n\nNodePort opens a port on each worker node hosting the service and forwards external traffic to labeled pods. Confirm\nwhether the exposure was approved and which workloads are reachable.\n\n### Possible investigation steps\n\n- Review `client.user.email`, `source.ip`, and `user_agent.original`.\n- Inspect `gcp.audit.resource_name` and `gcp.audit.request` for the service name, namespace, selector, and port.\n- Identify the backing pods and whether the NodePort is required for a legitimate external entrypoint.\n- Correlate with recent Service or networking changes from the same actor.\n\n### False positive analysis\n\n- Approved NodePort Services for lab frontends or custom load balancing may match. Allowlist known automation or\n  namespaces after review.\n- GKE addon reconciliation via `system:addon-manager` patch is excluded; unexpected create or update from that actor\n  should still be investigated.\n\n### Response and remediation\n\n- Remove or change unauthorized NodePort Services, revoke excess RBAC for Services writes, and review firewall exposure\n  for the opened node ports.\n\n",
+        "query": "data_stream.dataset:gcp.audit and service.name:\"k8s.io\" and event.outcome:success and\nevent.action:(\n  \"io.k8s.core.v1.services.create\" or\n  \"io.k8s.core.v1.services.update\" or\n  \"io.k8s.core.v1.services.patch\"\n) and gcp.audit.request.spec.type:\"NodePort\" and not (\n  client.user.email:\"system:addon-manager\" and\n  event.action:\"io.k8s.core.v1.services.patch\"\n)\n",
+        "references": [
+            "https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types",
+            "https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport",
+            "https://www.tigera.io/blog/new-vulnerability-exposes-kubernetes-to-man-in-the-middle-attacks-heres-how-to-mitigate/"
+        ],
+        "related_integrations": [
+            {
+                "integration": "audit",
+                "package": "gcp",
+                "version": ">=2.41.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "client.user.email",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "gcp.audit.request.spec.type",
+                "type": "unknown"
+            },
+            {
+                "ecs": true,
+                "name": "service.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "05ac190c-5d02-4b81-bb57-221d33479570",
+        "setup": "The GCP Fleet integration with GKE audit logs enabled is required. Request body capture for Service resources is\nrequired so `gcp.audit.request.spec.type` is populated.\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: Kubernetes",
+            "Data Source: GCP",
+            "Data Source: Google Cloud Platform",
+            "Use Case: Threat Detection",
+            "Tactic: Persistence",
+            "Tactic: Initial Access",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1133",
+                        "name": "External Remote Services",
+                        "reference": "https://attack.mitre.org/techniques/T1133/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0001",
+                    "name": "Initial Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0001/"
+                },
+                "technique": [
+                    {
+                        "id": "T1133",
+                        "name": "External Remote Services",
+                        "reference": "https://attack.mitre.org/techniques/T1133/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 1
+    },
+    "id": "05ac190c-5d02-4b81-bb57-221d33479570_1",
+    "type": "security-rule"
+}

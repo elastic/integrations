@@ -2,112 +2,114 @@
 description: Pipeline for processing reporting logs.
 processors:
   - set:
-      tag: set_ecs_version
+      tag: set_ecs_version_6b2cef5e
       field: ecs.version
       value: '8.11.0'
   - append:
-      tag: append_event_kind
+      tag: append_event_kind_26ec9663
       field: event.kind
       value: event
       allow_duplicates: false
   - set:
-      tag: set_event_type
+      tag: set_event_type_8bf4a5be
       field: event.type
       value: [info]
   - rename:
-      tag: rename_message
+      tag: rename_message_a7b1f822
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
   - json:
-      tag: json_event_original
+      tag: json_event_original_6ef32e07
       field: event.original
       target_field: json
       on_failure:
         - append:
+            tag: append_error_message_1379d1ee
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
   - rename:
-      tag: rename_json_computer_name
+      tag: rename_json_computer_name_12b918e5
       field: json.Computer Name
       target_field: tanium.reporting.computer_name
       ignore_missing: true
   - set:
-      tag: set_host_name
+      tag: set_host_name_eca00d7c
       field: host.name
       copy_from: tanium.reporting.computer_name
       ignore_empty_value: true
   - append:
-      tag: append_related_hosts
+      tag: append_related_hosts_6dcd7c16
       field: related.hosts
       value: '{{{host.name}}}'
       if: ctx.host?.name != null
       allow_duplicates: false
   - convert:
-      tag: convert_json_count
+      tag: convert_json_count_2f2a1ae9
       field: json.Count
       target_field: tanium.reporting.count
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_f637bcea
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
             allow_duplicates: false
   - rename:
-      tag: rename_json_is_virtual
+      tag: rename_json_is_virtual_62456e31
       field: json.Is Virtual
       target_field: tanium.reporting.is_virtual
       ignore_missing: true
   - rename:
-      tag: rename_json_manufacturer
+      tag: rename_json_manufacturer_be348ece
       field: json.Manufacturer
       target_field: tanium.reporting.manufacturer
       ignore_missing: true
   - rename:
-      tag: rename_json_model
+      tag: rename_json_model_62e0da74
       field: json.Model
       target_field: tanium.reporting.model
       ignore_missing: true
   - rename:
-      tag: rename_json_os_platform
+      tag: rename_json_os_platform_f7cf6216
       field: json.OS Platform
       target_field: tanium.reporting.os.platform
       ignore_missing: true
   - set:
-      tag: set_os_platform
+      tag: set_os_platform_49da45a1
       field: os.platform
       copy_from: tanium.reporting.os.platform
       ignore_empty_value: true
   - rename:
-      tag: rename_json_operating_system
+      tag: rename_json_operating_system_097de73b
       field: json.Operating System
       target_field: tanium.reporting.os.name
       ignore_missing: true
   - set:
-      tag: set_os_name
+      tag: set_os_name_34bef9f8
       field: os.name
       copy_from: tanium.reporting.os.name
       ignore_empty_value: true
   - rename:
-      tag: rename_json_virtual_platform
+      tag: rename_json_virtual_platform_bf33c6e9
       field: json.Virtual Platform
       target_field: tanium.reporting.virtual_platform
       ignore_missing: true
   - append:
-      tag: append_event_kind_2
+      tag: append_event_kind_2_c23e36e0
       field: event.kind
       value: pipeline_error
       if: ctx.error?.message != null && ctx.error.message != ''
       allow_duplicates: false
   - remove:
-      tag: remove_json
+      tag: remove_json_94dc55cd
       field: json
       ignore_missing: true
   - remove:
-      tag: remove_duplicate_custom_fields
+      tag: remove_duplicate_custom_fields_191cb449
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
       field:
         - tanium.reporting.os.platform
@@ -115,7 +117,7 @@ processors:
         - tanium.reporting.computer_name
       ignore_missing: true
   - script:
-      tag: script_drops_null_empty_values_recursively
+      tag: script_drops_null_empty_values_recursively_61327a06
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -134,13 +136,16 @@ processors:
         dropEmptyfield(ctx);
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message_8ac65503
       field: error.message
       value: >
         Processor "{{{ _ingest.on_failure_processor_type }}}"

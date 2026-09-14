@@ -1,7 +1,7 @@
-format_version: 3.3.2
+format_version: 3.4.2
 name: sailpoint_identity_sc
 title: Sailpoint Identity Security Cloud
-version: "1.3.0"
+version: "2.0.0"
 source:
   license: "Elastic-2.0"
 description: "Sailpoint identity security cloud provides enterprise identity governance and security capabilities. The integration allows users to extract audit information from their identity security cloud tenant using the ISC's AuditEvent API."
@@ -17,7 +17,15 @@ conditions:
     subscription: "basic"
 screenshots:
   - src: /img/dashboard.png
-    title: Dashboard
+    title: Events Dashboard
+    size: 600x600
+    type: image/png
+  - src: /img/identity-dashboard.png
+    title: Identity Dashboard
+    size: 600x600
+    type: image/png
+  - src: /img/machine-identity-dashboard.png
+    title: Machine Identity Dashboard
     size: 600x600
     type: image/png
 icons:
@@ -27,13 +35,14 @@ icons:
     type: image/svg+xml
 policy_templates:
   - name: sailpoint_identity_sc
-    title: Sailpoint identity security cloud events
-    description: "Collect events from Sailpoint identity security cloud event reporting."
+    title: Sailpoint identity security Cloud
+    description: "Collect audit events, and human and machine identities from SailPoint Identity Security Cloud via the API."
     deployment_modes:
       default:
         enabled: true
       agentless:
         enabled: true
+        release: ga
         organization: security
         division: engineering
         team: security-service-integrations
@@ -45,19 +54,19 @@ policy_templates:
           - name: api_host
             type: text
             title: Base URL of the Sailpoint identity security cloud Host API
-            description: "Enter the URL of the Sailpoint identity security cloud host API server, e.g., https://{tenant}.api.identitynow-demo.com/"
+            description: "Enter the URL of the Sailpoint identity security cloud host API server, for example, https://{tenant}.api.identitynow-demo.com/"
             show_user: true
             required: true
           - name: api_version
             type: text
             title: API Version
             description: |
-              Enter the API version to use, e.g., v2025.
-              Sailpoint Identity Security Cloud API follows a annual release cycle.
-              More information about it can be found [here](https://developer.sailpoint.com/docs/api/v2025/api-versioning-strategy).
+              Enter the API version to use, for example, v2026.
+              Sailpoint Identity Security Cloud API follows an annual release cycle.
+              More information about it can be found [here](https://developer.sailpoint.com/docs/api/v2026/api-versioning-strategy).
             show_user: true
             required: true
-            default: v2025
+            default: v2026
           - name: client_id
             type: text
             title: Client ID for Sailpoint identity security cloud
@@ -72,27 +81,6 @@ policy_templates:
             show_user: true
             required: true
             secret: true
-          - name: token_scopes
-            type: text
-            title: Token Scopes
-            multi: true
-            description: Scopes for OAuth2 token.
-            required: true
-            show_user: false
-            secret: false
-          - name: enable_request_tracer
-            type: bool
-            title: Enable Request Tracing
-            description: >-
-              The request tracer logs requests and responses to the agent's local file-system for debugging configurations.
-              Enabling this request tracing compromises security and should only be used for debugging. Disabling the request
-              tracer will delete any stored traces.
-              See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#_resource_tracer_enable)
-              for details.
-            default: true
-            multi: false
-            required: false
-            show_user: false
           - name: http_client_timeout
             type: text
             title: HTTP Client Timeout

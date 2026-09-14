@@ -3,89 +3,80 @@ description: Pipeline for processing Audit logs.
 processors:
   - set:
       field: ecs.version
-      tag: set_ecs_version
+      tag: set_ecs_version_6b2cef5e
       value: '8.11.0'
   - terminate:
-      tag: data_collection_error
+      tag: data_collection_error_4bdbb3d0
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
       description: error message set and no data to process.
-  - remove:
-      field:
-        - organization
-        - division
-        - team
-      ignore_missing: true
-      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
-      tag: remove_agentless_tags
-      description: >-
-        Removes the fields added by Agentless as metadata,
-        as they can collide with ECS fields.
   - rename:
       field: message
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_4217da53
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
       description: 'Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.'
   - remove:
+      tag: remove_message_facc4822
       field: message
       ignore_missing: true
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
       field: event.original
-      tag: json_event_original
+      tag: json_event_original_93ceb325
       target_field: json
       ignore_failure: true
   - date:
       field: json.timestamp
-      tag: date_set_timestamp
+      tag: date_set_timestamp_cc03f611
       formats:
         - ISO8601
       if: ctx.json?.timestamp != null && ctx.json.timestamp != ''
       on_failure:
         - append:
+            tag: append_error_message_a574a33d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: wiz.audit.timestamp
-      tag: set_wiz_audit_timestamp
+      tag: set_wiz_audit_timestamp_bfb469ff
       copy_from: '@timestamp'
       ignore_empty_value: true
   - trim:
       field: json.action
-      tag: trim_whitespace_action
+      tag: trim_whitespace_action_c9a0f8a9
       target_field: wiz.audit.action
       ignore_missing: true
       if: ctx.json?.action instanceof String && ctx.json.action != ''
   - lowercase:
       field: wiz.audit.action
-      tag: lowercase_action
+      tag: lowercase_action_b901061d
       ignore_missing: true
       if: ctx.wiz?.audit?.action instanceof String && ctx.wiz.audit.action != ''
   - split:
       field: wiz.audit.action
-      tag: split_action
+      tag: split_action_15533ebc
       separator: '\s+'
       if: ctx.wiz?.audit?.action instanceof String && ctx.wiz.audit.action != ''
   - join:
       field: wiz.audit.action
-      tag: join_action
+      tag: join_action_4e8acb48
       separator: "-"
       target_field: event.action
       if: ctx.wiz?.audit?.action instanceof List
   - remove:
       field: wiz.audit.action
-      tag: remove_audit_action
+      tag: remove_audit_action_64e267aa
       ignore_missing: true
   - rename:
       field: json.action
-      tag: rename_audit_action
+      tag: rename_audit_action_806d2787
       target_field: wiz.audit.action
       ignore_missing: true
   - script:
       description: Add value for event category based on action.
-      tag: script_to_add_category
+      tag: script_to_add_category_08a661fc
       if: ctx.wiz?.audit?.action instanceof String && ctx.wiz.audit.action != ''
       lang: painless
       source: >-
@@ -96,190 +87,192 @@ processors:
         }
   - rename:
       field: json.id
-      tag: rename_id
+      tag: rename_id_161b80d6
       target_field: wiz.audit.id
       ignore_missing: true
   - set:
       field: event.id
-      tag: set_event_id
+      tag: set_event_id_f4542da5
       copy_from: wiz.audit.id
       ignore_empty_value: true
   - set:
       field: event.kind
       value: event
-      tag: set_event_kind
+      tag: set_event_kind_d452ef2c
   - rename:
       field: json.status
       target_field: wiz.audit.status
-      tag: rename_status
+      tag: rename_status_6119588b
       ignore_missing: true
   - set:
       field: event.outcome
-      tag: set_outcome_unknown
+      tag: set_outcome_unknown_a75e59f4
       value: unknown
       if: ctx.wiz?.audit?.status instanceof String
   - set:
       field: event.outcome
-      tag: set_outcome_success
+      tag: set_outcome_success_90d88ace
       value: success
       if: ctx.wiz?.audit?.status instanceof String && ctx.wiz.audit.status.toLowerCase().contains("success")
   - set:
       field: event.outcome
-      tag: set_outcome_failure
+      tag: set_outcome_failure_d97781ab
       value: failure
       if: ctx.wiz?.audit?.status instanceof String && ctx.wiz.audit.status.toLowerCase().contains("fail")
   - set:
       field: event.type
-      tag: set_event_type
+      tag: set_event_type_996a6c2d
       value: [info]
       if: ctx.wiz?.audit?.action != null && ctx.wiz.audit.action != ''
   - rename:
       field: json.requestId
-      tag: rename_request_id
+      tag: rename_request_id_d68f6ebd
       target_field: wiz.audit.request_id
       ignore_missing: true
   - set:
       field: http.request.id
-      tag: set_request_id
+      tag: set_request_id_3ec86d97
       copy_from: wiz.audit.request_id
       ignore_empty_value: true
   - convert:
       field: json.sourceIP
-      tag: convert_sourceIP_to_ip
+      tag: convert_sourceIP_to_ip_5fb969a6
       target_field: wiz.audit.source_ip
       type: ip
       if: ctx.json?.sourceIP != ''
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_d3aea43c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: source.ip
-      tag: set_source_ip
+      tag: set_source_ip_eec95011
       copy_from: wiz.audit.source_ip
       ignore_empty_value: true
   - append:
       field: related.ip
-      tag: append_wiz_audit_source_ip_into_related_ip
+      tag: append_wiz_audit_source_ip_into_related_ip_ee3b8d52
       value: '{{{wiz.audit.source_ip}}}'
       allow_duplicates: false
   - rename:
       field: json.userAgent
-      tag: rename_user_agent
+      tag: rename_user_agent_9f4252f1
       target_field: wiz.audit.user_agent
       ignore_missing: true
   - user_agent:
       field: wiz.audit.user_agent
-      tag: process_user_agent
+      tag: process_user_agent_9f9efcf2
       on_failure:
         - set:
+            tag: set_user_agent_original_0a05f2f8
             field: user_agent.original
             copy_from: wiz.audit.user_agent
             ignore_failure: true
   - rename:
       field: json.user.id
-      tag: rename_user_id
+      tag: rename_user_id_0d604466
       target_field: wiz.audit.user.id
       ignore_missing: true
   - append:
       field: related.user
-      tag: append_wiz_audit_user_id_into_related_user
+      tag: append_wiz_audit_user_id_into_related_user_4173d33d
       value: '{{{wiz.audit.user.id}}}'
       allow_duplicates: false
   - set:
       field: user.id
-      tag: set_user_id
+      tag: set_user_id_fc3a917e
       copy_from: wiz.audit.user.id
       ignore_empty_value: true
   - rename:
       field: json.user.name
-      tag: rename_user_name
+      tag: rename_user_name_81a44066
       target_field: wiz.audit.user.name
       ignore_missing: true
   - append:
       field: related.user
-      tag: append_wiz_audit_user_name_into_related_user
+      tag: append_wiz_audit_user_name_into_related_user_86c8d265
       value: '{{{wiz.audit.user.name}}}'
       allow_duplicates: false
   - set:
       field: user.name
-      tag: set_user_name
+      tag: set_user_name_4e69912a
       copy_from: wiz.audit.user.name
       ignore_empty_value: true
   - rename:
       field: json.actionParameters.clientID
-      tag: rename_client_id
+      tag: rename_client_id_b8bfe219
       target_field: wiz.audit.action_parameters.client_id
       ignore_missing: true
   - rename:
       field: json.actionParameters.groups
-      tag: rename_groups
+      tag: rename_groups_ae9a02b8
       target_field: wiz.audit.action_parameters.groups
       ignore_missing: true
   - rename:
       field: json.actionParameters.name
-      tag: rename_action_parameters_name
+      tag: rename_action_parameters_name_eae1cba3
       target_field: wiz.audit.action_parameters.name
       ignore_missing: true
   - rename:
       field: json.actionParameters.products
-      tag: rename_action_parameters_products
+      tag: rename_action_parameters_products_5e597cc6
       target_field: wiz.audit.action_parameters.products
       ignore_missing: true
   - rename:
       field: json.actionParameters.role
-      tag: rename_action_parameters_role
+      tag: rename_action_parameters_role_b1477218
       target_field: wiz.audit.action_parameters.role
       ignore_missing: true
   - rename:
       field: json.actionParameters.scopes
-      tag: rename_action_parameters_scopes
+      tag: rename_action_parameters_scopes_1e182bec
       target_field: wiz.audit.action_parameters.scopes
       ignore_missing: true
   - rename:
       field: json.actionParameters.userEmail
-      tag: rename_action_parameters_user_email
+      tag: rename_action_parameters_user_email_64840036
       target_field: wiz.audit.action_parameters.user.email
       ignore_missing: true
   - append:
       field: related.user
-      tag: append_wiz_audit_action_parameters_user_email_into_related_user
+      tag: append_wiz_audit_action_parameters_user_email_into_related_user_cddd395e
       value: '{{{wiz.audit.action_parameters.user.email}}}'
       allow_duplicates: false
   - rename:
       field: json.actionParameters.userID
-      tag: rename_action_parameters_user_id
+      tag: rename_action_parameters_user_id_c427070a
       target_field: wiz.audit.action_parameters.user.id
       ignore_missing: true
   - append:
       field: related.user
-      tag: append_wiz_audit_action_parameters_user_id_into_related_user
+      tag: append_wiz_audit_action_parameters_user_id_into_related_user_77980f27
       value: '{{{wiz.audit.action_parameters.user.id}}}'
       allow_duplicates: false
   - rename:
       field: json.actionParameters.userpoolID
-      tag: rename_action_parameters_userpool_id
+      tag: rename_action_parameters_userpool_id_9af40fce
       target_field: wiz.audit.action_parameters.userpool_id
       ignore_missing: true
   - append:
       field: related.user
-      tag: append_wiz_audit_action_parameters_userpool_id_into_related_user
+      tag: append_wiz_audit_action_parameters_userpool_id_into_related_user_bb212261
       value: '{{{wiz.audit.action_parameters.userpool_id}}}'
       allow_duplicates: false
   - rename:
       field: json.serviceAccount.id
-      tag: rename_service_account_id
+      tag: rename_service_account_id_01ceb199
       target_field: wiz.audit.service_account.id
       ignore_missing: true
   - rename:
       field: json.serviceAccount.name
-      tag: rename_service_account_name
+      tag: rename_service_account_name_6c0d89e4
       target_field: wiz.audit.service_account.name
       ignore_missing: true
   - remove:
       field: json
-      tag: remove_json
+      tag: remove_json_94dc55cd
       ignore_missing: true
   - remove:
       field:
@@ -290,12 +283,12 @@ processors:
         - wiz.audit.user_agent
         - wiz.audit.user.id
         - wiz.audit.user.name
-      tag: remove_custom_duplicate_fields
+      tag: remove_custom_duplicate_fields_1db21b84
       ignore_missing: true
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
   - script:
       description: Drops null/empty values recursively.
-      tag: script_to_drop_null_values
+      tag: script_to_drop_null_values_84501ca6
       lang: painless
       source: |
         boolean drop(Object object) {
@@ -313,22 +306,26 @@ processors:
         drop(ctx);
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_4fd8ffa8
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_b6c08950
       field: tags
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message_6906b116
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

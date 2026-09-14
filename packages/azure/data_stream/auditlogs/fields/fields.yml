@@ -27,6 +27,7 @@
         Result signature
     - name: result_description
       type: keyword
+      ignore_above: 8191
       description: |
         Result description
     - name: level
@@ -45,8 +46,14 @@
             Activity display name
         - name: result_reason
           type: keyword
+          ignore_above: 8191
           description: |
             Reason for the log result
+        - name: result_description
+          type: keyword
+          ignore_above: 8191
+          description: |
+            Result description
         - name: correlation_id
           type: keyword
           description: |
@@ -94,21 +101,14 @@
               type: keyword
               description: |
                 User principal name
-            - name: modified_properties.*
-              type: group
-              fields:
-                - name: new_value
-                  type: keyword
-                  description: |
-                    New value
-                - name: display_name
-                  type: keyword
-                  description: |
-                    Display value
-                - name: old_value
-                  type: keyword
-                  description: |
-                    Old value
+            - name: modified_properties.*.*
+              type: object
+              object_type: keyword
+              object_type_mapping_type: '*'
+              ignore_above: 8191
+              subobjects: false
+              description: |
+                Modified properties (for example, old_value, new_value, display_name).
         - name: initiated_by
           type: group
           fields:
@@ -165,6 +165,7 @@
               description: Additional details key
             - name: value
               type: keyword
+              ignore_above: 8191
               description: Additional details value
         - name: authentication_protocol
           type: keyword

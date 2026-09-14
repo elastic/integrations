@@ -2,19 +2,26 @@ type: journald
 
 # Filter by syslog facilities, replicating the traditional log files
 # /var/log/syslog*, /var/log/messages*
-facilities:
-  - 0
-  - 1
-  - 2
-  - 3
-  - 5
-  - 6
-  - 7
-  - 8
-  - 9
-  - 11
-  - 12
-  - 15
+# SYSLOG_FACILITY field matches are used instead of the `facilities`
+# option because the latter relies on `journalctl --facility`, which
+# requires systemd >= 245 (RHEL 8 ships 239). journalctl ORs matches
+# on the same field, so this is equivalent to the facility filter.
+include_matches:
+  - SYSLOG_FACILITY=0
+  - SYSLOG_FACILITY=1
+  - SYSLOG_FACILITY=2
+  - SYSLOG_FACILITY=3
+  - SYSLOG_FACILITY=5
+  - SYSLOG_FACILITY=6
+  - SYSLOG_FACILITY=7
+  - SYSLOG_FACILITY=8
+  - SYSLOG_FACILITY=9
+  - SYSLOG_FACILITY=11
+  - SYSLOG_FACILITY=12
+  - SYSLOG_FACILITY=15
+{{#each include_matches as |include_match i|}}
+  - '{{include_match}}'
+{{/each}}
 
 {{#if condition }}
 condition: {{condition}}
@@ -24,13 +31,6 @@ condition: {{condition}}
 paths:
 {{#each paths as |path i|}}
   - {{path}}
-{{/each}}
-{{/if}}
-
-{{#if include_matches}}
-include_matches:
-{{#each include_matches as |include_match i|}}
-  - '{{include_match}}'
 {{/each}}
 {{/if}}
 

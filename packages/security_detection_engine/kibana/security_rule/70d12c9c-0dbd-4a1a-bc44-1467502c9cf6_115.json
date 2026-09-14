@@ -1,0 +1,149 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies use of the Windows Management Instrumentation StdRegProv (registry provider) to modify commonly abused registry locations for persistence.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.registry-*",
+            "endgame-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "host.id",
+                "user.id",
+                "process.entity_id",
+                "process.name",
+                "process.executable",
+                "process.command_line",
+                "process.Ext.session_info.logon_type",
+                "Effective_process.entity_id",
+                "Effective_process.name",
+                "Effective_process.executable",
+                "registry.path",
+                "registry.value",
+                "registry.data.type",
+                "registry.data.strings"
+            ]
+        },
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Persistence via WMI Standard Registry Provider",
+        "note": "## Triage and analysis\n\n### Investigating Persistence via WMI Standard Registry Provider\n#### Possible investigation steps\n\n- Which StdRegProv-backed persistence value changed, and what will it run?\n  - Why: StdRegProv can set logon and service ASEPs through \"WmiPrvSe.exe\" without a child process from the requester; registry value data is the payload clue.\n  - Focus: `registry.path`, `registry.value`, `registry.data.type`, and `registry.data.strings`.\n  - Implication: escalate when machine-wide Run/RunOnce, Winlogon shell, policy script, \"ServiceDLL\", or \"ImagePath\" values launch user-writable, share-hosted, script-host, shell-replacement, or unusual service content; lower suspicion only when the exact value and data match a recognized WMI-based deployment, configuration, or test workflow.\n\n- Who is the logical requester behind the WMI provider host?\n  - Why: `process.executable` usually identifies the provider host; effective process fields can identify the StdRegProv requester.\n  - Focus: `Effective_process.executable`, `Effective_process.name`, `Effective_process.entity_id`, `process.executable`, and `process.entity_id`.\n  - Hint: do not clear on the Microsoft-signed provider host alone; attacker and admin tooling can both route registry writes through \"WmiPrvSe.exe\".\n  - Implication: escalate when the requester is blank with suspicious value data, or is a script host, user-writable binary, Office/browser descendant, or unexpected remote administration tool; lower suspicion when requester path and name match the management or deployment component that owns the value.\n\n- Does the launch and session context fit the expected WMI workflow?\n  - Focus: `process.command_line`, `process.parent.executable`, `process.parent.command_line`, `process.Ext.session_info.logon_type`, and `user.id`.\n  - Implication: escalate when WMI registry writes occur under an unexpected user, service, remote, or parent context; lower suspicion when parent chain, session type, and user scope match the same recognized management or validation workflow.\n\n- Did the payload referenced by the modified value execute?\n  - Focus: same-host process starts after `@timestamp` where `process.command_line` matches the payload from `registry.data.strings`. !{investigate{\"description\":\"\",\"label\":\"Process starts matching the modified registry payload\",\"providers\":[[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"process\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.type\",\"queryType\":\"phrase\",\"value\":\"start\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.command_line\",\"queryType\":\"phrase\",\"value\":\"{{registry.data.strings}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now\",\"relativeTo\":\"now\"}}\n  - Hint: empty results do not prove non-execution; quoting, environment expansion, or arguments may require manual parsing.\n  - Implication: escalate when the payload launches after the WMI-backed registry change, especially from user-writable, share-hosted, service, shell, or script paths; keep unresolved when value data cannot be matched directly.\n\n- Did the same requester cluster additional persistence changes on this host?\n  - Why: clustered ASEP writes separate one managed configuration change from service-plus-logon fallback persistence.\n  - Focus: same-host registry changes by `Effective_process.entity_id`, or `process.entity_id` when the effective requester is blank, reviewing `registry.path`, `registry.value`, and `registry.data.strings`. !{investigate{\"description\":\"\",\"label\":\"Registry changes by the same effective requester\",\"providers\":[[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"registry\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"Effective_process.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{Effective_process.entity_id}}\",\"valueType\":\"string\"}],[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"registry\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Implication: escalate when the same requester changes multiple ASEPs, service values, shell values, or policy scripts in one timeline; lower suspicion when activity is limited to one exact value with data matching the recognized workflow.\n\n- If local evidence remains suspicious or unresolved, does the requester or host recur in recent alerts?\n  - Focus: recent alerts for `Effective_process.executable`. !{investigate{\"description\":\"\",\"label\":\"Alerts involving the same effective requester path\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"Effective_process.executable\",\"queryType\":\"phrase\",\"value\":\"{{Effective_process.executable}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n  - Hint: run the host alert view only after the registry target, requester, session, or same-host registry cluster remains suspicious or unresolved. !{investigate{\"description\":\"\",\"label\":\"Alerts associated with the host\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n  - Implication: broaden scope when the requester path or host shows repeated WMI abuse, persistence changes, or related execution alerts; keep local when recurrence is absent and local evidence supports a recognized workflow.\n\n- Escalate for unrecognized or blank requester with suspicious value data, unexpected remote/service context, clustered ASEP changes, execution, or alert recurrence; close only when modified ASEP, value data, requester, process/session context, cluster, and recurrence evidence bind one recognized management or test workflow with no contradictory registry data; preserve evidence and escalate if mixed or incomplete.\n\n### False positive analysis\n\n- Configuration managers, endpoint-management agents, installers, and hardening baselines can use StdRegProv to set Run keys, policy scripts, or service values. Confirm `Effective_process.executable`, `Effective_process.name`, parent context, registry path/value/data, and host or user scope converge on the same workflow. Use change records, owner confirmation, or tool inventory when available; otherwise require the same requester path, modified ASEP, and registry data pattern to recur across prior alerts from this rule on the same managed host cohort.\n- Authorized security testing or detection validation can write persistence values through StdRegProv. Confirm the expected requester, exact value, value data, parsed payload path, test scope, and engagement records when available. Without records, require recurrence only on known test assets and no appearance on unrelated production hosts. Do not exception on `process.name`, \"WmiPrvSe.exe\", or a broad ASEP family alone.\n\n### Response and remediation\n\n- If confirmed benign:\n  - Reverse temporary containment and document the requester identity, exact registry value and data, host or user scope, and the recurrence or records that proved the management or test workflow. Build exceptions from that minimum pattern, not from \"WmiPrvSe.exe\", `process.name`, or a broad registry key alone.\n- If suspicious but unconfirmed:\n  - Preserve the alert event, exact registry value and data, effective requester identifiers, parsed payload path from the value data, and same-requester registry timeline before changing host state.\n  - Apply reversible containment tied to the evidence, such as disabling the exact Run, policy, shell, or service value, blocking the requester path, or increasing monitoring on the affected host. Use host isolation only when host criticality allows it and the registry or requester evidence shows active persistence risk.\n- If confirmed malicious:\n  - Isolate the host after preserving the registry evidence, requester identifiers, parsed payload paths, and same-requester registry changes that established malicious activity; contain the affected account only when process or session evidence supports account misuse.\n  - Terminate the requester process only after recording the relevant entity or PID, then remove the malicious Run key, shell value, policy script, \"ServiceDLL\", or \"ImagePath\" change, restore the ASEP to known-good state, and remove only the payloads identified from the investigation.\n  - Review other hosts for the same requester path or registry pattern before deleting artifacts that may be needed for scoping.\n- Post-incident hardening:\n  - Restrict unnecessary WMI and remote administration access, monitor WMI-hosted writes to high-value ASEPs, keep endpoint process and registry telemetry enabled, and document any visibility gaps surfaced during triage.\n",
+        "query": "registry where host.os.type == \"windows\" and event.type == \"change\" and\n registry.data.strings != null and process.name : \"WmiPrvSe.exe\" and\n registry.path : (\n                  \"HKEY_USERS\\\\*\\\\SOFTWARE\\\\Microsoft\\\\Command Processor\\\\Autorun\",\n                  \"HKEY_USERS\\\\*\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Run\\\\*\",\n                  \"HKLM\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Run\\\\*\",\n                  \"HKLM\\\\Software\\\\WOW6432Node\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Run\\\\*\",\n                  \"HKEY_USERS\\\\*\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Policies\\\\Explorer\\\\Run\\\\*\",\n                  \"HKLM\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Policies\\\\Explorer\\\\Run\\\\*\",\n                  \"HKLM\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\RunOnce\\\\*\",\n                  \"HKLM\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\RunOnceEx\\\\*\",\n                  \"HKEY_USERS\\\\*\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\RunOnce\\\\*\",\n                  \"HKEY_USERS\\\\*\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\RunOnceEx\\\\*\",\n                  \"HKLM\\\\SYSTEM\\\\*ControlSet*\\\\Services\\\\*\\\\ServiceDLL\",\n                  \"HKLM\\\\SYSTEM\\\\*ControlSet*\\\\Services\\\\*\\\\ImagePath\",\n                  \"HKEY_USERS\\\\*\\\\Software\\\\Microsoft\\\\Windows NT\\\\CurrentVersion\\\\Winlogon\\\\Shell\\\\*\",\n                  \"HKEY_USERS\\\\*\\\\Environment\\\\UserInitMprLogonScript\",\n                  \"HKEY_USERS\\\\*\\\\SOFTWARE\\\\Microsoft\\\\Windows NT\\\\CurrentVersion\\\\Windows\\\\Load\",\n                  \"HKEY_USERS\\\\*\\\\SOFTWARE\\\\Microsoft\\\\Windows NT\\\\CurrentVersion\\\\Winlogon\\\\Shell\",\n                  \"HKEY_USERS\\\\*\\\\SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Policies\\\\System\\\\Shell\",\n                  \"HKEY_USERS\\\\*\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\System\\\\Scripts\\\\Logoff\\\\Script\",\n                  \"HKEY_USERS\\\\*\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\System\\\\Scripts\\\\Logon\\\\Script\",\n                  \"HKEY_USERS\\\\*\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\System\\\\Scripts\\\\Shutdown\\\\Script\",\n                  \"HKEY_USERS\\\\*\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\System\\\\Scripts\\\\Startup\\\\Script\",\n                  \"HKEY_USERS\\\\*\\\\SOFTWARE\\\\Microsoft\\\\Ctf\\\\LangBarAddin\\\\*\\\\FilePath\",\n                  \"HKEY_USERS\\\\*\\\\SOFTWARE\\\\Microsoft\\\\Internet Explorer\\\\Extensions\\\\*\\\\Exec\",\n                  \"HKEY_USERS\\\\*\\\\SOFTWARE\\\\Microsoft\\\\Internet Explorer\\\\Extensions\\\\*\\\\Script\",\n                  \"\\\\REGISTRY\\\\USER\\\\*\\\\SOFTWARE\\\\Microsoft\\\\Command Processor\\\\Autorun\",\n                  \"\\\\REGISTRY\\\\USER\\\\*\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Run\\\\*\",\n                  \"\\\\REGISTRY\\\\MACHINE\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Run\\\\*\",\n                  \"\\\\REGISTRY\\\\MACHINE\\\\Software\\\\WOW6432Node\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Run\\\\*\",\n                  \"\\\\REGISTRY\\\\USER\\\\*\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Policies\\\\Explorer\\\\Run\\\\*\",\n                  \"\\\\REGISTRY\\\\MACHINE\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Policies\\\\Explorer\\\\Run\\\\*\",\n                  \"\\\\REGISTRY\\\\MACHINE\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\RunOnce\\\\*\",\n                  \"\\\\REGISTRY\\\\MACHINE\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\RunOnceEx\\\\*\",\n                  \"\\\\REGISTRY\\\\USER\\\\*\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\RunOnce\\\\*\",\n                  \"\\\\REGISTRY\\\\USER\\\\*\\\\Software\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\RunOnceEx\\\\*\",\n                  \"\\\\REGISTRY\\\\MACHINE\\\\SYSTEM\\\\*ControlSet*\\\\Services\\\\*\\\\ServiceDLL\",\n                  \"\\\\REGISTRY\\\\MACHINE\\\\SYSTEM\\\\*ControlSet*\\\\Services\\\\*\\\\ImagePath\",\n                  \"\\\\REGISTRY\\\\USER\\\\*\\\\Software\\\\Microsoft\\\\Windows NT\\\\CurrentVersion\\\\Winlogon\\\\Shell\\\\*\",\n                  \"\\\\REGISTRY\\\\USER\\\\*\\\\Environment\\\\UserInitMprLogonScript\",\n                  \"\\\\REGISTRY\\\\USER\\\\*\\\\SOFTWARE\\\\Microsoft\\\\Windows NT\\\\CurrentVersion\\\\Windows\\\\Load\",\n                  \"\\\\REGISTRY\\\\USER\\\\*\\\\SOFTWARE\\\\Microsoft\\\\Windows NT\\\\CurrentVersion\\\\Winlogon\\\\Shell\",\n                  \"\\\\REGISTRY\\\\USER\\\\*\\\\SOFTWARE\\\\Microsoft\\\\Windows\\\\CurrentVersion\\\\Policies\\\\System\\\\Shell\",\n                  \"\\\\REGISTRY\\\\USER\\\\*\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\System\\\\Scripts\\\\Logoff\\\\Script\",\n                  \"\\\\REGISTRY\\\\USER\\\\*\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\System\\\\Scripts\\\\Logon\\\\Script\",\n                  \"\\\\REGISTRY\\\\USER\\\\*\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\System\\\\Scripts\\\\Shutdown\\\\Script\",\n                  \"\\\\REGISTRY\\\\USER\\\\*\\\\SOFTWARE\\\\Policies\\\\Microsoft\\\\Windows\\\\System\\\\Scripts\\\\Startup\\\\Script\",\n                  \"\\\\REGISTRY\\\\USER\\\\*\\\\SOFTWARE\\\\Microsoft\\\\Ctf\\\\LangBarAddin\\\\*\\\\FilePath\",\n                  \"\\\\REGISTRY\\\\USER\\\\*\\\\SOFTWARE\\\\Microsoft\\\\Internet Explorer\\\\Extensions\\\\*\\\\Exec\",\n                  \"\\\\REGISTRY\\\\USER\\\\*\\\\SOFTWARE\\\\Microsoft\\\\Internet Explorer\\\\Extensions\\\\*\\\\Script\"\n                  )\n",
+        "references": [
+            "https://learn.microsoft.com/en-us/previous-versions/windows/desktop/regprov/stdregprov",
+            "https://www.elastic.co/security-labs/hunting-for-persistence-using-elastic-security-part-1"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": ">=9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "registry.data.strings",
+                "type": "wildcard"
+            },
+            {
+                "ecs": true,
+                "name": "registry.path",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "70d12c9c-0dbd-4a1a-bc44-1467502c9cf6",
+        "setup": "## Setup\n\nThis rule is designed for data generated by [Elastic Defend](https://www.elastic.co/security/endpoint-security), which provides native endpoint detection and response, along with event enrichments designed to work with our detection rules.\n\nSetup instructions: https://ela.st/install-elastic-defend\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Persistence",
+            "Data Source: Elastic Endgame",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide",
+            "Tactic: Execution"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1543",
+                        "name": "Create or Modify System Process",
+                        "reference": "https://attack.mitre.org/techniques/T1543/",
+                        "subtechnique": [
+                            {
+                                "id": "T1543.003",
+                                "name": "Windows Service",
+                                "reference": "https://attack.mitre.org/techniques/T1543/003/"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "T1547",
+                        "name": "Boot or Logon Autostart Execution",
+                        "reference": "https://attack.mitre.org/techniques/T1547/",
+                        "subtechnique": [
+                            {
+                                "id": "T1547.001",
+                                "name": "Registry Run Keys / Startup Folder",
+                                "reference": "https://attack.mitre.org/techniques/T1547/001/"
+                            },
+                            {
+                                "id": "T1547.004",
+                                "name": "Winlogon Helper DLL",
+                                "reference": "https://attack.mitre.org/techniques/T1547/004/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1047",
+                        "name": "Windows Management Instrumentation",
+                        "reference": "https://attack.mitre.org/techniques/T1047/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 115
+    },
+    "id": "70d12c9c-0dbd-4a1a-bc44-1467502c9cf6_115",
+    "type": "security-rule"
+}

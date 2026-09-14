@@ -1,0 +1,53 @@
+{
+    "id": "vercel_otel-poor-core-web-vitals-by-route",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "description": "Alerts when the p75 value of LCP, INP, or CLS for a given route exceeds the 'poor' Web Vitals threshold over a 1-hour window. p75 is the standard Vercel Speed Insights benchmark. Catches per-route regressions in perceived load speed, interactivity, or visual stability, typically introduced by a recent deployment.",
+        "name": "[Vercel OTel] Poor Core Web Vitals (p75) by route",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "vercel",
+            "latency"
+        ],
+        "schedule": {
+            "interval": "15m"
+        },
+        "alertDelay": {
+            "active": 2
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "artifacts": {
+            "dashboards": [
+                {
+                    "id": "vercel_otel-speed-insights"
+                }
+            ],
+            "investigation_guide": {
+                "blob": "## Poor Core Web Vitals by Route\n\n### Triage Steps\n1. The alert context identifies the affected `route` and `metric` (LCP, INP, or CLS).\n2. For LCP regressions: check `vercel.speedinsights.attribution.element` and `.url` for the largest contentful element on that route \u2014 a new unoptimised image or blocking resource is the most common cause.\n3. For INP regressions: check `vercel.speedinsights.attribution.interactionTarget` and `.interactionType` \u2014 heavy JavaScript bundles or long tasks after a deployment are the usual culprit.\n4. For CLS regressions: check `vercel.speedinsights.attribution.largestShiftTarget` \u2014 a newly introduced element (ad, banner, font swap) shifting layout after initial render is the typical cause.\n5. Correlate the regression's start time with `deployment.id` to identify the responsible deployment and consider a rollback.\n6. Segment by `vercel.device.type` \u2014 mobile often regresses first and worst on slow connections; check `vercel.connection.speed` too.\n\n### Note\nSpeed Insights records are sampled at the drain level, so absolute counts are not reliable, but the p75 percentile and proportional analysis remain statistically stable. This rule requires a minimum of 5 samples per route/metric combination to reduce noise from low-traffic routes.\n\n### Escalation\nA regression that pushes a high-traffic route's p75 into 'poor' territory and persists for more than one evaluation cycle warrants a rollback discussion with the deployment owner."
+            }
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "TS metrics-vercel.speedinsights.v1.otel-default\n| WHERE deployment.environment.name == \"production\"\n// Evaluate LCP, INP, and CLS independently per route, then union the results (FORK branches must share a schema)\n| FORK\n    (WHERE metrics.LCP IS NOT NULL\n     | STATS p75 = PERCENTILE(metrics.LCP, 75), samples = COUNT(metrics.LCP) BY route = COALESCE(http.route, url.path)\n     // \"Poor\" threshold per the Web Vitals spec table (milliseconds); adjust to your own SLA if stricter\n     | EVAL metric = \"LCP\", poor_threshold = 4000.0)\n    (WHERE metrics.INP IS NOT NULL\n     | STATS p75 = PERCENTILE(metrics.INP, 75), samples = COUNT(metrics.INP) BY route = COALESCE(http.route, url.path)\n     | EVAL metric = \"INP\", poor_threshold = 500.0)\n    (WHERE metrics.CLS IS NOT NULL\n     | STATS p75 = PERCENTILE(metrics.CLS, 75), samples = COUNT(metrics.CLS) BY route = COALESCE(http.route, url.path)\n     // CLS is unitless; \"poor\" threshold per the spec table\n     | EVAL metric = \"CLS\", poor_threshold = 0.25)\n// Minimum sample size per route/metric, since Speed Insights data is sampled\n| WHERE samples >= 5\n| WHERE p75 > poor_threshold\n// Combine route + metric into a single grouping key since the rule can only group alerts by one field\n| EVAL group_key = CONCAT(route, \" - \", metric)\n| SORT p75 DESC\n| LIMIT 20"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 60,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "group_key",
+            "termSize": 20,
+            "excludeHitsFromPreviousRun": true
+        }
+    }
+}

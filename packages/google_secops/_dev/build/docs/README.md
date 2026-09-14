@@ -12,7 +12,8 @@ This module has been tested against the Google SecOps version **v2**.
 
 This integration collects the following logs:
 
-- **[Alerts](https://cloud.google.com/chronicle/docs/reference/detection-engine-api#response_fields_3)** - This method enables users to retrieve alerts from Google SecOps.
+- **[Alerts v2](https://cloud.google.com/chronicle/docs/reference/rest/v1alpha/projects.locations.instances.legacy/legacySearchDetections)** (`google_secops.alert_v2`) - Retrieves YARA-L rule detections using the Chronicle API `legacySearchDetections` method. **Use this data stream for new deployments.**
+- **[Alerts](https://cloud.google.com/chronicle/docs/reference/detection-engine-api#response_fields_3)** (`google_secops.alert`) - **Deprecated.** Retrieves alerts using the Backstory Detection Engine API. Only existing Google SecOps Backstory users can access this API. New users should use **Alerts v2** instead.
 
 ## Requirements
 
@@ -57,20 +58,32 @@ For more details, please refer [Google Chronicle Detection Engine API]( https://
 
 If installing in GCP-Cloud environment, credentials are not necessary but make sure the account linked with the VM has all the required IAM permissions. Steps to [Set up Application Default Credentials](https://cloud.google.com/docs/authentication/provide-credentials-adc).
 
+### Collect data for the Alerts v2 data stream
+
+Enable the **Alerts v2** data stream to collect from the Chronicle API [`legacySearchDetections`](https://cloud.google.com/chronicle/docs/reference/rest/v1alpha/projects.locations.instances.legacy/legacySearchDetections) method. Documents ingest into the `google_secops.alert_v2` data stream.
+
+1. Assign **Chronicle Viewer** (`roles/chronicle.viewer`) to the service account in IAM.
+2. Configure OAuth scope `https://www.googleapis.com/auth/chronicle.readonly` (or another supported Chronicle scope). See [Chronicle API authentication](https://cloud.google.com/chronicle/docs/reference/authentication).
+3. Note your regional Chronicle API URL, GCP project ID, location, and instance ID from Google SecOps. See [Chronicle API endpoints](https://cloud.google.com/chronicle/docs/reference/rest).
+
 ### Enabling the integration in Elastic:
 
 1. In the top search bar in Kibana, search for **Integrations**.
 2. In "Search for integrations" top bar, search for `Google SecOps`.
 3. Select the "Google SecOps" integration from the search results.
 4. Select "Add Google SecOps" to add the integration.
-5. Add all the required integration configuration parameters, including the URL, Credentials Type, and Credentials, to enable data collection.
+5. Add all the required integration configuration parameters to enable data collection:
+   - For **Alerts v2**, enable the **Alerts v2** data stream and add the regional Chronicle API URL (for example, `https://us-chronicle.googleapis.com`), GCP project ID, location, instance ID, OAuth scope, Credentials Type, and Credentials.
+   - For **Alerts** (deprecated; existing Backstory users only), set the URL to `https://backstory.googleapis.com` and add the Credentials Type and Credentials.
 6. Select "Save and continue" to save the integration.
 
-**Note**: The default URL is `https://backstory.googleapis.com`, but this may vary depending on your region. Please refer to the [Documentation](https://cloud.google.com/chronicle/docs/reference/search-api#regional_endpoints) to find the correct URL for your region.
+**Note**: The default URL is `https://us-chronicle.googleapis.com`, but this may vary depending on your region. Please refer to the [Documentation](https://cloud.google.com/chronicle/docs/reference/search-api#regional_endpoints) to find the correct URL for your region.
 
 ## Logs reference
 
 ### Alert
+
+> **Deprecated:** The `alert` data stream uses the Backstory Detection Engine API and is only available to existing Google SecOps Backstory users. New users should use the [`alert_v2`](#alert-v2) data stream instead.
 
 This is the `alert` dataset.
 
@@ -79,3 +92,13 @@ This is the `alert` dataset.
 {{event "alert"}}
 
 {{fields "alert"}}
+
+### Alert v2
+
+This is the `alert_v2` dataset.
+
+#### Example
+
+{{event "alert_v2"}}
+
+{{fields "alert_v2"}}

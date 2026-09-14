@@ -1,0 +1,246 @@
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.rate_limit.limit: {{resource_rate_limit_limit}}
+resource.retry.max_attempts: {{resource_retry_max_attempts}}
+resource.url: {{url}}
+auth.oauth2:
+  client.id: {{client_id}}
+  client.secret: {{client_secret}}
+  token_url: {{token_url}}
+  endpoint_params:
+    grant_type: client_credentials
+    audience: wiz-api
+state:
+  initial_interval: {{initial_interval}}
+  want_more: false
+  batch_size: {{batch_size}}
+  query: >-
+    query DetectionsTableV2($filterBy: DetectionFilters $first: Int $after: String){
+       detections(filterBy: $filterBy first: $first after: $after) {
+         nodes {
+           type
+           origins
+           actors {
+             id
+             name
+             externalId
+             providerUniqueId
+             type
+           }
+           resources {
+             id
+             name
+             externalId
+             providerUniqueId
+             type
+           }
+           cloudAccounts {
+             id
+             name
+             externalId
+             cloudProvider
+           }
+           cloudOrganizations {
+             id
+             name
+             externalId
+             cloudProvider
+           }
+           createdAt
+           updatedAt
+           id
+           severity
+           description(format: MARKDOWN)
+           primaryResource {
+             type
+             name
+             externalId
+             region
+             id
+           }
+           issue {
+             id
+           }
+           primaryActor {
+             id
+             name
+             type
+             nativeType
+             email
+             userAgent
+             MFA
+             federated
+             friendlyName
+             accessKeyId
+             externalId
+             providerUniqueId
+             hasHighPrivileges
+             hasAdminPrivileges
+             hasHighKubernetesPrivileges
+             hasAdminKubernetesPrivileges
+             inactiveInLast90Days
+             actingAs {
+               id
+               name
+               type
+               friendlyName
+               accessKeyId
+               externalId
+               providerUniqueId
+             }
+             cloudAccount {
+               id
+               externalId
+               name
+               cloudProvider
+             }
+           }
+           triggeringEvents(first: 50) {
+             totalCountV2
+             nodes {
+               ... on CloudEvent {
+                 id
+                 description
+                 actorIP
+                 timestamp
+                 rawAuditLogRecord
+                 commandLine
+                 runtimeProgram {
+                   name
+                 }
+                 parentRuntimeProgram {
+                   name
+                 }
+               }
+             }
+           }
+           ruleMatch {
+             rule {
+               id
+               name
+               builtin
+               securitySubCategories {
+                 id
+                 title
+                 category {
+                   id
+                   name
+                   framework {
+                     id
+                   }
+                 }
+               }
+             }
+           }
+         }
+         pageInfo {
+           hasNextPage
+           endCursor
+         }
+         totalCount
+       }
+     }
+redact:
+  fields: ~
+{{#if max_executions}}
+max_executions: {{max_executions}}
+{{/if}}
+program: |
+  (
+    state.?want_more.orValue(false) ?
+      state.start_time
+    :
+      state.?cursor.last_timestamp.orValue(string(now() - duration(state.initial_interval)))
+  ).as(start_time, state.with(
+    request(
+      "POST",
+      state.url.trim_right("/") + "/graphql",
+      {
+        "query": state.query,
+        "variables": {
+          "first": state.batch_size,
+          "after": state.?end_cursor.value.orValue(null),
+          "filterBy": {
+            "updatedAt": {
+              "after": start_time
+            },
+            // Wiz applies a default type filter of GENERATED_THREAT when any filterBy is
+            // sent, which drops MATCH_ONLY detections (rule matches without a threat issue).
+            // Request both types explicitly so pagination matches an unfiltered query.
+            "type": {
+              "equals": ["GENERATED_THREAT", "MATCH_ONLY"]
+            }
+          }
+        }
+      }.encode_json()
+    ).with({
+      "Header": {
+        "Content-Type": ["application/json"],
+        "User-Agent": [useragent],
+      },
+    }).do_request().as(resp, resp.StatusCode == 200 ?
+        resp.Body.decode_json().as(body, {
+          "events": body.?data.detections.nodes.orValue([]).map(e, {
+            "message": e.encode_json(),
+          }),
+          "cursor": {
+            ?"last_timestamp": body.?data.detections.nodes.orValue([]).size() > 0 ?
+                optional.of(string(body.?data.detections.nodes.orValue([]).map(e, timestamp(e.updatedAt)).max()))
+              :
+                state.?cursor.last_timestamp,
+          },
+          "start_time": start_time,
+          "end_cursor": {
+            ?"value": body.?data.detections.pageInfo.hasNextPage.orValue(false) &&
+                body.?data.detections.pageInfo.endCursor.orValue(null) != null ?
+                body.?data.detections.pageInfo.endCursor
+              :
+                optional.none()
+          },
+          "want_more": body.?data.detections.pageInfo.hasNextPage.orValue(false) &&
+              body.?data.detections.pageInfo.endCursor.orValue(null) != null,
+        })
+      :
+        {
+          "events": {
+            "error": {
+              "code": string(resp.StatusCode),
+              "id": string(resp.Status),
+              "message": "POST " + state.url.trim_right("/") + "/graphql: " + (
+                size(resp.Body) != 0 ?
+                  string(resp.Body)
+                :
+                  string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+              ),
+            },
+          },
+          "want_more": false,
+        }
+    )
+  ))
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

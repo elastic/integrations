@@ -261,24 +261,33 @@ processors:
       if: ctx.checkpoint?.src_user_name != null
       patterns:
         - "^%{DATA:source.user.full_name} \\(%{EMAILADDRESS:source.user.email}\\)$"
+        - "^%{DATA:source.user.full_name} \\(%{USERNAME_ONLY:source.user.name}\\)$"
         - "^%{EMAILADDRESS:source.user.email}$"
         - "^%{DATA:source.user.name}$"
+      pattern_definitions:
+        USERNAME_ONLY: "[^()@]+"
   - grok:
       tag: grok_administrator
       field: checkpoint.administrator
       if: ctx.checkpoint?.administrator != null && ctx.source?.user?.name == null && ctx.source?.user?.email == null
       patterns:
         - "^%{DATA:source.user.full_name} \\(%{EMAILADDRESS:source.user.email}\\)$"
+        - "^%{DATA:source.user.full_name} \\(%{USERNAME_ONLY:source.user.name}\\)$"
         - "^%{EMAILADDRESS:source.user.email}$"
         - "^%{DATA:source.user.name}$"
+      pattern_definitions:
+        USERNAME_ONLY: "[^()@]+"
   - grok:
       tag: grok_user
       field: checkpoint.user
       if: ctx.checkpoint?.user != null && ctx.user?.name == null
       patterns:
         - "^%{DATA:user.full_name} \\(%{EMAILADDRESS:user.email}\\)$"
+        - "^%{DATA:user.full_name} \\(%{USERNAME_ONLY:user.name}\\)$"
         - "^%{EMAILADDRESS:user.email}$"
         - "^%{DATA:user.name}$"
+      pattern_definitions:
+        USERNAME_ONLY: "[^()@]+"
   - convert:
       tag: convert_checkpoint_failed_login_factor_num_919842ca
       field: checkpoint.failed_login_factor_num
@@ -387,8 +396,11 @@ processors:
       if: ctx.checkpoint?.dst_user_name != null
       patterns:
         - "^%{DATA:destination.user.full_name} \\(%{EMAILADDRESS:destination.user.email}\\)$"
+        - "^%{DATA:destination.user.full_name} \\(%{USERNAME_ONLY:destination.user.name}\\)$"
         - "^%{EMAILADDRESS:destination.user.email}$"
         - "^%{DATA:destination.user.name}$"
+      pattern_definitions:
+        USERNAME_ONLY: "[^()@]+"
   - set:
       tag: set_destination_user_domain_d38bee06
       field: destination.user.domain
@@ -431,7 +443,7 @@ processors:
       tag: set_event_kind_543e5f23
       field: event.kind
       value: alert
-      if: "['Prevent', 'Detect', 'Quarantine'].contains(ctx.checkpoint?.rule_action)"
+      if: "['Prevent', 'Detect', 'Quarantine'].contains(ctx.checkpoint?.rule_action) || (ctx.checkpoint?.rule_action == null && ['Prevent', 'Detect', 'Quarantine'].contains(ctx.checkpoint?.action))"
   - set:
       tag: set_event_kind_31b9e9ac
       field: event.kind
@@ -441,14 +453,14 @@ processors:
       tag: set_event_outcome_e1548f1e
       field: event.outcome
       value: success
-      if: "['Accept', 'Allow'].contains(ctx.checkpoint?.rule_action)"
+      if: "['Accept', 'Allow'].contains(ctx.checkpoint?.rule_action) || (ctx.checkpoint?.rule_action == null && ['Accept', 'Allow'].contains(ctx.checkpoint?.action))"
   - append:
       tag: append_event_type_c2ef1ab7
       field: event.type
       value:
         - allowed
         - connection
-      if: "['Accept', 'Allow'].contains(ctx.checkpoint?.rule_action) && (ctx.checkpoint?.operation != 'Log In' && ctx.checkpoint?.operation != 'Log Out')"
+      if: "(['Accept', 'Allow'].contains(ctx.checkpoint?.rule_action) || (ctx.checkpoint?.rule_action == null && ['Accept', 'Allow'].contains(ctx.checkpoint?.action))) && (ctx.checkpoint?.operation != 'Log In' && ctx.checkpoint?.operation != 'Log Out')"
   - set:
       tag: set_event_outcome_5c62bf3d
       field: event.outcome
@@ -463,14 +475,14 @@ processors:
       tag: set_event_outcome_d309e070
       field: event.outcome
       value: success
-      if: "['Drop', 'Reject', 'Block', 'Prevent'].contains(ctx.checkpoint?.rule_action)"
+      if: "['Drop', 'Reject', 'Block', 'Prevent'].contains(ctx.checkpoint?.rule_action) || (ctx.checkpoint?.rule_action == null && ['Drop', 'Reject', 'Block', 'Prevent'].contains(ctx.checkpoint?.action))"
   - append:
       tag: append_event_type_9006e7fa
       field: event.type
       value:
         - connection
         - denied
-      if: "['Drop', 'Reject', 'Block', 'Prevent'].contains(ctx.checkpoint?.rule_action)"
+      if: "['Drop', 'Reject', 'Block', 'Prevent'].contains(ctx.checkpoint?.rule_action) || (ctx.checkpoint?.rule_action == null && ['Drop', 'Reject', 'Block', 'Prevent'].contains(ctx.checkpoint?.action))"
   - append:
       tag: append_event_category_560dce16
       field: event.category
@@ -481,7 +493,7 @@ processors:
       tag: append_event_category_8303940f
       field: event.category
       value: intrusion_detection
-      if: "['Detect', 'Prevent'].contains(ctx.checkpoint?.rule_action)"
+      if: "['Detect', 'Prevent'].contains(ctx.checkpoint?.rule_action) || (ctx.checkpoint?.rule_action == null && ['Detect', 'Prevent'].contains(ctx.checkpoint?.action))"
       allow_duplicates: false
   - set:
       tag: set_event_outcome_7b0154c9

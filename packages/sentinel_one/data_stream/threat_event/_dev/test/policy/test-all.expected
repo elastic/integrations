@@ -33,6 +33,15 @@ inputs:
                     state.url.trim_right("/") + "/web/api/v2.1/threats?" + {
                       "skipCount": ["true"],
                       "limit": [string(state.batch_size)],
+                      "sortBy": ["updatedAt"],
+                      "sortOrder": ["asc"],
+                      "updatedAt__gte": [
+                        state.?cursor.list_updated_at_gte.orValue(
+                          state.?cursor.last_timestamp.orValue(
+                            (now - duration(state.initial_interval)).format(time_layout.RFC3339)
+                          )
+                        )
+                      ],
                       ?"siteIds": state.?site_ids.optMap(v, [string(v)]),
                       ?"cursor": state.?cursor.next_page.token.optMap(v, [v]),
                     }.format_query()
@@ -51,6 +60,12 @@ inputs:
                             ?"token": (body.?pagination.nextCursor.orValue(null) != null) ? optional.of(body.pagination.nextCursor) : optional.none(),
                           },
                           "fetch_more": body.?pagination.nextCursor.orValue(null) != null,
+                          "list_updated_at_gte": state.?cursor.list_updated_at_gte.orValue(
+                            state.?cursor.last_timestamp.orValue(
+                              (now - duration(state.initial_interval)).format(time_layout.RFC3339)
+                            )
+                          ),
+                          ?"last_timestamp": state.?cursor.last_timestamp,
                         },
                       }
                     )
@@ -69,11 +84,12 @@ inputs:
                         },
                       },
                       "want_more": false,
-                      "cursor": {},
                     }
                   )
                 )
-            ).as(state,
+            ).as(state, has(state.?events.error) ?
+              state
+            :
               state.with(
                 !has(state.?cursor.worklist) ?
                   state
@@ -91,14 +107,20 @@ inputs:
                         "Authorization": ["ApiToken " + state.api_token],
                       },
                     }
-                  ).do_request().as(resp, (resp.StatusCode == 200) ?
-                    resp.Body.decode_json().as(body,
+                  ).do_request().as(resp, (resp.StatusCode == 200 || resp.StatusCode == 404) ?
+                    (
+                      (resp.StatusCode == 200) ?
+                        resp.Body.decode_json()
+                      :
+                        // Do not bother getting 404 body since it's not used.
+                        {}
+                    ).as(body,
                       (body.?pagination.nextCursor.orValue(null) != null).as(has_more_events,
                         {
                           "data": has_more_events ? state.cursor.worklist.data : tail(state.cursor.worklist.data),
                         }.as(new_worklist,
                           {
-                            "events": (has(body.data) && body.data.size() > 0) ?
+                            "events": (resp.StatusCode == 200 && has(body.data) && body.data.size() > 0) ?
                               body.data.map(e,
                                 {
                                   "message": e.encode_json(),
@@ -119,6 +141,20 @@ inputs:
                                 ?"token": has_more_events ? optional.of(body.pagination.nextCursor) : optional.none(),
                               },
                               "fetch_more": state.?cursor.fetch_more.orValue(false),
+                              ?"list_updated_at_gte": (body.?pagination.nextCursor.orValue(null) != null) ?
+                                optional.of(
+                                  state.?cursor.list_updated_at_gte.orValue(
+                                    state.?cursor.last_timestamp.orValue(
+                                      (now - duration(state.initial_interval)).format(time_layout.RFC3339)
+                                    )
+                                  )
+                                )
+                              :
+                                optional.none(),
+                              ?"last_timestamp": has_more_events ?
+                                state.?cursor.last_timestamp
+                              :
+                                state.cursor.worklist.data[0].?threatInfo.updatedAt.or(state.?cursor.last_timestamp),
                             },
                           }
                         )
@@ -145,7 +181,6 @@ inputs:
                   {
                     "events": [],
                     "want_more": false,
-                    "cursor": {},
                   }
               )
             )
@@ -242,6 +277,7 @@ inputs:
           state:
             api_token: ${SECRET_0}
             batch_size: 100
+            initial_interval: 1h
             site_ids: "123"
           tags:
             - preserve_original_event

@@ -3,11 +3,11 @@ description: Pipeline for processing Ticura threat intelligence feed
 processors:
 
   - set:
-      tag: set_ecs_version
+      tag: set_ecs_version_8efb762c
       field: ecs.version
       value: '9.3.0'
   - terminate:
-      tag: data_collection_error
+      tag: data_collection_error_56fe8b4d
       description: Stop early when the collector emitted an error placeholder with no data to process.
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
 
@@ -18,12 +18,12 @@ processors:
   - set:
       field: event.original
       copy_from: message
-      tag: copy_original_message
+      tag: copy_original_message_1f09f0c4
       if: ctx.tags?.contains('preserve_original_event') == true
       ignore_empty_value: true
 
   - json:
-      tag: json_decode_message
+      tag: json_decode_message_2cb9ba91
       field: message
       add_to_root: true
       add_to_root_conflict_strategy: merge
@@ -35,19 +35,19 @@ processors:
   # of ingest, so re-add it whenever event.original was set — otherwise the raw
   # copy is silently stripped after the pipeline runs.
   - append:
-      tag: append_preserve_original_event_tag
+      tag: append_preserve_original_event_tag_3f318a8a
       field: tags
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.event?.original != null
 
   - remove:
-      tag: remove_message
+      tag: remove_message_afcfbb44
       field: message
       ignore_missing: true
 
   - drop:
-      tag: drop_missing_uuid
+      tag: drop_missing_uuid_8c264361
       if: ctx.ticura?.indicator?.uuid == null
       ignore_failure: true
 
@@ -58,15 +58,15 @@ processors:
   # shape and value regardless of what the source sent (append would either
   # duplicate an existing value or leave a matching scalar un-promoted).
   - set:
-      tag: set_event_kind_enrichment
+      tag: set_event_kind_enrichment_3410a97a
       field: event.kind
       value: enrichment
   - set:
-      tag: set_event_type_indicator
+      tag: set_event_type_indicator_acbc82af
       field: event.type
       value: ["indicator"]
   - set:
-      tag: set_event_category_threat
+      tag: set_event_category_threat_4675e36d
       field: event.category
       value: ["threat"]
   # threat.indicator.id is ECS array-typed, but the ECSV1 feed delivers it as a
@@ -74,7 +74,7 @@ processors:
   # scalar to an array on 8.x but is a no-op on 9.x, so use an explicit script for
   # version-stable output.)
   - script:
-      tag: normalize_threat_indicator_id
+      tag: normalize_threat_indicator_id_e3d4741d
       if: ctx.threat?.indicator?.id != null
       lang: painless
       source: |
@@ -89,7 +89,7 @@ processors:
   # latest_indicator transform then keeps the newest version per UUID (by event.ingested)
   # and collapses duplicates that accumulate across index rollovers.
   - fingerprint:
-      tag: fingerprint_id
+      tag: fingerprint_id_96bfa4ee
       fields:
         - ticura.indicator.uuid
         - ticura.indicator.fingerprint
@@ -97,13 +97,13 @@ processors:
       ignore_missing: true
 
   - set:
-      tag: set_ticura_feed_ingest_timestamp
+      tag: set_ticura_feed_ingest_timestamp_750def21
       field: ticura.indicator.feed_ingest_timestamp
       value: "{{{_ingest.timestamp}}}"
 
   # Activity classification for filtering and Elastic Security UI grouping.
   - set:
-      tag: set_event_action
+      tag: set_event_action_a5f949c9
       field: event.action
       value: indicator-update
       override: false
@@ -119,14 +119,14 @@ processors:
   # If neither last_seen nor first_seen is present, @timestamp keeps the
   # Filebeat-supplied ingest time as a last resort.
   - date:
-      tag: date_threat_indicator_last_seen
+      tag: date_threat_indicator_last_seen_fe6a58eb
       field: threat.indicator.last_seen
       target_field: '@timestamp'
       formats: ['ISO8601']
       if: ctx.threat?.indicator?.last_seen != null
       ignore_failure: true
   - date:
-      tag: date_threat_indicator_first_seen
+      tag: date_threat_indicator_first_seen_85f17667
       field: threat.indicator.first_seen
       target_field: '@timestamp'
       formats: ['ISO8601']
@@ -138,17 +138,17 @@ processors:
   # constant_keyword fields in base-fields.yml (stored once in the mapping, not
   # stamped on every document); event.provider and observer.* are set here.
   - set:
-      tag: set_event_provider
+      tag: set_event_provider_1d827d33
       field: event.provider
       value: Ticura
       override: false
   - set:
-      tag: set_observer_vendor
+      tag: set_observer_vendor_5467f70e
       field: observer.vendor
       value: Ticura
       override: false
   - set:
-      tag: set_observer_product
+      tag: set_observer_product_b5f20482
       field: observer.product
       value: Ticura
       override: false
@@ -159,7 +159,7 @@ processors:
   # so a value the source already supplied in the ECS namespace wins; ignore_empty_value
   # skips when risk is absent.
   - set:
-      tag: set_event_severity
+      tag: set_event_severity_ccccebef
       field: event.severity
       copy_from: ticura.indicator.risk
       override: false
@@ -170,91 +170,91 @@ processors:
   # namespace are never replaced. The ticura.indicator.* fields are preserved as-is,
   # giving customers a per-field provenance signal (see README).
   - set:
-      tag: set_threat_technique_id
+      tag: set_threat_technique_id_feec2ead
       field: threat.technique.id
       copy_from: ticura.indicator.technique.id
       override: false
       ignore_empty_value: true
   - set:
-      tag: set_threat_technique_name
+      tag: set_threat_technique_name_08c48fe1
       field: threat.technique.name
       copy_from: ticura.indicator.technique.name
       override: false
       ignore_empty_value: true
   - set:
-      tag: set_threat_technique_reference
+      tag: set_threat_technique_reference_f3224e58
       field: threat.technique.reference
       copy_from: ticura.indicator.technique.reference
       override: false
       ignore_empty_value: true
   - set:
-      tag: set_threat_technique_subtechnique_id
+      tag: set_threat_technique_subtechnique_id_96a4f0ce
       field: threat.technique.subtechnique.id
       copy_from: ticura.indicator.technique.subtechnique.id
       override: false
       ignore_empty_value: true
   - set:
-      tag: set_threat_technique_subtechnique_name
+      tag: set_threat_technique_subtechnique_name_829ba269
       field: threat.technique.subtechnique.name
       copy_from: ticura.indicator.technique.subtechnique.name
       override: false
       ignore_empty_value: true
   - set:
-      tag: set_threat_technique_subtechnique_reference
+      tag: set_threat_technique_subtechnique_reference_ab0c6bfe
       field: threat.technique.subtechnique.reference
       copy_from: ticura.indicator.technique.subtechnique.reference
       override: false
       ignore_empty_value: true
   - set:
-      tag: set_threat_software_id
+      tag: set_threat_software_id_f14cc4ec
       field: threat.software.id
       copy_from: ticura.indicator.software.id
       override: false
       ignore_empty_value: true
   - set:
-      tag: set_threat_software_name
+      tag: set_threat_software_name_2f588d8b
       field: threat.software.name
       copy_from: ticura.indicator.software.name
       override: false
       ignore_empty_value: true
   - set:
-      tag: set_threat_software_type
+      tag: set_threat_software_type_3c451fb7
       field: threat.software.type
       copy_from: ticura.indicator.software.type
       override: false
       ignore_empty_value: true
   - set:
-      tag: set_threat_software_platforms
+      tag: set_threat_software_platforms_c519dd37
       field: threat.software.platforms
       copy_from: ticura.indicator.software.platforms
       override: false
       ignore_empty_value: true
   - set:
-      tag: set_threat_software_alias
+      tag: set_threat_software_alias_176af949
       field: threat.software.alias
       copy_from: ticura.indicator.software.alias
       override: false
       ignore_empty_value: true
   - set:
-      tag: set_threat_software_reference
+      tag: set_threat_software_reference_ea9d79c3
       field: threat.software.reference
       copy_from: ticura.indicator.software.reference
       override: false
       ignore_empty_value: true
   - set:
-      tag: set_threat_group_id
+      tag: set_threat_group_id_bf70ca98
       field: threat.group.id
       copy_from: ticura.indicator.group.id
       override: false
       ignore_empty_value: true
   - set:
-      tag: set_threat_group_name
+      tag: set_threat_group_name_7ed0cbc8
       field: threat.group.name
       copy_from: ticura.indicator.group.name
       override: false
       ignore_empty_value: true
   - set:
-      tag: set_threat_group_reference
+      tag: set_threat_group_reference_3e6c7d65
       field: threat.group.reference
       copy_from: ticura.indicator.group.reference
       override: false
@@ -266,21 +266,21 @@ processors:
   # ECS field from the sub_type. override: false so source-supplied hashes win.
   # Runs BEFORE the related.hash appends so the derived hash reaches related.hash.
   - set:
-      tag: set_threat_indicator_file_hash_sha256
+      tag: set_threat_indicator_file_hash_sha256_8e117489
       field: threat.indicator.file.hash.sha256
       copy_from: threat.indicator.name
       override: false
       if: ctx.ticura?.indicator?.sub_type == 'HASHSHA256' && ctx.threat?.indicator?.name != null
       ignore_empty_value: true
   - set:
-      tag: set_threat_indicator_file_hash_md5
+      tag: set_threat_indicator_file_hash_md5_7bc7de80
       field: threat.indicator.file.hash.md5
       copy_from: threat.indicator.name
       override: false
       if: ctx.ticura?.indicator?.sub_type == 'HASHMD5' && ctx.threat?.indicator?.name != null
       ignore_empty_value: true
   - set:
-      tag: set_threat_indicator_file_hash_sha1
+      tag: set_threat_indicator_file_hash_sha1_e787b913
       field: threat.indicator.file.hash.sha1
       copy_from: threat.indicator.name
       override: false
@@ -294,31 +294,31 @@ processors:
   # de-duplicated.
   - append:
       field: related.ip
-      tag: append_threat_indicator_ip_to_related_ip
+      tag: append_threat_indicator_ip_to_related_ip_f076e618
       value: "{{{threat.indicator.ip}}}"
       if: ctx.threat?.indicator?.ip != null
       allow_duplicates: false
   - append:
       field: related.hash
-      tag: append_threat_indicator_sha256_to_related_hash
+      tag: append_threat_indicator_sha256_to_related_hash_0f381a0f
       value: "{{{threat.indicator.file.hash.sha256}}}"
       if: ctx.threat?.indicator?.file?.hash?.sha256 != null
       allow_duplicates: false
   - append:
       field: related.hash
-      tag: append_threat_indicator_sha1_to_related_hash
+      tag: append_threat_indicator_sha1_to_related_hash_1d995e19
       value: "{{{threat.indicator.file.hash.sha1}}}"
       if: ctx.threat?.indicator?.file?.hash?.sha1 != null
       allow_duplicates: false
   - append:
       field: related.hash
-      tag: append_threat_indicator_md5_to_related_hash
+      tag: append_threat_indicator_md5_to_related_hash_f118f228
       value: "{{{threat.indicator.file.hash.md5}}}"
       if: ctx.threat?.indicator?.file?.hash?.md5 != null
       allow_duplicates: false
   - append:
       field: related.hosts
-      tag: append_threat_indicator_domain_to_related_hosts
+      tag: append_threat_indicator_domain_to_related_hosts_2a492cca
       value: "{{{threat.indicator.url.domain}}}"
       if: ctx.threat?.indicator?.url?.domain != null
       allow_duplicates: false
@@ -331,17 +331,18 @@ processors:
   # delivers threat.indicator.as for resolved IPs). Failures are tolerated (e.g.,
   # private/test IPs).
   - geoip:
-      tag: geoip_geo
+      tag: geoip_geo_9fe7a4de
       field: threat.indicator.ip
       target_field: threat.indicator.geo
       if: ctx.threat?.indicator?.ip != null && ctx.threat?.indicator?.geo == null
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_threat_indicator_geo_2b5aa00a
             field: threat.indicator.geo
             ignore_missing: true
   - geoip:
-      tag: geoip_as
+      tag: geoip_as_c98dcd78
       database_file: GeoLite2-ASN.mmdb
       field: threat.indicator.ip
       target_field: threat.indicator.as
@@ -350,23 +351,23 @@ processors:
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_threat_indicator_as_2bb3b75d
             field: threat.indicator.as
             ignore_missing: true
   # Rename GeoLite2-ASN raw fields to ECS-canonical names.
   - rename:
-      tag: rename_threat_indicator_as_number
+      tag: rename_threat_indicator_as_number_f5473d8b
       field: threat.indicator.as.asn
       target_field: threat.indicator.as.number
       ignore_missing: true
   - rename:
-      tag: rename_threat_indicator_as_organization_name
+      tag: rename_threat_indicator_as_organization_name_831a25ce
       field: threat.indicator.as.organization_name
       target_field: threat.indicator.as.organization.name
       ignore_missing: true
 
-
   - script:
-      tag: painless_merge_enrichment
+      tag: painless_merge_enrichment_ade8aff8
       description: Merge the ticura and additional_info country/industry/actor lists into deduplicated, sorted merged.* arrays.
       lang: painless
       source: |
@@ -431,7 +432,7 @@ processors:
 
   # ----- Cleanup: drop empty strings/arrays/maps left by conditional enrichment -----
   - script:
-      tag: remove_empty_fields
+      tag: remove_empty_fields_0d522c0a
       description: Recursively remove empty strings, arrays, and maps so indexed indicators stay clean.
       lang: painless
       ignore_failure: true
@@ -458,12 +459,12 @@ processors:
   # the pipeline, flag the document as a pipeline error and keep its original copy
   # (mirrors the top-level on_failure below).
   - set:
-      tag: set_event_kind_pipeline_error
+      tag: set_event_kind_pipeline_error_33727aaa
       if: ctx.error?.message != null
       field: event.kind
       value: pipeline_error
   - append:
-      tag: append_preserve_original_event_tag_3
+      tag: append_preserve_original_event_tag_3_26fd6ca5
       if: ctx.error?.message != null
       field: tags
       value: preserve_original_event
@@ -471,18 +472,18 @@ processors:
 
 on_failure:
   - append:
-      tag: append_error_message
+      tag: append_error_message_206bb8ac
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'
   - set:
-      tag: set_event_kind
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   # Fleet's final pipeline strips event.original unless the preserve_original_event
   # tag is present at end of ingest; re-add it so an errored document keeps its raw
   # copy when the user enabled preserve_original_event.
   - append:
-      tag: append_preserve_original_event_tag_2
+      tag: append_preserve_original_event_tag_2_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

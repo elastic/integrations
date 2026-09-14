@@ -2,23 +2,28 @@
 description: Pipeline for Jamf Compliance Reporter aue_setpriority audit logs.
 processors:
   - pipeline:
+      tag: pipeline_identity_object_8cb224f5
       name: '{{ IngestPipeline "pipeline_identity_object" }}'
   - convert:
+      tag: convert_json_arguments_priority_to_jamf_compliance_reporter_log_arguments_priority_1076537e
       field: json.arguments.priority
       target_field: jamf_compliance_reporter.log.arguments.priority
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_99c855b1
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_arguments_which_to_jamf_compliance_reporter_log_arguments_which_4be357b5
       field: json.arguments.which
       target_field: jamf_compliance_reporter.log.arguments.which
       type: string
       ignore_missing: true
       ignore_failure: true
   - convert:
+      tag: convert_json_arguments_who_to_jamf_compliance_reporter_log_arguments_who_d04fef91
       field: json.arguments.who
       target_field: jamf_compliance_reporter.log.arguments.who
       type: string
@@ -26,8 +31,18 @@ processors:
       ignore_failure: true
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_error_message_206bb8ac
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      tag: append_tags_279d5a5c
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
