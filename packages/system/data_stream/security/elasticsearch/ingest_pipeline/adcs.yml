@@ -1,7 +1,5 @@
 ---
-# Keep this pipeline byte-identical in:
-# - packages/system/data_stream/security/elasticsearch/ingest_pipeline/adcs.yml
-# - packages/windows/data_stream/forwarded/elasticsearch/ingest_pipeline/security_adcs.yml
+# Shared with Windows Forwarded through security_adcs.yml.link.
 description: Pipeline for normalizing Active Directory Certificate Services audit events.
 processors:
   - remove:
@@ -175,6 +173,9 @@ processors:
           san: san
         microsoft_sid_uri_prefix: 'tag:microsoft.com,2022-09-14:sid:'
       source: |
+        // Trim space/tab padding at attribute and SAN boundaries.
+        // LF separates lines upstream; parseAttributes removes a terminal CR.
+        // Other whitespace is preserved.
         boolean edgeWhitespace(int character) {
           return character == 32 || character == 9;
         }
@@ -209,7 +210,7 @@ processors:
             if (removeSeparators && (character == 32 || character == 9 || character == 45)) {
               continue;
             }
-            if (character >= 65 && character <= 90) {
+            if ((char)'A' <= character && character <= (char)'Z') {
               character += 32;
             }
             builder.append((char) character);
@@ -224,10 +225,10 @@ processors:
           for (int index = 0; index < prefix.length(); index++) {
             int left = value.charAt(index);
             int right = prefix.charAt(index);
-            if (left >= 65 && left <= 90) {
+            if ((char)'A' <= left && left <= (char)'Z') {
               left += 32;
             }
-            if (right >= 65 && right <= 90) {
+            if ((char)'A' <= right && right <= (char)'Z') {
               right += 32;
             }
             if (left != right) {
@@ -380,7 +381,9 @@ processors:
       value: adcs_normalization_failed
       allow_duplicates: false
       if: ctx._temp_adcs?.status == 'error'
-  # Preserve nonblank names; recognize dotted-decimal identifiers without decoding values.
+  # Preserve the exact extension name, including surrounding whitespace.
+  # The lookahead rejects ASCII-whitespace-only names; [\s\S]+ captures the full name.
+  # Derive an OID only when the entire name matches dotted ASCII decimal.
   - grok:
       tag: parse_adcs_extension_name
       field: winlog.event_data.ExtensionName
