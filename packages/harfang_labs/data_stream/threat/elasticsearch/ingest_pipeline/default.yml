@@ -1,0 +1,293 @@
+---
+description: Parse HarfangLab threat events from CEL API collection.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: '9.3.0'
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      target_field: json
+      tag: parse_json
+      if: ctx.event?.original != null
+  - date:
+      field: json.creation_date
+      target_field: '@timestamp'
+      formats:
+        - ISO8601
+      tag: date_creation_date
+      if: ctx.json?.creation_date != null
+  - date:
+      field: json.first_seen
+      target_field: event.start
+      formats:
+        - ISO8601
+      tag: date_first_seen
+      if: ctx.json?.first_seen != null
+  - set:
+      field: harfang_labs.threat.first_seen
+      tag: set_threat_first_seen
+      copy_from: event.start
+      if: ctx.event?.start != null
+  - date:
+      field: json.last_seen
+      target_field: event.end
+      formats:
+        - ISO8601
+      tag: date_last_seen
+      if: ctx.json?.last_seen != null
+  - set:
+      field: harfang_labs.threat.last_seen
+      tag: set_threat_last_seen
+      copy_from: event.end
+      if: ctx.event?.end != null
+  - date:
+      field: json.last_update
+      target_field: harfang_labs.threat.last_update
+      formats:
+        - ISO8601
+      tag: date_last_update
+      if: ctx.json?.last_update != null
+  - rename:
+      field: json.id
+      target_field: harfang_labs.threat.id
+      ignore_missing: true
+      tag: rename_threat_id
+  - rename:
+      field: json.slug
+      target_field: harfang_labs.threat.slug
+      ignore_missing: true
+      tag: rename_threat_slug
+  - set:
+      field: event.id
+      tag: set_event_id_from_slug
+      copy_from: harfang_labs.threat.slug
+      if: ctx.harfang_labs?.threat?.slug != null
+  - rename:
+      field: json.status
+      target_field: harfang_labs.threat.status
+      ignore_missing: true
+      tag: rename_threat_status
+  - rename:
+      field: json.level
+      target_field: harfang_labs.threat.level
+      ignore_missing: true
+      tag: rename_threat_level
+  - rename:
+      field: json.total_security_event_count
+      target_field: harfang_labs.threat.alert_count
+      ignore_missing: true
+      tag: rename_alert_count
+  - rename:
+      field: json.security_event_count_by_level
+      target_field: harfang_labs.threat.alert_count_by_level
+      ignore_missing: true
+      tag: rename_alert_count_by_level
+  - rename:
+      field: json.agent_count
+      target_field: harfang_labs.threat.agent_count
+      ignore_missing: true
+      tag: rename_agent_count
+  - rename:
+      field: json.rule_count
+      target_field: harfang_labs.threat.rule_count
+      ignore_missing: true
+      tag: rename_rule_count
+  - rename:
+      field: json.agents
+      target_field: harfang_labs.threat.agents
+      ignore_missing: true
+      tag: rename_agents
+  - rename:
+      field: json.impacted_users
+      target_field: harfang_labs.threat.impacted_users
+      ignore_missing: true
+      tag: rename_impacted_users
+  - rename:
+      field: json.rules
+      target_field: harfang_labs.threat.rules
+      ignore_missing: true
+      tag: rename_rules
+  - rename:
+      field: json.top_agents
+      target_field: harfang_labs.threat.top_agents
+      ignore_missing: true
+      tag: rename_top_agents
+  - rename:
+      field: json.top_impacted_users
+      target_field: harfang_labs.threat.top_impacted_users
+      ignore_missing: true
+      tag: rename_top_impacted_users
+  - rename:
+      field: json.top_rules
+      target_field: harfang_labs.threat.top_rules
+      ignore_missing: true
+      tag: rename_top_rules
+  - rename:
+      field: json.note
+      target_field: harfang_labs.threat.note
+      ignore_missing: true
+      tag: rename_note
+  - rename:
+      field: json.mitre_tactics
+      target_field: harfang_labs.threat.mitre_tactics
+      ignore_missing: true
+      tag: rename_mitre_tactics
+  - foreach:
+      field: harfang_labs.threat.mitre_tactics
+      ignore_missing: true
+      tag: foreach_mitre_tactic_to_ecs
+      processor:
+        append:
+          field: threat.tactic.name
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - script:
+      lang: painless
+      tag: map_event_severity
+      description: Map HarfangLab severity level strings to numeric event.severity values.
+      if: ctx.harfang_labs?.threat?.level != null
+      params:
+        severity_map:
+          informational: 0
+          low: 25
+          medium: 50
+          high: 75
+          critical: 99
+      source: |-
+        def level = ctx.harfang_labs.threat.level;
+        if (level != null && params.severity_map.containsKey(level)) {
+          ctx.event = ctx.event ?: [:];
+          ctx.event.severity = params.severity_map.get(level);
+        }
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: alert
+  - append:
+      field: event.category
+      tag: append_event_category
+      value: intrusion_detection
+  - append:
+      field: event.type
+      tag: append_event_type
+      value: info
+  - set:
+      field: event.outcome
+      tag: set_event_outcome
+      value: unknown
+  - foreach:
+      field: harfang_labs.threat.agents
+      tag: append_agent_hostname_to_related
+      if: ctx.harfang_labs?.threat?.agents instanceof List
+      processor:
+        append:
+          field: related.hosts
+          value: '{{{_ingest._value.hostname}}}'
+          allow_duplicates: false
+  - script:
+      lang: painless
+      tag: append_agent_ips_to_related
+      description: Append agent IP addresses from threat agents to related.ip.
+      if: ctx.harfang_labs?.threat?.agents instanceof List
+      source: |-
+        for (def agent : ctx.harfang_labs.threat.agents) {
+          if (agent.ipaddress != null && agent.ipaddress != '') {
+            ctx.related = ctx.related ?: [:];
+            ctx.related.ip = ctx.related.ip ?: [];
+            if (!ctx.related.ip.contains(agent.ipaddress)) {
+              ctx.related.ip.add(agent.ipaddress);
+            }
+          }
+        }
+  - foreach:
+      field: harfang_labs.threat.top_agents
+      tag: append_top_agent_hostname_to_related
+      if: ctx.harfang_labs?.threat?.top_agents instanceof List
+      processor:
+        append:
+          field: related.hosts
+          value: '{{{_ingest._value.agent_hostname}}}'
+          allow_duplicates: false
+  - script:
+      lang: painless
+      tag: append_impacted_users_to_related
+      description: Append impacted user names from DOMAIN\user full_name values to related.user.
+      if: ctx.harfang_labs?.threat?.impacted_users instanceof List
+      source: |-
+        for (def user : ctx.harfang_labs.threat.impacted_users) {
+          if (user.full_name != null) {
+            ctx.related = ctx.related ?: [:];
+            ctx.related.user = ctx.related.user ?: [];
+            String name = user.full_name;
+            int idx = name.indexOf('\\');
+            String username = idx > 0 ? name.substring(idx + 1) : name;
+            if (!ctx.related.user.contains(username)) {
+              ctx.related.user.add(username);
+            }
+          }
+        }
+  - foreach:
+      field: harfang_labs.threat.top_impacted_users
+      tag: append_top_impacted_user_to_related
+      if: ctx.harfang_labs?.threat?.top_impacted_users instanceof List
+      processor:
+        append:
+          field: related.user
+          value: '{{{_ingest._value.user_name}}}'
+          allow_duplicates: false
+  - remove:
+      field:
+        - json
+        - _temp
+      ignore_missing: true
+      tag: remove_temp_fields
+  - append:
+      field: tags
+      tag: append_preserve_original_event_tag
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

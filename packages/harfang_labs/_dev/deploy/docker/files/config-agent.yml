@@ -1,0 +1,359 @@
+rules:
+  # Health check (test-api.py Step 1)
+  - path: /api/version
+    methods: ['GET']
+    request_headers:
+      Authorization:
+        - 'Token fake_token'
+      Accept:
+        - 'application/json'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |
+          {"version": "9.11.0"}
+  # Round 2 — incremental poll after cursor bookmark (must precede round-1 offset=0)
+  - path: /api/data/endpoint/Agent/
+    methods: ['GET']
+    query_params:
+      offset: '0'
+      lastseen__gte: '{since:2024-06-15T10:25:00.*}'
+      limit: '{limit:.*}'
+      ordering: 'lastseen'
+    request_headers:
+      Authorization:
+        - 'Token fake_token'
+      Accept:
+        - 'application/json'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |
+          {
+            "count": 6,
+            "next": null,
+            "previous": null,
+            "results": [
+              {
+                "id": "55555555-5555-5555-5555-555555555555",
+                "hostname": "WS-EXAMPLE-02.example.com",
+                "domainname": "EXAMPLE",
+                "dnsdomainname": "example.local",
+                "ostype": "windows",
+                "osproducttype": "Windows 11 Pro",
+                "osversion": "10.0.22621",
+                "osmajor": 10,
+                "osminor": 0,
+                "osbuild": 22621,
+                "bitness": "x64",
+                "version": "4.9.8",
+                "status": "online",
+                "ipaddress": "192.0.2.22",
+                "external_ipaddress": "198.51.100.22",
+                "firstseen": "2024-06-01T08:00:00.000000Z",
+                "lastseen": "2024-06-15T10:30:00.000000Z",
+                "cpu_count": 4,
+                "cpu_frequency": 3200,
+                "total_memory": 8589934592.0,
+                "isolation_state": false,
+                "group_count": 1,
+                "groups": [
+                  {
+                    "id": "33333333-3333-3333-3333-333333333333",
+                    "name": "DEFAULT"
+                  }
+                ],
+                "policy": {
+                  "id": "44444444-4444-4444-4444-444444444444",
+                  "name": "Default policy",
+                  "revision": 5
+                }
+              }
+            ]
+          }
+  # Round 1 — page 1 (offset 0, dynamic lastseen__gte)
+  # Wrapped with {{ if eq .req_num 1 }} so re-evaluations after round-2 do not return events again.
+  - path: /api/data/endpoint/Agent/
+    methods: ['GET']
+    query_params:
+      offset: '0'
+      lastseen__gte: '{since:.*}'
+      limit: '{limit:.*}'
+      ordering: 'lastseen'
+    request_headers:
+      Authorization:
+        - 'Token fake_token'
+      Accept:
+        - 'application/json'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |
+          {{ if eq .req_num 1 }}
+          {
+            "count": 5,
+            "next": "/api/data/endpoint/Agent/?limit=2&offset=2&ordering=lastseen&lastseen__gte={{ .request.vars.since | urlquery }}",
+            "previous": null,
+            "results": [
+              {
+                "id": "11111111-1111-1111-1111-111111111111",
+                "hostname": "WS-EXAMPLE-01.example.com",
+                "domainname": "EXAMPLE",
+                "dnsdomainname": "example.local",
+                "ostype": "windows",
+                "osproducttype": "Windows 10 Pro",
+                "osversion": "10.0.19041",
+                "osmajor": 10,
+                "osminor": 0,
+                "osbuild": 19041,
+                "bitness": "x64",
+                "version": "4.9.8",
+                "status": "online",
+                "ipaddress": "192.0.2.10",
+                "external_ipaddress": "198.51.100.10",
+                "firstseen": "2024-05-01T08:00:00.000000Z",
+                "lastseen": "2024-06-15T10:21:20.704000Z",
+                "cpu_count": 2,
+                "cpu_frequency": 3393,
+                "total_memory": 4277866496.0,
+                "isolation_state": false,
+                "group_count": 1,
+                "groups": [
+                  {
+                    "id": "33333333-3333-3333-3333-333333333333",
+                    "name": "DEFAULT"
+                  }
+                ],
+                "policy": {
+                  "id": "44444444-4444-4444-4444-444444444444",
+                  "name": "Default policy",
+                  "revision": 5
+                }
+              },
+              {
+                "id": "22222222-2222-2222-2222-222222222222",
+                "hostname": "WS-EXAMPLE-03.example.com",
+                "domainname": "EXAMPLE",
+                "dnsdomainname": "example.local",
+                "ostype": "linux",
+                "osproducttype": "Ubuntu 22.04 LTS",
+                "osversion": "22.04",
+                "osmajor": 22,
+                "osminor": 4,
+                "osbuild": 0,
+                "bitness": "x64",
+                "version": "4.9.8",
+                "status": "offline",
+                "ipaddress": "192.0.2.30",
+                "external_ipaddress": "198.51.100.30",
+                "firstseen": "2024-05-15T08:00:00.000000Z",
+                "lastseen": "2024-06-15T10:22:00.000000Z",
+                "cpu_count": 8,
+                "cpu_frequency": 2800,
+                "total_memory": 17179869184.0,
+                "isolation_state": false,
+                "group_count": 1,
+                "groups": [
+                  {
+                    "id": "33333333-3333-3333-3333-333333333333",
+                    "name": "DEFAULT"
+                  }
+                ],
+                "policy": {
+                  "id": "44444444-4444-4444-4444-444444444444",
+                  "name": "Default policy",
+                  "revision": 5
+                }
+              }
+            ]
+          }
+          {{ else }}
+          {
+            "count": 6,
+            "next": null,
+            "previous": null,
+            "results": []
+          }
+          {{ end }}
+  # Round 1 — page 2 (offset 2)
+  - path: /api/data/endpoint/Agent/
+    methods: ['GET']
+    query_params:
+      offset: '2'
+      lastseen__gte: '{since:.*}'
+      limit: '{limit:.*}'
+      ordering: 'lastseen'
+    request_headers:
+      Authorization:
+        - 'Token fake_token'
+      Accept:
+        - 'application/json'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |
+          {
+            "count": 5,
+            "next": "/api/data/endpoint/Agent/?limit=2&offset=4&ordering=lastseen&lastseen__gte={{ .request.vars.since | urlquery }}",
+            "previous": "/api/data/endpoint/Agent/?limit=2&offset=0&ordering=lastseen&lastseen__gte={{ .request.vars.since | urlquery }}",
+            "results": [
+              {
+                "id": "33333333-3333-3333-3333-333333333333",
+                "hostname": "WS-EXAMPLE-04.example.com",
+                "domainname": "EXAMPLE",
+                "dnsdomainname": "example.local",
+                "ostype": "darwin",
+                "osproducttype": "macOS Sonoma",
+                "osversion": "14.5",
+                "osmajor": 14,
+                "osminor": 5,
+                "osbuild": 0,
+                "bitness": "x64",
+                "version": "4.9.8",
+                "status": "online",
+                "ipaddress": "192.0.2.40",
+                "external_ipaddress": "198.51.100.40",
+                "firstseen": "2024-05-20T08:00:00.000000Z",
+                "lastseen": "2024-06-15T10:23:00.000000Z",
+                "cpu_count": 6,
+                "cpu_frequency": 3100,
+                "total_memory": 12884901888.0,
+                "isolation_state": false,
+                "group_count": 1,
+                "groups": [
+                  {
+                    "id": "33333333-3333-3333-3333-333333333333",
+                    "name": "DEFAULT"
+                  }
+                ],
+                "policy": {
+                  "id": "44444444-4444-4444-4444-444444444444",
+                  "name": "Default policy",
+                  "revision": 5
+                }
+              },
+              {
+                "id": "44444444-4444-4444-4444-444444444444",
+                "hostname": "WS-EXAMPLE-05.example.com",
+                "domainname": "EXAMPLE",
+                "dnsdomainname": "example.local",
+                "ostype": "windows",
+                "osproducttype": "Windows 11 Enterprise",
+                "osversion": "10.0.22631",
+                "osmajor": 10,
+                "osminor": 0,
+                "osbuild": 22631,
+                "bitness": "x64",
+                "version": "4.9.8",
+                "status": "online",
+                "ipaddress": "192.0.2.50",
+                "external_ipaddress": "198.51.100.50",
+                "firstseen": "2024-05-25T08:00:00.000000Z",
+                "lastseen": "2024-06-15T10:24:00.000000Z",
+                "cpu_count": 4,
+                "cpu_frequency": 3000,
+                "total_memory": 8589934592.0,
+                "isolation_state": false,
+                "group_count": 1,
+                "groups": [
+                  {
+                    "id": "33333333-3333-3333-3333-333333333333",
+                    "name": "DEFAULT"
+                  }
+                ],
+                "policy": {
+                  "id": "44444444-4444-4444-4444-444444444444",
+                  "name": "Default policy",
+                  "revision": 5
+                }
+              }
+            ]
+          }
+  # Round 1 — page 3 terminal (offset 4)
+  - path: /api/data/endpoint/Agent/
+    methods: ['GET']
+    query_params:
+      offset: '4'
+      lastseen__gte: '{since:.*}'
+      limit: '{limit:.*}'
+      ordering: 'lastseen'
+    request_headers:
+      Authorization:
+        - 'Token fake_token'
+      Accept:
+        - 'application/json'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |
+          {
+            "count": 5,
+            "next": null,
+            "previous": "/api/data/endpoint/Agent/?limit=2&offset=2&ordering=lastseen&lastseen__gte={{ .request.vars.since | urlquery }}",
+            "results": [
+              {
+                "id": "66666666-6666-6666-6666-666666666666",
+                "hostname": "WS-EXAMPLE-06.example.com",
+                "domainname": "EXAMPLE",
+                "dnsdomainname": "example.local",
+                "ostype": "windows",
+                "osproducttype": "Windows Server 2022",
+                "osversion": "10.0.20348",
+                "osmajor": 10,
+                "osminor": 0,
+                "osbuild": 20348,
+                "bitness": "x64",
+                "version": "4.9.8",
+                "status": "online",
+                "ipaddress": "192.0.2.60",
+                "external_ipaddress": "198.51.100.60",
+                "firstseen": "2024-06-01T08:00:00.000000Z",
+                "lastseen": "2024-06-15T10:25:00.000000Z",
+                "cpu_count": 16,
+                "cpu_frequency": 2600,
+                "total_memory": 34359738368.0,
+                "isolation_state": false,
+                "group_count": 1,
+                "groups": [
+                  {
+                    "id": "33333333-3333-3333-3333-333333333333",
+                    "name": "DEFAULT"
+                  }
+                ],
+                "policy": {
+                  "id": "44444444-4444-4444-4444-444444444444",
+                  "name": "Default policy",
+                  "revision": 5
+                }
+              }
+            ]
+          }
+  # Regression guard — initial request missing time filter (cursor incorrectly cleared)
+  - path: /api/data/endpoint/Agent/
+    methods: ['GET']
+    query_params:
+      offset: '0'
+      limit: '{limit:.*}'
+      ordering: 'lastseen'
+    request_headers:
+      Authorization:
+        - 'Token fake_token'
+      Accept:
+        - 'application/json'
+    responses:
+      - status_code: 400
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |
+          {"detail": "lastseen__gte is required for incremental collection"}

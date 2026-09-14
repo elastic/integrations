@@ -1,0 +1,91 @@
+---
+description: Parse HarfangLab syslog agent connection log events.
+processors:
+  - date:
+      field: harfang_labs.date
+      target_field: '@timestamp'
+      formats:
+        - ISO8601
+      tag: date_connection_date
+      if: ctx.harfang_labs?.date != null
+  - date:
+      field: harfang_labs.date_received
+      target_field: event.created
+      formats:
+        - ISO8601
+      tag: date_date_received
+      if: ctx.harfang_labs?.date_received != null
+  - set:
+      field: agent.id
+      tag: set_agent_id
+      copy_from: harfang_labs.agent_id
+      override: true
+      if: ctx.harfang_labs?.agent_id != null
+  - remove:
+      field: harfang_labs.agent_id
+      tag: remove_harfang_labs_agent_id
+      ignore_missing: true
+  - rename:
+      field: harfang_labs.connection_count
+      target_field: harfang_labs.event.connectionlog.connection_count
+      ignore_missing: true
+      tag: rename_connection_count
+  - rename:
+      field: harfang_labs.telemetry_sum
+      target_field: harfang_labs.event.connectionlog.telemetry_sum
+      ignore_missing: true
+      tag: rename_telemetry_sum
+  - rename:
+      field: harfang_labs.investigation_data_sum
+      target_field: harfang_labs.event.connectionlog.investigation_data_sum
+      ignore_missing: true
+      tag: rename_investigation_data_sum
+  - rename:
+      field: harfang_labs.object_type
+      target_field: harfang_labs.event.connectionlog.object_type
+      ignore_missing: true
+      tag: rename_object_type
+  - rename:
+      field: harfang_labs.tenant
+      target_field: organization.id
+      ignore_missing: true
+      tag: rename_tenant
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+  - append:
+      field: event.category
+      tag: append_event_category_network
+      value: network
+  - append:
+      field: event.category
+      tag: append_event_category_host
+      value: host
+  - append:
+      field: event.type
+      tag: append_event_type_connection
+      value: connection
+  - append:
+      field: event.type
+      tag: append_event_type_info
+      value: info
+  - set:
+      field: event.outcome
+      tag: set_event_outcome
+      value: unknown
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

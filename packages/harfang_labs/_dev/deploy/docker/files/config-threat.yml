@@ -1,0 +1,511 @@
+rules:
+  # Health check (test-api.py Step 1)
+  - path: /api/version
+    methods: ['GET']
+    request_headers:
+      Authorization:
+        - 'Token fake_token'
+      Accept:
+        - 'application/json'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |
+          {"version": "9.11.0"}
+  # Round 2 — incremental poll after cursor bookmark (must precede round-1 offset=0)
+  - path: /api/data/alert/alert/Threat/
+    methods: ['GET']
+    query_params:
+      offset: '0'
+      creation_date__gte: '{since:2024-06-15T10:25:00.*}'
+      limit: '{limit:.*}'
+      ordering: 'creation_date'
+      status: 'new,investigating'
+      level: 'low,medium,high,critical'
+    request_headers:
+      Authorization:
+        - 'Token fake_token'
+      Accept:
+        - 'application/json'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |
+          {
+            "count": 6,
+            "next": null,
+            "previous": null,
+            "results": [
+              {
+                "id": 43,
+                "slug": "medium-sigma-activity-on-ws02",
+                "level": "medium",
+                "status": "new",
+                "creation_date": "2024-06-15T10:30:00.000000Z",
+                "first_seen": "2024-06-15T10:30:00.000000Z",
+                "last_seen": "2024-06-15T10:30:05.000000Z",
+                "last_update": "2024-06-15T10:30:10.000000Z",
+                "total_security_event_count": 2,
+                "security_event_count_by_level": {
+                  "critical": 0,
+                  "high": 0,
+                  "medium": 2,
+                  "low": 0
+                },
+                "agent_count": 1,
+                "rule_count": 1,
+                "mitre_tactics": ["execution"],
+                "agents": [
+                  {
+                    "id": "55555555-5555-5555-5555-555555555555",
+                    "hostname": "ws02.example.com",
+                    "domainname": "example.com",
+                    "osproducttype": "Windows 11 Pro",
+                    "ostype": "windows"
+                  }
+                ],
+                "impacted_users": [
+                  {
+                    "full_name": "EXAMPLE\\asmith",
+                    "user_sid": "S-1-5-21-0000000000-0000000000-0000000000-1200"
+                  }
+                ],
+                "rules": [
+                  {
+                    "rule_name": "Suspicious process creation",
+                    "rule_level": "medium",
+                    "security_event_count": 2
+                  }
+                ],
+                "top_agents": [
+                  {
+                    "agent_hostname": "ws02.example.com",
+                    "agent_id": "55555555-5555-5555-5555-555555555555"
+                  }
+                ],
+                "top_impacted_users": [
+                  {
+                    "user_name": "asmith"
+                  }
+                ],
+                "top_rules": [
+                  {
+                    "rule_name": "Suspicious process creation"
+                  }
+                ],
+                "note": {
+                  "title": "medium-sigma-activity-on-ws02",
+                  "content": "Auto-grouped threat",
+                  "creation_date": "2024-06-15T10:30:00.000000Z",
+                  "last_update": "2024-06-15T10:30:00.000000Z"
+                }
+              }
+            ],
+            "filters": {"wildcard": []}
+          }
+  # Round 1 — page 1 (offset 0, dynamic creation_date__gte)
+  - path: /api/data/alert/alert/Threat/
+    methods: ['GET']
+    query_params:
+      offset: '0'
+      creation_date__gte: '{since:.*}'
+      limit: '{limit:.*}'
+      ordering: 'creation_date'
+      status: 'new,investigating'
+      level: 'low,medium,high,critical'
+    request_headers:
+      Authorization:
+        - 'Token fake_token'
+      Accept:
+        - 'application/json'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |
+          {{ if eq .req_num 1 }}
+          {
+            "count": 5,
+            "next": "/api/data/alert/alert/Threat/?limit=2&offset=2&ordering=creation_date&status=new%2Cinvestigating&level=low%2Cmedium%2Chigh%2Ccritical&creation_date__gte={{ .request.vars.since | urlquery }}",
+            "previous": null,
+            "results": [
+              {
+                "id": 42,
+                "slug": "critical-yara-activity-on-ws01",
+                "level": "critical",
+                "status": "new",
+                "creation_date": "2024-06-15T10:21:20.704000Z",
+                "first_seen": "2024-06-15T10:21:20.704000Z",
+                "last_seen": "2024-06-15T10:22:00.000000Z",
+                "last_update": "2024-06-15T10:22:30.000000Z",
+                "total_security_event_count": 3,
+                "security_event_count_by_level": {
+                  "critical": 1,
+                  "high": 2,
+                  "medium": 0,
+                  "low": 0
+                },
+                "agent_count": 1,
+                "rule_count": 1,
+                "mitre_tactics": ["execution", "defense_evasion"],
+                "agents": [
+                  {
+                    "id": "11111111-1111-1111-1111-111111111111",
+                    "hostname": "ws01.example.com",
+                    "domainname": "example.com",
+                    "osproducttype": "Windows 10 Pro",
+                    "ostype": "windows"
+                  }
+                ],
+                "impacted_users": [
+                  {
+                    "full_name": "EXAMPLE\\jdoe",
+                    "user_sid": "S-1-5-21-0000000000-0000000000-0000000000-1100"
+                  }
+                ],
+                "rules": [
+                  {
+                    "rule_name": "YARA binary check",
+                    "rule_level": "high",
+                    "security_event_count": 3
+                  }
+                ],
+                "top_agents": [
+                  {
+                    "agent_hostname": "ws01.example.com",
+                    "agent_id": "11111111-1111-1111-1111-111111111111"
+                  }
+                ],
+                "top_impacted_users": [
+                  {
+                    "user_name": "jdoe"
+                  }
+                ],
+                "top_rules": [
+                  {
+                    "rule_name": "YARA binary check"
+                  }
+                ],
+                "note": {
+                  "title": "critical-yara-activity-on-ws01",
+                  "content": "Auto-grouped threat",
+                  "creation_date": "2024-06-15T10:21:20.704000Z",
+                  "last_update": "2024-06-15T10:21:20.704000Z"
+                }
+              },
+              {
+                "id": 44,
+                "slug": "high-sigma-activity-on-ws01",
+                "level": "high",
+                "status": "investigating",
+                "creation_date": "2024-06-15T10:22:00.000000Z",
+                "first_seen": "2024-06-15T10:22:00.000000Z",
+                "last_seen": "2024-06-15T10:22:30.000000Z",
+                "last_update": "2024-06-15T10:23:00.000000Z",
+                "total_security_event_count": 2,
+                "security_event_count_by_level": {
+                  "critical": 0,
+                  "high": 2,
+                  "medium": 0,
+                  "low": 0
+                },
+                "agent_count": 1,
+                "rule_count": 1,
+                "mitre_tactics": ["execution"],
+                "agents": [
+                  {
+                    "id": "11111111-1111-1111-1111-111111111111",
+                    "hostname": "ws01.example.com",
+                    "domainname": "example.com",
+                    "osproducttype": "Windows 10 Pro",
+                    "ostype": "windows"
+                  }
+                ],
+                "impacted_users": [],
+                "rules": [
+                  {
+                    "rule_name": "Sigma suspicious execution",
+                    "rule_level": "high",
+                    "security_event_count": 2
+                  }
+                ],
+                "top_agents": [
+                  {
+                    "agent_hostname": "ws01.example.com",
+                    "agent_id": "11111111-1111-1111-1111-111111111111"
+                  }
+                ],
+                "top_impacted_users": [],
+                "top_rules": [
+                  {
+                    "rule_name": "Sigma suspicious execution"
+                  }
+                ],
+                "note": {
+                  "title": "high-sigma-activity-on-ws01",
+                  "content": "Auto-grouped threat",
+                  "creation_date": "2024-06-15T10:22:00.000000Z",
+                  "last_update": "2024-06-15T10:22:00.000000Z"
+                }
+              }
+            ],
+            "filters": {"wildcard": []}
+          }
+          {{ else }}
+          {
+            "count": 6,
+            "next": null,
+            "previous": null,
+            "results": [],
+            "filters": {"wildcard": []}
+          }
+          {{ end }}
+  # Round 1 — page 2 (offset 2)
+  - path: /api/data/alert/alert/Threat/
+    methods: ['GET']
+    query_params:
+      offset: '2'
+      creation_date__gte: '{since:.*}'
+      limit: '{limit:.*}'
+      ordering: 'creation_date'
+      status: 'new,investigating'
+      level: 'low,medium,high,critical'
+    request_headers:
+      Authorization:
+        - 'Token fake_token'
+      Accept:
+        - 'application/json'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |
+          {
+            "count": 5,
+            "next": "/api/data/alert/alert/Threat/?limit=2&offset=4&ordering=creation_date&status=new%2Cinvestigating&level=low%2Cmedium%2Chigh%2Ccritical&creation_date__gte={{ .request.vars.since | urlquery }}",
+            "previous": "/api/data/alert/alert/Threat/?limit=2&offset=0&ordering=creation_date&status=new%2Cinvestigating&level=low%2Cmedium%2Chigh%2Ccritical&creation_date__gte={{ .request.vars.since | urlquery }}",
+            "results": [
+              {
+                "id": 45,
+                "slug": "medium-ioc-activity-on-ws01",
+                "level": "medium",
+                "status": "new",
+                "creation_date": "2024-06-15T10:23:00.000000Z",
+                "first_seen": "2024-06-15T10:23:00.000000Z",
+                "last_seen": "2024-06-15T10:23:30.000000Z",
+                "last_update": "2024-06-15T10:24:00.000000Z",
+                "total_security_event_count": 1,
+                "security_event_count_by_level": {
+                  "critical": 0,
+                  "high": 0,
+                  "medium": 1,
+                  "low": 0
+                },
+                "agent_count": 1,
+                "rule_count": 1,
+                "mitre_tactics": ["defense_evasion"],
+                "agents": [
+                  {
+                    "id": "11111111-1111-1111-1111-111111111111",
+                    "hostname": "ws01.example.com",
+                    "domainname": "example.com",
+                    "osproducttype": "Windows 10 Pro",
+                    "ostype": "windows"
+                  }
+                ],
+                "impacted_users": [],
+                "rules": [
+                  {
+                    "rule_name": "IOC hash match",
+                    "rule_level": "medium",
+                    "security_event_count": 1
+                  }
+                ],
+                "top_agents": [
+                  {
+                    "agent_hostname": "ws01.example.com",
+                    "agent_id": "11111111-1111-1111-1111-111111111111"
+                  }
+                ],
+                "top_impacted_users": [],
+                "top_rules": [
+                  {
+                    "rule_name": "IOC hash match"
+                  }
+                ],
+                "note": {
+                  "title": "medium-ioc-activity-on-ws01",
+                  "content": "Auto-grouped threat",
+                  "creation_date": "2024-06-15T10:23:00.000000Z",
+                  "last_update": "2024-06-15T10:23:00.000000Z"
+                }
+              },
+              {
+                "id": 46,
+                "slug": "low-hlai-activity-on-ws01",
+                "level": "low",
+                "status": "new",
+                "creation_date": "2024-06-15T10:24:00.000000Z",
+                "first_seen": "2024-06-15T10:24:00.000000Z",
+                "last_seen": "2024-06-15T10:24:30.000000Z",
+                "last_update": "2024-06-15T10:25:00.000000Z",
+                "total_security_event_count": 1,
+                "security_event_count_by_level": {
+                  "critical": 0,
+                  "high": 0,
+                  "medium": 0,
+                  "low": 1
+                },
+                "agent_count": 1,
+                "rule_count": 1,
+                "mitre_tactics": ["execution"],
+                "agents": [
+                  {
+                    "id": "11111111-1111-1111-1111-111111111111",
+                    "hostname": "ws01.example.com",
+                    "domainname": "example.com",
+                    "osproducttype": "Windows 10 Pro",
+                    "ostype": "windows"
+                  }
+                ],
+                "impacted_users": [],
+                "rules": [
+                  {
+                    "rule_name": "HLAI anomaly detection",
+                    "rule_level": "low",
+                    "security_event_count": 1
+                  }
+                ],
+                "top_agents": [
+                  {
+                    "agent_hostname": "ws01.example.com",
+                    "agent_id": "11111111-1111-1111-1111-111111111111"
+                  }
+                ],
+                "top_impacted_users": [],
+                "top_rules": [
+                  {
+                    "rule_name": "HLAI anomaly detection"
+                  }
+                ],
+                "note": {
+                  "title": "low-hlai-activity-on-ws01",
+                  "content": "Auto-grouped threat",
+                  "creation_date": "2024-06-15T10:24:00.000000Z",
+                  "last_update": "2024-06-15T10:24:00.000000Z"
+                }
+              }
+            ],
+            "filters": {"wildcard": []}
+          }
+  # Round 1 — page 3 terminal (offset 4)
+  - path: /api/data/alert/alert/Threat/
+    methods: ['GET']
+    query_params:
+      offset: '4'
+      creation_date__gte: '{since:.*}'
+      limit: '{limit:.*}'
+      ordering: 'creation_date'
+      status: 'new,investigating'
+      level: 'low,medium,high,critical'
+    request_headers:
+      Authorization:
+        - 'Token fake_token'
+      Accept:
+        - 'application/json'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |
+          {
+            "count": 5,
+            "next": null,
+            "previous": "/api/data/alert/alert/Threat/?limit=2&offset=2&ordering=creation_date&status=new%2Cinvestigating&level=low%2Cmedium%2Chigh%2Ccritical&creation_date__gte={{ .request.vars.since | urlquery }}",
+            "results": [
+              {
+                "id": 47,
+                "slug": "high-ransom-activity-on-ws01",
+                "level": "high",
+                "status": "investigating",
+                "creation_date": "2024-06-15T10:25:00.000000Z",
+                "first_seen": "2024-06-15T10:25:00.000000Z",
+                "last_seen": "2024-06-15T10:25:30.000000Z",
+                "last_update": "2024-06-15T10:26:00.000000Z",
+                "total_security_event_count": 1,
+                "security_event_count_by_level": {
+                  "critical": 0,
+                  "high": 1,
+                  "medium": 0,
+                  "low": 0
+                },
+                "agent_count": 1,
+                "rule_count": 1,
+                "mitre_tactics": ["impact"],
+                "agents": [
+                  {
+                    "id": "11111111-1111-1111-1111-111111111111",
+                    "hostname": "ws01.example.com",
+                    "domainname": "example.com",
+                    "osproducttype": "Windows 10 Pro",
+                    "ostype": "windows"
+                  }
+                ],
+                "impacted_users": [],
+                "rules": [
+                  {
+                    "rule_name": "Ransomware behavior",
+                    "rule_level": "high",
+                    "security_event_count": 1
+                  }
+                ],
+                "top_agents": [
+                  {
+                    "agent_hostname": "ws01.example.com",
+                    "agent_id": "11111111-1111-1111-1111-111111111111"
+                  }
+                ],
+                "top_impacted_users": [],
+                "top_rules": [
+                  {
+                    "rule_name": "Ransomware behavior"
+                  }
+                ],
+                "note": {
+                  "title": "high-ransom-activity-on-ws01",
+                  "content": "Auto-grouped threat",
+                  "creation_date": "2024-06-15T10:25:00.000000Z",
+                  "last_update": "2024-06-15T10:25:00.000000Z"
+                }
+              }
+            ],
+            "filters": {"wildcard": []}
+          }
+  # Regression guard — initial request missing time filter (cursor incorrectly cleared)
+  - path: /api/data/alert/alert/Threat/
+    methods: ['GET']
+    query_params:
+      offset: '0'
+      limit: '{limit:.*}'
+      ordering: 'creation_date'
+      status: 'new,investigating'
+      level: 'low,medium,high,critical'
+    request_headers:
+      Authorization:
+        - 'Token fake_token'
+      Accept:
+        - 'application/json'
+    responses:
+      - status_code: 400
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |
+          {"detail": "creation_date__gte is required for incremental collection"}

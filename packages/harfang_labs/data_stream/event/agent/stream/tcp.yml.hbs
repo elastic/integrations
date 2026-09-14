@@ -1,0 +1,45 @@
+host: {{listen_address}}:{{listen_port}}
+{{#if max_message_size}}
+max_message_size: {{max_message_size}}
+{{/if}}
+{{#if framing}}
+framing: {{framing}}
+{{/if}}
+{{#if line_delimiter}}
+line_delimiter: "{{line_delimiter}}"
+{{/if}}
+{{#if ssl}}
+ssl: {{ssl}}
+{{/if}}
+{{#if keep_null}}
+keep_null: {{keep_null}}
+{{/if}}
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+fields_under_root: true
+fields:
+  _conf:
+{{#if tz_offset}}
+    tz_offset: "{{tz_offset}}"
+{{/if}}
+processors:
+{{#if preserve_original_event}}
+- copy_fields:
+    fields:
+      - from: message
+        to: event.original
+{{/if}}
+- syslog:
+    field: message
+    format: auto
+{{#if processors}}
+{{processors}}
+{{/if}}
