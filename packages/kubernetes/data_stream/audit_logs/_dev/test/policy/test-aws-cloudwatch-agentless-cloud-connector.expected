@@ -1,0 +1,39 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            agentVersion: ^9.6.0
+            name: kubernetes
+      name: test-aws-cloudwatch-agentless-cloud-connector-kubernetes
+      streams:
+        - api_sleep: 200ms
+          api_timeout: 120s
+          data_stream:
+            dataset: kubernetes.audit_logs
+          log_group_arn: arn:aws:logs:us-east-1:123456789012:log-group:/aws/eks/cluster/audit
+          publisher_pipeline.disable_host: true
+          role_arn: arn:aws:iam::123456789012:role/ElasticKubernetesAuditLogsReadOnly
+          scan_frequency: 1m
+          start_position: beginning
+          tags:
+            - forwarded
+            - kubernetes-audit_logs
+          use_cloud_connectors: true
+      type: aws-cloudwatch
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-kubernetes.audit_logs-*
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references: []
