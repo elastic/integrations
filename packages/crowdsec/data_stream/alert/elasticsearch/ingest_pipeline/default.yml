@@ -1,0 +1,458 @@
+---
+description: Pipeline for parsing CrowdSec alerts.
+processors:
+  # The logfile input delivers the raw alert JSON as `message`; the http_endpoint
+  # input has already decoded it under `json`. Normalise both to `json`.
+  - json:
+      field: message
+      target_field: json
+      if: ctx.json == null && ctx.message instanceof String
+      tag: json_decode_message
+      on_failure:
+        - append:
+            field: error.message
+            value: "failed to json-decode message: {{{_ingest.on_failure_message}}}"
+
+  - set:
+      field: event.original
+      copy_from: message
+      tag: set_event_original
+      if: ctx.tags != null && ctx.tags.contains('preserve_original_event') && ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      if: ctx.event?.original != null || (ctx.tags == null || !ctx.tags.contains('preserve_original_event'))
+
+  # ---- base event metadata ----
+  - set:
+      field: ecs.version
+      value: "8.11.0"
+      tag: set_ecs_version
+  - set:
+      field: observer.vendor
+      value: CrowdSec
+      tag: set_observer_vendor
+  - set:
+      field: observer.product
+      value: CrowdSec
+      tag: set_observer_product
+  - set:
+      field: observer.type
+      value: ips
+      tag: set_observer_type
+  - set:
+      field: event.kind
+      value: alert
+      tag: set_event_kind
+  - append:
+      field: event.category
+      value: intrusion_detection
+      tag: append_event_category
+      allow_duplicates: false
+
+  # ---- timestamps ----
+  - date:
+      field: json.start_at
+      target_field: "@timestamp"
+      formats:
+        - ISO8601
+      tag: date_start_at
+      if: ctx.json?.start_at != null
+      on_failure:
+        - append:
+            field: error.message
+            value: "failed to parse start_at: {{{_ingest.on_failure_message}}}"
+  - date:
+      field: json.start_at
+      target_field: event.start
+      formats:
+        - ISO8601
+      tag: date_event_start
+      if: ctx.json?.start_at != null
+      on_failure:
+        - append:
+            field: error.message
+            value: "failed to parse event.start: {{{_ingest.on_failure_message}}}"
+  - date:
+      field: json.stop_at
+      target_field: event.end
+      formats:
+        - ISO8601
+      tag: date_event_end
+      if: ctx.json?.stop_at != null
+      on_failure:
+        - append:
+            field: error.message
+            value: "failed to parse event.end: {{{_ingest.on_failure_message}}}"
+
+  # ---- identifiers and scenario ----
+  - set:
+      field: event.id
+      copy_from: json.uuid
+      tag: set_event_id
+      ignore_empty_value: true
+  - set:
+      field: crowdsec.alert.uuid
+      copy_from: json.uuid
+      tag: set_alert_uuid
+      ignore_empty_value: true
+  - set:
+      field: event.reason
+      copy_from: json.message
+      tag: set_event_reason
+      ignore_empty_value: true
+  - set:
+      field: rule.name
+      copy_from: json.scenario
+      tag: set_rule_name
+      ignore_empty_value: true
+  - set:
+      field: rule.ruleset
+      value: CrowdSec Hub
+      tag: set_rule_ruleset
+      if: ctx.json?.scenario != null
+  - set:
+      field: crowdsec.scenario.name
+      copy_from: json.scenario
+      tag: set_scenario_name
+      ignore_empty_value: true
+  # CrowdSec Hub items are named <author>/<scenario>. Split the author off so
+  # official (crowdsecurity) and community rules can be told apart and filtered,
+  # and so dashboards can show the scenario without the constant prefix eating
+  # the width of every legend. The second pattern covers a name with no author.
+  - grok:
+      field: crowdsec.scenario.name
+      patterns:
+        - '^%{DATA:crowdsec.scenario.author}/%{GREEDYDATA:crowdsec.scenario.title}$'
+        - '^%{GREEDYDATA:crowdsec.scenario.title}$'
+      tag: grok_scenario_author
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: "failed to split scenario name: {{{_ingest.on_failure_message}}}"
+  - set:
+      field: rule.version
+      copy_from: json.scenario_version
+      tag: set_rule_version
+      ignore_empty_value: true
+  - set:
+      field: crowdsec.scenario.version
+      copy_from: json.scenario_version
+      tag: set_scenario_version
+      ignore_empty_value: true
+  - set:
+      field: crowdsec.scenario.hash
+      copy_from: json.scenario_hash
+      tag: set_scenario_hash
+      ignore_empty_value: true
+
+  # ---- counters and buckets (arrive as strings) ----
+  - convert:
+      field: json.events_count
+      target_field: crowdsec.events_count
+      type: long
+      tag: convert_events_count
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: "failed to convert events_count: {{{_ingest.on_failure_message}}}"
+  - convert:
+      field: json.capacity
+      target_field: crowdsec.capacity
+      type: long
+      tag: convert_capacity
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: "failed to convert capacity: {{{_ingest.on_failure_message}}}"
+  - set:
+      field: crowdsec.leakspeed
+      copy_from: json.leakspeed
+      tag: set_leakspeed
+      ignore_empty_value: true
+  - convert:
+      field: json.simulated
+      target_field: crowdsec.simulated
+      type: boolean
+      tag: convert_simulated
+      ignore_missing: true
+  - convert:
+      field: json.remediation
+      target_field: crowdsec.remediation
+      type: boolean
+      tag: convert_remediation
+      ignore_missing: true
+  - set:
+      field: crowdsec.kind
+      copy_from: json.kind
+      tag: set_crowdsec_kind
+      ignore_empty_value: true
+  - set:
+      field: crowdsec.machine_id
+      copy_from: json.machine_id
+      tag: set_machine_id
+      ignore_empty_value: true
+  - set:
+      field: observer.name
+      copy_from: json.machine_id
+      tag: set_observer_name
+      ignore_empty_value: true
+
+  # ---- source ----
+  - set:
+      field: crowdsec.source.scope
+      copy_from: json.source.scope
+      tag: set_source_scope
+      ignore_empty_value: true
+  - set:
+      field: source.address
+      copy_from: json.source.value
+      tag: set_source_address
+      ignore_empty_value: true
+  # scope Ip means source.value is an address; other scopes (Range, Country, ...)
+  # are not IPs, so only populate source.ip when the scope says so.
+  - set:
+      field: source.ip
+      copy_from: json.source.ip
+      tag: set_source_ip
+      ignore_empty_value: true
+      if: ctx.json?.source?.scope == 'Ip' && ctx.json?.source?.ip != null && ctx.json.source.ip != ''
+  - append:
+      field: related.ip
+      value: "{{{source.ip}}}"
+      tag: append_related_ip
+      allow_duplicates: false
+      if: ctx.source?.ip != null
+  - set:
+      field: crowdsec.source.range
+      copy_from: json.source.range
+      tag: set_source_range
+      ignore_empty_value: true
+  - convert:
+      field: json.source.as_number
+      target_field: source.as.number
+      type: long
+      tag: convert_as_number
+      ignore_missing: true
+      if: ctx.json?.source?.as_number != null && ctx.json.source.as_number != '' && ctx.json.source.as_number != '0'
+      on_failure:
+        - append:
+            field: error.message
+            value: "failed to convert as_number: {{{_ingest.on_failure_message}}}"
+  - set:
+      field: source.as.organization.name
+      copy_from: json.source.as_name
+      tag: set_as_name
+      ignore_empty_value: true
+
+  # ---- geo: prefer the GeoIP database, fall back to CrowdSec's own geo ----
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      tag: geoip_source_ip
+      ignore_missing: true
+      if: ctx.source?.ip != null
+  - geoip:
+      field: source.ip
+      target_field: source.as
+      database_file: GeoLite2-ASN.mmdb
+      properties:
+        - asn
+        - organization_name
+      tag: geoip_source_asn
+      ignore_missing: true
+      if: ctx.source?.ip != null && ctx.source?.as?.number == null
+  - rename:
+      field: source.as.asn
+      target_field: source.as.number
+      tag: rename_source_as_number
+      ignore_missing: true
+  - rename:
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      tag: rename_source_as_org
+      ignore_missing: true
+  # CrowdSec ships a country code (cn) and coordinates on the source; use them
+  # only where the GeoIP database returned nothing (offline installs, or IPs the
+  # database does not know).
+  - set:
+      field: source.geo.country_iso_code
+      copy_from: json.source.cn
+      tag: set_geo_country_fallback
+      ignore_empty_value: true
+      if: ctx.source?.geo?.country_iso_code == null && ctx.json?.source?.cn != null && ctx.json.source.cn != ''
+  - script:
+      lang: painless
+      tag: script_geo_location_fallback
+      description: Build source.geo.location from CrowdSec latitude/longitude when GeoIP had no answer.
+      if: >-
+        ctx.source?.geo?.location == null && ctx.json?.source != null
+        && ctx.json.source.latitude != null && ctx.json.source.longitude != null
+      source: |
+        double lat; double lon;
+        def rlat = ctx.json.source.latitude;
+        def rlon = ctx.json.source.longitude;
+        try { lat = rlat instanceof String ? Double.parseDouble(rlat) : ((Number) rlat).doubleValue(); }
+        catch (Exception e) { return; }
+        try { lon = rlon instanceof String ? Double.parseDouble(rlon) : ((Number) rlon).doubleValue(); }
+        catch (Exception e) { return; }
+        if (lat == 0.0 && lon == 0.0) { return; }
+        if (ctx.source == null) { ctx.source = new HashMap(); }
+        if (ctx.source.geo == null) { ctx.source.geo = new HashMap(); }
+        ctx.source.geo.location = new HashMap();
+        ctx.source.geo.location.lat = lat;
+        ctx.source.geo.location.lon = lon;
+
+  # ---- decisions: keep the array, and lift the first decision to ECS ----
+  - set:
+      field: crowdsec.decisions
+      copy_from: json.decisions
+      tag: set_decisions_structured
+      ignore_empty_value: true
+  - set:
+      field: event.action
+      copy_from: json.decisions.0.type
+      tag: set_event_action
+      ignore_empty_value: true
+  - set:
+      field: crowdsec.decision.type
+      copy_from: json.decisions.0.type
+      tag: set_decision_type
+      ignore_empty_value: true
+  - set:
+      field: crowdsec.decision.duration
+      copy_from: json.decisions.0.duration
+      tag: set_decision_duration
+      ignore_empty_value: true
+  - set:
+      field: crowdsec.decision.origin
+      copy_from: json.decisions.0.origin
+      tag: set_decision_origin
+      ignore_empty_value: true
+  - set:
+      field: crowdsec.decision.scope
+      copy_from: json.decisions.0.scope
+      tag: set_decision_scope
+      ignore_empty_value: true
+  # A ban is a block; anything else is informational.
+  - append:
+      field: event.type
+      value: denied
+      tag: append_event_type_denied
+      allow_duplicates: false
+      if: ctx.crowdsec?.decision?.type == 'ban' || ctx.crowdsec?.decision?.type == 'captcha'
+  - append:
+      field: event.type
+      value: info
+      tag: append_event_type_info
+      allow_duplicates: false
+      if: ctx.event?.type == null
+
+  # ---- alert-level meta: fold [{key,value}] into an object ----
+  - script:
+      lang: painless
+      tag: script_fold_alert_meta
+      description: Fold the alert meta key/value list into crowdsec.alert.meta, decoding JSON-array values.
+      if: ctx.json?.meta instanceof List
+      source: |
+        Map out = new HashMap();
+        for (def kv : ctx.json.meta) {
+          if (kv == null || kv.key == null) { continue; }
+          def v = kv.value;
+          out[kv.key] = v;
+        }
+        if (ctx.crowdsec == null) { ctx.crowdsec = new HashMap(); }
+        if (ctx.crowdsec.alert == null) { ctx.crowdsec.alert = new HashMap(); }
+        ctx.crowdsec.alert.meta = out;
+  # target_uri / method / status / user_agent come as JSON-encoded string arrays.
+  - json:
+      field: crowdsec.alert.meta.target_uri
+      target_field: crowdsec.alert.target_uri
+      tag: json_target_uri
+      if: ctx.crowdsec?.alert?.meta?.target_uri instanceof String
+      on_failure:
+        - append:
+            field: error.message
+            value: "failed to decode target_uri: {{{_ingest.on_failure_message}}}"
+  - json:
+      field: crowdsec.alert.meta.method
+      target_field: http.request.method
+      tag: json_method
+      if: ctx.crowdsec?.alert?.meta?.method instanceof String
+      on_failure:
+        - append:
+            field: error.message
+            value: "failed to decode method: {{{_ingest.on_failure_message}}}"
+  - json:
+      field: crowdsec.alert.meta.user_agent
+      target_field: user_agent.original
+      tag: json_user_agent
+      if: ctx.crowdsec?.alert?.meta?.user_agent instanceof String
+      on_failure:
+        - append:
+            field: error.message
+            value: "failed to decode user_agent: {{{_ingest.on_failure_message}}}"
+  - json:
+      field: crowdsec.alert.meta.status
+      target_field: crowdsec.alert.status
+      tag: json_status
+      if: ctx.crowdsec?.alert?.meta?.status instanceof String
+      on_failure:
+        - append:
+            field: error.message
+            value: "failed to decode status: {{{_ingest.on_failure_message}}}"
+
+  # ---- events: keep count only; the per-event detail is aggregated above ----
+  - script:
+      lang: painless
+      tag: script_events_paths
+      description: Collect distinct request paths and status codes from the alert's events.
+      if: ctx.json?.events instanceof List
+      source: |
+        List paths = new ArrayList();
+        List statuses = new ArrayList();
+        for (def ev : ctx.json.events) {
+          if (ev?.meta instanceof List) {
+            for (def kv : ev.meta) {
+              if (kv?.key == 'http_path' && kv.value != null && !paths.contains(kv.value)) { paths.add(kv.value); }
+              if (kv?.key == 'http_status' && kv.value != null && !statuses.contains(kv.value)) { statuses.add(kv.value); }
+            }
+          }
+        }
+        if (!paths.isEmpty()) {
+          if (ctx.crowdsec == null) { ctx.crowdsec = new HashMap(); }
+          if (ctx.crowdsec.alert == null) { ctx.crowdsec.alert = new HashMap(); }
+          ctx.crowdsec.alert.paths = paths;
+        }
+
+  # ---- cleanup ----
+  - remove:
+      field: json
+      tag: remove_json
+      ignore_missing: true
+  - remove:
+      field:
+        - crowdsec.alert.meta
+      tag: remove_meta_scratch
+      ignore_missing: true
+  - remove:
+      field:
+        - source.as.number
+      tag: remove_zero_as
+      ignore_missing: true
+      if: ctx.source?.as?.number == 0
+
+  # ---- pipeline-wide failure handler ----
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+      tag: set_event_kind_error
+  - append:
+      field: error.message
+      value: "{{{ _ingest.on_failure_message }}}"
+      tag: append_pipeline_error

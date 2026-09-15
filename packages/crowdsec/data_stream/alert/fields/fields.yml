@@ -1,0 +1,85 @@
+- name: crowdsec
+  type: group
+  fields:
+    - name: kind
+      type: keyword
+      description: The kind of object CrowdSec emitted. Always `crowdsec` for an alert.
+    - name: machine_id
+      type: keyword
+      description: Identifier of the CrowdSec machine that raised the alert.
+    - name: capacity
+      type: long
+      description: The bucket capacity of the scenario that fired, i.e. how many events it holds before overflowing.
+    - name: leakspeed
+      type: keyword
+      description: The rate at which the scenario bucket leaks events, for example `10s`.
+    - name: events_count
+      type: long
+      description: Number of events that contributed to the alert.
+    - name: simulated
+      type: boolean
+      description: Whether the alert was produced in simulation mode and carries no enforced decision.
+    - name: remediation
+      type: boolean
+      description: Whether the alert carries a remediation decision.
+    - name: scenario
+      type: group
+      fields:
+        - name: name
+          type: keyword
+          description: Name of the scenario that fired, for example `crowdsecurity/http-probing`.
+        - name: version
+          type: keyword
+          description: Version of the scenario.
+        - name: hash
+          type: keyword
+          description: Hash of the scenario definition at the time it fired.
+        - name: author
+          type: keyword
+          description: Author namespace of the Hub scenario, for example `crowdsecurity` for official scenarios or a community handle.
+        - name: title
+          type: keyword
+          description: Scenario name without its author prefix, for example `http-probing`. Used for display.
+
+    - name: source
+      type: group
+      fields:
+        - name: scope
+          type: keyword
+          description: Scope of the alert source, for example `Ip`, `Range` or `Country`.
+        - name: range
+          type: keyword
+          description: The CIDR range the source belongs to, when CrowdSec resolved one.
+    - name: decision
+      type: group
+      fields:
+        - name: type
+          type: keyword
+          description: Type of the primary remediation, for example `ban` or `captcha`.
+        - name: duration
+          type: keyword
+          description: How long the primary remediation lasts, for example `4h`.
+        - name: origin
+          type: keyword
+          description: Origin of the primary decision, for example `crowdsec` or `CAPI`.
+        - name: scope
+          type: keyword
+          description: Scope of the primary decision, for example `Ip` or `Range`.
+    - name: decisions
+      type: flattened
+      description: The full list of remediation decisions carried by the alert.
+    - name: alert
+      type: group
+      fields:
+        - name: uuid
+          type: keyword
+          description: Unique identifier of the alert.
+        - name: target_uri
+          type: keyword
+          description: Distinct request URIs seen across the events that contributed to the alert.
+        - name: paths
+          type: keyword
+          description: Distinct request paths collected from the alert's events.
+        - name: status
+          type: keyword
+          description: Distinct HTTP status codes seen across the alert's events.
