@@ -1086,7 +1086,7 @@ processors:
   - grok:
       field: aws.cloudtrail.user_identity.arn
       patterns:
-        - "arn:(aws|aws-us-gov):sts:.*/%{GREEDYDATA:user.changes.name}$"
+        - "arn:[a-z0-9-]+:sts:.*/%{GREEDYDATA:user.changes.name}$"
       ignore_missing: true
       if: (ctx.aws?.cloudtrail?.user_identity?.type == 'AssumedRole' || ctx.aws?.cloudtrail?.user_identity?.type == 'FederatedUser') && ctx.aws?.cloudtrail?.user_identity?.arn != null
       tag: extract_user_name_from_arn
