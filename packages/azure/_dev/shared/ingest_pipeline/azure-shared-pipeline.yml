@@ -8,6 +8,7 @@ processors:
   - grok:
       tag: grok_azure_resource_id_a37ae5a2
       field: azure.resource_id
+      if: 'ctx.azure?.resource_id != null'
       patterns:
         - (?i)/subscriptions/%{SUBID:azure.subscription_id}/resourceGroups/%{GROUPID:azure.resource.group}/providers/%{PROVIDERNAME:azure.resource.provider}/namespaces/%{NAMESPACE:azure.resource.namespace}/authorizationRules/%{RULE:azure.resource.authorization_rule}
       pattern_definitions:
@@ -20,7 +21,7 @@ processors:
   - grok:
       tag: grok_azure_resource_id_dec79cc0
       field: azure.resource_id
-      if: 'ctx.azure?.subscription_id == null'
+      if: 'ctx.azure?.resource_id != null && ctx.azure?.subscription_id == null'
       patterns:
       - (?i)/subscriptions/%{SUBID:azure.subscription_id}/resourceGroups/%{GROUPID:azure.resource.group}/providers/%{PROVIDERNAME:azure.resource.provider}/%{NAME:azure.resource.name}
       pattern_definitions:
@@ -32,7 +33,7 @@ processors:
   - grok:
       tag: grok_azure_resource_id_50c4712a
       field: azure.resource_id
-      if: 'ctx.azure?.subscription_id == null'
+      if: 'ctx.azure?.resource_id != null && ctx.azure?.subscription_id == null'
       patterns:
         - (?i)/subscriptions/%{SUBID:azure.subscription_id}/resourceGroups/%{GROUPID:azure.resource.group}/providers/%{PROVIDERNAME:azure.resource.provider}/%{NAME:azure.resource.name}
       pattern_definitions:
@@ -44,7 +45,7 @@ processors:
   - grok:
       tag: grok_azure_resource_id_f149bb55
       field: azure.resource_id
-      if: 'ctx.azure?.subscription_id == null'
+      if: 'ctx.azure?.resource_id != null && ctx.azure?.subscription_id == null'
       patterns:
       - (?i)/providers/%{PROVIDER:azure.resource.provider}
       pattern_definitions:
@@ -53,7 +54,7 @@ processors:
   - grok:
       tag: grok_azure_resource_id_6b41a6b7
       field: azure.resource_id
-      if: 'ctx.azure?.subscription_id == null'
+      if: 'ctx.azure?.resource_id != null && ctx.azure?.subscription_id == null'
       patterns:
         - (?i)/subscriptions/%{SUBID:azure.subscription_id}/providers/%{PROVIDERNAME:azure.resource.provider}
       pattern_definitions:
@@ -63,7 +64,7 @@ processors:
   - grok:
       tag: grok_azure_resource_id_ba700861
       field: azure.resource_id
-      if: 'ctx.azure?.subscription_id == null'
+      if: 'ctx.azure?.resource_id != null && ctx.azure?.subscription_id == null'
       patterns:
         - (?i)/subscriptions/%{SUBID:azure.subscription_id}/resourceGroups/%{GROUPID:azure.resource.group}
       pattern_definitions:
@@ -73,7 +74,7 @@ processors:
   - grok:
       tag: grok_azure_resource_id_0733b345
       field: azure.resource_id
-      if: 'ctx.azure?.subscription_id == null'
+      if: 'ctx.azure?.resource_id != null && ctx.azure?.subscription_id == null'
       patterns:
         - (?i)/subscriptions/%{SUBID:azure.subscription_id}
       pattern_definitions:
@@ -82,7 +83,7 @@ processors:
   - grok:
       tag: grok_azure_resource_id_tenant_8ef5a053
       field: azure.resource_id
-      if: 'ctx.azure?.subscription_id == null && ctx.azure?.tenant_id == null'
+      if: 'ctx.azure?.resource_id != null && ctx.azure?.subscription_id == null && ctx.azure?.tenant_id == null'
       patterns:
         - (?i)/tenants/%{TENANTID:azure.tenant_id}/providers/%{PROVIDERNAME:azure.resource.provider}
       pattern_definitions:
