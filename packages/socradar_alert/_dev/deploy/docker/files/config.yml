@@ -1,4 +1,25 @@
 rules:
+  # Error path: company 999 always fails so the system test can exercise the
+  # CEL error branch and the pipeline's terminate (data_collection_error).
+  - path: /api/company/999/incidents/v4
+    methods: ['GET']
+    query_params:
+      limit: "{limit:.*}"
+      include_total_records: "true"
+      show_page_in_response: "true"
+      page: "1"
+      include_alarm_details: "true"
+      include_company_id: "true"
+      start_date: "{start_date:.*}"
+    request_headers:
+      Api-Key:
+        - xxxx
+    responses:
+      - status_code: 500
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: '{"error": "Internal Server Error"}'
   - path: /api/company/330/incidents/v4
     methods: ['GET']
     query_params:
