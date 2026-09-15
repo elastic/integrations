@@ -81,20 +81,38 @@
                             "store": "appState"
                         },
                         "meta": {
-                            "alias": null,
+                            "alias": "event.dataset: files*",
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+                            "key": "query",
+                            "negate": false,
+                            "type": "custom"
+                        },
+                        "query": {
+                            "wildcard": {
+                                "event.dataset": "files*"
+                            }
+                        }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": "Aggregation",
                             "disabled": false,
                             "field": "event.dataset",
-                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[2].meta.index",
                             "key": "event.dataset",
-                            "negate": false,
+                            "negate": true,
                             "params": {
-                                "query": "files"
+                                "query": "files_agg"
                             },
                             "type": "phrase"
                         },
                         "query": {
                             "match_phrase": {
-                                "event.dataset": "files"
+                                "event.dataset": "files_agg"
                             }
                         }
                     }
@@ -144,7 +162,7 @@
                     }
                 },
                 "gridData": {
-                    "h": 36,
+                    "h": 37,
                     "i": "eeaac2aa-7781-425d-8d40-ca07aec4e833",
                     "w": 11,
                     "x": 0,
@@ -187,9 +205,9 @@
                     }
                 },
                 "gridData": {
-                    "h": 4,
+                    "h": 5,
                     "i": "7cd7bcee-1a07-434b-8729-38270c86442b",
-                    "w": 37,
+                    "w": 28,
                     "x": 11,
                     "y": 0
                 },
@@ -200,10 +218,94 @@
             {
                 "embeddableConfig": {
                     "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "2054fad719cad1586f4939c0fd43d4071c8862ffeb29dc9033641358407a31e0": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "2054fad719cad1586f4939c0fd43d4071c8862ffeb29dc9033641358407a31e0",
+                                    "name": "logs-corelight.files*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "logs-corelight.files*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "2054fad719cad1586f4939c0fd43d4071c8862ffeb29dc9033641358407a31e0",
+                                            "timeField": "@timestamp",
+                                            "title": "logs-corelight.files*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "92201f03-ee82-4771-a0fb-a700e312380f": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "Files Aggregation",
+                                                    "fieldName": "Files Aggregation",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "2054fad719cad1586f4939c0fd43d4071c8862ffeb29dc9033641358407a31e0",
+                                            "query": {
+                                                "esql": "FROM logs-corelight.files*\r\n| WHERE event.dataset  == \"files_agg\"\r\n| STATS count = COUNT()\r\n| EVAL `Files Aggregation` = CASE(count \u003e 0, \"Files Agg Logs Available\", \"No Files Agg Logs\"),\r\n    status = CASE(count \u003e 0, 1, 0)\r\n| KEEP `Files Aggregation`, status"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "query": {
+                                "esql": "FROM logs-corelight.files*\r\n| WHERE event.dataset  == \"files_agg\"\r\n| STATS count = COUNT()\r\n| EVAL `Files Aggregation` = CASE(count \u003e 0, \"Files Agg Logs Available\", \"No Files Agg Logs\"),\r\n    status = CASE(count \u003e 0, 1, 0)\r\n| KEEP `Files Aggregation`, status"
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "Files Aggregation"
+                                    }
+                                ],
+                                "layerId": "92201f03-ee82-4771-a0fb-a700e312380f",
+                                "layerType": "data"
+                            }
+                        },
+                        "title": "Bar vertical stacked",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "disabledActions": [
+                        "OPEN_FLYOUT_ADD_DRILLDOWN"
+                    ],
+                    "enhancements": {},
+                    "hidePanelTitles": true
+                },
+                "gridData": {
+                    "h": 5,
+                    "i": "70d061fb-aeab-4a2b-9b20-20b21474b02b",
+                    "w": 9,
+                    "x": 39,
+                    "y": 0
+                },
+                "panelIndex": "70d061fb-aeab-4a2b-9b20-20b21474b02b",
+                "title": "Files Aggregation",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
                         "references": [
                             {
                                 "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-82ef7ce8-74e4-42a0-af0b-aeb2e348a234",
+                                "name": "indexpattern-datasource-layer-a4d36c81-1466-4bc5-a37e-fe4fe1cd0082",
                                 "type": "index-pattern"
                             }
                         ],
@@ -213,31 +315,13 @@
                                 "formBased": {
                                     "currentIndexPatternId": "logs-*",
                                     "layers": {
-                                        "82ef7ce8-74e4-42a0-af0b-aeb2e348a234": {
+                                        "a4d36c81-1466-4bc5-a37e-fe4fe1cd0082": {
                                             "columnOrder": [
-                                                "8d47a011-22ac-446e-9a54-0a06c551c7c5",
-                                                "8ba7e98c-4ccd-4c54-94af-577a27e0f6e6"
+                                                "0471bd47-b6e9-491e-8e5c-61bea9e23105",
+                                                "3eb07058-2192-42ab-b3b8-d9bfee65b63d"
                                             ],
                                             "columns": {
-                                                "8ba7e98c-4ccd-4c54-94af-577a27e0f6e6": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Count",
-                                                    "operationType": "count",
-                                                    "params": {
-                                                        "emptyAsNull": false,
-                                                        "format": {
-                                                            "id": "number",
-                                                            "params": {
-                                                                "decimals": 0
-                                                            }
-                                                        }
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
-                                                },
-                                                "8d47a011-22ac-446e-9a54-0a06c551c7c5": {
+                                                "0471bd47-b6e9-491e-8e5c-61bea9e23105": {
                                                     "customLabel": true,
                                                     "dataType": "string",
                                                     "isBucketed": true,
@@ -250,7 +334,7 @@
                                                         "includeIsRegex": false,
                                                         "missingBucket": false,
                                                         "orderBy": {
-                                                            "columnId": "8ba7e98c-4ccd-4c54-94af-577a27e0f6e6",
+                                                            "columnId": "3eb07058-2192-42ab-b3b8-d9bfee65b63d",
                                                             "type": "column"
                                                         },
                                                         "orderDirection": "desc",
@@ -258,10 +342,28 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
-                                                        "size": 20
+                                                        "size": 10
                                                     },
                                                     "scale": "ordinal",
                                                     "sourceField": "file.mime_type"
+                                                },
+                                                "3eb07058-2192-42ab-b3b8-d9bfee65b63d": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true,
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
                                                 }
                                             },
                                             "ignoreGlobalFilters": false,
@@ -284,123 +386,14 @@
                                         "store": "appState"
                                     },
                                     "meta": {
-                                        "alias": "NOT is_broadcast: true",
-                                        "disabled": false,
-                                        "index": "b5bdfd46-0352-4308-b594-75f9b1dc0bc9",
-                                        "negate": false,
-                                        "params": [
-                                            {
-                                                "meta": {
-                                                    "alias": null,
-                                                    "disabled": false,
-                                                    "field": "source.ip",
-                                                    "index": "logs-*",
-                                                    "key": "source.ip",
-                                                    "negate": true,
-                                                    "params": [
-                                                        "0.0.0.0",
-                                                        "255.255.255.255"
-                                                    ],
-                                                    "type": "phrases",
-                                                    "value": [
-                                                        "0.0.0.0",
-                                                        "255.255.255.255"
-                                                    ]
-                                                },
-                                                "query": {
-                                                    "bool": {
-                                                        "minimum_should_match": 1,
-                                                        "should": [
-                                                            {
-                                                                "match_phrase": {
-                                                                    "source.ip": "0.0.0.0"
-                                                                }
-                                                            },
-                                                            {
-                                                                "match_phrase": {
-                                                                    "source.ip": "255.255.255.255"
-                                                                }
-                                                            }
-                                                        ]
-                                                    }
-                                                }
-                                            },
-                                            {
-                                                "meta": {
-                                                    "alias": null,
-                                                    "disabled": false,
-                                                    "field": "destination.ip",
-                                                    "index": "logs-*",
-                                                    "key": "destination.ip",
-                                                    "negate": true,
-                                                    "params": [
-                                                        "0.0.0.0",
-                                                        "255.255.255.255"
-                                                    ],
-                                                    "type": "phrases",
-                                                    "value": [
-                                                        "0.0.0.0",
-                                                        "255.255.255.255"
-                                                    ]
-                                                },
-                                                "query": {
-                                                    "bool": {
-                                                        "minimum_should_match": 1,
-                                                        "should": [
-                                                            {
-                                                                "match_phrase": {
-                                                                    "destination.ip": "0.0.0.0"
-                                                                }
-                                                            },
-                                                            {
-                                                                "match_phrase": {
-                                                                    "destination.ip": "255.255.255.255"
-                                                                }
-                                                            }
-                                                        ]
-                                                    }
-                                                }
-                                            }
-                                        ],
-                                        "relation": "OR",
-                                        "type": "combined"
-                                    },
-                                    "query": {}
-                                },
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "field": "file.mime_type",
-                                        "index": "f7619cff-3f07-439b-bb70-086277623759",
-                                        "key": "file.mime_type",
-                                        "negate": true,
-                                        "params": {
-                                            "query": "application/pkix-cert"
-                                        },
-                                        "type": "phrase"
-                                    },
-                                    "query": {
-                                        "match_phrase": {
-                                            "file.mime_type": "application/pkix-cert"
-                                        }
-                                    }
-                                },
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
                                         "alias": null,
                                         "disabled": false,
                                         "field": "observer.hostname",
-                                        "index": "4901d4e1-cc78-4ac2-947a-3fb128dd1a81",
+                                        "index": "dd2393e5-874b-4454-be7c-f27ec99baf00",
                                         "key": "observer.hostname",
                                         "negate": false,
-                                        "type": "exists"
+                                        "type": "exists",
+                                        "value": "exists"
                                     },
                                     "query": {
                                         "exists": {
@@ -416,14 +409,37 @@
                                         "alias": null,
                                         "disabled": false,
                                         "field": "file.mime_type",
-                                        "index": "60ee415e-28fa-48dc-bdd1-143f8219a014",
+                                        "index": "01fc0e5e-c2f8-44c5-9f02-a5956e49c616",
                                         "key": "file.mime_type",
                                         "negate": false,
-                                        "type": "exists"
+                                        "type": "exists",
+                                        "value": "exists"
                                     },
                                     "query": {
                                         "exists": {
                                             "field": "file.mime_type"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "file.mime_type",
+                                        "index": "b4f0bbdc-64ab-44fd-9003-4f2fc3029fd5",
+                                        "key": "file.mime_type",
+                                        "negate": true,
+                                        "params": {
+                                            "query": "application/pkix-cert"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "file.mime_type": "application/pkix-cert"
                                         }
                                     }
                                 }
@@ -437,7 +453,7 @@
                                 "layers": [
                                     {
                                         "accessors": [
-                                            "8ba7e98c-4ccd-4c54-94af-577a27e0f6e6"
+                                            "3eb07058-2192-42ab-b3b8-d9bfee65b63d"
                                         ],
                                         "colorMapping": {
                                             "assignments": [],
@@ -457,12 +473,12 @@
                                                 }
                                             ]
                                         },
-                                        "layerId": "82ef7ce8-74e4-42a0-af0b-aeb2e348a234",
+                                        "layerId": "a4d36c81-1466-4bc5-a37e-fe4fe1cd0082",
                                         "layerType": "data",
                                         "position": "top",
-                                        "seriesType": "bar_horizontal",
+                                        "seriesType": "bar_horizontal_stacked",
                                         "showGridlines": false,
-                                        "xAccessor": "8d47a011-22ac-446e-9a54-0a06c551c7c5"
+                                        "xAccessor": "0471bd47-b6e9-491e-8e5c-61bea9e23105"
                                     }
                                 ],
                                 "legend": {
@@ -471,7 +487,7 @@
                                     "shouldTruncate": false,
                                     "showSingleSeries": false
                                 },
-                                "preferredSeriesType": "bar",
+                                "preferredSeriesType": "bar_stacked",
                                 "title": "Empty XY chart",
                                 "valueLabels": "hide"
                             }
@@ -480,178 +496,17 @@
                         "type": "lens",
                         "visualizationType": "lnsXY"
                     },
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
-                    },
-                    "filters": [
-                        {
-                            "$state": {
-                                "store": "appState"
-                            },
-                            "meta": {
-                                "alias": "NOT is_broadcast: true",
-                                "disabled": false,
-                                "index": "b5bdfd46-0352-4308-b594-75f9b1dc0bc9",
-                                "negate": false,
-                                "params": [
-                                    {
-                                        "meta": {
-                                            "alias": null,
-                                            "disabled": false,
-                                            "field": "source.ip",
-                                            "index": "logs-*",
-                                            "key": "source.ip",
-                                            "negate": true,
-                                            "params": [
-                                                "0.0.0.0",
-                                                "255.255.255.255"
-                                            ],
-                                            "type": "phrases",
-                                            "value": [
-                                                "0.0.0.0",
-                                                "255.255.255.255"
-                                            ]
-                                        },
-                                        "query": {
-                                            "bool": {
-                                                "minimum_should_match": 1,
-                                                "should": [
-                                                    {
-                                                        "match_phrase": {
-                                                            "source.ip": "0.0.0.0"
-                                                        }
-                                                    },
-                                                    {
-                                                        "match_phrase": {
-                                                            "source.ip": "255.255.255.255"
-                                                        }
-                                                    }
-                                                ]
-                                            }
-                                        }
-                                    },
-                                    {
-                                        "meta": {
-                                            "alias": null,
-                                            "disabled": false,
-                                            "field": "destination.ip",
-                                            "index": "logs-*",
-                                            "key": "destination.ip",
-                                            "negate": true,
-                                            "params": [
-                                                "0.0.0.0",
-                                                "255.255.255.255"
-                                            ],
-                                            "type": "phrases",
-                                            "value": [
-                                                "0.0.0.0",
-                                                "255.255.255.255"
-                                            ]
-                                        },
-                                        "query": {
-                                            "bool": {
-                                                "minimum_should_match": 1,
-                                                "should": [
-                                                    {
-                                                        "match_phrase": {
-                                                            "destination.ip": "0.0.0.0"
-                                                        }
-                                                    },
-                                                    {
-                                                        "match_phrase": {
-                                                            "destination.ip": "255.255.255.255"
-                                                        }
-                                                    }
-                                                ]
-                                            }
-                                        }
-                                    }
-                                ],
-                                "relation": "OR",
-                                "type": "combined"
-                            },
-                            "query": {}
-                        },
-                        {
-                            "$state": {
-                                "store": "appState"
-                            },
-                            "meta": {
-                                "alias": null,
-                                "disabled": false,
-                                "field": "file.mime_type",
-                                "index": "f7619cff-3f07-439b-bb70-086277623759",
-                                "key": "file.mime_type",
-                                "negate": true,
-                                "params": {
-                                    "query": "application/pkix-cert"
-                                },
-                                "type": "phrase"
-                            },
-                            "query": {
-                                "match_phrase": {
-                                    "file.mime_type": "application/pkix-cert"
-                                }
-                            }
-                        },
-                        {
-                            "$state": {
-                                "store": "appState"
-                            },
-                            "meta": {
-                                "alias": null,
-                                "disabled": false,
-                                "field": "observer.hostname",
-                                "index": "4901d4e1-cc78-4ac2-947a-3fb128dd1a81",
-                                "key": "observer.hostname",
-                                "negate": false,
-                                "type": "exists"
-                            },
-                            "query": {
-                                "exists": {
-                                    "field": "observer.hostname"
-                                }
-                            }
-                        },
-                        {
-                            "$state": {
-                                "store": "appState"
-                            },
-                            "meta": {
-                                "alias": null,
-                                "disabled": false,
-                                "field": "file.mime_type",
-                                "index": "60ee415e-28fa-48dc-bdd1-143f8219a014",
-                                "key": "file.mime_type",
-                                "negate": false,
-                                "type": "exists"
-                            },
-                            "query": {
-                                "exists": {
-                                    "field": "file.mime_type"
-                                }
-                            }
-                        }
-                    ],
-                    "query": {
-                        "language": "kuery",
-                        "query": ""
-                    },
-                    "syncColors": false,
-                    "syncCursor": true,
-                    "syncTooltips": false
+                    "enhancements": {}
                 },
                 "gridData": {
                     "h": 16,
-                    "i": "6833a252-fba1-48cb-bd4d-7d8a0c6b054c",
+                    "i": "557e8007-b1b6-4ac9-82d6-7d03242c2e1d",
                     "w": 37,
                     "x": 11,
-                    "y": 4
+                    "y": 5
                 },
-                "panelIndex": "6833a252-fba1-48cb-bd4d-7d8a0c6b054c",
-                "title": "Top 20 Mime Types by File Count [Logs Corelight]",
+                "panelIndex": "557e8007-b1b6-4ac9-82d6-7d03242c2e1d",
+                "title": "Top 10 Mime Types by File Count",
                 "type": "lens"
             },
             {
@@ -683,7 +538,7 @@
                                         }
                                     ],
                                     "layers": {
-                                        "cde03ffc-0b20-4571-a8b9-2b676e0fadf0": {
+                                        "0a3f5894-6c36-461d-8f67-fa3d8bee37f4": {
                                             "columns": [
                                                 {
                                                     "columnId": "Mime Type",
@@ -713,7 +568,7 @@
                                             ],
                                             "index": "2054fad719cad1586f4939c0fd43d4071c8862ffeb29dc9033641358407a31e0",
                                             "query": {
-                                                "esql": "FROM logs-corelight.files*\r\n| WHERE event.dataset == \"files\" AND file.mime_type == \"application/x-dosexec\" AND (NOT file.name RLIKE \".*exe.*\")\r\n| LIMIT 10000\r\n| STATS COUNT() by file.name, file.mime_type \r\n| RENAME file.mime_type AS `Mime Type`, file.name  AS Filename, `COUNT()` AS Count\r\n| SORT Count DESC\r\n| LIMIT 15\r\n| KEEP `Mime Type`, Filename, Count"
+                                                "esql": "FROM logs-corelight.files*\r\n| WHERE observer.hostname IS NOT NULL AND event.dataset LIKE  \"files*\" AND file.mime_type == \"application/x-dosexec\" AND (NOT file.name RLIKE \".*exe.*\")\r\n| LIMIT 10000\r\n| STATS COUNT() by file.name, file.mime_type \r\n| RENAME file.mime_type AS `Mime Type`, file.name  AS Filename, `COUNT()` AS Count\r\n| SORT Count DESC\r\n| LIMIT 15\r\n| KEEP `Mime Type`, Filename, Count"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -722,7 +577,7 @@
                             },
                             "filters": [],
                             "query": {
-                                "esql": "FROM logs-corelight.files*\r\n| WHERE event.dataset == \"files\" AND file.mime_type == \"application/x-dosexec\" AND (NOT file.name RLIKE \".*exe.*\")\r\n| LIMIT 10000\r\n| STATS COUNT() by file.name, file.mime_type \r\n| RENAME file.mime_type AS `Mime Type`, file.name  AS Filename, `COUNT()` AS Count\r\n| SORT Count DESC\r\n| LIMIT 15\r\n| KEEP `Mime Type`, Filename, Count"
+                                "esql": "FROM logs-corelight.files*\r\n| WHERE observer.hostname IS NOT NULL AND event.dataset LIKE  \"files*\" AND file.mime_type == \"application/x-dosexec\" AND (NOT file.name RLIKE \".*exe.*\")\r\n| LIMIT 10000\r\n| STATS COUNT() by file.name, file.mime_type \r\n| RENAME file.mime_type AS `Mime Type`, file.name  AS Filename, `COUNT()` AS Count\r\n| SORT Count DESC\r\n| LIMIT 15\r\n| KEEP `Mime Type`, Filename, Count"
                             },
                             "visualization": {
                                 "columns": [
@@ -736,12 +591,8 @@
                                         "columnId": "Count"
                                     }
                                 ],
-                                "layerId": "cde03ffc-0b20-4571-a8b9-2b676e0fadf0",
-                                "layerType": "data",
-                                "paging": {
-                                    "enabled": true,
-                                    "size": 10
-                                }
+                                "layerId": "0a3f5894-6c36-461d-8f67-fa3d8bee37f4",
+                                "layerType": "data"
                             }
                         },
                         "title": "Bar vertical stacked",
@@ -752,28 +603,17 @@
                     "disabledActions": [
                         "OPEN_FLYOUT_ADD_DRILLDOWN"
                     ],
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
-                    },
-                    "filters": [],
-                    "query": {
-                        "esql": "FROM logs-corelight.files*\r\n| WHERE event.dataset == \"files\" AND file.mime_type == \"application/x-dosexec\" AND (NOT file.name RLIKE \".*exe.*\")\r\n| LIMIT 10000\r\n| STATS COUNT() by file.name, file.mime_type \r\n| RENAME file.mime_type AS `Mime Type`, file.name  AS Filename, `COUNT()` AS Count\r\n| SORT Count DESC\r\n| LIMIT 15\r\n| KEEP `Mime Type`, Filename, Count"
-                    },
-                    "syncColors": false,
-                    "syncCursor": true,
-                    "syncTooltips": false
+                    "enhancements": {}
                 },
                 "gridData": {
                     "h": 16,
-                    "i": "2cbb6e54-2d29-433d-b0f7-514421d221cd",
+                    "i": "a3b863e1-7939-4662-b9e5-aa004603a2b8",
                     "w": 23,
                     "x": 11,
-                    "y": 20
+                    "y": 21
                 },
-                "panelIndex": "2cbb6e54-2d29-433d-b0f7-514421d221cd",
-                "title": "Corelight Mime Type to Filename Check [Logs Corelight]",
+                "panelIndex": "a3b863e1-7939-4662-b9e5-aa004603a2b8",
+                "title": "Corelight Mime Type to Filename Check",
                 "type": "lens"
             },
             {
@@ -782,7 +622,7 @@
                         "references": [
                             {
                                 "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-f73d497e-9555-4428-b949-a7f0ef5a3194",
+                                "name": "indexpattern-datasource-layer-a4d36c81-1466-4bc5-a37e-fe4fe1cd0082",
                                 "type": "index-pattern"
                             }
                         ],
@@ -792,13 +632,13 @@
                                 "formBased": {
                                     "currentIndexPatternId": "logs-*",
                                     "layers": {
-                                        "f73d497e-9555-4428-b949-a7f0ef5a3194": {
+                                        "a4d36c81-1466-4bc5-a37e-fe4fe1cd0082": {
                                             "columnOrder": [
-                                                "c50cb4aa-6fe4-46f2-9273-a9e439196fa1",
-                                                "c6924b31-50a1-4c4a-97e9-60714aacb677"
+                                                "0471bd47-b6e9-491e-8e5c-61bea9e23105",
+                                                "3eb07058-2192-42ab-b3b8-d9bfee65b63d"
                                             ],
                                             "columns": {
-                                                "c50cb4aa-6fe4-46f2-9273-a9e439196fa1": {
+                                                "0471bd47-b6e9-491e-8e5c-61bea9e23105": {
                                                     "customLabel": true,
                                                     "dataType": "string",
                                                     "isBucketed": true,
@@ -811,7 +651,7 @@
                                                         "includeIsRegex": false,
                                                         "missingBucket": false,
                                                         "orderBy": {
-                                                            "columnId": "c6924b31-50a1-4c4a-97e9-60714aacb677",
+                                                            "columnId": "3eb07058-2192-42ab-b3b8-d9bfee65b63d",
                                                             "type": "column"
                                                         },
                                                         "orderDirection": "desc",
@@ -819,16 +659,17 @@
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
+                                                        "secondaryFields": [],
                                                         "size": 10
                                                     },
                                                     "scale": "ordinal",
                                                     "sourceField": "network.protocol"
                                                 },
-                                                "c6924b31-50a1-4c4a-97e9-60714aacb677": {
+                                                "3eb07058-2192-42ab-b3b8-d9bfee65b63d": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "File Count",
+                                                    "label": "Count",
                                                     "operationType": "count",
                                                     "params": {
                                                         "emptyAsNull": false,
@@ -863,101 +704,14 @@
                                         "store": "appState"
                                     },
                                     "meta": {
-                                        "alias": "NOT is_broadcast: true",
-                                        "disabled": false,
-                                        "index": "7ba3ef82-a999-4eb2-8952-918c66dfe0ac",
-                                        "negate": false,
-                                        "params": [
-                                            {
-                                                "meta": {
-                                                    "alias": null,
-                                                    "disabled": false,
-                                                    "field": "source.ip",
-                                                    "index": "logs-*",
-                                                    "key": "source.ip",
-                                                    "negate": true,
-                                                    "params": [
-                                                        "0.0.0.0",
-                                                        "255.255.255.255"
-                                                    ],
-                                                    "type": "phrases",
-                                                    "value": [
-                                                        "0.0.0.0",
-                                                        "255.255.255.255"
-                                                    ]
-                                                },
-                                                "query": {
-                                                    "bool": {
-                                                        "minimum_should_match": 1,
-                                                        "should": [
-                                                            {
-                                                                "match_phrase": {
-                                                                    "source.ip": "0.0.0.0"
-                                                                }
-                                                            },
-                                                            {
-                                                                "match_phrase": {
-                                                                    "source.ip": "255.255.255.255"
-                                                                }
-                                                            }
-                                                        ]
-                                                    }
-                                                }
-                                            },
-                                            {
-                                                "meta": {
-                                                    "alias": null,
-                                                    "disabled": false,
-                                                    "field": "destination.ip",
-                                                    "index": "logs-*",
-                                                    "key": "destination.ip",
-                                                    "negate": true,
-                                                    "params": [
-                                                        "0.0.0.0",
-                                                        "255.255.255.255"
-                                                    ],
-                                                    "type": "phrases",
-                                                    "value": [
-                                                        "0.0.0.0",
-                                                        "255.255.255.255"
-                                                    ]
-                                                },
-                                                "query": {
-                                                    "bool": {
-                                                        "minimum_should_match": 1,
-                                                        "should": [
-                                                            {
-                                                                "match_phrase": {
-                                                                    "destination.ip": "0.0.0.0"
-                                                                }
-                                                            },
-                                                            {
-                                                                "match_phrase": {
-                                                                    "destination.ip": "255.255.255.255"
-                                                                }
-                                                            }
-                                                        ]
-                                                    }
-                                                }
-                                            }
-                                        ],
-                                        "relation": "OR",
-                                        "type": "combined"
-                                    },
-                                    "query": {}
-                                },
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
                                         "alias": null,
                                         "disabled": false,
                                         "field": "observer.hostname",
-                                        "index": "93cb4c07-a68a-4c9c-949d-3a60a06ddd33",
+                                        "index": "dd2393e5-874b-4454-be7c-f27ec99baf00",
                                         "key": "observer.hostname",
                                         "negate": false,
-                                        "type": "exists"
+                                        "type": "exists",
+                                        "value": "exists"
                                     },
                                     "query": {
                                         "exists": {
@@ -973,17 +727,15 @@
                                         "alias": null,
                                         "disabled": false,
                                         "field": "file.mime_type",
-                                        "index": "f99edf26-8f35-4944-a136-386a4e9236d2",
+                                        "index": "01fc0e5e-c2f8-44c5-9f02-a5956e49c616",
                                         "key": "file.mime_type",
-                                        "negate": true,
-                                        "params": {
-                                            "query": "application/pkix-cert"
-                                        },
-                                        "type": "phrase"
+                                        "negate": false,
+                                        "type": "exists",
+                                        "value": "exists"
                                     },
                                     "query": {
-                                        "match_phrase": {
-                                            "file.mime_type": "application/pkix-cert"
+                                        "exists": {
+                                            "field": "file.mime_type"
                                         }
                                     }
                                 },
@@ -995,14 +747,17 @@
                                         "alias": null,
                                         "disabled": false,
                                         "field": "file.mime_type",
-                                        "index": "f6eb4f73-8cb4-412d-a5a7-5b21981a6811",
+                                        "index": "b4f0bbdc-64ab-44fd-9003-4f2fc3029fd5",
                                         "key": "file.mime_type",
-                                        "negate": false,
-                                        "type": "exists"
+                                        "negate": true,
+                                        "params": {
+                                            "query": "application/pkix-cert"
+                                        },
+                                        "type": "phrase"
                                     },
                                     "query": {
-                                        "exists": {
-                                            "field": "file.mime_type"
+                                        "match_phrase": {
+                                            "file.mime_type": "application/pkix-cert"
                                         }
                                     }
                                 }
@@ -1034,16 +789,16 @@
                                                 }
                                             ]
                                         },
-                                        "layerId": "f73d497e-9555-4428-b949-a7f0ef5a3194",
+                                        "layerId": "a4d36c81-1466-4bc5-a37e-fe4fe1cd0082",
                                         "layerType": "data",
                                         "legendDisplay": "show",
                                         "metrics": [
-                                            "c6924b31-50a1-4c4a-97e9-60714aacb677"
+                                            "3eb07058-2192-42ab-b3b8-d9bfee65b63d"
                                         ],
                                         "nestedLegend": false,
                                         "numberDisplay": "percent",
                                         "primaryGroups": [
-                                            "c50cb4aa-6fe4-46f2-9273-a9e439196fa1"
+                                            "0471bd47-b6e9-491e-8e5c-61bea9e23105"
                                         ],
                                         "truncateLegend": false
                                     }
@@ -1055,178 +810,17 @@
                         "type": "lens",
                         "visualizationType": "lnsPie"
                     },
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
-                    },
-                    "filters": [
-                        {
-                            "$state": {
-                                "store": "appState"
-                            },
-                            "meta": {
-                                "alias": "NOT is_broadcast: true",
-                                "disabled": false,
-                                "index": "7ba3ef82-a999-4eb2-8952-918c66dfe0ac",
-                                "negate": false,
-                                "params": [
-                                    {
-                                        "meta": {
-                                            "alias": null,
-                                            "disabled": false,
-                                            "field": "source.ip",
-                                            "index": "logs-*",
-                                            "key": "source.ip",
-                                            "negate": true,
-                                            "params": [
-                                                "0.0.0.0",
-                                                "255.255.255.255"
-                                            ],
-                                            "type": "phrases",
-                                            "value": [
-                                                "0.0.0.0",
-                                                "255.255.255.255"
-                                            ]
-                                        },
-                                        "query": {
-                                            "bool": {
-                                                "minimum_should_match": 1,
-                                                "should": [
-                                                    {
-                                                        "match_phrase": {
-                                                            "source.ip": "0.0.0.0"
-                                                        }
-                                                    },
-                                                    {
-                                                        "match_phrase": {
-                                                            "source.ip": "255.255.255.255"
-                                                        }
-                                                    }
-                                                ]
-                                            }
-                                        }
-                                    },
-                                    {
-                                        "meta": {
-                                            "alias": null,
-                                            "disabled": false,
-                                            "field": "destination.ip",
-                                            "index": "logs-*",
-                                            "key": "destination.ip",
-                                            "negate": true,
-                                            "params": [
-                                                "0.0.0.0",
-                                                "255.255.255.255"
-                                            ],
-                                            "type": "phrases",
-                                            "value": [
-                                                "0.0.0.0",
-                                                "255.255.255.255"
-                                            ]
-                                        },
-                                        "query": {
-                                            "bool": {
-                                                "minimum_should_match": 1,
-                                                "should": [
-                                                    {
-                                                        "match_phrase": {
-                                                            "destination.ip": "0.0.0.0"
-                                                        }
-                                                    },
-                                                    {
-                                                        "match_phrase": {
-                                                            "destination.ip": "255.255.255.255"
-                                                        }
-                                                    }
-                                                ]
-                                            }
-                                        }
-                                    }
-                                ],
-                                "relation": "OR",
-                                "type": "combined"
-                            },
-                            "query": {}
-                        },
-                        {
-                            "$state": {
-                                "store": "appState"
-                            },
-                            "meta": {
-                                "alias": null,
-                                "disabled": false,
-                                "field": "observer.hostname",
-                                "index": "93cb4c07-a68a-4c9c-949d-3a60a06ddd33",
-                                "key": "observer.hostname",
-                                "negate": false,
-                                "type": "exists"
-                            },
-                            "query": {
-                                "exists": {
-                                    "field": "observer.hostname"
-                                }
-                            }
-                        },
-                        {
-                            "$state": {
-                                "store": "appState"
-                            },
-                            "meta": {
-                                "alias": null,
-                                "disabled": false,
-                                "field": "file.mime_type",
-                                "index": "f99edf26-8f35-4944-a136-386a4e9236d2",
-                                "key": "file.mime_type",
-                                "negate": true,
-                                "params": {
-                                    "query": "application/pkix-cert"
-                                },
-                                "type": "phrase"
-                            },
-                            "query": {
-                                "match_phrase": {
-                                    "file.mime_type": "application/pkix-cert"
-                                }
-                            }
-                        },
-                        {
-                            "$state": {
-                                "store": "appState"
-                            },
-                            "meta": {
-                                "alias": null,
-                                "disabled": false,
-                                "field": "file.mime_type",
-                                "index": "f6eb4f73-8cb4-412d-a5a7-5b21981a6811",
-                                "key": "file.mime_type",
-                                "negate": false,
-                                "type": "exists"
-                            },
-                            "query": {
-                                "exists": {
-                                    "field": "file.mime_type"
-                                }
-                            }
-                        }
-                    ],
-                    "query": {
-                        "language": "kuery",
-                        "query": ""
-                    },
-                    "syncColors": false,
-                    "syncCursor": true,
-                    "syncTooltips": false
+                    "enhancements": {}
                 },
                 "gridData": {
                     "h": 16,
-                    "i": "7db4925b-9c90-4d60-a780-37213bd85f3e",
+                    "i": "d954507f-85d9-45cf-9919-810d9a886b7a",
                     "w": 14,
                     "x": 34,
-                    "y": 20
+                    "y": 21
                 },
-                "panelIndex": "7db4925b-9c90-4d60-a780-37213bd85f3e",
-                "title": "Top File Protocols by File Count [Logs Corelight]",
+                "panelIndex": "d954507f-85d9-45cf-9919-810d9a886b7a",
+                "title": "Top File Protocols by File Count",
                 "type": "lens"
             },
             {
@@ -1266,7 +860,7 @@
                     "i": "9f2ae999-7a4d-43a4-b8f3-02a2f5ed4698",
                     "w": 48,
                     "x": 0,
-                    "y": 36
+                    "y": 37
                 },
                 "panelIndex": "9f2ae999-7a4d-43a4-b8f3-02a2f5ed4698",
                 "title": "",
@@ -1278,7 +872,7 @@
                         "references": [
                             {
                                 "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-aa62b6fc-5c2a-4906-949c-6f312a971d54",
+                                "name": "indexpattern-datasource-layer-a4d36c81-1466-4bc5-a37e-fe4fe1cd0082",
                                 "type": "index-pattern"
                             }
                         ],
@@ -1288,17 +882,17 @@
                                 "formBased": {
                                     "currentIndexPatternId": "logs-*",
                                     "layers": {
-                                        "aa62b6fc-5c2a-4906-949c-6f312a971d54": {
+                                        "a4d36c81-1466-4bc5-a37e-fe4fe1cd0082": {
                                             "columnOrder": [
-                                                "41bd222e-daaf-4170-865a-32211359d183",
-                                                "b541bdcb-e210-4ae1-8ecf-9b61254c6a0d"
+                                                "0471bd47-b6e9-491e-8e5c-61bea9e23105",
+                                                "3eb07058-2192-42ab-b3b8-d9bfee65b63d"
                                             ],
                                             "columns": {
-                                                "41bd222e-daaf-4170-865a-32211359d183": {
+                                                "0471bd47-b6e9-491e-8e5c-61bea9e23105": {
                                                     "customLabel": true,
-                                                    "dataType": "string",
+                                                    "dataType": "ip",
                                                     "isBucketed": true,
-                                                    "label": "Source Host",
+                                                    "label": "Source IP",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -1307,7 +901,7 @@
                                                         "includeIsRegex": false,
                                                         "missingBucket": false,
                                                         "orderBy": {
-                                                            "columnId": "b541bdcb-e210-4ae1-8ecf-9b61254c6a0d",
+                                                            "columnId": "3eb07058-2192-42ab-b3b8-d9bfee65b63d",
                                                             "type": "column"
                                                         },
                                                         "orderDirection": "desc",
@@ -1319,9 +913,9 @@
                                                         "size": 10
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "files.tx_hosts"
+                                                    "sourceField": "source.ip"
                                                 },
-                                                "b541bdcb-e210-4ae1-8ecf-9b61254c6a0d": {
+                                                "3eb07058-2192-42ab-b3b8-d9bfee65b63d": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
@@ -1362,7 +956,7 @@
                                     "meta": {
                                         "alias": "NOT is_broadcast: true",
                                         "disabled": false,
-                                        "index": "5759ec8b-2424-4fba-be6a-96bc6da0cd90",
+                                        "index": "00c2a7e5-f733-417b-afd7-58abdd872562",
                                         "negate": false,
                                         "params": [
                                             {
@@ -1438,7 +1032,7 @@
                                                 }
                                             }
                                         ],
-                                        "relation": "OR",
+                                        "relation": "AND",
                                         "type": "combined"
                                     },
                                     "query": {}
@@ -1450,8 +1044,27 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
+                                        "field": "observer.hostname",
+                                        "index": "dd2393e5-874b-4454-be7c-f27ec99baf00",
+                                        "key": "observer.hostname",
+                                        "negate": false,
+                                        "type": "exists"
+                                    },
+                                    "query": {
+                                        "exists": {
+                                            "field": "observer.hostname"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
                                         "field": "file.mime_type",
-                                        "index": "9c51268e-315a-4270-aab0-c370f3461b91",
+                                        "index": "01fc0e5e-c2f8-44c5-9f02-a5956e49c616",
                                         "key": "file.mime_type",
                                         "negate": false,
                                         "type": "exists"
@@ -1471,17 +1084,13 @@
                             "visualization": {
                                 "columns": [
                                     {
-                                        "columnId": "41bd222e-daaf-4170-865a-32211359d183",
-                                        "isMetric": false,
-                                        "isTransposed": false
+                                        "columnId": "0471bd47-b6e9-491e-8e5c-61bea9e23105"
                                     },
                                     {
-                                        "columnId": "b541bdcb-e210-4ae1-8ecf-9b61254c6a0d",
-                                        "isMetric": true,
-                                        "isTransposed": false
+                                        "columnId": "3eb07058-2192-42ab-b3b8-d9bfee65b63d"
                                     }
                                 ],
-                                "layerId": "aa62b6fc-5c2a-4906-949c-6f312a971d54",
+                                "layerId": "a4d36c81-1466-4bc5-a37e-fe4fe1cd0082",
                                 "layerType": "data"
                             }
                         },
@@ -1489,137 +1098,17 @@
                         "type": "lens",
                         "visualizationType": "lnsDatatable"
                     },
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
-                    },
-                    "filters": [
-                        {
-                            "$state": {
-                                "store": "appState"
-                            },
-                            "meta": {
-                                "alias": "NOT is_broadcast: true",
-                                "disabled": false,
-                                "index": "5759ec8b-2424-4fba-be6a-96bc6da0cd90",
-                                "negate": false,
-                                "params": [
-                                    {
-                                        "meta": {
-                                            "alias": null,
-                                            "disabled": false,
-                                            "field": "source.ip",
-                                            "index": "logs-*",
-                                            "key": "source.ip",
-                                            "negate": true,
-                                            "params": [
-                                                "0.0.0.0",
-                                                "255.255.255.255"
-                                            ],
-                                            "type": "phrases",
-                                            "value": [
-                                                "0.0.0.0",
-                                                "255.255.255.255"
-                                            ]
-                                        },
-                                        "query": {
-                                            "bool": {
-                                                "minimum_should_match": 1,
-                                                "should": [
-                                                    {
-                                                        "match_phrase": {
-                                                            "source.ip": "0.0.0.0"
-                                                        }
-                                                    },
-                                                    {
-                                                        "match_phrase": {
-                                                            "source.ip": "255.255.255.255"
-                                                        }
-                                                    }
-                                                ]
-                                            }
-                                        }
-                                    },
-                                    {
-                                        "meta": {
-                                            "alias": null,
-                                            "disabled": false,
-                                            "field": "destination.ip",
-                                            "index": "logs-*",
-                                            "key": "destination.ip",
-                                            "negate": true,
-                                            "params": [
-                                                "0.0.0.0",
-                                                "255.255.255.255"
-                                            ],
-                                            "type": "phrases",
-                                            "value": [
-                                                "0.0.0.0",
-                                                "255.255.255.255"
-                                            ]
-                                        },
-                                        "query": {
-                                            "bool": {
-                                                "minimum_should_match": 1,
-                                                "should": [
-                                                    {
-                                                        "match_phrase": {
-                                                            "destination.ip": "0.0.0.0"
-                                                        }
-                                                    },
-                                                    {
-                                                        "match_phrase": {
-                                                            "destination.ip": "255.255.255.255"
-                                                        }
-                                                    }
-                                                ]
-                                            }
-                                        }
-                                    }
-                                ],
-                                "relation": "OR",
-                                "type": "combined"
-                            },
-                            "query": {}
-                        },
-                        {
-                            "$state": {
-                                "store": "appState"
-                            },
-                            "meta": {
-                                "alias": null,
-                                "disabled": false,
-                                "field": "file.mime_type",
-                                "index": "9c51268e-315a-4270-aab0-c370f3461b91",
-                                "key": "file.mime_type",
-                                "negate": false,
-                                "type": "exists"
-                            },
-                            "query": {
-                                "exists": {
-                                    "field": "file.mime_type"
-                                }
-                            }
-                        }
-                    ],
-                    "query": {
-                        "language": "kuery",
-                        "query": ""
-                    },
-                    "syncColors": false,
-                    "syncCursor": true,
-                    "syncTooltips": false
+                    "enhancements": {}
                 },
                 "gridData": {
                     "h": 16,
-                    "i": "7071f201-af3a-4a3d-a4b7-f4ca911951dc",
+                    "i": "8dfcee30-fff0-475f-8476-4649e037563f",
                     "w": 24,
                     "x": 0,
-                    "y": 40
+                    "y": 41
                 },
-                "panelIndex": "7071f201-af3a-4a3d-a4b7-f4ca911951dc",
-                "title": "Top Transmitting (tx_host) Hosts by number of files [Logs Corelight]",
+                "panelIndex": "8dfcee30-fff0-475f-8476-4649e037563f",
+                "title": "Top Transmitting (src_ip) Hosts by Number of Files",
                 "type": "lens"
             },
             {
@@ -1628,7 +1117,7 @@
                         "references": [
                             {
                                 "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-aa62b6fc-5c2a-4906-949c-6f312a971d54",
+                                "name": "indexpattern-datasource-layer-a4d36c81-1466-4bc5-a37e-fe4fe1cd0082",
                                 "type": "index-pattern"
                             }
                         ],
@@ -1638,17 +1127,17 @@
                                 "formBased": {
                                     "currentIndexPatternId": "logs-*",
                                     "layers": {
-                                        "aa62b6fc-5c2a-4906-949c-6f312a971d54": {
+                                        "a4d36c81-1466-4bc5-a37e-fe4fe1cd0082": {
                                             "columnOrder": [
-                                                "41bd222e-daaf-4170-865a-32211359d183",
-                                                "b541bdcb-e210-4ae1-8ecf-9b61254c6a0d"
+                                                "0471bd47-b6e9-491e-8e5c-61bea9e23105",
+                                                "3eb07058-2192-42ab-b3b8-d9bfee65b63d"
                                             ],
                                             "columns": {
-                                                "41bd222e-daaf-4170-865a-32211359d183": {
+                                                "0471bd47-b6e9-491e-8e5c-61bea9e23105": {
                                                     "customLabel": true,
-                                                    "dataType": "string",
+                                                    "dataType": "ip",
                                                     "isBucketed": true,
-                                                    "label": "Source Host",
+                                                    "label": "Source IP",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -1657,7 +1146,7 @@
                                                         "includeIsRegex": false,
                                                         "missingBucket": false,
                                                         "orderBy": {
-                                                            "columnId": "b541bdcb-e210-4ae1-8ecf-9b61254c6a0d",
+                                                            "columnId": "3eb07058-2192-42ab-b3b8-d9bfee65b63d",
                                                             "type": "column"
                                                         },
                                                         "orderDirection": "desc",
@@ -1669,9 +1158,9 @@
                                                         "size": 10
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "files.tx_hosts"
+                                                    "sourceField": "source.ip"
                                                 },
-                                                "b541bdcb-e210-4ae1-8ecf-9b61254c6a0d": {
+                                                "3eb07058-2192-42ab-b3b8-d9bfee65b63d": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
@@ -1680,7 +1169,7 @@
                                                     "params": {
                                                         "emptyAsNull": false,
                                                         "format": {
-                                                            "id": "number",
+                                                            "id": "bytes",
                                                             "params": {
                                                                 "decimals": 0
                                                             }
@@ -1712,7 +1201,7 @@
                                     "meta": {
                                         "alias": "NOT is_broadcast: true",
                                         "disabled": false,
-                                        "index": "05c6758c-1d97-4315-9b6b-e5e298c8b973",
+                                        "index": "00c2a7e5-f733-417b-afd7-58abdd872562",
                                         "negate": false,
                                         "params": [
                                             {
@@ -1788,7 +1277,7 @@
                                                 }
                                             }
                                         ],
-                                        "relation": "OR",
+                                        "relation": "AND",
                                         "type": "combined"
                                     },
                                     "query": {}
@@ -1800,8 +1289,27 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
+                                        "field": "observer.hostname",
+                                        "index": "dd2393e5-874b-4454-be7c-f27ec99baf00",
+                                        "key": "observer.hostname",
+                                        "negate": false,
+                                        "type": "exists"
+                                    },
+                                    "query": {
+                                        "exists": {
+                                            "field": "observer.hostname"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
                                         "field": "file.mime_type",
-                                        "index": "bc08c59e-cb41-4d2e-8871-eab303e041c5",
+                                        "index": "01fc0e5e-c2f8-44c5-9f02-a5956e49c616",
                                         "key": "file.mime_type",
                                         "negate": false,
                                         "type": "exists"
@@ -1821,17 +1329,13 @@
                             "visualization": {
                                 "columns": [
                                     {
-                                        "columnId": "41bd222e-daaf-4170-865a-32211359d183",
-                                        "isMetric": false,
-                                        "isTransposed": false
+                                        "columnId": "0471bd47-b6e9-491e-8e5c-61bea9e23105"
                                     },
                                     {
-                                        "columnId": "b541bdcb-e210-4ae1-8ecf-9b61254c6a0d",
-                                        "isMetric": true,
-                                        "isTransposed": false
+                                        "columnId": "3eb07058-2192-42ab-b3b8-d9bfee65b63d"
                                     }
                                 ],
-                                "layerId": "aa62b6fc-5c2a-4906-949c-6f312a971d54",
+                                "layerId": "a4d36c81-1466-4bc5-a37e-fe4fe1cd0082",
                                 "layerType": "data"
                             }
                         },
@@ -1839,137 +1343,17 @@
                         "type": "lens",
                         "visualizationType": "lnsDatatable"
                     },
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
-                    },
-                    "filters": [
-                        {
-                            "$state": {
-                                "store": "appState"
-                            },
-                            "meta": {
-                                "alias": "NOT is_broadcast: true",
-                                "disabled": false,
-                                "index": "05c6758c-1d97-4315-9b6b-e5e298c8b973",
-                                "negate": false,
-                                "params": [
-                                    {
-                                        "meta": {
-                                            "alias": null,
-                                            "disabled": false,
-                                            "field": "source.ip",
-                                            "index": "logs-*",
-                                            "key": "source.ip",
-                                            "negate": true,
-                                            "params": [
-                                                "0.0.0.0",
-                                                "255.255.255.255"
-                                            ],
-                                            "type": "phrases",
-                                            "value": [
-                                                "0.0.0.0",
-                                                "255.255.255.255"
-                                            ]
-                                        },
-                                        "query": {
-                                            "bool": {
-                                                "minimum_should_match": 1,
-                                                "should": [
-                                                    {
-                                                        "match_phrase": {
-                                                            "source.ip": "0.0.0.0"
-                                                        }
-                                                    },
-                                                    {
-                                                        "match_phrase": {
-                                                            "source.ip": "255.255.255.255"
-                                                        }
-                                                    }
-                                                ]
-                                            }
-                                        }
-                                    },
-                                    {
-                                        "meta": {
-                                            "alias": null,
-                                            "disabled": false,
-                                            "field": "destination.ip",
-                                            "index": "logs-*",
-                                            "key": "destination.ip",
-                                            "negate": true,
-                                            "params": [
-                                                "0.0.0.0",
-                                                "255.255.255.255"
-                                            ],
-                                            "type": "phrases",
-                                            "value": [
-                                                "0.0.0.0",
-                                                "255.255.255.255"
-                                            ]
-                                        },
-                                        "query": {
-                                            "bool": {
-                                                "minimum_should_match": 1,
-                                                "should": [
-                                                    {
-                                                        "match_phrase": {
-                                                            "destination.ip": "0.0.0.0"
-                                                        }
-                                                    },
-                                                    {
-                                                        "match_phrase": {
-                                                            "destination.ip": "255.255.255.255"
-                                                        }
-                                                    }
-                                                ]
-                                            }
-                                        }
-                                    }
-                                ],
-                                "relation": "OR",
-                                "type": "combined"
-                            },
-                            "query": {}
-                        },
-                        {
-                            "$state": {
-                                "store": "appState"
-                            },
-                            "meta": {
-                                "alias": null,
-                                "disabled": false,
-                                "field": "file.mime_type",
-                                "index": "bc08c59e-cb41-4d2e-8871-eab303e041c5",
-                                "key": "file.mime_type",
-                                "negate": false,
-                                "type": "exists"
-                            },
-                            "query": {
-                                "exists": {
-                                    "field": "file.mime_type"
-                                }
-                            }
-                        }
-                    ],
-                    "query": {
-                        "language": "kuery",
-                        "query": ""
-                    },
-                    "syncColors": false,
-                    "syncCursor": true,
-                    "syncTooltips": false
+                    "enhancements": {}
                 },
                 "gridData": {
                     "h": 16,
-                    "i": "90d89b9c-b506-45fb-a721-3cb9ab29fed4",
+                    "i": "322b313f-3210-480b-ab42-c39cde71f3b7",
                     "w": 24,
                     "x": 24,
-                    "y": 40
+                    "y": 41
                 },
-                "panelIndex": "90d89b9c-b506-45fb-a721-3cb9ab29fed4",
-                "title": "Top Transmitting (tx_host) Hosts - Bytes [Logs Corelight]",
+                "panelIndex": "322b313f-3210-480b-ab42-c39cde71f3b7",
+                "title": "Top Transmitting (src_ip) Hosts - Bytes",
                 "type": "lens"
             },
             {
@@ -1978,7 +1362,7 @@
                         "references": [
                             {
                                 "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-aa62b6fc-5c2a-4906-949c-6f312a971d54",
+                                "name": "indexpattern-datasource-layer-a4d36c81-1466-4bc5-a37e-fe4fe1cd0082",
                                 "type": "index-pattern"
                             }
                         ],
@@ -1988,17 +1372,17 @@
                                 "formBased": {
                                     "currentIndexPatternId": "logs-*",
                                     "layers": {
-                                        "aa62b6fc-5c2a-4906-949c-6f312a971d54": {
+                                        "a4d36c81-1466-4bc5-a37e-fe4fe1cd0082": {
                                             "columnOrder": [
-                                                "41bd222e-daaf-4170-865a-32211359d183",
-                                                "b541bdcb-e210-4ae1-8ecf-9b61254c6a0d"
+                                                "0471bd47-b6e9-491e-8e5c-61bea9e23105",
+                                                "3eb07058-2192-42ab-b3b8-d9bfee65b63d"
                                             ],
                                             "columns": {
-                                                "41bd222e-daaf-4170-865a-32211359d183": {
+                                                "0471bd47-b6e9-491e-8e5c-61bea9e23105": {
                                                     "customLabel": true,
-                                                    "dataType": "string",
+                                                    "dataType": "ip",
                                                     "isBucketed": true,
-                                                    "label": "Destination Host",
+                                                    "label": "Destination IP",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -2007,7 +1391,7 @@
                                                         "includeIsRegex": false,
                                                         "missingBucket": false,
                                                         "orderBy": {
-                                                            "columnId": "b541bdcb-e210-4ae1-8ecf-9b61254c6a0d",
+                                                            "columnId": "3eb07058-2192-42ab-b3b8-d9bfee65b63d",
                                                             "type": "column"
                                                         },
                                                         "orderDirection": "desc",
@@ -2019,9 +1403,9 @@
                                                         "size": 10
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "files.rx_hosts"
+                                                    "sourceField": "destination.ip"
                                                 },
-                                                "b541bdcb-e210-4ae1-8ecf-9b61254c6a0d": {
+                                                "3eb07058-2192-42ab-b3b8-d9bfee65b63d": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
@@ -2041,6 +1425,7 @@
                                                 }
                                             },
                                             "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
                                             "indexPatternId": "logs-*",
                                             "sampling": 1
                                         }
@@ -2061,7 +1446,7 @@
                                     "meta": {
                                         "alias": "NOT is_broadcast: true",
                                         "disabled": false,
-                                        "index": "ac7eb31a-de51-470f-9aee-ca8e0814bea8",
+                                        "index": "00c2a7e5-f733-417b-afd7-58abdd872562",
                                         "negate": false,
                                         "params": [
                                             {
@@ -2137,7 +1522,7 @@
                                                 }
                                             }
                                         ],
-                                        "relation": "OR",
+                                        "relation": "AND",
                                         "type": "combined"
                                     },
                                     "query": {}
@@ -2149,8 +1534,27 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
+                                        "field": "observer.hostname",
+                                        "index": "dd2393e5-874b-4454-be7c-f27ec99baf00",
+                                        "key": "observer.hostname",
+                                        "negate": false,
+                                        "type": "exists"
+                                    },
+                                    "query": {
+                                        "exists": {
+                                            "field": "observer.hostname"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
                                         "field": "file.mime_type",
-                                        "index": "9c51268e-315a-4270-aab0-c370f3461b91",
+                                        "index": "01fc0e5e-c2f8-44c5-9f02-a5956e49c616",
                                         "key": "file.mime_type",
                                         "negate": false,
                                         "type": "exists"
@@ -2170,17 +1574,13 @@
                             "visualization": {
                                 "columns": [
                                     {
-                                        "columnId": "41bd222e-daaf-4170-865a-32211359d183",
-                                        "isMetric": false,
-                                        "isTransposed": false
+                                        "columnId": "0471bd47-b6e9-491e-8e5c-61bea9e23105"
                                     },
                                     {
-                                        "columnId": "b541bdcb-e210-4ae1-8ecf-9b61254c6a0d",
-                                        "isMetric": true,
-                                        "isTransposed": false
+                                        "columnId": "3eb07058-2192-42ab-b3b8-d9bfee65b63d"
                                     }
                                 ],
-                                "layerId": "aa62b6fc-5c2a-4906-949c-6f312a971d54",
+                                "layerId": "a4d36c81-1466-4bc5-a37e-fe4fe1cd0082",
                                 "layerType": "data"
                             }
                         },
@@ -2188,137 +1588,17 @@
                         "type": "lens",
                         "visualizationType": "lnsDatatable"
                     },
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
-                    },
-                    "filters": [
-                        {
-                            "$state": {
-                                "store": "appState"
-                            },
-                            "meta": {
-                                "alias": "NOT is_broadcast: true",
-                                "disabled": false,
-                                "index": "ac7eb31a-de51-470f-9aee-ca8e0814bea8",
-                                "negate": false,
-                                "params": [
-                                    {
-                                        "meta": {
-                                            "alias": null,
-                                            "disabled": false,
-                                            "field": "source.ip",
-                                            "index": "logs-*",
-                                            "key": "source.ip",
-                                            "negate": true,
-                                            "params": [
-                                                "0.0.0.0",
-                                                "255.255.255.255"
-                                            ],
-                                            "type": "phrases",
-                                            "value": [
-                                                "0.0.0.0",
-                                                "255.255.255.255"
-                                            ]
-                                        },
-                                        "query": {
-                                            "bool": {
-                                                "minimum_should_match": 1,
-                                                "should": [
-                                                    {
-                                                        "match_phrase": {
-                                                            "source.ip": "0.0.0.0"
-                                                        }
-                                                    },
-                                                    {
-                                                        "match_phrase": {
-                                                            "source.ip": "255.255.255.255"
-                                                        }
-                                                    }
-                                                ]
-                                            }
-                                        }
-                                    },
-                                    {
-                                        "meta": {
-                                            "alias": null,
-                                            "disabled": false,
-                                            "field": "destination.ip",
-                                            "index": "logs-*",
-                                            "key": "destination.ip",
-                                            "negate": true,
-                                            "params": [
-                                                "0.0.0.0",
-                                                "255.255.255.255"
-                                            ],
-                                            "type": "phrases",
-                                            "value": [
-                                                "0.0.0.0",
-                                                "255.255.255.255"
-                                            ]
-                                        },
-                                        "query": {
-                                            "bool": {
-                                                "minimum_should_match": 1,
-                                                "should": [
-                                                    {
-                                                        "match_phrase": {
-                                                            "destination.ip": "0.0.0.0"
-                                                        }
-                                                    },
-                                                    {
-                                                        "match_phrase": {
-                                                            "destination.ip": "255.255.255.255"
-                                                        }
-                                                    }
-                                                ]
-                                            }
-                                        }
-                                    }
-                                ],
-                                "relation": "OR",
-                                "type": "combined"
-                            },
-                            "query": {}
-                        },
-                        {
-                            "$state": {
-                                "store": "appState"
-                            },
-                            "meta": {
-                                "alias": null,
-                                "disabled": false,
-                                "field": "file.mime_type",
-                                "index": "9c51268e-315a-4270-aab0-c370f3461b91",
-                                "key": "file.mime_type",
-                                "negate": false,
-                                "type": "exists"
-                            },
-                            "query": {
-                                "exists": {
-                                    "field": "file.mime_type"
-                                }
-                            }
-                        }
-                    ],
-                    "query": {
-                        "language": "kuery",
-                        "query": ""
-                    },
-                    "syncColors": false,
-                    "syncCursor": true,
-                    "syncTooltips": false
+                    "enhancements": {}
                 },
                 "gridData": {
                     "h": 16,
-                    "i": "fb79a20f-f69e-44e8-aaad-ea59433e3263",
+                    "i": "d66593cf-bb96-42da-81e8-3c99a8eb8537",
                     "w": 24,
                     "x": 0,
-                    "y": 56
+                    "y": 57
                 },
-                "panelIndex": "fb79a20f-f69e-44e8-aaad-ea59433e3263",
-                "title": "Top Receiving (rx_host) Hosts by number of files [Logs Corelight]",
+                "panelIndex": "d66593cf-bb96-42da-81e8-3c99a8eb8537",
+                "title": "Top Receiving (dest_ip) Hosts by Number of Files",
                 "type": "lens"
             },
             {
@@ -2327,7 +1607,7 @@
                         "references": [
                             {
                                 "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-aa62b6fc-5c2a-4906-949c-6f312a971d54",
+                                "name": "indexpattern-datasource-layer-a4d36c81-1466-4bc5-a37e-fe4fe1cd0082",
                                 "type": "index-pattern"
                             }
                         ],
@@ -2337,17 +1617,17 @@
                                 "formBased": {
                                     "currentIndexPatternId": "logs-*",
                                     "layers": {
-                                        "aa62b6fc-5c2a-4906-949c-6f312a971d54": {
+                                        "a4d36c81-1466-4bc5-a37e-fe4fe1cd0082": {
                                             "columnOrder": [
-                                                "41bd222e-daaf-4170-865a-32211359d183",
-                                                "b541bdcb-e210-4ae1-8ecf-9b61254c6a0d"
+                                                "0471bd47-b6e9-491e-8e5c-61bea9e23105",
+                                                "3eb07058-2192-42ab-b3b8-d9bfee65b63d"
                                             ],
                                             "columns": {
-                                                "41bd222e-daaf-4170-865a-32211359d183": {
+                                                "0471bd47-b6e9-491e-8e5c-61bea9e23105": {
                                                     "customLabel": true,
-                                                    "dataType": "string",
+                                                    "dataType": "ip",
                                                     "isBucketed": true,
-                                                    "label": "Destination Host",
+                                                    "label": "Destination IP",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -2356,7 +1636,7 @@
                                                         "includeIsRegex": false,
                                                         "missingBucket": false,
                                                         "orderBy": {
-                                                            "columnId": "b541bdcb-e210-4ae1-8ecf-9b61254c6a0d",
+                                                            "columnId": "3eb07058-2192-42ab-b3b8-d9bfee65b63d",
                                                             "type": "column"
                                                         },
                                                         "orderDirection": "desc",
@@ -2368,18 +1648,18 @@
                                                         "size": 10
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "files.rx_hosts"
+                                                    "sourceField": "destination.ip"
                                                 },
-                                                "b541bdcb-e210-4ae1-8ecf-9b61254c6a0d": {
+                                                "3eb07058-2192-42ab-b3b8-d9bfee65b63d": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
                                                     "label": "Destination Bytes",
-                                                    "operationType": "sum",
+                                                    "operationType": "count",
                                                     "params": {
                                                         "emptyAsNull": false,
                                                         "format": {
-                                                            "id": "number",
+                                                            "id": "bytes",
                                                             "params": {
                                                                 "decimals": 0
                                                             }
@@ -2411,7 +1691,7 @@
                                     "meta": {
                                         "alias": "NOT is_broadcast: true",
                                         "disabled": false,
-                                        "index": "79439baa-afe1-4f91-875f-eea279b35006",
+                                        "index": "00c2a7e5-f733-417b-afd7-58abdd872562",
                                         "negate": false,
                                         "params": [
                                             {
@@ -2487,7 +1767,7 @@
                                                 }
                                             }
                                         ],
-                                        "relation": "OR",
+                                        "relation": "AND",
                                         "type": "combined"
                                     },
                                     "query": {}
@@ -2499,8 +1779,27 @@
                                     "meta": {
                                         "alias": null,
                                         "disabled": false,
+                                        "field": "observer.hostname",
+                                        "index": "dd2393e5-874b-4454-be7c-f27ec99baf00",
+                                        "key": "observer.hostname",
+                                        "negate": false,
+                                        "type": "exists"
+                                    },
+                                    "query": {
+                                        "exists": {
+                                            "field": "observer.hostname"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
                                         "field": "file.mime_type",
-                                        "index": "bc08c59e-cb41-4d2e-8871-eab303e041c5",
+                                        "index": "01fc0e5e-c2f8-44c5-9f02-a5956e49c616",
                                         "key": "file.mime_type",
                                         "negate": false,
                                         "type": "exists"
@@ -2520,17 +1819,13 @@
                             "visualization": {
                                 "columns": [
                                     {
-                                        "columnId": "41bd222e-daaf-4170-865a-32211359d183",
-                                        "isMetric": false,
-                                        "isTransposed": false
+                                        "columnId": "0471bd47-b6e9-491e-8e5c-61bea9e23105"
                                     },
                                     {
-                                        "columnId": "b541bdcb-e210-4ae1-8ecf-9b61254c6a0d",
-                                        "isMetric": true,
-                                        "isTransposed": false
+                                        "columnId": "3eb07058-2192-42ab-b3b8-d9bfee65b63d"
                                     }
                                 ],
-                                "layerId": "aa62b6fc-5c2a-4906-949c-6f312a971d54",
+                                "layerId": "a4d36c81-1466-4bc5-a37e-fe4fe1cd0082",
                                 "layerType": "data"
                             }
                         },
@@ -2538,137 +1833,17 @@
                         "type": "lens",
                         "visualizationType": "lnsDatatable"
                     },
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
-                    },
-                    "filters": [
-                        {
-                            "$state": {
-                                "store": "appState"
-                            },
-                            "meta": {
-                                "alias": "NOT is_broadcast: true",
-                                "disabled": false,
-                                "index": "79439baa-afe1-4f91-875f-eea279b35006",
-                                "negate": false,
-                                "params": [
-                                    {
-                                        "meta": {
-                                            "alias": null,
-                                            "disabled": false,
-                                            "field": "source.ip",
-                                            "index": "logs-*",
-                                            "key": "source.ip",
-                                            "negate": true,
-                                            "params": [
-                                                "0.0.0.0",
-                                                "255.255.255.255"
-                                            ],
-                                            "type": "phrases",
-                                            "value": [
-                                                "0.0.0.0",
-                                                "255.255.255.255"
-                                            ]
-                                        },
-                                        "query": {
-                                            "bool": {
-                                                "minimum_should_match": 1,
-                                                "should": [
-                                                    {
-                                                        "match_phrase": {
-                                                            "source.ip": "0.0.0.0"
-                                                        }
-                                                    },
-                                                    {
-                                                        "match_phrase": {
-                                                            "source.ip": "255.255.255.255"
-                                                        }
-                                                    }
-                                                ]
-                                            }
-                                        }
-                                    },
-                                    {
-                                        "meta": {
-                                            "alias": null,
-                                            "disabled": false,
-                                            "field": "destination.ip",
-                                            "index": "logs-*",
-                                            "key": "destination.ip",
-                                            "negate": true,
-                                            "params": [
-                                                "0.0.0.0",
-                                                "255.255.255.255"
-                                            ],
-                                            "type": "phrases",
-                                            "value": [
-                                                "0.0.0.0",
-                                                "255.255.255.255"
-                                            ]
-                                        },
-                                        "query": {
-                                            "bool": {
-                                                "minimum_should_match": 1,
-                                                "should": [
-                                                    {
-                                                        "match_phrase": {
-                                                            "destination.ip": "0.0.0.0"
-                                                        }
-                                                    },
-                                                    {
-                                                        "match_phrase": {
-                                                            "destination.ip": "255.255.255.255"
-                                                        }
-                                                    }
-                                                ]
-                                            }
-                                        }
-                                    }
-                                ],
-                                "relation": "OR",
-                                "type": "combined"
-                            },
-                            "query": {}
-                        },
-                        {
-                            "$state": {
-                                "store": "appState"
-                            },
-                            "meta": {
-                                "alias": null,
-                                "disabled": false,
-                                "field": "file.mime_type",
-                                "index": "bc08c59e-cb41-4d2e-8871-eab303e041c5",
-                                "key": "file.mime_type",
-                                "negate": false,
-                                "type": "exists"
-                            },
-                            "query": {
-                                "exists": {
-                                    "field": "file.mime_type"
-                                }
-                            }
-                        }
-                    ],
-                    "query": {
-                        "language": "kuery",
-                        "query": ""
-                    },
-                    "syncColors": false,
-                    "syncCursor": true,
-                    "syncTooltips": false
+                    "enhancements": {}
                 },
                 "gridData": {
                     "h": 16,
-                    "i": "29a70d86-29f0-41ab-9559-88505fbe645c",
+                    "i": "7b823179-06aa-4d99-99e5-b0ab2d52fd84",
                     "w": 24,
                     "x": 24,
-                    "y": 56
+                    "y": 57
                 },
-                "panelIndex": "29a70d86-29f0-41ab-9559-88505fbe645c",
-                "title": "Top Receiving (dest_host) Hosts - Bytes [Logs Corelight]",
+                "panelIndex": "7b823179-06aa-4d99-99e5-b0ab2d52fd84",
+                "title": "Top Receiving (dest_ip) Hosts - Bytes",
                 "type": "lens"
             }
         ],
@@ -2677,7 +1852,7 @@
         "version": 2
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2026-05-11T11:24:10.226Z",
+    "created_at": "2026-08-22T18:08:27.146Z",
     "id": "corelight-0cfc8a95-4979-4265-b9ad-91edf63f01a9",
     "references": [
         {
@@ -2692,32 +1867,37 @@
         },
         {
             "id": "logs-*",
-            "name": "6833a252-fba1-48cb-bd4d-7d8a0c6b054c:indexpattern-datasource-layer-82ef7ce8-74e4-42a0-af0b-aeb2e348a234",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[2].meta.index",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "7db4925b-9c90-4d60-a780-37213bd85f3e:indexpattern-datasource-layer-f73d497e-9555-4428-b949-a7f0ef5a3194",
+            "name": "557e8007-b1b6-4ac9-82d6-7d03242c2e1d:indexpattern-datasource-layer-a4d36c81-1466-4bc5-a37e-fe4fe1cd0082",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "7071f201-af3a-4a3d-a4b7-f4ca911951dc:indexpattern-datasource-layer-aa62b6fc-5c2a-4906-949c-6f312a971d54",
+            "name": "d954507f-85d9-45cf-9919-810d9a886b7a:indexpattern-datasource-layer-a4d36c81-1466-4bc5-a37e-fe4fe1cd0082",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "90d89b9c-b506-45fb-a721-3cb9ab29fed4:indexpattern-datasource-layer-aa62b6fc-5c2a-4906-949c-6f312a971d54",
+            "name": "8dfcee30-fff0-475f-8476-4649e037563f:indexpattern-datasource-layer-a4d36c81-1466-4bc5-a37e-fe4fe1cd0082",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "fb79a20f-f69e-44e8-aaad-ea59433e3263:indexpattern-datasource-layer-aa62b6fc-5c2a-4906-949c-6f312a971d54",
+            "name": "322b313f-3210-480b-ab42-c39cde71f3b7:indexpattern-datasource-layer-a4d36c81-1466-4bc5-a37e-fe4fe1cd0082",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "29a70d86-29f0-41ab-9559-88505fbe645c:indexpattern-datasource-layer-aa62b6fc-5c2a-4906-949c-6f312a971d54",
+            "name": "d66593cf-bb96-42da-81e8-3c99a8eb8537:indexpattern-datasource-layer-a4d36c81-1466-4bc5-a37e-fe4fe1cd0082",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "7b823179-06aa-4d99-99e5-b0ab2d52fd84:indexpattern-datasource-layer-a4d36c81-1466-4bc5-a37e-fe4fe1cd0082",
             "type": "index-pattern"
         },
         {
