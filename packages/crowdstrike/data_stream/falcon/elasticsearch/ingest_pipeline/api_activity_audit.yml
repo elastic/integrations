@@ -1,0 +1,169 @@
+---
+description: Pipeline for processing CrowdStrike APIActivityAuditEvent logs.
+processors:
+  - set:
+      tag: set_event_kind
+      field: event.kind
+      value: event
+  - append:
+      field: event.category
+      value: api
+      tag: append_api_category
+  - set:
+      field: event.type
+      value:
+        - denied
+      tag: set_denied_type
+      if: ctx.crowdstrike?.event?.Success == false
+  - set:
+      field: event.type
+      value:
+        - access
+      tag: set_access_type
+      if: ctx.crowdstrike?.event?.Success != false
+  - grok:
+      tag: grok_crowdstrike_event_UserId
+      field: crowdstrike.event.UserId
+      patterns:
+        - '%{USERNAME:user.name}@%{HOSTNAME:user.domain}'
+        - '%{GREEDYDATA:user.name}'
+      ignore_missing: true
+      ignore_failure: true
+  - set:
+      field: user.email
+      copy_from: crowdstrike.event.UserId
+      tag: copy_user_email
+      if: ctx.crowdstrike?.event?.UserId != null && ctx.crowdstrike.event.UserId.indexOf("@") > 0
+  - append:
+      field: event.action
+      value: '{{{crowdstrike.event.OperationName}}}'
+      tag: append_operation_name
+      if: ctx.crowdstrike?.event?.OperationName != null
+  - append:
+      field: event.action
+      value: APIActivityAuditEvent
+      tag: append_api_activity_audit_event
+      if: ctx.event?.action == null
+  - set:
+      field: event.outcome
+      value: success
+      tag: set_success_outcome
+      if: ctx.crowdstrike?.event?.Success == true
+  - set:
+      field: event.outcome
+      value: failure
+      tag: set_failure_outcome
+      if: ctx.crowdstrike?.event?.Success == false
+  - set:
+      field: event.outcome
+      value: unknown
+      tag: set_unknown_outcome
+      if: ctx.event?.outcome == null
+  - rename:
+      field: crowdstrike.event.ServiceName
+      target_field: message
+      tag: rename_service_name
+      ignore_missing: true
+  - rename:
+      field: crowdstrike.event.UserIp
+      target_field: source.ip
+      tag: rename_user_ip
+      ignore_missing: true
+  - rename:
+      field: crowdstrike.event.SourceIp
+      target_field: source.ip
+      tag: rename_source_ip
+      ignore_missing: true
+      if: ctx.source?.ip == null
+  - rename:
+      field: crowdstrike.event.Attributes.request_method
+      target_field: http.request.method
+      tag: rename_http_request_method
+      ignore_missing: true
+  - rename:
+      field: crowdstrike.event.Attributes.request_path
+      target_field: url.path
+      tag: rename_url_path
+      ignore_missing: true
+  - rename:
+      field: crowdstrike.event.Attributes.request_query
+      target_field: url.query
+      tag: rename_url_query
+      ignore_missing: true
+  - rename:
+      field: crowdstrike.event.Attributes.request_host
+      target_field: url.domain
+      tag: rename_url_domain
+      ignore_missing: true
+  - convert:
+      field: crowdstrike.event.Attributes.status_code
+      target_field: http.response.status_code
+      type: long
+      tag: convert_status_code
+      ignore_missing: true
+      on_failure:
+        - append:
+            tag: append_error_message_status_code
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: crowdstrike.event.Attributes.user_agent
+      target_field: user_agent.original
+      tag: rename_user_agent_original
+      ignore_missing: true
+  - rename:
+      field: crowdstrike.event.Attributes.trace_id
+      target_field: trace.id
+      tag: rename_trace_id
+      ignore_missing: true
+  - convert:
+      field: crowdstrike.event.Attributes.elapsed_microseconds
+      target_field: _tmp_.elapsed_microseconds
+      type: long
+      tag: convert_elapsed_microseconds
+      ignore_missing: true
+      on_failure:
+        - append:
+            tag: append_error_message_elapsed_microseconds
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - script:
+      tag: script_event_duration_from_elapsed_microseconds
+      lang: painless
+      if: ctx._tmp_?.elapsed_microseconds != null
+      description: Convert elapsed microseconds to event.duration nanoseconds.
+      source: |
+        ctx.event = ctx.event ?: [:];
+        ctx.event.duration = ctx._tmp_.elapsed_microseconds * 1000L;
+  - remove:
+      field:
+        - crowdstrike.event.Attributes.status_code
+        - crowdstrike.event.Attributes.elapsed_microseconds
+        - _tmp_
+      tag: remove_custom_duplicate_fields
+      ignore_missing: true
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      tag: append_preserve_original_event_on_error
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+
+on_failure:
+  - append:
+      field: error.message
+      value: |-
+        Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
