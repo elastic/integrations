@@ -1,0 +1,208 @@
+---
+description: Pipeline for processing WhoisFreaks domain intelligence records
+processors:
+  - pipeline:
+      tag: pipeline_logs_ti_whoisfreaks_nrd_with_whois_custom
+      name: logs-ti_whoisfreaks.nrd_with_whois@custom
+      ignore_missing_pipeline: true
+      ignore_failure: true
+  # Flag upstream errors so partial docs are not indexed as normal events.
+  - set:
+      tag: set_event_kind_error
+      field: event.kind
+      value: pipeline_error
+      if: "ctx.error != null"
+  - set:
+      tag: set_event_kind_default
+      field: event.kind
+      value: enrichment
+      if: "ctx.error == null"
+
+  - set:
+      tag: set_event_category
+      field: event.category
+      value:
+        - threat
+        - network
+      if: "ctx.error == null"
+  - set:
+      tag: set_event_type
+      field: event.type
+      value:
+        - indicator
+      if: "ctx.error == null"
+  - set:
+      tag: set_event_dataset
+      field: event.dataset
+      value: ti_whoisfreaks.nrd_with_whois
+  - set:
+      tag: set_ecs_version
+      field: ecs.version
+      value: '8.11.0'
+
+  # Move the per-feed tag emitted by the input into whoisfreaks.tld_type.
+  - set:
+      tag: set_tld_type
+      field: whoisfreaks.tld_type
+      copy_from: _tld
+      ignore_empty_value: true
+  - remove:
+      tag: remove_tmp_tld
+      field: _tld
+      ignore_missing: true
+  - convert:
+      tag: convert_num
+      field: whoisfreaks.num
+      type: long
+      ignore_missing: true
+      ignore_failure: true
+      if: "ctx.whoisfreaks?.num != null && ctx.whoisfreaks.num != ''"
+
+  # Drop blank date strings. WhoisFreaks emits "" for absent dates; left in place
+  # these fail the date mapping at index time and land the doc in _ignored.
+  - remove:
+      tag: drop_empty_create_date
+      field: whoisfreaks.create_date
+      ignore_missing: true
+      if: "ctx.whoisfreaks?.create_date == ''"
+  - remove:
+      tag: drop_empty_update_date
+      field: whoisfreaks.update_date
+      ignore_missing: true
+      if: "ctx.whoisfreaks?.update_date == ''"
+  - remove:
+      tag: drop_empty_expiry_date
+      field: whoisfreaks.expiry_date
+      ignore_missing: true
+      if: "ctx.whoisfreaks?.expiry_date == ''"
+
+  # Timestamps, for successful records only.
+  - date:
+      tag: parse_query_time
+      field: whoisfreaks.query_time
+      target_field: "@timestamp"
+      formats:
+        - "yyyy-MM-dd HH:mm:ss"
+        - "ISO8601"
+      if: "ctx.whoisfreaks?.query_time != null && ctx.whoisfreaks.query_time != ''"
+      ignore_failure: true
+  - date:
+      tag: parse_create_date
+      field: whoisfreaks.create_date
+      target_field: whoisfreaks.create_date
+      formats:
+        - "yyyy-MM-dd HH:mm:ss"
+        - "yyyy-MM-dd"
+        - "ISO8601"
+      if: "ctx.whoisfreaks?.create_date != null && ctx.whoisfreaks.create_date != ''"
+      ignore_failure: true
+  - date:
+      tag: parse_update_date
+      field: whoisfreaks.update_date
+      target_field: whoisfreaks.update_date
+      formats:
+        - "yyyy-MM-dd HH:mm:ss"
+        - "yyyy-MM-dd"
+        - "ISO8601"
+      if: "ctx.whoisfreaks?.update_date != null && ctx.whoisfreaks.update_date != ''"
+      ignore_failure: true
+  - date:
+      tag: parse_expiry_date
+      field: whoisfreaks.expiry_date
+      target_field: whoisfreaks.expiry_date
+      formats:
+        - "yyyy-MM-dd HH:mm:ss"
+        - "yyyy-MM-dd"
+        - "ISO8601"
+      if: "ctx.whoisfreaks?.expiry_date != null && ctx.whoisfreaks.expiry_date != ''"
+      ignore_failure: true
+
+  # ECS convenience fields used by the dashboard.
+  - set:
+      tag: set_ecs_domain
+      field: domain.registered_domain
+      copy_from: whoisfreaks.domain_name
+      ignore_empty_value: true
+  - set:
+      tag: set_ecs_registrar
+      field: domain.registrar.name
+      copy_from: whoisfreaks.domain_registrar_name
+      ignore_empty_value: true
+
+  # Threat intelligence ECS fields.
+  - set:
+      tag: set_threat_indicator_type
+      field: threat.indicator.type
+      value: domain-name
+      if: "ctx.error == null && ctx.whoisfreaks?.domain_name != null"
+  - set:
+      tag: set_threat_indicator_domain
+      field: threat.indicator.domain
+      copy_from: whoisfreaks.domain_name
+      ignore_empty_value: true
+      if: "ctx.error == null"
+  - set:
+      tag: set_threat_feed_name
+      field: threat.feed.name
+      value: WhoisFreaks
+      if: "ctx.error == null"
+  - set:
+      tag: set_threat_feed_dashboard_id
+      field: threat.feed.dashboard_id
+      value: ti_whoisfreaks-383060b6-e437-4bac-9578-612a44ed8150
+      if: "ctx.error == null"
+  - set:
+      tag: set_threat_indicator_provider
+      field: threat.indicator.provider
+      value: WhoisFreaks
+      if: "ctx.error == null"
+  - set:
+      tag: set_threat_indicator_reference
+      field: threat.indicator.reference
+      value: https://whoisfreaks.com/
+      if: "ctx.error == null"
+
+  # Derived fields for dashboards and rules.
+  - script:
+      tag: compute_expiry_and_age_fields
+      description: Compute days_until_expiry and is_newly_registered.
+      lang: painless
+      ignore_failure: true
+      if: "ctx.whoisfreaks != null"
+      source: |
+        if (ctx.whoisfreaks.expiry_date != null) {
+          long nowMillis = ctx.containsKey('@timestamp') && ctx['@timestamp'] != null
+            ? Instant.parse(ctx['@timestamp']).toEpochMilli()
+            : System.currentTimeMillis();
+          long expiryMillis = Instant.parse(ctx.whoisfreaks.expiry_date).toEpochMilli();
+          ctx.whoisfreaks.days_until_expiry = (int) Math.floor((expiryMillis - nowMillis) / 86400000.0);
+        }
+        if (ctx.whoisfreaks.create_date != null && ctx.whoisfreaks.query_time != null) {
+          String createDay = ctx.whoisfreaks.create_date.toString().substring(0, 10);
+          String queryDay = ctx.whoisfreaks.query_time.toString().substring(0, 10);
+          ctx.whoisfreaks.is_newly_registered = createDay.equals(queryDay);
+        }
+
+  # Deduplicate so a re-polled file does not create duplicate docs.
+  - fingerprint:
+      tag: fingerprint_for_dedup
+      fields:
+        - whoisfreaks.tld_type
+        - whoisfreaks.domain_name
+        - whoisfreaks.query_time
+      target_field: _id
+      if: "ctx.whoisfreaks?.domain_name != null && ctx.whoisfreaks?.query_time != null"
+      ignore_missing: true
+
+on_failure:
+  - set:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
