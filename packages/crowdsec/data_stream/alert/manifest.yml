@@ -1,0 +1,117 @@
+title: CrowdSec alerts
+type: logs
+streams:
+  - input: http_endpoint
+    title: CrowdSec alerts (HTTP push)
+    description: Receive alerts from the CrowdSec notification-http plugin.
+    template_path: http_endpoint.yml.hbs
+    vars:
+      - name: listen_address
+        type: text
+        title: Listen address
+        description: The bind address for the HTTP listener. Use 0.0.0.0 to accept from any interface.
+        multi: false
+        required: true
+        show_user: true
+        default: localhost
+      - name: listen_port
+        type: integer
+        title: Listen port
+        description: The port the HTTP listener binds to. Point the CrowdSec notification-http `url` at this port.
+        multi: false
+        required: true
+        show_user: true
+        default: 7822
+      - name: url
+        type: text
+        title: URL path
+        description: The path the listener serves. Must match the path in the CrowdSec notification-http `url`.
+        multi: false
+        required: true
+        show_user: true
+        default: /crowdsec
+      - name: secret_header
+        type: text
+        title: Secret header name
+        description: Optional. If set, requests must carry this header with the value below. Configure the same header in the CrowdSec plugin.
+        multi: false
+        required: false
+        show_user: true
+        secret: false
+      - name: secret_value
+        type: password
+        title: Secret header value
+        description: Optional shared secret matched against the header above.
+        multi: false
+        required: false
+        show_user: true
+        secret: true
+      - name: preserve_original_event
+        type: bool
+        title: Preserve original event
+        description: Keep the raw alert JSON in the `event.original` field.
+        multi: false
+        required: true
+        show_user: true
+        default: false
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - crowdsec-alert
+          - forwarded
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event
+          with metadata. This executes in the agent before the logs are parsed.
+
+
+  - input: logfile
+    title: CrowdSec alerts (file)
+    description: Read CrowdSec alerts from a file, one JSON alert object per line.
+    template_path: logfile.yml.hbs
+    enabled: false
+    vars:
+      - name: paths
+        type: text
+        title: File paths
+        description: Paths to files holding CrowdSec alerts, one JSON alert object per line.
+        multi: true
+        required: true
+        show_user: true
+        default:
+          - /var/log/crowdsec/alerts.log
+      - name: preserve_original_event
+        type: bool
+        title: Preserve original event
+        description: Keep the raw alert JSON in the `event.original` field.
+        multi: false
+        required: true
+        show_user: true
+        default: false
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - crowdsec-alert
+          - forwarded
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event
+          with metadata. This executes in the agent before the logs are parsed.
