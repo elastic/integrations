@@ -54,7 +54,7 @@ Configuration values are stored in the `chargeback_conf_lookup` index. The dashb
 
 ### Update the default configuration
 
-Using `_update/config` updates the document with ID `config`:
+Using `_update/config` updates the document with ID `config` (the bootstrap transform writes this ID from 0.4.4 onward):
 
 ```
 POST chargeback_conf_lookup/_update/config
@@ -259,6 +259,12 @@ Three alert rule templates are included and can be installed from the integratio
 For more information, refer to the [Elastic documentation](https://www.elastic.co/docs/reference/fleet/alerting-rule-templates).
 
 ## Upgrade Notes
+
+### Upgrading to 0.4.4
+
+1. Upgrade the Fleet package to **0.4.4**. Kibana requirement remains `^9.2.0`.
+2. The bootstrap transform now writes the default configuration document with `_id` `config`, so `POST chargeback_conf_lookup/_update/config` works as documented.
+3. **If you upgraded from 0.2.10–0.4.3** and already have a hashed-ID bootstrap row: after the package upgrade creates the new `_id` `config` document, copy any customized field values onto it with `POST chargeback_conf_lookup/_update/config`, then delete the hashed-ID document so LOOKUP JOIN does not match two overlapping date windows. Do not index a partial document to ID `config` with the index API (`_doc`); that replaces the whole document and can drop required bootstrap fields such as `config_join_key`. Fresh 0.4.4 installs need no cleanup.
 
 ### Upgrading to 0.4.3
 

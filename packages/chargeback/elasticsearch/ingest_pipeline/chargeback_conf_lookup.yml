@@ -17,6 +17,13 @@ processors:
       field: "@timestamp"
       ignore_missing: true
       tag: remove_conf_timestamp
+  # Pivot dest IDs are a hash of group_by. Force the bootstrap row to _id "config" so
+  # POST chargeback_conf_lookup/_update/config matches the documented update path.
+  - set:
+      field: _id
+      value: config
+      override: true
+      tag: set_config_document_id
   - set:
       field: event.ingested
       value: "{{{_ingest.timestamp}}}"
