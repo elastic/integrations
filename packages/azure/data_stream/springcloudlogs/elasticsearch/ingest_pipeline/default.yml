@@ -175,6 +175,23 @@ processors:
       field: azure.springcloudlogs.Region
       target_field: cloud.region
       ignore_missing: true
+  - set:
+      tag: set_cloud_region_from_location_5e3b7c2a
+      field: cloud.region
+      copy_from: azure.springcloudlogs.location
+      if: 'ctx.cloud?.region == null && ctx.azure?.springcloudlogs?.location instanceof String && ctx.azure.springcloudlogs.location.length() > 2'
+  - rename:
+      tag: rename_azure_springcloudlogs_tenantId_to_azure_tenant_id_be40a712
+      field: azure.springcloudlogs.tenantId
+      target_field: azure.tenant_id
+      ignore_missing: true
+      if: ctx?.azure?.tenant_id == null
+  - rename:
+      tag: rename_azure_springcloudlogs_TenantId_to_azure_tenant_id_3c9e5fd1
+      field: azure.springcloudlogs.TenantId
+      target_field: azure.tenant_id
+      ignore_missing: true
+      if: ctx?.azure?.tenant_id == null
   - json:
       tag: json_azure_springcloudlogs_EventProperties_to_azure_springcloudlogs_properties_94c422b4
       field: azure.springcloudlogs.EventProperties

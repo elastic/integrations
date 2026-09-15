@@ -1,3 +1,44 @@
+- version: "1.41.0"
+  changes:
+    - description: >-
+        Consolidate the duplicated `azure-shared-pipeline.yml` into a single shared source under `_dev/shared/ingest_pipeline/` and replace the 10 per-data-stream copies with `.link` files, so 11 data streams now share one pipeline. The canonical pipeline uses case-insensitive (`(?i)`) ARM resource-ID parsing, fixing silent data loss for mixed-case resource paths (e.g. `/subscriptions/{guid}/resourcegroups/...`). The generic `eventhub` data stream keeps its own copy for now and is not part of this consolidation.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/21261
+    - description: >-
+        Set `cloud.account.id` consistently across the data streams that share the pipeline: from `azure.subscription_id` where present, falling back to `azure.tenant_id` for tenant-scoped logs that have no subscription (auditlogs, signinlogs, identity_protection, provisioning, graphactivitylogs, aadgraphactivitylogs, activitylogs, platformlogs, springcloudlogs).
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/21261
+    - description: >-
+        Promote the envelope `tenantId` field to the shared `azure.tenant_id` field in activitylogs, platformlogs, and springcloudlogs; extract `azure.correlation_id` and `azure.tenant_id` from the envelope in application_gateway and firewall_logs; promote `resource_id` and `correlation_id` to shared fields in aadgraphactivitylogs.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/21261
+    - description: >-
+        Extract `azure.tenant_id` from a `/tenants/{id}/providers/...` ARM resource ID when the envelope carries neither a tenant ID nor a subscription ID.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/21261
+    - description: >-
+        Set `cloud.region` from the `location` envelope field in activitylogs, platformlogs, and springcloudlogs, guarded to exclude the 2-letter country codes that appear in sign-in events.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/21261
+    - description: >-
+        Normalize `cloud.region` to the canonical Azure region slug by stripping whitespace and lowercasing, so that the display names some log categories emit ("West Europe") and the slugs others emit ("westeurope") no longer split into separate buckets when aggregating. Values of `"global"`, which identify non-regional resources rather than a region, are no longer written to `cloud.region`. This changes existing `cloud.region` values in activitylogs, platformlogs, springcloudlogs, graphactivitylogs, and aadgraphactivitylogs; saved queries and dashboards that match on a region display name need updating.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/21261
+    - description: >-
+        Move the envelope tenant ID in activitylogs to `azure.tenant_id` instead of copying it, so the value is no longer indexed twice. `azure.activitylogs.tenant_id` is no longer populated; use `azure.tenant_id`, which matches every other data stream in the package.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/21261
+    - description: >-
+        Stop overriding `cloud.account.id` with the tenant ID in graphactivitylogs and aadgraphactivitylogs when the shared pipeline already resolved a subscription ID.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/21261
+    - description: Set `cloud.provider` to `"azure"` in the events (routing) data stream.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/21261
+    - description: >-
+        Add `azure.resource.authorization_rule` field definition to identity_protection and provisioning data streams; add metadata fields documentation section to the integration README.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/21261
 - version: "1.40.0"
   changes:
     - description: Add routing system test for the events data stream and a `storage_account_connection_string` package variable for pointing at a custom blob endpoint.

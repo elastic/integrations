@@ -6,10 +6,10 @@ processors:
       field: cloud.provider
       value: azure
   - grok:
-      tag: grok_azure_resource_id_be7af620
+      tag: grok_azure_resource_id_a37ae5a2
       field: azure.resource_id
       patterns:
-      - /(?i)subscriptions/%{SUBID:azure.subscription_id}/RESOURCEGROUPS/%{GROUPID:azure.resource.group}/PROVIDERS/%{PROVIDERNAME:azure.resource.provider}/NAMESPACES/%{NAMESPACE:azure.resource.namespace}/AUTHORIZATIONRULES/%{RULE:azure.resource.authorization_rule}
+        - (?i)/subscriptions/%{SUBID:azure.subscription_id}/resourceGroups/%{GROUPID:azure.resource.group}/providers/%{PROVIDERNAME:azure.resource.provider}/namespaces/%{NAMESPACE:azure.resource.namespace}/authorizationRules/%{RULE:azure.resource.authorization_rule}
       pattern_definitions:
         SUBID: (\{){0,1}[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}(\}){0,1}
         GROUPID: .+
@@ -18,11 +18,11 @@ processors:
         RULE: .+
       ignore_failure: true
   - grok:
-      tag: grok_azure_resource_id_83752afa
+      tag: grok_azure_resource_id_dec79cc0
       field: azure.resource_id
       if: 'ctx.azure?.subscription_id == null'
       patterns:
-      - /(?i)subscriptions/%{SUBID:azure.subscription_id}/resourceGroups/%{GROUPID:azure.resource.group}/providers/%{PROVIDERNAME:azure.resource.provider}/%{NAME:azure.resource.name}
+      - (?i)/subscriptions/%{SUBID:azure.subscription_id}/resourceGroups/%{GROUPID:azure.resource.group}/providers/%{PROVIDERNAME:azure.resource.provider}/%{NAME:azure.resource.name}
       pattern_definitions:
         SUBID: (\{){0,1}[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}(\}){0,1}
         GROUPID: .+
@@ -30,11 +30,11 @@ processors:
         NAME: ((?!AUTHORIZATIONRULES).)*$
       ignore_failure: true
   - grok:
-      tag: grok_azure_resource_id_7745cf2c
+      tag: grok_azure_resource_id_50c4712a
       field: azure.resource_id
       if: 'ctx.azure?.subscription_id == null'
       patterns:
-        - /(?i)subscriptions/%{SUBID:azure.subscription_id}/resourceGroups/%{GROUPID:azure.resource.group}/providers/%{PROVIDERNAME:azure.resource.provider}/%{NAME:azure.resource.name}
+        - (?i)/subscriptions/%{SUBID:azure.subscription_id}/resourceGroups/%{GROUPID:azure.resource.group}/providers/%{PROVIDERNAME:azure.resource.provider}/%{NAME:azure.resource.name}
       pattern_definitions:
         SUBID: (\{){0,1}[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}(\}){0,1}
         GROUPID: .+
@@ -42,43 +42,52 @@ processors:
         NAME: .+
       ignore_failure: true
   - grok:
-      tag: grok_azure_resource_id_fde2ca9e
+      tag: grok_azure_resource_id_f149bb55
       field: azure.resource_id
       if: 'ctx.azure?.subscription_id == null'
       patterns:
-      - /providers/%{PROVIDER:azure.resource.provider}
-      - /PROVIDERS/%{PROVIDER:azure.resource.provider}
+      - (?i)/providers/%{PROVIDER:azure.resource.provider}
       pattern_definitions:
         PROVIDER: .+
       ignore_failure: true
   - grok:
-      tag: grok_azure_resource_id_38739c7d
+      tag: grok_azure_resource_id_6b41a6b7
       field: azure.resource_id
       if: 'ctx.azure?.subscription_id == null'
       patterns:
-        - /(?i)subscriptions/%{SUBID:azure.subscription_id}/providers/%{PROVIDERNAME:azure.resource.provider}
+        - (?i)/subscriptions/%{SUBID:azure.subscription_id}/providers/%{PROVIDERNAME:azure.resource.provider}
       pattern_definitions:
         SUBID: (\{){0,1}[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}(\}){0,1}
         PROVIDERNAME: ([A-Za-z])\w+.([A-Za-z])\w+\/([A-Za-z][^\/])\w+
       ignore_failure: true
   - grok:
-      tag: grok_azure_resource_id_c7933127
+      tag: grok_azure_resource_id_ba700861
       field: azure.resource_id
       if: 'ctx.azure?.subscription_id == null'
       patterns:
-        - /(?i)subscriptions/%{SUBID:azure.subscription_id}/resourceGroups/%{GROUPID:azure.resource.group}
+        - (?i)/subscriptions/%{SUBID:azure.subscription_id}/resourceGroups/%{GROUPID:azure.resource.group}
       pattern_definitions:
         SUBID: (\{){0,1}[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}(\}){0,1}
         GROUPID: .+
       ignore_failure: true
   - grok:
-      tag: grok_azure_resource_id_b5c556af
+      tag: grok_azure_resource_id_0733b345
       field: azure.resource_id
       if: 'ctx.azure?.subscription_id == null'
       patterns:
-        - /(?i)subscriptions/%{SUBID:azure.subscription_id}
+        - (?i)/subscriptions/%{SUBID:azure.subscription_id}
       pattern_definitions:
         SUBID: (\{){0,1}[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}(\}){0,1}
+      ignore_failure: true
+  - grok:
+      tag: grok_azure_resource_id_tenant_8ef5a053
+      field: azure.resource_id
+      if: 'ctx.azure?.subscription_id == null && ctx.azure?.tenant_id == null'
+      patterns:
+        - (?i)/tenants/%{TENANTID:azure.tenant_id}/providers/%{PROVIDERNAME:azure.resource.provider}
+      pattern_definitions:
+        TENANTID: (\{){0,1}[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}(\}){0,1}
+        PROVIDERNAME: .+
       ignore_failure: true
   - rename:
       tag: rename_azure_resource_id_to_azure_resource_id_4a05dbed
@@ -89,6 +98,35 @@ processors:
       tag: lowercase_event_outcome_eb9dfc47
       field: event.outcome
       ignore_missing: true
+  - set:
+      tag: set_cloud_account_id_91e76e66
+      field: cloud.account.id
+      copy_from: azure.subscription_id
+      ignore_empty_value: true
+  - set:
+      tag: set_cloud_account_id_from_tenant_id_3f2a1b8c
+      field: cloud.account.id
+      copy_from: azure.tenant_id
+      if: 'ctx.cloud?.account?.id == null'
+      ignore_empty_value: true
+  # Azure reports a resource's region either as a display name ("West Europe")
+  # or as the canonical slug ("westeurope") depending on the log category. Both
+  # are normalized to the slug form so `cloud.region` aggregates cleanly.
+  - gsub:
+      tag: gsub_cloud_region_whitespace_5c4e1a72
+      field: cloud.region
+      pattern: '\s+'
+      replacement: ''
+      ignore_missing: true
+  - lowercase:
+      tag: lowercase_cloud_region_6d90f3b1
+      field: cloud.region
+      ignore_missing: true
+  # "global" identifies a non-regional resource, not an Azure region.
+  - remove:
+      tag: remove_cloud_region_global_2f7a84cd
+      field: cloud.region
+      if: 'ctx.cloud?.region == "global"'
 on_failure:
   - set:
       tag: set_event_kind_72b1902f
