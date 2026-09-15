@@ -10,56 +10,59 @@
                 "ignoreValidations": false
             },
             "panelsJSON": {
-                "14dfd81b-a5cc-49e4-a815-413d0ce413c1": {
+                "3e4de572-c448-4e32-83b1-6dbeaae5a766": {
                     "explicitInput": {
                         "dataViewId": "logs-*",
                         "exclude": false,
                         "existsSelected": false,
-                        "fieldName": "observer.name",
+                        "fieldName": "user.email",
                         "searchTechnique": "prefix",
                         "selectedOptions": [],
                         "sort": {
                             "by": "_count",
                             "direction": "desc"
-                        }
+                        },
+                        "title": "Email"
                     },
-                    "grow": true,
-                    "order": 1,
-                    "type": "optionsListControl",
-                    "width": "medium"
-                },
-                "43bbcf1b-5094-496b-bdef-cbdba9e6214d": {
-                    "explicitInput": {
-                        "dataViewId": "logs-*",
-                        "exclude": false,
-                        "existsSelected": false,
-                        "fieldName": "client.ip",
-                        "searchTechnique": "prefix",
-                        "selectedOptions": [],
-                        "sort": {
-                            "by": "_count",
-                            "direction": "desc"
-                        }
-                    },
-                    "grow": true,
+                    "grow": false,
                     "order": 2,
                     "type": "optionsListControl",
                     "width": "medium"
                 },
-                "6dc514e1-aaec-4ab5-ab7c-8c8fd88be988": {
+                "53ef0d42-bc1f-4305-9970-a1ae720b9755": {
                     "explicitInput": {
                         "dataViewId": "logs-*",
                         "exclude": false,
                         "existsSelected": false,
-                        "fieldName": "event.action",
+                        "fieldName": "user.full_name",
                         "searchTechnique": "prefix",
                         "selectedOptions": [],
                         "sort": {
                             "by": "_count",
                             "direction": "desc"
-                        }
+                        },
+                        "title": "Full Name"
                     },
-                    "grow": true,
+                    "grow": false,
+                    "order": 1,
+                    "type": "optionsListControl",
+                    "width": "medium"
+                },
+                "8d43e0f6-a027-414f-af35-8d4f850a3558": {
+                    "explicitInput": {
+                        "dataViewId": "logs-*",
+                        "exclude": false,
+                        "existsSelected": false,
+                        "fieldName": "user.name",
+                        "searchTechnique": "prefix",
+                        "selectedOptions": [],
+                        "sort": {
+                            "by": "_count",
+                            "direction": "desc"
+                        },
+                        "title": "User Name"
+                    },
+                    "grow": false,
                     "order": 0,
                     "type": "optionsListControl",
                     "width": "medium"
@@ -67,7 +70,7 @@
             },
             "showApplySelections": false
         },
-        "description": "Monitor PingDirectory audit logs showing directory changes, operations by type, affected components, client IPs, and administrative activity across the environment.",
+        "description": "Overview of User in PingDirectory",
         "kibanaSavedObjectMeta": {
             "searchSourceJSON": {
                 "filter": [
@@ -83,13 +86,35 @@
                             "key": "data_stream.dataset",
                             "negate": false,
                             "params": {
-                                "query": "ping_directory.audit"
+                                "query": "ping_directory.user"
                             },
                             "type": "phrase"
                         },
                         "query": {
                             "match_phrase": {
-                                "data_stream.dataset": "ping_directory.audit"
+                                "data_stream.dataset": "ping_directory.user"
+                            }
+                        }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "labels.is_transform_source",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+                            "key": "labels.is_transform_source",
+                            "negate": false,
+                            "params": {
+                                "query": "false"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "labels.is_transform_source": "false"
                             }
                         }
                     }
@@ -127,10 +152,9 @@
                             }
                         },
                         "description": "",
-                        "id": "",
                         "params": {
                             "fontSize": 12,
-                            "markdown": "**Overview**\n\nThis dashboard provides visibility into audit log activity collected from PingDirectory.\n\nIt highlights audit operation trends, operation type distribution, affected directory components, and top client IPs. The dashboard helps administrators monitor configuration changes and identify unusual activity across the environment.\n\nVisualizations include audit activity over time, operations by type, affected components, and top client IPs. Interactive controls on event action, client IP, and observer name enable focused analysis of audit events.\n\nAudit Activity Over Time helps identify spikes in administrative changes.\n\n**[Integration Page](/app/integrations/detail/ping_directory/overview)**\n",
+                            "markdown": "**Overview**\n\nThis dashboard provides visibility into user synchronization activity collected from PingDirectory.\n\nIt highlights user sync trends and employment type distribution across the environment. The dashboard helps administrators and analysts monitor user provisioning activity, identify changes in the user directory, and understand the composition of synced users.\n\nVisualizations include user sync events over time, users by employment type, users by title, and a user account inventory table. Interactive filters allow scoping the view to relevant synced user records for focused analysis and troubleshooting.\n\n**[Integration Page](/app/integrations/detail/ping_directory/overview)**",
                             "openLinksInNewTab": false
                         },
                         "title": "",
@@ -139,36 +163,14 @@
                     }
                 },
                 "gridData": {
-                    "h": 36,
-                    "i": "2038b56b-1c99-49a0-9219-09c022ee4691",
-                    "w": 9,
+                    "h": 18,
+                    "i": "35a75ebe-5c11-4b30-9e28-a5dc7b21105e",
+                    "w": 10,
                     "x": 0,
                     "y": 4
                 },
-                "panelIndex": "2038b56b-1c99-49a0-9219-09c022ee4691",
+                "panelIndex": "35a75ebe-5c11-4b30-9e28-a5dc7b21105e",
                 "type": "visualization"
-            },
-            {
-                "embeddableConfig": {
-                    "description": "",
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
-                    },
-                    "savedObjectId": "ping_directory-c56f9f5b-cb4f-4714-8346-e5fd858a7dea",
-                    "title": "Audit Essential Details"
-                },
-                "gridData": {
-                    "h": 13,
-                    "i": "27d7482d-e8ff-42ae-811c-c2b743114d01",
-                    "w": 48,
-                    "x": 0,
-                    "y": 40
-                },
-                "panelIndex": "27d7482d-e8ff-42ae-811c-c2b743114d01",
-                "panelRefName": "panel_27d7482d-e8ff-42ae-811c-c2b743114d01",
-                "type": "search"
             },
             {
                 "embeddableConfig": {
@@ -177,12 +179,17 @@
                         "references": [
                             {
                                 "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-06539fcb-a650-40b8-b0c3-ec6810605f86",
+                                "name": "indexpattern-datasource-layer-b8e72038-1011-4f3a-a6b1-1c79a55037ac",
                                 "type": "index-pattern"
                             },
                             {
                                 "id": "logs-*",
-                                "name": "b08c0918-123f-46eb-9577-4ffc989791e7",
+                                "name": "3dc3f923-4813-4352-9b89-5bd6fe100191",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "615e2ac3-4d82-498e-b3cf-0f3e300d868a",
                                 "type": "index-pattern"
                             }
                         ],
@@ -191,19 +198,19 @@
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
-                                        "06539fcb-a650-40b8-b0c3-ec6810605f86": {
+                                        "b8e72038-1011-4f3a-a6b1-1c79a55037ac": {
                                             "columnOrder": [
-                                                "6fe11838-fc24-425a-9558-4df1ce447695"
+                                                "555e9a57-83fe-4fb8-a917-140cbc5ad4de"
                                             ],
                                             "columns": {
-                                                "6fe11838-fc24-425a-9558-4df1ce447695": {
+                                                "555e9a57-83fe-4fb8-a917-140cbc5ad4de": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Total Audit Events",
+                                                    "label": "Total Users",
                                                     "operationType": "count",
                                                     "params": {
-                                                        "emptyAsNull": false
+                                                        "emptyAsNull": true
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "___records___"
@@ -231,17 +238,39 @@
                                         "alias": null,
                                         "disabled": false,
                                         "field": "data_stream.dataset",
-                                        "index": "b08c0918-123f-46eb-9577-4ffc989791e7",
+                                        "index": "3dc3f923-4813-4352-9b89-5bd6fe100191",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": {
-                                            "query": "ping_directory.audit"
+                                            "query": "ping_directory.user"
                                         },
                                         "type": "phrase"
                                     },
                                     "query": {
                                         "match_phrase": {
-                                            "data_stream.dataset": "ping_directory.audit"
+                                            "data_stream.dataset": "ping_directory.user"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "labels.is_transform_source",
+                                        "index": "615e2ac3-4d82-498e-b3cf-0f3e300d868a",
+                                        "key": "labels.is_transform_source",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "false"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "labels.is_transform_source": "false"
                                         }
                                     }
                                 }
@@ -253,16 +282,12 @@
                             },
                             "visualization": {
                                 "color": "#6092C0",
-                                "layerId": "06539fcb-a650-40b8-b0c3-ec6810605f86",
+                                "layerId": "b8e72038-1011-4f3a-a6b1-1c79a55037ac",
                                 "layerType": "data",
-                                "metricAccessor": "6fe11838-fc24-425a-9558-4df1ce447695",
-                                "secondaryTrend": {
-                                    "type": "none"
-                                }
+                                "metricAccessor": "555e9a57-83fe-4fb8-a917-140cbc5ad4de"
                             }
                         },
-                        "title": "Total Audit Events",
-                        "type": "lens",
+                        "title": "Total Users",
                         "visualizationType": "lnsMetric"
                     },
                     "enhancements": {
@@ -279,17 +304,39 @@
                                 "alias": null,
                                 "disabled": false,
                                 "field": "data_stream.dataset",
-                                "index": "b08c0918-123f-46eb-9577-4ffc989791e7",
+                                "index": "3dc3f923-4813-4352-9b89-5bd6fe100191",
                                 "key": "data_stream.dataset",
                                 "negate": false,
                                 "params": {
-                                    "query": "ping_directory.audit"
+                                    "query": "ping_directory.user"
                                 },
                                 "type": "phrase"
                             },
                             "query": {
                                 "match_phrase": {
-                                    "data_stream.dataset": "ping_directory.audit"
+                                    "data_stream.dataset": "ping_directory.user"
+                                }
+                            }
+                        },
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "labels.is_transform_source",
+                                "index": "615e2ac3-4d82-498e-b3cf-0f3e300d868a",
+                                "key": "labels.is_transform_source",
+                                "negate": false,
+                                "params": {
+                                    "query": "false"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "labels.is_transform_source": "false"
                                 }
                             }
                         }
@@ -301,16 +348,16 @@
                     "syncColors": false,
                     "syncCursor": true,
                     "syncTooltips": false,
-                    "title": ""
+                    "title": "Total Users"
                 },
                 "gridData": {
-                    "h": 12,
-                    "i": "06533346-15f1-44dd-af90-6a9abe014828",
+                    "h": 7,
+                    "i": "d016900b-680f-4e0a-9ec5-50e13e6f51e7",
                     "w": 6,
-                    "x": 9,
+                    "x": 10,
                     "y": 4
                 },
-                "panelIndex": "06533346-15f1-44dd-af90-6a9abe014828",
+                "panelIndex": "d016900b-680f-4e0a-9ec5-50e13e6f51e7",
                 "type": "lens"
             },
             {
@@ -320,12 +367,17 @@
                         "references": [
                             {
                                 "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-952b53eb-638f-4dbd-a3b2-a48077ff034e",
+                                "name": "indexpattern-datasource-layer-cc864def-a7f7-4884-b728-1dfc9004fdc0",
                                 "type": "index-pattern"
                             },
                             {
                                 "id": "logs-*",
-                                "name": "a9fedef0-1ce3-4fa0-b482-616257a7bd7f",
+                                "name": "ba0f129a-4a62-44cf-9d3b-0fdb23c4612f",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "43d62ba4-152a-4226-b7b5-9feed8b745bc",
                                 "type": "index-pattern"
                             }
                         ],
@@ -334,28 +386,16 @@
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
-                                        "952b53eb-638f-4dbd-a3b2-a48077ff034e": {
+                                        "cc864def-a7f7-4884-b728-1dfc9004fdc0": {
                                             "columnOrder": [
-                                                "6ed55186-9620-484d-ae7d-f3c313c3eb6b",
-                                                "123c827e-69a5-4c85-a73f-c74042470110"
+                                                "489f69df-5c49-4581-a3cb-01de6a08756f",
+                                                "f1dfed05-d572-47ce-9897-9d3f56fe3640"
                                             ],
                                             "columns": {
-                                                "123c827e-69a5-4c85-a73f-c74042470110": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Count",
-                                                    "operationType": "count",
-                                                    "params": {
-                                                        "emptyAsNull": false
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
-                                                },
-                                                "6ed55186-9620-484d-ae7d-f3c313c3eb6b": {
+                                                "489f69df-5c49-4581-a3cb-01de6a08756f": {
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top 5 values of event.action",
+                                                    "label": "Top 5 values of ping_directory.user.user_type",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -364,7 +404,7 @@
                                                         "includeIsRegex": false,
                                                         "missingBucket": false,
                                                         "orderBy": {
-                                                            "columnId": "123c827e-69a5-4c85-a73f-c74042470110",
+                                                            "columnId": "f1dfed05-d572-47ce-9897-9d3f56fe3640",
                                                             "type": "column"
                                                         },
                                                         "orderDirection": "desc",
@@ -375,7 +415,18 @@
                                                         "size": 5
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "event.action"
+                                                    "sourceField": "ping_directory.user.user_type"
+                                                },
+                                                "f1dfed05-d572-47ce-9897-9d3f56fe3640": {
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count of records",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
                                                 }
                                             },
                                             "ignoreGlobalFilters": false,
@@ -400,17 +451,39 @@
                                         "alias": null,
                                         "disabled": false,
                                         "field": "data_stream.dataset",
-                                        "index": "a9fedef0-1ce3-4fa0-b482-616257a7bd7f",
+                                        "index": "ba0f129a-4a62-44cf-9d3b-0fdb23c4612f",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": {
-                                            "query": "ping_directory.audit"
+                                            "query": "ping_directory.user"
                                         },
                                         "type": "phrase"
                                     },
                                     "query": {
                                         "match_phrase": {
-                                            "data_stream.dataset": "ping_directory.audit"
+                                            "data_stream.dataset": "ping_directory.user"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "labels.is_transform_source",
+                                        "index": "43d62ba4-152a-4226-b7b5-9feed8b745bc",
+                                        "key": "labels.is_transform_source",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "false"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "labels.is_transform_source": "false"
                                         }
                                     }
                                 }
@@ -442,16 +515,16 @@
                                                 }
                                             ]
                                         },
-                                        "layerId": "952b53eb-638f-4dbd-a3b2-a48077ff034e",
+                                        "layerId": "cc864def-a7f7-4884-b728-1dfc9004fdc0",
                                         "layerType": "data",
                                         "legendDisplay": "show",
                                         "metrics": [
-                                            "123c827e-69a5-4c85-a73f-c74042470110"
+                                            "f1dfed05-d572-47ce-9897-9d3f56fe3640"
                                         ],
                                         "nestedLegend": false,
                                         "numberDisplay": "percent",
                                         "primaryGroups": [
-                                            "6ed55186-9620-484d-ae7d-f3c313c3eb6b"
+                                            "489f69df-5c49-4581-a3cb-01de6a08756f"
                                         ],
                                         "truncateLegend": false
                                     }
@@ -459,7 +532,7 @@
                                 "shape": "pie"
                             }
                         },
-                        "title": "Audit Operations by Type",
+                        "title": "Users by Employment Type",
                         "visualizationType": "lnsPie"
                     },
                     "enhancements": {
@@ -476,17 +549,39 @@
                                 "alias": null,
                                 "disabled": false,
                                 "field": "data_stream.dataset",
-                                "index": "a9fedef0-1ce3-4fa0-b482-616257a7bd7f",
+                                "index": "ba0f129a-4a62-44cf-9d3b-0fdb23c4612f",
                                 "key": "data_stream.dataset",
                                 "negate": false,
                                 "params": {
-                                    "query": "ping_directory.audit"
+                                    "query": "ping_directory.user"
                                 },
                                 "type": "phrase"
                             },
                             "query": {
                                 "match_phrase": {
-                                    "data_stream.dataset": "ping_directory.audit"
+                                    "data_stream.dataset": "ping_directory.user"
+                                }
+                            }
+                        },
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "labels.is_transform_source",
+                                "index": "43d62ba4-152a-4226-b7b5-9feed8b745bc",
+                                "key": "labels.is_transform_source",
+                                "negate": false,
+                                "params": {
+                                    "query": "false"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "labels.is_transform_source": "false"
                                 }
                             }
                         }
@@ -498,16 +593,16 @@
                     "syncColors": false,
                     "syncCursor": true,
                     "syncTooltips": false,
-                    "title": "Audit Operations by Type"
+                    "title": "Users by Employment Type"
                 },
                 "gridData": {
-                    "h": 12,
-                    "i": "b98ef1b1-735e-4f0a-ae28-4df35b0a30b2",
-                    "w": 14,
-                    "x": 15,
+                    "h": 7,
+                    "i": "f606f970-8d43-4f7a-a561-2e6aab254ccb",
+                    "w": 10,
+                    "x": 16,
                     "y": 4
                 },
-                "panelIndex": "b98ef1b1-735e-4f0a-ae28-4df35b0a30b2",
+                "panelIndex": "f606f970-8d43-4f7a-a561-2e6aab254ccb",
                 "type": "lens"
             },
             {
@@ -517,12 +612,17 @@
                         "references": [
                             {
                                 "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-793d55e5-adf2-4c1e-badb-955a805e7edc",
+                                "name": "indexpattern-datasource-layer-49384767-7aec-4027-b6c7-d9d2e7cba929",
                                 "type": "index-pattern"
                             },
                             {
                                 "id": "logs-*",
-                                "name": "10852cbc-bcd5-4657-ba8d-021bc01cdf0c",
+                                "name": "85d31d06-60f8-4035-9f67-47b984377678",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "3dd7c39d-7c4a-428c-9043-81231290c3e5",
                                 "type": "index-pattern"
                             }
                         ],
@@ -531,14 +631,26 @@
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
-                                        "793d55e5-adf2-4c1e-badb-955a805e7edc": {
+                                        "49384767-7aec-4027-b6c7-d9d2e7cba929": {
                                             "columnOrder": [
-                                                "98d19b30-9130-46ff-8a1d-7b10d9a6622b",
-                                                "040709bd-4d12-407d-97d1-f71f4edd7d4a",
-                                                "8f6c3c67-90b4-46bb-8c58-72f8508c5270"
+                                                "e62c4eb4-f1ea-44ba-bd3a-8bcea219307f",
+                                                "8d2219fc-df9f-4e5d-b90d-24d814a85beb"
                                             ],
                                             "columns": {
-                                                "040709bd-4d12-407d-97d1-f71f4edd7d4a": {
+                                                "8d2219fc-df9f-4e5d-b90d-24d814a85beb": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "e62c4eb4-f1ea-44ba-bd3a-8bcea219307f": {
+                                                    "customLabel": false,
                                                     "dataType": "date",
                                                     "isBucketed": true,
                                                     "label": "@timestamp",
@@ -550,43 +662,6 @@
                                                     },
                                                     "scale": "interval",
                                                     "sourceField": "@timestamp"
-                                                },
-                                                "8f6c3c67-90b4-46bb-8c58-72f8508c5270": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Count ",
-                                                    "operationType": "count",
-                                                    "params": {
-                                                        "emptyAsNull": false
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
-                                                },
-                                                "98d19b30-9130-46ff-8a1d-7b10d9a6622b": {
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "Top 3 values of event.action",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "exclude": [],
-                                                        "excludeIsRegex": false,
-                                                        "include": [],
-                                                        "includeIsRegex": false,
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "8f6c3c67-90b4-46bb-8c58-72f8508c5270",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": true,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "size": 3
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "event.action"
                                                 }
                                             },
                                             "ignoreGlobalFilters": false,
@@ -611,17 +686,39 @@
                                         "alias": null,
                                         "disabled": false,
                                         "field": "data_stream.dataset",
-                                        "index": "10852cbc-bcd5-4657-ba8d-021bc01cdf0c",
+                                        "index": "85d31d06-60f8-4035-9f67-47b984377678",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": {
-                                            "query": "ping_directory.audit"
+                                            "query": "ping_directory.user"
                                         },
                                         "type": "phrase"
                                     },
                                     "query": {
                                         "match_phrase": {
-                                            "data_stream.dataset": "ping_directory.audit"
+                                            "data_stream.dataset": "ping_directory.user"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "labels.is_transform_source",
+                                        "index": "3dd7c39d-7c4a-428c-9043-81231290c3e5",
+                                        "key": "labels.is_transform_source",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "false"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "labels.is_transform_source": "false"
                                         }
                                     }
                                 }
@@ -635,7 +732,7 @@
                                 "layers": [
                                     {
                                         "accessors": [
-                                            "8f6c3c67-90b4-46bb-8c58-72f8508c5270"
+                                            "8d2219fc-df9f-4e5d-b90d-24d814a85beb"
                                         ],
                                         "colorMapping": {
                                             "assignments": [],
@@ -655,27 +752,26 @@
                                                 }
                                             ]
                                         },
-                                        "layerId": "793d55e5-adf2-4c1e-badb-955a805e7edc",
+                                        "layerId": "49384767-7aec-4027-b6c7-d9d2e7cba929",
                                         "layerType": "data",
                                         "position": "top",
                                         "seriesType": "line",
                                         "showGridlines": false,
-                                        "splitAccessor": "98d19b30-9130-46ff-8a1d-7b10d9a6622b",
-                                        "xAccessor": "040709bd-4d12-407d-97d1-f71f4edd7d4a"
+                                        "xAccessor": "e62c4eb4-f1ea-44ba-bd3a-8bcea219307f"
                                     }
                                 ],
                                 "legend": {
                                     "isVisible": true,
                                     "position": "right",
                                     "shouldTruncate": false,
-                                    "showSingleSeries": true
+                                    "showSingleSeries": false
                                 },
                                 "preferredSeriesType": "line",
                                 "title": "Empty XY chart",
                                 "valueLabels": "hide"
                             }
                         },
-                        "title": "Audit Activity over Time",
+                        "title": "User Sync Events over Time",
                         "visualizationType": "lnsXY"
                     },
                     "enhancements": {
@@ -692,17 +788,39 @@
                                 "alias": null,
                                 "disabled": false,
                                 "field": "data_stream.dataset",
-                                "index": "10852cbc-bcd5-4657-ba8d-021bc01cdf0c",
+                                "index": "85d31d06-60f8-4035-9f67-47b984377678",
                                 "key": "data_stream.dataset",
                                 "negate": false,
                                 "params": {
-                                    "query": "ping_directory.audit"
+                                    "query": "ping_directory.user"
                                 },
                                 "type": "phrase"
                             },
                             "query": {
                                 "match_phrase": {
-                                    "data_stream.dataset": "ping_directory.audit"
+                                    "data_stream.dataset": "ping_directory.user"
+                                }
+                            }
+                        },
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "labels.is_transform_source",
+                                "index": "3dd7c39d-7c4a-428c-9043-81231290c3e5",
+                                "key": "labels.is_transform_source",
+                                "negate": false,
+                                "params": {
+                                    "query": "false"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "labels.is_transform_source": "false"
                                 }
                             }
                         }
@@ -714,16 +832,16 @@
                     "syncColors": false,
                     "syncCursor": true,
                     "syncTooltips": false,
-                    "title": "Audit Activity over Time"
+                    "title": "User Sync Events over Time"
                 },
                 "gridData": {
-                    "h": 12,
-                    "i": "d41f57eb-e5bd-43a4-9b25-b7af0e1adb76",
-                    "w": 19,
-                    "x": 29,
+                    "h": 7,
+                    "i": "4ded6562-9f56-45f2-a445-ac61413b759b",
+                    "w": 21,
+                    "x": 26,
                     "y": 4
                 },
-                "panelIndex": "d41f57eb-e5bd-43a4-9b25-b7af0e1adb76",
+                "panelIndex": "4ded6562-9f56-45f2-a445-ac61413b759b",
                 "type": "lens"
             },
             {
@@ -733,12 +851,17 @@
                         "references": [
                             {
                                 "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-e71c7890-6639-4a7f-874a-fb506b4817de",
+                                "name": "indexpattern-datasource-layer-92888946-2da8-4fa4-94bc-6ff2cdca6c81",
                                 "type": "index-pattern"
                             },
                             {
                                 "id": "logs-*",
-                                "name": "dc156d54-711d-4435-b3f8-ff4f7be97107",
+                                "name": "b3a2b533-56bd-4c1a-9af2-c072b91b6a46",
+                                "type": "index-pattern"
+                            },
+                            {
+                                "id": "logs-*",
+                                "name": "113e724b-a5c9-4b19-9ae2-90f083d9f1f0",
                                 "type": "index-pattern"
                             }
                         ],
@@ -747,30 +870,33 @@
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
-                                        "e71c7890-6639-4a7f-874a-fb506b4817de": {
+                                        "92888946-2da8-4fa4-94bc-6ff2cdca6c81": {
                                             "columnOrder": [
-                                                "8d6f9199-1f45-429f-b666-ecb5958e29b0",
-                                                "8f712daf-1763-4ec7-9940-b69bf728f0bd",
-                                                "30a2cf87-65b3-47bb-9e67-d33a759cc326"
+                                                "7cb8b58a-8e33-4477-a0dc-b649787f166d",
+                                                "5d04c73a-326c-41ff-a0af-847acb58979d",
+                                                "90e485bd-046f-461c-ba74-b49fb9d94c4d",
+                                                "775f1645-ba0a-43df-b528-0aa6b48588ee",
+                                                "28b8141c-a9ac-4b07-8fd6-adcb9a2720c1",
+                                                "0b661b94-7f1a-4f54-923b-0799435b2795"
                                             ],
                                             "columns": {
-                                                "30a2cf87-65b3-47bb-9e67-d33a759cc326": {
+                                                "0b661b94-7f1a-4f54-923b-0799435b2795": {
                                                     "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
                                                     "label": "Count",
                                                     "operationType": "count",
                                                     "params": {
-                                                        "emptyAsNull": false
+                                                        "emptyAsNull": true
                                                     },
                                                     "scale": "ratio",
                                                     "sourceField": "___records___"
                                                 },
-                                                "8d6f9199-1f45-429f-b666-ecb5958e29b0": {
+                                                "28b8141c-a9ac-4b07-8fd6-adcb9a2720c1": {
                                                     "customLabel": true,
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Directory Object",
+                                                    "label": "User Type",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -779,25 +905,103 @@
                                                         "includeIsRegex": false,
                                                         "missingBucket": false,
                                                         "orderBy": {
-                                                            "columnId": "30a2cf87-65b3-47bb-9e67-d33a759cc326",
+                                                            "columnId": "0b661b94-7f1a-4f54-923b-0799435b2795",
                                                             "type": "column"
                                                         },
-                                                        "orderDirection": "desc",
+                                                        "orderDirection": "asc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "ping_directory.user.user_type"
+                                                },
+                                                "5d04c73a-326c-41ff-a0af-847acb58979d": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Full Name",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "0b661b94-7f1a-4f54-923b-0799435b2795",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "asc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 5
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "user.full_name"
+                                                },
+                                                "775f1645-ba0a-43df-b528-0aa6b48588ee": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Department",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "0b661b94-7f1a-4f54-923b-0799435b2795",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "asc",
+                                                        "otherBucket": false,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 15
+                                                    },
+                                                    "scale": "ordinal",
+                                                    "sourceField": "ping_directory.user.title"
+                                                },
+                                                "7cb8b58a-8e33-4477-a0dc-b649787f166d": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "User Name",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "0b661b94-7f1a-4f54-923b-0799435b2795",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "asc",
                                                         "otherBucket": false,
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
                                                         "secondaryFields": [],
-                                                        "size": 10
+                                                        "size": 5
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "ping_directory.audit.dn.value"
+                                                    "sourceField": "user.name"
                                                 },
-                                                "8f712daf-1763-4ec7-9940-b69bf728f0bd": {
+                                                "90e485bd-046f-461c-ba74-b49fb9d94c4d": {
                                                     "customLabel": true,
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Operation Type",
+                                                    "label": "Email",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -806,18 +1010,18 @@
                                                         "includeIsRegex": false,
                                                         "missingBucket": false,
                                                         "orderBy": {
-                                                            "columnId": "30a2cf87-65b3-47bb-9e67-d33a759cc326",
+                                                            "columnId": "0b661b94-7f1a-4f54-923b-0799435b2795",
                                                             "type": "column"
                                                         },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": true,
+                                                        "orderDirection": "asc",
+                                                        "otherBucket": false,
                                                         "parentFormat": {
                                                             "id": "terms"
                                                         },
-                                                        "size": 10
+                                                        "size": 5
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "event.action"
+                                                    "sourceField": "user.email"
                                                 }
                                             },
                                             "ignoreGlobalFilters": false,
@@ -842,17 +1046,39 @@
                                         "alias": null,
                                         "disabled": false,
                                         "field": "data_stream.dataset",
-                                        "index": "dc156d54-711d-4435-b3f8-ff4f7be97107",
+                                        "index": "b3a2b533-56bd-4c1a-9af2-c072b91b6a46",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": {
-                                            "query": "ping_directory.audit"
+                                            "query": "ping_directory.user"
                                         },
                                         "type": "phrase"
                                     },
                                     "query": {
                                         "match_phrase": {
-                                            "data_stream.dataset": "ping_directory.audit"
+                                            "data_stream.dataset": "ping_directory.user"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "labels.is_transform_source",
+                                        "index": "113e724b-a5c9-4b19-9ae2-90f083d9f1f0",
+                                        "key": "labels.is_transform_source",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "false"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "labels.is_transform_source": "false"
                                         }
                                     }
                                 }
@@ -865,26 +1091,41 @@
                             "visualization": {
                                 "columns": [
                                     {
-                                        "columnId": "8d6f9199-1f45-429f-b666-ecb5958e29b0",
+                                        "columnId": "7cb8b58a-8e33-4477-a0dc-b649787f166d",
                                         "isMetric": false,
                                         "isTransposed": false
                                     },
                                     {
-                                        "columnId": "8f712daf-1763-4ec7-9940-b69bf728f0bd",
-                                        "isMetric": false,
-                                        "isTransposed": false
-                                    },
-                                    {
-                                        "columnId": "30a2cf87-65b3-47bb-9e67-d33a759cc326",
+                                        "columnId": "0b661b94-7f1a-4f54-923b-0799435b2795",
                                         "isMetric": true,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "5d04c73a-326c-41ff-a0af-847acb58979d",
+                                        "isMetric": false,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "90e485bd-046f-461c-ba74-b49fb9d94c4d",
+                                        "isMetric": false,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "775f1645-ba0a-43df-b528-0aa6b48588ee",
+                                        "isMetric": false,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "28b8141c-a9ac-4b07-8fd6-adcb9a2720c1",
+                                        "isMetric": false,
                                         "isTransposed": false
                                     }
                                 ],
-                                "layerId": "e71c7890-6639-4a7f-874a-fb506b4817de",
+                                "layerId": "92888946-2da8-4fa4-94bc-6ff2cdca6c81",
                                 "layerType": "data"
                             }
                         },
-                        "title": "Object Modification Summary",
+                        "title": "User Directory Overview",
                         "visualizationType": "lnsDatatable"
                     },
                     "enhancements": {
@@ -901,202 +1142,20 @@
                                 "alias": null,
                                 "disabled": false,
                                 "field": "data_stream.dataset",
-                                "index": "dc156d54-711d-4435-b3f8-ff4f7be97107",
+                                "index": "b3a2b533-56bd-4c1a-9af2-c072b91b6a46",
                                 "key": "data_stream.dataset",
                                 "negate": false,
                                 "params": {
-                                    "query": "ping_directory.audit"
+                                    "query": "ping_directory.user"
                                 },
                                 "type": "phrase"
                             },
                             "query": {
                                 "match_phrase": {
-                                    "data_stream.dataset": "ping_directory.audit"
+                                    "data_stream.dataset": "ping_directory.user"
                                 }
-                            }
-                        }
-                    ],
-                    "query": {
-                        "language": "kuery",
-                        "query": ""
-                    },
-                    "syncColors": false,
-                    "syncCursor": true,
-                    "syncTooltips": false,
-                    "title": "Object Modification Summary"
-                },
-                "gridData": {
-                    "h": 13,
-                    "i": "f5eea6d1-a766-47ab-9598-0f6452ea99d0",
-                    "w": 20,
-                    "x": 9,
-                    "y": 16
-                },
-                "panelIndex": "f5eea6d1-a766-47ab-9598-0f6452ea99d0",
-                "type": "lens"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "description": "",
-                        "references": [
-                            {
-                                "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-9011241e-200b-4be6-88ed-890f291d4094",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "a754a959-5a7c-43dc-8d48-9c2c1ae4b1f9",
-                                "type": "index-pattern"
-                            }
-                        ],
-                        "state": {
-                            "adHocDataViews": {},
-                            "datasourceStates": {
-                                "formBased": {
-                                    "layers": {
-                                        "9011241e-200b-4be6-88ed-890f291d4094": {
-                                            "columnOrder": [
-                                                "e1eb8367-b11b-4ade-9e6e-eb9d943642d5",
-                                                "2c97ad14-38bb-4247-9535-f260d5d3b1b7"
-                                            ],
-                                            "columns": {
-                                                "2c97ad14-38bb-4247-9535-f260d5d3b1b7": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Count ",
-                                                    "operationType": "count",
-                                                    "params": {
-                                                        "emptyAsNull": false
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
-                                                },
-                                                "e1eb8367-b11b-4ade-9e6e-eb9d943642d5": {
-                                                    "dataType": "ip",
-                                                    "isBucketed": true,
-                                                    "label": "Top 10 values of client.ip",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "exclude": [],
-                                                        "excludeIsRegex": false,
-                                                        "include": [],
-                                                        "includeIsRegex": false,
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "2c97ad14-38bb-4247-9535-f260d5d3b1b7",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": true,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "size": 10
-                                                    },
-                                                    "scale": "ordinal",
-                                                    "sourceField": "client.ip"
-                                                }
-                                            },
-                                            "ignoreGlobalFilters": false,
-                                            "incompleteColumns": {},
-                                            "sampling": 1
-                                        }
-                                    }
-                                },
-                                "indexpattern": {
-                                    "layers": {}
-                                },
-                                "textBased": {
-                                    "layers": {}
-                                }
-                            },
-                            "filters": [
-                                {
-                                    "$state": {
-                                        "store": "appState"
-                                    },
-                                    "meta": {
-                                        "alias": null,
-                                        "disabled": false,
-                                        "field": "data_stream.dataset",
-                                        "index": "a754a959-5a7c-43dc-8d48-9c2c1ae4b1f9",
-                                        "key": "data_stream.dataset",
-                                        "negate": false,
-                                        "params": {
-                                            "query": "ping_directory.audit"
-                                        },
-                                        "type": "phrase"
-                                    },
-                                    "query": {
-                                        "match_phrase": {
-                                            "data_stream.dataset": "ping_directory.audit"
-                                        }
-                                    }
-                                }
-                            ],
-                            "internalReferences": [],
-                            "query": {
-                                "language": "kuery",
-                                "query": ""
-                            },
-                            "visualization": {
-                                "layers": [
-                                    {
-                                        "accessors": [
-                                            "2c97ad14-38bb-4247-9535-f260d5d3b1b7"
-                                        ],
-                                        "colorMapping": {
-                                            "assignments": [],
-                                            "colorMode": {
-                                                "type": "categorical"
-                                            },
-                                            "paletteId": "eui_amsterdam_color_blind",
-                                            "specialAssignments": [
-                                                {
-                                                    "color": {
-                                                        "type": "loop"
-                                                    },
-                                                    "rules": [
-                                                        {
-                                                            "type": "other"
-                                                        }
-                                                    ],
-                                                    "touched": false
-                                                }
-                                            ]
-                                        },
-                                        "layerId": "9011241e-200b-4be6-88ed-890f291d4094",
-                                        "layerType": "data",
-                                        "position": "top",
-                                        "seriesType": "bar_stacked",
-                                        "showGridlines": false,
-                                        "xAccessor": "e1eb8367-b11b-4ade-9e6e-eb9d943642d5"
-                                    }
-                                ],
-                                "legend": {
-                                    "isVisible": false,
-                                    "position": "right",
-                                    "shouldTruncate": false,
-                                    "showSingleSeries": false
-                                },
-                                "preferredSeriesType": "bar_stacked",
-                                "title": "Empty XY chart",
-                                "valueLabels": "hide"
                             }
                         },
-                        "title": "Top Client IPs",
-                        "type": "lens",
-                        "visualizationType": "lnsXY"
-                    },
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
-                    },
-                    "filters": [
                         {
                             "$state": {
                                 "store": "appState"
@@ -1104,18 +1163,18 @@
                             "meta": {
                                 "alias": null,
                                 "disabled": false,
-                                "field": "data_stream.dataset",
-                                "index": "a754a959-5a7c-43dc-8d48-9c2c1ae4b1f9",
-                                "key": "data_stream.dataset",
+                                "field": "labels.is_transform_source",
+                                "index": "113e724b-a5c9-4b19-9ae2-90f083d9f1f0",
+                                "key": "labels.is_transform_source",
                                 "negate": false,
                                 "params": {
-                                    "query": "ping_directory.audit"
+                                    "query": "false"
                                 },
                                 "type": "phrase"
                             },
                             "query": {
                                 "match_phrase": {
-                                    "data_stream.dataset": "ping_directory.audit"
+                                    "labels.is_transform_source": "false"
                                 }
                             }
                         }
@@ -1127,16 +1186,16 @@
                     "syncColors": false,
                     "syncCursor": true,
                     "syncTooltips": false,
-                    "title": "Top Client IPs"
+                    "title": "User Directory Overview"
                 },
                 "gridData": {
-                    "h": 13,
-                    "i": "98e440ff-6d62-4e5b-9dcd-0a601cf25b21",
-                    "w": 19,
-                    "x": 29,
-                    "y": 16
+                    "h": 9,
+                    "i": "df89a5c1-5f01-40cc-a7c1-b0fb8f84a930",
+                    "w": 21,
+                    "x": 10,
+                    "y": 11
                 },
-                "panelIndex": "98e440ff-6d62-4e5b-9dcd-0a601cf25b21",
+                "panelIndex": "df89a5c1-5f01-40cc-a7c1-b0fb8f84a930",
                 "type": "lens"
             },
             {
@@ -1146,12 +1205,7 @@
                         "references": [
                             {
                                 "id": "logs-*",
-                                "name": "indexpattern-datasource-layer-25ea2a39-4688-4b3d-ab54-d9273d5ebfa7",
-                                "type": "index-pattern"
-                            },
-                            {
-                                "id": "logs-*",
-                                "name": "540711bd-618c-4433-bca4-f5104ba3d28e",
+                                "name": "indexpattern-datasource-layer-060f398a-0ece-47f9-845f-80aa657714e2",
                                 "type": "index-pattern"
                             }
                         ],
@@ -1159,28 +1213,40 @@
                             "adHocDataViews": {},
                             "datasourceStates": {
                                 "formBased": {
+                                    "currentIndexPatternId": "logs-*",
                                     "layers": {
-                                        "25ea2a39-4688-4b3d-ab54-d9273d5ebfa7": {
+                                        "060f398a-0ece-47f9-845f-80aa657714e2": {
                                             "columnOrder": [
-                                                "094e0000-86cb-4bef-9d4f-6dd5e84c605d",
-                                                "0a74fbb1-60e3-4059-bafd-f7a5d722c670"
+                                                "272ac74f-5f83-4947-a896-49bae4189d79",
+                                                "0542a3da-3139-40b0-a156-6c64756addd1"
                                             ],
                                             "columns": {
-                                                "094e0000-86cb-4bef-9d4f-6dd5e84c605d": {
+                                                "0542a3da-3139-40b0-a156-6c64756addd1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Count",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "272ac74f-5f83-4947-a896-49bae4189d79": {
                                                     "customLabel": true,
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "ping_directory.audit.dn.value",
+                                                    "label": "User Title",
                                                     "operationType": "terms",
                                                     "params": {
-                                                        "accuracyMode": true,
                                                         "exclude": [],
                                                         "excludeIsRegex": false,
                                                         "include": [],
                                                         "includeIsRegex": false,
                                                         "missingBucket": false,
                                                         "orderBy": {
-                                                            "columnId": "0a74fbb1-60e3-4059-bafd-f7a5d722c670",
+                                                            "columnId": "0542a3da-3139-40b0-a156-6c64756addd1",
                                                             "type": "column"
                                                         },
                                                         "orderDirection": "desc",
@@ -1191,31 +1257,28 @@
                                                         "size": 10
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "ping_directory.audit.dn.value"
-                                                },
-                                                "0a74fbb1-60e3-4059-bafd-f7a5d722c670": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Count ",
-                                                    "operationType": "count",
-                                                    "params": {
-                                                        "emptyAsNull": false
-                                                    },
-                                                    "scale": "ratio",
-                                                    "sourceField": "___records___"
+                                                    "sourceField": "ping_directory.user.title"
                                                 }
                                             },
                                             "ignoreGlobalFilters": false,
                                             "incompleteColumns": {},
+                                            "indexPatternId": "logs-*",
                                             "sampling": 1
                                         }
                                     }
                                 },
                                 "indexpattern": {
+                                    "currentIndexPatternId": "logs-*",
                                     "layers": {}
                                 },
                                 "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "logs-*",
+                                            "timeField": "@timestamp",
+                                            "title": "logs-*"
+                                        }
+                                    ],
                                     "layers": {}
                                 }
                             },
@@ -1228,17 +1291,39 @@
                                         "alias": null,
                                         "disabled": false,
                                         "field": "data_stream.dataset",
-                                        "index": "540711bd-618c-4433-bca4-f5104ba3d28e",
+                                        "index": "logs-*",
                                         "key": "data_stream.dataset",
                                         "negate": false,
                                         "params": {
-                                            "query": "ping_directory.audit"
+                                            "query": "ping_directory.user"
                                         },
                                         "type": "phrase"
                                     },
                                     "query": {
                                         "match_phrase": {
-                                            "data_stream.dataset": "ping_directory.audit"
+                                            "data_stream.dataset": "ping_directory.user"
+                                        }
+                                    }
+                                },
+                                {
+                                    "$state": {
+                                        "store": "appState"
+                                    },
+                                    "meta": {
+                                        "alias": null,
+                                        "disabled": false,
+                                        "field": "labels.is_transform_source",
+                                        "index": "logs-*",
+                                        "key": "labels.is_transform_source",
+                                        "negate": false,
+                                        "params": {
+                                            "query": "false"
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "labels.is_transform_source": "false"
                                         }
                                     }
                                 }
@@ -1252,7 +1337,7 @@
                                 "layers": [
                                     {
                                         "accessors": [
-                                            "0a74fbb1-60e3-4059-bafd-f7a5d722c670"
+                                            "0542a3da-3139-40b0-a156-6c64756addd1"
                                         ],
                                         "colorMapping": {
                                             "assignments": [],
@@ -1272,25 +1357,26 @@
                                                 }
                                             ]
                                         },
-                                        "layerId": "25ea2a39-4688-4b3d-ab54-d9273d5ebfa7",
+                                        "layerId": "060f398a-0ece-47f9-845f-80aa657714e2",
                                         "layerType": "data",
                                         "position": "top",
                                         "seriesType": "bar_stacked",
                                         "showGridlines": false,
-                                        "xAccessor": "094e0000-86cb-4bef-9d4f-6dd5e84c605d"
+                                        "xAccessor": "272ac74f-5f83-4947-a896-49bae4189d79"
                                     }
                                 ],
                                 "legend": {
                                     "isVisible": true,
                                     "position": "right",
-                                    "shouldTruncate": false
+                                    "shouldTruncate": false,
+                                    "showSingleSeries": false
                                 },
                                 "preferredSeriesType": "bar_stacked",
                                 "title": "Empty XY chart",
                                 "valueLabels": "hide"
                             }
                         },
-                        "title": "Affected Components",
+                        "title": "Users by Department",
                         "visualizationType": "lnsXY"
                     },
                     "enhancements": {
@@ -1307,17 +1393,39 @@
                                 "alias": null,
                                 "disabled": false,
                                 "field": "data_stream.dataset",
-                                "index": "540711bd-618c-4433-bca4-f5104ba3d28e",
+                                "index": "logs-*",
                                 "key": "data_stream.dataset",
                                 "negate": false,
                                 "params": {
-                                    "query": "ping_directory.audit"
+                                    "query": "ping_directory.user"
                                 },
                                 "type": "phrase"
                             },
                             "query": {
                                 "match_phrase": {
-                                    "data_stream.dataset": "ping_directory.audit"
+                                    "data_stream.dataset": "ping_directory.user"
+                                }
+                            }
+                        },
+                        {
+                            "$state": {
+                                "store": "appState"
+                            },
+                            "meta": {
+                                "alias": null,
+                                "disabled": false,
+                                "field": "labels.is_transform_source",
+                                "index": "logs-*",
+                                "key": "labels.is_transform_source",
+                                "negate": false,
+                                "params": {
+                                    "query": "false"
+                                },
+                                "type": "phrase"
+                            },
+                            "query": {
+                                "match_phrase": {
+                                    "labels.is_transform_source": "false"
                                 }
                             }
                         }
@@ -1329,16 +1437,16 @@
                     "syncColors": false,
                     "syncCursor": true,
                     "syncTooltips": false,
-                    "title": "Affected Components"
+                    "title": "Users by Department"
                 },
                 "gridData": {
-                    "h": 11,
-                    "i": "6e69e7fe-7145-4316-9147-73b80e05f562",
-                    "w": 39,
-                    "x": 9,
-                    "y": 29
+                    "h": 9,
+                    "i": "cc30c4f3-ef54-49f6-bd0c-96eb6363d266",
+                    "w": 17,
+                    "x": 31,
+                    "y": 11
                 },
-                "panelIndex": "6e69e7fe-7145-4316-9147-73b80e05f562",
+                "panelIndex": "cc30c4f3-ef54-49f6-bd0c-96eb6363d266",
                 "type": "lens"
             },
             {
@@ -1415,22 +1523,22 @@
                 },
                 "gridData": {
                     "h": 4,
-                    "i": "73c0f77f-645a-44c8-9726-68b51777e4e1",
+                    "i": "481c83ee-0188-4fca-b5a0-19d042269916",
                     "w": 48,
                     "x": 0,
                     "y": 0
                 },
-                "panelIndex": "73c0f77f-645a-44c8-9726-68b51777e4e1",
+                "panelIndex": "481c83ee-0188-4fca-b5a0-19d042269916",
                 "type": "links"
             }
         ],
         "timeRestore": false,
-        "title": "[Logs PingDirectory] Audit",
+        "title": "[Logs PingDirectory] User",
         "version": 3
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2026-09-03T08:37:45.602Z",
-    "id": "ping_directory-1ca066b0-8ff5-4518-820c-53f52e80a929",
+    "created_at": "2026-09-03T08:37:44.600Z",
+    "id": "ping_directory-d475f863-3414-4288-a082-199a0991bb37",
     "references": [
         {
             "id": "logs-*",
@@ -1438,118 +1546,123 @@
             "type": "index-pattern"
         },
         {
-            "id": "ping_directory-c56f9f5b-cb4f-4714-8346-e5fd858a7dea",
-            "name": "27d7482d-e8ff-42ae-811c-c2b743114d01:panel_27d7482d-e8ff-42ae-811c-c2b743114d01",
-            "type": "search"
-        },
-        {
-            "id": "ping_directory-c56f9f5b-cb4f-4714-8346-e5fd858a7dea",
-            "name": "27d7482d-e8ff-42ae-811c-c2b743114d01:panel_27d7482d-e8ff-42ae-811c-c2b743114d01",
-            "type": "search"
-        },
-        {
             "id": "logs-*",
-            "name": "06533346-15f1-44dd-af90-6a9abe014828:indexpattern-datasource-layer-06539fcb-a650-40b8-b0c3-ec6810605f86",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "06533346-15f1-44dd-af90-6a9abe014828:b08c0918-123f-46eb-9577-4ffc989791e7",
+            "name": "d016900b-680f-4e0a-9ec5-50e13e6f51e7:indexpattern-datasource-layer-b8e72038-1011-4f3a-a6b1-1c79a55037ac",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "b98ef1b1-735e-4f0a-ae28-4df35b0a30b2:indexpattern-datasource-layer-952b53eb-638f-4dbd-a3b2-a48077ff034e",
+            "name": "d016900b-680f-4e0a-9ec5-50e13e6f51e7:3dc3f923-4813-4352-9b89-5bd6fe100191",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "b98ef1b1-735e-4f0a-ae28-4df35b0a30b2:a9fedef0-1ce3-4fa0-b482-616257a7bd7f",
+            "name": "d016900b-680f-4e0a-9ec5-50e13e6f51e7:615e2ac3-4d82-498e-b3cf-0f3e300d868a",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "d41f57eb-e5bd-43a4-9b25-b7af0e1adb76:indexpattern-datasource-layer-793d55e5-adf2-4c1e-badb-955a805e7edc",
+            "name": "f606f970-8d43-4f7a-a561-2e6aab254ccb:indexpattern-datasource-layer-cc864def-a7f7-4884-b728-1dfc9004fdc0",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "d41f57eb-e5bd-43a4-9b25-b7af0e1adb76:10852cbc-bcd5-4657-ba8d-021bc01cdf0c",
+            "name": "f606f970-8d43-4f7a-a561-2e6aab254ccb:ba0f129a-4a62-44cf-9d3b-0fdb23c4612f",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "f5eea6d1-a766-47ab-9598-0f6452ea99d0:indexpattern-datasource-layer-e71c7890-6639-4a7f-874a-fb506b4817de",
+            "name": "f606f970-8d43-4f7a-a561-2e6aab254ccb:43d62ba4-152a-4226-b7b5-9feed8b745bc",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "f5eea6d1-a766-47ab-9598-0f6452ea99d0:dc156d54-711d-4435-b3f8-ff4f7be97107",
+            "name": "4ded6562-9f56-45f2-a445-ac61413b759b:indexpattern-datasource-layer-49384767-7aec-4027-b6c7-d9d2e7cba929",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "98e440ff-6d62-4e5b-9dcd-0a601cf25b21:indexpattern-datasource-layer-9011241e-200b-4be6-88ed-890f291d4094",
+            "name": "4ded6562-9f56-45f2-a445-ac61413b759b:85d31d06-60f8-4035-9f67-47b984377678",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "98e440ff-6d62-4e5b-9dcd-0a601cf25b21:a754a959-5a7c-43dc-8d48-9c2c1ae4b1f9",
+            "name": "4ded6562-9f56-45f2-a445-ac61413b759b:3dd7c39d-7c4a-428c-9043-81231290c3e5",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "6e69e7fe-7145-4316-9147-73b80e05f562:indexpattern-datasource-layer-25ea2a39-4688-4b3d-ab54-d9273d5ebfa7",
+            "name": "df89a5c1-5f01-40cc-a7c1-b0fb8f84a930:indexpattern-datasource-layer-92888946-2da8-4fa4-94bc-6ff2cdca6c81",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "6e69e7fe-7145-4316-9147-73b80e05f562:540711bd-618c-4433-bca4-f5104ba3d28e",
+            "name": "df89a5c1-5f01-40cc-a7c1-b0fb8f84a930:b3a2b533-56bd-4c1a-9af2-c072b91b6a46",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "df89a5c1-5f01-40cc-a7c1-b0fb8f84a930:113e724b-a5c9-4b19-9ae2-90f083d9f1f0",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "cc30c4f3-ef54-49f6-bd0c-96eb6363d266:indexpattern-datasource-layer-060f398a-0ece-47f9-845f-80aa657714e2",
             "type": "index-pattern"
         },
         {
             "id": "ping_directory-1ca066b0-8ff5-4518-820c-53f52e80a929",
-            "name": "73c0f77f-645a-44c8-9726-68b51777e4e1:link_9c0f5a4e-4d3a-4a3f-9a35-1c0e9b58a1d2_dashboard",
+            "name": "481c83ee-0188-4fca-b5a0-19d042269916:link_9c0f5a4e-4d3a-4a3f-9a35-1c0e9b58a1d2_dashboard",
             "type": "dashboard"
         },
         {
             "id": "ping_directory-f34ff331-41b1-4a64-a60f-5ef745aa78ac",
-            "name": "73c0f77f-645a-44c8-9726-68b51777e4e1:link_3f6c1c27-8a1b-4e6a-9c8b-6d5f2a7e4b90_dashboard",
+            "name": "481c83ee-0188-4fca-b5a0-19d042269916:link_3f6c1c27-8a1b-4e6a-9c8b-6d5f2a7e4b90_dashboard",
             "type": "dashboard"
         },
         {
             "id": "ping_directory-35e0d479-ad96-46d3-b2c7-c34debf03606",
-            "name": "73c0f77f-645a-44c8-9726-68b51777e4e1:link_e2d03d27-7cee-4de5-9361-094381bd9bd9_dashboard",
+            "name": "481c83ee-0188-4fca-b5a0-19d042269916:link_e2d03d27-7cee-4de5-9361-094381bd9bd9_dashboard",
             "type": "dashboard"
         },
         {
             "id": "ping_directory-d475f863-3414-4288-a082-199a0991bb37",
-            "name": "73c0f77f-645a-44c8-9726-68b51777e4e1:link_656b8510-155e-4698-b8f3-ff455bcc9689_dashboard",
+            "name": "481c83ee-0188-4fca-b5a0-19d042269916:link_656b8510-155e-4698-b8f3-ff455bcc9689_dashboard",
             "type": "dashboard"
         },
         {
             "id": "ping_directory-b2380ddf-991e-4c72-8fb4-abb3206db74d",
-            "name": "73c0f77f-645a-44c8-9726-68b51777e4e1:link_074172e1-16db-4241-9229-e9bea8ae9f7c_dashboard",
+            "name": "481c83ee-0188-4fca-b5a0-19d042269916:link_074172e1-16db-4241-9229-e9bea8ae9f7c_dashboard",
             "type": "dashboard"
         },
         {
             "id": "logs-*",
-            "name": "controlGroup_6dc514e1-aaec-4ab5-ab7c-8c8fd88be988:optionsListDataView",
+            "name": "controlGroup_8d43e0f6-a027-414f-af35-8d4f850a3558:optionsListDataView",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "controlGroup_14dfd81b-a5cc-49e4-a815-413d0ce413c1:optionsListDataView",
+            "name": "controlGroup_53ef0d42-bc1f-4305-9970-a1ae720b9755:optionsListDataView",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
-            "name": "controlGroup_43bbcf1b-5094-496b-bdef-cbdba9e6214d:optionsListDataView",
+            "name": "controlGroup_3e4de572-c448-4e32-83b1-6dbeaae5a766:optionsListDataView",
             "type": "index-pattern"
         },
         {
             "id": "logs-*",
             "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
             "type": "index-pattern"
         }
     ],
