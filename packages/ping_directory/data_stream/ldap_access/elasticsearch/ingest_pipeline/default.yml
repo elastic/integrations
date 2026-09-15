@@ -4,7 +4,7 @@ processors:
   - set:
       field: ecs.version
       tag: set_ecs_version
-      value: 9.4.0
+      value: 9.5.0
   - rename:
       field: message
       tag: rename_message_to_event_original
@@ -657,6 +657,7 @@ processors:
       field: source.ip
       tag: geoip_source_ip
       target_field: source.geo
+      if: ctx.source?.ip != null
       ignore_missing: true
   - geoip:
       field: source.ip
@@ -666,6 +667,7 @@ processors:
       properties:
         - asn
         - organization_name
+      if: ctx.source?.ip != null
       ignore_missing: true
   - rename:
       field: source.as.asn

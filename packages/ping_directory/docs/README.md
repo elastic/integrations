@@ -203,11 +203,11 @@ An example event for `http_access` looks as following:
 {
     "@timestamp": "2026-05-25T18:55:19.182+05:30",
     "agent": {
-        "ephemeral_id": "084f8557-355a-40ee-96ed-97f616cbca07",
-        "id": "3455b6e0-52f8-4828-a529-058ecb6d5ce3",
-        "name": "elastic-agent-66564",
+        "ephemeral_id": "cc8d780c-9689-4583-bda8-26052acab90e",
+        "id": "77332175-62be-4af3-8924-7c7995e2d8e8",
+        "name": "elastic-agent-21334",
         "type": "filebeat",
-        "version": "8.19.0"
+        "version": "8.19.21"
     },
     "client": {
         "ip": "172.20.240.130",
@@ -215,16 +215,16 @@ An example event for `http_access` looks as following:
     },
     "data_stream": {
         "dataset": "ping_directory.http_access",
-        "namespace": "60932",
+        "namespace": "22176",
         "type": "logs"
     },
     "ecs": {
-        "version": "9.4.0"
+        "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "3455b6e0-52f8-4828-a529-058ecb6d5ce3",
+        "id": "77332175-62be-4af3-8924-7c7995e2d8e8",
         "snapshot": false,
-        "version": "8.19.0"
+        "version": "8.19.21"
     },
     "event": {
         "action": "GET",
@@ -234,7 +234,7 @@ An example event for `http_access` looks as following:
         ],
         "dataset": "ping_directory.http_access",
         "duration": 124825000,
-        "ingested": "2026-08-13T11:14:53Z",
+        "ingested": "2026-09-15T11:22:34Z",
         "kind": "event",
         "original": "[25/May/2026:18:55:19.182 +0530] RESULT instanceName=\"pingdirectory-elastic-test\" threadID=164 requestID=8 correlationID=\"7c0f360b-77f0-4951-9101-74d4f8358795\" from=\"172.20.240.130:55188\" method=\"GET\" url=\"https://10.50.15.29:2443/scim/v2\" requestHeader=\"Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7\" requestHeader=\"Connection: keep-alive\" requestHeader=\"User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36\" requestHeader=\"Sec-Fetch-Site: none\" requestHeader=\"Sec-Fetch-Dest: document\" requestHeader=\"Host: 10.50.15.29:2443\" requestHeader=\"Accept-Encoding: gzip, deflate, br, zstd\" requestHeader=\"Sec-Fetch-Mode: navigate\" requestHeader=\"sec-ch-ua: 'Chromium';v='148', 'Google Chrome';v='148', 'Not/A)Brand';v='99'\" requestHeader=\"sec-ch-ua-mobile: ?0\" requestHeader=\"Upgrade-Insecure-Requests: 1\" requestHeader=\"sec-ch-ua-platform: 'Windows'\" requestHeader=\"Sec-Fetch-User: ?1\" requestHeader=\"Accept-Language: en-GB,en-US;q=0.9,en;q=0.8\" statusCode=401 etime=124.825 responseContentLength=118 responseHeader=\"X-Frame-Options: SAMEORIGIN\" responseHeader=\"Correlation-Id: 7c0f360b-77f0-4951-9101-74d4f8358795\" responseHeader=\"Date: Mon, 25 May 2026 13:25:19 GMT\" responseContentType=\"application/scim+json\"",
         "outcome": "failure",
@@ -259,8 +259,8 @@ An example event for `http_access` looks as following:
     },
     "log": {
         "file": {
-            "device_id": "64768",
-            "inode": "1982471",
+            "device_id": "45",
+            "inode": "170",
             "path": "/tmp/service_logs/test-http-access.log"
         },
         "offset": 720
@@ -388,27 +388,27 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2026-05-25T18:48:06.786+05:30",
     "agent": {
-        "ephemeral_id": "bce38323-dc6c-4c42-9334-52a521979aa0",
-        "id": "2b8063ac-53d3-460a-ae40-b83abdefd8aa",
-        "name": "elastic-agent-46676",
+        "ephemeral_id": "1b76d22a-4b8f-4ff9-b9db-bdcde5886361",
+        "id": "04808745-d644-49a9-b690-e3ad5605360e",
+        "name": "elastic-agent-95282",
         "type": "filebeat",
-        "version": "8.19.0"
+        "version": "8.19.21"
     },
     "client": {
         "ip": "10.50.15.29"
     },
     "data_stream": {
         "dataset": "ping_directory.audit",
-        "namespace": "82148",
+        "namespace": "13121",
         "type": "logs"
     },
     "ecs": {
-        "version": "9.4.0"
+        "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "2b8063ac-53d3-460a-ae40-b83abdefd8aa",
+        "id": "04808745-d644-49a9-b690-e3ad5605360e",
         "snapshot": false,
-        "version": "8.19.0"
+        "version": "8.19.21"
     },
     "event": {
         "action": "modify",
@@ -417,7 +417,7 @@ An example event for `audit` looks as following:
             "configuration"
         ],
         "dataset": "ping_directory.audit",
-        "ingested": "2026-08-13T11:13:47Z",
+        "ingested": "2026-09-15T11:20:50Z",
         "kind": "event",
         "original": "# 25/May/2026:18:48:06.786 +0530; conn=13; op=28; instanceName=\"pingdirectory-elastic-test\"; threadID=29; clientIP=10.50.15.29; requesterDN=\"cn=Directory Manager,cn=Root DNs,cn=config\"; usingAdminSessionWorkerThread=true; operationPurpose={ \"applicationName\":\"PingDirectory\", \"applicationVersion\":\"11.0.0.2\", \"codeLocation\":\"DSConfig.getReason:2978 SetPropSubCommandHandler.modifyManagedObject:541 SetPropSubCommandHandler.run:1246 DSConfig.runSubCommand:2574 DSConfig.execute:1698\" }\ndn: cn=File-Based Audit Logger,cn=Loggers,cn=config\nchangetype: modify\nreplace: ds-cfg-enabled\nds-cfg-enabled: true\n-\nreplace: modifiersName\nmodifiersName: cn=Directory Manager,cn=Root DNs,cn=config\n-\nreplace: modifyTimestamp\nmodifyTimestamp: 20260525131806.681Z",
         "timezone": "+0530",
@@ -430,8 +430,8 @@ An example event for `audit` looks as following:
     },
     "log": {
         "file": {
-            "device_id": "64768",
-            "inode": "1978780",
+            "device_id": "45",
+            "inode": "156",
             "path": "/tmp/service_logs/test-audit.log"
         },
         "flags": [
@@ -563,24 +563,24 @@ An example event for `ldap_access` looks as following:
 {
     "@timestamp": "2026-05-25T18:30:48.688+05:30",
     "agent": {
-        "ephemeral_id": "51dce33e-4bf5-4497-95fe-67324a29c239",
-        "id": "187e8326-9e20-4c5c-8cad-e5022b920c8f",
-        "name": "elastic-agent-83001",
+        "ephemeral_id": "6b292174-2e7a-4732-b87c-02769cd24e5a",
+        "id": "4b077387-9a4c-42a0-b26a-74aa6af58545",
+        "name": "elastic-agent-83125",
         "type": "filebeat",
-        "version": "8.19.0"
+        "version": "8.19.21"
     },
     "data_stream": {
         "dataset": "ping_directory.ldap_access",
-        "namespace": "58636",
+        "namespace": "54401",
         "type": "logs"
     },
     "ecs": {
-        "version": "9.4.0"
+        "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "187e8326-9e20-4c5c-8cad-e5022b920c8f",
+        "id": "4b077387-9a4c-42a0-b26a-74aa6af58545",
         "snapshot": false,
-        "version": "8.19.0"
+        "version": "8.19.21"
     },
     "event": {
         "action": "add result",
@@ -590,7 +590,7 @@ An example event for `ldap_access` looks as following:
         ],
         "dataset": "ping_directory.ldap_access",
         "duration": 24567000,
-        "ingested": "2026-08-31T10:13:47Z",
+        "ingested": "2026-09-15T11:24:18Z",
         "kind": "event",
         "original": "[25/May/2026:18:30:48.688 +0530] ADD RESULT instanceName=\"pingdirectory-elastic-test\" threadID=9 conn=4 op=1 msgID=2 requesterIP=\"127.0.0.1\" requesterDN=\"cn=Directory Manager,cn=Root DNs,cn=config\" dn=\"ou=People,dc=example,dc=com\" resultCode=0 resultCodeName=\"Success\" qtime=0 etime=24.567 usedPrivileges=\"bypass-acl\"",
         "outcome": "success",
@@ -600,15 +600,12 @@ An example event for `ldap_access` looks as following:
         ]
     },
     "input": {
-        "type": "filestream"
+        "type": "udp"
     },
     "log": {
-        "file": {
-            "device_id": "64768",
-            "inode": "2761329",
-            "path": "/tmp/service_logs/test-ldap_access.log"
-        },
-        "offset": 0
+        "source": {
+            "address": "172.19.0.3:54907"
+        }
     },
     "observer": {
         "name": "pingdirectory-elastic-test"
@@ -739,6 +736,12 @@ The `user` data stream provides user identity records collected from PingDirecto
 | data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| entity.id | A unique identifier for the entity. When multiple identifiers exist, this should be the most stable and commonly used identifier that: 1) persists across the entity's lifecycle, 2) ensures uniqueness within its scope, 3) is commonly used for queries and correlation, and 4) is readily available in most observations (logs/events). For entities with dedicated field sets (for example, host, user), this value should match the corresponding \*.id field. Alternative identifiers (for example, ARNs values in AWS, URLs) can be preserved in the raw field. | keyword |
+| entity.last_seen_timestamp | Indicates the date/time when this entity was last "seen," usually based upon the last event/log that is initiated by this entity. | date |
+| entity.name | The name of the entity. The keyword field enables exact matches for filtering and aggregations, while the text field enables full-text search. For entities with dedicated field sets (for example, `host`), this field should mirrors the corresponding \*.name value. | keyword |
+| entity.name.text | Multi-field of `entity.name`. | match_only_text |
+| entity.source | The module or integration that provided this entity data (similar to event.module). | keyword |
+| entity.type | A standardized high-level classification of the entity. This provides a normalized way to group similar entities across different providers or systems. Example values: `bucket`, `database`, `container`, `function`, `queue`, `host`, `user`, `application`, `session`, `cloud`, `orchestrator`, etc. If an entity is nested under a top-level namespace like `host` or `cloud`, or similar, its type array should include the matching value — for example, `host` or `cloud`. | keyword |
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | input.type | Type of filebeat input. | keyword |
@@ -763,26 +766,35 @@ An example event for `user` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-09-02T10:47:18.592Z",
+    "@timestamp": "2026-09-15T11:25:01.645Z",
     "agent": {
-        "ephemeral_id": "3eaabb50-ad9b-47b2-82e1-e4cdeffcf659",
-        "id": "f0bf4a12-c54e-4301-b0e7-862a402d44bc",
-        "name": "elastic-agent-22681",
+        "ephemeral_id": "508671d7-59f3-4515-a27d-73cc8ee6b1cb",
+        "id": "d1a75cea-5576-454c-a012-4dd40c16ad8c",
+        "name": "elastic-agent-82814",
         "type": "filebeat",
-        "version": "8.19.0"
+        "version": "8.19.21"
     },
     "data_stream": {
         "dataset": "ping_directory.user",
-        "namespace": "74219",
+        "namespace": "88344",
         "type": "logs"
     },
     "ecs": {
         "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "f0bf4a12-c54e-4301-b0e7-862a402d44bc",
+        "id": "d1a75cea-5576-454c-a012-4dd40c16ad8c",
         "snapshot": false,
-        "version": "8.19.0"
+        "version": "8.19.21"
+    },
+    "entity": {
+        "id": "c9bbce6c-7d77-4d93-b674-42b1e8a00606",
+        "last_seen_timestamp": "2026-09-15T11:25:01.645Z",
+        "name": "john.doe",
+        "source": "ping_directory",
+        "type": [
+            "user"
+        ]
     },
     "event": {
         "agent_id_status": "verified",
@@ -790,7 +802,7 @@ An example event for `user` looks as following:
             "iam"
         ],
         "dataset": "ping_directory.user",
-        "ingested": "2026-09-02T10:47:21Z",
+        "ingested": "2026-09-15T11:25:04Z",
         "kind": "asset",
         "original": "{\"displayName\":\"John Doe\",\"emails\":[\"john.doe@example.com\"],\"id\":\"c9bbce6c-7d77-4d93-b674-42b1e8a00606\",\"meta\":{\"location\":\"https://10.50.15.29:2443/scim/v2/Users/c9bbce6c-7d77-4d93-b674-42b1e8a00606\",\"resourceType\":\"User\"},\"name\":{\"familyName\":\"Doe\",\"formatted\":\"John Doe\",\"givenName\":\"John\"},\"schemas\":[\"urn:ietf:params:scim:schemas:core:2.0:User\",\"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User\"],\"title\":\"DevOps Engineer\",\"userName\":\"john.doe\",\"userType\":\"Full-Time\"}",
         "type": [
@@ -858,6 +870,11 @@ The `group` data stream provides group membership records collected from PingDir
 | data_stream.dataset | Name of the dataset associated with the event. | constant_keyword |
 | data_stream.namespace | Namespace for the data stream. | constant_keyword |
 | data_stream.type | Type of data stream. | constant_keyword |
+| entity.id | A unique identifier for the entity. When multiple identifiers exist, this should be the most stable and commonly used identifier that: 1) persists across the entity's lifecycle, 2) ensures uniqueness within its scope, 3) is commonly used for queries and correlation, and 4) is readily available in most observations (logs/events). For entities with dedicated field sets (for example, host, user), this value should match the corresponding \*.id field. Alternative identifiers (for example, ARNs values in AWS, URLs) can be preserved in the raw field. | keyword |
+| entity.last_seen_timestamp | Indicates the date/time when this entity was last "seen," usually based upon the last event/log that is initiated by this entity. | date |
+| entity.name | The name of the entity. The keyword field enables exact matches for filtering and aggregations, while the text field enables full-text search. For entities with dedicated field sets (for example, `host`), this field should mirrors the corresponding \*.name value. | keyword |
+| entity.name.text | Multi-field of `entity.name`. | match_only_text |
+| entity.source | The module or integration that provided this entity data (similar to event.module). | keyword |
 | event.dataset | Dataset name for events collected from PingDirectory group records. | constant_keyword |
 | event.module | Module name for PingDirectory events. | constant_keyword |
 | input.type | Type of filebeat input. | keyword |
@@ -873,26 +890,32 @@ An example event for `group` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-09-15T09:20:47.029Z",
+    "@timestamp": "2026-09-15T11:21:40.986Z",
     "agent": {
-        "ephemeral_id": "82364f59-ad56-4ed9-a791-3d5dcae599b3",
-        "id": "414ff919-fbba-47c6-94a5-52435603f104",
-        "name": "elastic-agent-57726",
+        "ephemeral_id": "586c471e-4f3f-4226-a89f-3f5a57fb0316",
+        "id": "9bfd051a-b3df-4fd3-a348-cf3e476b16f8",
+        "name": "elastic-agent-32707",
         "type": "filebeat",
-        "version": "8.19.0"
+        "version": "8.19.21"
     },
     "data_stream": {
         "dataset": "ping_directory.group",
-        "namespace": "79915",
+        "namespace": "43291",
         "type": "logs"
     },
     "ecs": {
         "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "414ff919-fbba-47c6-94a5-52435603f104",
+        "id": "9bfd051a-b3df-4fd3-a348-cf3e476b16f8",
         "snapshot": false,
-        "version": "8.19.0"
+        "version": "8.19.21"
+    },
+    "entity": {
+        "id": "a7631f14-c7eb-490f-8b94-724b78241e13",
+        "last_seen_timestamp": "2026-09-15T11:21:40.986Z",
+        "name": "security",
+        "source": "ping_directory"
     },
     "event": {
         "agent_id_status": "verified",
@@ -900,7 +923,7 @@ An example event for `group` looks as following:
             "iam"
         ],
         "dataset": "ping_directory.group",
-        "ingested": "2026-09-15T09:20:50Z",
+        "ingested": "2026-09-15T11:21:43Z",
         "kind": "asset",
         "original": "{\"displayName\":\"security\",\"id\":\"a7631f14-c7eb-490f-8b94-724b78241e13\",\"members\":[\"uid=alice.smith,ou=People,dc=example,dc=com\"],\"meta\":{\"location\":\"https://10.50.15.29:2443/scim/v2/Groups/a7631f14-c7eb-490f-8b94-724b78241e13\",\"resourceType\":\"Group\"},\"schemas\":[\"urn:ietf:params:scim:schemas:core:2.0:Group\"]}",
         "type": [
