@@ -1,0 +1,72 @@
+{{#if condition}}
+condition: ${host.platform} == 'linux' and ({{condition}})
+{{else}}
+condition: ${host.platform} == 'linux'
+{{/if}}
+
+{{#if paths}}
+paths:
+{{#each paths as |path i|}}
+  - {{path}}
+{{/each}}
+{{/if}}
+
+{{#if include_matches}}
+include_matches:
+{{#each include_matches as |include_match i|}}
+  - '{{include_match}}'
+{{/each}}
+{{/if}}
+
+{{#if seek}}
+seek: {{seek}}
+{{/if}}
+{{#if cursor_seek_fallback}}
+cursor_seek_fallback: {{cursor_seek_fallback}}
+{{/if}}
+
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag i|}}
+  - {{tag}}
+{{/each}}
+
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+
+processors:
+# Align journald input fields to ECS.
+- convert:
+    tag: journald-to-ecs
+    mode: rename
+    ignore_missing: true
+    fields:
+      - from: message_id
+        to: event.code
+      - from: journald.code.file
+        to: log.origin.file.name
+      - from: journald.code.line
+        to: log.origin.file.line
+      - from: journald.code.func
+        to: log.origin.function
+      - from: syslog.pid
+        to: log.syslog.procid
+      - from: syslog.identifier
+        to: log.syslog.appname
+- drop_fields:
+    ignore_missing: true
+    fields:
+      - syslog
+      - container.id_truncated
+{{#if drop_debug_logs}}
+- drop_event:
+    when:
+      contains:
+        message: "DEBUG "
+{{/if}}
+{{#if processors}}
+{{processors}}
+{{/if}}
