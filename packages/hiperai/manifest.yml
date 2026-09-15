@@ -1,4 +1,4 @@
-format_version: "3.0.0"
+format_version: "3.4.2"
 name: hiperai
 title: "HiperAI SecureAI"
 version: "1.0.0"
@@ -9,7 +9,7 @@ categories:
   - security
 conditions:
   kibana:
-    version: "^8.12.0"
+    version: "^8.19.0 || ^9.1.0"
   elastic:
     subscription: "basic"
 owner:
@@ -59,20 +59,30 @@ policy_templates:
             default: 8089
             required: true
             show_user: true
+          - name: url
+            type: text
+            title: URL Path
+            description: >-
+              URL path the HTTP listener accepts SecureAI webhook requests on.
+            default: "/hiperai/events"
+            required: false
+            show_user: true
           - name: secret_header
             type: text
             title: Secret Header
             description: >-
               HTTP header name used for authentication (e.g., Authorization).
-            required: false
-            show_user: false
+            required: true
+            show_user: true
+            secret: false
           - name: secret_value
             type: password
             title: Secret Value
             description: >-
               Expected value for the secret header. For API Key auth, use the format "ApiKey <base64-encoded-key>".
-            required: false
-            show_user: false
+            required: true
+            show_user: true
+            secret: true
           - name: ssl
             type: yaml
             title: TLS/SSL Configuration

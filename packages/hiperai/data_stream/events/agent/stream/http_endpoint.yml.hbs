@@ -1,5 +1,8 @@
 listen_address: {{ listen_address }}
 listen_port: {{ listen_port }}
+{{#if url}}
+url: {{ url }}
+{{/if}}
 {{#if secret_header}}
 secret.header: {{ secret_header }}
 {{/if}}
@@ -9,16 +12,17 @@ secret.value: {{ secret_value }}
 {{#if ssl}}
 ssl: {{ ssl }}
 {{/if}}
+tags:
 {{#if preserve_original_event}}
-preserve_original_event: true
+  - preserve_original_event
 {{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
 {{#if processors}}
 processors:
 {{ processors }}
-{{/if}}
-{{#if tags}}
-tags:
-{{#each tags}}
-  - {{this}}
-{{/each}}
 {{/if}}
