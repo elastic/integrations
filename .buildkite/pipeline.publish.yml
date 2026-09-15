@@ -1,16 +1,14 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/buildkite/pipeline-schema/main/schema.json
 
 env:
-  SETUP_GVM_VERSION: "v0.5.2"
+  SETUP_GVM_VERSION: "v0.6.0"
   LINUX_AGENT_IMAGE: "golang:${GO_VERSION}"
-  DOCKER_COMPOSE_VERSION: "v2.24.1"
+  DOCKER_COMPOSE_VERSION: "v2.17.2"
   DOCKER_VERSION: "false"
   YQ_VERSION: 'v4.35.2'
   JQ_VERSION: '1.7'
   # Elastic package settings
   # Manage docker output/logs
-  ELASTIC_PACKAGE_COMPOSE_DISABLE_ANSI: "true"
-  ELASTIC_PACKAGE_COMPOSE_DISABLE_PULL_PROGRESS_INFORMATION: "true"
   ELASTIC_PACKAGE_COMPOSE_DISABLE_VERBOSE_OUTPUT: "true"
   # Default license to use by `elastic-package build`
   ELASTIC_PACKAGE_REPOSITORY_LICENSE: "licenses/Elastic-2.0.txt"
@@ -40,6 +38,9 @@ steps:
       ARTIFACTS_FOLDER: "artifacts-to-sign"
       # by default it will publish packages
       DRY_RUN: "${DRY_RUN:-false}"
+      # Comma-separated list of package zip filenames to skip (e.g. "foo-1.0.0.zip,bar-2.0.0.zip")
+      # kubeletstats_input_otel-0.1.0 was deleted but it is kept in the repository for now, in case it is needed to release a new version if needed
+      SKIP_PACKAGES: "kubeletstats_input_otel-0.1.0.zip"
     depends_on:
       - step: "check"
         allow_failure: false
