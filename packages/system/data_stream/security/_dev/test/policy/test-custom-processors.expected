@@ -11,9 +11,15 @@ inputs:
           data_stream:
             dataset: system.security
           ignore_older: 72h
-          include_xml: true
           name: Security
           processors:
+            - translate_sid:
+                account_name_target: winlog.event_data._MemberUserName
+                account_type_target: winlog.event_data._MemberAccountType
+                domain_target: winlog.event_data._MemberDomain
+                field: winlog.event_data.MemberSid
+                ignore_failure: true
+                ignore_missing: true
             - decode_xml:
                 field: winlog.event_data.TaskContent
                 ignore_failure: true
@@ -26,6 +32,8 @@ inputs:
                             - winlog.event_data.TaskContent
                         - equals:
                             winlog.provider_name: Microsoft-Windows-Security-Auditing
+                        - regexp:
+                            winlog.channel: ^[Ss][Ee][Cc][Uu][Rr][Ii][Tt][Yy]$
             - decode_xml:
                 field: winlog.event_data.TaskContentNew
                 ignore_failure: true
@@ -38,11 +46,12 @@ inputs:
                             - winlog.event_data.TaskContentNew
                         - equals:
                             winlog.provider_name: Microsoft-Windows-Security-Auditing
+                        - regexp:
+                            winlog.channel: ^[Ss][Ee][Cc][Uu][Rr][Ii][Tt][Yy]$
             - add_fields:
                 fields:
                     processors: preserved
                 target: winlog._tmp.policy_test
-          tags: null
       type: winlog
       use_output: default
 output_permissions:

@@ -1124,7 +1124,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | winlog.level | The event severity.  Levels are Critical, Error, Warning and Information, Verbose | keyword |
 | winlog.logon.failure.reason | The reason the logon failed. | keyword |
 | winlog.logon.failure.status | The reason the logon failed. This is textual description based on the value of the hexadecimal `Status` field. | keyword |
-| winlog.logon.failure.sub_status | Additional information about the logon failure. This is a textual description based on the value of the hexidecimal `SubStatus` field. | keyword |
+| winlog.logon.failure.sub_status | Additional information about the logon failure. This is a textual description based on the value of the hexadecimal `SubStatus` field. | keyword |
 | winlog.logon.id | Logon ID that can be used to associate this logon with other events related to the same logon session. | keyword |
 | winlog.logon.type | Logon type name. This is the descriptive version of the `winlog.event_data.LogonType` ordinal. This is an enrichment added by the Security module. | keyword |
 | winlog.opcode | The opcode defined in the event. Task and opcode are typically used to identify the location in the application from where the event was logged. | keyword |
