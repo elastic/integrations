@@ -95,6 +95,7 @@ To ensure optimal performance in high-volume environments, consider the followin
 *   **Preserve original event** (`preserve_original_event`): Preserves a raw copy of the original event, added to the field `event.original`. Default: `False`.
 *   **Tags** (`tags`): Custom tags to append to the events. Default: `['cisco-aironet', 'forwarded']`.
 *   **Timezone** (`tz_offset`): IANA time zone or time offset (for example `+0200`) to use when interpreting syslog timestamps without a time zone. Default: `UTC`.
+*   **Timezone Map** (`tz_map`): Maps time zone abbreviations in the log header (`tz_short`) to an IANA time zone or fixed offset (`tz_long`), for example `CEST` to `Europe/Paris`. Use this for abbreviations the controller truncates (for example `Singapo`) or that are ambiguous across regions (`CST` is both China and US Central). Entries take precedence over the abbreviation in the log.
 *   **Processors** (`processors`): Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata.
 *   **SSL Configuration** (`ssl`): SSL configuration options (for example, `#certificate: "/etc/server/cert.pem"`).
 *   **Custom TCP Options** (`tcp_options`): Specify custom configuration options like `max_connections` or `framing`.
@@ -105,6 +106,7 @@ To ensure optimal performance in high-volume environments, consider the followin
 *   **Preserve original event** (`preserve_original_event`): Preserves a raw copy of the original event, added to the field `event.original`. Default: `False`.
 *   **Tags** (`tags`): Custom tags for event categorization. Default: `['cisco-aironet', 'forwarded']`.
 *   **Timezone** (`tz_offset`): IANA time zone or time offset used to interpret timestamps. Default: `UTC`.
+*   **Timezone Map** (`tz_map`): Maps time zone abbreviations in the log header (`tz_short`) to an IANA time zone or fixed offset (`tz_long`), for example `CEST` to `Europe/Paris`. Use this for abbreviations the controller truncates (for example `Singapo`) or that are ambiguous across regions (`CST` is both China and US Central). Entries take precedence over the abbreviation in the log.
 *   **Custom UDP Options** (`udp_options`): Specify custom configuration options for the UDP input such as `read_buffer` or `max_message_size`.
 *   **Processors** (`processors`): Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata.
 
@@ -113,6 +115,7 @@ To ensure optimal performance in high-volume environments, consider the followin
 *   **Preserve original event** (`preserve_original_event`): Preserves a raw copy of the original event, added to the field `event.original`. Default: `False`.
 *   **Tags** (`tags`): Custom tags for the file input. Default: `['cisco-aironet', 'forwarded']`.
 *   **Timezone** (`tz_offset`): IANA time zone or time offset used to interpret timestamps. Default: `UTC`.
+*   **Timezone Map** (`tz_map`): Maps time zone abbreviations in the log header (`tz_short`) to an IANA time zone or fixed offset (`tz_long`), for example `CEST` to `Europe/Paris`. Use this for abbreviations the controller truncates (for example `Singapo`) or that are ambiguous across regions (`CST` is both China and US Central). Entries take precedence over the abbreviation in the log.
 *   **Processors** (`processors`): Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata.
 
 5.  Click **Save and continue** to deploy the configuration to the Elastic Agent.

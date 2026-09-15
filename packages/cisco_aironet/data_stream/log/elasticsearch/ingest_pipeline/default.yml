@@ -99,11 +99,9 @@ processors:
       description: >-
         The controller stamps a time zone abbreviation into the syslog header, but
         the date processor's `timezone` option is resolved with ZoneId.of(), which
-        rejects abbreviations outright. Resolve the abbreviation to a zone id here
-        instead. tz_map is consulted first because abbreviations are ambiguous - CST
-        is both China and US Central, IST is India, Ireland and Israel - and because
-        Java knows no zone name for some of them at all (SGT, ART), which leaves the
-        event on _conf.tz_offset rather than failing it.
+        rejects abbreviations outright. tz_map takes precedence over the log because
+        abbreviations are ambiguous: CST is both China and US Central, IST is India,
+        Ireland and Israel.
       if: ctx._temp_?.raw_date_timezone != null
       source: |
         def tz = ctx._temp_.raw_date_timezone;
