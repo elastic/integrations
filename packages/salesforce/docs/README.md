@@ -857,7 +857,7 @@ An example event for `logout` looks as following:
 | salesforce.logout.app_type | The application type that was in use upon logging out. | keyword |
 | salesforce.logout.browser_type | The identifier string returned by the browser used at login. | keyword |
 | salesforce.logout.client_version | The version of the client that was in use upon logging out. | keyword |
-| salesforce.logout.event_identifier | This field is populated only when the activity that this event monitors requires extra authentication, such as multi-factor authentication. In this case, Salesforce generates more events and sets the RelatedEventIdentifier field of the new events to the value of the EventIdentifier field of the original event. Use this field with the EventIdentifier field to correlate all the related events. If no extra authentication is required, this field is blank. | keyword |
+| salesforce.logout.event_identifier | Unique identifier of this logout event. Salesforce populates EventIdentifier on every LogoutEvent. RelatedEventIdentifier is the field that is blank unless extra authentication generated related events. | keyword |
 | salesforce.logout.event_type | The type of event. The value is always Logout. | keyword |
 | salesforce.logout.login_key | The string that ties together all events in a given user's login session. It starts with a login event and ends with either a logout event or the user session expiring. | keyword |
 | salesforce.logout.organization_id | The 15-character ID of the organization. | keyword |
