@@ -499,6 +499,7 @@ This stream can contain multiple TYCHON record families in one place, including 
 | tychon.file.group.name |  | keyword |
 | tychon.file.owner.name |  | keyword |
 | tychon.file.permissions |  | keyword |
+| tychon.hash.sha256_certificate |  | keyword |
 | tychon.host.cpu.cores |  | long |
 | tychon.host.ipv4 | IPv4 address reported by TQC before ECS host.ip normalization. | ip |
 | tychon.host.ipv6 | IPv6 address reported by TQC before ECS host.ip normalization. | ip |
