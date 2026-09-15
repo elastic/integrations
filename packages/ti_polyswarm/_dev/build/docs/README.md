@@ -8,7 +8,7 @@ Because the integration writes to `logs-ti_polyswarm.scans-*`, which matches Kib
 
 ### Compatibility
 
-This integration has been tested against PolySwarm CTI API `v3` (`GET /v3/search/metadata/query`) and Elastic Stack 8.13.0 and later.
+This integration has been tested against PolySwarm CTI API `v3` (`GET /v3/search/metadata/query`) and Elastic Stack 8.19.0 and later.
 
 ### How it works
 
@@ -32,7 +32,7 @@ The integration also installs a `latest_scans` transform that deduplicates the s
 
 ## What do I need to use this integration?
 
-- A self-managed or Elastic Cloud deployment running Elastic Stack 8.13.0 or later.
+- A self-managed or Elastic Cloud deployment running Elastic Stack 8.19.0 or later.
 - An Elastic Agent enrolled in Fleet. If you do not have one, see the [Elastic Agent installation instructions](https://www.elastic.co/docs/reference/fleet/install-elastic-agents). Only one Elastic Agent can be installed per host.
 - A PolySwarm account with CTI API access and an API key. Register at [polyswarm.network](https://polyswarm.network); the API key is available from your account settings. Metadata search is a paid capability — confirm your plan includes it before configuring the integration.
 
@@ -51,6 +51,8 @@ This integration is deployed using Elastic Agent. For an end-to-end overview of 
    - **Query**: The server-side metadata query. Default `artifact.created:>now-1d AND scan.detections.malicious:>0`. Keep the `scan.detections.malicious:>0` clause so only artifacts with at least one malicious detection are ingested as indicators — removing it ingests benign artifacts as threat indicators. See [Tuning the query](#tuning-the-query).
    - **Community**: The PolySwarm community to search. Default `default`.
    - **Batch Size**: Number of results requested per API request. Default `100`. Available under **Advanced options**.
+   - **Preserve original event**: Retains the raw PolySwarm JSON for each artifact in `event.original`. Default off; enable when you need an audit trail of exactly what the API returned.
+   - **Enable request tracer**: Writes full HTTP request/response pairs to `../../logs/cel/http-request-trace-*.ndjson` on the agent host. Default off, available under **Advanced options**. Use for debugging only — the trace may contain sensitive response data.
 4. Select the agent policy to deploy to, then click **Save and continue**.
 
 ### Validation

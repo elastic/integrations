@@ -11,6 +11,19 @@ processors:
       target_field: polyswarm
       if: ctx.message != null
   - rename:
+      description: Preserve the original vendor payload for audit.
+      tag: rename-message-to-event-original
+      field: message
+      target_field: event.original
+      ignore_missing: true
+      if: ctx.event?.original == null
+  - remove:
+      description: Remove message once event.original is set.
+      tag: remove-message-after-original
+      field: message
+      ignore_missing: true
+      if: ctx.event?.original != null
+  - rename:
       tag: rename-conf-interval
       field: _conf.interval
       target_field: labels.interval
@@ -32,22 +45,20 @@ processors:
       field: event.kind
       value: pipeline_error
       if: ctx.error?.message != null
-  - set:
-      tag: set-event-category
+  - append:
+      description: Categorize indicators only; error documents are not threat indicators.
+      tag: append-event-category
       field: event.category
       value: [threat]
-  - set:
-      tag: set-event-type
+      allow_duplicates: false
+      if: ctx.error?.message == null
+  - append:
+      description: Categorize indicators only; error documents are not threat indicators.
+      tag: append-event-type
       field: event.type
       value: [indicator]
-  - set:
-      tag: set-event-dataset
-      field: event.dataset
-      value: ti_polyswarm.scans
-  - set:
-      tag: set-event-module
-      field: event.module
-      value: ti_polyswarm
+      allow_duplicates: false
+      if: ctx.error?.message == null
   - set:
       tag: set-threat-feed-name
       field: threat.feed.name
@@ -120,6 +131,14 @@ processors:
         - ISO8601
       ignore_failure: true
       if: ctx.polyswarm?.scan?.last_seen != null
+  - date:
+      tag: date-modified-at
+      field: polyswarm.modified
+      target_field: threat.indicator.modified_at
+      formats:
+        - ISO8601
+      ignore_failure: true
+      if: ctx.polyswarm?.modified != null
   - script:
       tag: script-map-polyscore
       lang: painless
@@ -167,10 +186,6 @@ processors:
       value: '{{{threat.indicator.file.hash.md5}}}'
       allow_duplicates: false
       if: ctx.threat?.indicator?.file?.hash?.md5 != null
-  - remove:
-      tag: remove-message
-      field: message
-      ignore_missing: true
 on_failure:
   - append:
       field: error.message
@@ -178,3 +193,7 @@ on_failure:
   - set:
       field: event.kind
       value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

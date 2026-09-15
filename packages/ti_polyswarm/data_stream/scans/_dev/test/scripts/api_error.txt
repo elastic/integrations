@@ -32,6 +32,14 @@ stdout '^pipeline_error$'
 exec jq '[.hits.hits[]._source | select(.threat.indicator != null)] | length' got_docs.json
 stdout '^0$'
 
+# The error document must not be categorized as a threat indicator, or it shows
+# up in Security -> Explore -> Intelligence and inflates indicator counts.
+exec jq '[.hits.hits[]._source | select(.event.category != null)] | length' got_docs.json
+stdout '^0$'
+
+exec jq '[.hits.hits[]._source | select(.event.type != null)] | length' got_docs.json
+stdout '^0$'
+
 # The failing request URL is recorded for troubleshooting.
 exec jq -r '.hits.hits[0]._source.http.response.status_code' got_docs.json
 stdout '^401$'

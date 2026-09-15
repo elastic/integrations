@@ -1,6 +1,11 @@
 config_version: 2
 interval: {{interval}}
 resource.url: "{{url}}"
+{{#if enable_request_tracer}}
+resource.tracer:
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{/if}}
 state:
   api_key: "{{api_key}}"
   query: "{{query}}"
@@ -31,7 +36,7 @@ program: |
       (resp.StatusCode == 200) ?
         bytes(resp.Body).decode_json().as(body,
           (has(body.result) && body.result != null ? body.result : []).as(results,
-            (has(body.has_more) && body.has_more == true && has(body.offset) && size(results) > 0).as(more,
+            (has(body.has_more) && body.has_more == true && has(body.offset) && string(body.offset) != "").as(more,
               {
                 "events": results.map(a,
                   {"message": a.encode_json()}
@@ -47,6 +52,8 @@ program: |
           "events": [
             {
               "error": {
+                "code": string(resp.StatusCode),
+                "id": "polyswarm-metadata-search-failed",
                 "message": "GET /v3/search/metadata/query failed with status " + string(resp.StatusCode) + ": " + string(resp.Body),
               },
               "http": {
@@ -59,7 +66,7 @@ program: |
               },
             },
           ],
-          "offset": "",
+          "offset": state.offset,
           "want_more": false,
         }
     )
