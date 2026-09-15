@@ -46,10 +46,21 @@ processors:
       tag: append_event_category
       value: iam
   - set:
-      field: event.kind
-      tag: set_event_kind_error
-      value: pipeline_error
+      field: error.message
+      copy_from: bhe.sync.error
+      ignore_empty_value: true
+      tag: set_error_message_from_sync
+      if: ctx.bhe?.sync?.error != null && ctx.error?.message == null
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_failure
+      value: failure
       if: ctx.bhe?.sync?.error != null
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_success
+      value: success
+      if: ctx.bhe?.sync?.error == null
 on_failure:
   - append:
       field: error.message

@@ -199,6 +199,7 @@ processors:
       field: json.remediation
       target_field: bloodhound_enterprise.remediation
       ignore_missing: true
+      if: ctx.json?.remediation instanceof String
   - set:
       field: message
       value: "BloodHound Finding: {{event.action}} (From {{user.name}} to {{destination.user.name}})"
@@ -213,6 +214,19 @@ processors:
       field: json
       ignore_missing: true
 on_failure:
-  - set:
+  - append:
       field: error.message
-      value: "{{ _ingest.on_failure_message }}"
+      tag: append_error_message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      tag: append_preserve_original_event
+      value: preserve_original_event
+      allow_duplicates: false

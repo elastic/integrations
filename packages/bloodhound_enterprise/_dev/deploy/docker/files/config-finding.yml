@@ -1,0 +1,45 @@
+rules:
+  - path: /api/v2/available-domains
+    methods: ['GET']
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          {"data":[{"id":"domain-1","name":"EXAMPLE.CORP","exposures":[{"asset_group_tag":{"id":"1","name":"Tier Zero"}}]}]}
+  - path: /api/v2/domains/{id}/available-types
+    methods: ['GET']
+    query_params:
+      asset_group_tag_id: "{tag:.*}"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          {"data":["T0GenericAll"]}
+  - path: /api/v2/findings/{type}
+    methods: ['GET']
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          {"data":{"title":"GenericAll on Tier Zero","type":"T0GenericAll","short_remediation":"Remove GenericAll rights.","long_remediation":"Remove GenericAll rights from the principal."}}
+  - path: /api/v2/domains/{id}/details
+    methods: ['GET']
+    query_params:
+      finding: "{finding:.*}"
+      skip: "{skip:.*}"
+      limit: "{limit:.*}"
+      Accepted: "{accepted:.*}"
+      asset_group_tag_id: "{tag:.*}"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          {"count":1,"data":[{"id":"100001","Finding":"T0GenericAll","Severity":"critical","Environment":"EXAMPLE.CORP","FromPrincipal":"S-1-5-21-000000000-000000000-000000000-1100","FromPrincipalName":"alice@example.corp","FromPrincipalKind":"User","ToPrincipal":"S-1-5-21-000000000-000000000-000000000-512","ToPrincipalName":"DOMAIN ADMINS@EXAMPLE.CORP","ToPrincipalKind":"Group","ImpactPercentage":0.85,"GraphURL":"https://bloodhound.example.com/ui/findings/100001"}]}
