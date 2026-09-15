@@ -1,0 +1,24 @@
+# A non-positive chunk_duration must degrade to unchunked windows
+# (endTime = now - lag_time) rather than produce an empty window with
+# startTime == endTime, which the Google API rejects. The chunked_token mock
+# answers an empty window with an error body and no items, so if the guard
+# were missing no documents would ever be indexed. With the guard in place the
+# window end is used as the next start and a document arrives every interval.
+input: httpjson
+service: google_workspace
+vars:
+  jwt_file: "{{SERVICE_LOGS_DIR}}/credentials.json"
+  delegated_account: test@example.com
+  api_host: http://{{Hostname}}:{{Port}}
+  initial_interval: 72h
+  enable_request_tracer: true
+data_stream:
+  vars:
+    application_name_for_url: chunked_token
+    interval: 5s
+    lag_time: 2h
+    chunk_duration: "0"
+    preserve_original_event: true
+assert:
+  min_count: 2
+wait_for_data_timeout: 1m

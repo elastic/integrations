@@ -1,0 +1,95 @@
+# Test that the alert data stream treats benign "error" values (JSON null
+# and empty string) in HTTP 200 responses as success and ingests the data.
+#
+# Nozomi can return {"error":null,"result":[...]} (or "error":"") together
+# with valid results. The CEL program must not emit an error event or fail
+# evaluation in that case; only a non-empty error value is a real failure.
+
+[!external_stack] skip 'Skipping external stack test.'
+[!exec:jq] skip 'Skipping test requiring absent jq command'
+
+use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+install_agent -profile ${CONFIG_PROFILES}/${PROFILE} -network_name NETWORK_NAME
+docker_up -profile ${CONFIG_PROFILES}/${PROFILE} -network ${NETWORK_NAME} nozomi-mock
+add_package -profile ${CONFIG_PROFILES}/${PROFILE}
+add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config.yaml DATA_STREAM_NAME
+
+# Two data documents: one from the "error":null response (first poll) and
+# one from the "error":"" response (second poll, matched on the cursor
+# timestamp of the first record). The confirm window spans further polls to
+# guard against spurious error events or duplicates.
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 2 -confirm 45s -timeout 5m ${DATA_STREAM_NAME}
+cp stdout got_docs.json
+
+# No error events were emitted.
+exec jq '[.hits.hits[]._source.error.message // empty] | flatten | length' got_docs.json
+stdout '^0$'
+
+# Both documents are processed data events.
+exec jq '[.hits.hits[]._source | select(.nozomi_networks.alert != null)] | length' got_docs.json
+stdout '^2$'
+
+remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_NAME}
+uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 1m
+docker_down nozomi-mock
+
+-- test_config.yaml --
+input: cel
+vars:
+  url: http://nozomi-mock:8080
+  username: username
+  password: password
+data_stream:
+  vars:
+    interval: 30s
+    initial_interval: 1h
+    batch_size: 2
+    preserve_original_event: true
+    enable_request_tracer: false
+-- nozomi-mock/docker-compose.yml --
+version: '2.3'
+services:
+  nozomi-mock:
+    image: docker.elastic.co/observability/stream:v0.20.0
+    hostname: nozomi-mock
+    ports:
+      - 8080
+    environment:
+      PORT: "8080"
+    volumes:
+      - ./config.yml:/config.yml
+    command:
+      - http-server
+      - --addr=:8080
+      - --config=/config.yml
+-- nozomi-mock/config.yml --
+rules:
+  # Second poll: the query embeds the first record's cursor timestamp.
+  # Respond with "error" as an empty string plus a second record.
+  - path: /api/open/query/do
+    methods: [GET]
+    query_params:
+      query: '{query:alerts \| where record_created_at > 1747399017809 \| sort record_created_at asc}'
+    request_headers:
+      Authorization:
+        - "Basic dXNlcm5hbWU6cGFzc3dvcmQ="
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"error":"","result":[{"id":"6dbf93f8-d8da-4ae3-bf1a-e91a82fc0002","ack":false,"name":"Program change","note":"User Defined Note","synchronized":true,"time":1747398906110,"id_dst":"ab_ethip-1/1.128.0.0","id_src":"ab_ethip-1/1.128.0.11","ip_dst":"89.160.20.112","ip_src":"81.2.69.192","status":"close","mac_dst":"f4:54:33:9f:22:3d","mac_src":"00:0c:29:01:98:be","parents":["id1"],"port_dst":44818,"port_src":58679,"protocol":"ethernetip","severity":10,"zone_dst":"Production_B","zone_src":"Production_B","dst_roles":"producer","label_dst":"private.directinvesting.com1","label_src":"private.directinvesting.com2","src_roles":"consumer, engineering_station","ti_source":"","type_name":"Program change","session_id":"12eszcd-223cds34","replicated":true,"bpf_filter":"(ip host 1.128.0.11 and ip host 1.128.0.0 and tcp port 58679 and tcp port 44818) or (vlan and ip host 1.128.0.11 and ip host 1.128.0.0 and tcp port 58679 and tcp port 44818)","properties":{"to_id":"1.128.0.0","from_id":"1.128.0.11","base_risk":6,"raised_by":"n2os_ids","n2os_version":"25.0.0-03042016_D5AB7","is_dst_public":false,"is_src_public":false,"is_dst_node_learned":true,"is_src_node_learned":true,"mitre_attack_for_ics":{"source":{"types":["Engineering Workstation"],"levels":["2"]},"destination":{"types":["Field Controller/RTU/PLC/IED"],"levels":["2"]}},"is_dst_reputation_bad":false,"is_src_reputation_bad":false},"closed_time":1747399017809,"description":"Online edits have been made on the PLC with IP 1.128.0.0. The following steps were executed:\n[1]- Downloaded project [ C:\\USERS\\NOZOMI\\DESKTOP\\LADDERBOMB\\PLC_LOGIC_CHALLENGE2\\challenge2changed.ACD ] to [ \\AB_ETHIP-1\\1.128.0.0\\C1_1756 ]\n[2]- Changed Controller [ C1_1756 ] to Run Mode\n[3]- Changed Controller [ C1_1756 ] to Program Mode\n[4]- Downloaded project [ C:\\USERS\\NOZOMI\\DESKTOP\\LADDERBOMB\\PLC_LOGIC_CHALLENGE2\\challenge2changed.ACD ] to [ \\AB_ETHIP-1\\1.128.0.0\\C1_1756 ]\n[5]- Changed Controller [ C1_1756 ] to Run Mode\n[6]- Changed Controller [ C1_1756 ] to Program Mode\n[7]- Downloaded project [ C:\\USERS\\NOZOMI\\DESKTOP\\LADDERBOMB\\PLC_LOGIC_CHALLENGE2\\challenge2changed.ACD ] to [ \\AB_ETHIP-1\\1.128.0.0\\C1_1756 ]\n[8]- Changed Controller [ C1_1756 ] to Run Mode\n[9]- Changed Controller [ C1_1756 ] to Program Mode\n[10]- Downloaded project [ C:\\USERS\\NOZOMI\\DESKTOP\\LADDERBOMB\\PLC_LOGIC_CHALLENGE2\\challenge2changed.ACD ] to [ \\AB_ETHIP-1\\1.128.0.0\\C1_1756 ]\n","is_incident":false,"is_security":true,"threat_name":"Grizzly Steppe Threat Actor","incident_keys":[],"created_time":1747398906110,"appliance_site":"Sandbox","trigger_type":"stix_indicators","appliance_host":"Sandbox-TAE-Guardian3","capture_device":"base.pcap","grouped_visible":true,"custom_fields_dst":{},"custom_fields_src":{},"playbook_contents":null,"transport_protocol":"tcp","sec_profile_visible":true,"close_option":null,"appliance_id":"d5ab7eaa-9a4b-4b4b-9a4b-4b4b9a4b4b4b","appliance_ip":"1.128.0.0","risk":6,"trace_status":"state_unavailable_for_alert_type","trace_sha1":null,"record_created_at":1747399017809,"type_id":"SIGN:PROGRAM:CHANGE","trigger_id":"indicator--fb15c96c-eb73-48ac-a48a-15bcab2f0fe3"}],"header":[],"total":1}
+  # Any other poll (including the first): "error" is JSON null.
+  - path: /api/open/query/do
+    methods: [GET]
+    request_headers:
+      Authorization:
+        - "Basic dXNlcm5hbWU6cGFzc3dvcmQ="
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"error":null,"result":[{"id":"6dbf93f8-d8da-4ae3-bf1a-e91a82fc3041","ack":false,"name":"Program change","note":"User Defined Note","synchronized":true,"time":1747398906110,"id_dst":"1.128.0.0","id_src":"1.128.0.11","ip_dst":"89.160.20.112","ip_src":"81.2.69.192","status":"open","mac_dst":"f4:54:33:9f:22:3d","mac_src":"00:0c:29:01:98:be","parents":["id1"],"port_dst":44818,"port_src":58679,"protocol":"ethernetip","severity":10,"zone_dst":"Production_B","zone_src":"Production_B","dst_roles":"producer","label_dst":"private.directinvesting.com1","label_src":"private.directinvesting.com2","src_roles":"consumer, engineering_station","ti_source":"","type_name":"Program change","session_id":"12eszcd-223cds34","replicated":true,"bpf_filter":"(ip host 1.128.0.11 and ip host 1.128.0.0 and tcp port 58679 and tcp port 44818) or (vlan and ip host 1.128.0.11 and ip host 1.128.0.0 and tcp port 58679 and tcp port 44818)","properties":{"to_id":"1.128.0.0","from_id":"1.128.0.11","base_risk":6,"raised_by":"n2os_ids","n2os_version":"25.0.0-03042016_D5AB7","is_dst_public":false,"is_src_public":false,"is_dst_node_learned":true,"is_src_node_learned":true,"mitre_attack_for_ics":{"source":{"types":["Engineering Workstation"],"levels":["2"]},"destination":{"types":["Field Controller/RTU/PLC/IED"],"levels":["2"]}},"is_dst_reputation_bad":false,"is_src_reputation_bad":false},"closed_time":0,"description":"Online edits have been made on the PLC with IP 1.128.0.0. The following steps were executed:\n[1]- Downloaded project [ C:\\USERS\\NOZOMI\\DESKTOP\\LADDERBOMB\\PLC_LOGIC_CHALLENGE2\\challenge2changed.ACD ] to [ \\AB_ETHIP-1\\1.128.0.0\\C1_1756 ]\n[2]- Changed Controller [ C1_1756 ] to Run Mode\n[3]- Changed Controller [ C1_1756 ] to Program Mode\n[4]- Downloaded project [ C:\\USERS\\NOZOMI\\DESKTOP\\LADDERBOMB\\PLC_LOGIC_CHALLENGE2\\challenge2changed.ACD ] to [ \\AB_ETHIP-1\\1.128.0.0\\C1_1756 ]\n[5]- Changed Controller [ C1_1756 ] to Run Mode\n[6]- Changed Controller [ C1_1756 ] to Program Mode\n[7]- Downloaded project [ C:\\USERS\\NOZOMI\\DESKTOP\\LADDERBOMB\\PLC_LOGIC_CHALLENGE2\\challenge2changed.ACD ] to [ \\AB_ETHIP-1\\1.128.0.0\\C1_1756 ]\n[8]- Changed Controller [ C1_1756 ] to Run Mode\n[9]- Changed Controller [ C1_1756 ] to Program Mode\n[10]- Downloaded project [ C:\\USERS\\NOZOMI\\DESKTOP\\LADDERBOMB\\PLC_LOGIC_CHALLENGE2\\challenge2changed.ACD ] to [ \\AB_ETHIP-1\\1.128.0.0\\C1_1756 ]\n","is_incident":false,"is_security":true,"threat_name":"Grizzly Steppe Threat Actor","incident_keys":[],"created_time":1747398906110,"appliance_site":"Sandbox","trigger_type":"stix_indicators","appliance_host":"Sandbox-TAE-Guardian3","capture_device":"base.pcap","grouped_visible":true,"custom_fields_dst":{},"custom_fields_src":{},"playbook_contents":null,"transport_protocol":"tcp","sec_profile_visible":true,"close_option":null,"appliance_id":"d5ab7eaa-9a4b-4b4b-9a4b-4b4b9a4b4b4b","appliance_ip":"1.128.0.0","risk":6,"trace_status":"state_unavailable_for_alert_type","trace_sha1":null,"record_created_at":1747399017809,"type_id":"SIGN:PROGRAM:CHANGE","trigger_id":"indicator--fb15c96c-eb73-48ac-a48a-15bcab2f0fe3"}],"header":[],"total":1}
