@@ -1,0 +1,391 @@
+---
+description: Pipeline for parsing OPNsense logs.
+processors:
+  - set:
+      field: ecs.version
+      value: "8.11.0"
+      tag: set_ecs_version
+  - set:
+      field: event.original
+      copy_from: message
+      tag: set_event_original
+      if: ctx.tags != null && ctx.tags.contains('preserve_original_event') && ctx.event?.original == null
+
+  # OPNsense emits RFC 5424. The structured-data element is present but carries
+  # only a sequence id, so it is matched and discarded rather than parsed.
+  - grok:
+      field: message
+      patterns:
+        - >-
+          ^<%{NONNEGINT:_tmp.priority:long}>%{NONNEGINT:_tmp.syslog_version}
+          %{TIMESTAMP_ISO8601:_tmp.timestamp} %{HOSTNAME:host.name}
+          %{PROG:process.name}(?: %{POSINT:process.pid:long}| -)(?: -| %{NOTSPACE:_tmp.msgid})
+          (?: -|\s*\[%{DATA:_tmp.structured_data}\])\s*%{GREEDYDATA:_tmp.body}$
+        - >-
+          ^<%{NONNEGINT:_tmp.priority:long}>%{SYSLOGTIMESTAMP:_tmp.timestamp}
+          %{HOSTNAME:host.name} %{PROG:process.name}(?:\[%{POSINT:process.pid:long}\])?:
+          \s*%{GREEDYDATA:_tmp.body}$
+        - '^%{GREEDYDATA:_tmp.body}$'
+      tag: grok_syslog_header
+      on_failure:
+        - append:
+            field: error.message
+            value: "failed to parse syslog header: {{{_ingest.on_failure_message}}}"
+
+  - date:
+      field: _tmp.timestamp
+      target_field: "@timestamp"
+      formats:
+        - ISO8601
+        - MMM  d HH:mm:ss
+        - MMM dd HH:mm:ss
+      tag: date_timestamp
+      if: ctx._tmp?.timestamp != null
+      on_failure:
+        - append:
+            field: error.message
+            value: "failed to parse timestamp: {{{_ingest.on_failure_message}}}"
+
+  # syslog priority = facility * 8 + severity
+  - script:
+      lang: painless
+      tag: script_syslog_priority
+      if: ctx._tmp?.priority != null
+      source: |
+        long p = ctx._tmp.priority;
+        if (ctx.log == null) { ctx.log = new HashMap(); }
+        if (ctx.log.syslog == null) { ctx.log.syslog = new HashMap(); }
+        ctx.log.syslog.priority = p;
+        ctx.log.syslog.facility = new HashMap();
+        ctx.log.syslog.facility.code = (long)(p / 8);
+        ctx.log.syslog.severity = new HashMap();
+        ctx.log.syslog.severity.code = (long)(p % 8);
+
+  - set:
+      field: observer.vendor
+      value: OPNsense
+      tag: set_observer_vendor
+  - set:
+      field: observer.product
+      value: OPNsense
+      tag: set_observer_product
+  - set:
+      field: observer.type
+      value: firewall
+      tag: set_observer_type
+  - set:
+      field: observer.name
+      copy_from: host.name
+      tag: set_observer_name
+      ignore_empty_value: true
+
+  # ---- filterlog ----
+  # The body is CSV whose layout depends on the IP version and, after that, on
+  # the protocol. Positional parsing in one script is clearer than a stack of
+  # grok alternatives and keeps the field order documented in one place.
+  - script:
+      lang: painless
+      tag: script_parse_filterlog
+      description: Parse the OPNsense filterlog CSV, branching on IP version and protocol.
+      if: ctx.process?.name == 'filterlog' && ctx._tmp?.body != null
+      source: |
+        String[] f = /,/.split(ctx._tmp.body, -1);
+        if (f.length < 9) { return; }
+
+        Map o = new HashMap();
+        Map rule = new HashMap();
+        if (f[0] != '') { rule.put('id', f[0]); }
+        if (f[1] != '') { rule.put('subrule', f[1]); }
+        if (f[2] != '') { rule.put('anchor', f[2]); }
+        if (f[3] != '') { rule.put('uuid', f[3]); }
+        if (!rule.isEmpty()) { o.put('rule', rule); }
+
+        o.put('interface', f[4]);
+        o.put('reason', f[5]);
+        o.put('action', f[6]);
+        o.put('direction', f[7]);
+        String ver = f[8];
+        o.put('ip_version', ver);
+
+        int i;
+        Map ip = new HashMap();
+        if (ver == '4') {
+          // tos, ecn, ttl, id, offset, flags, protonum, protoname
+          if (f.length < 18) { ctx.opnsense = ['log': o]; return; }
+          if (f[9]  != '') { ip.put('tos', f[9]); }
+          if (f[10] != '') { ip.put('ecn', f[10]); }
+          if (f[11] != '') { ip.put('ttl', Long.parseLong(f[11])); }
+          if (f[12] != '') { ip.put('id', Long.parseLong(f[12])); }
+          if (f[13] != '') { ip.put('offset', Long.parseLong(f[13])); }
+          if (f[14] != '') { ip.put('flags', f[14]); }
+          if (f[15] != '') { ip.put('protocol_number', Long.parseLong(f[15])); }
+          o.put('protocol', f[16]);
+          i = 17;
+        } else {
+          // IPv6 reverses the two protocol columns relative to IPv4:
+          // class, flow, hoplimit, protoname, protonum
+          if (f.length < 16) { ctx.opnsense = ['log': o]; return; }
+          if (f[9]  != '') { ip.put('class', f[9]); }
+          if (f[10] != '') { ip.put('flow_label', f[10]); }
+          if (f[11] != '') { ip.put('hop_limit', Long.parseLong(f[11])); }
+          o.put('protocol', f[12]);
+          if (f[13] != '') { ip.put('protocol_number', Long.parseLong(f[13])); }
+          i = 14;
+        }
+        if (!ip.isEmpty()) { o.put('ip', ip); }
+
+        // length, src, dst
+        if (f.length > i && f[i] != '') { o.put('length', Long.parseLong(f[i])); }
+        i++;
+        if (f.length > i) { o.put('source_ip', f[i]); } i++;
+        if (f.length > i) { o.put('destination_ip', f[i]); } i++;
+
+        String proto = o.containsKey('protocol') ? ((String)o.get('protocol')).toLowerCase() : '';
+        if (proto == 'tcp' || proto == 'udp') {
+          if (f.length > i && f[i] != '') { o.put('source_port', Long.parseLong(f[i])); } i++;
+          if (f.length > i && f[i] != '') { o.put('destination_port', Long.parseLong(f[i])); } i++;
+          if (f.length > i && f[i] != '') { o.put('data_length', Long.parseLong(f[i])); } i++;
+          if (proto == 'tcp') {
+            Map tcp = new HashMap();
+            if (f.length > i && f[i] != '') { tcp.put('flags', f[i]); } i++;
+            if (f.length > i && f[i] != '') { tcp.put('sequence_number', f[i]); } i++;
+            if (f.length > i && f[i] != '') { tcp.put('ack_number', f[i]); } i++;
+            if (f.length > i && f[i] != '') { tcp.put('window', f[i]); } i++;
+            if (f.length > i && f[i] != '') { tcp.put('urg', f[i]); } i++;
+            if (f.length > i && f[i] != '') { tcp.put('options', f[i]); }
+            if (!tcp.isEmpty()) { o.put('tcp', tcp); }
+          }
+        } else if (f.length > i) {
+          // icmp and the option/reject reasons use key=value or a bare token
+          Map extra = new HashMap();
+          for (int j = i; j < f.length; j++) {
+            if (f[j] == '') { continue; }
+            int eq = f[j].indexOf('=');
+            if (eq > 0) {
+              extra.put(f[j].substring(0, eq), f[j].substring(eq + 1));
+            } else {
+              extra.put('type', f[j]);
+            }
+          }
+          if (!extra.isEmpty()) { o.put('icmp', extra); }
+        }
+
+        ctx.opnsense = ['log': o];
+
+  # ---- ECS mapping for filterlog ----
+  - set:
+      field: event.kind
+      value: event
+      tag: set_event_kind
+      if: ctx.opnsense?.log != null
+  - append:
+      field: event.category
+      value: network
+      tag: append_category_network
+      allow_duplicates: false
+      if: ctx.opnsense?.log != null
+  - append:
+      field: event.type
+      value: connection
+      tag: append_type_connection
+      allow_duplicates: false
+      if: ctx.opnsense?.log != null
+  - append:
+      field: event.type
+      value: denied
+      tag: append_type_denied
+      allow_duplicates: false
+      if: ctx.opnsense?.log?.action == 'block' || ctx.opnsense?.log?.action == 'rdr'
+  - append:
+      field: event.type
+      value: allowed
+      tag: append_type_allowed
+      allow_duplicates: false
+      if: ctx.opnsense?.log?.action == 'pass'
+  - set:
+      field: event.action
+      copy_from: opnsense.log.action
+      tag: set_event_action
+      ignore_empty_value: true
+  - set:
+      field: event.reason
+      copy_from: opnsense.log.reason
+      tag: set_event_reason
+      ignore_empty_value: true
+  - set:
+      field: event.outcome
+      value: failure
+      tag: set_outcome_failure
+      if: ctx.opnsense?.log?.action == 'block'
+  - set:
+      field: event.outcome
+      value: success
+      tag: set_outcome_success
+      if: ctx.opnsense?.log?.action == 'pass'
+
+  - set:
+      field: rule.id
+      copy_from: opnsense.log.rule.id
+      tag: set_rule_id
+      ignore_empty_value: true
+  - set:
+      field: rule.uuid
+      copy_from: opnsense.log.rule.uuid
+      tag: set_rule_uuid
+      ignore_empty_value: true
+
+  - set:
+      field: network.direction
+      value: inbound
+      tag: set_direction_inbound
+      if: ctx.opnsense?.log?.direction == 'in'
+  - set:
+      field: network.direction
+      value: outbound
+      tag: set_direction_outbound
+      if: ctx.opnsense?.log?.direction == 'out'
+  - lowercase:
+      field: opnsense.log.protocol
+      target_field: network.transport
+      tag: lowercase_transport
+      ignore_missing: true
+  - set:
+      field: network.type
+      value: ipv4
+      tag: set_network_ipv4
+      if: ctx.opnsense?.log?.ip_version == '4'
+  - set:
+      field: network.type
+      value: ipv6
+      tag: set_network_ipv6
+      if: ctx.opnsense?.log?.ip_version == '6'
+  - set:
+      field: network.bytes
+      copy_from: opnsense.log.length
+      tag: set_network_bytes
+      ignore_empty_value: true
+
+  - convert:
+      field: opnsense.log.source_ip
+      target_field: source.ip
+      type: ip
+      tag: convert_source_ip
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: "source is not an IP: {{{_ingest.on_failure_message}}}"
+  - convert:
+      field: opnsense.log.destination_ip
+      target_field: destination.ip
+      type: ip
+      tag: convert_destination_ip
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: "destination is not an IP: {{{_ingest.on_failure_message}}}"
+  - set:
+      field: source.port
+      copy_from: opnsense.log.source_port
+      tag: set_source_port
+      ignore_empty_value: true
+  - set:
+      field: destination.port
+      copy_from: opnsense.log.destination_port
+      tag: set_destination_port
+      ignore_empty_value: true
+  - set:
+      field: observer.ingress.interface.name
+      copy_from: opnsense.log.interface
+      tag: set_ingress_interface
+      ignore_empty_value: true
+      if: ctx.opnsense?.log?.direction == 'in'
+  - set:
+      field: observer.egress.interface.name
+      copy_from: opnsense.log.interface
+      tag: set_egress_interface
+      ignore_empty_value: true
+      if: ctx.opnsense?.log?.direction == 'out'
+
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      tag: geoip_source
+      ignore_missing: true
+  - geoip:
+      field: source.ip
+      target_field: source.as
+      database_file: GeoLite2-ASN.mmdb
+      properties:
+        - asn
+        - organization_name
+      tag: geoip_source_asn
+      ignore_missing: true
+  - rename:
+      field: source.as.asn
+      target_field: source.as.number
+      tag: rename_source_as_number
+      ignore_missing: true
+  - rename:
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      tag: rename_source_as_org
+      ignore_missing: true
+  - geoip:
+      field: destination.ip
+      target_field: destination.geo
+      tag: geoip_destination
+      ignore_missing: true
+
+  - append:
+      field: related.ip
+      value: "{{{source.ip}}}"
+      tag: append_related_source
+      allow_duplicates: false
+      if: ctx.source?.ip != null
+  - append:
+      field: related.ip
+      value: "{{{destination.ip}}}"
+      tag: append_related_destination
+      allow_duplicates: false
+      if: ctx.destination?.ip != null
+
+  # Anything that is not filterlog is kept as a plain log line rather than
+  # dropped, so a misconfigured remote-logging target is visible instead of silent.
+  - set:
+      field: event.kind
+      value: event
+      tag: set_event_kind_other
+      if: ctx.opnsense?.log == null
+  - set:
+      field: message
+      copy_from: _tmp.body
+      tag: set_message_body
+      if: ctx.opnsense?.log == null && ctx._tmp?.body != null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      if: ctx.opnsense?.log != null
+
+  - remove:
+      field: _tmp
+      tag: remove_tmp
+      ignore_missing: true
+  - remove:
+      field:
+        - source.as.number
+      tag: remove_zero_asn
+      ignore_missing: true
+      if: ctx.source?.as?.number == 0
+
+on_failure:
+  - set:
+      field: event.kind
+      value: pipeline_error
+      tag: set_event_kind_error
+  - append:
+      field: error.message
+      value: "{{{ _ingest.on_failure_message }}}"
+      tag: append_pipeline_error

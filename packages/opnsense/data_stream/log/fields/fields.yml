@@ -1,0 +1,123 @@
+- name: opnsense.log
+  type: group
+  fields:
+    - name: interface
+      type: keyword
+      description: The interface the packet was seen on, for example `vtnet0` or `igb0`.
+    - name: reason
+      type: keyword
+      description: Why the packet was logged, for example `match` for a rule match or `ip-option` for a rejected IP option.
+    - name: action
+      type: keyword
+      description: What the firewall did with the packet, for example `block`, `pass` or `rdr`.
+    - name: direction
+      type: keyword
+      description: Direction relative to the interface, `in` or `out`.
+    - name: ip_version
+      type: keyword
+      description: IP version of the packet, `4` or `6`. The remaining fields of the log line differ between the two.
+    - name: protocol
+      type: keyword
+      description: Transport protocol name as OPNsense reports it, for example `tcp`, `udp`, `icmp` or `ipv6-icmp`.
+    - name: length
+      type: long
+      description: Total packet length in bytes.
+    - name: source_ip
+      type: keyword
+      description: Raw source address as logged. Also parsed into `source.ip`.
+    - name: destination_ip
+      type: keyword
+      description: Raw destination address as logged. Also parsed into `destination.ip`.
+    - name: source_port
+      type: long
+      description: Source port, for TCP and UDP.
+    - name: destination_port
+      type: long
+      description: Destination port, for TCP and UDP.
+    - name: data_length
+      type: long
+      description: Payload length in bytes, for TCP and UDP.
+    - name: rule
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: Number of the rule that matched.
+        - name: subrule
+          type: keyword
+          description: Sub-rule number, when the matching rule is part of a group.
+        - name: anchor
+          type: keyword
+          description: Name of the pf anchor the rule belongs to.
+        - name: uuid
+          type: keyword
+          description: Identifier of the matching rule, which is stable across reloads and links the event back to the rule in the OPNsense UI.
+    - name: ip
+      type: group
+      fields:
+        - name: tos
+          type: keyword
+          description: IPv4 type of service.
+        - name: ecn
+          type: keyword
+          description: IPv4 explicit congestion notification.
+        - name: ttl
+          type: long
+          description: IPv4 time to live.
+        - name: id
+          type: long
+          description: IPv4 identification field.
+        - name: offset
+          type: long
+          description: IPv4 fragment offset.
+        - name: flags
+          type: keyword
+          description: IPv4 flags, for example `DF`.
+        - name: class
+          type: keyword
+          description: IPv6 traffic class.
+        - name: flow_label
+          type: keyword
+          description: IPv6 flow label.
+        - name: hop_limit
+          type: long
+          description: IPv6 hop limit.
+        - name: protocol_number
+          type: long
+          description: Numeric protocol identifier.
+    - name: tcp
+      type: group
+      fields:
+        - name: flags
+          type: keyword
+          description: TCP flags on the packet, for example `S` for SYN or `FA` for FIN+ACK. Useful for telling scan techniques apart.
+        - name: sequence_number
+          type: keyword
+          description: TCP sequence number.
+        - name: ack_number
+          type: keyword
+          description: TCP acknowledgement number.
+        - name: window
+          type: keyword
+          description: TCP window size.
+        - name: urg
+          type: keyword
+          description: TCP urgent pointer.
+        - name: options
+          type: keyword
+          description: TCP options present on the packet, for example `mss;sackOK;TS;nop;wscale`.
+    - name: icmp
+      type: group
+      fields:
+        - name: type
+          type: keyword
+          description: ICMP type as logged, when OPNsense reports it as a bare token.
+        - name: datalength
+          type: keyword
+          description: ICMP payload length.
+        - name: id
+          type: keyword
+          description: ICMP echo identifier.
+        - name: seq
+          type: keyword
+          description: ICMP echo sequence number.

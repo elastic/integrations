@@ -1,0 +1,139 @@
+title: OPNsense logs
+type: logs
+streams:
+  - input: udp
+    title: OPNsense logs (UDP)
+    description: Receive syslog from OPNsense over UDP, its default remote logging transport.
+    template_path: udp.yml.hbs
+    vars:
+      - name: syslog_host
+        type: text
+        title: Listen address
+        description: The interface that receives syslog from OPNsense.
+        multi: false
+        required: true
+        show_user: true
+        default: localhost
+      - name: syslog_port
+        type: integer
+        title: Listen port
+        description: The port to listen on. Set the same port as the target in OPNsense.
+        multi: false
+        required: true
+        show_user: true
+        default: 9525
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - opnsense
+          - forwarded
+      - name: preserve_original_event
+        type: bool
+        title: Preserve original event
+        description: Keep the raw syslog message in the `event.original` field.
+        multi: false
+        required: true
+        show_user: true
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event
+          with metadata. This executes in the agent before the logs are parsed.
+  - input: tcp
+    title: OPNsense logs (TCP)
+    description: Receive syslog from OPNsense over TCP.
+    template_path: tcp.yml.hbs
+    enabled: false
+    vars:
+      - name: syslog_host
+        type: text
+        title: Listen address
+        description: The interface that receives syslog from OPNsense.
+        multi: false
+        required: true
+        show_user: true
+        default: localhost
+      - name: syslog_port
+        type: integer
+        title: Listen port
+        description: The port to listen on. Set the same port as the target in OPNsense.
+        multi: false
+        required: true
+        show_user: true
+        default: 9525
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - opnsense
+          - forwarded
+      - name: preserve_original_event
+        type: bool
+        title: Preserve original event
+        description: Keep the raw syslog message in the `event.original` field.
+        multi: false
+        required: true
+        show_user: true
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event
+          with metadata. This executes in the agent before the logs are parsed.
+  - input: logfile
+    title: OPNsense logs (file)
+    description: Read OPNsense syslog from a file.
+    template_path: logfile.yml.hbs
+    enabled: false
+    vars:
+      - name: paths
+        type: text
+        title: File paths
+        description: Paths to files holding OPNsense syslog messages, one per line.
+        multi: true
+        required: true
+        show_user: true
+        default:
+          - /var/log/opnsense/opnsense.log
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - opnsense
+          - forwarded
+      - name: preserve_original_event
+        type: bool
+        title: Preserve original event
+        description: Keep the raw syslog message in the `event.original` field.
+        multi: false
+        required: true
+        show_user: true
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event
+          with metadata. This executes in the agent before the logs are parsed.
