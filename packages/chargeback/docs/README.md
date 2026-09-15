@@ -264,7 +264,7 @@ For more information, refer to the [Elastic documentation](https://www.elastic.c
 
 1. Upgrade the Fleet package to **0.4.4**. Kibana requirement remains `^9.2.0`.
 2. The bootstrap transform now writes the default configuration document with `_id` `config`, so `POST chargeback_conf_lookup/_update/config` works as documented.
-3. **If you upgraded from 0.2.10–0.4.3** and already have a hashed-ID bootstrap row: search `chargeback_conf_lookup`, copy any customized field values onto a document with ID `config` (via `_update/config` after the new bootstrap row exists, or `POST .../_doc/config`), then delete the hashed-ID document so LOOKUP JOIN does not match two overlapping date windows. Fresh 0.4.4 installs need no cleanup.
+3. **If you upgraded from 0.2.10–0.4.3** and already have a hashed-ID bootstrap row: after the package upgrade creates the new `_id` `config` document, copy any customized field values onto it with `POST chargeback_conf_lookup/_update/config`, then delete the hashed-ID document so LOOKUP JOIN does not match two overlapping date windows. Do not index a partial document to ID `config` with the index API (`_doc`); that replaces the whole document and can drop required bootstrap fields such as `config_join_key`. Fresh 0.4.4 installs need no cleanup.
 
 ### Upgrading to 0.4.3
 
