@@ -26,8 +26,6 @@ def fetch_version():
 
 
 def find_oldest_supported_version(kibana_version_condition: str) -> str:
-    # The logic of this function is copied from https://github.com/elastic/apm-pipeline-library/blob/main/vars/findOldestSupportedVersion.groovy
-
     if "||" in kibana_version_condition and kibana_version_condition.index("||") >= 0:
         return handle_or(kibana_version_condition)
 
@@ -55,33 +53,6 @@ def find_oldest_supported_version(kibana_version_condition: str) -> str:
     if not next_patch_exists and (snapshot_version in available_versions):
         return snapshot_version
 
-    # Use the version as is if it exists.
-    if version in available_versions:
-        return version
-
-    # Old minors may not be available in artifacts-api, if it is older
-    # than the others in the same major, return the version as is.
-    older = True
-    for available_version in available_versions:
-        available_parts = available_version.split(".")
-        if len(available_parts) < 2:
-            continue
-
-        available_major = available_parts[0]
-        available_minor = available_parts[1]
-        if major == available_major and minor > available_minor:
-            older = False
-            break
-    if older:
-        return version
-
-    # If no version has been found so far, try with the snapshot of the next version
-    # in the current major.
-    major_snapshot = f"{major}.x-SNAPSHOT"
-    if major_snapshot in available_aliases:
-        return major_snapshot
-
-    # Otherwise, return it, whatever this is.
     return version
 
 
@@ -170,19 +141,22 @@ class TestFindOldestSupportVersion(unittest.TestCase):
             "8.8.0",
             "8.8.1",
             "8.8.2",
-            "8.9.0",
             "8.9.1-SNAPSHOT",
             "8.9.1",
             "8.9.2-SNAPSHOT",
             "8.9.2",
+            "8.9.4",
             "8.10.0-SNAPSHOT",
             "8.10.0",
             "8.10.1-SNAPSHOT",
+            "8.10.1",
             "8.11.0-SNAPSHOT"
         ],
         "aliases": [
+            "7.x-SNAPSHOT",
             "7.17-SNAPSHOT",
             "7.17",
+            "8.x-SNAPSHOT",
             "8.7",
             "8.8",
             "8.9-SNAPSHOT",
@@ -225,6 +199,23 @@ class TestFindOldestSupportVersion(unittest.TestCase):
     def test_too_old_to_be_in_api(self):
         self.assertEqual(find_oldest_supported_version("7.16.0"), "7.16.0")
         self.assertEqual(find_oldest_supported_version("8.6.0"), "8.6.0")
+        self.assertEqual(find_oldest_supported_version("7.6.0"), "7.6.0")
+
+    def test_newer_major_or_minor_versions_not_shown_in_api(self):
+        # next minor from 7.x
+        self.assertEqual(find_oldest_supported_version("7.19.0"), "7.19.0")
+        # next minor from 8.x
+        self.assertEqual(find_oldest_supported_version("8.12.0"), "8.12.0")
+        # next patch from 8.8.x
+        self.assertEqual(find_oldest_supported_version("8.8.3"), "8.8.3")
+        # next major 9.0
+        self.assertEqual(find_oldest_supported_version("9.0.0"), "9.0.0")
+
+    def test_missing_older_versions_in_api_response(self):
+        # exists 8.9.1 and 8.8.x, but not 8.9.0
+        self.assertEqual(find_oldest_supported_version("8.9.0"), "8.9.0")
+        # exists 8.9.2 and 8.9.4, but not 8.9.3
+        self.assertEqual(find_oldest_supported_version("8.9.3"), "8.9.3")
 
     def test_or(self):
         self.assertEqual(find_oldest_supported_version("8.6.0||8.7.0"), "8.6.0")
