@@ -1,16 +1,12 @@
 # BeyondInsight Password Safe - Sessions Test Mock Configuration
 #
-# Test Scenario: Simulates session retrieval with authentication, cookie fix
-# verification, sign-out, and 401 retry:
-# 1. Initial authentication via SignAppin endpoint (returns 200, sets two cookies
+# Test Scenario: Simulates session retrieval with authentication and cookie
+# header format verification:
+# 1. Authentication via SignAppin endpoint (returns 200, sets two cookies
 #    with attributes — ASP.NET_SessionId and __RequestVerificationToken)
-# 2. First Sessions request (returns 401) — tests that the Cookie header is
-#    correctly formatted (attributes stripped, multiple cookies joined)
-# 3. Re-authentication via SignAppin endpoint (returns 200, new session cookies)
-# 4. Retry Sessions request (returns 200, session data — 3 sessions)
-# 5. Sign-out to release the server-side session
+# 2. Sessions request (returns 200, session data — 3 sessions)
 #
-# Cookie header format assertion: the fixed code must send a single Cookie header
+# Cookie header format assertion: the code must send a single Cookie header
 # value with attributes stripped and both cookies joined by "; ".
 # The buggy code sent multiple Cookie header lines (one per Set-Cookie value),
 # which the server ignores past the first, causing 401s on real BeyondInsight servers.
@@ -31,7 +27,7 @@ rules:
         headers:
           Content-Type: ['application/json']
           Set-Cookie:
-            - 'ASP.NET_SessionId={{ if eq .req_num 1 }}session_cookie1{{ else }}session_cookie2{{ end }}; path=/; secure; HttpOnly; SameSite=None'
+            - 'ASP.NET_SessionId=session_cookie1; path=/; secure; HttpOnly; SameSite=None'
             - '__RequestVerificationToken=rvt_token; path=/; secure; HttpOnly'
         body: |
           {{ minify_json `
@@ -55,7 +51,7 @@ rules:
         headers:
           Content-Type: ['application/json']
           Set-Cookie:
-            - 'ASP.NET_SessionId={{ if eq .req_num 1 }}session_cookie1{{ else }}session_cookie2{{ end }}; path=/; secure; HttpOnly; SameSite=None'
+            - 'ASP.NET_SessionId=session_cookie1; path=/; secure; HttpOnly; SameSite=None'
             - '__RequestVerificationToken=rvt_token; path=/; secure; HttpOnly'
         body: |
           {{ minify_json `
@@ -68,8 +64,7 @@ rules:
           }
           `}}
 
-  # Sessions - first attempt with session_cookie1 returns 401.
-  # The Cookie assertion verifies attributes are stripped and both cookies are joined
+  # Sessions - Cookie assertion verifies attributes are stripped and both cookies are joined
   # into a single header value, matching RFC 6265 §5.4.
   - path: "/BeyondTrust/api/public/v3/Sessions"
     methods: ["GET"]
@@ -77,20 +72,6 @@ rules:
       Authorization: ['PS-Auth key=test_api_key;.*']
       Content-Type: ['application/json']
       Cookie: ['ASP.NET_SessionId=session_cookie1; __RequestVerificationToken=rvt_token']
-    responses:
-      - status_code: 401
-        headers:
-          Content-Type: ['application/json']
-        body: >-
-          "User not authenticated"
-
-  # Sessions - retry with refreshed session (session_cookie2) succeeds.
-  - path: "/BeyondTrust/api/public/v3/Sessions"
-    methods: ["GET"]
-    request_headers:
-      Authorization: ['PS-Auth key=test_api_key;.*']
-      Content-Type: ['application/json']
-      Cookie: ['ASP.NET_SessionId=session_cookie2; __RequestVerificationToken=rvt_token']
     responses:
       - status_code: 200
         headers:
@@ -160,16 +141,3 @@ rules:
             }
           ]
           `}}
-
-  # Sign-out to release the server-side session.
-  - path: "/BeyondTrust/api/public/v3/Auth/Signout"
-    methods: ["POST"]
-    request_headers:
-      Authorization: ['PS-Auth key=test_api_key;.*']
-      Content-Type: ['application/json']
-      Cookie: ['ASP.NET_SessionId=session_cookie2; __RequestVerificationToken=rvt_token']
-    responses:
-      - status_code: 200
-        headers:
-          Content-Type: ['application/json']
-        body: ""

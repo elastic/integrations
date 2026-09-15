@@ -1,9 +1,9 @@
 # BeyondInsight API - UserAudits Test Mock Configuration
 #
-# This scenario tests session expiration with reauthentication, offset-based
-# pagination, and validation that startdate is updated only after offset-based
-# pagination completes. It also verifies the Cookie header fix (attributes stripped,
-# multiple cookies joined into a single header value) and that Signout is called.
+# This scenario tests offset-based pagination and session persistence across
+# polls, and validates that startdate is updated only after offset-based
+# pagination completes. It also verifies correct Cookie header handling
+# (attributes stripped, multiple cookies joined into a single header value).
 #
 # NOTE: According to the API docs, the "records are sorted by CreateDate in
 # descending order (latest entries are shown first)."
@@ -12,19 +12,15 @@
 # 1. Authentication: Establishes session via /Auth/SignAppin, receives two Set-Cookie
 #    headers with attributes (ASP.NET_SessionId and __RequestVerificationToken)
 # 2. First Page (offset=0): Requests 3 records, updates newest_event_time to most
-#    recent record (2025-08-22T10:30:00Z)
+#    recent record (2025-08-22T10:30:00Z); TotalCount=5 > size=3, continues
 # 3. Pagination Setup: Sets current_offset=3, in_pagination=true, same time window
-# 4. Session Expiration: Second request (offset=3) returns 401 — session expired
-#    during pagination
-# 5. Re-authentication: Automatically re-establishes session, preserves pagination
-#    state (time window and offset)
-# 6. Pagination Resume: Continues from offset=3 with new session cookie, retrieves
-#    remaining 2 records; TotalCount=5 equals 3+2 — terminal, triggers sign-out
-# 7. Sign-out to release the server-side session (first execution)
+# 4. Second Page (offset=3): Returns remaining 2 records; TotalCount=5 equals 3+2 — terminal
+# 5. Session cookie is kept in cursor for next poll
 #
 # Second periodic execution behavior:
-# 1. Single request with offset=0 and startdate = newest_event_time from first
-#    execution — retrieves 1 record, triggers sign-out
+# 1. Session is still fresh (< 15m old); reuses cookie from cursor without re-auth
+# 2. Single request with offset=0 and startdate = newest_event_time from first
+#    execution — retrieves 1 record; terminal
 
 rules:
   # Auth.
@@ -38,7 +34,7 @@ rules:
         headers:
           Content-Type: ['application/json']
           Set-Cookie:
-            - 'ASP.NET_SessionId={{ if eq .req_num 1 }}cookie_value1{{ else }}cookie_value2{{ end }}; path=/; secure; HttpOnly; SameSite=None'
+            - 'ASP.NET_SessionId=cookie_value1; path=/; secure; HttpOnly; SameSite=None'
             - '__RequestVerificationToken=rvt_token; path=/; secure; HttpOnly'
         body: |
           {{ minify_json `
@@ -62,7 +58,7 @@ rules:
         headers:
           Content-Type: ['application/json']
           Set-Cookie:
-            - 'ASP.NET_SessionId={{ if eq .req_num 1 }}cookie_value1{{ else }}cookie_value2{{ end }}; path=/; secure; HttpOnly; SameSite=None'
+            - 'ASP.NET_SessionId=cookie_value1; path=/; secure; HttpOnly; SameSite=None'
             - '__RequestVerificationToken=rvt_token; path=/; secure; HttpOnly'
         body: |
           {{ minify_json `
@@ -75,13 +71,14 @@ rules:
           }
           `}}
 
-  # Request 4 - Start of 2nd periodic execution.
+  # Start of 2nd periodic execution — specific startdate matches newest_event_time.
+  # Must come before the first-execution rule (which matches any startdate).
   - path: "/BeyondTrust/api/public/v3/UserAudits"
     methods: ["GET"]
     request_headers:
       Authorization: ['PS-Auth key=test_api_key;.*']
       Content-Type: ['application/json']
-      Cookie: ['ASP.NET_SessionId=cookie_value2; __RequestVerificationToken=rvt_token']
+      Cookie: ['ASP.NET_SessionId=cookie_value1; __RequestVerificationToken=rvt_token']
     query_params:
       offset: 0
       limit: 3
@@ -109,13 +106,13 @@ rules:
           }
           `}}
 
-  # Request 3.
+  # Second page (offset=3) — first execution continues.
   - path: "/BeyondTrust/api/public/v3/UserAudits"
     methods: ["GET"]
     request_headers:
       Authorization: ['PS-Auth key=test_api_key;.*']
       Content-Type: ['application/json']
-      Cookie: ['ASP.NET_SessionId=cookie_value2; __RequestVerificationToken=rvt_token']
+      Cookie: ['ASP.NET_SessionId=cookie_value1; __RequestVerificationToken=rvt_token']
     query_params:
       offset: 3
       limit: 3
@@ -152,26 +149,7 @@ rules:
           }
           `}}
 
-  # Request 2.
-  - path: "/BeyondTrust/api/public/v3/UserAudits"
-    methods: ["GET"]
-    request_headers:
-      Authorization: ['PS-Auth key=test_api_key;.*']
-      Content-Type: ['application/json']
-      Cookie: ['ASP.NET_SessionId=cookie_value1; __RequestVerificationToken=rvt_token']
-    query_params:
-      offset: 3
-      limit: 3
-      startdate: "{startdate:.*}"
-      enddate: "{enddate:.*}"
-    responses:
-      - status_code: 401
-        headers:
-          Content-Type: ['application/json']
-        body: >-
-          "User not authenticated"
-
-  # Request 1.
+  # First page (offset=0) — first execution; later polls return empty.
   - path: "/BeyondTrust/api/public/v3/UserAudits"
     methods: ["GET"]
     request_headers:
@@ -188,7 +166,7 @@ rules:
         headers:
           Content-Type: ['application/json']
         body: |-
-          {{ minify_json `
+          {{ if eq .req_num 1 }}{{ minify_json `
           {
               "Data": [
                   {
@@ -221,21 +199,4 @@ rules:
               ],
               "TotalCount": 5
           }
-          `}}
-      - status_code: 418
-        headers:
-          Content-Type: ['text/plain']
-        body: Program should never request this. {{.request.vars}}
-
-  # Sign-out to release the server-side session (called after each terminal request).
-  - path: "/BeyondTrust/api/public/v3/Auth/Signout"
-    methods: ["POST"]
-    request_headers:
-      Authorization: ['PS-Auth key=test_api_key;.*']
-      Content-Type: ['application/json']
-      Cookie: ['ASP.NET_SessionId=cookie_value2; __RequestVerificationToken=rvt_token']
-    responses:
-      - status_code: 200
-        headers:
-          Content-Type: ['application/json']
-        body: ""
+          ` }}{{ else }}{"Data":[],"TotalCount":0}{{ end }}

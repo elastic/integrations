@@ -11,65 +11,107 @@ inputs:
             dataset: beyondinsight_password_safe.managedsystem
           interval: 4h
           processors:
-            - drop_event.when.equals.cel: true
             - add_fields:
                 fields:
                     foo: bar
           program: |-
             state.with(
-              has(state.?cursor.cookies) ?
-                // Fetch managed systems using authenticated session.
-                request(
-                  "GET",
-                  state.url.trim_suffix("/") + "/ManagedSystems?" + {
-                    "limit": [string(state.limit)],
-                    "offset": [string(state.?offset.orValue(0))],
-                  }.format_query()
-                ).with(
-                  {
-                    "Header": {
-                      // Include credentials on every request; some API registrations validate them on all calls, not just sign-in.
-                      "Authorization": [
-                        sprintf("PS-Auth key=%s; runas=%s;", [state.apikey, state.username]) +
-                        (has(state.password) ? (sprintf(" pwd=[%s];", [state.password])) : ""),
-                      ],
-                      "Content-Type": ["application/json"],
-                      // Strip Set-Cookie attributes and join multiple cookies into a single header value.
-                      "Cookie": [state.cursor.cookies.map(c, c.split(";")[0]).join("; ")],
-                    },
-                  }
-                ).do_request().as(resp,
-                  (resp.StatusCode == 200) ?
-                    // Success: process JSON response with Data array of managed system objects.
-                    resp.Body.decode_json().as(body,
-                      (size(body.Data) == int(state.limit)) ?
-                        // More pages available — keep the session open.
-                        {
-                          "events": body.Data.map(e,
-                            {
-                              "event": {
-                                "original": e.encode_json(),
-                              },
-                            }
-                          ),
-                          "want_more": true,
-                          "offset": int(state.?offset.orValue(0)) + size(body.Data),
-                          "retries": 0,
-                        }
+              (
+                // Reuse existing session if fresh; otherwise sign out the old one (if any) and sign in.
+                has(state.?cookie_jar.cookies) && (now - timestamp(state.cookie_jar.session_time)) < duration(state.cookie_ttl) ?
+                  state.cookie_jar
+                :
+                  (has(state.?cookie_jar.cookies) ?
+                    request("POST", state.url.trim_suffix("/") + "/Auth/Signout").with(
+                      {
+                        "Header": {
+                          "Authorization": [
+                            sprintf("PS-Auth key=%s; runas=%s;", [state.apikey, state.username]) +
+                            (has(state.password) ? (sprintf(" pwd=[%s];", [state.password])) : ""),
+                          ],
+                          "Content-Type": ["application/json"],
+                          "Cookie": [state.cookie_jar.cookies.map(c, c.split(";")[0]).join("; ")],
+                        },
+                      }
+                    ).do_request()
+                  :
+                    dyn(null)
+                  ).as(_,
+                    request("POST", state.url.trim_suffix("/") + "/Auth/SignAppin").with(
+                      {
+                        "Header": {
+                          "Authorization": [
+                            sprintf("PS-Auth key=%s; runas=%s;", [state.apikey, state.username]) +
+                            // pwd is required only if the user password is required on the application API registration.
+                            (has(state.password) ? (sprintf(" pwd=[%s];", [state.password])) : ""),
+                          ],
+                          "Content-Type": ["application/json"],
+                        },
+                      }
+                    ).do_request().as(resp,
+                      (resp.StatusCode == 200) ?
+                        {"cookies": resp.Header["Set-Cookie"], "session_time": now.format("2006-01-02T15:04:05Z")}
                       :
-                        // All data fetched — sign out and clear the session cookie.
-                        request("POST", state.url.trim_suffix("/") + "/Auth/Signout").with(
+                        {
+                          "error": {
+                            "code": string(resp.StatusCode),
+                            "id": resp.Status,
+                            "message": "Failed to create session: POST " + state.url.trim_suffix("/") + "/Auth/SignAppin: " + (
+                              (size(resp.Body) != 0) ?
+                                string(resp.Body)
+                              :
+                                resp.Status + " (" + string(resp.StatusCode) + ")"
+                            ),
+                          },
+                        }
+                    )
+                  )
+              ).as(auth,
+                has(auth.error) ?
+                  {
+                    "events": {"error": {"message": "failed to log in: " + auth.error.message}},
+                    "want_more": false,
+                    "cookie_jar": {},
+                  }
+                :
+                  // Fetch managed systems using authenticated session.
+                  request(
+                    "GET",
+                    state.url.trim_suffix("/") + "/ManagedSystems?" + {
+                      "limit": [string(state.limit)],
+                      "offset": [string(state.?offset.orValue(0))],
+                    }.format_query()
+                  ).with(
+                    {
+                      "Header": {
+                        // Include credentials on every request; some API registrations validate them on all calls, not just sign-in.
+                        "Authorization": [
+                          sprintf("PS-Auth key=%s; runas=%s;", [state.apikey, state.username]) +
+                          (has(state.password) ? (sprintf(" pwd=[%s];", [state.password])) : ""),
+                        ],
+                        "Content-Type": ["application/json"],
+                        "Cookie": [auth.cookies.map(c, c.split(";")[0]).join("; ")],
+                      },
+                    }
+                  ).do_request().as(resp,
+                    (resp.StatusCode == 200) ?
+                      resp.Body.decode_json().as(body,
+                        (size(body.Data) == int(state.limit)) ?
+                          // More pages available.
                           {
-                            "Header": {
-                              "Authorization": [
-                                sprintf("PS-Auth key=%s; runas=%s;", [state.apikey, state.username]) +
-                                (has(state.password) ? (sprintf(" pwd=[%s];", [state.password])) : ""),
-                              ],
-                              "Content-Type": ["application/json"],
-                              "Cookie": [state.cursor.cookies.map(c, c.split(";")[0]).join("; ")],
-                            },
+                            "events": body.Data.map(e,
+                              {
+                                "event": {
+                                  "original": e.encode_json(),
+                                },
+                              }
+                            ),
+                            "want_more": true,
+                            "offset": int(state.?offset.orValue(0)) + size(body.Data),
+                            "cookie_jar": auth,
                           }
-                        ).do_request().as(_,
+                        :
+                          // All data fetched.
                           {
                             "events": body.Data.map(e,
                               {
@@ -80,126 +122,52 @@ inputs:
                             ),
                             "want_more": false,
                             "offset": 0,
-                            "retries": 0,
-                            "cursor": {},
+                            "cookie_jar": auth,
                           }
-                        )
-                    )
-                  : (resp.StatusCode == 401) ?
-                    (
-                      // Authentication failure: clear session and retry once.
-                      (int(state.?retries.orValue(0)) == 0) ?
-                        {
-                          "events": [
-                            // Must produce an event for want_more=true to be honored.
-                            {"cel": true},
-                          ],
-                          "retries": 1,
-                          "want_more": true,
-                          "cursor": {},
-                        }
-                      :
-                        {
-                          "events": {
-                            "error": {
-                              "code": string(resp.StatusCode),
-                              "id": string(resp.Status),
-                              "message": "Authentication failed after retry: " + "GET " + state.url.trim_suffix("/") + "/ManagedSystems: " + (
-                                (size(resp.Body) != 0) ?
-                                  string(resp.Body)
-                                :
-                                  string(resp.Status) + " (" + string(resp.StatusCode) + ")"
-                              ),
-                            },
-                          },
-                          "want_more": false,
-                        }
-                    )
-                  :
-                    // Handle all other HTTP error responses. Sign out to release the server-side session.
-                    request("POST", state.url.trim_suffix("/") + "/Auth/Signout").with(
-                      {
-                        "Header": {
-                          "Authorization": [
-                            sprintf("PS-Auth key=%s; runas=%s;", [state.apikey, state.username]) +
-                            (has(state.password) ? (sprintf(" pwd=[%s];", [state.password])) : ""),
-                          ],
-                          "Content-Type": ["application/json"],
-                          "Cookie": [state.cursor.cookies.map(c, c.split(";")[0]).join("; ")],
-                        },
-                      }
-                    ).do_request().as(_,
+                      )
+                    : (resp.StatusCode == 401) ?
                       {
                         "events": {
                           "error": {
                             "code": string(resp.StatusCode),
-                            "id": string(resp.Status),
+                            "id": resp.Status,
                             "message": "GET " + state.url.trim_suffix("/") + "/ManagedSystems: " + (
                               (size(resp.Body) != 0) ?
                                 string(resp.Body)
                               :
-                                string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                                resp.Status + " (" + string(resp.StatusCode) + ")"
                             ),
                           },
                         },
                         "want_more": false,
-                        "cursor": {},
+                        "cookie_jar": {},
                       }
-                    )
-                )
-              :
-                // Establish new authenticated session.
-                request("POST", state.url.trim_suffix("/") + "/Auth/SignAppin").with(
-                  {
-                    "Header": {
-                      "Authorization": [
-                        sprintf("PS-Auth key=%s; runas=%s;", [state.apikey, state.username]) + (
-                        // pwd is required only if the user password is required on the application API registration.
-                        has(state.password) ? (sprintf(" pwd=[%s];", [state.password])) : ""),
-                      ],
-                      "Content-Type": ["application/json"],
-                    },
-                  }
-                ).do_request().as(resp,
-                  (resp.StatusCode == 200) ?
-                    {
-                      "events": [
-                        // Must produce an event for want_more=true to be honored.
-                        {"cel": true},
-                      ],
-                      "cursor": {
-                        "cookies": resp.Header["Set-Cookie"],
-                      },
-                      "want_more": true,
-                    }
-                  :
-                    {
-                      "events": {
-                        "error": {
-                          "code": string(resp.StatusCode),
-                          "id": string(resp.Status),
-                          "message": "Failed to create session: " + "POST " + state.url.trim_suffix("/") + "/Auth/SignAppin: " + (
-                            (size(resp.Body) != 0) ?
-                              string(resp.Body)
-                            :
-                              string(resp.Status) + " (" + string(resp.StatusCode) + ")"
-                          ),
+                    :
+                      {
+                        "events": {
+                          "error": {
+                            "code": string(resp.StatusCode),
+                            "id": resp.Status,
+                            "message": "GET " + state.url.trim_suffix("/") + "/ManagedSystems: " + (
+                              (size(resp.Body) != 0) ?
+                                string(resp.Body)
+                              :
+                                resp.Status + " (" + string(resp.StatusCode) + ")"
+                            ),
+                          },
                         },
-                      },
-                      "want_more": false,
-                    }
-                )
-            ).as(state, (state.want_more == false) ?
-              // Reset retry counter when execution completes.
-              state.drop("retries")
-            :
-              state
+                        "want_more": false,
+                        "cookie_jar": auth,
+                      }
+                  )
+              )
             )
           publisher_pipeline.disable_host: true
           redact:
             fields:
                 - apikey
                 - password
+                - cookie_jar
           resource.ssl.renegotiation: freely
           resource.tracer:
             enabled: true
@@ -208,6 +176,7 @@ inputs:
           resource.url: https://foo.ps.beyondtrustcloud.com/BeyondTrust/api/public/v3
           state:
             apikey: ${SECRET_0}
+            cookie_ttl: 15m
             limit: 1000
             password: ${SECRET_1}
             username: domain\user

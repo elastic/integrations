@@ -1,16 +1,13 @@
 # BeyondInsight Password Safe - Managed Accounts Test Mock Configuration
 #
 # Test Scenario: Simulates paginated retrieval of managed accounts with session
-# expiration and re-authentication, verifying the Cookie header fix:
-# 1. Initial authentication via SignAppin endpoint (returns 200, sets two cookies
+# persistence across polls, verifying correct Cookie header handling:
+# 1. Authentication via SignAppin endpoint (returns 200, sets two cookies
 #    with attributes — ASP.NET_SessionId and __RequestVerificationToken)
 # 2. First ManagedAccounts request with limit=1&offset=0 (returns 200, first account)
-# 3. Second ManagedAccounts request with limit=1&offset=1 (returns 401, session expired)
-# 4. Re-authentication via SignAppin endpoint (returns 200, new session cookies)
-# 5. Retry ManagedAccounts request with limit=1&offset=1 (returns 200, second account)
-# 6. Final ManagedAccounts request with limit=1&offset=2 (returns 200, empty array —
-#    no more data, triggers sign-out)
-# 7. Sign-out to release the server-side session
+# 3. Second ManagedAccounts request with limit=1&offset=1 (returns 200, second account)
+# 4. Final ManagedAccounts request with limit=1&offset=2 (returns 200, empty array —
+#    no more data; session cookie is kept in cursor for next poll)
 #
 # Cookie header format assertion: each Cookie rule asserts the joined single-header form.
 # The buggy code replayed raw Set-Cookie values (with attributes) as multiple Cookie
@@ -28,7 +25,7 @@ rules:
         headers:
           Content-Type: ['application/json']
           Set-Cookie:
-            - 'ASP.NET_SessionId={{ if eq .req_num 1 }}cookie_value1{{ else }}cookie_value2{{ end }}; path=/; secure; HttpOnly; SameSite=None'
+            - 'ASP.NET_SessionId=cookie_value1; path=/; secure; HttpOnly; SameSite=None'
             - '__RequestVerificationToken=rvt_token; path=/; secure; HttpOnly'
         body: |
           {{ minify_json `
@@ -52,7 +49,7 @@ rules:
         headers:
           Content-Type: ['application/json']
           Set-Cookie:
-            - 'ASP.NET_SessionId={{ if eq .req_num 1 }}cookie_value1{{ else }}cookie_value2{{ end }}; path=/; secure; HttpOnly; SameSite=None'
+            - 'ASP.NET_SessionId=cookie_value1; path=/; secure; HttpOnly; SameSite=None'
             - '__RequestVerificationToken=rvt_token; path=/; secure; HttpOnly'
         body: |
           {{ minify_json `
@@ -113,22 +110,6 @@ rules:
       Content-Type: ['application/json']
       Cookie: ['ASP.NET_SessionId=cookie_value1; __RequestVerificationToken=rvt_token']
     responses:
-      - status_code: 401
-        headers:
-          Content-Type: ['application/json']
-        body: >-
-          "User not authenticated"
-
-  - path: "/BeyondTrust/api/public/v3/ManagedAccounts"
-    methods: ["GET"]
-    query_params:
-      offset: '1'
-      limit: '1'
-    request_headers:
-      Authorization: ['PS-Auth key=test_api_key;.*']
-      Content-Type: ['application/json']
-      Cookie: ['ASP.NET_SessionId=cookie_value2; __RequestVerificationToken=rvt_token']
-    responses:
       - status_code: 200
         headers:
           Content-Type: ['application/json']
@@ -141,7 +122,7 @@ rules:
                   "SystemName": "SecondSystem",
                   "InstanceName": "Primary",
                   "DomainName": "example.com",
-                  "AccountId": 5,
+                  "AccountId": 6,
                   "AccountName": "MacdonaldP.Irene",
                   "UserPrincipalName": "irene@example.com",
                   "ApplicationID": 123,
@@ -159,28 +140,15 @@ rules:
           ]
           `}}
 
-  # Empty page — no more data, triggers sign-out.
+  # Empty page — no more data; session cookie is kept in cursor for next poll.
   - path: "/BeyondTrust/api/public/v3/ManagedAccounts"
     methods: ["GET"]
     request_headers:
       Authorization: ['PS-Auth key=test_api_key;.*']
       Content-Type: ['application/json']
-      Cookie: ['ASP.NET_SessionId=cookie_value2; __RequestVerificationToken=rvt_token']
+      Cookie: ['ASP.NET_SessionId=cookie_value1; __RequestVerificationToken=rvt_token']
     responses:
       - status_code: 200
         headers:
           Content-Type: ['application/json']
         body: '[]'
-
-  # Sign-out to release the server-side session.
-  - path: "/BeyondTrust/api/public/v3/Auth/Signout"
-    methods: ["POST"]
-    request_headers:
-      Authorization: ['PS-Auth key=test_api_key;.*']
-      Content-Type: ['application/json']
-      Cookie: ['ASP.NET_SessionId=cookie_value2; __RequestVerificationToken=rvt_token']
-    responses:
-      - status_code: 200
-        headers:
-          Content-Type: ['application/json']
-        body: ""
