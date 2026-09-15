@@ -111,9 +111,9 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
         * Set **Username** for the ePO user account with `WP_EventInfo` query permissions.
         * Set **Password** for the ePO user account.
         * Set **Initial Event Auto Id** to the starting `EventAutoID` from which to begin querying events. Subsequent collections resume from the last persisted `EventAutoID`. Set to `0` to start from the beginning (default: `0`).
-        * Set **Interval** to the polling frequency. The default is `5m`.
+        * Set **Interval** to the polling frequency. The default is `24h`.
         * Set **Page Size** to the number of web control log records to retrieve per API request. The default is `500`.
-        * Optionally adjust **HTTP Client Timeout**, proxy, and SSL settings.
+        * Optionally adjust **Maximum Pages Per Interval**, **HTTP Client Timeout**, proxy, and SSL settings.
     * For **compliance history** logs:
         * Set **Trellix ePO URL** to the base URL of your Trellix ePO server, for example `https://epo.example.com:8443`.
         * Set the **Username** for the ePO user account with `EpoComplianceHistory` query permissions.
@@ -1370,7 +1370,7 @@ This integration uses the following API:
 * **Audit**: Collects audit log records via the **Trellix ePO executeQuery API** (endpoint: `/remote/core.executeQuery`). Records are queried from the `OrionAuditLog` table using a keyset cursor on `AutoId`, with results ordered ascending so the cursor advances monotonically across polls.
 * **Web Control**: Collects web control event records via the **Trellix ePO executeQuery API** (endpoint: `/remote/core.executeQuery`). Records are queried from the `WP_EventInfo` table using keyset-based pagination with the `EventAutoID` field as a cursor to ensure efficient and non-duplicating retrieval.
 * **Compliance history**: Collects compliance history records via the **Trellix ePO executeQuery API** (endpoint: `/remote/core.executeQuery`). Records are queried from the `EpoComplianceHistory` table using keyset-based pagination with the `AutoId` field as a cursor to ensure efficient and non-duplicating retrieval.
-* **System**: Collects managed system (endpoint) records via the **Trellix ePO executeQuery API** (endpoint: `/remote/core.executeQuery`). Records are queried from the `EPOLeafNode` table using keyset-based pagination with the `LastUpdate` field as a cursor to ensure efficient and non-duplicating retrieval.
+* **System**: Collects managed system (endpoint) records via the **Trellix ePO executeQuery API** (endpoint: `/remote/core.executeQuery`). Records are queried from the `EPOLeafNode` table and ordered by `LastUpdate`, which is used as an inclusive time cursor. Records sharing the boundary timestamp are re-read on the next poll; the ingest pipeline assigns a stable document ID from `AutoID` so the repeats overwrite rather than duplicate.
 * **Product Event**: Collects product event records through the **Trellix ePO executeQuery API** at `/remote/core.executeQuery`. Records are queried from `EPOProductEvents` using a keyset cursor on `AutoID`, with results ordered ascending so the cursor advances monotonically across polls.
 * **Device event**: Collects removable-media device event records through the **Trellix ePO executeQuery API** at `/remote/core.executeQuery`. Records are queried from `EEFFDeviceAllEventsView` using a keyset cursor on `AutoID`, with results ordered ascending so the cursor advances monotonically across polls.
 * **DLP incident**: Collects DLP incident records through the **Trellix ePO executeQuery API** (endpoint: `/remote/core.executeQuery`). Records are queried from `UDLP_EPD_Incidents` and ordered by `LastUpdateTimestamp`, which is used as an inclusive time cursor.
