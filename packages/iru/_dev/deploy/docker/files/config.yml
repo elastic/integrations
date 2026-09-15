@@ -1,4 +1,121 @@
 rules:
+  # Admin page 3 — cursor termination (partial page, no next link).
+  - path: /api/v1/admins
+    methods: ['GET']
+    query_params:
+      limit: "{limit:.*}"
+      cursor: adminpage3cursor
+    request_headers:
+      Authorization:
+        - 'Bearer xxxx'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {
+            "next": null,
+            "previous": null,
+            "results": [
+              {
+                "id": "e5f6a789-0123-4567-89ab-cdef01234567",
+                "email": "ops@example.com",
+                "first_name": "Ops",
+                "last_name": "Admin",
+                "role": "admin",
+                "is_active": true,
+                "locale": "en_US",
+                "created_at": "2025-01-01T00:00:00.000000Z",
+                "updated_at": "2025-01-01T00:00:00.000000Z"
+              }
+            ]
+          }
+  # Admin page 2 — cursor pagination (full page with next link).
+  - path: /api/v1/admins
+    methods: ['GET']
+    query_params:
+      limit: "{limit:.*}"
+      cursor: adminpage2cursor
+    request_headers:
+      Authorization:
+        - 'Bearer xxxx'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {
+            "next": "http://{{ hostname }}:{{ env "PORT" }}/api/v1/admins?limit=2&cursor=adminpage3cursor",
+            "previous": null,
+            "results": [
+              {
+                "id": "c3d4e5f6-7890-1234-5678-90abcdef1234",
+                "email": "security@example.com",
+                "first_name": "Security",
+                "last_name": "Admin",
+                "role": "admin",
+                "is_active": true,
+                "locale": "en_US",
+                "created_at": "2025-01-01T00:00:00.000000Z",
+                "updated_at": "2025-01-01T00:00:00.000000Z"
+              },
+              {
+                "id": "d4e5f678-9012-3456-7890-abcdef123456",
+                "email": "support@example.com",
+                "first_name": "Support",
+                "last_name": "Admin",
+                "role": "admin",
+                "is_active": true,
+                "locale": "en_US",
+                "created_at": "2025-01-01T00:00:00.000000Z",
+                "updated_at": "2025-01-01T00:00:00.000000Z"
+              }
+            ]
+          }
+  # Admin page 1 — initial request for audit actor enrichment.
+  - path: /api/v1/admins
+    methods: ['GET']
+    query_params:
+      limit: "{limit:.*}"
+    request_headers:
+      Authorization:
+        - 'Bearer xxxx'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {
+            "next": "http://{{ hostname }}:{{ env "PORT" }}/api/v1/admins?limit=2&cursor=adminpage2cursor",
+            "previous": null,
+            "results": [
+              {
+                "id": "cf40d6e7-20cb-4da9-84a1-9ad0b7003ca5",
+                "email": "admin@example.com",
+                "first_name": "Example",
+                "last_name": "Admin",
+                "role": "admin",
+                "is_active": true,
+                "locale": "en_US",
+                "created_at": "2025-01-01T00:00:00.000000Z",
+                "updated_at": "2025-01-01T00:00:00.000000Z"
+              },
+              {
+                "id": "b2c3d4e5-6789-0123-4567-89abcdef01234",
+                "email": "readonly@example.com",
+                "first_name": "Readonly",
+                "last_name": "Admin",
+                "role": "readonly",
+                "is_active": true,
+                "locale": "en_US",
+                "created_at": "2025-01-01T00:00:00.000000Z",
+                "updated_at": "2025-01-01T00:00:00.000000Z"
+              }
+            ]
+          }
   # Audit page 3 — cursor termination (partial page, no next link).
   - path: /api/v1/audit/events
     methods: ['GET']

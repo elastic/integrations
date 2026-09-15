@@ -155,6 +155,15 @@ The `audit` data stream collects tenant Activity events from `GET /api/v1/audit/
 | input.type | Type of filebeat input. | keyword |
 | iru.audit.actor.id | Unique identifier of the actor when the actor is not a user. | keyword |
 | iru.audit.actor.type | Type of actor that performed the action (for example user or api_token). | keyword |
+| iru.audit.admin.created_at | When the administrator account was created. | date |
+| iru.audit.admin.email | Administrator email address. | keyword |
+| iru.audit.admin.first_name | Administrator first name. | keyword |
+| iru.audit.admin.id | Administrator identifier. | keyword |
+| iru.audit.admin.is_active | Whether the administrator account is active. | boolean |
+| iru.audit.admin.last_name | Administrator last name. | keyword |
+| iru.audit.admin.locale | Administrator locale. | keyword |
+| iru.audit.admin.role | Administrator role. | keyword |
+| iru.audit.admin.updated_at | When the administrator account was last updated. | date |
 | iru.audit.metadata | Additional context supplied by the API. | flattened |
 | iru.audit.new_state.active | Whether the target is active. | boolean |
 | iru.audit.new_state.description | Description of the target after the change. | keyword |
@@ -178,7 +187,10 @@ The `audit` data stream collects tenant Activity events from `GET /api/v1/audit/
 | observer.vendor | Vendor name of the observer. | constant_keyword |
 | related.user | All the user names or other user identifiers seen on the event. | keyword |
 | tags | List of keywords used to tag each event. | keyword |
+| user.email | User email address. | keyword |
 | user.id | Unique identifier of the user. | keyword |
+| user.name | Short name or login of the user. | keyword |
+| user.name.text | Multi-field of `user.name`. | match_only_text |
 
 
 ##### Audit sample event
@@ -189,24 +201,24 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2025-03-04T16:29:55.253Z",
     "agent": {
-        "ephemeral_id": "d8590701-7679-49de-aa49-771e35f1be88",
-        "id": "85a3ce58-26c4-4f14-a4d9-8d6c63c422e9",
-        "name": "elastic-agent-98585",
+        "ephemeral_id": "47873d42-038b-4735-89be-e6719c522597",
+        "id": "b610d0fe-fc27-4e5e-b3a5-0be922e31573",
+        "name": "elastic-agent-67746",
         "type": "filebeat",
-        "version": "8.18.8"
+        "version": "8.19.3"
     },
     "data_stream": {
         "dataset": "iru.audit",
-        "namespace": "18496",
+        "namespace": "85456",
         "type": "logs"
     },
     "ecs": {
-        "version": "9.3.0"
+        "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "85a3ce58-26c4-4f14-a4d9-8d6c63c422e9",
+        "id": "b610d0fe-fc27-4e5e-b3a5-0be922e31573",
         "snapshot": false,
-        "version": "8.18.8"
+        "version": "8.19.3"
     },
     "event": {
         "action": "update",
@@ -216,9 +228,9 @@ An example event for `audit` looks as following:
         ],
         "dataset": "iru.audit",
         "id": "01JNGZW47KZKPXE1JWCFE4PHDW",
-        "ingested": "2026-09-01T07:28:45Z",
+        "ingested": "2026-09-10T09:30:28Z",
         "kind": "event",
-        "original": "{\"action\":\"update\",\"actor_id\":\"cf40d6e7-20cb-4da9-84a1-9ad0b7003ca5\",\"actor_type\":\"user\",\"id\":\"01JNGZW47KZKPXE1JWCFE4PHDW\",\"metadata\":{},\"new_state\":{\"library_items_added\":[{\"id\":\"c7a5871a-1683-432f-87d4-30bbd404eb85\",\"name\":\"Example App\"}],\"library_items_removed\":[],\"library_items_scoped\":[{\"id\":\"c7a5871a-1683-432f-87d4-30bbd404eb85\",\"name\":\"Example App\"}],\"name\":\"Example Blueprint\"},\"occurred_at\":\"2025-03-04T16:29:55.253454Z\",\"target_component\":\"library_items\",\"target_id\":\"449ec92a-186a-44f2-9421-d5ac6e465eb5\",\"target_type\":\"blueprint\"}",
+        "original": "{\"action\":\"update\",\"actor_id\":\"cf40d6e7-20cb-4da9-84a1-9ad0b7003ca5\",\"actor_type\":\"user\",\"admin\":{\"created_at\":\"2025-01-01T00:00:00.000000Z\",\"email\":\"admin@example.com\",\"first_name\":\"Example\",\"id\":\"cf40d6e7-20cb-4da9-84a1-9ad0b7003ca5\",\"is_active\":true,\"last_name\":\"Admin\",\"locale\":\"en_US\",\"role\":\"admin\",\"updated_at\":\"2025-01-01T00:00:00.000000Z\"},\"id\":\"01JNGZW47KZKPXE1JWCFE4PHDW\",\"metadata\":{},\"new_state\":{\"library_items_added\":[{\"id\":\"c7a5871a-1683-432f-87d4-30bbd404eb85\",\"name\":\"Example App\"}],\"library_items_removed\":[],\"library_items_scoped\":[{\"id\":\"c7a5871a-1683-432f-87d4-30bbd404eb85\",\"name\":\"Example App\"}],\"name\":\"Example Blueprint\"},\"occurred_at\":\"2025-03-04T16:29:55.253454Z\",\"target_component\":\"library_items\",\"target_id\":\"449ec92a-186a-44f2-9421-d5ac6e465eb5\",\"target_type\":\"blueprint\"}",
         "type": [
             "change"
         ]
@@ -230,6 +242,17 @@ An example event for `audit` looks as following:
         "audit": {
             "actor": {
                 "type": "user"
+            },
+            "admin": {
+                "created_at": "2025-01-01T00:00:00.000Z",
+                "email": "admin@example.com",
+                "first_name": "Example",
+                "id": "cf40d6e7-20cb-4da9-84a1-9ad0b7003ca5",
+                "is_active": true,
+                "last_name": "Admin",
+                "locale": "en_US",
+                "role": "admin",
+                "updated_at": "2025-01-01T00:00:00.000Z"
             },
             "metadata": {},
             "new_state": {
@@ -261,7 +284,9 @@ An example event for `audit` looks as following:
     },
     "related": {
         "user": [
-            "cf40d6e7-20cb-4da9-84a1-9ad0b7003ca5"
+            "cf40d6e7-20cb-4da9-84a1-9ad0b7003ca5",
+            "admin@example.com",
+            "Example Admin"
         ]
     },
     "tags": [
@@ -270,7 +295,9 @@ An example event for `audit` looks as following:
         "iru-audit"
     ],
     "user": {
-        "id": "cf40d6e7-20cb-4da9-84a1-9ad0b7003ca5"
+        "email": "admin@example.com",
+        "id": "cf40d6e7-20cb-4da9-84a1-9ad0b7003ca5",
+        "name": "Example Admin"
     }
 }
 ```
@@ -291,6 +318,12 @@ The `device` data stream collects managed device inventory from `GET /api/v1/dev
 | data_stream.type | Data stream type. | constant_keyword |
 | device.serial_number | The unique serial number serves as a distinct identifier for each device, aiding in inventory management and device authentication. | keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| entity.id | A unique identifier for the entity. When multiple identifiers exist, this should be the most stable and commonly used identifier that: 1) persists across the entity's lifecycle, 2) ensures uniqueness within its scope, 3) is commonly used for queries and correlation, and 4) is readily available in most observations (logs/events). For entities with dedicated field sets (for example, host, user), this value should match the corresponding \*.id field. Alternative identifiers (for example, ARNs values in AWS, URLs) can be preserved in the raw field. | keyword |
+| entity.last_seen_timestamp | Indicates the date/time when this entity was last "seen," usually based upon the last event/log that is initiated by this entity. | date |
+| entity.name | The name of the entity. The keyword field enables exact matches for filtering and aggregations, while the text field enables full-text search. For entities with dedicated field sets (for example, `host`), this field should mirrors the corresponding \*.name value. | keyword |
+| entity.name.text | Multi-field of `entity.name`. | match_only_text |
+| entity.source | The module or integration that provided this entity data (similar to event.module). | keyword |
+| entity.type | A standardized high-level classification of the entity. This provides a normalized way to group similar entities across different providers or systems. Example values: `bucket`, `database`, `container`, `function`, `queue`, `host`, `user`, `application`, `session`, `cloud`, `orchestrator`, etc. If an entity is nested under a top-level namespace like `host` or `cloud`, or similar, its type array should include the matching value — for example, `host` or `cloud`. | keyword |
 | error.message | Error message. | match_only_text |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.dataset | Event dataset. | constant_keyword |
@@ -348,27 +381,36 @@ An example event for `device` looks as following:
 {
     "@timestamp": "2023-03-24T00:45:18.674Z",
     "agent": {
-        "ephemeral_id": "80e44232-c5fd-42ed-ab8c-aecdbe0bc8db",
-        "id": "2c016910-7eb2-4afc-b7c4-2f2ee5aaa594",
-        "name": "elastic-agent-42100",
+        "ephemeral_id": "24df7e78-2e13-483f-8952-6d885c3f3622",
+        "id": "d516b6af-1c82-497c-a444-f27039bc1a97",
+        "name": "elastic-agent-12985",
         "type": "filebeat",
-        "version": "8.18.8"
+        "version": "8.19.3"
     },
     "data_stream": {
         "dataset": "iru.device",
-        "namespace": "77166",
+        "namespace": "54458",
         "type": "logs"
     },
     "device": {
         "serial_number": "DMPF2L00Q6LC"
     },
     "ecs": {
-        "version": "9.3.0"
+        "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "2c016910-7eb2-4afc-b7c4-2f2ee5aaa594",
+        "id": "d516b6af-1c82-497c-a444-f27039bc1a97",
         "snapshot": false,
-        "version": "8.18.8"
+        "version": "8.19.3"
+    },
+    "entity": {
+        "id": "bd4eb679-d679-4071-a395-5855807b6829",
+        "last_seen_timestamp": "2023-03-24T00:45:18.674Z",
+        "name": "example-ipad",
+        "source": "iru",
+        "type": [
+            "host"
+        ]
     },
     "event": {
         "agent_id_status": "verified",
@@ -376,7 +418,7 @@ An example event for `device` looks as following:
             "host"
         ],
         "dataset": "iru.device",
-        "ingested": "2026-09-01T09:45:15Z",
+        "ingested": "2026-09-10T09:31:17Z",
         "kind": "asset",
         "original": "{\"agent_installed\":true,\"agent_version\":\"4.1.3 (3795)\",\"asset_tag\":\"\",\"blueprint_id\":\"97e4e175-1631-43f6-a02b-33fd1c748ab8\",\"blueprint_name\":\"Example Blueprint\",\"device_id\":\"bd4eb679-d679-4071-a395-5855807b6829\",\"device_name\":\"example-ipad\",\"first_enrollment\":\"2022-07-21 15:00:06.470889+00:00\",\"is_missing\":false,\"is_removed\":false,\"last_check_in\":\"2023-03-24T00:45:18.674561Z\",\"last_enrollment\":\"2023-03-13 17:29:41.167646+00:00\",\"lost_mode_status\":\"\",\"mdm_enabled\":true,\"model\":\"iPad Pro (12.9-inch) (5th generation)\",\"os_version\":\"16.5.1\",\"platform\":\"iPad\",\"serial_number\":\"DMPF2L00Q6LC\",\"tags\":[],\"user\":\"\"}",
         "type": [
@@ -402,7 +444,6 @@ An example event for `device` looks as following:
                 "installed": true,
                 "version": "4.1.3 (3795)"
             },
-            "asset_tag": "",
             "blueprint": {
                 "id": "97e4e175-1631-43f6-a02b-33fd1c748ab8",
                 "name": "Example Blueprint"
@@ -413,7 +454,6 @@ An example event for `device` looks as following:
             "is_removed": false,
             "last_check_in": "2023-03-24T00:45:18.674Z",
             "last_enrollment": "2023-03-13T17:29:41.167Z",
-            "lost_mode_status": "",
             "mdm_enabled": true,
             "model": "iPad Pro (12.9-inch) (5th generation)",
             "platform": "iPad",
@@ -439,9 +479,3 @@ An example event for `device` looks as following:
     ]
 }
 ```
-
-
-### Data streams using ILM policies
-
-
-

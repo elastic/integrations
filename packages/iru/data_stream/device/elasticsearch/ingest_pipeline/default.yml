@@ -4,7 +4,7 @@ processors:
   - set:
       field: ecs.version
       tag: set_ecs_version
-      value: '9.3.0'
+      value: '9.5.0'
 
   - terminate:
       tag: data_collection_error
@@ -322,6 +322,31 @@ processors:
       field: event.type
       tag: append_event_type_info
       value: info
+
+  - set:
+      field: entity.id
+      copy_from: host.id
+      ignore_empty_value: true
+      tag: set_entity_id
+  - set:
+      field: entity.name
+      copy_from: host.name
+      ignore_empty_value: true
+      tag: set_entity_name
+  - set:
+      field: entity.type
+      tag: set_entity_type
+      value:
+        - host
+  - set:
+      field: entity.source
+      tag: set_entity_source
+      value: iru
+  - set:
+      field: entity.last_seen_timestamp
+      copy_from: iru.device.last_check_in
+      ignore_empty_value: true
+      tag: set_entity_last_seen
 
   - set:
       field: observer.vendor

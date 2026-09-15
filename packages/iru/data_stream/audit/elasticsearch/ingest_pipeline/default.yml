@@ -4,7 +4,7 @@ processors:
   - set:
       field: ecs.version
       tag: set_ecs_version
-      value: '9.3.0'
+      value: '9.5.0'
 
   - terminate:
       tag: data_collection_error
@@ -106,6 +106,54 @@ processors:
       target_field: iru.audit.metadata
       ignore_missing: true
       tag: rename_metadata
+  - rename:
+      field: json.admin
+      target_field: iru.audit.admin
+      ignore_missing: true
+      tag: rename_admin
+      if: ctx.json?.admin != null
+  - convert:
+      field: iru.audit.admin.is_active
+      tag: convert_admin_is_active
+      type: boolean
+      ignore_missing: true
+  - date:
+      field: iru.audit.admin.created_at
+      target_field: iru.audit.admin.created_at
+      formats:
+        - ISO8601
+      tag: date_admin_created_at
+      if: ctx.iru?.audit?.admin?.created_at != null
+  - date:
+      field: iru.audit.admin.updated_at
+      target_field: iru.audit.admin.updated_at
+      formats:
+        - ISO8601
+      tag: date_admin_updated_at
+      if: ctx.iru?.audit?.admin?.updated_at != null
+  - set:
+      field: user.email
+      tag: set_user_email_from_admin
+      copy_from: iru.audit.admin.email
+      ignore_empty_value: true
+      if: ctx.iru?.audit?.admin?.email != null
+  - script:
+      lang: painless
+      tag: set_user_name_from_admin
+      description: Build ECS user.name from administrator first and last name.
+      if: ctx.iru?.audit?.admin != null
+      source: |-
+        def admin = ctx.iru.audit.admin;
+        def parts = new ArrayList();
+        if (admin.first_name != null && admin.first_name != '') {
+          parts.add(admin.first_name);
+        }
+        if (admin.last_name != null && admin.last_name != '') {
+          parts.add(admin.last_name);
+        }
+        if (!parts.isEmpty()) {
+          ctx.user.name = String.join(' ', parts);
+        }
 
   - set:
       field: event.kind
@@ -157,6 +205,18 @@ processors:
       value: '{{{user.id}}}'
       allow_duplicates: false
       if: ctx.user?.id != null
+  - append:
+      field: related.user
+      tag: append_user_email_to_related
+      value: '{{{user.email}}}'
+      allow_duplicates: false
+      if: ctx.user?.email != null
+  - append:
+      field: related.user
+      tag: append_user_name_to_related
+      value: '{{{user.name}}}'
+      allow_duplicates: false
+      if: ctx.user?.name != null
 
   - script:
       lang: painless

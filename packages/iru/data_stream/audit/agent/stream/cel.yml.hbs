@@ -17,69 +17,171 @@ state:
   api_token: {{api_token}}
   batch_size: {{batch_size}}
   initial_interval: {{initial_interval}}
+  want_more: false
+  admins_fetched: false
 redact:
   fields:
     - api_token
 program: |-
-  state.with(
-    request(
-      "GET",
-      state.?want_more.orValue(false) ?
-        state.next_url
-      :
-        state.url.trim_right("/") + "/api/v1/audit/events?" + {
-          "limit": [string(int(state.batch_size))],
-          "sort_by": ["occurred_at"],
-          "start_date": [state.?cursor.occurred_at.orValue(
-            string(now - duration(state.initial_interval))
-          )],
-        }.format_query()
-    ).with(
-      {
-        "Header": {
-          "Authorization": ["Bearer " + state.api_token],
-          "Accept": ["application/json"],
-        },
-      }
-    ).do_request().as(resp,resp.StatusCode == 200 ?
-      resp.Body.decode_json().as(body,
+  (
+    state.?want_more.orValue(false) ?
+      state
+    :
+      state.drop(
+        [
+          "next_url",
+          "admin_keys",
+          "admin_values",
+          "admin_next_url",
+        ]
+      ).with(
         {
-          "events": has(body.results) ?
-            body.results.map(e, {"message": e.encode_json()})
-          :
-            [],
-          "want_more": has(body.next) && body.next != null && string(body.next) != "",
-          ?"next_url": has(body.next) && body.next != null && string(body.next) != "" ?
-            optional.of(string(body.next))
-          :
-            optional.none(),
-          "cursor": {
-            "occurred_at": (has(body.results) && size(body.results) > 0) ?
-              body.results.map(e, e.occurred_at).max()
-            :
-              state.?cursor.occurred_at.orValue(
-                string(now - duration(state.initial_interval))
-              ),
-          },
+          "admins_fetched": false,
         }
       )
-    :
-      {
-        "events": {
-          "error": {
-            "code": string(resp.StatusCode),
-            "id": resp.Status,
-            "message": "GET " + state.url.trim_right("/") + "/api/v1/audit/events: " + (
-              size(resp.Body) != 0 ?
-                string(resp.Body)
-              :
-                resp.Status + ' (' + string(resp.StatusCode) + ')'
-            ),
+  ).as(state,
+    !state.?admins_fetched.orValue(false) ?
+      request(
+        "GET",
+        has(state.admin_next_url) && state.admin_next_url != "" ?
+          state.admin_next_url
+        :
+          state.url.trim_right("/") + "/api/v1/admins?" + {
+            "limit": [string(int(state.batch_size))],
+          }.format_query()
+      ).with(
+        {
+          "Header": {
+            "Authorization": ["Bearer " + state.api_token],
+            "Accept": ["application/json"],
           },
-        },
-        "want_more": false,
-      }
-    )
+        }
+      ).do_request().as(resp,
+        resp.StatusCode == 200 ?
+          resp.Body.decode_json().as(body,
+            state.with(
+              {
+                "events": [{"message": "retry"}],
+                "want_more": true,
+                "admin_keys": state.?admin_keys.orValue([]) + (
+                  has(body.results) ? body.results.map(a, a.id) : []
+                ),
+                "admin_values": state.?admin_values.orValue([]) + (
+                  has(body.results) ? body.results : []
+                ),
+                "admin_next_url": has(body.next) && body.next != null && body.next != "" ? string(body.next) : "",
+                "admins_fetched": !(has(body.next) && body.next != null && body.next != ""),
+              }
+            )
+          )
+        : resp.StatusCode == 403 ?
+          state.with(
+            {
+              "events": [{"message": "retry"}],
+              "want_more": true,
+              "admins_fetched": true,
+            }
+          )
+        :
+          state.with(
+            {
+              "events": [
+                {
+                  "error": {
+                    "code": string(resp.StatusCode),
+                    "id": resp.Status,
+                    "message": "GET " + state.url.trim_right("/") + "/api/v1/admins: " + (
+                      size(resp.Body) != 0 ?
+                        string(resp.Body)
+                      :
+                        resp.Status + ' (' + string(resp.StatusCode) + ')'
+                    ),
+                  },
+                },
+              ],
+              "want_more": false,
+            }
+          )
+      )
+    :
+      zip(state.?admin_keys.orValue([]), state.?admin_values.orValue([])).as(admin_map,
+        request(
+          "GET",
+          has(state.next_url) && state.next_url != "" ?
+            state.next_url
+          :
+            state.url.trim_right("/") + "/api/v1/audit/events?" + {
+              "limit": [string(int(state.batch_size))],
+              "sort_by": ["occurred_at"],
+              "start_date": [state.?cursor.occurred_at.orValue(
+                string(now - duration(state.initial_interval))
+              )],
+            }.format_query()
+        ).with(
+          {
+            "Header": {
+              "Authorization": ["Bearer " + state.api_token],
+              "Accept": ["application/json"],
+            },
+          }
+        ).do_request().as(resp,
+          resp.StatusCode == 200 ?
+            resp.Body.decode_json().as(body,
+              state.with(
+                {
+                  "events": has(body.results) ?
+                    body.results.map(e,
+                      e.actor_type == "user" && e.actor_id != "" &&
+                      e.actor_id in admin_map ?
+                        {
+                          "message": e.with(
+                            {
+                              "admin": admin_map[?e.actor_id],
+                            }
+                          ).encode_json(),
+                        }
+                      :
+                        {"message": e.encode_json()}
+                    )
+                  :
+                    [],
+                  "want_more": has(body.next) && body.next != null && body.next != "",
+                  ?"next_url": has(body.next) && body.next != null && body.next != "" ?
+                    optional.of(string(body.next))
+                  :
+                    optional.none(),
+                  "cursor": {
+                    "occurred_at": has(body.results) && size(body.results) > 0 ?
+                      body.results.map(e, e.occurred_at).max()
+                    :
+                      state.?cursor.occurred_at.orValue(
+                        string(now - duration(state.initial_interval))
+                      ),
+                  },
+                  "admin_keys": has(body.next) && body.next != null && body.next != "" ? state.?admin_keys.orValue([]) : [],
+                  "admin_values": has(body.next) && body.next != null && body.next != "" ? state.?admin_values.orValue([]) : [],
+                  "admins_fetched": has(body.next) && body.next != null && body.next != "",
+                }
+              )
+            )
+          :
+            {
+              "events": {
+                "error": {
+                  "code": string(resp.StatusCode),
+                  "id": resp.Status,
+                  "message": "GET " + state.url.trim_right("/") + "/api/v1/audit/events: " + (
+                    size(resp.Body) != 0 ?
+                      string(resp.Body)
+                    :
+                      resp.Status + ' (' + string(resp.StatusCode) + ')'
+                  ),
+                },
+              },
+              "want_more": false,
+            }
+        )
+      )
   )
 tags:
 {{#if preserve_original_event}}
@@ -91,7 +193,11 @@ tags:
 {{#contains "forwarded" tags}}
 publisher_pipeline.disable_host: true
 {{/contains}}
-{{#if processors}}
 processors:
+- drop_event:
+    when:
+      equals:
+        message: retry
+{{#if processors}}
 {{processors}}
 {{/if}}

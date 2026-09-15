@@ -125,7 +125,3 @@ The `device` data stream collects managed device inventory from `GET /api/v1/dev
 ##### Device sample event
 
 {{ event "device" }}
-
-{{ ilm }}
-
-{{ transform }}
