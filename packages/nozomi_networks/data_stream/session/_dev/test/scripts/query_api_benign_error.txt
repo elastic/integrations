@@ -1,0 +1,95 @@
+# Test that the session data stream treats benign "error" values (JSON null
+# and empty string) in HTTP 200 responses as success and ingests the data.
+#
+# Nozomi can return {"error":null,"result":[...]} (or "error":"") together
+# with valid results. The CEL program must not emit an error event or fail
+# evaluation in that case; only a non-empty error value is a real failure.
+
+[!external_stack] skip 'Skipping external stack test.'
+[!exec:jq] skip 'Skipping test requiring absent jq command'
+
+use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+install_agent -profile ${CONFIG_PROFILES}/${PROFILE} -network_name NETWORK_NAME
+docker_up -profile ${CONFIG_PROFILES}/${PROFILE} -network ${NETWORK_NAME} nozomi-mock
+add_package -profile ${CONFIG_PROFILES}/${PROFILE}
+add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config.yaml DATA_STREAM_NAME
+
+# Two data documents: one from the "error":null response (first poll) and
+# one from the "error":"" response (second poll, matched on the cursor
+# timestamp of the first record). The confirm window spans further polls to
+# guard against spurious error events or duplicates.
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 2 -confirm 45s -timeout 5m ${DATA_STREAM_NAME}
+cp stdout got_docs.json
+
+# No error events were emitted.
+exec jq '[.hits.hits[]._source.error.message // empty] | flatten | length' got_docs.json
+stdout '^0$'
+
+# Both documents are processed data events.
+exec jq '[.hits.hits[]._source | select(.nozomi_networks.session != null)] | length' got_docs.json
+stdout '^2$'
+
+remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_NAME}
+uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 1m
+docker_down nozomi-mock
+
+-- test_config.yaml --
+input: cel
+vars:
+  url: http://nozomi-mock:8080
+  username: username
+  password: password
+data_stream:
+  vars:
+    interval: 30s
+    initial_interval: 1h
+    batch_size: 2
+    preserve_original_event: true
+    enable_request_tracer: false
+-- nozomi-mock/docker-compose.yml --
+version: '2.3'
+services:
+  nozomi-mock:
+    image: docker.elastic.co/observability/stream:v0.20.0
+    hostname: nozomi-mock
+    ports:
+      - 8080
+    environment:
+      PORT: "8080"
+    volumes:
+      - ./config.yml:/config.yml
+    command:
+      - http-server
+      - --addr=:8080
+      - --config=/config.yml
+-- nozomi-mock/config.yml --
+rules:
+  # Second poll: the query embeds the first record's cursor timestamp.
+  # Respond with "error" as an empty string plus a second record.
+  - path: /api/open/query/do
+    methods: [GET]
+    query_params:
+      query: '{query:sessions \| where last_activity_time > 1745957044875 \| sort last_activity_time asc}'
+    request_headers:
+      Authorization:
+        - "Basic dXNlcm5hbWU6cGFzc3dvcmQ="
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"error":"","result":[{"id":"5514f626-98s8-123e-a9ad-d06aaf56e5bb","to":"2a02:cf41:abcd::1","key":"2a02:cf41:abcd::1;5355;2a02:cf40::;49740;udp;56710","from":"2a02:cf40::","status":"ACTIVE","to_port":"5355","to_zone":"Undefined","protocol":"llmnr","from_port":"49740","from_zone":"Undefined","bpf_filter":"ip6 host 2a02:cf40:: and ip6 host 2a02:cf41:abcd::1 and udp port 49740 and udp port 5355","is_broadcast":false,"is_to_public":false,"is_from_public":false,"throughput_speed":0,"transferred.bytes":"90","direction_is_known":true,"last_activity_time":1745957044875,"transport_protocol":"udp","first_activity_time":"1745957044874","transferred.packets":"1","transferred.last_5m_bytes":"90","transferred.last_15m_bytes":"90","transferred.last_30m_bytes":"90","transferred.avg_packet_bytes":90,"transferred.biggest_packet_bytes":"90","transferred.smallest_packet_bytes":"90","vlan_id":"100"}],"header":[],"total":1}
+  # Any other poll (including the first): "error" is JSON null.
+  - path: /api/open/query/do
+    methods: [GET]
+    request_headers:
+      Authorization:
+        - "Basic dXNlcm5hbWU6cGFzc3dvcmQ="
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"error":null,"result":[{"id":"5514f626-10d8-476e-a9ad-d06eef56e5eb","to":"2a02:cf41:abcd::1234","key":"2a02:cf41:abcd::1234;5355;2a02:cf40::;49740;udp;56710","from":"2a02:cf40::","status":"ACTIVE","to_port":"5355","to_zone":"Undefined","protocol":"llmnr","from_port":"49740","from_zone":"Undefined","bpf_filter":"ip6 host 2a02:cf40:: and ip6 host 2a02:cf41:abcd::1234 and udp port 49740 and udp port 5355","is_broadcast":false,"is_to_public":false,"is_from_public":false,"throughput_speed":0,"transferred.bytes":"90","direction_is_known":true,"last_activity_time":1745957044875,"transport_protocol":"udp","first_activity_time":"1745957044874","transferred.packets":"1","transferred.last_5m_bytes":"90","transferred.last_15m_bytes":"90","transferred.last_30m_bytes":"90","transferred.avg_packet_bytes":90,"transferred.biggest_packet_bytes":"90","transferred.smallest_packet_bytes":"90","vlan_id":"100"}],"header":[],"total":1}

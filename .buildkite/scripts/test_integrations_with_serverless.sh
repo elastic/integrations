@@ -33,7 +33,7 @@ if [[ "$SERVERLESS_PROJECT" == "security" ]]; then
     kibana_url="https://raw.githubusercontent.com/elastic/kibana/main/config/serverless.security.yml"
 fi
 export KIBANA_CONFIG_FILE_PATH="${WORKSPACE}/kibana.serverless.config.yml"
-curl -sSL -o "${KIBANA_CONFIG_FILE_PATH}" "${kibana_url}"
+download_file "${KIBANA_CONFIG_FILE_PATH}" "${kibana_url}"
 
 if [ ! -d packages ]; then
     echo "Missing packages folder"
@@ -87,9 +87,19 @@ if [[ "${FORCE_CHECK_ALL}" == "true" ]] || echo "${changed_files}" | pr_has_pack
 else
     PACKAGE_LIST=$(
         {
-            echo "${changed_files}" | grep -oE '^packages/[^/]+' | sort -u || true
-            echo "${changed_files}" | grep -oE '^\.buildkite/scripts/packages/[^/]+\.sh' \
-                | sed 's|^\.buildkite/scripts/||; s|\.sh$||' || true
+            # Use list_all_directories (mage listPackages) instead of grepping ^packages/[^/]+
+            # directly from the diff output: the regex would only capture the first path segment
+            # and break for nested packages (e.g. packages/technology/foo → packages/technology,
+            # which has no manifest.yml). mage listPackages discovers valid package roots at any
+            # depth via WalkDir, so we cross-reference its output against the changed files.
+            all_pkgs=$(list_all_directories)
+            while IFS= read -r pkg_path; do
+                if echo "${changed_files}" | grep -q "^${pkg_path}/"; then
+                    echo "${pkg_path}"
+                elif echo "${changed_files}" | grep -q "^\.buildkite/scripts/${pkg_path}\.sh$"; then
+                    echo "${pkg_path}"
+                fi
+            done <<< "${all_pkgs}"
         } | sort -u | grep -v '^$' || true
     )
     echo "Packages affected by diff: $(echo "${PACKAGE_LIST}" | tr '\n' ' ')"
