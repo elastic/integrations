@@ -14,13 +14,105 @@ import (
 
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploghttp"
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	otellog "go.opentelemetry.io/otel/log"
 	sdklog "go.opentelemetry.io/otel/sdk/log"
 	"go.opentelemetry.io/otel/sdk/resource"
+	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.27.0"
+	oteltrace "go.opentelemetry.io/otel/trace"
 )
 
 const endpoint = "elastic-agent:4318"
+const traceEndpoint = "elastic-agent:4317"
+
+func sendTraces(ctx context.Context, res *resource.Resource) {
+	traceExporter, err := otlptracegrpc.New(ctx,
+		otlptracegrpc.WithInsecure(),
+		otlptracegrpc.WithEndpoint(traceEndpoint),
+	)
+	if err != nil {
+		log.Fatalf("failed to create trace exporter: %v", err)
+	}
+
+	tp := sdktrace.NewTracerProvider(
+		sdktrace.WithBatcher(traceExporter),
+		sdktrace.WithResource(res),
+	)
+	defer tp.Shutdown(ctx)
+
+	tracer := tp.Tracer("com.anthropic.claude_code.events",
+		oteltrace.WithInstrumentationVersion("2.1.175"),
+	)
+
+	sessionAttrs := []attribute.KeyValue{
+		attribute.String("session.id", "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"),
+		attribute.String("organization.id", "00000000-0000-0000-0000-000000000001"),
+		attribute.String("user.email", "test@example.com"),
+		attribute.String("user.id", "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2"),
+		attribute.String("user.account_id", "user_01ExampleAccountId00000"),
+		attribute.String("user.account_uuid", "00000000-1111-2222-3333-444444444444"),
+		attribute.String("terminal.type", "xterm-256color"),
+	}
+
+	// Root span: claude_code.interaction
+	ctxInteraction, spanInteraction := tracer.Start(ctx, "claude_code.interaction")
+	spanInteraction.SetAttributes(append(sessionAttrs,
+		attribute.Int64("interaction.sequence", 1),
+	)...)
+
+	// Child: claude_code.llm_request
+	_, spanLLM := tracer.Start(ctxInteraction, "claude_code.llm_request",
+		oteltrace.WithSpanKind(oteltrace.SpanKindClient))
+	spanLLM.SetAttributes(append(sessionAttrs,
+		attribute.String("model", "claude-sonnet-4-6"),
+		attribute.Int64("input_tokens", 1024),
+		attribute.Int64("output_tokens", 256),
+		attribute.Int64("cache_read_tokens", 512),
+		attribute.Int64("cache_creation_tokens", 0),
+		attribute.Int64("duration_ms", 1500),
+		attribute.Int64("ttft_ms", 450),
+		attribute.String("request_id", "req_01ExampleRequestId0000000"),
+		attribute.String("stop_reason", "end_turn"),
+		attribute.String("success", "true"),
+	)...)
+	spanLLM.End()
+
+	// Child: claude_code.tool
+	ctxTool, spanTool := tracer.Start(ctxInteraction, "claude_code.tool")
+	spanTool.SetAttributes(append(sessionAttrs,
+		attribute.String("tool_name", "Bash"),
+		attribute.String("tool_use_id", "toolu_01ExampleToolUseId00000"),
+		attribute.Int64("duration_ms", 500),
+		attribute.Int64("result_tokens", 10),
+		attribute.String("success", "true"),
+	)...)
+
+	// Grandchild: claude_code.tool.blocked_on_user
+	_, spanBlocked := tracer.Start(ctxTool, "claude_code.tool.blocked_on_user")
+	spanBlocked.SetAttributes(append(sessionAttrs,
+		attribute.Int64("duration_ms", 120),
+		attribute.String("decision", "accept"),
+		attribute.String("source", "config"),
+	)...)
+	spanBlocked.End()
+
+	// Grandchild: claude_code.tool.execution
+	_, spanExec := tracer.Start(ctxTool, "claude_code.tool.execution")
+	spanExec.SetAttributes(append(sessionAttrs,
+		attribute.Int64("duration_ms", 350),
+		attribute.String("success", "true"),
+	)...)
+	spanExec.End()
+
+	spanTool.End()
+	spanInteraction.End()
+
+	if err := tp.ForceFlush(ctx); err != nil {
+		log.Printf("trace flush failed: %v", err)
+	}
+	log.Println("all traces sent")
+}
 
 func main() {
 	log.Println("waiting for SIGHUP...")
@@ -73,8 +165,10 @@ func main() {
 	}
 
 	if err := provider.ForceFlush(ctx); err != nil {
-		log.Fatalf("flush failed: %v", err)
+		log.Printf("flush failed: %v", err)
 	}
+
+	sendTraces(ctx, res)
 	log.Println("all events sent, exiting")
 }
 

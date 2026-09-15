@@ -1,0 +1,49 @@
+connectors:
+    forward: {}
+exporters:
+    elasticsearch/componentid-0:
+        endpoints:
+            - https://elasticsearch:9200
+inputs: []
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - traces-claude_code.traces.otel-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+processors:
+    transform/componentid-0:
+        trace_statements:
+            - context: span
+              statements:
+                - set(attributes["data_stream.type"], "traces")
+                - set(attributes["data_stream.dataset"], "claude_code.traces")
+                - set(attributes["data_stream.namespace"], "ep")
+receivers:
+    otlp/componentid-0:
+        protocols:
+            grpc:
+                endpoint: 0.0.0.0:4317
+secret_references: []
+service:
+    pipelines:
+        traces:
+            exporters:
+                - elasticsearch/componentid-0
+            receivers:
+                - forward
+        traces/componentid-0:
+            exporters:
+                - forward
+            processors:
+                - transform/componentid-0
+            receivers:
+                - otlp/componentid-0

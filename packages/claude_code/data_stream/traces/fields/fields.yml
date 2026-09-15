@@ -1,0 +1,121 @@
+# OTel span fields (top-level, not in ECS).
+- name: name
+  type: keyword
+  description: Span name (e.g. claude_code.interaction).
+- name: kind
+  type: keyword
+  description: OTel span kind (e.g. Internal, Client).
+- name: duration
+  type: long
+  description: Span duration in nanoseconds, as emitted by the OTel collector.
+- name: span_id
+  type: keyword
+  description: OTel span identifier (hex).
+- name: trace_id
+  type: keyword
+  description: OTel trace identifier (hex).
+- name: parent_span_id
+  type: keyword
+  description: Parent span identifier (hex); absent on root spans.
+# ECS gen_ai.* fields (not yet in the external ECS schema used by elastic-package).
+- name: gen_ai.provider.name
+  type: constant_keyword
+  value: anthropic
+  description: Generative AI provider name.
+- name: gen_ai.request.model
+  type: keyword
+  description: Model used for the generative AI request.
+- name: gen_ai.response.model
+  type: keyword
+  description: Model that generated the response.
+- name: gen_ai.response.id
+  type: keyword
+  description: Identifier for the generative AI response.
+- name: gen_ai.usage.input_tokens
+  type: long
+  description: Number of input tokens consumed.
+- name: gen_ai.usage.output_tokens
+  type: long
+  description: Number of output tokens generated.
+- name: gen_ai.usage.cache_read.input_tokens
+  type: long
+  description: Number of input tokens served from cache.
+- name: gen_ai.usage.cache_creation.input_tokens
+  type: long
+  description: Number of input tokens used for cache creation.
+- name: gen_ai.tool.name
+  type: keyword
+  description: Name of the tool invoked by the model.
+- name: gen_ai.tool.call.id
+  type: keyword
+  description: Unique identifier for the tool call.
+# Claude Code namespaced fields
+- name: claude_code.traces
+  type: group
+  fields:
+    - name: session.id
+      type: keyword
+      description: Claude Code session identifier.
+    - name: interaction.sequence
+      type: long
+      description: Prompt turn counter within a session.
+    - name: terminal.type
+      type: keyword
+      description: Terminal emulator type.
+    - name: user.account_id
+      type: keyword
+      description: Anthropic account identifier.
+    - name: user.account_uuid
+      type: keyword
+      description: Anthropic account UUID.
+    - name: duration_ms
+      type: long
+      description: Claude Code internal duration measurement in milliseconds.
+    - name: ttft_ms
+      type: long
+      description: Time to first token in milliseconds (llm_request spans).
+    - name: stop_reason
+      type: keyword
+      description: Reason the model stopped (end_turn, tool_use, max_tokens, stop_sequence, pause_turn, refusal).
+    - name: success
+      type: keyword
+      description: Whether the operation succeeded ("true" or "false").
+    - name: status_code
+      type: long
+      description: HTTP status code on API failure.
+    - name: result_tokens
+      type: long
+      description: Approximate size of the tool result in tokens.
+    - name: full_command
+      type: keyword
+      description: Bash command executed (gated by OTEL_LOG_TOOL_DETAILS).
+    - name: file_path
+      type: keyword
+      description: File path accessed by a tool (gated by OTEL_LOG_TOOL_DETAILS).
+    - name: decision
+      type: keyword
+      description: Permission decision (accept or reject).
+    - name: source
+      type: keyword
+      description: Source of the permission decision.
+    - name: hook_event
+      type: keyword
+      description: Hook event type (e.g. PreToolUse).
+    - name: hook_name
+      type: keyword
+      description: Hook identifier.
+    - name: num_success
+      type: long
+      description: Number of hooks that completed successfully.
+    - name: num_blocking
+      type: long
+      description: Number of hooks that blocked execution.
+    - name: num_non_blocking_error
+      type: long
+      description: Number of hooks that failed without blocking.
+    - name: num_cancelled
+      type: long
+      description: Number of hooks that were cancelled.
+    - name: error
+      type: keyword
+      description: Error category from a failed span.
