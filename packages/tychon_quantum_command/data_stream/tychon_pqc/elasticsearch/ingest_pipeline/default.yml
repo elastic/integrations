@@ -245,6 +245,28 @@ processors:
           }
           if (ctx.host.os_category != null) { ctx.tychon.host.os_category = ctx.host.os_category; }
           if (ctx.host.os_pqc_tier != null) { ctx.tychon.host.os_pqc_tier = ctx.host.os_pqc_tier; }
+          if (ctx.host.cpu != null && ctx.host.cpu instanceof Map && ctx.host.cpu.cores != null) {
+            if (ctx.tychon.host.cpu == null || !(ctx.tychon.host.cpu instanceof Map)) { ctx.tychon.host.cpu = [:]; }
+            ctx.tychon.host.cpu.cores = ctx.host.cpu.cores;
+          }
+          if (ctx.host.memory != null && ctx.host.memory instanceof Map && ctx.host.memory.total != null) {
+            if (ctx.tychon.host.memory == null || !(ctx.tychon.host.memory instanceof Map)) { ctx.tychon.host.memory = [:]; }
+            ctx.tychon.host.memory.total = ctx.host.memory.total;
+          }
+        }
+        if (ctx.macsec != null && ctx.macsec instanceof Map) { ctx.tychon.macsec = ctx.macsec; }
+        if (ctx.archive != null && ctx.archive instanceof Map) { ctx.tychon.archive = ctx.archive; }
+        if (ctx.file != null && ctx.file instanceof Map) {
+          if (ctx.tychon.file == null || !(ctx.tychon.file instanceof Map)) { ctx.tychon.file = [:]; }
+          if (ctx.file.permissions != null) { ctx.tychon.file.permissions = ctx.file.permissions; }
+          if (ctx.file.group != null && ctx.file.group instanceof Map && ctx.file.group.name != null) {
+            if (ctx.tychon.file.group == null || !(ctx.tychon.file.group instanceof Map)) { ctx.tychon.file.group = [:]; }
+            ctx.tychon.file.group.name = ctx.file.group.name;
+          }
+          if (ctx.file.owner != null && ctx.file.owner instanceof Map && ctx.file.owner.name != null) {
+            if (ctx.tychon.file.owner == null || !(ctx.tychon.file.owner instanceof Map)) { ctx.tychon.file.owner = [:]; }
+            ctx.tychon.file.owner.name = ctx.file.owner.name;
+          }
         }
         if (ctx.process != null && ctx.process instanceof Map) {
           if (ctx.tychon.process == null || !(ctx.tychon.process instanceof Map)) {
@@ -255,6 +277,11 @@ processors:
           if (ctx.process.service_info != null) { ctx.tychon.process.service_info = ctx.process.service_info; }
           if (ctx.process.user_name != null) { ctx.tychon.process.user_name = ctx.process.user_name; }
           if (ctx.process.username != null) { ctx.tychon.process.username = ctx.process.username; }
+          if (ctx.process.path != null) { ctx.tychon.process.path = ctx.process.path; }
+        }
+        if (ctx.server != null && ctx.server instanceof Map && ctx.server.protocol != null) {
+          if (ctx.tychon.server == null || !(ctx.tychon.server instanceof Map)) { ctx.tychon.server = [:]; }
+          ctx.tychon.server.protocol = ctx.server.protocol;
         }
         if (ctx.observer != null && ctx.observer instanceof Map) {
           if (ctx.tychon.observer == null || !(ctx.tychon.observer instanceof Map)) {
@@ -337,6 +364,12 @@ processors:
             if (ctx.hash == null || !(ctx.hash instanceof Map)) { ctx.hash = [:]; }
             if (ctx.hash.sha256 == null) { ctx.hash.sha256 = ctx.x509.sha256_fingerprint; }
           }
+          if (ctx.x509.is_ca != null) { ctx.tychon.x509.is_ca = ctx.x509.is_ca; ctx.x509.remove('is_ca'); }
+          if (ctx.x509.is_valid != null) { ctx.tychon.x509.is_valid = ctx.x509.is_valid; ctx.x509.remove('is_valid'); }
+          if (ctx.x509.validity != null && ctx.x509.validity instanceof Map) {
+            if (ctx.x509.validity.not_after != null) { ctx.tychon.x509.validity.not_after = ctx.x509.validity.not_after; ctx.x509.validity.remove('not_after'); }
+            if (ctx.x509.validity.not_before != null) { ctx.tychon.x509.validity.not_before = ctx.x509.validity.not_before; ctx.x509.validity.remove('not_before'); }
+          }
           ctx.x509.remove('fingerprint_sha1');
           ctx.x509.remove('fingerprint_sha256');
           ctx.x509.remove('is_self_signed');
@@ -377,6 +410,7 @@ processors:
           ctx.observer.remove('cpu_vendor_id');
           ctx.observer.remove('current_user');
           ctx.observer.remove('database_schema_version');
+          ctx.observer.remove('domain');
           ctx.observer.remove('error');
           ctx.observer.remove('fips_mode_enabled');
           ctx.observer.remove('ip_addresses');
@@ -386,6 +420,7 @@ processors:
           ctx.observer.remove('machine_serial_number');
           ctx.observer.remove('organization');
           ctx.observer.remove('output_schema_version');
+          ctx.observer.remove('os');
           ctx.observer.remove('platform_version');
           ctx.observer.remove('ram_used_percent');
           ctx.observer.remove('software_version');
@@ -402,13 +437,30 @@ processors:
           ctx.process.remove('executable_directory');
           ctx.process.remove('executable_file');
           ctx.process.remove('service_info');
+          ctx.process.remove('path');
           ctx.process.remove('user_name');
           ctx.process.remove('username');
         }
+        if (ctx.macsec != null && ctx.macsec instanceof Map) { ctx.remove('macsec'); }
+        if (ctx.archive != null && ctx.archive instanceof Map) { ctx.remove('archive'); }
+        if (ctx.file != null && ctx.file instanceof Map) {
+          ctx.file.remove('permissions');
+          ctx.file.remove('group');
+          ctx.file.remove('owner');
+        }
+        if (ctx.host != null && ctx.host instanceof Map) {
+          if (ctx.host.cpu != null && ctx.host.cpu instanceof Map) { ctx.host.cpu.remove('cores'); }
+          if (ctx.host.memory != null && ctx.host.memory instanceof Map) { ctx.host.memory.remove('total'); }
+        }
+        if (ctx.server != null && ctx.server instanceof Map) { ctx.server.remove('protocol'); }
         if (ctx.package != null && ctx.package instanceof Map) {
           ctx.package.remove('install_directory');
         }
         if (ctx.hash != null && ctx.hash instanceof Map) {
+          if (ctx.hash.sha256_certificate != null) {
+            if (ctx.tychon.hash == null || !(ctx.tychon.hash instanceof Map)) { ctx.tychon.hash = [:]; }
+            ctx.tychon.hash.sha256_certificate = ctx.hash.sha256_certificate;
+          }
           ctx.hash.remove('sha1_certificate');
           ctx.hash.remove('sha256_certificate');
         }
