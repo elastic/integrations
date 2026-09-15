@@ -123,7 +123,7 @@
                                 "applyColorTo": "background"
                             },
                             "query": {
-                                "esql": "FROM metrics-traefik.otel-*\n| WHERE data_stream.dataset == \"traefik.otel\"\n| WHERE traefik_entrypoint_requests_total IS NOT NULL\n| STATS total = SUM(traefik_entrypoint_requests_total), min_ts = MIN(@timestamp), max_ts = MAX(@timestamp)\n| EVAL duration_sec = DATE_DIFF(\"seconds\", min_ts, max_ts)\n| EVAL request_rate = CASE(duration_sec > 0, total / duration_sec, 0.0)\n| KEEP request_rate"
+                                "esql": "TS metrics-traefik.otel-*\n| WHERE data_stream.dataset == \"traefik.otel\"\n| WHERE traefik_entrypoint_requests_total IS NOT NULL\n| STATS request_rate = SUM(RATE(traefik_entrypoint_requests_total))"
                             },
                             "filters": [],
                             "datasourceStates": {
@@ -131,7 +131,7 @@
                                     "layers": {
                                         "d2a62428-55bf-f397-73d8-ef8de23036f1": {
                                             "query": {
-                                                "esql": "FROM metrics-traefik.otel-*\n| WHERE data_stream.dataset == \"traefik.otel\"\n| WHERE traefik_entrypoint_requests_total IS NOT NULL\n| STATS total = SUM(traefik_entrypoint_requests_total), min_ts = MIN(@timestamp), max_ts = MAX(@timestamp)\n| EVAL duration_sec = DATE_DIFF(\"seconds\", min_ts, max_ts)\n| EVAL request_rate = CASE(duration_sec > 0, total / duration_sec, 0.0)\n| KEEP request_rate"
+                                                "esql": "TS metrics-traefik.otel-*\n| WHERE data_stream.dataset == \"traefik.otel\"\n| WHERE traefik_entrypoint_requests_total IS NOT NULL\n| STATS request_rate = SUM(RATE(traefik_entrypoint_requests_total))"
                                             },
                                             "columns": [
                                                 {
@@ -248,7 +248,7 @@
                                 "applyColorTo": "background"
                             },
                             "query": {
-                                "esql": "FROM metrics-traefik.otel-*\n| WHERE data_stream.dataset == \"traefik.otel\"\n| WHERE traefik_entrypoint_requests_total IS NOT NULL\n| STATS total = SUM(traefik_entrypoint_requests_total), errors_5xx = SUM(traefik_entrypoint_requests_total) WHERE attributes.code LIKE \"5*\"\n| EVAL error_rate = CASE(total > 0, errors_5xx / total, 0.0)\n| STATS error_rate = MAX(error_rate)"
+                                "esql": "TS metrics-traefik.otel-*\n| WHERE data_stream.dataset == \"traefik.otel\"\n| WHERE traefik_entrypoint_requests_total IS NOT NULL\n| STATS total = SUM(RATE(traefik_entrypoint_requests_total)), errors_5xx = SUM(RATE(traefik_entrypoint_requests_total)) WHERE attributes.code LIKE \"5*\"\n| EVAL error_rate = CASE(total > 0, errors_5xx / total, 0.0)\n| KEEP error_rate"
                             },
                             "filters": [],
                             "datasourceStates": {
@@ -256,7 +256,7 @@
                                     "layers": {
                                         "213e51a5-bb57-44e4-426a-2bc6c1156e30": {
                                             "query": {
-                                                "esql": "FROM metrics-traefik.otel-*\n| WHERE data_stream.dataset == \"traefik.otel\"\n| WHERE traefik_entrypoint_requests_total IS NOT NULL\n| STATS total = SUM(traefik_entrypoint_requests_total), errors_5xx = SUM(traefik_entrypoint_requests_total) WHERE attributes.code LIKE \"5*\"\n| EVAL error_rate = CASE(total > 0, errors_5xx / total, 0.0)\n| STATS error_rate = MAX(error_rate)"
+                                                "esql": "TS metrics-traefik.otel-*\n| WHERE data_stream.dataset == \"traefik.otel\"\n| WHERE traefik_entrypoint_requests_total IS NOT NULL\n| STATS total = SUM(RATE(traefik_entrypoint_requests_total)), errors_5xx = SUM(RATE(traefik_entrypoint_requests_total)) WHERE attributes.code LIKE \"5*\"\n| EVAL error_rate = CASE(total > 0, errors_5xx / total, 0.0)\n| KEEP error_rate"
                                             },
                                             "columns": [
                                                 {
@@ -494,7 +494,7 @@
                                 "applyColorTo": "background"
                             },
                             "query": {
-                                "esql": "FROM metrics-traefik.otel-*\n| WHERE data_stream.dataset == \"traefik.otel\"\n| WHERE traefik_entrypoint_responses_bytes_total IS NOT NULL\n| STATS total = SUM(traefik_entrypoint_responses_bytes_total), min_ts = MIN(@timestamp), max_ts = MAX(@timestamp)\n| EVAL duration_sec = DATE_DIFF(\"seconds\", min_ts, max_ts)\n| EVAL bytes_rate = CASE(duration_sec > 0, total / duration_sec, 0.0)\n| KEEP bytes_rate"
+                                "esql": "TS metrics-traefik.otel-*\n| WHERE data_stream.dataset == \"traefik.otel\"\n| WHERE traefik_entrypoint_responses_bytes_total IS NOT NULL\n| STATS bytes_rate = SUM(RATE(traefik_entrypoint_responses_bytes_total))"
                             },
                             "filters": [],
                             "datasourceStates": {
@@ -502,7 +502,7 @@
                                     "layers": {
                                         "2534cb18-a368-812b-8ac0-4cb2e45438bf": {
                                             "query": {
-                                                "esql": "FROM metrics-traefik.otel-*\n| WHERE data_stream.dataset == \"traefik.otel\"\n| WHERE traefik_entrypoint_responses_bytes_total IS NOT NULL\n| STATS total = SUM(traefik_entrypoint_responses_bytes_total), min_ts = MIN(@timestamp), max_ts = MAX(@timestamp)\n| EVAL duration_sec = DATE_DIFF(\"seconds\", min_ts, max_ts)\n| EVAL bytes_rate = CASE(duration_sec > 0, total / duration_sec, 0.0)\n| KEEP bytes_rate"
+                                                "esql": "TS metrics-traefik.otel-*\n| WHERE data_stream.dataset == \"traefik.otel\"\n| WHERE traefik_entrypoint_responses_bytes_total IS NOT NULL\n| STATS bytes_rate = SUM(RATE(traefik_entrypoint_responses_bytes_total))"
                                             },
                                             "columns": [
                                                 {
@@ -649,7 +649,7 @@
                                 "valueLabels": "hide"
                             },
                             "query": {
-                                "esql": "FROM metrics-traefik.otel-*\n| WHERE data_stream.dataset == \"traefik.otel\"\n| WHERE traefik_entrypoint_requests_total IS NOT NULL\n| STATS total = SUM(traefik_entrypoint_requests_total), min_ts = MIN(@timestamp), max_ts = MAX(@timestamp) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.entrypoint\n| EVAL bucket_secs = GREATEST(DATE_DIFF(\"seconds\", min_ts, max_ts), 1)\n| EVAL request_rate = total / bucket_secs\n| KEEP time_bucket, attributes.entrypoint, request_rate\n| SORT time_bucket ASC"
+                                "esql": "TS metrics-traefik.otel-*\n| WHERE data_stream.dataset == \"traefik.otel\"\n| WHERE traefik_entrypoint_requests_total IS NOT NULL\n| STATS request_rate = SUM(RATE(traefik_entrypoint_requests_total)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.entrypoint\n| KEEP time_bucket, attributes.entrypoint, request_rate\n| SORT time_bucket ASC"
                             },
                             "filters": [],
                             "datasourceStates": {
@@ -657,7 +657,7 @@
                                     "layers": {
                                         "bc49e397-7457-6be1-83ca-ef806fe774b2": {
                                             "query": {
-                                                "esql": "FROM metrics-traefik.otel-*\n| WHERE data_stream.dataset == \"traefik.otel\"\n| WHERE traefik_entrypoint_requests_total IS NOT NULL\n| STATS total = SUM(traefik_entrypoint_requests_total), min_ts = MIN(@timestamp), max_ts = MAX(@timestamp) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.entrypoint\n| EVAL bucket_secs = GREATEST(DATE_DIFF(\"seconds\", min_ts, max_ts), 1)\n| EVAL request_rate = total / bucket_secs\n| KEEP time_bucket, attributes.entrypoint, request_rate\n| SORT time_bucket ASC"
+                                                "esql": "TS metrics-traefik.otel-*\n| WHERE data_stream.dataset == \"traefik.otel\"\n| WHERE traefik_entrypoint_requests_total IS NOT NULL\n| STATS request_rate = SUM(RATE(traefik_entrypoint_requests_total)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.entrypoint\n| KEEP time_bucket, attributes.entrypoint, request_rate\n| SORT time_bucket ASC"
                                             },
                                             "columns": [
                                                 {
@@ -882,7 +882,7 @@
                                 "valueLabels": "hide"
                             },
                             "query": {
-                                "esql": "FROM metrics-traefik.otel-*\n| WHERE data_stream.dataset == \"traefik.otel\"\n| WHERE traefik_entrypoint_requests_total IS NOT NULL\n| STATS total = SUM(traefik_entrypoint_requests_total), min_ts = MIN(@timestamp), max_ts = MAX(@timestamp) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.code\n| EVAL bucket_secs = GREATEST(DATE_DIFF(\"seconds\", min_ts, max_ts), 1)\n| EVAL requests = total / bucket_secs\n| KEEP time_bucket, attributes.code, requests\n| SORT time_bucket ASC"
+                                "esql": "TS metrics-traefik.otel-*\n| WHERE data_stream.dataset == \"traefik.otel\"\n| WHERE traefik_entrypoint_requests_total IS NOT NULL\n| STATS requests = SUM(RATE(traefik_entrypoint_requests_total)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.code\n| KEEP time_bucket, attributes.code, requests\n| SORT time_bucket ASC"
                             },
                             "filters": [],
                             "datasourceStates": {
@@ -890,7 +890,7 @@
                                     "layers": {
                                         "fc4791a2-fdd7-95dc-c139-4017b43935a5": {
                                             "query": {
-                                                "esql": "FROM metrics-traefik.otel-*\n| WHERE data_stream.dataset == \"traefik.otel\"\n| WHERE traefik_entrypoint_requests_total IS NOT NULL\n| STATS total = SUM(traefik_entrypoint_requests_total), min_ts = MIN(@timestamp), max_ts = MAX(@timestamp) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.code\n| EVAL bucket_secs = GREATEST(DATE_DIFF(\"seconds\", min_ts, max_ts), 1)\n| EVAL requests = total / bucket_secs\n| KEEP time_bucket, attributes.code, requests\n| SORT time_bucket ASC"
+                                                "esql": "TS metrics-traefik.otel-*\n| WHERE data_stream.dataset == \"traefik.otel\"\n| WHERE traefik_entrypoint_requests_total IS NOT NULL\n| STATS requests = SUM(RATE(traefik_entrypoint_requests_total)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.code\n| KEEP time_bucket, attributes.code, requests\n| SORT time_bucket ASC"
                                             },
                                             "columns": [
                                                 {
@@ -1255,7 +1255,7 @@
                                 "shape": "donut"
                             },
                             "query": {
-                                "esql": "FROM metrics-traefik.otel-*\n| WHERE data_stream.dataset == \"traefik.otel\"\n| WHERE traefik_entrypoint_requests_total IS NOT NULL\n| STATS total_requests = SUM(traefik_entrypoint_requests_total) BY attributes.code\n| SORT total_requests DESC\n| LIMIT 10"
+                                "esql": "TS metrics-traefik.otel-*\n| WHERE data_stream.dataset == \"traefik.otel\"\n| WHERE traefik_entrypoint_requests_total IS NOT NULL\n| STATS total_requests = SUM(INCREASE(traefik_entrypoint_requests_total)) BY attributes.code\n| SORT total_requests DESC\n| LIMIT 10"
                             },
                             "filters": [],
                             "datasourceStates": {
@@ -1263,7 +1263,7 @@
                                     "layers": {
                                         "2fcc441e-f741-8c78-e998-0e6222cb3954": {
                                             "query": {
-                                                "esql": "FROM metrics-traefik.otel-*\n| WHERE data_stream.dataset == \"traefik.otel\"\n| WHERE traefik_entrypoint_requests_total IS NOT NULL\n| STATS total_requests = SUM(traefik_entrypoint_requests_total) BY attributes.code\n| SORT total_requests DESC\n| LIMIT 10"
+                                                "esql": "TS metrics-traefik.otel-*\n| WHERE data_stream.dataset == \"traefik.otel\"\n| WHERE traefik_entrypoint_requests_total IS NOT NULL\n| STATS total_requests = SUM(INCREASE(traefik_entrypoint_requests_total)) BY attributes.code\n| SORT total_requests DESC\n| LIMIT 10"
                                             },
                                             "columns": [
                                                 {
@@ -1405,7 +1405,7 @@
                                 "valueLabels": "hide"
                             },
                             "query": {
-                                "esql": "FROM metrics-traefik.otel-*\n| WHERE data_stream.dataset == \"traefik.otel\"\n| WHERE traefik_entrypoint_responses_bytes_total IS NOT NULL\n| STATS total = SUM(traefik_entrypoint_responses_bytes_total), min_ts = MIN(@timestamp), max_ts = MAX(@timestamp) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| EVAL bucket_secs = GREATEST(DATE_DIFF(\"seconds\", min_ts, max_ts), 1)\n| EVAL bytes_rate = total / bucket_secs\n| KEEP time_bucket, bytes_rate\n| SORT time_bucket ASC"
+                                "esql": "TS metrics-traefik.otel-*\n| WHERE data_stream.dataset == \"traefik.otel\"\n| WHERE traefik_entrypoint_responses_bytes_total IS NOT NULL\n| STATS bytes_rate = SUM(RATE(traefik_entrypoint_responses_bytes_total)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| KEEP time_bucket, bytes_rate\n| SORT time_bucket ASC"
                             },
                             "filters": [],
                             "datasourceStates": {
@@ -1413,7 +1413,7 @@
                                     "layers": {
                                         "6bfaabfd-9472-2da5-b24d-481c2447686c": {
                                             "query": {
-                                                "esql": "FROM metrics-traefik.otel-*\n| WHERE data_stream.dataset == \"traefik.otel\"\n| WHERE traefik_entrypoint_responses_bytes_total IS NOT NULL\n| STATS total = SUM(traefik_entrypoint_responses_bytes_total), min_ts = MIN(@timestamp), max_ts = MAX(@timestamp) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| EVAL bucket_secs = GREATEST(DATE_DIFF(\"seconds\", min_ts, max_ts), 1)\n| EVAL bytes_rate = total / bucket_secs\n| KEEP time_bucket, bytes_rate\n| SORT time_bucket ASC"
+                                                "esql": "TS metrics-traefik.otel-*\n| WHERE data_stream.dataset == \"traefik.otel\"\n| WHERE traefik_entrypoint_responses_bytes_total IS NOT NULL\n| STATS bytes_rate = SUM(RATE(traefik_entrypoint_responses_bytes_total)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| KEEP time_bucket, bytes_rate\n| SORT time_bucket ASC"
                                             },
                                             "columns": [
                                                 {
@@ -1556,7 +1556,7 @@
                                 "layerType": "data"
                             },
                             "query": {
-                                "esql": "FROM metrics-traefik.otel-*\n| WHERE data_stream.dataset == \"traefik.otel\"\n| WHERE traefik_entrypoint_requests_total IS NOT NULL\n| STATS total_requests = SUM(traefik_entrypoint_requests_total) BY attributes.entrypoint\n| SORT total_requests DESC\n| LIMIT 20"
+                                "esql": "TS metrics-traefik.otel-*\n| WHERE data_stream.dataset == \"traefik.otel\"\n| WHERE traefik_entrypoint_requests_total IS NOT NULL\n| STATS total_requests = SUM(INCREASE(traefik_entrypoint_requests_total)) BY attributes.entrypoint\n| SORT total_requests DESC\n| LIMIT 20"
                             },
                             "filters": [],
                             "datasourceStates": {
@@ -1564,7 +1564,7 @@
                                     "layers": {
                                         "3e200d8b-03be-0ace-8618-ce0ca3000a92": {
                                             "query": {
-                                                "esql": "FROM metrics-traefik.otel-*\n| WHERE data_stream.dataset == \"traefik.otel\"\n| WHERE traefik_entrypoint_requests_total IS NOT NULL\n| STATS total_requests = SUM(traefik_entrypoint_requests_total) BY attributes.entrypoint\n| SORT total_requests DESC\n| LIMIT 20"
+                                                "esql": "TS metrics-traefik.otel-*\n| WHERE data_stream.dataset == \"traefik.otel\"\n| WHERE traefik_entrypoint_requests_total IS NOT NULL\n| STATS total_requests = SUM(INCREASE(traefik_entrypoint_requests_total)) BY attributes.entrypoint\n| SORT total_requests DESC\n| LIMIT 20"
                                             },
                                             "columns": [
                                                 {
