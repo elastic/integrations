@@ -1,0 +1,59 @@
+title: "BloodHound Attack Path Findings"
+type: logs
+streams:
+  - input: cel
+    enabled: false
+    title: "BloodHound Attack Path Findings"
+    description: "Optional raw finding log collection. The Attack Path dashboard uses Security alerts created by Case & Alert Sync, so this stream can stay disabled to avoid BloodHound API contention."
+    template_path: cel.yml.hbs
+    vars:
+      - name: interval
+        type: text
+        title: "Polling Interval"
+        description: Fixed efficient default for dashboard collection.
+        required: true
+        show_user: false
+        default: 6h
+        secret: false
+      - name: details_limit
+        type: text
+        title: "Details page size"
+        description: Fixed efficient BloodHound details page size.
+        required: true
+        show_user: false
+        default: "500"
+        secret: false
+      - name: max_executions
+        type: text
+        title: "Max CEL executions per interval"
+        description: Fixed CEL loop budget for finding collection.
+        required: true
+        show_user: false
+        default: "500000"
+        secret: false
+      - name: tags
+        type: text
+        title: "Tags"
+        multi: true
+        secret: false
+        show_user: false
+        default:
+          - forwarded
+          - bloodhound_enterprise-finding
+      - name: preserve_original_event
+        type: bool
+        title: "Preserve original event"
+        description: "Preserves a raw copy of the original event, added as the event.original field."
+        required: true
+        show_user: false
+        default: false
+      - name: processors
+        type: yaml
+        title: "Processors"
+        description: "Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed."
+        required: false
+        show_user: false
+elasticsearch:
+  index_template:
+    mappings:
+      subobjects: false
