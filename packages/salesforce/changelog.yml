@@ -1,4 +1,15 @@
 # newer versions go on top
+- version: "1.9.0"
+  changes:
+    - description: Deduplicate retried Login, Logout, and Apex events by setting a stable Elasticsearch document id. Real-time Login and Logout use EventIdentifier. Login EventLogFile uses request id, timestamp, and organization id; Logout EventLogFile also includes user and session identifiers because a single request can log out multiple sessions; Apex EventLogFile also includes event type plus per-event fields (URI, URL, trigger, class/method) because request id is transaction-scoped.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/20931
+    - description: Resume EventLogFile and Setup Audit Trail queries by timestamp and Salesforce Id so rows that share a timestamp are not skipped or duplicated. EventLogFile historical lookback now uses file creation time (CreatedDate).
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/20931
+    - description: Keep Apex, Login, and Logout EventLogFile collection on daily log files (Sequence = 0) when no EventLogFile Interval is configured, so the Salesforce Id resume tie-breaker does not unintentionally pull hourly log files.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/20931
 - version: "1.8.1"
   changes:
     - description: Fix EventLogFile cursor not advancing by ordering the Apex, Login, and Logout queries by `CreatedDate` (the cursor field) instead of `LogDate`. Previously the mismatch let the persisted cursor regress, causing repeated re-collection of old data.
