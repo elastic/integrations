@@ -873,24 +873,24 @@ An example event for `group` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-09-02T10:44:29.722Z",
+    "@timestamp": "2026-09-15T09:20:47.029Z",
     "agent": {
-        "ephemeral_id": "0fb8618c-37ce-4fba-beee-4e04fff42bc7",
-        "id": "c9f37863-7011-4ca9-8f0a-0daa194ef237",
-        "name": "elastic-agent-29290",
+        "ephemeral_id": "82364f59-ad56-4ed9-a791-3d5dcae599b3",
+        "id": "414ff919-fbba-47c6-94a5-52435603f104",
+        "name": "elastic-agent-57726",
         "type": "filebeat",
         "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "ping_directory.group",
-        "namespace": "64996",
+        "namespace": "79915",
         "type": "logs"
     },
     "ecs": {
         "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "c9f37863-7011-4ca9-8f0a-0daa194ef237",
+        "id": "414ff919-fbba-47c6-94a5-52435603f104",
         "snapshot": false,
         "version": "8.19.0"
     },
@@ -900,7 +900,7 @@ An example event for `group` looks as following:
             "iam"
         ],
         "dataset": "ping_directory.group",
-        "ingested": "2026-09-02T10:44:32Z",
+        "ingested": "2026-09-15T09:20:50Z",
         "kind": "asset",
         "original": "{\"displayName\":\"security\",\"id\":\"a7631f14-c7eb-490f-8b94-724b78241e13\",\"members\":[\"uid=alice.smith,ou=People,dc=example,dc=com\"],\"meta\":{\"location\":\"https://10.50.15.29:2443/scim/v2/Groups/a7631f14-c7eb-490f-8b94-724b78241e13\",\"resourceType\":\"Group\"},\"schemas\":[\"urn:ietf:params:scim:schemas:core:2.0:Group\"]}",
         "type": [
@@ -937,7 +937,7 @@ An example event for `group` looks as following:
         "ping_directory-group"
     ],
     "user": {
-        "id": "alice.smith"
+        "name": "alice.smith"
     }
 }
 ```

@@ -109,7 +109,7 @@ processors:
       tag: script_append_members_to_related_user
       description: >
         Process group members (plain array or object with value array).
-        Extracts uid from DN, appends to related.user and user.id.
+        Extracts uid from DN, appends to related.user and user.name.
         Stores remaining DN (without uid) deduplicated as plain string into members_metadata.
       lang: painless
       source: |
@@ -152,7 +152,7 @@ processors:
           }
         }
         if (!uidList.isEmpty()) {
-          ctx.user.id = uidList.size() == 1 ? uidList[0] : uidList;
+          ctx.user.name = uidList.size() == 1 ? uidList[0] : uidList;
         }
         if (!metaSet.isEmpty()) {
           def metaList = new ArrayList(metaSet);
