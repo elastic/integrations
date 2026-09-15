@@ -214,19 +214,31 @@ processors:
       field: json
       ignore_missing: true
 on_failure:
-  - append:
-      field: error.message
-      tag: append_error_message
-      value: >-
-        Processor '{{{ _ingest.on_failure_processor_type }}}'
-        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
-        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
+      tag: set_event_kind_92954dfa
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
       value: pipeline_error
+      if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
-      tag: append_preserve_original_event
       value: preserve_original_event
       allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - set:
+      tag: set_event_kind_72b1902f
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_tags_279d5a5c
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+  - append:
+      tag: append_error_message_fb774d38
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'
