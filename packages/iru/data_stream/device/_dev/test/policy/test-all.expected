@@ -1,0 +1,123 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: iru
+      name: test-all-iru
+      streams:
+        - data_stream:
+            dataset: iru.device
+          interval: 1h
+          processors:
+            - add_fields:
+                fields:
+                    test: policy-test
+                target: ""
+          program: |-
+            state.with(
+              request(
+                "GET",
+                state.url.trim_right("/") + "/api/v1/devices?" + {
+                  "limit": [string(int(state.batch_size))],
+                  "offset": [string(int(
+                    state.?want_more.orValue(false) ?
+                      state.offset
+                    :
+                      0
+                  ))],
+                }.format_query()
+              ).with(
+                {
+                  "Header": {
+                    "Authorization": ["Bearer " + state.api_token],
+                    "Accept": ["application/json"],
+                  },
+                }
+              ).do_request().as(resp, resp.StatusCode == 200 ?
+                resp.Body.decode_json().as(body,
+                  {
+                    "events": body.map(e, {"message": e.encode_json()}),
+                    ?"offset": (size(body) > 0 && size(body) >= int(state.batch_size)) ?
+                      optional.of(int(state.?offset.orValue(0)) + int(state.batch_size))
+                    :
+                      optional.none(),
+                    "want_more": size(body) > 0 && size(body) >= int(state.batch_size),
+                  }
+                )
+              :
+                {
+                  "events": {
+                    "error": {
+                      "code": string(resp.StatusCode),
+                      "id": resp.Status,
+                      "message": "GET " + state.url.trim_right("/") + "/api/v1/devices: " + (
+                        (size(resp.Body) != 0) ?
+                          string(resp.Body)
+                        :
+                          resp.Status
+                      ),
+                    },
+                  },
+                  "want_more": false,
+                }
+              )
+            )
+          publisher_pipeline.disable_host: true
+          redact:
+            fields:
+                - api_token
+          resource.proxy_url: https://user:pass@proxy.example.com:8080
+          resource.ssl:
+            certificate_authorities:
+                - |
+                  -----BEGIN CERTIFICATE-----
+                  MIIDCjCCAfKgAwIBAgITJ706Mu2wJlKckpIvkWxEHvEyijANBgkqhkiG9w0BAQsF
+                  ADAUMRIwEAYDVQQDDAlsb2NhbGhvc3QwIBcNMTkwNzIyMTkyOTA0WhgPMjExOTA2
+                  MjgxOTI5MDRaMBQxEjAQBgNVBAMMCWxvY2FhbGhvc3RDCCASIwDQYJKoZIhvcNAQEB
+                  BQADggEPADCCAQoCggEBANce58Y/JykI58iyOXpxGfw0/gMvF0hUQAcUrSMxEO6n
+                  fZRA49b4OV4SwWmA3395uL2eB2NB8y8qdQ9muXUdPBWE4l9rMZ6gmfu90N5B5uEl
+                  94NcfBfYOKi1fJQ9i7WKhTjlRkMCgBkWPkUokvBZFRt8RtF7zI77BSEorHGQCk9t
+                  /D7BS0GJyfVEhftbWcFEAG3VRcoMhF7kUzYwp+qESoriFRYLeDWv68ZOvG7eoWnP
+                  PsvZStEVEimjvK5NSESEQa9xWyJOmlOKXhkdymtcUd/nXnx6UTCFgnkgzSdTWV41
+                  CI6B6aJ9svCTI2QuoIq2HxX/ix7OvW1huVmcyHVxyUECAwEAAaNTMFEwHQYDVR0O
+                  BBYEFPwN1OceFGm9v6ux8G+DZ3TUDYxqMB8GA1UdIwQYMBaAFPwN1OceFGm9v6ux
+                  8G+DZ3TUDYxqMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQELBQADggEBAG5D
+                  874A4YI7YUwOVsVAdbWtgp1d0zKcPRR+r2OdSbTAV5/gcS3jgBJ3i1BN34JuDVFw
+                  3DeJSYT3nxy2Y56lLnxDeF8CUTUtVQx3CuGkRg1ouGAHpO/6OqOhwLLorEmxi7tA
+                  H2O8mtT0poX5AnOAhzVy7QW0D/k4WaoLyckM5hUa6RtvgvLxOwA0U+VGurCDoctu
+                  8F4QOgTAWyh8EZIwaKCliFRSynDpv3JTUwtfZkxo6K6nce1RhCWFAsMvDZL8Dgc0
+                  yvgJ38BRsFOtkRuAGSf6ZUwTO8JJRRIFnpUzXflAnGivK9M13D5GEQMmIl6U9Pvk
+                  sxSmbIUfc2SGJGCJD4I=
+                  -----END CERTIFICATE-----
+          resource.timeout: 30s
+          resource.tracer:
+            enabled: true
+            filename: ../../logs/cel/http-request-trace-*.ndjson
+            maxbackups: 5
+          resource.url: https://example.api.kandji.io
+          state:
+            api_token: ${SECRET_0}
+            batch_size: 300
+          tags:
+            - preserve_original_event
+            - forwarded
+            - iru-device
+      type: cel
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-iru.device-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references:
+    - {}
