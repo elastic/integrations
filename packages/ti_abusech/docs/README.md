@@ -6,7 +6,7 @@ The abuse.ch integration for Elastic allows you to collect logs from [abuse.ch](
 
 ### Compatibility
 
-The abuse.ch integration is compatible with `v1` version of abuse.ch URLhaus, MalwareBazaar, ThreatFox, and SSLBL APIs.
+The abuse.ch integration is compatible with `v1` version of abuse.ch URLhaus, MalwareBazaar, ThreatFox, SSLBL and YARAify APIs.
 
 ### How it works
 
@@ -18,10 +18,11 @@ This integration collects threat intelligence indicators into the following data
 
 - `ja3_fingerprints`: Collects JA3 fingerprint based threat indicators identified by SSLBL via [SSLBL API endpoint](https://sslbl.abuse.ch/blacklist/ja3_fingerprints.csv).
 - `malware`: Collects malware payloads from URLs tracked by URLhaus via [URLhaus Bulk API](https://urlhaus-api.abuse.ch/#payloads-recent).
-- `malwarebazaar`: Collects malware payloads from MalwareBazaar via [MalwareBazaar API](https://bazaar.abuse.ch/api/#latest_additions).
+- `malwarebazaar`: Collects malware payloads from MalwareBazaar via the Community [MalwareBazaar API](https://bazaar.abuse.ch/api/#latest_additions) or the Commercial API (`GET /malwarebazaar/v1/samples`). Community API uses Auth Key; Commercial API requires username and password from the [Spamhaus Customer Portal](https://portal.spamhaus.com).
 - `sslblacklist`: Collects SSL certificate based threat indicators blacklisted on SSLBL via [SSLBL API endpoint](https://sslbl.abuse.ch/blacklist/sslblacklist.csv).
 - `threatfox`: Collects threat indicators from ThreatFox via [ThreatFox API](https://threatfox.abuse.ch/api/#recent-iocs).
-- `url`: Collects recently added malware URL based threat indicators from URLhaus via [URLhaus API](https://urlhaus-api.abuse.ch/#urls-recent). The API returns at most 1000 entries from the last 3 days. The **Interval** setting must be short enough to avoid exceeding the 1000-entry limit between polls; otherwise the oldest URLs added in that window will be lost.
+- `url`: Collects recently added malware URL based threat indicators from URLhaus via the Community [URLhaus API](https://urlhaus-api.abuse.ch/#urls-recent) or the Commercial API (`GET /urlhaus/v1/urls`). The Community API returns at most 1000 entries from the last 3 days. The **Interval** setting must be short enough to avoid exceeding the 1000-entry limit between polls; otherwise the oldest URLs added in that window will be lost. Community API uses Auth Key; Commercial API requires username and password from the [Spamhaus Customer Portal](https://portal.spamhaus.com).
+- `yaraify`: Collects YARA rule metadata from YARAify via the Community [YARAify API](https://yaraify.abuse.ch/api/#recent-yararules) (`POST` with `query: recent_yararules`) or the Commercial API (`GET /yaraify/v1/rules`). Community API uses Auth Key; Commercial API requires username and password from the [Spamhaus Customer Portal](https://portal.spamhaus.com).
 
 ### Supported use cases
 
@@ -37,8 +38,8 @@ This integration installs [Elastic latest transforms](https://www.elastic.co/doc
 
 Which credentials you need depends on which datasets you enable, not on the integration as a whole:
 
-- **ThreatFox threat indicators** (`threatfox`) and **MalwareBazaar payloads** (`malwarebazaar`) can use either API, selected with the shared **API Type** setting. The Community API requires an **Auth Key**. The Commercial API requires Spamhaus username and password credentials, which the integration exchanges for a short-lived JWT.
-- **Malware URLs** (`url`) and **Malware payloads** (`malware`) always query the URLhaus Community API and require an **Auth Key** regardless of **API Type**. Requests without the key are rejected.
+- **ThreatFox threat indicators** (`threatfox`), **MalwareBazaar payloads** (`malwarebazaar`), **Malware URLs** (`url`), and **YARAify Rules** (`yaraify`) can use either API, selected with the shared **API Type** setting. The Community API requires an **Auth Key**. The Commercial API requires Spamhaus username and password credentials, which the integration exchanges for a short-lived JWT.
+- **Malware payloads** (`malware`) always query the URLhaus Community API and require an **Auth Key** regardless of **API Type**. Requests without the key are rejected.
 - **SSL Blacklisted Certificates** (`sslblacklist`) and **JA3 Fingerprints** (`ja3_fingerprints`) read the SSLBL feeds and use neither credential.
 
 Because **API Type** applies to the whole integration, selecting **Commercial API** does not remove the need for an **Auth Key** unless you also disable **Malware URLs** and **Malware payloads**.
@@ -88,8 +89,8 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 
     * To **Collect abuse.ch logs via API**, you'll need to:
 
-        - Configure **Auth Key (Community)**. The **Malware URLs** and **Malware payloads** datasets always need it, and **ThreatFox threat indicators** and **MalwareBazaar payloads** need it when **API Type** is **Community API**.
-        - To use the Commercial API for **ThreatFox threat indicators** and **MalwareBazaar payloads**, set **API Type** to **Commercial API** and configure **Username (Commercial)** and **Password (Commercial)**.
+        - Configure **Auth Key (Community)** when **API Type** is **Community API**, and for the **Malware payloads** dataset which always uses the Community API.
+        - To use the Commercial API for **ThreatFox threat indicators**, **MalwareBazaar payloads**, **Malware URLs**, and **YARAify Rules**, set **API Type** to **Commercial API** and configure **Username (Commercial)** and **Password (Commercial)**.
         - Enable/Disable the required datasets.
         - For each dataset, adjust the integration configuration parameters if required, including the URL, Interval, etc. to enable data collection.
 
@@ -120,7 +121,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
     5. Under the MalwareBazaar data stream, expand **Advanced options** and reset **URL** to `https://mb-api.abuse.ch/api/v1/` if you had changed it to `https://api.spamhaus.com` for the 4.2.0 Commercial API. The Commercial API base URL is now configured once at the integration level via **Commercial API URL**.
     6. Select **Save integration**.
 
-    Community API users who only use an Auth Key are unaffected. After this change, the same Spamhaus credentials apply to all commercial datasets (MalwareBazaar, ThreatFox, and future commercial data streams).
+    Community API users who only use an Auth Key are unaffected. After this change, the same Spamhaus credentials apply to all commercial datasets (MalwareBazaar, ThreatFox, Malware URLs, and YARAify).
 - **Upgrading to v4.0.0**: Version 4.0.0 switches the URL data stream from the full export ZIP endpoint (`/downloads/json`) to the incremental JSON API (`/v1/urls/recent/`). When upgrading from a previous version, the URL setting in your integration policy retains the old value and must be updated manually:
     1. In Kibana, navigate to **Fleet** > **Agent policies**.
     2. Select the policy containing the abuse.ch integration.
@@ -139,8 +140,8 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
     All the abusec.ch API errors are captured inside the `error` fields.
     1. abuse.ch APIs return HTTP status `403 Forbidden` when the Auth Key is invalid. In such case, the `error.message` field is populated with message `query_status: unknown_auth_key` and `error.id` with `403 Forbidden`. To fix this, you need to regenerate the Auth Key in the [abuse.ch authentication portal](https://auth.abuse.ch/) and update the integration policy with newly generated Auth Key.
     2. abuse.ch APIs return HTTP status `500 Internal Server Error` when experiencing problem on the abuse.ch service. In such case, `error.message` field is populated with message `POST:500 Internal Server Error (500)` and `error.id` with `500 Internal Server Error`. This is likely a one-off scenario and the ingestion should resume normally in the subsequent request.
-    3. When **API Type** is **Community API** and **Auth Key (Community)** is not configured, MalwareBazaar and ThreatFox log `api_type is 'community' but auth_key is not configured` in `error.message` and `configuration_error` in `error.id`. Add **Auth Key (Community)** at the integration level.
-    4. When **API Type** is **Commercial API** and **Username (Commercial)** or **Password (Commercial)** is not configured, MalwareBazaar and ThreatFox log `api_type is 'commercial' but username/password are not configured` in `error.message` and `configuration_error` in `error.id`. Configure both fields at the integration level.
+    3. When **API Type** is **Community API** and **Auth Key (Community)** is not configured, MalwareBazaar, ThreatFox, Malware URLs, and YARAify log `api_type is 'community' but auth_key is not configured` in `error.message` and `configuration_error` in `error.id`. Add **Auth Key (Community)** at the integration level.
+    4. When **API Type** is **Commercial API** and **Username (Commercial)** or **Password (Commercial)** is not configured, MalwareBazaar, ThreatFox, Malware URLs, and YARAify log `api_type is 'commercial' but username/password are not configured` in `error.message` and `configuration_error` in `error.id`. Configure both fields at the integration level.
 - Since this integration supports the expiration of Indicators of Compromise (IoCs) using Elastic latest transform, the threat indicators are present in both source and destination indices. While this may appear to be duplicate ingestion, it is an implementation detail necessary for properly expiring threat indicators.
 - Because the latest copy of threat indicators is now indexed in two places, that is, in both source and destination indices, users must anticipate storage requirements accordingly. The ILM policies on source indices can be tuned to manage their data retention period.
 - For help with Elastic ingest tools, check [Common problems](https://www.elastic.co/docs/troubleshoot/ingest/fleet/common-problems).
@@ -398,6 +399,7 @@ For more information on architectures that can be used for scaling this integrat
 | abusech.url.last_online | Last timestamp when the URL has been serving malware. | date |
 | abusech.url.reporter | The Twitter handle of the reporter that has reported this malware URL (or anonymous). | keyword |
 | abusech.url.tags | A list of tags associated with the queried malware URL. | keyword |
+| abusech.url.takedown_time_seconds | The take down time in seconds (how long it took for the hosting provider to take down the malware site). Omitted if the malware URL has not been taken down. | long |
 | abusech.url.threat | The threat corresponding to this malware URL. | keyword |
 | abusech.url.url_status | The current status of the URL. Possible values are: online, offline and unknown. | keyword |
 | abusech.url.urlhaus_reference | Link to URLhaus entry. | keyword |
@@ -419,6 +421,33 @@ For more information on architectures that can be used for scaling this integrat
 | threat.indicator.first_seen | The date and time when intelligence source first reported sighting this indicator. | date |
 | threat.indicator.last_seen | The date and time when intelligence source last reported sighting this indicator. | date |
 | threat.indicator.modified_at | The date and time when intelligence source last modified information for this indicator. | date |
+
+
+#### YARAify
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| abusech.yaraify.date | Date when the YARA rule was written (community API). Kept separate from date_written. | date |
+| abusech.yaraify.date_written | Date when the YARA rule was written (commercial API). Kept separate from date. | date |
+| abusech.yaraify.deleted_at | The indicator expiration timestamp. | date |
+| abusech.yaraify.ioc_expiration_duration | The configured indicator expiration duration. | keyword |
+| abusech.yaraify.malpedia_family | Malware family name using the Malpedia naming scheme. | keyword |
+| abusech.yaraify.time_stamp | Timestamp when the YARA rule was observed (community API). Kept separate from first_seen. | date |
+| abusech.yaraify.yarahub_author_twitter | Twitter handle of the YARA rule author on YARAhub. | keyword |
+| abusech.yaraify.yarahub_license | License under which the YARA rule is shared. | keyword |
+| abusech.yaraify.yarahub_rule_sharing_tlp | Traffic Light Protocol classification for sharing the YARA rule. | keyword |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
+| input.type | Type of filebeat input. | keyword |
+| labels.is_ioc_transform_source | Indicates whether an IOC is in the raw source data stream, or the in latest destination index. | constant_keyword |
+| threat.feed.dashboard_id | The saved object ID of the dashboard belonging to the threat feed for displaying dashboard links to threat feeds in Kibana. | constant_keyword |
+| threat.feed.name | The name of the threat feed in UI friendly format. | constant_keyword |
 
 
 ### Example event
@@ -871,7 +900,7 @@ An example event for `url` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-05-11T18:17:40.972Z",
+    "@timestamp": "2026-07-29T05:58:47.965Z",
     "abusech": {
         "url": {
             "blacklists": {
@@ -887,24 +916,24 @@ An example event for `url` looks as following:
         }
     },
     "agent": {
-        "ephemeral_id": "fbc79c61-889e-4edd-b733-17bc0b3df43d",
-        "id": "dbaec5f5-5537-414c-9177-835ebc75386b",
-        "name": "elastic-agent-77348",
+        "ephemeral_id": "6f3e0e60-187c-4e33-8d86-7cedd4918215",
+        "id": "e20e15df-cdb6-4865-a35c-24fff0a8d7b9",
+        "name": "elastic-agent-80664",
         "type": "filebeat",
-        "version": "9.3.1"
+        "version": "9.1.0"
     },
     "data_stream": {
         "dataset": "ti_abusech.url",
-        "namespace": "12831",
+        "namespace": "69182",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "dbaec5f5-5537-414c-9177-835ebc75386b",
+        "id": "e20e15df-cdb6-4865-a35c-24fff0a8d7b9",
         "snapshot": false,
-        "version": "9.3.1"
+        "version": "9.1.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -912,7 +941,7 @@ An example event for `url` looks as following:
             "threat"
         ],
         "dataset": "ti_abusech.url",
-        "ingested": "2026-05-11T18:17:43Z",
+        "ingested": "2026-07-29T05:58:50Z",
         "kind": "enrichment",
         "module": "ti_abusech",
         "original": "{\"blacklists\":{\"spamhaus_dbl\":\"not listed\",\"surbl\":\"not listed\"},\"date_added\":\"2021-10-05 13:57:05 UTC\",\"host\":\"81.2.69.142\",\"id\":\"1656008\",\"larted\":\"true\",\"reporter\":\"tammeto\",\"tags\":null,\"threat\":\"malware_download\",\"url\":\"http://81.2.69.142:55871/mozi.m\",\"url_status\":\"online\",\"urlhaus_reference\":\"https://urlhaus.abuse.ch/url/1656008/\"}",
@@ -957,6 +986,98 @@ An example event for `url` looks as following:
 }
 ```
 
+#### YARAify
+
+An example event for `yaraify` looks as following:
+
+```json
+{
+    "@timestamp": "2024-01-15T11:16:40.000Z",
+    "abusech": {
+        "yaraify": {
+            "date": "2024-01-08T00:00:00.000Z",
+            "deleted_at": "2024-01-20T11:16:40.000Z",
+            "ioc_expiration_duration": "5d",
+            "malpedia_family": "win.samplemw",
+            "time_stamp": "2024-01-15T11:16:40.000Z",
+            "yarahub_license": "CC BY-SA 4.0",
+            "yarahub_rule_sharing_tlp": "TLP:WHITE"
+        }
+    },
+    "agent": {
+        "ephemeral_id": "64793051-55c6-4b81-957c-554985ee088b",
+        "id": "6bebc018-1734-4daf-8e16-17cf7768ac39",
+        "name": "elastic-agent-57391",
+        "type": "filebeat",
+        "version": "9.1.0"
+    },
+    "data_stream": {
+        "dataset": "ti_abusech.yaraify",
+        "namespace": "50080",
+        "type": "logs"
+    },
+    "ecs": {
+        "version": "8.11.0"
+    },
+    "elastic_agent": {
+        "id": "6bebc018-1734-4daf-8e16-17cf7768ac39",
+        "snapshot": false,
+        "version": "9.1.0"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "threat"
+        ],
+        "dataset": "ti_abusech.yaraify",
+        "id": "33333333-3333-4333-8333-333333333333",
+        "ingested": "2026-07-27T12:01:28Z",
+        "kind": "enrichment",
+        "module": "ti_abusech",
+        "original": "{\"author\":\"Third Author\",\"date\":\"2024-01-08\",\"description\":\"detects SampleMalware\",\"malpedia_family\":\"win.samplemw\",\"rule_name\":\"win_samplemw\",\"time_stamp\":\"2024-01-15 11:16:40 UTC\",\"yarahub_license\":\"CC BY-SA 4.0\",\"yarahub_rule_matching_tlp\":\"TLP:WHITE\",\"yarahub_rule_sharing_tlp\":\"TLP:WHITE\",\"yarahub_uuid\":\"33333333-3333-4333-8333-333333333333\"}",
+        "type": [
+            "indicator"
+        ]
+    },
+    "input": {
+        "type": "cel"
+    },
+    "labels": {
+        "is_ioc_transform_source": "true"
+    },
+    "related": {
+        "user": [
+            "Third Author"
+        ]
+    },
+    "rule": {
+        "name": "win_samplemw"
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "abusech-yaraify"
+    ],
+    "threat": {
+        "feed": {
+            "dashboard_id": "ti_abusech-c0d8d1f0-3b20-11ec-ae50-2fdf1e96c6a6",
+            "name": "AbuseCH YARAify"
+        },
+        "indicator": {
+            "description": "detects SampleMalware",
+            "first_seen": "2024-01-15T11:16:40.000Z",
+            "marking": {
+                "tlp": "CLEAR"
+            },
+            "name": "win_samplemw"
+        }
+    },
+    "user": {
+        "name": "Third Author"
+    }
+}
+```
+
 ### Inputs used
 
 These inputs can be used in this integration:
@@ -969,14 +1090,15 @@ This integration datasets use the following APIs:
 
 - `ja3_fingerprints`: [SSLBL API](https://sslbl.abuse.ch/blacklist/ja3_fingerprints.csv).
 - `malware`: [URLhaus Bulk API](https://urlhaus-api.abuse.ch/#payloads-recent).
-- `malwarebazaar`: [MalwareBazaar API](https://bazaar.abuse.ch/api/#latest_additions).
+- `malwarebazaar`: [MalwareBazaar Community API](https://bazaar.abuse.ch/api/#latest_additions) and [abuse.ch Commercial API — MalwareBazaar](https://abusech.docs.spamhaus.com/) (`GET /malwarebazaar/v1/samples`).
 - `sslblacklist`: [SSLBL API](https://sslbl.abuse.ch/blacklist/sslblacklist.csv).
 - `threatfox`: [ThreatFox API](https://threatfox.abuse.ch/api/#recent-iocs).
-- `url`: [URLhaus API](https://urlhaus-api.abuse.ch/#urls-recent).
+- `url`: [URLhaus Community API](https://urlhaus-api.abuse.ch/#urls-recent) and [abuse.ch Commercial API — URLhaus](https://abusech.docs.spamhaus.com/) (`GET /urlhaus/v1/urls`).
+- `yaraify`: [YARAify Community API](https://yaraify.abuse.ch/api/#recent-yararules) (`recent_yararules`) and [abuse.ch Commercial API — YARAify](https://abusech.docs.spamhaus.com/) (`GET /yaraify/v1/rules`).
 
 ### Expiration of Indicators of Compromise (IOCs)
 
-All abuse.ch datasets now support indicator expiration. The `URL`, `Malware`, `MalwareBazaar`, and `ThreatFox` datasets expire threat indicators after the duration configured in the `IOC Expiration Duration` setting (default `90d`). An [Elastic Transform](https://www.elastic.co/guide/en/elasticsearch/reference/current/transforms.html) is created for every source index to make sure only active threat indicators are available to the end users. Each transform creates a destination index named `logs-ti_abusech_latest.dest_*` which only contains active and unexpired threat indicators. The indicator match rules and dashboards are updated to list only active threat indicators.
+All abuse.ch datasets now support indicator expiration. The `URL`, `Malware`, `MalwareBazaar`, `ThreatFox` and `YARAify` datasets expire threat indicators after the duration configured in the `IOC Expiration Duration` setting (default `90d`). An [Elastic Transform](https://www.elastic.co/guide/en/elasticsearch/reference/current/transforms.html) is created for every source index to make sure only active threat indicators are available to the end users. Each transform creates a destination index named `logs-ti_abusech_latest.dest_*` which only contains active and unexpired threat indicators. The indicator match rules and dashboards are updated to list only active threat indicators.
 Destinations indices are aliased to `logs-ti_abusech_latest.<data_stream_name>`.
 
 | Source Data stream                  | Destination Index Pattern                        | Destination Alias                       |
@@ -985,6 +1107,7 @@ Destinations indices are aliased to `logs-ti_abusech_latest.<data_stream_name>`.
 | `logs-ti_abusech.malware-*`        | `logs-ti_abusech_latest.dest_malware-*`          | `logs-ti_abusech_latest.malware`        |
 | `logs-ti_abusech.malwarebazaar-*`  | `logs-ti_abusech_latest.dest_malwarebazaar-*`    | `logs-ti_abusech_latest.malwarebazaar`  |
 | `logs-ti_abusech.threatfox-*`      | `logs-ti_abusech_latest.dest_threatfox-*`        | `logs-ti_abusech_latest.threatfox`      |
+| `logs-ti_abusech.yaraify-*`        | `logs-ti_abusech_latest.dest_yaraify-*`          | `logs-ti_abusech_latest.yaraify`        |
 
 #### ILM Policy
 
