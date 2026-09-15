@@ -2,45 +2,55 @@
 description: Pipeline for processing Atlassian Jira Cloud audit logs.
 processors:
 - set:
+    tag: set__tmp_timestamp_a7eb892d
     field: _tmp.timestamp
     copy_from: json.created
     if: ctx.json?.created != null
 - convert:
+    tag: convert_json_id_to_event_id_7fbde318
     field: json.id
     target_field: event.id
     type: string
     ignore_missing: true
 - rename:
+    tag: rename_json_remoteAddress_to_source_address_c865f307
     field: json.remoteAddress
     target_field: source.address
     ignore_missing: true
 - rename:
+    tag: rename_json_authorAccountId_to_user_id_3d774165
     field: json.authorAccountId
     target_field: user.id
     ignore_missing: true
 - rename:
+    tag: rename_json_category_to_jira_audit_type_category_33b28be9
     field: json.category
     target_field: jira.audit.type.category
     ignore_missing: true
 - rename:
+    tag: rename_json_summary_to_jira_audit_type_action_673bb501
     field: json.summary
     target_field: jira.audit.type.action
     ignore_missing: true
 - set:
+    tag: set_event_action_8f21c380
     field: event.action
     copy_from: jira.audit.type.action
     ignore_empty_value: true
 - rename:
+    tag: rename_json_associatedItems_to_jira_audit_affected_objects_29e35484
     field: json.associatedItems
     target_field: jira.audit.affected_objects
     ignore_missing: true
 - rename:
+    tag: rename_json_changedValues_to_jira_audit_changed_values_38ca71f0
     field: json.changedValues
     target_field: jira.audit.changed_values
     ignore_missing: true
 - script:
+    tag: script_modify_data_to_match_self_ff2d4230
     lang: painless
-    description: Modify data to match Self Hosted 
+    description: Modify data to match Self Hosted
     source: >-
         if(ctx.jira?.audit?.affected_objects == null) {
             ArrayList items = new ArrayList();
@@ -76,10 +86,17 @@ processors:
             }
         }
 on_failure:
+- append:
+    tag: append_tags_279d5a5c
+    field: tags
+    value: preserve_original_event
+    allow_duplicates: false
 - set:
+    tag: set_event_kind_72b1902f
     field: event.kind
     value: pipeline_error
 - append:
+    tag: append_error_message_8ac65503
     field: error.message
     value: >
       Processor "{{{ _ingest.on_failure_processor_type }}}"

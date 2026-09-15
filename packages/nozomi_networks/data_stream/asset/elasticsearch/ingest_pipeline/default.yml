@@ -308,12 +308,20 @@ processors:
       lang: painless
       if: ctx.json?.last_activity_time != null && ctx.json.created_at != null
       source: |-
-        long lastActivity = ctx.json.last_activity_time;
-        long createdAt = ctx.json.created_at;
-        long uptimeMillis = lastActivity - createdAt;
-        long uptimeSeconds = uptimeMillis / 1000;
+        long lastActivity = (ctx.json.last_activity_time instanceof Number) ?
+          ((Number)ctx.json.last_activity_time).longValue() :
+          Long.parseLong(ctx.json.last_activity_time.toString());
+        long createdAt = (ctx.json.created_at instanceof Number) ?
+          ((Number)ctx.json.created_at).longValue() :
+          Long.parseLong(ctx.json.created_at.toString());
+        long uptimeSeconds = (lastActivity - createdAt) / 1000;
         ctx.host = ctx.host ?: [:];
         ctx.host.uptime = uptimeSeconds;
+      on_failure:
+        - append:
+            tag: append_error_message_calculate_host_uptime_asset
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.level
       tag: rename_level_66c1e856
