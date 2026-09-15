@@ -1,8 +1,16 @@
 - version: "1.41.0"
   changes:
     - description: >-
-        Consolidate the duplicated `azure-shared-pipeline.yml` into a single shared source under `_dev/shared/ingest_pipeline/` and replace the 10 per-data-stream copies with `.link` files, so 11 data streams now share one pipeline. The canonical pipeline uses case-insensitive (`(?i)`) ARM resource-ID parsing, fixing silent data loss for mixed-case resource paths (e.g. `/subscriptions/{guid}/resourcegroups/...`). The generic `eventhub` data stream keeps its own copy for now and is not part of this consolidation.
+        Consolidate the duplicated `azure-shared-pipeline.yml` into a single shared source under `_dev/shared/ingest_pipeline/` and replace all per-data-stream copies (including `eventhub`) with `.link` files, so all 12 data streams that use the shared pipeline now share one canonical copy.
       type: bugfix
+      link: https://github.com/elastic/integrations/pull/21261
+    - description: >-
+        Extend the metadata normalization to the `eventhub` data stream: when **Parse azure message** is enabled, the envelope `tenantId`/`TenantId` is promoted to `azure.tenant_id`, `correlationId` to `azure.correlation_id`, `location`/`Region` to `cloud.region`, and the ARM resource ID is parsed case-insensitively into `azure.subscription_id`, `azure.resource.*`, and the `/tenants/` path variant into `azure.tenant_id`. `cloud.account.id` is then set from the subscription ID (or tenant ID as a fallback), and `cloud.region` is normalized to the canonical slug.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/21261
+    - description: >-
+        Add the missing `azure-eventhub.partition_key` field definition to the `eventhub` data stream; the v2 event hub processor emits this field but it was previously undeclared.
+      type: enhancement
       link: https://github.com/elastic/integrations/pull/21261
     - description: >-
         Set `cloud.account.id` consistently across the data streams that share the pipeline: from `azure.subscription_id` where present, falling back to `azure.tenant_id` for tenant-scoped logs that have no subscription (auditlogs, signinlogs, identity_protection, provisioning, graphactivitylogs, aadgraphactivitylogs, activitylogs, platformlogs, springcloudlogs).

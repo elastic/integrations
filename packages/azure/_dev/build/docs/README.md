@@ -25,14 +25,14 @@ Azure resource-log envelope into a common set of metadata fields, giving you
 consistent dimensions to filter and correlate across Azure logs in Kibana:
 Activity, Platform, Spring Apps, Application Gateway, Firewall, Microsoft Entra
 ID (Audit, Sign-in, Identity Protection, Provisioning), Microsoft Graph
-Activity, and Azure AD Graph Activity.
+Activity, Azure AD Graph Activity, and Event Hub (when **Parse azure message**
+is enabled).
 
 Each field is populated only when the corresponding value is present in the
 event, so availability varies by Azure log category and by the shape of the ARM
-resource ID. The generic `azure.eventhub` data stream and the `azure.events`
-routing data stream are not covered by this normalization; `azure.eventhub`
-populates `cloud.provider` and, when **Parse azure message** is enabled, its own
-subset of these fields.
+resource ID. The `azure.events` routing data stream is not covered by this
+normalization. For `azure.eventhub`, the normalization runs only when the
+**Parse azure message** stream option is enabled (it is off by default).
 
 | Elastic field | Azure source field(s) | Notes |
 |---|---|---|
