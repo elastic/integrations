@@ -30,7 +30,7 @@ program: |
       {}
     :
       // Compute start_time first so we can cap end_time to within the 2-week server limit.
-      state.?cursor.last_timestamp.orValue(
+      state.?cursor.last_timestamp.optMap(v,int(v)).orValue(
         timestamp((now - duration(state.initial_interval))).as(ts, int(ts)*1000000000 + int(ts - timestamp(int(ts))))
       ).as(start_time, now.as(ts, int(ts)*1000000000 + int(ts - timestamp(int(ts)))).as(now_ns, {
         "start_time": start_time,
