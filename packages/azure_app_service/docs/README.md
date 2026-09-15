@@ -107,6 +107,13 @@ Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ec
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| azure-eventhub.consumer_group | Consumer group. | keyword |
+| azure-eventhub.enqueued_time | The enqueued time. | date |
+| azure-eventhub.eventhub | Event hub name. | keyword |
+| azure-eventhub.offset | Offset. | long |
+| azure-eventhub.partition_id | Partition ID. | keyword |
+| azure-eventhub.partition_key | Partition key. | keyword |
+| azure-eventhub.sequence_number | Sequence number. | long |
 | azure.app_service.category | The category of the operation. | keyword |
 | azure.app_service.container_id | Application container id | keyword |
 | azure.app_service.event_ip_address | IP address of the event | keyword |

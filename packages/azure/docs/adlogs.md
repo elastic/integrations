@@ -220,6 +220,13 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| azure-eventhub.consumer_group | Consumer group. | keyword |
+| azure-eventhub.enqueued_time | The enqueued time. | date |
+| azure-eventhub.eventhub | Event hub name. | keyword |
+| azure-eventhub.offset | Offset. | long |
+| azure-eventhub.partition_id | Partition ID. | keyword |
+| azure-eventhub.partition_key | Partition key. | keyword |
+| azure-eventhub.sequence_number | Sequence number. | long |
 | azure.correlation_id | Correlation ID | keyword |
 | azure.resource.authorization_rule | Authorization rule | keyword |
 | azure.resource.group | Resource group | keyword |
@@ -420,6 +427,13 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| azure-eventhub.consumer_group | Consumer group. | keyword |
+| azure-eventhub.enqueued_time | The enqueued time. | date |
+| azure-eventhub.eventhub | Event hub name. | keyword |
+| azure-eventhub.offset | Offset. | long |
+| azure-eventhub.partition_id | Partition ID. | keyword |
+| azure-eventhub.partition_key | Partition key. | keyword |
+| azure-eventhub.sequence_number | Sequence number. | long |
 | azure.correlation_id | Correlation ID | keyword |
 | azure.identityprotection.category | Category | keyword |
 | azure.identityprotection.operation_name | Operation name | keyword |
@@ -639,6 +653,13 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| azure-eventhub.consumer_group | Consumer group. | keyword |
+| azure-eventhub.enqueued_time | The enqueued time. | date |
+| azure-eventhub.eventhub | Event hub name. | keyword |
+| azure-eventhub.offset | Offset. | long |
+| azure-eventhub.partition_id | Partition ID. | keyword |
+| azure-eventhub.partition_key | Partition key. | keyword |
+| azure-eventhub.sequence_number | Sequence number. | long |
 | azure.correlation_id | Correlation ID | keyword |
 | azure.provisioning.category | Category | keyword |
 | azure.provisioning.identity | Describes the identity of the user or application that performed the operation | keyword |
@@ -784,6 +805,13 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| azure-eventhub.consumer_group | Consumer group. | keyword |
+| azure-eventhub.enqueued_time | The enqueued time. | date |
+| azure-eventhub.eventhub | Event hub name. | keyword |
+| azure-eventhub.offset | Offset. | long |
+| azure-eventhub.partition_id | Partition ID. | keyword |
+| azure-eventhub.partition_key | Partition key. | keyword |
+| azure-eventhub.sequence_number | Sequence number. | long |
 | azure.auditlogs.category | The category of the operation.  Currently, Audit is the only supported value. | keyword |
 | azure.auditlogs.identity | Identity | keyword |
 | azure.auditlogs.level | Value for level. | float |
