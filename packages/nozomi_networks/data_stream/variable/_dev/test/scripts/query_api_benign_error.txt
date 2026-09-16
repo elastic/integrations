@@ -1,0 +1,95 @@
+# Test that the variable data stream treats benign "error" values (JSON null
+# and empty string) in HTTP 200 responses as success and ingests the data.
+#
+# Nozomi can return {"error":null,"result":[...]} (or "error":"") together
+# with valid results. The CEL program must not emit an error event or fail
+# evaluation in that case; only a non-empty error value is a real failure.
+
+[!external_stack] skip 'Skipping external stack test.'
+[!exec:jq] skip 'Skipping test requiring absent jq command'
+
+use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+install_agent -profile ${CONFIG_PROFILES}/${PROFILE} -network_name NETWORK_NAME
+docker_up -profile ${CONFIG_PROFILES}/${PROFILE} -network ${NETWORK_NAME} nozomi-mock
+add_package -profile ${CONFIG_PROFILES}/${PROFILE}
+add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config.yaml DATA_STREAM_NAME
+
+# Two data documents: one from the "error":null response (first poll) and
+# one from the "error":"" response (second poll, matched on the cursor
+# timestamp of the first record). The confirm window spans further polls to
+# guard against spurious error events or duplicates.
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 2 -confirm 45s -timeout 5m ${DATA_STREAM_NAME}
+cp stdout got_docs.json
+
+# No error events were emitted.
+exec jq '[.hits.hits[]._source.error.message // empty] | flatten | length' got_docs.json
+stdout '^0$'
+
+# Both documents are processed data events.
+exec jq '[.hits.hits[]._source | select(.nozomi_networks.variable != null)] | length' got_docs.json
+stdout '^2$'
+
+remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_NAME}
+uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 1m
+docker_down nozomi-mock
+
+-- test_config.yaml --
+input: cel
+vars:
+  url: http://nozomi-mock:8080
+  username: username
+  password: password
+data_stream:
+  vars:
+    interval: 30s
+    initial_interval: 1h
+    batch_size: 2
+    preserve_original_event: true
+    enable_request_tracer: false
+-- nozomi-mock/docker-compose.yml --
+version: '2.3'
+services:
+  nozomi-mock:
+    image: docker.elastic.co/observability/stream:v0.20.0
+    hostname: nozomi-mock
+    ports:
+      - 8080
+    environment:
+      PORT: "8080"
+    volumes:
+      - ./config.yml:/config.yml
+    command:
+      - http-server
+      - --addr=:8080
+      - --config=/config.yml
+-- nozomi-mock/config.yml --
+rules:
+  # Second poll: the query embeds the first record's cursor timestamp.
+  # Respond with "error" as an empty string plus a second record.
+  - path: /api/open/query/do
+    methods: [GET]
+    query_params:
+      query: '{query:variables \| where record_created_at > 1744586817566 \| sort record_created_at asc}'
+    request_headers:
+      Authorization:
+        - "Basic dXNlcm5hbWU6cGFzc3dvcmQ="
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"error":"","result":[{"id":"e77d717d-4306-49af-9bfe-d49f81ae0002","host":"localhost","name":"ioa-2-206","type":"analog","unit":"n/a","label":"ioa-2-206 at 6913","scale":"1.000000","value":"","offset":"0.000000","var_key":"localhost/6913/ioa-2-206","protocol":"iec104","bit_value":"00111011011111000000000000000000","max_value":"0.013184","min_value":"0.013184","namespace":"6913","host_label":"plc095.ACME0.corporationnet.com","is_numeric":true,"last_cause":"read:event","last_value":0.01318359375,"flow_status":"CYCLIC","last_client":"localhost:8080","active_checks":[],"changes_count":"4","request_count":"9032","flow_anomalies":"0","flow_stats.avg":300005.2765957447,"flow_stats.var":224189.0462307355,"history_status":false,"last_update_time":"1741982102719","latest_bit_change":"Bit 5 changed from 0 to 1","last_activity_time":"1744585807741","last_function_code":"9","last_value_quality":["invalid"],"first_activity_time":"1741870170944","last_value_is_valid":true,"flow_hiccups_percent":"0","last_range_change_time":"1741870170944","last_function_code_info":"M_ME_NA_1: Measured value, normalized value","last_valid_quality_time":"1744585807741","flow_anomaly_in_progress":false,"record_created_at":1744586817566}],"header":[],"total":1}
+  # Any other poll (including the first): "error" is JSON null.
+  - path: /api/open/query/do
+    methods: [GET]
+    request_headers:
+      Authorization:
+        - "Basic dXNlcm5hbWU6cGFzc3dvcmQ="
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"error":null,"result":[{"id":"e77d717d-4306-49af-9bfe-d49f81aebcef","host":"1.128.0.0","name":"ioa-2-206","type":"analog","unit":"n/a","label":"ioa-2-206 at 6913","scale":"1.000000","value":0.003814697265625,"offset":"0.000000","var_key":"1.128.0.0/6913/ioa-2-206","protocol":"iec104","bit_value":"00111011011111000000000000000000","max_value":"0.013184","min_value":"0.013184","namespace":"6913","host_label":"plc095.ACME0.corporationnet.com","is_numeric":true,"last_cause":"read:event","last_value":0.01318359375,"flow_status":"CYCLIC","last_client":"89.160.20.112","active_checks":[],"changes_count":"4","request_count":"9032","flow_anomalies":"0","flow_stats.avg":300005.2765957447,"flow_stats.var":224189.0462307355,"history_status":false,"last_update_time":"1741982102719","latest_bit_change":"Bit 5 changed from 0 to 1","last_activity_time":"1744585807741","last_function_code":"9","last_value_quality":["invalid"],"first_activity_time":"1741870170944","last_value_is_valid":true,"flow_hiccups_percent":"0","last_range_change_time":"1741870170944","last_function_code_info":"M_ME_NA_1: Measured value, normalized value","last_valid_quality_time":"1744585807741","flow_anomaly_in_progress":false,"record_created_at":1744586817566}],"header":[],"total":1}
