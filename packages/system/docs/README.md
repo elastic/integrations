@@ -117,9 +117,9 @@ upgrade, the panels are empty.
 
 To include the older events, copy the account from `user.name` and `user.id` into
 `user.target.name` and `user.target.id`. Backing indices created before the upgrade might not map
-the `user.target.*` fields, or might map them dynamically with a different type. To make sure the
-backfilled values are mapped as `keyword` and the panels can aggregate on them, first add the
-mapping to all backing indices of the `system.auth` data stream:
+the `user.target.*` fields. To make sure the backfilled values are mapped as `keyword` and the
+panels can aggregate on them, first add the mapping to all backing indices of the `system.auth`
+data stream:
 
 ```json
 PUT logs-system.auth-*/_mapping
@@ -166,11 +166,13 @@ POST logs-system.auth-*/_update_by_query?conflicts=proceed
 }
 ```
 
-The update rewrites every matching document. Read-only indices, such as searchable snapshot
-indices in the cold or frozen tier, can't be updated. If some of the older data is read-only, add a
-`range` filter on `@timestamp` to the update by query request so it only matches documents in
-writable indices, or narrow the dashboard time range to events ingested after the upgrade to
-version 2.22.0.
+The update rewrites every matching document. Read-only backing indices, such as searchable
+snapshot indices in the cold or frozen tier, can't be updated, and the mapping request fails if a
+backing index already maps `user.target.name` with a different type. In both cases, replace
+`logs-system.auth-*` in the two requests with an explicit list of the writable backing indices
+that need the backfill. Use `GET _data_stream/logs-system.auth-*` to list the backing indices of
+each data stream. As an alternative, narrow the dashboard time range to events ingested after the
+upgrade to version 2.22.0.
 
 ## Logs reference
 
