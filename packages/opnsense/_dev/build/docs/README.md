@@ -80,10 +80,10 @@ integration, refer to the
 ### Onboard and configure
 
 Fleet-managed and standalone Elastic Agent deployments are both supported.
-Agentless deployment is **not** supported: OPNsense pushes syslog to a listener,
+Elastic Managed (agentless) deployment is **not** supported: OPNsense pushes syslog to a listener,
 which requires an Agent reachable from the firewall.
 
-1. In Kibana, go to **Management > Integrations**, search for **OPNsense**, and
+1. In Kibana, go to **Management → Integrations**, search for **OPNsense**, and
    click **Add OPNsense**.
 2. Enable one input and configure it:
    - **UDP** (default) — OPNsense's normal syslog transport. Set the listen
@@ -96,7 +96,7 @@ which requires an Agent reachable from the firewall.
 Then configure OPNsense to forward to it:
 
 1. In the OPNsense web interface, go to
-   **System > Settings > Logging / targets**.
+   **System → Settings → Logging / targets**.
 2. Add a target:
    - **Transport** — matching the input enabled above, `UDP(4)` by default.
    - **Applications** — include `filter` to send packet filter events.
@@ -105,7 +105,7 @@ Then configure OPNsense to forward to it:
      `Informational`.
 3. Apply the change.
 4. Confirm the rules you want to observe have logging enabled under
-   **Firewall > Rules**. The default deny rule logs by default.
+   **Firewall → Rules**. The default deny rule logs by default.
 
 Refer to the
 [OPNsense logging documentation](https://docs.opnsense.org/manual/settingsmenu.html)
@@ -115,7 +115,7 @@ for the authoritative configuration reference.
 
 1. Generate traffic the firewall will block, for example by connecting to a
    closed port on the firewall's WAN address.
-2. Confirm OPNsense logged it under **Firewall > Log Files > Live View**.
+2. Confirm OPNsense logged it under **Firewall → Log Files → Live View**.
 3. On the Agent host, confirm the packets arrive:
 
    ```bash
@@ -188,7 +188,7 @@ the transport protocol:
 - IPv4 carries `tos, ecn, ttl, id, offset, flags` and reports the protocol as
   `number, name`; IPv6 carries `class, flow, hoplimit` and reverses those two
   columns to `name, number`.
-- TCP lines end with ports, payload length, flags, sequence and acknowledgement
+- TCP lines end with ports, payload length, flags, sequence and acknowledgment
   numbers, window, urgent pointer and options.
 - UDP lines end after ports and payload length.
 - ICMP lines end with `key=value` pairs rather than positional columns.

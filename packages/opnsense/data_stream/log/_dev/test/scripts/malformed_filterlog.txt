@@ -1,0 +1,51 @@
+# A filterlog line whose address columns are corrupt must still be indexed: the
+# rest of the line is parsed, the bad address is reported in error.message, and
+# the raw line is kept for diagnosis.
+
+[!external_stack] skip 'Skipping external stack test.'
+[!exec:jq] skip 'Skipping test requiring absent jq command'
+
+use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+
+install_pipelines -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT}
+! stderr .
+
+simulate -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT} default data.json
+! stderr .
+cp stdout got.json
+
+exec jq -s 'length' got.json
+stdout '^2$'
+
+# The failure is reported and the raw line kept on both documents.
+exec jq -s 'all(.tags | index("preserve_original_event") != null)' got.json
+stdout '^true$'
+exec jq -s 'all(.event.original | startswith("<134>1 "))' got.json
+stdout '^true$'
+
+# Corrupt source address: reported, not set, and the valid destination still parsed.
+exec jq -s -r '.[0].error.message | tostring' got.json
+stdout 'source is not an IP'
+exec jq -s -r '.[0] | [(.source.ip // "absent"), .destination.ip] | join(" ")' got.json
+stdout '^absent 192\.0\.2\.10$'
+
+# Corrupt destination address: reported, not set, and the valid source still parsed.
+exec jq -s -r '.[1].error.message | tostring' got.json
+stdout 'destination is not an IP'
+exec jq -s -r '.[1] | [.source.ip, (.destination.ip // "absent")] | join(" ")' got.json
+stdout '^192\.0\.2\.10 absent$'
+
+# A processor-level failure does not discard the event: the action is still parsed.
+exec jq -s -r '.[].event.action' got.json
+stdout '^block$'
+
+uninstall_pipelines -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT}
+! stderr .
+
+-- data.json --
+{
+	"message": "<134>1 2026-09-07T02:14:00+00:00 OPNsense.localdomain filterlog 54555 - [meta sequenceId=\"930\"] 71,,,3d399f8f89b68d684701badb48eab085,vtnet1,match,block,in,4,0x0,,64,6002,0,DF,17,udp,76,999.0.2.300,192.0.2.10,40000,53,56"
+}
+{
+	"message": "<134>1 2026-09-07T02:14:05+00:00 OPNsense.localdomain filterlog 54555 - [meta sequenceId=\"931\"] 71,,,3d399f8f89b68d684701badb48eab085,vtnet1,match,block,in,4,0x0,,64,6003,0,DF,17,udp,76,192.0.2.10,not-an-address,40001,53,56"
+}
