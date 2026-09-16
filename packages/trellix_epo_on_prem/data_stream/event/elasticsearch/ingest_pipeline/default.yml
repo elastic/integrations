@@ -16,6 +16,11 @@ processors:
       field: event.original
       tag: json_event_original
       target_field: trellix_epo_on_prem.event
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_json_event_original_error
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - remove:
       field: message
       tag: remove_message
@@ -52,6 +57,11 @@ processors:
         if (epo.MachineInfo != null && epo.MachineInfo instanceof Map && epo.MachineInfo.RawMACAddress != null) {
           epo.MachineInfo.RawMACAddress = normalizeMac(epo.MachineInfo.RawMACAddress);
         }
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_normalize_mac_addresses_on_failure
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: trellix_epo_on_prem.event.EPOEvent.AnalyzerIPv4
       tag: convert_analyzer_ipv4_to_ip
@@ -339,19 +349,18 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: trellix_epo_on_prem.event.EPOEvent.SoftwareInfo.Event.CustomFields.ThreatDetectedOnCreation
-      value: 'True'
-      if: ctx.trellix_epo_on_prem?.event?.EPOEvent?.SoftwareInfo?.Event?.CustomFields?.ThreatDetectedOnCreation == 0
-      ignore_empty_value: true
+      tag: set_customfields_threatdetectedoncreation_false
+      value: false
+      if: ctx.trellix_epo_on_prem?.event?.EPOEvent?.SoftwareInfo?.Event?.CustomFields?.ThreatDetectedOnCreation == '0'
   - set:
       field: trellix_epo_on_prem.event.EPOEvent.SoftwareInfo.Event.CustomFields.ThreatDetectedOnCreation
-      value: 'False'
-      if: ctx.trellix_epo_on_prem?.event?.EPOEvent?.SoftwareInfo?.Event?.CustomFields?.ThreatDetectedOnCreation == 1
-      ignore_empty_value: true
+      tag: set_customfields_threatdetectedoncreation_true
+      value: true
+      if: ctx.trellix_epo_on_prem?.event?.EPOEvent?.SoftwareInfo?.Event?.CustomFields?.ThreatDetectedOnCreation == '1'
   - convert:
       field: trellix_epo_on_prem.event.EPOEvent.SoftwareInfo.Event.CustomFields.ThreatDetectedOnCreation
       tag: convert_customfields_threatdetectedoncreation_to_boolean
       type: boolean
-      if: ctx.trellix_epo_on_prem?.event?.EPOEvent?.SoftwareInfo?.Event?.CustomFields?.ThreatDetectedOnCreation != '' && ctx.trellix_epo_on_prem?.event?.EPOEvent?.SoftwareInfo?.Event?.CustomFields?.ThreatDetectedOnCreation instanceof String
       ignore_missing: true
       on_failure:
         - remove:
@@ -755,6 +764,7 @@ processors:
       on_failure:
         - append:
             field: error.message
+            tag: append_split_event_action_error
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - join:
       field: event.action
@@ -764,6 +774,7 @@ processors:
       on_failure:
         - append:
             field: error.message
+            tag: append_join_event_action_error
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: message
@@ -1261,13 +1272,8 @@ processors:
             tag: append_analyzer_content_creation_date_date_error
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
-      field: '@timestamp'
-      tag: set_timestamp_from_detected_utc
-      copy_from: trellix_epo_on_prem.event.EPOEvent.ReceivedUTC
-      ignore_empty_value: true
-  - set:
-      field: event.started
-      tag: set_event_started_from_start_time
+      field: event.start
+      tag: set_event_start_from_start_time
       copy_from: trellix_epo_on_prem.event.EPOEvent.StartTime
       ignore_empty_value: true
   - append:
@@ -1324,6 +1330,18 @@ processors:
       value: '{{{client.ip}}}'
       allow_duplicates: false
       if: ctx.client?.ip != null
+  - append:
+      field: related.ip
+      tag: append_related_observer_ipv4
+      value: '{{{trellix_epo_on_prem.event.EPOEvent.AnalyzerIPv4}}}'
+      allow_duplicates: false
+      if: ctx.trellix_epo_on_prem?.event?.EPOEvent?.AnalyzerIPv4 != null
+  - append:
+      field: related.ip
+      tag: append_related_observer_ipv6
+      value: '{{{trellix_epo_on_prem.event.EPOEvent.AnalyzerIPv6}}}'
+      allow_duplicates: false
+      if: ctx.trellix_epo_on_prem?.event?.EPOEvent?.AnalyzerIPv6 != null
   - append:
       field: related.hosts
       tag: append_related_host_name_hostname
@@ -1595,8 +1613,54 @@ processors:
         - trellix_epo_on_prem.event.EPOEvent.MachineInfo.IPAddress
         - trellix_epo_on_prem.event.EPOEvent.AnalyzerMAC
         - trellix_epo_on_prem.event.EPOEvent.MachineInfo.RawMACAddress
-        - trellix_epo_on_prem.event.EPOEvent.ReceivedUTC
         - trellix_epo_on_prem.event.EPOEvent.StartTime
+  - script:
+      tag: script_convert_camelcase_to_snake_case
+      lang: painless
+      source: |-
+        String camelToSnake(String str) {
+            def result = "";
+            for (int i = 0; i < str.length(); i++) {
+                char c = str.charAt(i);
+                if (Character.isUpperCase(c)) {
+                    if (i > 0 && str.charAt(i - 1) != (char) '_'
+                        && (!Character.isUpperCase(str.charAt(i - 1))
+                        || (i + 1 < str.length() && Character.isLowerCase(str.charAt(i + 1))))) {
+                        result += "_";
+                    }
+                    result += Character.toLowerCase(c);
+                } else {
+                    result += c;
+                }
+            }
+            return result;
+        }
+        def convertToSnakeCase(def obj) {
+          if (obj instanceof Map) {
+            def newObj = [:];
+            for (entry in obj.entrySet()) {
+              String newKey = camelToSnake(entry.getKey());
+              newObj[newKey] = convertToSnakeCase(entry.getValue());
+            }
+            return newObj;
+          } else if (obj instanceof List) {
+            def newList = [];
+            for (item in obj) {
+              newList.add(convertToSnakeCase(item));
+            }
+            return newList;
+          } else {
+            return obj;
+          }
+        }
+        if (ctx.trellix_epo_on_prem?.event != null) {
+          ctx.trellix_epo_on_prem.event = convertToSnakeCase(ctx.trellix_epo_on_prem.event);
+        }
+      on_failure:
+        - append:
+            tag: append_script_convert_camelcase_to_snake_case_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.kind
       tag: set_pipeline_error_into_event_kind
@@ -1609,18 +1673,19 @@ processors:
       value: preserve_original_event
       allow_duplicates: false
 on_failure:
+  - append:
+      field: error.message
+      tag: append_pipeline_error_message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: event.kind
       tag: set_pipeline_error_to_event_kind
       value: pipeline_error
   - append:
-      field: error.message
-      value: >-
-        Processor '{{{ _ingest.on_failure_processor_type }}}'
-        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
-        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
-  - append:
       field: tags
-      tag: append_tags
+      tag: append_preserve_original_event_on_failure
       value: preserve_original_event
       allow_duplicates: false
