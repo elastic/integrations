@@ -1,4 +1,16 @@
 # later versions go on top
+- version: "3.28.0"
+  changes:
+    - description: >-
+        Add a three-state parser_mode setting (none/parse/coalesce) that replaces the
+        retired use_auditd_parser bool. Coalesce mode groups related audit records into
+        a single document whose field schema matches logs-auditd_manager.auditd-*.
+        Requires Elastic Agent 9.6.0 or later. Migration note: Fleet does not carry
+        values across a variable rename, so policies with use_auditd_parser: true reset
+        to parser_mode: none on upgrade (low impact — the old variable was hidden from
+        users and defaulted to false, so it was never active).
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/21282
 - version: "3.27.0"
   changes:
     - description: Migrate the log data stream from the deprecated logfile input to filestream. Existing log-input state is adopted via take_over so files are not re-read. Users upgrading from 3.24.x or earlier without passing through 3.26.0 will lose custom variable values (paths, tags, processors); the two-step migration only protects users who upgrade incrementally through 3.26.0.
