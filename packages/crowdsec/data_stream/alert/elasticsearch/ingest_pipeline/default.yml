@@ -1,34 +1,45 @@
 ---
 description: Pipeline for parsing CrowdSec alerts.
 processors:
-  # The logfile input delivers the raw alert JSON as `message`; the http_endpoint
-  # input has already decoded it under `json`. Normalise both to `json`.
-  - json:
-      field: message
-      target_field: json
-      if: ctx.json == null && ctx.message instanceof String
-      tag: json_decode_message
-      on_failure:
-        - append:
-            field: error.message
-            value: "failed to json-decode message: {{{_ingest.on_failure_message}}}"
-
   - set:
-      field: event.original
-      copy_from: message
-      tag: set_event_original
-      if: ctx.tags != null && ctx.tags.contains('preserve_original_event') && ctx.event?.original == null
+      field: ecs.version
+      tag: set_ecs_version
+      value: '9.3.0'
+
+  # The logfile input delivers the raw alert JSON as `message`; the http_endpoint
+  # input has already decoded it and delivers a `json` object. Store the raw
+  # message as `event.original` first, then parse from it — `event.original` is
+  # never modified afterwards.
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
   - remove:
       field: message
       tag: remove_message
       ignore_missing: true
-      if: ctx.event?.original != null || (ctx.tags == null || !ctx.tags.contains('preserve_original_event'))
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - json:
+      field: event.original
+      target_field: json
+      tag: parse_json
+      description: Decode the alert from `event.original`. Skipped when the http_endpoint input already supplied a decoded `json` object.
+      if: ctx.json == null && ctx.event?.original != null
+      on_failure:
+        - append:
+            field: error.message
+            value: 'failed to json-decode event.original: {{{_ingest.on_failure_message}}}'
+  - fail:
+      tag: fail_missing_json
+      description: Neither input supplied a decodable alert object.
+      if: ctx.json == null || !(ctx.json instanceof Map)
+      message: missing alert object in input document
 
   # ---- base event metadata ----
-  - set:
-      field: ecs.version
-      value: "8.11.0"
-      tag: set_ecs_version
   - set:
       field: observer.vendor
       value: CrowdSec
@@ -62,7 +73,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: "failed to parse start_at: {{{_ingest.on_failure_message}}}"
+            value: 'failed to parse start_at: {{{_ingest.on_failure_message}}}'
   - date:
       field: json.start_at
       target_field: event.start
@@ -73,7 +84,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: "failed to parse event.start: {{{_ingest.on_failure_message}}}"
+            value: 'failed to parse event.start: {{{_ingest.on_failure_message}}}'
   - date:
       field: json.stop_at
       target_field: event.end
@@ -84,7 +95,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: "failed to parse event.end: {{{_ingest.on_failure_message}}}"
+            value: 'failed to parse event.end: {{{_ingest.on_failure_message}}}'
 
   # ---- identifiers and scenario ----
   - set:
@@ -131,7 +142,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: "failed to split scenario name: {{{_ingest.on_failure_message}}}"
+            value: 'failed to split scenario name: {{{_ingest.on_failure_message}}}'
   - set:
       field: rule.version
       copy_from: json.scenario_version
@@ -158,7 +169,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: "failed to convert events_count: {{{_ingest.on_failure_message}}}"
+            value: 'failed to convert events_count: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.capacity
       target_field: crowdsec.capacity
@@ -168,7 +179,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: "failed to convert capacity: {{{_ingest.on_failure_message}}}"
+            value: 'failed to convert capacity: {{{_ingest.on_failure_message}}}'
   - set:
       field: crowdsec.leakspeed
       copy_from: json.leakspeed
@@ -223,7 +234,7 @@ processors:
       if: ctx.json?.source?.scope == 'Ip' && ctx.json?.source?.ip != null && ctx.json.source.ip != ''
   - append:
       field: related.ip
-      value: "{{{source.ip}}}"
+      value: '{{{source.ip}}}'
       tag: append_related_ip
       allow_duplicates: false
       if: ctx.source?.ip != null
@@ -242,7 +253,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: "failed to convert as_number: {{{_ingest.on_failure_message}}}"
+            value: 'failed to convert as_number: {{{_ingest.on_failure_message}}}'
   - set:
       field: source.as.organization.name
       copy_from: json.source.as_name
@@ -377,7 +388,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: "failed to decode target_uri: {{{_ingest.on_failure_message}}}"
+            value: 'failed to decode target_uri: {{{_ingest.on_failure_message}}}'
   - json:
       field: crowdsec.alert.meta.method
       target_field: http.request.method
@@ -386,7 +397,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: "failed to decode method: {{{_ingest.on_failure_message}}}"
+            value: 'failed to decode method: {{{_ingest.on_failure_message}}}'
   - json:
       field: crowdsec.alert.meta.user_agent
       target_field: user_agent.original
@@ -395,16 +406,27 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: "failed to decode user_agent: {{{_ingest.on_failure_message}}}"
+            value: 'failed to decode user_agent: {{{_ingest.on_failure_message}}}'
   - json:
       field: crowdsec.alert.meta.status
-      target_field: crowdsec.alert.status
+      target_field: http.response.status_code
       tag: json_status
       if: ctx.crowdsec?.alert?.meta?.status instanceof String
       on_failure:
         - append:
             field: error.message
-            value: "failed to decode status: {{{_ingest.on_failure_message}}}"
+            value: 'failed to decode status: {{{_ingest.on_failure_message}}}'
+  # CrowdSec encodes the status codes as an array of strings; ECS types the field
+  # as long.
+  - convert:
+      field: http.response.status_code
+      type: long
+      tag: convert_status_code
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'failed to convert status code: {{{_ingest.on_failure_message}}}'
 
   # ---- events: keep count only; the per-event detail is aggregated above ----
   - script:
@@ -446,13 +468,29 @@ processors:
       ignore_missing: true
       if: ctx.source?.as?.number == 0
 
-  # ---- pipeline-wide failure handler ----
+  # Keep the raw payload on any document a processor failed on, so the failure
+  # can be diagnosed from the document itself.
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      tag: append_preserve_original_event_on_error
+      if: ctx.error?.message != null
+
 on_failure:
-  - set:
-      field: event.kind
-      value: pipeline_error
-      tag: set_event_kind_error
   - append:
       field: error.message
-      value: "{{{ _ingest.on_failure_message }}}"
       tag: append_pipeline_error
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      tag: append_preserve_original_event_on_failure
