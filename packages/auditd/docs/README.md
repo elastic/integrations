@@ -171,11 +171,14 @@ An example event for `log` looks as following:
 | auditd.data.daddr | remote IP address | ip |
 | auditd.data.data | TTY text | keyword |
 | auditd.data.default_context | default MAC context | keyword |
+| auditd.data.dev | network or routing device name | keyword |
 | auditd.data.device | device name | keyword |
 | auditd.data.dir | directory name | keyword |
 | auditd.data.direction | direction of crypto operation | keyword |
 | auditd.data.dmac | remote MAC address | keyword |
 | auditd.data.dport | remote port number | long |
+| auditd.data.dst | routing destination address | keyword |
+| auditd.data.dst_prefixlen | routing destination prefix length | keyword |
 | auditd.data.enforcing | new MAC enforcement status | keyword |
 | auditd.data.entries | number of entries in the netfilter table | long |
 | auditd.data.exit | syscall exit code | keyword |
@@ -191,6 +194,7 @@ An example event for `log` looks as following:
 | auditd.data.fp | crypto key finger print | keyword |
 | auditd.data.frootid |  | keyword |
 | auditd.data.fver | file system capabilities version number | keyword |
+| auditd.data.gpg_res | GPG verification result | keyword |
 | auditd.data.grantors | pam modules approving the action | keyword |
 | auditd.data.grp | group name | keyword |
 | auditd.data.hook | netfilter hook that packet came from | keyword |
@@ -211,6 +215,7 @@ An example event for `log` looks as following:
 | auditd.data.items | the number of path records in the event | long |
 | auditd.data.iuid | ipc object's user ID | keyword |
 | auditd.data.kernel | kernel's version number | keyword |
+| auditd.data.key_enforce | key enforcement mode flag | keyword |
 | auditd.data.kind | server or client in crypto operation | keyword |
 | auditd.data.ksize | key size for crypto operation | keyword |
 | auditd.data.laddr | local network address | keyword |
@@ -224,6 +229,7 @@ An example event for `log` looks as following:
 | auditd.data.minor | device minor number | keyword |
 | auditd.data.model | security model being used for virt | keyword |
 | auditd.data.msg | the payload of the audit record | keyword |
+| auditd.data.name | object name | keyword |
 | auditd.data.nargs | the number of arguments to a socket call | long |
 | auditd.data.net | network MAC address | keyword |
 | auditd.data.new | value being set in feature | keyword |
@@ -286,6 +292,7 @@ An example event for `log` looks as following:
 | auditd.data.outif | out interface number | keyword |
 | auditd.data.pa |  | keyword |
 | auditd.data.parent | the inode number of the parent file | keyword |
+| auditd.data.path | file or resource path | keyword |
 | auditd.data.pe |  | keyword |
 | auditd.data.per | linux personality | keyword |
 | auditd.data.perm | the file permission being used | keyword |
@@ -293,6 +300,7 @@ An example event for `log` looks as following:
 | auditd.data.permissive | SELinux is in permissive mode | keyword |
 | auditd.data.pfs | perfect forward secrecy method | keyword |
 | auditd.data.pi |  | keyword |
+| auditd.data.port | network port | keyword |
 | auditd.data.pp |  | keyword |
 | auditd.data.printer | printer name | keyword |
 | auditd.data.prom | network promiscuity flag | keyword |
@@ -305,6 +313,7 @@ An example event for `log` looks as following:
 | auditd.data.reset |  | keyword |
 | auditd.data.resrc | resource being assigned | keyword |
 | auditd.data.result |  | keyword |
+| auditd.data.root_dir | root directory | keyword |
 | auditd.data.rport | remote port number | long |
 | auditd.data.sauid | sent login user ID | keyword |
 | auditd.data.scontext | the subject's context string | keyword |
@@ -325,6 +334,8 @@ An example event for `log` looks as following:
 | auditd.data.socket.saddr | The raw socket address structure. | keyword |
 | auditd.data.spid | sent process ID | long |
 | auditd.data.sport | local port number | long |
+| auditd.data.src | routing source address | keyword |
+| auditd.data.src_prefixlen | routing source prefix length | keyword |
 | auditd.data.state | audit daemon configuration resulting state | keyword |
 | auditd.data.subj | lspp subject's context string | keyword |
 | auditd.data.subj_category | The SELinux category associated with the subject. It helps further refine the level of access by classifying subjects into categories for multi-level security (MLS). Categories are often used to label data with additional attributes, like "high" or "low," enhancing granularity. | keyword |
@@ -333,6 +344,8 @@ An example event for `log` looks as following:
 | auditd.data.subj_role | The SELinux role associated with the subject. The role determines the capabilities a subject has within a given SELinux policy. Roles are used to define higher-level security attributes in the context of the system's security policies. | keyword |
 | auditd.data.subj_user | The SELinux user identity. This represents the SELinux user role that is assigned to the subject (user or process) performing an action. It's part of the SELinux security context and is used to enforce policies that restrict what actions a subject can perform. | keyword |
 | auditd.data.success | whether the syscall was successful or not | keyword |
+| auditd.data.sw | software package name | keyword |
+| auditd.data.sw_type | software package type | keyword |
 | auditd.data.syscall | syscall number in effect when the event occurred | keyword |
 | auditd.data.table | netfilter table name | keyword |
 | auditd.data.tclass | target's object classification | keyword |
@@ -341,6 +354,7 @@ An example event for `log` looks as following:
 | auditd.data.tty | tty udevice the user is running programs on | keyword |
 | auditd.data.unit | systemd unit | keyword |
 | auditd.data.uri | URI pointing to a printer | keyword |
+| auditd.data.user | username associated with the event | keyword |
 | auditd.data.uuid | a UUID | keyword |
 | auditd.data.val | generic value associated with the operation | keyword |
 | auditd.data.ver | audit daemon's version number | keyword |
@@ -660,4 +674,6 @@ An example event for `log` looks as following:
 | user.target.name | Short name or login of the user. | keyword |
 | user.target.name.text | Multi-field of `user.target.name`. | match_only_text |
 | user.terminal | Terminal or tty device on which the user is performing the observed activity. | keyword |
+| user.uuid.id | One or multiple unique identifiers of the user. | keyword |
+| user.uuid.name | Short name or login of the user. | keyword |
 
