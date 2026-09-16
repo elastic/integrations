@@ -16,7 +16,10 @@ Install the **Google Cloud Monitoring (OpenTelemetry)** input package and config
 
 ## Dashboards
 
-Dashboards will be added in a later release.
+| Dashboard | Description |
+|-----------|-------------|
+| **[GCP Compute] Overview** | Fleet-wide health overview covering CPU utilization, memory, swap, disk throughput, IOPS, latency, network, firewall drops, and instance availability across zones. |
+| **[GCP Compute] GCE Instance Detail** | Per-instance deep-dive into CPU, memory, swap, network throughput, disk throughput, IOPS, I/O latency, queue depth, disk health, uptime, and interruption events. |
 
 ## Alerting Rule Templates
 
