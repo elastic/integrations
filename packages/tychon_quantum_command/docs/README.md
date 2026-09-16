@@ -989,22 +989,22 @@ An example event for `tychon_pqc` looks as following:
 {
     "@timestamp": "2026-07-06T17:03:00.055Z",
     "agent": {
-        "ephemeral_id": "5c000472-208b-4bcb-a351-2585392c0676",
-        "id": "f830ae00-b6f0-4f85-9b0d-28f1daaf22c9",
-        "name": "elastic-agent-20495",
+        "ephemeral_id": "f2b23fe2-7336-401c-8c5c-5ce3c703d65f",
+        "id": "20deb899-b473-405a-a6da-fcc34492ba9f",
+        "name": "elastic-agent-30985",
         "type": "filebeat",
         "version": "9.4.4"
     },
     "data_stream": {
         "dataset": "tychon_quantum_command.tychon_pqc",
-        "namespace": "94051",
+        "namespace": "55622",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "f830ae00-b6f0-4f85-9b0d-28f1daaf22c9",
+        "id": "20deb899-b473-405a-a6da-fcc34492ba9f",
         "snapshot": false,
         "version": "9.4.4"
     },
@@ -1014,7 +1014,7 @@ An example event for `tychon_pqc` looks as following:
             "process"
         ],
         "dataset": "tychon_quantum_command.tychon_pqc",
-        "ingested": "2026-08-21T15:44:13Z",
+        "ingested": "2026-09-15T20:18:56Z",
         "kind": "event",
         "module": "tychon_quantum_command",
         "timezone": "+00:00",
@@ -1025,21 +1025,21 @@ An example event for `tychon_pqc` looks as following:
     "host": {
         "architecture": "x86_64",
         "containerized": true,
-        "domain": "rnd-lab",
+        "domain": "example-lab",
         "hostname": [
-            "elastic-agent-20495",
-            "71-win1124h2"
+            "elastic-agent-30985",
+            "host-1"
         ],
-        "id": "41c3d03f-3e7f-45b0-a65e-199cda6f50e5",
+        "id": "00000000-0000-4000-8000-000000000002",
         "ip": [
             "172.20.0.2",
-            "172.19.0.4"
+            "172.19.0.7"
         ],
         "mac": [
-            "2A-E7-E0-87-BE-13",
-            "CA-C6-F2-C6-2A-95"
+            "2E-D2-98-2B-4F-D4",
+            "82-B0-54-BB-34-37"
         ],
-        "name": "elastic-agent-20495",
+        "name": "elastic-agent-30985",
         "os": {
             "kernel": "5.15.167.4-microsoft-standard-WSL2",
             "name": "Wolfi",
@@ -1051,38 +1051,18 @@ An example event for `tychon_pqc` looks as following:
     "input": {
         "type": "filestream"
     },
-    "tychon.kerberos": {
-        "config_source": "os_default",
-        "has_aes128": true,
-        "has_aes256": true,
-        "has_des": false,
-        "has_rc4": true,
-        "is_explicitly_configured": false,
-        "is_quantum_safe": false,
-        "raw_bitmask": 28,
-        "supported_types": "RC4-HMAC, AES128-CTS-HMAC-SHA1-96, AES256-CTS-HMAC-SHA1-96"
-    },
     "log": {
         "file": {
             "device_id": "2080",
             "fingerprint": "4ee8746d04407cd93cebfc9496b55aeee0246c415d53d5ef1f5142d2062f5e42",
-            "inode": "381887",
+            "inode": "463265",
             "path": "/tmp/service_logs/tqc.ndjson"
         },
         "offset": 0
     },
     "observer": {
-        "domain": "rnd-lab",
-        "hostname": "71-win1124h2",
-        "id": "41c3d03f-3e7f-45b0-a65e-199cda6f50e5",
-        "os": {
-            "build": "26100",
-            "family": "windows",
-            "kernel": "10.0",
-            "name": "windows",
-            "platform": "Microsoft Windows 11 Pro",
-            "version": "10.0.26100.8655"
-        }
+        "hostname": "host-1",
+        "id": "00000000-0000-4000-8000-000000000002"
     },
     "tags": [
         "tychon",
@@ -1106,6 +1086,17 @@ An example event for `tychon_pqc` looks as following:
             "source": "process"
         },
         "index": "applications",
+        "kerberos": {
+            "config_source": "os_default",
+            "has_aes128": true,
+            "has_aes256": true,
+            "has_des": false,
+            "has_rc4": true,
+            "is_explicitly_configured": false,
+            "is_quantum_safe": false,
+            "raw_bitmask": 28,
+            "supported_types": "RC4-HMAC, AES128-CTS-HMAC-SHA1-96, AES256-CTS-HMAC-SHA1-96"
+        },
         "library": {
             "crypt32_pqc_status": "not_capable",
             "crypt32_version": "10.0.26100.8521",
@@ -1116,22 +1107,22 @@ An example event for `tychon_pqc` looks as following:
         },
         "observer": {
             "bigfix_client_installed": false,
-            "bios_serial_number": "VMware, Inc. VMware20,1",
+            "bios_serial_number": "VMware, Inc. VMware00,1",
             "cpu_cores": 2,
             "cpu_logical_cores": 2,
             "cpu_model_name": "Intel(R) Xeon(R) CPU E5-2683 v4 @ 2.10GHz",
             "cpu_vendor_id": "GenuineIntel",
-            "current_user": "rnd-lab\\administrator",
-            "domain": "rnd-lab",
+            "current_user": "example-lab\\administrator",
+            "domain": "example-lab",
             "fips_mode_enabled": false,
-            "hostname": "71-win1124h2",
-            "id": "41c3d03f-3e7f-45b0-a65e-199cda6f50e5",
-            "ip_addresses": "fe80::e8aa:5f5d:c0ba:d453, 169.254.182.0, 10.80.60.236, fe80::3c91:a230:8d87:fd50, 169.254.239.112",
+            "hostname": "host-1",
+            "id": "00000000-0000-4000-8000-000000000002",
+            "ip_addresses": "2001:db8::10, 192.0.2.30, 198.51.100.10, 2001:db8::20, 203.0.113.20",
             "is_vdi_environment": false,
             "kernel_arch": "x86_64",
             "kernel_version": "26100.8655",
-            "machine_serial_number": "VMware-42 2a 65 03 0f cb 74 d4-a3 7c 0c ff 76 19 03 ed",
-            "organization": "rnd-lab",
+            "machine_serial_number": "VMware-00 00 00 00 00 00 00 00-00 00 00 00 00 00 00 01",
+            "organization": "example-lab",
             "os": {
                 "build": "26100",
                 "family": "windows",
@@ -1145,10 +1136,10 @@ An example event for `tychon_pqc` looks as following:
             "software_version": "2.0.4.10",
             "system_uptime_seconds": 1725864,
             "total_ram_bytes": 17178578944,
-            "tychon_client_id": "F304B69C-A420-4773-91EE-C5140D7302F7",
-            "user_gid": "S-1-5-21-2448716297-349153808-1407024372-513",
+            "tychon_client_id": "00000000-0000-4000-8000-000000000001",
+            "user_gid": "S-1-5-21-1111111111-2222222222-3333333333-513",
             "user_home_dir": "C:\\Users\\administrator",
-            "user_uid": "S-1-5-21-2448716297-349153808-1407024372-500",
+            "user_uid": "S-1-5-21-1111111111-2222222222-3333333333-500",
             "vdi_identity_source": "gopsutil",
             "windows_server_role": "workstation"
         },
