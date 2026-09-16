@@ -6,6 +6,13 @@ if [[ "${BUILDKITE_PULL_REQUEST}" == "false" ]]; then
   exit 0
 fi
 
+# Changelog-sync PRs only copy already-merged backport version entries into
+# changelog.yml. Skip the expensive downstream OOM pipeline for those PRs.
+if [[ "${GITHUB_PR_LABELS:-}" == *"backport:sync-changelog"* ]]; then
+  echo "Skipping OOM testing: PR labeled backport:sync-changelog"
+  exit 0
+fi
+
 # Use Release API to get released and supported Elastic Stack versions
 PAST_RELEASES_URL="https://ela.st/past-stack-releases"
 PAST_VERSIONS=$(curl -sL $PAST_RELEASES_URL |  jq -r '
