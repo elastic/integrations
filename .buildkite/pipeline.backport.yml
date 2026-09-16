@@ -3,19 +3,33 @@
 name: "integrations-backport"
 
 env:
+  SETUP_GVM_VERSION: "v0.6.0"
   YQ_VERSION: 'v4.35.2'
+  GH_CLI_VERSION: "2.29.0"
+  # Agent images used in pipeline steps
+  LINUX_AGENT_IMAGE: "golang:${GO_VERSION}"
+  NOTIFY_TO: "ecosystem-team@elastic.co"
 
 steps:
 
   - label: "Check that it runs from UI"
     key: "check-ui"
     command:
-      - "buildkite-agent annotate \"The $BUILDKITE_PIPELINE_SLUG is used only for running from UI!\" --style 'warning'"
+      - "buildkite-agent annotate \"The $${BUILDKITE_PIPELINE_SLUG} pipeline can only be triggered from the UI by members of the 'ecosystem' team, or via a trigger step from the 'integrations' or 'integrations-backport-dispatch' pipeline. For the recommended workflow see the [documentation](https://www.elastic.co/guide/en/integrations-developer/current/developer-workflow-support-old-package.html).\" --style 'warning'"
       - "exit 1"
-    if: "build.source != 'ui'"
+    if: |
+      !(
+        (build.source == 'ui' && build.creator.teams includes "ecosystem") ||
+        (build.source == 'trigger_job' && build.env('BUILDKITE_TRIGGERED_FROM_BUILD_PIPELINE_SLUG') == 'integrations') ||
+        (build.source == 'trigger_job' && build.env('BUILDKITE_TRIGGERED_FROM_BUILD_PIPELINE_SLUG') == 'integrations-backport-dispatch')
+      )
+
+  # Ensure that the check-ui step runs before any other step
+  - wait: ~
 
   - input: "Input values for the variables"
     key: "input-variables"
+    if: "build.source != 'trigger_job'"
     fields:
     - select: "DRY_RUN"
       key: "DRY_RUN"
@@ -29,7 +43,7 @@ steps:
       key: "BASE_COMMIT"
       required: true
       default: ""
-    - text: "Enter package name"
+    - text: "Enter package name (as defined in manifest.yml)"
       key: "PACKAGE_NAME"
       required: true
       default: ""
@@ -44,11 +58,21 @@ steps:
           value: "true"
         - label: "False"
           value: "false"
-      default: "false"
+      default: "true"
+    - text: "Backport branch name (optional, defaults to backport-<package>-<major>.<minor>)"
+      key: "BACKPORT_BRANCH_NAME"
+      required: false
+      default: ""
+    - text: "PR number to notify on completion (optional)"
+      key: "PR_NUMBER"
+      required: false
+      default: ""
 
   - label: "Creating the backport branch"
     key: "create-backport-branch"
     command: ".buildkite/scripts/backport_branch.sh"
+    agents:
+      image: "${LINUX_AGENT_IMAGE}"
     env:
       GITHUB_EMAIL: "elasticmachine@elastic.co"
       GITHUB_USERNAME: "elastic-vault-github-plugin-prod"
@@ -57,3 +81,30 @@ steps:
     depends_on:
       - step: "input-variables"
         allow_failure: false
+
+  - label: ":github: Notify PR"
+    key: "notify-pr"
+    command: |
+      if ! outcome=$$(buildkite-agent step get "outcome" --step "create-backport-branch"); then
+        echo "Failed to retrieve step outcome, skipping PR notification"
+        exit 0
+      fi
+      if [[ "$${outcome}" == "passed" ]]; then
+        NOTIFY_STATUS=success .buildkite/scripts/notify_backport_pr.sh
+      else
+        NOTIFY_STATUS=failure .buildkite/scripts/notify_backport_pr.sh
+      fi
+    agents:
+      image: "${LINUX_AGENT_IMAGE}"
+    plugins:
+      - elastic/vault-github-token#v0.1.0:
+    depends_on:
+      - step: "create-backport-branch"
+        allow_failure: true
+
+notify:
+  # Only notify for automated backport creation failures (triggered by integrations-backport-dispatch).
+  # Dry-run failures from PR builds (triggered by integrations) are already surfaced as a failing
+  # CI status on the PR itself and do not warrant a team email.
+  - email: "$NOTIFY_TO"
+    if: "build.state == 'failed' && build.source == 'trigger_job' && build.env('BUILDKITE_TRIGGERED_FROM_BUILD_PIPELINE_SLUG') == 'integrations-backport-dispatch'"
