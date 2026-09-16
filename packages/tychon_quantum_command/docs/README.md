@@ -220,7 +220,6 @@ This stream can contain multiple TYCHON record families in one place, including 
 | file.path | Full path to the file, including the file name. It should include the drive letter, when appropriate. | keyword |
 | file.path.text | Multi-field of `file.path`. | match_only_text |
 | file.size | File size in bytes. Only relevant when `file.type` is "file". | long |
-| hash.sha256 | SHA256 hash. | keyword |
 | host.architecture | Operating system architecture. | keyword |
 | host.domain | Name of the domain of which the host is a member. For example, on Windows this could be the host's Active Directory domain or NetBIOS domain name. For Linux this could be the domain of the host's LDAP provider. | keyword |
 | host.hostname | Hostname of the host. It normally contains what the `hostname` command returns on the host machine. | keyword |
@@ -499,6 +498,7 @@ This stream can contain multiple TYCHON record families in one place, including 
 | tychon.file.group.name |  | keyword |
 | tychon.file.owner.name |  | keyword |
 | tychon.file.permissions |  | keyword |
+| tychon.hash.sha256 |  | keyword |
 | tychon.hash.sha256_certificate |  | keyword |
 | tychon.host.cpu.cores |  | long |
 | tychon.host.ipv4 | IPv4 address reported by TQC before ECS host.ip normalization. | ip |
