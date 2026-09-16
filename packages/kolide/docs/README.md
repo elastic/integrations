@@ -50,7 +50,7 @@ For the `device_check` and `issues` data streams, `event.outcome` reflects the d
 
 ### Host correlation for device checks
 
-Check-run results identify the device only by its numeric Kolide device ID, which maps to `host.id`. The payload carries no hostname, so the integration does not set `host.name` on this data stream. You can correlate check runs with the `device`, `auth`, and `issues` data streams using the shared `host.id`. If you need `host.name` directly on check-run documents, you must enrich them at ingest time with an Elasticsearch [enrich policy](https://www.elastic.co/docs/manage-data/ingest/transform-enrich/data-enrichment) that matches on `host.id`. Use `logs-kolide_latest.device` as the policy's source index: it is maintained by the `latest_device` transform and holds exactly one document per device, so each `host.id` resolves to a single unambiguous `host.name`. See [Latest device and people snapshots](#latest-device-and-people-snapshots) for details. This setup requires you to enable the `device` data stream, which is what feeds the transform, and to re-execute the enrich policy periodically so that new or renamed devices resolve correctly.
+Check-run results identify the device only by its numeric Kolide device ID, which maps to `host.id`. The payload carries no hostname, so the integration does not set `host.name` on this data stream. You can correlate check runs with the `device`, `auth`, and `issues` data streams using the shared `host.id`. If you need `host.name` directly on check-run documents, you must enrich them at ingest time with an Elasticsearch [enrich policy](https://www.elastic.co/docs/manage-data/ingest/transform-enrich/data-enrichment) that matches on `host.id`. Use `logs-kolide_lookup.device` as the policy's source index: it is maintained by the `latest_device` transform and holds exactly one document per device, so each `host.id` resolves to a single unambiguous `host.name`. See [Latest device and people snapshots](#latest-device-and-people-snapshots) for details. This setup requires you to enable the `device` data stream, which is what feeds the transform, and to re-execute the enrich policy periodically so that new or renamed devices resolve correctly.
 
 ### Document identity for requests
 
@@ -66,10 +66,10 @@ The `device` and `people` data streams keep a document per distinct state of eac
 
 | Transform | Source | Destination alias | Entity key |
 | --- | --- | --- | --- |
-| `latest_device` | `logs-kolide.device-*` | `logs-kolide_latest.device` | `host.id` |
-| `latest_people` | `logs-kolide.people-*` | `logs-kolide_latest.people` | `user.id` |
+| `latest_device` | `logs-kolide.device-*` | `logs-kolide_lookup.device` | `host.id` |
+| `latest_people` | `logs-kolide.people-*` | `logs-kolide_lookup.people` | `user.id` |
 
-Each destination index holds exactly one document per device or person, containing its most recently collected state. When a record changes, the transform replaces the previous document rather than adding to it. These indices are well suited as the source for an Elasticsearch [enrich policy](https://www.elastic.co/docs/manage-data/ingest/transform-enrich/data-enrichment): because the entity key only determines document identity, any field on the document can serve as the policy's match field. For example, you can enrich on `host.hostname` or `host.name` from `logs-kolide_latest.device`, or on `user.email` from `logs-kolide_latest.people`.
+Each destination index holds exactly one document per device or person, containing its most recently collected state. When a record changes, the transform replaces the previous document rather than adding to it. These indices are well suited as the source for an Elasticsearch [enrich policy](https://www.elastic.co/docs/manage-data/ingest/transform-enrich/data-enrichment): because the entity key only determines document identity, any field on the document can serve as the policy's match field. For example, you can enrich on `host.hostname` or `host.name` from `logs-kolide_lookup.device`, or on `user.email` from `logs-kolide_lookup.people`.
 
 Both transforms key on the stable Kolide identifier (`host.id` for devices, `user.id` for people) rather than on a display name, so renaming a device or changing a person's email updates the existing document instead of creating a second entity.
 
@@ -1998,7 +1998,7 @@ An example event for `osquery_status` looks as following:
 #### latest_device
 * Description: Latest devices from Kolide. As devices get updated, this transform stores only the latest state of each device inside the destination index. Thus the transform's destination index contains only the latest state of the device.
 * Source Index: logs-kolide.device-\*
-* Destination Index: logs-kolide_latest.dest_device-2
+* Destination Index: logs-kolide_lookup.dest_device-2
 
 **Exported fields**
 
@@ -2072,7 +2072,7 @@ An example event for `osquery_status` looks as following:
 #### latest_people
 * Description: Latest people from Kolide. As people get updated, this transform stores only the latest state of each person inside the destination index. Thus the transform's destination index contains only the latest state of the person.
 * Source Index: logs-kolide.people-\*
-* Destination Index: logs-kolide_latest.dest_people-2
+* Destination Index: logs-kolide_lookup.dest_people-2
 
 **Exported fields**
 
