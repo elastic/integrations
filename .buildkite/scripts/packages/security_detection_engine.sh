@@ -6,9 +6,48 @@ if [[ "${BUILDKITE_PULL_REQUEST}" == "false" ]]; then
   exit 0
 fi
 
-# Fetch active Kibana versions
-ACTIVE_KIBANA_VERSIONS=$(curl -sL https://raw.githubusercontent.com/elastic/kibana/main/versions.json | yq '.versions[].version' | xargs)
-echo "Active Kibana versions: $ACTIVE_KIBANA_VERSIONS"
+# Use Release API to get released and supported Elastic Stack versions
+PAST_RELEASES_URL="https://ela.st/past-stack-releases"
+PAST_VERSIONS=$(curl -sL $PAST_RELEASES_URL |  jq -r '
+.releases
+  | map(
+      select(
+        .is_end_of_support == false
+        and .is_retired == false
+        and (.version | test("^\\d+\\.\\d+\\.\\d+$"))
+      )
+    )
+  | group_by(
+      .version
+      | capture("^(?<maj>\\d+)\\.(?<min>\\d+)")
+      | "\(.maj).\(.min)"
+    )
+  | map(
+      max_by(
+        .version
+        | split(".")
+        | map(tonumber)
+      )
+    )
+  | .[].version'
+)
+
+FUTURE_RELEASES_URL="https://ela.st/future-stack-releases"
+FUTURE_VERSIONS=$(curl -sL $FUTURE_RELEASES_URL |  jq -r '
+.releases[]
+  | select(.active_release == true)
+  | select(
+      .snapshots
+      | to_entries
+      | any(.value.date_removed > (now | strftime("%Y-%m-%d %H:%M:%S")))
+    )
+  | "\(.version)-SNAPSHOT"
+'
+)
+
+ACTIVE_VERSIONS="$(echo -e "${PAST_VERSIONS}\n${FUTURE_VERSIONS}" | sort -V | xargs)"
+
+echo "Active Elastic Stack versions: $ACTIVE_VERSIONS"
 
 # Extract version spec from the manifest
 KIBANA_REQ=$(yq .conditions.kibana.version ./packages/security_detection_engine/manifest.yml)
@@ -34,16 +73,27 @@ func main() {
 		panic(err)
 	}
 
-	for _, s := range strings.Split(os.Args[2], " ") {
-		if v, _ := semver.NewVersion(s); c.Check(v) {
-			fmt.Println(s + "-SNAPSHOT")
+  for _, s := range strings.Split(os.Args[2], " ") {
+		checkVersion := s
+
+		if strings.HasSuffix(s, "-SNAPSHOT") {
+			checkVersion = strings.TrimSuffix(s, "-SNAPSHOT")
+		}
+
+		v, err := semver.NewVersion(checkVersion)
+		if err != nil {
+			continue
+		}
+
+		if c.Check(v) {
+			fmt.Println(s)
 		}
 	}
 }
 GO
 
 # Capture the "returned" array in STACK_VERSIONS
-read -r -a STACK_VERSIONS <<< "$(go run "${SEMVER_FILTER_PATH}" "${KIBANA_REQ}" "${ACTIVE_KIBANA_VERSIONS}" | xargs)"
+read -r -a STACK_VERSIONS <<< "$(go run "${SEMVER_FILTER_PATH}" "${KIBANA_REQ}" "${ACTIVE_VERSIONS}" | xargs)"
 
 if [[ ! -n "${STACK_VERSIONS+x}" ]]; then
 	echo "There are no active versions satisfying the constraint ${KIBANA_REQ}."
