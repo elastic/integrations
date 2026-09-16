@@ -116,9 +116,35 @@ New users panels don't show them. If the selected time range contains only event
 upgrade, the panels are empty.
 
 To include the older events, copy the account from `user.name` and `user.id` into
-`user.target.name` and `user.target.id` with an update by query request. The request targets the
-`system.auth` data stream in every namespace and only changes `useradd` events that don't have
-`user.target.name` set:
+`user.target.name` and `user.target.id`. Backing indices created before the upgrade might not map
+the `user.target.*` fields, or might map them dynamically with a different type. To make sure the
+backfilled values are mapped as `keyword` and the panels can aggregate on them, first add the
+mapping to all backing indices of the `system.auth` data stream:
+
+```json
+PUT logs-system.auth-*/_mapping
+{
+  "properties": {
+    "user": {
+      "properties": {
+        "target": {
+          "properties": {
+            "id": { "type": "keyword", "ignore_above": 1024 },
+            "name": {
+              "type": "keyword",
+              "ignore_above": 1024,
+              "fields": { "text": { "type": "match_only_text" } }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+Then run an update by query request. The request targets the `system.auth` data stream in every
+namespace and only changes `useradd` events that don't have `user.target.name` set:
 
 ```json
 POST logs-system.auth-*/_update_by_query?conflicts=proceed
@@ -135,17 +161,16 @@ POST logs-system.auth-*/_update_by_query?conflicts=proceed
     }
   },
   "script": {
-    "lang": "painless",
     "source": "if (ctx._source.user.target == null) { ctx._source.user.target = new HashMap(); } ctx._source.user.target.name = ctx._source.user.name; if (ctx._source.user.id != null) { ctx._source.user.target.id = ctx._source.user.id; }"
   }
 }
 ```
 
-The request rewrites every matching document. In backing indices created before the upgrade,
-Elasticsearch maps the new fields dynamically through the ECS dynamic templates. The request can't
-update read-only indices, such as searchable snapshot indices in the cold or frozen tier. If you
-can't update the older data, narrow the dashboard time range to events ingested after the upgrade
-to version 2.22.0.
+The update rewrites every matching document. Read-only indices, such as searchable snapshot
+indices in the cold or frozen tier, can't be updated. If some of the older data is read-only, add a
+`range` filter on `@timestamp` to the update by query request so it only matches documents in
+writable indices, or narrow the dashboard time range to events ingested after the upgrade to
+version 2.22.0.
 
 ## Logs reference
 
