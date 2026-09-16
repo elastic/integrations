@@ -3,7 +3,7 @@
 ## Overview
 
 [CrowdSec](https://www.crowdsec.net/) is an open-source, collaborative intrusion
-prevention system. It parses logs, detects aggressive behaviour with scenarios
+prevention system. It parses logs, detects aggressive behavior with scenarios
 from the CrowdSec Hub, and issues remediation decisions such as banning a source
 IP. Decisions are shared with the CrowdSec community network, so a source that
 attacked one participant can be blocked by the others before it reaches them.
@@ -79,10 +79,10 @@ integration, refer to the
 ### Onboard and configure
 
 Fleet-managed and standalone Elastic Agent deployments are both supported.
-Agentless deployment is **not** supported: CrowdSec pushes to a listener, which
-requires an Agent reachable from the CrowdSec host.
+Elastic Managed (agentless) deployment is **not** supported: CrowdSec pushes to a
+listener, which requires an Agent reachable from the CrowdSec host.
 
-1. In Kibana, go to **Management > Integrations**, search for **CrowdSec**, and
+1. In Kibana, go to **Management → Integrations**, search for **CrowdSec**, and
    click **Add CrowdSec**.
 2. Configure the HTTP endpoint input:
    - **Listen address** — `0.0.0.0` to accept from any interface, or the specific
@@ -109,7 +109,7 @@ Then configure CrowdSec to push to it:
      {{ "{{.|toJson}}" }}
    ```
 
-   The `format` line must serialise the whole object so that complete alerts are
+   The `format` line must serialize the whole object so that complete alerts are
    sent. If a secret header was configured above, add it under `headers`.
 
 2. In `/etc/crowdsec/profiles.yaml`, add the notification to the profiles whose
@@ -164,7 +164,7 @@ firewall that drops the port is the most common cause: `tcpdump` on the Agent
 will show the packets arriving while nothing reaches the listener.
 
 **Documents arrive but every field except `@timestamp` is missing.**
-The `format` in `http.yaml` is not serialising the full object. It must be
+The `format` in `http.yaml` is not serializing the full object. It must be
 `{{ "{{.|toJson}}" }}`; a format that renders a human-readable string produces a
 body the pipeline cannot decode, and the document is tagged `pipeline_error`.
 
