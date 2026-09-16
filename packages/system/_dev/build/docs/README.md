@@ -106,6 +106,47 @@ the events from Windows. The filter shown below is equivalent to
       winlog.event_id.lte: 2004
 ```
 
+### New users panels are empty after upgrading
+
+Starting with version 2.24.0, the New users panels in the **[Logs System] New users and groups**
+dashboard read the created account from the ECS fields `user.target.name` and `user.target.id`.
+The integration populates these fields for `useradd` events starting with version 2.22.0. Events
+ingested by earlier versions only store the created account in `user.name` and `user.id`, so the
+New users panels don't show them. If the selected time range contains only events from before the
+upgrade, the panels are empty.
+
+To include the older events, copy the account from `user.name` and `user.id` into
+`user.target.name` and `user.target.id` with an update by query request. The request targets the
+`system.auth` data stream in every namespace and only changes `useradd` events that don't have
+`user.target.name` set:
+
+```json
+POST logs-system.auth-*/_update_by_query?conflicts=proceed
+{
+  "query": {
+    "bool": {
+      "filter": [
+        { "exists": { "field": "system.auth.useradd.home" } },
+        { "exists": { "field": "user.name" } }
+      ],
+      "must_not": [
+        { "exists": { "field": "user.target.name" } }
+      ]
+    }
+  },
+  "script": {
+    "lang": "painless",
+    "source": "if (ctx._source.user.target == null) { ctx._source.user.target = new HashMap(); } ctx._source.user.target.name = ctx._source.user.name; if (ctx._source.user.id != null) { ctx._source.user.target.id = ctx._source.user.id; }"
+  }
+}
+```
+
+The request rewrites every matching document. In backing indices created before the upgrade,
+Elasticsearch maps the new fields dynamically through the ECS dynamic templates. The request can't
+update read-only indices, such as searchable snapshot indices in the cold or frozen tier. If you
+can't update the older data, narrow the dashboard time range to events ingested after the upgrade
+to version 2.22.0.
+
 ## Logs reference
 
 ### Application
