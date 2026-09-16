@@ -1,0 +1,125 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "This rule detects a memfd_create syscall event on Linux where the combination of host and process lineage (parent executable and executable path) has not been seen before. This can indicate fileless execution using memfd-backed executables.",
+        "from": "now-9m",
+        "history_window_start": "now-10d",
+        "index": [
+            "logs-endpoint.events.process*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "Potential Fileless Execution via Unusual memfd Create Call",
+        "new_terms_fields": [
+            "host.id",
+            "process.parent.executable",
+            "process.executable"
+        ],
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Potential Fileless Execution via Unusual memfd Create Call\n\nThis rule detects a Linux process using memfd_create from a suspicious memory-backed or temporary path with a previously unseen host and process lineage, which may reveal code executing without a conventional on-disk file. An attacker can decrypt an ELF payload into an anonymous memory file and execute it through `/proc/self/fd`, reducing disk artifacts and evading file-based controls.\n\n### Possible investigation steps\n\n- Reconstruct the full process ancestry and execution timeline, examining command-line arguments, effective user, working directory, session context, and nearby process starts for evidence of initial access or privilege escalation.\n- Determine whether the executable is still running and, if so, preserve its memory, open file descriptors, `/proc/<pid>/exe` target, and loaded mappings before containment to support payload recovery and analysis.\n- Correlate the event with outbound network connections, DNS activity, authentication events, and file modifications from the same process tree to identify command-and-control or follow-on behavior.\n- Compare the lineage and binary metadata against approved software inventories and known behavior from browsers, language runtimes, container tooling, security agents, and self-updating applications to rule out legitimate memfd use.\n- If malicious activity is confirmed, isolate the host, terminate the associated process tree, revoke affected credentials, quarantine recovered payloads, and hunt across Linux endpoints for matching hashes, command lines, destinations, or ancestry patterns.\n\n### False positive analysis\n\n- A legitimate application or language runtime may use memfd-backed files for just-in-time compilation or helper execution; verify the process lineage, package ownership, user context, and behavior against an approved baseline.\n- An authorized security agent, container workload, or self-updating application may execute transient code from memory or temporary paths; confirm the timing matches a documented deployment or update and that no anomalous network or child-process activity followed.\n\n### Response and remediation\n\n- Isolate affected Linux systems from the network while preserving access for incident responders, then terminate the malicious memfd-backed process tree and block associated domains, IP addresses, hashes, and command lines.\n- Remove persistence associated with the process lineage, including unauthorized systemd units, cron jobs, shell-profile changes, SSH keys, modified startup scripts, containers, and executables under `/tmp`, `/var/tmp`, `/dev/shm`, or `/run/user`.\n- Revoke and rotate credentials, API tokens, SSH keys, and service secrets accessible to the compromised account or process, and review neighboring systems for reuse of those credentials.\n- Escalate immediately to incident response if the payload ran with root privileges, accessed credentials, established external communications, modified multiple hosts, or cannot be fully scoped from available evidence.\n- Reimage materially compromised hosts from trusted media or restore them from a verified known-good backup, then validate package integrity, security controls, accounts, services, and network behavior before reconnecting them.\n- Prevent recurrence by patching the exploited entry point, restricting execution from writable and memory-backed locations where operationally feasible, applying least privilege and systemd sandboxing, and hunting fleet-wide for matching process ancestry, `/proc/*/fd/*` execution, and memfd-backed artifacts.\n",
+        "query": "host.os.type:\"linux\" and event.category:process and event.type:start and event.action:memfd_create and\nprocess.executable:(\n  *memfd\\:* or /tmp/* or /var/tmp/* or /dev/shm/* or ./* or /run/user/* or /var/run/user/* or\n  /boot/* or /sys/* or /lost+found/* or /proc/* or /var/mail/* or /root/* or *\\(deleted\\)* or\n  /proc/*/fd/*\n) and process.parent.executable:*\n",
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.executable",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "42663c0e-572e-4459-bf61-476a81d6aab1",
+        "setup": "## Setup\n\nThis rule requires data coming in from Elastic Defend.\n\n### Elastic Defend Integration Setup\nElastic Defend is integrated into the Elastic Agent using Fleet. Upon configuration, the integration allows the Elastic Agent to monitor events on your host and send data to the Elastic Security app.\n\n#### Prerequisite Requirements:\n- Fleet is required for Elastic Defend.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n\n#### The following steps should be executed in order to add the Elastic Defend integration on a Linux System:\n- Go to the Kibana home page and click \"Add integrations\".\n- In the query bar, search for \"Elastic Defend\" and select the integration to see more details about it.\n- Click \"Add Elastic Defend\".\n- Configure the integration name and optionally add a description.\n- Select the type of environment you want to protect, either \"Traditional Endpoints\" or \"Cloud Workloads\".\n- Select a configuration preset. Each preset comes with different default settings for Elastic Agent, you can further customize these later by configuring the Elastic Defend integration policy. [Helper guide](https://www.elastic.co/guide/en/security/current/configure-endpoint-integration-policy.html).\n- We suggest selecting \"Complete EDR (Endpoint Detection and Response)\" as a configuration setting, that provides \"All events; all preventions\"\n- Enter a name for the agent policy in \"New agent policy name\". If other agent policies already exist, you can click the \"Existing hosts\" tab and select an existing policy instead.\nFor more details on Elastic Agent configuration settings, refer to the [helper guide](https://www.elastic.co/guide/en/fleet/8.10/agent-policy.html).\n- Click \"Save and Continue\".\n- To complete the integration, select \"Add Elastic Agent to your hosts\" and continue to the next section to install the Elastic Agent on your hosts.\nFor more details on Elastic Defend refer to the [helper guide](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Linux",
+            "Platform: Linux",
+            "Use Case: Threat Detection",
+            "Tactic: Defense Evasion",
+            "Tactic: Execution",
+            "Data Source: Elastic Defend",
+            "Rule Type: New Terms",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1620",
+                        "name": "Reflective Code Loading",
+                        "reference": "https://attack.mitre.org/techniques/T1620/"
+                    },
+                    {
+                        "id": "T1055",
+                        "name": "Process Injection",
+                        "reference": "https://attack.mitre.org/techniques/T1055/",
+                        "subtechnique": [
+                            {
+                                "id": "T1055.009",
+                                "name": "Proc Memory",
+                                "reference": "https://attack.mitre.org/techniques/T1055/009/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1106",
+                        "name": "Native API",
+                        "reference": "https://attack.mitre.org/techniques/T1106/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "new_terms",
+        "version": 1
+    },
+    "id": "42663c0e-572e-4459-bf61-476a81d6aab1_1",
+    "type": "security-rule"
+}

@@ -1,0 +1,129 @@
+{
+    "attributes": {
+        "alert_suppression": {
+            "duration": {
+                "unit": "h",
+                "value": 1
+            }
+        },
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies failed authentication attempts against the AWS Management Console root user from the same source IP address targeting multiple AWS accounts. Password spraying uses few attempts per target across many accounts to avoid lockout, making per-account volume an unreliable signal. This rule detects the cross-account breadth pattern: a single source IP generating root ConsoleLogin failures across two or more distinct AWS accounts. Requires an AWS Organizations-level CloudTrail trail aggregating events from member accounts.",
+        "false_positives": [
+            "Administrators behind a shared egress address, such as a corporate NAT gateway or VPN concentrator, can trigger this rule when separate people mistype root passwords for different accounts within the window, since a single failure per account is sufficient. An administrator who legitimately holds root credentials for several accounts can also match. Verify whether the source IP is an expected corporate or administrator address, and whether the targeted accounts correspond to that person's scope, before escalating. Repeated failures against a single account do not trigger this rule and are covered by the separate brute-force rule."
+        ],
+        "from": "now-1h",
+        "index": [
+            "logs-aws.cloudtrail-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "source.ip",
+                "user_agent.original",
+                "cloud.account.id",
+                "aws.cloudtrail.user_identity.type",
+                "event.outcome",
+                "aws.cloudtrail.error_message",
+                "@timestamp"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "AWS Root Console Login Password Spraying",
+        "note": "## Triage and analysis\n\n### Investigating AWS Root Console Login Password Spraying\n\nPassword spraying is a credential access technique where an attacker tries a small number of commonly used or leaked passwords across many accounts. Unlike brute force, the per-account attempt count is intentionally low \u2014 often 2\u20138 attempts \u2014 to stay below lockout thresholds and evade high-volume detections. Attackers targeting AWS root accounts typically hold a pre-enumerated list of root account email addresses and route attempts through proxy or residential IP infrastructure.\n\nThis rule fires when a single source IP generates failed root `ConsoleLogin` events against two or more distinct AWS accounts within a 1 hour window, requiring an AWS Organizations-level CloudTrail trail. The cross-account breadth is the defining spray signal; brute force against a single account is covered by a separate rule.\n\n#### Possible investigation steps\n\n- **Assess the source IP.**\nDetermine whether the IP belongs to a known corporate range, VPN, or expected admin location. Use threat intelligence tools to check if it is flagged as a proxy, Tor exit node, or residential proxy service.\n\n- **Review the user agent string.**\nOutdated browser user agents (for example, Chrome 85 or Firefox 120) are common indicators of spray-campaign tooling. Cross-reference `user_agent.original` across the contributing events in Timeline.\n\n- **Check for a subsequent successful login.**\nQuery CloudTrail for a `ConsoleLogin` success for the root identity in the same timeframe. A success immediately after failures indicates the spray succeeded \u2014 escalate immediately.\n\n- **Examine follow-on API calls.**\nIf a successful login did occur, review high-risk API calls that followed: `CreateUser`, `CreateAccessKey`, `AttachRolePolicy`, `DeleteTrail`, or `StopLogging`.\n\n- **Widen the scope across accounts.**\nIf your organization uses AWS Organizations, check whether the same source IP triggered root login failures in other member accounts during the same window.\n\n### False positive analysis\n\n- **Mistyped credentials.** A root credential custodian mistyping the password multiple times is the most likely benign cause. Confirm whether the source IP is a known admin location and whether a successful login followed shortly after.\n- **Stale automation.** Misconfigured scripts or browser sessions with cached root credentials may retry on failure. Check whether the user agent matches known internal tooling.\n\n### Response and remediation\n\n- **If no successful root login is found:**\n  - Rotate the root password to a strong, unique credential stored in an offline vault.\n  - Confirm MFA is enabled and enforced on the root account.\n  - Block the source IP at AWS WAF or network ACLs if confirmed malicious.\n\n- **If a successful root login is found:**\n  - Treat as Priority-1 account compromise and immediately follow the *AWS Management Console Root Login* investigation guide.\n  - Initiate an emergency root password reset and MFA re-enrollment.\n  - Preserve all CloudTrail events from \u00b11 hour around the login in an immutable evidence bucket.\n  - Audit all API calls made during the session for persistence: new users, access keys, policy changes.\n\n### Additional information\n\n- [AWS root user best practices](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_root-user.html)\n- [AWS IR Playbooks \u2014 Credential Compromise](https://github.com/aws-samples/aws-incident-response-playbooks)\n",
+        "query": "data_stream.dataset:aws.cloudtrail and\nevent.provider:signin.amazonaws.com and\nevent.action:ConsoleLogin and\naws.cloudtrail.user_identity.type:Root and\nevent.outcome:failure\n",
+        "references": [
+            "https://securitylabs.datadoghq.com/articles/aws-root-user-bruteforce-campaign/"
+        ],
+        "related_integrations": [
+            {
+                "integration": "cloudtrail",
+                "package": "aws",
+                "version": "^6.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "aws.cloudtrail.user_identity.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.provider",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "171d3cdd-0c04-47c2-b392-65719284ae25",
+        "setup": "## Setup\n\nThis rule requires an AWS Organizations-level CloudTrail trail that aggregates management events from all member accounts into a single destination. A single-account trail will only ever contain one `cloud.account.id` value and the cross-account cardinality signal will never fire.\n\nTo configure an org-level trail: in the AWS CloudTrail console, create a trail scoped to your AWS Organization and enable it in all regions. Ensure the Elastic AWS integration is ingesting from the aggregated trail destination.",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: Identity",
+            "Platform: AWS",
+            "Data Source: AWS CloudTrail",
+            "Use Case: Identity and Access Audit",
+            "Tactic: Credential Access",
+            "Rule Type: Threshold",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1110",
+                        "name": "Brute Force",
+                        "reference": "https://attack.mitre.org/techniques/T1110/",
+                        "subtechnique": [
+                            {
+                                "id": "T1110.003",
+                                "name": "Password Spraying",
+                                "reference": "https://attack.mitre.org/techniques/T1110/003/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "threshold": {
+            "cardinality": [
+                {
+                    "field": "cloud.account.id",
+                    "value": 2
+                }
+            ],
+            "field": [
+                "source.ip"
+            ],
+            "value": 1
+        },
+        "timestamp_override": "event.ingested",
+        "type": "threshold",
+        "version": 1
+    },
+    "id": "171d3cdd-0c04-47c2-b392-65719284ae25_1",
+    "type": "security-rule"
+}
