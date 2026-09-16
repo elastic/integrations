@@ -1,40 +1,189 @@
 # OPNsense
 
-[OPNsense](https://opnsense.org/) is an open-source firewall and routing
-platform based on FreeBSD and HardenedBSD.
+## Overview
 
-This integration collects OPNsense's **filterlog** events — the packet filter
-decisions made by `pf` — over syslog, and maps them to the Elastic Common Schema.
+[OPNsense](https://opnsense.org/) is an open-source firewall and routing platform
+based on FreeBSD and HardenedBSD, developed by Deciso B.V. It provides stateful
+packet filtering, VPN, intrusion detection and traffic shaping through the `pf`
+packet filter.
 
-## Compatibility
+This integration collects OPNsense **filterlog** events — the accept and block
+decisions `pf` makes on every packet that matches a logging rule — over syslog,
+and maps them to the Elastic Common Schema.
 
-Tested against OPNsense 26.7. The filterlog format is stable across recent
-releases.
+### Compatibility
 
-## Data collection
+This integration has been tested against OPNsense **26.7**. The filterlog format
+is stable across recent releases, so earlier versions are expected to work.
 
-Configure OPNsense to forward its logs:
+The same format is produced by pfSense and by FreeBSD's `pf` directly, but only
+OPNsense has been verified. For pfSense, use the dedicated `pfsense` integration.
 
-1. In the OPNsense UI, go to **System → Settings → Logging / targets**.
-2. Add a target with the address and port of the host running Elastic Agent,
-   the transport matching the input you enable below (UDP by default), and
-   **Applications** set to include `filter`.
-3. Ensure the rules you want to observe have logging enabled. The default deny
-   rule logs by default.
+### How it works
 
-Then add this integration to an agent policy and pick an input:
+OPNsense forwards its logs over syslog. The Elastic Agent listens on a UDP or TCP
+port and receives the messages as OPNsense emits them; a third input reads
+messages already written to a file.
 
-- **UDP**, the usual choice and OPNsense's default transport.
-- **TCP**, for delivery guarantees or messages larger than the network MTU.
-- **File**, to read messages already written to disk.
+Each filterlog message is an RFC 5424 syslog envelope wrapping a CSV body. The
+pipeline parses the envelope, then parses the body positionally — its column
+layout changes with the IP version and again with the transport protocol, so a
+single script handles the variants rather than a stack of alternative patterns.
 
-The agent needs permission to bind the listening port. Ports below 1024 require
-extra privileges, so the default is `9525`.
+## What data does this integration collect?
 
-## The log format
+The integration collects one data stream:
 
-A filterlog line is an RFC 5424 syslog message wrapping a CSV body whose layout
-changes with the IP version and then with the transport protocol:
+| Data stream | Type | Description |
+|---|---|---|
+| `log` | logs | OPNsense firewall events from the `filterlog` process, plus other syslog messages forwarded from the same host. |
+
+Filterlog events are mapped to ECS: the action becomes `event.action` and
+`event.type` (`allowed` or `denied`), addresses and ports become `source.*` and
+`destination.*`, the matching rule becomes `rule.id`, and the interface becomes
+`observer.ingress.interface.name`. Protocol-specific detail with no ECS
+equivalent is kept under `opnsense.log.*`.
+
+Messages from the same syslog stream that are not filterlog events are retained
+with their text in `message` and their program name in `process.name`, rather
+than being dropped.
+
+### Supported use cases
+
+- See what the firewall is blocking, which rules are responsible, and whether a
+  rule change had the intended effect.
+- Identify port scans from the TCP flag combination — `opnsense.log.tcp.flags`
+  distinguishes an ordinary `S` connection attempt from FIN, NULL and Xmas scans.
+- Track which internal hosts generate the most outbound traffic and where it goes.
+- Correlate firewall decisions with events from other integrations through
+  `source.ip`, `destination.ip` and `related.ip`.
+
+## What do I need to use this integration?
+
+- An Elastic Stack deployment — self-managed, Elastic Cloud or Elastic Cloud
+  Serverless — and an Elastic Agent enrolled in Fleet.
+- An OPNsense installation you can administer, to configure a remote syslog
+  target and to enable logging on the rules you want to observe.
+- Network reachability from OPNsense to the Elastic Agent on the chosen port.
+- Permission for the Agent to bind the listening port. Ports below 1024 require
+  additional privileges, so the default is `9525`.
+
+No credentials or API access to OPNsense are required — OPNsense pushes syslog to
+the Agent.
+
+## How do I deploy this integration?
+
+For step-by-step instructions on installing the Elastic Agent and adding an
+integration, refer to the
+[Getting started guide](https://www.elastic.co/guide/en/observability/current/observability-get-started.html).
+
+### Onboard and configure
+
+Fleet-managed and standalone Elastic Agent deployments are both supported.
+Agentless deployment is **not** supported: OPNsense pushes syslog to a listener,
+which requires an Agent reachable from the firewall.
+
+1. In Kibana, go to **Management > Integrations**, search for **OPNsense**, and
+   click **Add OPNsense**.
+2. Enable one input and configure it:
+   - **UDP** (default) — OPNsense's normal syslog transport. Set the listen
+     address to `0.0.0.0` unless the Agent has a single relevant interface.
+   - **TCP** — use when delivery guarantees matter or when messages can exceed
+     the network MTU.
+   - **File** — use to read messages already written to disk by another collector.
+3. Select or create an agent policy and save.
+
+Then configure OPNsense to forward to it:
+
+1. In the OPNsense web interface, go to
+   **System > Settings > Logging / targets**.
+2. Add a target:
+   - **Transport** — matching the input enabled above, `UDP(4)` by default.
+   - **Applications** — include `filter` to send packet filter events.
+   - **Hostname** and **Port** — the Elastic Agent's address and listen port.
+   - **Level** — `Informational` or lower; filterlog events are logged at
+     `Informational`.
+3. Apply the change.
+4. Confirm the rules you want to observe have logging enabled under
+   **Firewall > Rules**. The default deny rule logs by default.
+
+Refer to the
+[OPNsense logging documentation](https://docs.opnsense.org/manual/settingsmenu.html)
+for the authoritative configuration reference.
+
+### Validation
+
+1. Generate traffic the firewall will block, for example by connecting to a
+   closed port on the firewall's WAN address.
+2. Confirm OPNsense logged it under **Firewall > Log Files > Live View**.
+3. On the Agent host, confirm the packets arrive:
+
+   ```bash
+   sudo tcpdump -n -i any udp port 9525
+   ```
+
+4. In Kibana, open **Discover** and query `data_stream.dataset: "opnsense.log"`,
+   or open the **[Logs OPNsense] Firewall activity** dashboard.
+
+## Troubleshooting
+
+**`tcpdump` shows packets but no documents appear.**
+A host firewall on the Agent machine is dropping the port before the listener
+sees it. `tcpdump` captures below the filter, so traffic is visible even when the
+socket never receives it. Add an accept rule for the listen port.
+
+**Documents appear but every filterlog field is missing.**
+The syslog target is not sending the `filter` application, so the messages are
+other OPNsense logs. These are retained with their text in `message`; check
+`process.name` to see what is actually being forwarded.
+
+**`destination.port` or `source.port` is missing on some events.**
+ICMP and protocols without ports do not carry them. This is expected — check
+`network.transport` before reading the port fields.
+
+**Events are truncated or malformed under load.**
+UDP syslog has no delivery guarantee and messages larger than the MTU are
+truncated. Switch the target and the integration to TCP.
+
+**`event.action` is present but `rule.id` is not.**
+The rule that matched has no tracker id, which happens for some automatically
+generated rules. The action and interface are still recorded.
+
+For OPNsense-side issues, refer to the
+[OPNsense troubleshooting documentation](https://docs.opnsense.org/troubleshooting/).
+
+## Performance and scaling
+
+The UDP and TCP inputs are push-based, so throughput is bounded by how much the
+firewall logs rather than by a polling interval. A busy firewall with logging
+enabled on permissive rules can produce a very high event rate; log only the
+rules that matter rather than logging everything and filtering later.
+
+UDP drops messages silently under load, at the kernel receive buffer. If events
+are missing during traffic peaks, either raise the receive buffer on the Agent
+host or switch to TCP, which applies back-pressure instead of discarding.
+
+For several firewalls, point them at one Agent listener; events carry
+`observer.name` and `host.name` to tell them apart. Scale out to multiple Agents
+only when a single listener saturates.
+
+For guidance on sizing the Elastic Stack itself, refer to
+[Elastic Agent scaling](https://www.elastic.co/guide/en/fleet/current/fleet-agent-scaling.html).
+
+## Reference
+
+### Inputs used in this integration
+
+| Input | Purpose | Enabled by default |
+|---|---|---|
+| `udp` | Receives syslog over UDP, OPNsense's default transport. | yes |
+| `tcp` | Receives syslog over TCP. | no |
+| `logfile` | Reads syslog messages from a file. | no |
+
+### The filterlog format
+
+A filterlog body is CSV whose layout changes with the IP version and then with
+the transport protocol:
 
 - IPv4 carries `tos, ecn, ttl, id, offset, flags` and reports the protocol as
   `number, name`; IPv6 carries `class, flow, hoplimit` and reverses those two
@@ -44,19 +193,6 @@ changes with the IP version and then with the transport protocol:
 - UDP lines end after ports and payload length.
 - ICMP lines end with `key=value` pairs rather than positional columns.
 
-The pipeline parses all of these into `opnsense.log.*` alongside the ECS fields.
-`opnsense.log.tcp.flags` is worth knowing about: it distinguishes an ordinary
-SYN connection attempt from FIN, NULL and Xmas scans.
-
-## Dashboard
-
-The **[Logs OPNsense] Firewall Activity** dashboard covers traffic volume and
-block rate, activity over time by action and interface, the ports being targeted
-over time, TCP flag distribution, which rules are firing, top talkers and
-destinations, protocol and direction breakdowns, and a source map.
-
-## Logs
-
 ### Log
 
 The `log` data stream collects OPNsense firewall events.
@@ -65,40 +201,43 @@ An example event for `log` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-09-07T02:05:17.000Z",
+    "@timestamp": "2026-09-07T02:06:04.000Z",
+    "data_stream": {
+        "dataset": "opnsense.log",
+        "namespace": "default",
+        "type": "logs"
+    },
     "destination": {
         "geo": {
-            "city_name": "Las Vegas",
-            "continent_name": "North America",
-            "country_iso_code": "US",
-            "country_name": "United States",
+            "city_name": "Amsterdam",
+            "continent_name": "Europe",
+            "country_iso_code": "NL",
+            "country_name": "Netherlands",
             "location": {
-                "lat": 36.17497,
-                "lon": -115.13722
+                "lat": 52.37404,
+                "lon": 4.88969
             },
-            "region_iso_code": "US-NV",
-            "region_name": "Nevada"
+            "region_iso_code": "NL-NH",
+            "region_name": "North Holland"
         },
-        "ip": "192.0.2.10",
+        "ip": "198.51.100.1",
         "port": 22
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "9.3.0"
     },
     "event": {
-        "action": "block",
+        "action": "pass",
         "category": [
             "network"
         ],
         "kind": "event",
-        "outcome": "failure",
+        "outcome": "success",
         "reason": "match",
         "type": [
             "connection",
-            "denied"
-        ],
-        "dataset": "opnsense.log",
-        "module": "opnsense"
+            "allowed"
+        ]
     },
     "host": {
         "name": "OPNsense.internal"
@@ -123,7 +262,7 @@ An example event for `log` looks as following:
     "observer": {
         "ingress": {
             "interface": {
-                "name": "vtnet1"
+                "name": "vtnet0"
             }
         },
         "name": "OPNsense.internal",
@@ -133,15 +272,15 @@ An example event for `log` looks as following:
     },
     "opnsense": {
         "log": {
-            "action": "block",
+            "action": "pass",
             "data_length": 0,
-            "destination_ip": "192.0.2.10",
+            "destination_ip": "198.51.100.1",
             "destination_port": 22,
             "direction": "in",
-            "interface": "vtnet1",
+            "interface": "vtnet0",
             "ip": {
                 "flags": "DF",
-                "id": 10370,
+                "id": 15873,
                 "offset": 0,
                 "protocol_number": 6,
                 "tos": "0x0",
@@ -152,15 +291,15 @@ An example event for `log` looks as following:
             "protocol": "tcp",
             "reason": "match",
             "rule": {
-                "id": "71",
-                "uuid": "3d399f8f89b68d684701badb48eab085"
+                "id": "81",
+                "uuid": "60533d555322b9f6a009f71c1c471480"
             },
-            "source_ip": "192.0.2.1",
-            "source_port": 53170,
+            "source_ip": "198.51.100.2",
+            "source_port": 47048,
             "tcp": {
                 "flags": "S",
                 "options": "mss;sackOK;TS;nop;wscale",
-                "sequence_number": "879339721",
+                "sequence_number": "2012195821",
                 "window": "64240"
             }
         }
@@ -171,43 +310,38 @@ An example event for `log` looks as following:
     },
     "related": {
         "ip": [
-            "192.0.2.1",
-            "192.0.2.10"
+            "198.51.100.2",
+            "198.51.100.1"
         ]
     },
     "rule": {
-        "id": "71",
-        "uuid": "3d399f8f89b68d684701badb48eab085"
+        "id": "81",
+        "uuid": "60533d555322b9f6a009f71c1c471480"
     },
     "source": {
         "as": {
-            "number": 64500,
+            "number": 64501,
             "organization": {
                 "name": "Documentation ASN"
             }
         },
         "geo": {
-            "city_name": "Las Vegas",
-            "continent_name": "North America",
-            "country_iso_code": "US",
-            "country_name": "United States",
+            "city_name": "Amsterdam",
+            "continent_name": "Europe",
+            "country_iso_code": "NL",
+            "country_name": "Netherlands",
             "location": {
-                "lat": 36.17497,
-                "lon": -115.13722
+                "lat": 52.37404,
+                "lon": 4.88969
             },
-            "region_iso_code": "US-NV",
-            "region_name": "Nevada"
+            "region_iso_code": "NL-NH",
+            "region_name": "North Holland"
         },
-        "ip": "192.0.2.1",
-        "port": 53170
-    },
-    "data_stream": {
-        "type": "logs",
-        "dataset": "opnsense.log",
-        "namespace": "default"
+        "ip": "198.51.100.2",
+        "port": 47048
     },
     "tags": [
-        "opnsense",
+        "opnsense-log",
         "forwarded"
     ]
 }
@@ -217,10 +351,10 @@ An example event for `log` looks as following:
 
 | Field | Description | Type |
 |---|---|---|
-| @timestamp | Event timestamp. | date |
-| data_stream.dataset | Data stream dataset. | constant_keyword |
-| data_stream.namespace | Data stream namespace. | constant_keyword |
-| data_stream.type | Data stream type. | constant_keyword |
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
 | destination.geo.country_iso_code | Country ISO code. | keyword |
 | destination.geo.location | Longitude and latitude. | geo_point |
 | destination.ip | IP address of the destination (IPv4 or IPv6). | ip |
@@ -229,14 +363,16 @@ An example event for `log` looks as following:
 | error.message | Error message. | match_only_text |
 | event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
-| event.dataset | Event dataset. | constant_keyword |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
-| event.module | Event module. | constant_keyword |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
 | event.reason | Reason why this event happened, according to the source. This describes the why of a particular action or outcome captured in the event. Where `event.action` captures the action from the event, `event.reason` describes why that action was taken. For example, a web proxy with an `event.action` which denied the request may also populate `event.reason` with the reason why (e.g. `blocked site`). | keyword |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | host.name | Name of the host. It can contain what hostname returns on Unix systems, the fully qualified domain name (FQDN), or a name specified by the user. The recommended value is the lowercase FQDN of the host. | keyword |
+| log.file.path | Path to the log file the event was read from. | keyword |
+| log.offset | Log offset. | long |
 | log.syslog.facility.code | The Syslog numeric facility of the log event, if available. According to RFCs 5424 and 3164, this value should be an integer between 0 and 23. | long |
 | log.syslog.priority | Syslog numeric priority of the event, if available. According to RFCs 5424 and 3164, the priority is 8 \* facility + severity. This number is therefore expected to contain a value between 0 and 191. | long |
 | log.syslog.severity.code | The Syslog numeric severity of the log event, if available. If the event source publishing via Syslog provides a different numeric severity value (e.g. firewall, IDS), your source's numeric severity should go to `event.severity`. If the event source does not specify a distinct severity, you can optionally copy the Syslog severity to `event.severity`. | long |

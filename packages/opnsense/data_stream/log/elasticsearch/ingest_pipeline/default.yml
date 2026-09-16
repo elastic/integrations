@@ -3,18 +3,26 @@ description: Pipeline for parsing OPNsense logs.
 processors:
   - set:
       field: ecs.version
-      value: "8.11.0"
       tag: set_ecs_version
-  - set:
-      field: event.original
-      copy_from: message
-      tag: set_event_original
-      if: ctx.tags != null && ctx.tags.contains('preserve_original_event') && ctx.event?.original == null
+      value: '9.3.0'
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
 
   # OPNsense emits RFC 5424. The structured-data element is present but carries
   # only a sequence id, so it is matched and discarded rather than parsed.
   - grok:
-      field: message
+      field: event.original
       patterns:
         - >-
           ^<%{NONNEGINT:_tmp.priority:long}>%{NONNEGINT:_tmp.syslog_version}
@@ -30,7 +38,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: "failed to parse syslog header: {{{_ingest.on_failure_message}}}"
+            value: 'failed to parse syslog header: {{{_ingest.on_failure_message}}}'
 
   - date:
       field: _tmp.timestamp
@@ -44,7 +52,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: "failed to parse timestamp: {{{_ingest.on_failure_message}}}"
+            value: 'failed to parse timestamp: {{{_ingest.on_failure_message}}}'
 
   # syslog priority = facility * 8 + severity
   - script:
@@ -274,7 +282,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: "source is not an IP: {{{_ingest.on_failure_message}}}"
+            value: 'source is not an IP: {{{_ingest.on_failure_message}}}'
   - convert:
       field: opnsense.log.destination_ip
       target_field: destination.ip
@@ -284,7 +292,7 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: "destination is not an IP: {{{_ingest.on_failure_message}}}"
+            value: 'destination is not an IP: {{{_ingest.on_failure_message}}}'
   - set:
       field: source.port
       copy_from: opnsense.log.source_port
@@ -340,13 +348,13 @@ processors:
 
   - append:
       field: related.ip
-      value: "{{{source.ip}}}"
+      value: '{{{source.ip}}}'
       tag: append_related_source
       allow_duplicates: false
       if: ctx.source?.ip != null
   - append:
       field: related.ip
-      value: "{{{destination.ip}}}"
+      value: '{{{destination.ip}}}'
       tag: append_related_destination
       allow_duplicates: false
       if: ctx.destination?.ip != null
@@ -364,12 +372,6 @@ processors:
       tag: set_message_body
       if: ctx.opnsense?.log == null && ctx._tmp?.body != null
   - remove:
-      field: message
-      tag: remove_message
-      ignore_missing: true
-      if: ctx.opnsense?.log != null
-
-  - remove:
       field: _tmp
       tag: remove_tmp
       ignore_missing: true
@@ -380,12 +382,29 @@ processors:
       ignore_missing: true
       if: ctx.source?.as?.number == 0
 
+  # Keep the raw payload on any document a processor failed on, so the failure
+  # can be diagnosed from the document itself.
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      tag: append_preserve_original_event_on_error
+      if: ctx.error?.message != null
+
 on_failure:
-  - set:
-      field: event.kind
-      value: pipeline_error
-      tag: set_event_kind_error
   - append:
       field: error.message
-      value: "{{{ _ingest.on_failure_message }}}"
       tag: append_pipeline_error
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+      tag: append_preserve_original_event_on_failure
