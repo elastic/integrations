@@ -1,0 +1,114 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Adversaries may create or modify Linux firewall rules with DROP, ACCEPT, or REJECT actions to affect how a host receives or sends network traffic. This activity may be used to bypass security controls, block defensive tooling, or gain unauthorized access to the network.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.process*",
+            "endgame-*",
+            "logs-crowdstrike.fdr*",
+            "logs-sentinel_one_cloud_funnel.*",
+            "logs-auditd_manager.auditd-*",
+            "auditbeat-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Linux Firewall Rule Creation or Modification",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Linux Firewall Rule Creation or Modification\n\nThis rule detects Linux firewall commands that create or modify DROP, ACCEPT, REJECT, deny, allow, or reject rules, which can weaken network controls, conceal malicious traffic, or open unauthorized access paths. An attacker with elevated privileges may add an ACCEPT rule permitting inbound SSH from a controlled address, then add DROP or REJECT rules that block connections to monitoring or management systems.\n\n### Possible investigation steps\n\n- Review the full command line, execution user, privilege level, parent process, working directory, and related shell history to determine who initiated the change and whether it followed an approved administrative workflow.\n- Reconstruct the resulting firewall policy and identify affected interfaces, protocols, ports, addresses, directions, and rule ordering to assess whether access was opened or security and management traffic was blocked.\n- Compare the change with configuration-management activity, maintenance windows, change tickets, administrator baselines, and similar commands on peer hosts to distinguish expected operations from anomalous behavior.\n- Correlate nearby authentication, process, file, and network events for suspicious logins, privilege escalation, remote-access tooling, firewall persistence changes, or connections newly enabled by the rule.\n- If unauthorized, preserve the active ruleset and relevant telemetry, restore the approved policy through controlled procedures, isolate the host when necessary, and investigate the initiating account and adjacent systems for compromise.\n\n### False positive analysis\n\n- An administrator may add or modify DROP, ACCEPT, REJECT, deny, allow, or reject rules during approved firewall maintenance; verify the command scope, initiating user, execution time, and corresponding change record.\n- A startup script or configuration-management process may restore the approved firewall baseline after boot or deployment; confirm the parent process, command recurrence, and resulting ruleset match established host and peer baselines.\n\n### Response and remediation\n\n- Isolate affected hosts from untrusted networks while preserving approved incident-response access, and block attacker-controlled addresses and newly exposed services at upstream firewalls.\n- Preserve the active ruleset and relevant logs, then remove unauthorized DROP, ACCEPT, REJECT, deny, allow, or reject rules and restore the approved policy through configuration management.\n- Remove firewall persistence from systemd units, cron jobs, startup scripts, network hooks, nftables configuration, iptables-persistent files, and UFW configuration.\n- Revoke compromised credentials and active sessions, inspect for additional malware or privilege escalation, and reimage from a known-good source if root-level integrity cannot be established.\n- Escalate immediately to incident response if the rules were created with root privileges, enabled unauthorized remote access, impaired monitoring, or appear on multiple systems.\n- Harden the environment by restricting firewall administration through least privilege, enforcing reviewed ruleset baselines, securing configuration files, and alerting on future policy changes.\n",
+        "query": "process where host.os.type == \"linux\" and event.type == \"start\" and\nevent.action in (\"exec\", \"exec_event\", \"start\", \"ProcessRollup2\", \"executed\", \"process_started\") and\n(\n  (\n    process.name in (\n      \"iptables\", \"ip6tables\", \"iptables-nft\", \"ip6tables-nft\", \"iptables-legacy\",\n      \"ip6tables-legacy\", \"xtables-nft-multi\", \"xtables-legacy-multi\"\n    ) and\n    process.args in (\"-A\", \"--append\", \"-I\", \"--insert\", \"-R\", \"--replace\", \"-P\", \"--policy\") and\n    process.args like~ (\"DROP\", \"ACCEPT\", \"REJECT\")\n  ) or\n  (\n    process.name == \"nft\" and\n    process.args in (\"add\", \"insert\", \"replace\") and\n    process.args == \"rule\" and\n    process.args like~ (\"DROP\", \"ACCEPT\", \"REJECT\") and\n    not process.args in (\"-c\", \"--check\")\n  ) or\n  (\n    process.name == \"ufw\" and\n    process.args like~ (\"deny\", \"allow\", \"reject\") and\n    not process.args in (\"delete\", \"--dry-run\")\n  )\n)\n",
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.9.0"
+            },
+            {
+                "package": "crowdstrike",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "auditd_manager",
+                "version": "^1.18.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "c7395bb9-9b71-49e6-aeb4-dc70b8229b97",
+        "setup": "## Setup\n\nThis rule requires data coming in from Elastic Defend.\n\n### Elastic Defend Integration Setup\nElastic Defend is integrated into the Elastic Agent using Fleet. Upon configuration, the integration allows the Elastic Agent to monitor events on your host and send data to the Elastic Security app.\n\n#### Prerequisite Requirements:\n- Fleet is required for Elastic Defend.\n- To configure Fleet Server refer to the [documentation](https://www.elastic.co/guide/en/fleet/current/fleet-server.html).\n\n#### The following steps should be executed in order to add the Elastic Defend integration on a Linux System:\n- Go to the Kibana home page and click \"Add integrations\".\n- In the query bar, search for \"Elastic Defend\" and select the integration to see more details about it.\n- Click \"Add Elastic Defend\".\n- Configure the integration name and optionally add a description.\n- Select the type of environment you want to protect, either \"Traditional Endpoints\" or \"Cloud Workloads\".\n- Select a configuration preset. Each preset comes with different default settings for Elastic Agent, you can further customize these later by configuring the Elastic Defend integration policy. [Helper guide](https://www.elastic.co/guide/en/security/current/configure-endpoint-integration-policy.html).\n- We suggest selecting \"Complete EDR (Endpoint Detection and Response)\" as a configuration setting, that provides \"All events; all preventions\"\n- Enter a name for the agent policy in \"New agent policy name\". If other agent policies already exist, you can click the \"Existing hosts\" tab and select an existing policy instead.\nFor more details on Elastic Agent configuration settings, refer to the [helper guide](https://www.elastic.co/guide/en/fleet/8.10/agent-policy.html).\n- Click \"Save and Continue\".\n- To complete the integration, select \"Add Elastic Agent to your hosts\" and continue to the next section to install the Elastic Agent on your hosts.\nFor more details on Elastic Defend refer to the [helper guide](https://www.elastic.co/guide/en/security/current/install-endpoint.html).\n\n### Additional data sources\n\nThis rule also supports ECS-compatible process events from Elastic Endgame and the following integrations:\n\n- [CrowdStrike](https://ela.st/crowdstrike-integration)\n- [SentinelOne Cloud Funnel](https://ela.st/sentinel-one-cloud-funnel)\n- [Auditd Manager](https://www.elastic.co/docs/reference/integrations/auditd_manager)\n- [Auditbeat](https://www.elastic.co/guide/en/beats/auditbeat/current/auditbeat-installation-configuration.html)\n",
+        "severity": "low",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Linux",
+            "Platform: Linux",
+            "Use Case: Threat Detection",
+            "Tactic: Defense Evasion",
+            "Data Source: Auditd Manager",
+            "Data Source: Elastic Defend",
+            "Data Source: Elastic Endgame",
+            "Data Source: Crowdstrike",
+            "Data Source: SentinelOne",
+            "Resources: Investigation Guide",
+            "Rule Type: Event Correlation (EQL)"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1562",
+                        "name": "Impair Defenses",
+                        "reference": "https://attack.mitre.org/techniques/T1562/",
+                        "subtechnique": [
+                            {
+                                "id": "T1562.004",
+                                "name": "Disable or Modify System Firewall",
+                                "reference": "https://attack.mitre.org/techniques/T1562/004/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 1
+    },
+    "id": "c7395bb9-9b71-49e6-aeb4-dc70b8229b97_1",
+    "type": "security-rule"
+}
