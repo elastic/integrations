@@ -239,6 +239,12 @@ processors:
           ctx['message'] = details;
         }
 
+  - set:
+      tag: set_event_reason_9c2f5a3e
+      field: event.reason
+      copy_from: azure.signinlogs.properties.status.failure_reason
+      ignore_empty_value: true
+      description: 'Azure describes the cause of a sign-in result in `status.failureReason`. The vendor field is consumed into `message` and then removed, so the value is copied to `event.reason` first to keep it queryable as a field.'
   - remove:
       tag: remove_azure_signinlogs_properties_status_failure_reason_172a2fd8
       field: azure.signinlogs.properties.status.failure_reason

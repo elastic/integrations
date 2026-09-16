@@ -186,7 +186,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | azure.activitylogs.properties | Event properties | flattened |
 | azure.activitylogs.result_signature | Result signature | keyword |
 | azure.activitylogs.result_type | Result type | keyword |
-| azure.activitylogs.tenant_id | Tenant ID | keyword |
+| azure.activitylogs.tenant_id | Tenant ID. Alias of `azure.tenant_id`. | alias |
 | azure.correlation_id | Correlation ID | keyword |
 | azure.resource.authorization_rule | Authorization rule | keyword |
 | azure.resource.group | Resource group | keyword |

@@ -33,7 +33,7 @@
       type: enhancement
       link: https://github.com/elastic/integrations/pull/21261
     - description: >-
-        Move the envelope tenant ID in activitylogs to `azure.tenant_id` instead of copying it, so the value is no longer indexed twice. `azure.activitylogs.tenant_id` is no longer populated; use `azure.tenant_id`, which matches every other data stream in the package.
+        Move the envelope tenant ID in activitylogs to `azure.tenant_id` instead of copying it, so the value is no longer indexed twice. `azure.activitylogs.tenant_id` is redefined as a field alias of `azure.tenant_id`, so existing queries, aggregations, and dashboards that reference the old name keep working.
       type: bugfix
       link: https://github.com/elastic/integrations/pull/21261
     - description: >-
@@ -65,6 +65,10 @@
       link: https://github.com/elastic/integrations/pull/21261
     - description: >-
         Set `event.outcome` from the HTTP response status code in the application_gateway data stream. Web application firewall records, which carry no status code, are left without an outcome.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/21261
+    - description: >-
+        Populate `event.reason` in the signinlogs, auditlogs, and provisioning data streams, from the sign-in `status.failureReason`, the audit `resultReason`, and the provisioning error `reason` respectively. In signinlogs the vendor field is consumed into `message` and then removed, so the value was previously not queryable as a field at all.
       type: enhancement
       link: https://github.com/elastic/integrations/pull/21261
 - version: "1.40.0"
