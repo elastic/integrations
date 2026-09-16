@@ -34,6 +34,7 @@ Create a dedicated API token in **Account Menu → Access → API tokens** and g
 
 * Devices: Device Information: Device list
 * Audit Logs: List Audit Events
+* Admins: List Tenant Admins
 
 Copy **Your organization's API URL** from the same page.
 
@@ -46,7 +47,7 @@ Copy **Your organization's API URL** from the same page.
 3. Note **Your organization's API URL**.
 4. Click **Add Token**, enter a name and description, and click **Create**.
 5. Copy the token immediately. It is shown only once.
-6. Configure permissions: enable **Device list** and **List Audit Events** only. Do not grant lock, erase, or secrets permissions.
+6. Configure permissions: enable **Device list**, **List Audit Events**, and **List Tenant Admins**. Do not grant lock, erase, or secrets permissions.
 7. Click **Save**.
 
 #### Vendor resources
@@ -66,7 +67,7 @@ Copy **Your organization's API URL** from the same page.
 
 ### Validation
 
-1. In Iru, confirm the token has Device list and List Audit Events permissions and that the tenant has recent Activity and enrolled devices.
+1. In Iru, confirm the token has Device list, List Audit Events, and List Tenant Admins permissions and that the tenant has recent Activity and enrolled devices.
 2. In Kibana Discover, search `data_stream.dataset: "iru.audit"` and `data_stream.dataset: "iru.device"`.
 
 ## Troubleshooting
@@ -119,6 +120,7 @@ To collect logs via API endpoint, configure the following parameters:
 These APIs are used with this integration:
 * [List audit events](https://api-docs.iru.com/) — `GET /api/v1/audit/events`
 * [List devices](https://api-docs.iru.com/) — `GET /api/v1/devices`
+* [List tenant admins](https://api-docs.iru.com/) — `GET /api/v1/admins`
 
 ### Vendor documentation links
 
