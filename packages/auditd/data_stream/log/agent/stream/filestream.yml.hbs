@@ -18,12 +18,14 @@ publisher_pipeline.disable_host: true
 prospector.scanner.exclude_files: ['\.gz$']
 take_over:
   enabled: true
-{{#if use_auditd_parser}}
-{{#semverSatisfies _meta.agent.version ">=9.5.0"}}
+{{#semverSatisfies _meta.agent.version ">=9.6.0"}}
 parsers:
-  - auditd: ~
-{{/semverSatisfies}}
+  - auditd:
+      mode: {{parser_mode}}
+{{#if preserve_original_event}}
+      include_raw_message: true
 {{/if}}
+{{/semverSatisfies}}
 {{#if processors}}
 processors:
 {{processors}}
