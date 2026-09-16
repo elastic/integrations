@@ -62,10 +62,7 @@ func (m *packageManifest) HasRequires() bool {
 	return m.Requires != nil && (len(m.Requires.Input) > 0 || len(m.Requires.Content) > 0)
 }
 
-// ParsePackageManifest parses manifest.yml content read from anywhere — a
-// worktree file, or content read from another git ref (e.g. via `git show
-// <ref>:packages/<pkg>/manifest.yml`).
-func ParsePackageManifest(content []byte) (*packageManifest, error) {
+func parsePackageManifest(content []byte) (*packageManifest, error) {
 	cfg, err := yaml.NewConfig(content, ucfg.PathSep("."))
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse package manifest: %w", err)
@@ -84,7 +81,7 @@ func ReadPackageManifest(path string) (*packageManifest, error) {
 		return nil, fmt.Errorf("reading file failed (path: %s): %w", path, err)
 	}
 
-	manifest, err := ParsePackageManifest(content)
+	manifest, err := parsePackageManifest(content)
 	if err != nil {
 		return nil, fmt.Errorf("%s: %w", path, err)
 	}

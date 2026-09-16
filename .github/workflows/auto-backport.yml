@@ -68,10 +68,10 @@ jobs:
         run: |
           PERMISSION=$(gh api "repos/$REPOSITORY/collaborators/$ACTOR/permission" \
             --jq '.permission' 2>/dev/null || echo "none")
-          if [[ "$PERMISSION" == "write" || "$PERMISSION" == "admin" ]]; then
+          if [[ "$PERMISSION" == "write" || "$PERMISSION" == "maintain" || "$PERMISSION" == "admin" ]]; then
             echo "permitted=true" >> "$GITHUB_OUTPUT"
           else
-            echo "Actor $ACTOR lacks write/admin permission ($PERMISSION) — skipping"
+            echo "Actor $ACTOR lacks write/maintain/admin permission ($PERMISSION) — skipping"
           fi
 
       - name: Resolve merge SHA and PR metadata
@@ -124,13 +124,14 @@ jobs:
 
       - name: Set up Go
         if: steps.resolve.outputs.pr_number != ''
-        uses: actions/setup-go@v6
+        uses: actions/setup-go@v7
         with:
-          go-version-file: .go-version
+          # Use the backport tool's own Go version (pinned to main's version).
+          go-version-file: cmd/backport/.go-version
 
-      - name: Install mage
+      - name: Build backport tool
         if: steps.resolve.outputs.pr_number != ''
-        run: go install github.com/magefile/mage
+        run: mkdir -p "$GITHUB_WORKSPACE/build" && go build -C cmd/backport -o "$GITHUB_WORKSPACE/build/backport" .
 
       - name: Find checklist comment
         id: find-comment
