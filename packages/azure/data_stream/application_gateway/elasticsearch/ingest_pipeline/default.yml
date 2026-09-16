@@ -148,6 +148,18 @@ processors:
       field: json.properties.httpStatus
       target_field: http.response.status_code
       ignore_missing: true
+  - script:
+      tag: script_set_event_outcome_from_http_status_4e7b1c93
+      lang: painless
+      description: 'Derives `event.outcome` from the HTTP response status code. Web application firewall records carry no status code and are left without an outcome.'
+      ignore_failure: true
+      if: 'ctx.http?.response?.status_code != null && ctx.event?.outcome == null'
+      source: |
+        def code = ctx.http.response.status_code;
+        int status = code instanceof Number
+          ? ((Number) code).intValue()
+          : Integer.parseInt(code.toString());
+        ctx.event.outcome = status < 400 ? 'success' : 'failure';
   - dissect:
       tag: dissect_json_properties_httpVersion_7a112f14
       field: json.properties.httpVersion
@@ -232,6 +244,11 @@ processors:
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
+  - set:
+      tag: set_client_ip_2a8f6d41
+      field: client.ip
+      value: '{{{source.ip}}}'
+      ignore_empty_value: true
 
   - append:
       tag: append_related_ip_5ea7f39f

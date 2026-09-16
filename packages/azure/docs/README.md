@@ -20,7 +20,7 @@ Log data streams collected by the Azure Logs integration include Activity, Platf
 
 ## Common Azure metadata fields
 
-The data streams listed below share a single ingest pipeline that normalizes the
+The following data streams share a single ingest pipeline that normalizes the
 Azure resource-log envelope into a common set of metadata fields, giving you
 consistent dimensions to filter and correlate across Azure logs in Kibana:
 Activity, Platform, Spring Apps, Application Gateway, Firewall, Microsoft Entra
@@ -38,16 +38,30 @@ normalization. For `azure.eventhub`, the normalization runs only when the
 |---|---|---|
 | `cloud.provider` | — | Always `"azure"`. |
 | `cloud.account.id` | `subscriptionId` / `tenantId` | Set from the Azure subscription ID when present. For tenant-scoped logs that have no subscription (Audit, Sign-in, Identity Protection, Provisioning, Graph Activity, Azure AD Graph Activity, and tenant-level Activity, Platform, and Spring Apps logs), the tenant ID is used instead. |
-| `cloud.region` | `location` / `Region` | Normalized to the canonical Azure region slug: whitespace is removed and the value is lowercased, so both `"West Europe"` and `"westeurope"` are indexed as `westeurope`. Values of two characters or fewer are ignored, so ISO country codes (e.g. `"GB"`) from sign-in events do not pollute the field, and `"global"` is dropped because it identifies a non-regional resource rather than a region. |
+| `cloud.region` | `location` / `Region` | Normalized to the canonical Azure region slug: whitespace is removed and the value is lowercased, so both `"West Europe"` and `"westeurope"` are indexed as `westeurope`. Values of two characters or fewer are ignored, so ISO country codes such as `"GB"` from sign-in events do not pollute the field, and `"global"` is dropped because it identifies a non-regional resource rather than a region. |
 | `azure.subscription_id` | `subscriptionId` (in `resourceId`) | Extracted from the ARM resource ID using case-insensitive matching. |
 | `azure.tenant_id` | `tenantId` | Populated from the envelope `tenantId` field, or from the `/tenants/{id}/providers/...` pattern in the ARM resource ID when the envelope has neither a tenant ID nor a subscription. |
 | `azure.correlation_id` | `correlationId` | Populated whenever the envelope carries a correlation ID. Azure omits it for some log categories. |
 | `azure.resource.id` | `resourceId` | Full ARM resource ID, preserved with the casing Azure emitted. Parsing of its segments is case-insensitive. |
 | `azure.resource.group` | `resourceId` segment | Extracted via case-insensitive ARM path parsing. Absent for tenant-scoped resource IDs, which have no resource group. |
-| `azure.resource.provider` | `resourceId` segment | Includes the provider namespace and type (e.g. `Microsoft.Web/sites`). |
+| `azure.resource.provider` | `resourceId` segment | Includes the provider namespace and type, for example `Microsoft.Web/sites`. |
 | `azure.resource.namespace` | `resourceId` segment | Present only for Event Hub-style namespace paths. |
 | `azure.resource.name` | `resourceId` segment | Final resource name segment. Absent for resource IDs that end at the provider. |
 | `azure.resource.authorization_rule` | `resourceId` segment | Present only for Event Hub authorization-rule paths. |
+
+### Common ECS fields
+
+Alongside the Azure-specific metadata, the log data streams map the caller,
+network, and outcome attributes of each event onto Elastic Common Schema (ECS)
+fields, so Azure logs correlate with the rest of your data in Kibana:
+
+| Elastic field | Azure source field(s) | Notes |
+|---|---|---|
+| `source.ip` | `callerIpAddress`, `properties.clientIP`, `properties.ipAddress` | The address the request originated from. Identity Protection falls back to the detection IP in `properties.ipAddress` when the envelope omits `callerIpAddress`. |
+| `client.ip` | Mirrors `source.ip` | Populated for the data streams where the caller is a client of an Azure service. Firewall logs record network flows rather than client requests, so they populate only `source.*` and `destination.*`. |
+| `related.ip` | `source.ip`, `destination.ip` | Every address seen in the event, for pivoting across data streams. |
+| `event.outcome` | `resultType`, `httpStatus` | Either `success` or `failure`. Application Gateway derives it from the HTTP response status code, so web application firewall records, which carry no status code, have no outcome. |
+| `user.name`, `user.id` | `initiatedBy.user.*`, `properties.userPrincipalName` | The identity that initiated the event, for the Microsoft Entra ID data streams that report one. |
 
 ## Requirements
 

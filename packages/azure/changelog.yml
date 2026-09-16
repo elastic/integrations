@@ -47,6 +47,26 @@
         Add `azure.resource.authorization_rule` field definition to identity_protection and provisioning data streams; add metadata fields documentation section to the integration README.
       type: enhancement
       link: https://github.com/elastic/integrations/pull/21261
+    - description: >-
+        Set `client.ip` from `source.ip` in the application_gateway, identity_protection, and provisioning data streams, matching the mapping that signinlogs, auditlogs, graphactivitylogs, and aadgraphactivitylogs already apply.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/21261
+    - description: >-
+        Populate `related.ip` from `source.ip` in the identity_protection and provisioning data streams, so that caller addresses in Microsoft Entra ID logs are reachable from the same pivot as the other data streams.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/21261
+    - description: >-
+        Rename the geoip ASN output in the provisioning data stream from `source.as.asn` and `source.as.organization_name` to the ECS field names `source.as.number` and `source.as.organization.name`, as every other data stream in the package already does.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/21261
+    - description: >-
+        Fall back to the detection IP in `properties.ipAddress` when setting `source.ip` in the identity_protection data stream, for risk detections that carry no envelope `callerIpAddress`.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/21261
+    - description: >-
+        Set `event.outcome` from the HTTP response status code in the application_gateway data stream. Web application firewall records, which carry no status code, are left without an outcome.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/21261
 - version: "1.40.0"
   changes:
     - description: Add routing system test for the events data stream and a `storage_account_connection_string` package variable for pointing at a custom blob endpoint.

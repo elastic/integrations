@@ -103,6 +103,27 @@ processors:
         - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_source_as_asn_to_source_as_number_a917047d
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+  - rename:
+      tag: rename_source_as_organization_name_to_source_as_organization_name_f1362d0b
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+  - set:
+      tag: set_client_ip_6f0a2b84
+      field: client.ip
+      value: '{{{source.ip}}}'
+      ignore_empty_value: true
+  - append:
+      tag: append_related_ip_c19d3e65
+      field: related.ip
+      value: '{{{source.ip}}}'
+      allow_duplicates: false
+      if: 'ctx.source?.ip != null'
+  - rename:
       tag: rename_azure_provisioning_durationMs_to_event_duration_63215b30
       field: azure.provisioning.durationMs
       target_field: event.duration
