@@ -1014,6 +1014,53 @@ processors:
       tag: rename_zone_8bb5b9df
       target_field: nozomi_networks.node.zone
       ignore_missing: true
+  - rename:
+      field: json.uid
+      tag: map_uid_cmc
+      target_field: nozomi_networks.node.uid
+      ignore_missing: true
+  - rename:
+      field: json.appliance_id
+      tag: map_appliance_id_cmc
+      target_field: nozomi_networks.node.appliance_id
+      ignore_missing: true
+  - rename:
+      field: json.appliance_site
+      tag: map_appliance_site_cmc
+      target_field: nozomi_networks.node.appliance_site
+      ignore_missing: true
+  - rename:
+      field: json.appliance_hosts
+      tag: map_appliance_hosts_cmc
+      target_field: nozomi_networks.node.appliance_hosts
+      ignore_missing: true
+  - rename:
+      field: json.capture_devices
+      tag: map_capture_devices_cmc
+      target_field: nozomi_networks.node.capture_devices
+      ignore_missing: true
+  - date:
+      field: json.deleted_at
+      tag: map_deleted_at_cmc
+      target_field: nozomi_networks.node.deleted_at
+      formats:
+        - UNIX_MS
+      if: ctx.json?.deleted_at != null && ctx.json.deleted_at != ''
+      on_failure:
+        - append:
+            tag: append_map_deleted_at_cmc
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.fields
+      tag: map_fields_cmc
+      target_field: nozomi_networks.node.protocol_fields
+      ignore_missing: true
+  - rename:
+      field: json.asset_id
+      tag: map_asset_id_cmc
+      target_field: nozomi_networks.node.asset_id
+      ignore_missing: true
   - remove:
       field:
         - nozomi_networks.node.appliance_host

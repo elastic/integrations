@@ -216,6 +216,61 @@ processors:
             tag: append_error_message_756af335
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      tag: set_@timestamp_from_audit_time_fallback
+      copy_from: nozomi_networks.audit.time
+      override: false
+  - set:
+      field: json.username
+      tag: set_audit_username_from_user
+      copy_from: json.user
+      ignore_empty_value: true
+      override: false
+  - rename:
+      field: json.appliance_host
+      tag: map_appliance_host_cmc
+      target_field: nozomi_networks.audit.appliance_host
+      ignore_missing: true
+  - rename:
+      field: json.appliance_id
+      tag: map_appliance_id_cmc
+      target_field: nozomi_networks.audit.appliance_id
+      ignore_missing: true
+  - convert:
+      field: json.appliance_ip
+      tag: map_appliance_ip_cmc
+      target_field: nozomi_networks.audit.appliance_ip
+      type: ip
+      ignore_missing: true
+      if: ctx.json?.appliance_ip != null && ctx.json.appliance_ip != ''
+      on_failure:
+        - append:
+            tag: append_map_appliance_ip_cmc
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.replicated
+      tag: map_replicated_cmc
+      target_field: nozomi_networks.audit.replicated
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            tag: append_map_replicated_cmc
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.synchronized
+      tag: map_synchronized_cmc
+      target_field: nozomi_networks.audit.synchronized
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            tag: append_map_synchronized_cmc
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.username
       tag: rename_username_6972b53b
