@@ -12,14 +12,25 @@ processors:
       add_to_root: true
       if: ctx.tychon == null && ctx.message != null
       on_failure:
-        - remove:
-            tag: remove_malformed_json_message
-            field: message
-            ignore_missing: true
+        - set:
+            tag: initialize_tychon_json_message
+            field: tychon
+            value: {}
+            override: false
+        - set:
+            tag: preserve_malformed_json_message
+            field: event.original
+            copy_from: message
+            override: false
+            ignore_empty_value: true
         - append:
             tag: append_error_pipeline_json_message
             field: tychon.error.pipeline
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} failed with message: {{{_ingest.on_failure_message}}}"
+        - set:
+            tag: set_pipeline_error_to_event_kind_json_message
+            field: event.kind
+            value: pipeline_error
 
   - script:
       tag: script_lift_raw_tqc_ndjson_fields_parsed_under_tychon_raw_be
