@@ -27,9 +27,10 @@ func TestPick(t *testing.T) {
 	})
 
 	t.Run("author has no write access (external contributor) — fall back to mergedBy", func(t *testing.T) {
+		onlyMerger := func(login string) bool { return login == "merger" }
 		assert.Equal(t, "merger", Pick(
 			PRActor{Login: "external-contributor", IsBot: false},
-			PRActor{Login: "merger", IsBot: false}, no))
+			PRActor{Login: "merger", IsBot: false}, onlyMerger))
 	})
 
 	t.Run("author is bot and mergedBy is bot — return empty string", func(t *testing.T) {
@@ -42,5 +43,11 @@ func TestPick(t *testing.T) {
 		assert.Equal(t, "", Pick(
 			PRActor{Login: "app/bot", IsBot: true},
 			PRActor{}, yes))
+	})
+
+	t.Run("author is bot and mergedBy lost write access — return empty string", func(t *testing.T) {
+		assert.Equal(t, "", Pick(
+			PRActor{Login: "app/bot", IsBot: true},
+			PRActor{Login: "ex-maintainer", IsBot: false}, no))
 	})
 }

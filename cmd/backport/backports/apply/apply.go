@@ -196,7 +196,7 @@ func Apply(opts Options) (*Result, error) {
 	}
 
 	var assignee string
-	if opts.OpenPR {
+	if opts.OpenPR && !opts.DryRun {
 		assignee = assign.Resolve(opts.OriginPRNumber, repository)
 	}
 	prURL, err := maybeOpenPR(opts.OpenPR, workingBranch, branchName, opts.Package, changes[0].Description, newVersion, opts.SHA, repository, assignee)
