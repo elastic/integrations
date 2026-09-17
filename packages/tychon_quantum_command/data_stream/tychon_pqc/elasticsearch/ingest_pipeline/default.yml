@@ -195,6 +195,90 @@ processors:
       field: "*"
       ignore_failure: true
 
+  - date:
+      tag: date_x509_not_before
+      field: x509.not_before
+      target_field: x509.not_before
+      formats:
+        - ISO8601
+        - yyyy-MM-dd'T'HH:mm:ssXXX
+        - yyyy-MM-dd'T'HH:mm:ss.SSSXXX
+        - yyyy-MM-dd HH:mm:ss
+        - MMM dd HH:mm:ss yyyy 'GMT'
+      if: ctx?.x509?.not_before != null
+      on_failure:
+        - remove:
+            tag: remove_failed_x509_not_before
+            field: x509.not_before
+            ignore_missing: true
+        - append:
+            tag: append_error_pipeline_date_x509_not_before
+            field: error.pipeline
+            value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} failed with message: {{{_ingest.on_failure_message}}}"
+
+  - date:
+      tag: date_x509_not_after
+      field: x509.not_after
+      target_field: x509.not_after
+      formats:
+        - ISO8601
+        - yyyy-MM-dd'T'HH:mm:ssXXX
+        - yyyy-MM-dd'T'HH:mm:ss.SSSXXX
+        - yyyy-MM-dd HH:mm:ss
+        - MMM dd HH:mm:ss yyyy 'GMT'
+      if: ctx?.x509?.not_after != null
+      on_failure:
+        - remove:
+            tag: remove_failed_x509_not_after
+            field: x509.not_after
+            ignore_missing: true
+        - append:
+            tag: append_error_pipeline_date_x509_not_after
+            field: error.pipeline
+            value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} failed with message: {{{_ingest.on_failure_message}}}"
+
+  - date:
+      tag: date_x509_validity_not_before
+      field: x509.validity.not_before
+      target_field: x509.validity.not_before
+      formats:
+        - ISO8601
+        - yyyy-MM-dd'T'HH:mm:ssXXX
+        - yyyy-MM-dd'T'HH:mm:ss.SSSXXX
+        - yyyy-MM-dd HH:mm:ss
+        - MMM dd HH:mm:ss yyyy 'GMT'
+      if: ctx?.x509?.validity?.not_before != null
+      on_failure:
+        - remove:
+            tag: remove_failed_x509_validity_not_before
+            field: x509.validity.not_before
+            ignore_missing: true
+        - append:
+            tag: append_error_pipeline_date_x509_validity_not_before
+            field: error.pipeline
+            value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} failed with message: {{{_ingest.on_failure_message}}}"
+
+  - date:
+      tag: date_x509_validity_not_after
+      field: x509.validity.not_after
+      target_field: x509.validity.not_after
+      formats:
+        - ISO8601
+        - yyyy-MM-dd'T'HH:mm:ssXXX
+        - yyyy-MM-dd'T'HH:mm:ss.SSSXXX
+        - yyyy-MM-dd HH:mm:ss
+        - MMM dd HH:mm:ss yyyy 'GMT'
+      if: ctx?.x509?.validity?.not_after != null
+      on_failure:
+        - remove:
+            tag: remove_failed_x509_validity_not_after
+            field: x509.validity.not_after
+            ignore_missing: true
+        - append:
+            tag: append_error_pipeline_date_x509_validity_not_after
+            field: error.pipeline
+            value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} failed with message: {{{_ingest.on_failure_message}}}"
+
   - script:
       tag: script_copy_tqc_specific_fields_out_of_ecs_namespaces_for_pa
       lang: painless
@@ -335,7 +419,15 @@ processors:
         if (ctx.x509 != null && ctx.x509 instanceof Map) {
           if (ctx.tychon.x509 == null || !(ctx.tychon.x509 instanceof Map)) { ctx.tychon.x509 = [:]; }
           for (entry in ctx.x509.entrySet()) {
-            ctx.tychon.x509[entry.getKey()] = entry.getValue();
+            if (entry.getKey() == 'validity' && entry.getValue() instanceof Map) {
+              Map validityCopy = [:];
+              for (validityEntry in entry.getValue().entrySet()) {
+                validityCopy[validityEntry.getKey()] = validityEntry.getValue();
+              }
+              ctx.tychon.x509.validity = validityCopy;
+            } else {
+              ctx.tychon.x509[entry.getKey()] = entry.getValue();
+            }
           }
           if (ctx.x509.issuer_cn != null) {
             if (ctx.x509.issuer == null || !(ctx.x509.issuer instanceof Map)) { ctx.x509.issuer = [:]; }
@@ -843,6 +935,26 @@ processors:
             tag: append_error_pipeline_date_certificate_not_after
             field: error.pipeline
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} failed with message: {{{_ingest.on_failure_message}}}"
+
+  - script:
+      tag: script_sync_normalized_x509_certificate_dates
+      lang: painless
+      description: Sync normalized certificate dates into ECS x509 fields and the independent TYCHON copy.
+      if: ctx?.x509 != null && ctx.x509 instanceof Map
+      source: >
+        if (ctx.tychon == null || !(ctx.tychon instanceof Map)) { ctx.tychon = [:]; }
+        if (ctx.tychon.x509 == null || !(ctx.tychon.x509 instanceof Map)) { ctx.tychon.x509 = [:]; }
+        if (ctx.certificate?.not_before != null) { ctx.x509.not_before = ctx.certificate.not_before; }
+        if (ctx.certificate?.not_after != null) { ctx.x509.not_after = ctx.certificate.not_after; }
+        if (ctx.x509.not_before != null) { ctx.tychon.x509.not_before = ctx.x509.not_before; }
+        if (ctx.x509.not_after != null) { ctx.tychon.x509.not_after = ctx.x509.not_after; }
+        if (ctx.x509.validity instanceof Map && !ctx.x509.validity.isEmpty()) {
+          Map validityCopy = [:];
+          for (validityEntry in ctx.x509.validity.entrySet()) {
+            validityCopy[validityEntry.getKey()] = validityEntry.getValue();
+          }
+          ctx.tychon.x509.validity = validityCopy;
+        }
 
   - date:
       tag: date_cipher_last_seen

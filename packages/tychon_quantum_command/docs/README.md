@@ -948,6 +948,7 @@ This stream can contain multiple TYCHON record families in one place, including 
 | tychon.x509.fingerprint_sha256 |  | keyword |
 | tychon.x509.is_ca |  | boolean |
 | tychon.x509.is_self_signed |  | boolean |
+| tychon.x509.is_valid |  | boolean |
 | tychon.x509.is_weak_signature |  | boolean |
 | tychon.x509.issuer_cn |  | keyword |
 | tychon.x509.issuer_org |  | keyword |
@@ -961,6 +962,8 @@ This stream can contain multiple TYCHON record families in one place, including 
 | tychon.x509.sig_algorithm |  | keyword |
 | tychon.x509.subject_cn |  | keyword |
 | tychon.x509.subject_org |  | keyword |
+| tychon.x509.validity.not_after |  | date |
+| tychon.x509.validity.not_before |  | date |
 | x509.is_ca |  | boolean |
 | x509.is_valid |  | boolean |
 | x509.issuer.common_name |  | keyword |
