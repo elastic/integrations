@@ -1,0 +1,145 @@
+---
+description: Parse HarfangLab syslog audit log events.
+processors:
+  - date:
+      field: harfang_labs.log_creation_date
+      target_field: '@timestamp'
+      formats:
+        - ISO8601
+      tag: date_log_creation_date
+      if: ctx.harfang_labs?.log_creation_date != null
+  - rename:
+      field: harfang_labs.log_slug
+      target_field: event.action
+      ignore_missing: true
+      tag: rename_event_action
+  - rename:
+      field: harfang_labs.action_title
+      target_field: event.reason
+      ignore_missing: true
+      tag: rename_event_reason
+  - rename:
+      field: harfang_labs.log_description
+      target_field: message
+      ignore_missing: true
+      tag: rename_log_description
+  - rename:
+      field: harfang_labs.username
+      target_field: user.name
+      ignore_missing: true
+      tag: rename_user_name
+  - rename:
+      field: harfang_labs.ip_address
+      target_field: source.ip
+      ignore_missing: true
+      tag: rename_source_ip
+  - rename:
+      field: harfang_labs.user_agent
+      target_field: user_agent.original
+      ignore_missing: true
+      tag: rename_user_agent
+  - user_agent:
+      field: user_agent.original
+      ignore_missing: true
+      tag: enrich_user_agent
+  - rename:
+      field: harfang_labs.request_method
+      target_field: http.request.method
+      ignore_missing: true
+      tag: rename_request_method
+  - rename:
+      field: harfang_labs.request_path
+      target_field: url.path
+      ignore_missing: true
+      tag: rename_request_path
+  - rename:
+      field: harfang_labs.request_content
+      target_field: http.request.body.content
+      ignore_missing: true
+      tag: rename_request_content
+  - set:
+      field: http.response.status_code
+      tag: set_response_status_code
+      copy_from: harfang_labs.response_status_code
+      if: ctx.harfang_labs?.response_status_code != null
+  - convert:
+      field: http.response.status_code
+      type: long
+      ignore_missing: true
+      tag: convert_response_status_code
+  - rename:
+      field: harfang_labs.response_status_text
+      target_field: harfang_labs.event.auditlog.response_status_text
+      ignore_missing: true
+      tag: rename_response_status_text
+  - rename:
+      field: harfang_labs.response_content
+      target_field: http.response.body.content
+      ignore_missing: true
+      tag: rename_response_content
+  - rename:
+      field: harfang_labs.tenant
+      target_field: organization.id
+      ignore_missing: true
+      tag: rename_tenant
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+  - append:
+      field: event.category
+      tag: append_event_category_iam
+      value: iam
+  - append:
+      field: event.category
+      tag: append_event_category_configuration
+      value: configuration
+  - append:
+      field: event.type
+      tag: append_event_type_change
+      value: change
+  - append:
+      field: event.type
+      tag: append_event_type_info
+      value: info
+  - append:
+      field: event.type
+      tag: append_event_type_admin
+      value: admin
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_success
+      value: success
+      if: ctx.http?.response?.status_code != null && ctx.http.response.status_code < 400
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_failure
+      value: failure
+      if: ctx.http?.response?.status_code != null && ctx.http.response.status_code >= 400
+  - append:
+      field: related.ip
+      tag: append_source_ip_to_related
+      value: '{{{source.ip}}}'
+      allow_duplicates: false
+      if: ctx.source?.ip != null
+  - append:
+      field: related.user
+      tag: append_user_name_to_related
+      value: '{{{user.name}}}'
+      allow_duplicates: false
+      if: ctx.user?.name != null
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

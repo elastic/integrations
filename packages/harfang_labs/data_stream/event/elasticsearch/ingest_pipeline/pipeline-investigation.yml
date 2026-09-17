@@ -1,0 +1,124 @@
+---
+description: Parse HarfangLab syslog investigation activity events.
+processors:
+  - pipeline:
+      name: '{{ IngestPipeline "pipeline-common-agent" }}'
+      tag: map_common_agent
+  - rename:
+      field: harfang_labs.pid
+      target_field: process.pid
+      ignore_missing: true
+      tag: rename_process_pid
+  - rename:
+      field: harfang_labs.ppid
+      target_field: process.parent.pid
+      ignore_missing: true
+      tag: rename_process_ppid
+  - set:
+      field: process.name
+      tag: set_process_name
+      copy_from: harfang_labs.name
+      override: true
+      if: ctx.harfang_labs?.name != null
+  - rename:
+      field: harfang_labs.exe
+      target_field: process.executable
+      ignore_missing: true
+      tag: rename_process_executable
+  - rename:
+      field: harfang_labs.cmdline
+      target_field: process.command_line
+      ignore_missing: true
+      tag: rename_process_command_line
+  - script:
+      lang: painless
+      tag: split_investigation_username
+      description: Split DOMAIN\user investigation username into user.domain and user.name.
+      if: ctx.harfang_labs?.username != null
+      source: |-
+        def username = ctx.harfang_labs.username;
+        if (username == null) {
+          return;
+        }
+        ctx.user = ctx.user ?: [:];
+        int idx = username.indexOf('\\');
+        if (idx > 0) {
+          ctx.user.domain = username.substring(0, idx);
+          ctx.user.name = username.substring(idx + 1);
+        } else {
+          ctx.user.name = username;
+        }
+  - rename:
+      field: harfang_labs.status
+      target_field: harfang_labs.event.investigation.status
+      ignore_missing: true
+      tag: rename_investigation_status
+  - rename:
+      field: harfang_labs.object_type
+      target_field: harfang_labs.event.investigation.object_type
+      ignore_missing: true
+      tag: rename_object_type
+  - rename:
+      field: harfang_labs.job_id
+      target_field: harfang_labs.event.investigation.job_id
+      ignore_missing: true
+      tag: rename_job_id
+  - rename:
+      field: harfang_labs.job_instance_id
+      target_field: harfang_labs.event.investigation.job_instance_id
+      ignore_missing: true
+      tag: rename_job_instance_id
+  - rename:
+      field: harfang_labs.binaryinfo
+      target_field: harfang_labs.event.investigation.binaryinfo
+      ignore_missing: true
+      tag: rename_binaryinfo
+  - date:
+      field: harfang_labs.create_time
+      target_field: process.start
+      formats:
+        - ISO8601
+      tag: date_process_create_time
+      if: ctx.harfang_labs?.create_time != null
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+  - append:
+      field: event.category
+      tag: append_event_category_host
+      value: host
+  - append:
+      field: event.type
+      tag: append_event_type_info
+      value: info
+  - set:
+      field: event.outcome
+      tag: set_event_outcome
+      value: unknown
+  - append:
+      field: related.user
+      tag: append_user_name_to_related
+      value: '{{{user.name}}}'
+      allow_duplicates: false
+      if: ctx.user?.name != null
+  - remove:
+      field:
+        - _temp
+      ignore_missing: true
+      tag: remove_temp_fields
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
