@@ -738,11 +738,6 @@ processors:
             tag: append_error_message_57388c58
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - set:
-      field: '@timestamp'
-      tag: set_@timestamp_from_alert_record_created_at_553bb006
-      copy_from: nozomi_networks.alert.record_created_at
-      ignore_empty_value: true
   - convert:
       field: json.replicated
       tag: convert_replicated_to_boolean_d8a076c1
@@ -865,9 +860,9 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: '@timestamp'
-      tag: set_@timestamp_from_alert_time_fallback
+      tag: set_@timestamp_from_alert_time
       copy_from: nozomi_networks.alert.time
-      override: false
+      ignore_empty_value: true
   - rename:
       field: json.trace_sha1
       tag: rename_trace_sha1_24ca436a

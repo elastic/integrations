@@ -38,7 +38,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 
 ## Compatibility
 
-For the REST API, this module has been tested against **N2OS 25.1.0** on Vantage and CMC.
+For the REST API, this module has been tested against Nozomi Vantage and against CMC running **N2OS 26.5.0**.
 
 ## Setup
 
@@ -77,6 +77,8 @@ For more details, see [Nozomi Vantage API Key](https://technicaldocs.nozominetwo
 ### CMC (Central Management Console)
 
 When collecting from a CMC endpoint, use the CMC URL and credentials that support **HTTP Basic** authentication (N2OS local user or equivalent). Use a CMC **All-in-One** deployment for Node collection; Multicontext CMC does not expose merged nodes.
+
+CMC and Vantage replicate Guardian events after they occur. Each data stream applies a configurable **Lookback** (default `5m`) to the previous cursor so late-replicated records are still collected. Re-fetched unchanged records are deduplicated by document fingerprint.
 
 Vantage API keys (Key Name and Key Token) continue to work for Vantage deployments as described above.
 

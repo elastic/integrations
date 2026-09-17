@@ -199,11 +199,6 @@ processors:
             tag: append_error_message_2f043cff
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - set:
-      field: '@timestamp'
-      tag: set_@timestamp_from_audit_record_created_at_ed82f4a7
-      copy_from: nozomi_networks.audit.record_created_at
-      ignore_empty_value: true
   - date:
       field: json.time
       tag: date_time_cd64cea5
@@ -218,9 +213,9 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: '@timestamp'
-      tag: set_@timestamp_from_audit_time_fallback
+      tag: set_@timestamp_from_audit_time
       copy_from: nozomi_networks.audit.time
-      override: false
+      ignore_empty_value: true
   - set:
       field: json.username
       tag: set_audit_username_from_user
@@ -249,6 +244,12 @@ processors:
             tag: append_map_appliance_ip_cmc
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - append:
+      field: related.ip
+      tag: append_audit_appliance_ip_into_related_ip
+      value: '{{{nozomi_networks.audit.appliance_ip}}}'
+      allow_duplicates: false
+      if: ctx.nozomi_networks?.audit?.appliance_ip != null
   - convert:
       field: json.replicated
       tag: map_replicated_cmc

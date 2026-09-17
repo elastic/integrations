@@ -118,11 +118,6 @@ processors:
             tag: append_error_message_5404f063
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - set:
-      field: '@timestamp'
-      tag: set_@timestamp_from_asset_created_at_69081e54
-      copy_from: nozomi_networks.asset.created_at
-      ignore_empty_value: true
   - rename:
       field: json.custom_fields
       tag: rename_custom_fields_e6bbc0c2
@@ -302,6 +297,11 @@ processors:
             tag: append_error_message_cd38197b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      tag: set_@timestamp_from_asset_last_activity_time
+      copy_from: nozomi_networks.asset.last_activity_time
+      ignore_empty_value: true
   - script:
       description: Calculate host uptime in seconds.
       tag: calculate_host_uptime_e3210bfe

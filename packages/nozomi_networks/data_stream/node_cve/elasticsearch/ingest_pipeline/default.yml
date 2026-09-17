@@ -450,11 +450,6 @@ processors:
             tag: append_error_message_41a64567
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - set:
-      field: '@timestamp'
-      tag: set_@timestamp_from_record_created_at_0b2d56d2
-      copy_from: nozomi_networks.node_cve.record_created_at
-      ignore_empty_value: true
   - foreach:
       field: json.references
       tag: foreach_references_source_fc0bfb60
@@ -515,9 +510,9 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: '@timestamp'
-      tag: set_@timestamp_from_node_cve_time_fallback
+      tag: set_@timestamp_from_node_cve_time
       copy_from: nozomi_networks.node_cve.time
-      override: false
+      ignore_empty_value: true
   - rename:
       field: json.type
       tag: rename_type_26a12ea9
