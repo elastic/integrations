@@ -201,13 +201,13 @@ An example event for `http_access` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-05-25T18:55:19.182+05:30",
+    "@timestamp": "2026-05-25T13:25:19.182Z",
     "agent": {
-        "ephemeral_id": "f2617137-0f50-4516-b955-cae6e626605d",
-        "id": "136f64d9-7808-4209-9f5f-d049e364bc65",
-        "name": "elastic-agent-85357",
+        "ephemeral_id": "678114f8-2b5b-4de7-a4dc-cc53e02863a2",
+        "id": "64bfc1a5-f990-4be5-952a-774bac9c8d44",
+        "name": "elastic-agent-99277",
         "type": "filebeat",
-        "version": "8.19.21"
+        "version": "9.4.4"
     },
     "client": {
         "as": {
@@ -222,8 +222,11 @@ An example event for `http_access` looks as following:
             "country_iso_code": "NL",
             "country_name": "Netherlands",
             "location": {
-                "lat": 52.37404,
-                "lon": 4.88969
+                "coordinates": [
+                    4.889689916744828,
+                    52.37403995823115
+                ],
+                "type": "Point"
             },
             "region_iso_code": "NL-NH",
             "region_name": "North Holland"
@@ -233,16 +236,16 @@ An example event for `http_access` looks as following:
     },
     "data_stream": {
         "dataset": "ping_directory.http_access",
-        "namespace": "73751",
+        "namespace": "84773",
         "type": "logs"
     },
     "ecs": {
         "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "136f64d9-7808-4209-9f5f-d049e364bc65",
+        "id": "64bfc1a5-f990-4be5-952a-774bac9c8d44",
         "snapshot": false,
-        "version": "8.19.21"
+        "version": "9.4.4"
     },
     "event": {
         "action": "GET",
@@ -252,8 +255,9 @@ An example event for `http_access` looks as following:
         ],
         "dataset": "ping_directory.http_access",
         "duration": 124825000,
-        "ingested": "2026-09-16T07:16:20Z",
+        "ingested": "2026-09-16T18:23:18Z",
         "kind": "event",
+        "module": "ping_directory",
         "original": "[25/May/2026:18:55:19.182 +0530] RESULT instanceName=\"pingdirectory-elastic-test\" threadID=164 requestID=8 correlationID=\"7c0f360b-77f0-4951-9101-74d4f8358795\" from=\"198.51.100.21:55188\" method=\"GET\" url=\"https://203.0.113.10:2443/scim/v2\" requestHeader=\"Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7\" requestHeader=\"Connection: keep-alive\" requestHeader=\"User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36\" requestHeader=\"Sec-Fetch-Site: none\" requestHeader=\"Sec-Fetch-Dest: document\" requestHeader=\"Host: 203.0.113.10:2443\" requestHeader=\"Accept-Encoding: gzip, deflate, br, zstd\" requestHeader=\"Sec-Fetch-Mode: navigate\" requestHeader=\"sec-ch-ua: 'Chromium';v='148', 'Google Chrome';v='148', 'Not/A)Brand';v='99'\" requestHeader=\"sec-ch-ua-mobile: ?0\" requestHeader=\"Upgrade-Insecure-Requests: 1\" requestHeader=\"sec-ch-ua-platform: 'Windows'\" requestHeader=\"Sec-Fetch-User: ?1\" requestHeader=\"Accept-Language: en-GB,en-US;q=0.9,en;q=0.8\" statusCode=401 etime=124.825 responseContentLength=118 responseHeader=\"X-Frame-Options: SAMEORIGIN\" responseHeader=\"Correlation-Id: 7c0f360b-77f0-4951-9101-74d4f8358795\" responseHeader=\"Date: Mon, 25 May 2026 13:25:19 GMT\" responseContentType=\"application/scim+json\"",
         "outcome": "failure",
         "timezone": "+0530",
@@ -278,7 +282,8 @@ An example event for `http_access` looks as following:
     "log": {
         "file": {
             "device_id": "45",
-            "inode": "219",
+            "fingerprint": "f7e4cd87976c1df315bb6b38bf7f463b7a37e5b2c75d327536859f8fe62ed77a",
+            "inode": "278",
             "path": "/tmp/service_logs/test-http-access.log"
         },
         "offset": 723
@@ -287,7 +292,9 @@ An example event for `http_access` looks as following:
         "protocol": "https"
     },
     "observer": {
-        "name": "pingdirectory-elastic-test"
+        "name": "pingdirectory-elastic-test",
+        "product": "PingDirectory",
+        "vendor": "PingIdentity"
     },
     "ping_directory": {
         "http_access": {
@@ -404,13 +411,13 @@ An example event for `audit` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-05-25T18:48:06.786+05:30",
+    "@timestamp": "2026-05-25T13:18:06.786Z",
     "agent": {
-        "ephemeral_id": "6204507e-da33-4e06-8e73-2675dfc09476",
-        "id": "c502fa06-add9-4247-8f0c-a3a3fe2a0aef",
-        "name": "elastic-agent-94022",
+        "ephemeral_id": "0b004822-0b71-4366-a69b-6570d69b8359",
+        "id": "9b9db75b-2966-446a-8846-f0ac66571b2c",
+        "name": "elastic-agent-38421",
         "type": "filebeat",
-        "version": "8.19.21"
+        "version": "9.4.4"
     },
     "client": {
         "as": {
@@ -425,8 +432,11 @@ An example event for `audit` looks as following:
             "country_iso_code": "ES",
             "country_name": "Spain",
             "location": {
-                "lat": 40.41639,
-                "lon": -3.7025
+                "coordinates": [
+                    -3.702500034123659,
+                    40.416389987803996
+                ],
+                "type": "Point"
             },
             "region_iso_code": "ES-M",
             "region_name": "Madrid"
@@ -435,16 +445,16 @@ An example event for `audit` looks as following:
     },
     "data_stream": {
         "dataset": "ping_directory.audit",
-        "namespace": "47505",
+        "namespace": "42624",
         "type": "logs"
     },
     "ecs": {
         "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "c502fa06-add9-4247-8f0c-a3a3fe2a0aef",
+        "id": "9b9db75b-2966-446a-8846-f0ac66571b2c",
         "snapshot": false,
-        "version": "8.19.21"
+        "version": "9.4.4"
     },
     "event": {
         "action": "modify",
@@ -453,8 +463,9 @@ An example event for `audit` looks as following:
             "configuration"
         ],
         "dataset": "ping_directory.audit",
-        "ingested": "2026-09-16T07:14:32Z",
+        "ingested": "2026-09-16T18:21:34Z",
         "kind": "event",
+        "module": "ping_directory",
         "original": "# 25/May/2026:18:48:06.786 +0530; conn=13; op=28; instanceName=\"pingdirectory-elastic-test\"; threadID=29; clientIP=203.0.113.10; requesterDN=\"cn=Directory Manager,cn=Root DNs,cn=config\"; usingAdminSessionWorkerThread=true; operationPurpose={ \"applicationName\":\"PingDirectory\", \"applicationVersion\":\"11.0.0.2\", \"codeLocation\":\"DSConfig.getReason:2978 SetPropSubCommandHandler.modifyManagedObject:541 SetPropSubCommandHandler.run:1246 DSConfig.runSubCommand:2574 DSConfig.execute:1698\" }\ndn: cn=File-Based Audit Logger,cn=Loggers,cn=config\nchangetype: modify\nreplace: ds-cfg-enabled\nds-cfg-enabled: true\n-\nreplace: modifiersName\nmodifiersName: cn=Directory Manager,cn=Root DNs,cn=config\n-\nreplace: modifyTimestamp\nmodifyTimestamp: 20260525131806.681Z",
         "timezone": "+0530",
         "type": [
@@ -467,16 +478,17 @@ An example event for `audit` looks as following:
     "log": {
         "file": {
             "device_id": "45",
-            "inode": "203",
+            "fingerprint": "8fecf63daa9fa27f6404d89185f0f858d43bdb27630ecc95b63369aec6edb656",
+            "inode": "263",
             "path": "/tmp/service_logs/test-audit.log"
         },
-        "flags": [
-            "multiline"
-        ],
+        "flags": "multiline",
         "offset": 2400
     },
     "observer": {
-        "name": "pingdirectory-elastic-test"
+        "name": "pingdirectory-elastic-test",
+        "product": "PingDirectory",
+        "vendor": "PingIdentity"
     },
     "ping_directory": {
         "audit": {
@@ -487,7 +499,7 @@ An example event for `audit` looks as following:
                 "value": "File-Based Audit Logger"
             },
             "ds_cfg": {
-                "enabled": true
+                "enabled": "true"
             },
             "modifiers_name": {
                 "attribute": "cn",
@@ -597,26 +609,26 @@ An example event for `ldap_access` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-05-25T18:30:48.688+05:30",
+    "@timestamp": "2026-05-25T13:00:48.688Z",
     "agent": {
-        "ephemeral_id": "8229ecd2-3210-4998-b31a-82e91490ac3e",
-        "id": "370e2a0c-041d-4527-8e70-9828c4f55155",
-        "name": "elastic-agent-60397",
+        "ephemeral_id": "b1c3718f-0fd7-456e-b15b-9e303351c123",
+        "id": "30d40869-0087-429e-b1c2-2c083e51e286",
+        "name": "elastic-agent-37063",
         "type": "filebeat",
-        "version": "8.19.21"
+        "version": "9.4.4"
     },
     "data_stream": {
         "dataset": "ping_directory.ldap_access",
-        "namespace": "91508",
+        "namespace": "51471",
         "type": "logs"
     },
     "ecs": {
         "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "370e2a0c-041d-4527-8e70-9828c4f55155",
+        "id": "30d40869-0087-429e-b1c2-2c083e51e286",
         "snapshot": false,
-        "version": "8.19.21"
+        "version": "9.4.4"
     },
     "event": {
         "action": "add result",
@@ -626,8 +638,9 @@ An example event for `ldap_access` looks as following:
         ],
         "dataset": "ping_directory.ldap_access",
         "duration": 24567000,
-        "ingested": "2026-09-16T07:18:03Z",
+        "ingested": "2026-09-16T18:25:02Z",
         "kind": "event",
+        "module": "ping_directory",
         "original": "[25/May/2026:18:30:48.688 +0530] ADD RESULT instanceName=\"pingdirectory-elastic-test\" threadID=9 conn=4 op=1 msgID=2 requesterIP=\"127.0.0.1\" requesterDN=\"cn=Directory Manager,cn=Root DNs,cn=config\" dn=\"ou=People,dc=example,dc=com\" resultCode=0 resultCodeName=\"Success\" qtime=0 etime=24.567 usedPrivileges=\"bypass-acl\"",
         "outcome": "success",
         "timezone": "+0530",
@@ -640,11 +653,13 @@ An example event for `ldap_access` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.19.0.3:33823"
+            "address": "172.19.0.3:58161"
         }
     },
     "observer": {
-        "name": "pingdirectory-elastic-test"
+        "name": "pingdirectory-elastic-test",
+        "product": "PingDirectory",
+        "vendor": "PingIdentity"
     },
     "ping_directory": {
         "ldap_access": {
@@ -802,30 +817,30 @@ An example event for `user` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-09-16T07:18:56.795Z",
+    "@timestamp": "2026-09-16T18:25:56.118Z",
     "agent": {
-        "ephemeral_id": "e467b560-0e49-4635-a38e-b9bf4fe6ce16",
-        "id": "681893a8-ab36-44ad-a51b-26bbc7ab4d51",
-        "name": "elastic-agent-23065",
+        "ephemeral_id": "9f8892a0-0bf8-4c75-bbae-d269533a2b66",
+        "id": "eadfefd9-d57d-4c3d-8c93-8829945437da",
+        "name": "elastic-agent-57715",
         "type": "filebeat",
-        "version": "8.19.21"
+        "version": "9.4.4"
     },
     "data_stream": {
         "dataset": "ping_directory.user",
-        "namespace": "75533",
+        "namespace": "83876",
         "type": "logs"
     },
     "ecs": {
         "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "681893a8-ab36-44ad-a51b-26bbc7ab4d51",
+        "id": "eadfefd9-d57d-4c3d-8c93-8829945437da",
         "snapshot": false,
-        "version": "8.19.21"
+        "version": "9.4.4"
     },
     "entity": {
         "id": "c9bbce6c-7d77-4d93-b674-42b1e8a00606",
-        "last_seen_timestamp": "2026-09-16T07:18:56.795Z",
+        "last_seen_timestamp": "2026-09-16T18:25:56.118Z",
         "name": "john.doe",
         "source": "ping_directory",
         "type": [
@@ -838,8 +853,9 @@ An example event for `user` looks as following:
             "iam"
         ],
         "dataset": "ping_directory.user",
-        "ingested": "2026-09-16T07:18:59Z",
+        "ingested": "2026-09-16T18:25:59Z",
         "kind": "asset",
+        "module": "ping_directory",
         "original": "{\"displayName\":\"John Doe\",\"emails\":[\"john.doe@example.com\"],\"id\":\"c9bbce6c-7d77-4d93-b674-42b1e8a00606\",\"meta\":{\"location\":\"https://203.0.113.10:2443/scim/v2/Users/c9bbce6c-7d77-4d93-b674-42b1e8a00606\",\"resourceType\":\"User\"},\"name\":{\"familyName\":\"Doe\",\"formatted\":\"John Doe\",\"givenName\":\"John\"},\"schemas\":[\"urn:ietf:params:scim:schemas:core:2.0:User\",\"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User\"],\"title\":\"DevOps Engineer\",\"userName\":\"john.doe\",\"userType\":\"Full-Time\"}",
         "type": [
             "user"
@@ -847,6 +863,13 @@ An example event for `user` looks as following:
     },
     "input": {
         "type": "cel"
+    },
+    "labels": {
+        "is_transform_source": "true"
+    },
+    "observer": {
+        "product": "PingDirectory",
+        "vendor": "PingIdentity"
     },
     "ping_directory": {
         "user": {
@@ -926,30 +949,30 @@ An example event for `group` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-09-16T07:15:27.020Z",
+    "@timestamp": "2026-09-16T18:22:25.425Z",
     "agent": {
-        "ephemeral_id": "33d86fc0-161c-4977-ab6a-340c0e9a7ac1",
-        "id": "1da188c0-9b6f-4294-860d-d3369a5dfc32",
-        "name": "elastic-agent-71328",
+        "ephemeral_id": "d3586ff0-948b-4358-93b7-cc6ca8bf0a42",
+        "id": "a1e12b2a-f9bd-4fd5-b4e7-f5d4e3d905b1",
+        "name": "elastic-agent-61893",
         "type": "filebeat",
-        "version": "8.19.21"
+        "version": "9.4.4"
     },
     "data_stream": {
         "dataset": "ping_directory.group",
-        "namespace": "76736",
+        "namespace": "43306",
         "type": "logs"
     },
     "ecs": {
         "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "1da188c0-9b6f-4294-860d-d3369a5dfc32",
+        "id": "a1e12b2a-f9bd-4fd5-b4e7-f5d4e3d905b1",
         "snapshot": false,
-        "version": "8.19.21"
+        "version": "9.4.4"
     },
     "entity": {
         "id": "a7631f14-c7eb-490f-8b94-724b78241e13",
-        "last_seen_timestamp": "2026-09-16T07:15:27.020Z",
+        "last_seen_timestamp": "2026-09-16T18:22:25.425Z",
         "name": "security",
         "source": "ping_directory"
     },
@@ -959,8 +982,9 @@ An example event for `group` looks as following:
             "iam"
         ],
         "dataset": "ping_directory.group",
-        "ingested": "2026-09-16T07:15:29Z",
+        "ingested": "2026-09-16T18:22:28Z",
         "kind": "asset",
+        "module": "ping_directory",
         "original": "{\"displayName\":\"security\",\"id\":\"a7631f14-c7eb-490f-8b94-724b78241e13\",\"members\":[\"uid=alice.smith,ou=People,dc=example,dc=com\"],\"meta\":{\"location\":\"https://203.0.113.10:2443/scim/v2/Groups/a7631f14-c7eb-490f-8b94-724b78241e13\",\"resourceType\":\"Group\"},\"schemas\":[\"urn:ietf:params:scim:schemas:core:2.0:Group\"]}",
         "type": [
             "group"
@@ -973,6 +997,10 @@ An example event for `group` looks as following:
     "input": {
         "type": "cel"
     },
+    "observer": {
+        "product": "PingDirectory",
+        "vendor": "PingIdentity"
+    },
     "ping_directory": {
         "group": {
             "members_metadata": "ou=People,dc=example,dc=com",
@@ -980,9 +1008,7 @@ An example event for `group` looks as following:
                 "location": "https://203.0.113.10:2443/scim/v2/Groups/a7631f14-c7eb-490f-8b94-724b78241e13",
                 "resource_type": "Group"
             },
-            "schemas": [
-                "urn:ietf:params:scim:schemas:core:2.0:Group"
-            ]
+            "schemas": "urn:ietf:params:scim:schemas:core:2.0:Group"
         }
     },
     "related": {

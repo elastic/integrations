@@ -141,25 +141,17 @@ processors:
       field: event.outcome
       value: success
       tag: set_event_outcome_to_success
-      if: >
-        ctx.http?.response?.status_code != null &&
-        [200L, 201L, 202L].contains(ctx.http.response.status_code)
+      if: ctx.http?.response?.status_code != null && ctx.http.response.status_code < 400
   - set:
       field: event.outcome
       value: failure
       tag: set_event_outcome_to_failure
-      if: >
-        ctx.http?.response?.status_code != null &&
-        ctx.http.response.status_code >= 400 &&
-        ctx.http.response.status_code < 600
+      if: ctx.http?.response?.status_code != null && ctx.http.response.status_code >= 400 && ctx.http.response.status_code < 600
   - set:
       field: event.outcome
       value: unknown
       tag: set_event_outcome_to_unknown
-      if: >
-        ctx.http?.response?.status_code != null &&
-        (ctx.http.response.status_code < 400 || ctx.http.response.status_code >= 600) &&
-        ![200L, 201L, 202L].contains(ctx.http.response.status_code)
+      if: ctx.http?.response?.status_code == null || ctx.http.response.status_code >= 600
   - set:
       field: event.action
       tag: set_event_action_from_http_request_method
