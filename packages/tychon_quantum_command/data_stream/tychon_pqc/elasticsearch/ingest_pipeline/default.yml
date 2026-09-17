@@ -154,6 +154,9 @@ processors:
           }
           ctx.remove('event.type');
         }
+        if (ctx.event.type instanceof String) {
+          ctx.event.type = [ctx.event.type];
+        }
         if (ctx.event.category == null && ctx.containsKey('event.category')) {
           def category = ctx['event.category'];
           if (category instanceof List) {
@@ -171,6 +174,9 @@ processors:
             ctx.event.category = [category];
           }
           ctx.remove('event.category');
+        }
+        if (ctx.event.category instanceof String) {
+          ctx.event.category = [ctx.event.category];
         }
         if (ctx.event.category instanceof List && ctx.event.category.contains('library') && ctx.event.type instanceof List && ctx.event.type.contains('info')) {
           ctx.event.type.removeIf(v -> v == 'info');
