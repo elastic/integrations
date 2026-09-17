@@ -325,15 +325,30 @@ ELASTIC_PACKAGE_VERBOSITY=$(elastic_package_verbosity)
 
 is_already_published() {
     local packageZip=$1
+    local url="https://package-storage.elastic.co/artifacts/packages/${packageZip}"
+    local retries=3
+    local count=0
+    local http_code
+    local wait
 
-    # Avoid using "-q" in grep in this pipe, it could cause some weird behavior in some scenarios due to SIGPIPE errors when "set -o pipefail"
-    # https://tldp.org/LDP/lpg/node20.html
-    if curl -s --head "https://package-storage.elastic.co/artifacts/packages/${packageZip}" | grep "HTTP/2 200" > /dev/null; then
-        echo "- Already published ${packageZip}"
-        return 0
-    fi
-    echo "- Not published ${packageZip}"
-    return 1
+    while true; do
+        http_code=$(curl -s -o /dev/null -w "%{http_code}" --head "${url}")
+        if [ "${http_code}" == "200" ]; then
+            echo "- Already published ${packageZip}"
+            return 0
+        elif [ "${http_code}" == "404" ]; then
+            echo "- Not published ${packageZip}"
+            return 1
+        fi
+        count=$((count + 1))
+        if [ "${count}" -ge "${retries}" ]; then
+            >&2 echo "Failed to check if ${packageZip} is published after ${retries} attempts (last HTTP status: ${http_code})"
+            return 1
+        fi
+        wait=$((2 ** count))
+        >&2 echo "Unexpected HTTP status ${http_code} checking ${packageZip}, retrying in ${wait}s... ($count/$retries)"
+        sleep "${wait}"
+    done
 }
 
 create_kind_cluster() {
