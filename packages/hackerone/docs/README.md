@@ -79,8 +79,6 @@ When the integration is installed, a transform maintains the latest state of eac
 
 Join keys must be single-valued: a report can list several CVE identifiers, so `hackerone.report.attributes.cve_ids` could not match and adds only `null` columns.
 
-Joining against the `logs-hackerone_latest.report` alias requires Elasticsearch 9.1 or later, which every stack version supported by this integration satisfies.
-
 ## Troubleshooting
 
 For help with Elastic ingest tools, check [Common problems](https://www.elastic.co/docs/troubleshoot/ingest/fleet/common-problems).
