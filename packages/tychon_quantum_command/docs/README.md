@@ -492,7 +492,6 @@ This stream can contain multiple TYCHON record families in one place, including 
 | tychon.crypto.protocol |  | keyword |
 | tychon.crypto.protocol_version |  | keyword |
 | tychon.crypto.quantum_risk |  | keyword |
-| tychon.crypto.signature_algorithm |  | keyword |
 | tychon.error.pipeline |  | keyword |
 | tychon.file.group.name |  | keyword |
 | tychon.file.owner.name |  | keyword |
