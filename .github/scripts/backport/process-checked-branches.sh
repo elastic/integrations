@@ -48,13 +48,16 @@ echo "$ITEMS" | jq -c '.[]' | while IFS= read -r item; do
   fi
 
   # Run the backport; --json ensures structured output even on conflict
+  APPLY_FLAGS=()
+  [[ -n "${PR_NUMBER:-}" ]] && APPLY_FLAGS+=("--origin-pr-number" "$PR_NUMBER")
   RESULT=$("$GITHUB_WORKSPACE/dev/scripts/backport_apply.sh" \
     --sha        "$MERGE_SHA" \
     --package    "$PKG" \
     --target     "$BRANCH" \
     --open-pr \
     --json \
-    --repository "$REPOSITORY" || true)
+    --repository "$REPOSITORY" \
+    "${APPLY_FLAGS[@]+"${APPLY_FLAGS[@]}"}" || true)
 
   STATUS_VAL=$(jq -r '.status // empty' <<< "$RESULT" 2>/dev/null || true)
   if [[ "$STATUS_VAL" == "success" ]]; then
