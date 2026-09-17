@@ -25,6 +25,62 @@ processors:
       tag: json_event_original_to_aws_bedrock_invocation_71c8bf78
       field: event.original
       target_field: aws_bedrock.invocation
+  - script:
+      tag: normalize_streaming_invocation_list_b4e9a12c
+      description: Normalize a streaming-format invocation (a list of SSE chunks) into the invocation object shape the rest of the pipeline expects.
+      if: ctx.aws_bedrock?.invocation instanceof List
+      lang: painless
+      source: |
+        def chunks = ctx.aws_bedrock.invocation;
+        def inv = [:];
+        inv.output = [:];
+
+        // Use camelCase keys so the existing remarshal and rename scripts
+        // handle them identically to a regular ModelInvocationLog.
+        // Prefer Bedrock's own invocationMetrics for token counts (present
+        // for all model families); fall back to Anthropic-specific usage
+        // blocks when the Bedrock metrics are absent.
+        long bedrockInputTokens    = -1;
+        long bedrockOutputTokens   = -1;
+        long anthropicInputTokens  = -1;
+        long anthropicOutputTokens = -1;
+
+        for (def chunk : chunks) {
+          if (!(chunk instanceof Map)) continue;
+
+          def metrics = chunk['amazon-bedrock-invocationMetrics'];
+          if (metrics instanceof Map) {
+            if (metrics.inputTokenCount  != null) bedrockInputTokens  = metrics.inputTokenCount;
+            if (metrics.outputTokenCount != null) bedrockOutputTokens = metrics.outputTokenCount;
+          }
+
+          if (chunk.type == 'message_start' && chunk.message instanceof Map) {
+            def msg = chunk.message;
+            if (msg.model != null) inv.modelId = msg.model;
+            if (msg.usage instanceof Map) {
+              def u = msg.usage;
+              long n = 0;
+              if (u.input_tokens                != null) n += u.input_tokens;
+              if (u.cache_read_input_tokens     != null) n += u.cache_read_input_tokens;
+              if (u.cache_creation_input_tokens != null) n += u.cache_creation_input_tokens;
+              anthropicInputTokens = n;
+            }
+          } else if (chunk.type == 'message_delta') {
+            if (chunk.usage instanceof Map && chunk.usage.output_tokens != null) {
+              anthropicOutputTokens = chunk.usage.output_tokens;
+            }
+          }
+        }
+
+        if (bedrockInputTokens >= 0 || anthropicInputTokens >= 0) {
+          inv.input = [:];
+          inv.input.inputTokenCount = bedrockInputTokens >= 0 ? bedrockInputTokens : anthropicInputTokens;
+        }
+        long outTokens = bedrockOutputTokens >= 0 ? bedrockOutputTokens : anthropicOutputTokens;
+        if (outTokens >= 0) inv.output.outputTokenCount = outTokens;
+
+        inv.output.outputBodyJson = chunks;
+        ctx.aws_bedrock.invocation = inv;
   - set:
       tag: set_ecs_version_0f7334bb
       field: ecs.version
@@ -90,6 +146,7 @@ processors:
       tag: set_gen_ai_response_timestamp_69ae8169
       field: gen_ai.response.timestamp
       copy_from: '@timestamp'
+      ignore_failure: true
   # Remarshal the request and response.
   - set:
       tag: set_gen_ai_prompt_b562a590
