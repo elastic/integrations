@@ -1036,8 +1036,8 @@ An example event for `tychon_pqc` looks as following:
         ],
         "id": "00000000-0000-4000-8000-000000000002",
         "ip": [
-            "172.20.0.2",
-            "172.19.0.7"
+            "192.0.2.1",
+            "192.0.2.2"
         ],
         "mac": [
             "2E-D2-98-2B-4F-D4",
@@ -1058,7 +1058,7 @@ An example event for `tychon_pqc` looks as following:
     "log": {
         "file": {
             "device_id": "2080",
-            "fingerprint": "4ee8746d04407cd93cebfc9496b55aeee0246c415d53d5ef1f5142d2062f5e42",
+            "fingerprint": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
             "inode": "463265",
             "path": "/tmp/service_logs/tqc.ndjson"
         },
