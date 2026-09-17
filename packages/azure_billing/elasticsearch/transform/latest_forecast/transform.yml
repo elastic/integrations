@@ -1,0 +1,76 @@
+source:
+  index:
+    - "metrics-azure.billing-*"
+  # Forecast rows come from a different Azure API than the usage details: they have
+  # no `azure.billing.billing_period_id` and carry exactly one of
+  # `azure.billing.actual_cost` or `azure.billing.forecast_cost`. A `latest`
+  # transform uses `missing_bucket: true` for every unique key field, so documents
+  # without the key are not skipped: they all collapse into a single shared
+  # "missing" bucket. Narrow the source down to the forecast rows only.
+  query:
+    bool:
+      filter:
+        - exists:
+            field: azure.billing.usage_date
+        - bool:
+            should:
+              - exists:
+                  field: azure.billing.actual_cost
+              - exists:
+                  field: azure.billing.forecast_cost
+            minimum_should_match: 1
+  runtime_mappings:
+    # The forecast API has no status field: the status is implied by which cost
+    # field is populated. Deriving it keeps actual and forecast rows for the same
+    # day in separate buckets instead of overwriting each other.
+    azure.billing.cost_status:
+      type: keyword
+      script:
+        source: |-
+          if (doc.containsKey('azure.billing.actual_cost') && doc['azure.billing.actual_cost'].size() > 0) {
+            emit('actual');
+          } else {
+            emit('forecast');
+          }
+latest:
+  # Forecast rows have no per-record ID, so the natural key is the scope, the day,
+  # the currency, and whether the row is an actual or a forecast.
+  unique_key:
+    - azure.subscription_id
+    - azure.billing.usage_date
+    - azure.billing.currency
+    - azure.billing.cost_status
+  # Azure keeps revising cost rows for up to ~72h, so the most recently collected
+  # copy of a row is the authoritative one.
+  sort: "@timestamp"
+dest:
+  # The destination index must not match `metrics-*`: transform documents keep
+  # their original `data_stream.dataset`, so a `metrics-*` data view would count
+  # both the raw and the deduplicated documents.
+  index: "azure_billing.forecast-v1"
+  aliases:
+    - alias: "azure_billing.forecast_latest"
+      move_on_creation: true
+description: >-
+  Deduplicated Azure billing forecast. The Azure billing metricset re-fetches recent days on every run, which creates duplicate documents in the metrics-azure.billing-* data stream. This transform keeps only the most recently collected actual and forecast cost row per subscription, usage date, and currency.
+# Billing data arrives once a day, so there is nothing to gain from a faster
+# checkpoint interval.
+frequency: 1h
+settings:
+  # This is required to prevent the transform from clobbering the Fleet-managed
+  # mappings.
+  deduce_mappings: false
+  unattended: true
+sync:
+  time:
+    field: "@timestamp"
+    # 120s instead of the default 60s because of the index refresh delay in
+    # Serverless.
+    delay: 120s
+_meta:
+  # Bump this version to delete, reinstall, and restart the transform during
+  # package installation. The source has no `@timestamp` range filter on purpose:
+  # Fleet rebuilds the destination index from scratch on a version bump, and a
+  # relative range filter would silently drop all history.
+  fleet_transform_version: 0.1.0
+  run_as_kibana_system: false
