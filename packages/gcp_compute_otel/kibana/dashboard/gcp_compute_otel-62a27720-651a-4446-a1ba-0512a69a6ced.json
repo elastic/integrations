@@ -27,7 +27,7 @@
             {
                 "embeddableConfig": {
                     "esql_query": [
-                        "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS instance_name = MAX(LAST_OVER_TIME(instance_name))\n| LIMIT 1"
+                        "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS instance_name = MAX(LAST_OVER_TIME(instance_name))\n| LIMIT 1"
                     ],
                     "hide_border": true,
                     "template": "\u003cstyle\u003e\n  body {\n    margin: 0;\n    padding: var(--cc-space-xs) var(--cc-space-l) var(--cc-space-l) var(--cc-space-l);\n    box-sizing: border-box;\n    font-family: var(--cc-font-family);\n    color: var(--cc-color-text);\n    background: var(--cc-color-background);\n  }\n  .wrap {\n    height: auto;\n    display: flex;\n    flex-direction: column;\n    justify-content: flex-start;\n  }\n  .instance-name {\n    font-size: 1.25rem;\n    font-weight: 600;\n    color: var(--cc-color-text);\n    text-align: left;\n    word-break: break-word;\n    margin: 0;\n  }\n\u003c/style\u003e\n\n\u003cdiv class=\"wrap\"\u003e\n  {% for row in rows %}\n    \u003cdiv class=\"instance-name\"\u003e{{ row[\"instance_name\"].value }}\u003c/div\u003e\n  {% endfor %}\n\u003c/div\u003e"
@@ -45,7 +45,7 @@
             {
                 "embeddableConfig": {
                     "esql_query": [
-                        "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS avg_cpu_utilization = AVG(AVG_OVER_TIME(compute.googleapis.`com/instance/cpu/utilization`)), last_reserved_cores = MAX(LAST_OVER_TIME(compute.googleapis.`com/instance/cpu/reserved_cores`)), last_guest_visible_vcpus = MAX(LAST_OVER_TIME(compute.googleapis.`com/instance/cpu/guest_visible_vcpus`)), last_balloon_ram_size = MAX(LAST_OVER_TIME(compute.googleapis.`com/instance/memory/balloon/ram_size`)), last_uptime_total = MAX(LAST_OVER_TIME(compute.googleapis.`com/instance/uptime_total`)) BY instance_name, zone = resource.attributes.zone, project_id = resource.attributes.project_id, instance_id = resource.attributes.instance_id\n| SORT avg_cpu_utilization DESC\n| LIMIT 1"
+                        "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS avg_cpu_utilization = AVG(AVG_OVER_TIME(compute.googleapis.`com/instance/cpu/utilization`)), last_reserved_cores = MAX(LAST_OVER_TIME(compute.googleapis.`com/instance/cpu/reserved_cores`)), last_guest_visible_vcpus = MAX(LAST_OVER_TIME(compute.googleapis.`com/instance/cpu/guest_visible_vcpus`)), last_balloon_ram_size = MAX(LAST_OVER_TIME(compute.googleapis.`com/instance/memory/balloon/ram_size`)), last_uptime_total = MAX(LAST_OVER_TIME(compute.googleapis.`com/instance/uptime_total`)) BY instance_name, zone = resource.attributes.zone, project_id = resource.attributes.project_id, instance_id = resource.attributes.instance_id\n| SORT avg_cpu_utilization DESC\n| LIMIT 1"
                     ],
                     "template": "\u003cstyle\u003e\n  body {\n    margin: 0;\n    padding: var(--cc-space-l);\n    box-sizing: border-box;\n    font-family: var(--cc-font-family);\n    color: var(--cc-color-text);\n    background: var(--cc-color-background);\n  }\n\n  .strip {\n    min-width: 0;\n  }\n\n  .panel-title {\n    font-size: 1rem;\n    font-weight: 600;\n    margin: 0 0 var(--cc-space-s) 0;\n  }\n\n  .ident {\n    min-width: 0;\n    display: flex;\n    flex-direction: column;\n    gap: var(--cc-space-s);\n  }\n\n  .meta-grid {\n    display: grid;\n    grid-template-columns: repeat(3, 1fr);\n    gap: var(--cc-space-l);\n    margin-top: var(--cc-space-xs);\n  }\n\n  .field {\n    display: flex;\n    flex-direction: column;\n    gap: var(--cc-space-xs);\n    min-width: 0;\n  }\n\n  .field-label {\n    font-size: 0.85rem;\n    color: var(--cc-color-text);\n    opacity: 0.6;\n  }\n\n  .field-value {\n    font-size: 1rem;\n    font-weight: 600;\n    word-break: break-all;\n  }\n\n  .empty {\n    font-size: 0.875rem;\n    color: var(--cc-color-text);\n    opacity: 0.6;\n  }\n\n  .cpu-ok { color: #24c292; }\n  .cpu-warn { color: #fcd883; }\n  .cpu-bad { color: #f6726a; }\n\u003c/style\u003e\n\n{% if rows.size == 0 %}\n  \u003cdiv class=\"panel-title\"\u003eMetadata\u003c/div\u003e\n  \u003cdiv class=\"empty\"\u003eNo instance selected — pick one from the Instance control or drill down from the fleet list.\u003c/div\u003e\n{% else %}\n  {% for row in rows %}\n  \u003cdiv class=\"strip\"\u003e\n    \u003cdiv class=\"panel-title\"\u003eMetadata\u003c/div\u003e\n    \u003cdiv class=\"ident\"\u003e\n      \u003cdiv class=\"meta-grid\"\u003e\n        \u003cdiv class=\"field\"\u003e\n          \u003cdiv class=\"field-label\"\u003eZone\u003c/div\u003e\n          \u003cdiv class=\"field-value\"\u003e{% if row[\"zone\"].value %}{{ row[\"zone\"].value }}{% else %}—{% endif %}\u003c/div\u003e\n        \u003c/div\u003e\n        \u003cdiv class=\"field\"\u003e\n          \u003cdiv class=\"field-label\"\u003eProject\u003c/div\u003e\n          \u003cdiv class=\"field-value\"\u003e{% if row[\"project_id\"].value %}{{ row[\"project_id\"].value }}{% else %}—{% endif %}\u003c/div\u003e\n        \u003c/div\u003e\n        \u003cdiv class=\"field\"\u003e\n          \u003cdiv class=\"field-label\"\u003eInstance ID\u003c/div\u003e\n          \u003cdiv class=\"field-value\"\u003e{% if row[\"instance_id\"].value %}{{ row[\"instance_id\"].value }}{% else %}—{% endif %}\u003c/div\u003e\n        \u003c/div\u003e\n        \u003cdiv class=\"field\"\u003e\n          \u003cdiv class=\"field-label\"\u003evCPUs\u003c/div\u003e\n          \u003cdiv class=\"field-value\"\u003e{% if row[\"last_guest_visible_vcpus\"].value %}{{ row[\"last_guest_visible_vcpus\"].value | round: 0 }}{% else %}—{% endif %}\u003c/div\u003e\n        \u003c/div\u003e\n        \u003cdiv class=\"field\"\u003e\n          \u003cdiv class=\"field-label\"\u003eReserved cores\u003c/div\u003e\n          \u003cdiv class=\"field-value\"\u003e{% if row[\"last_reserved_cores\"].value %}{{ row[\"last_reserved_cores\"].value | times: 1.0 | round: 2 }}{% else %}—{% endif %}\u003c/div\u003e\n        \u003c/div\u003e\n        \u003cdiv class=\"field\"\u003e\n          \u003cdiv class=\"field-label\"\u003eRAM\u003c/div\u003e\n          \u003cdiv class=\"field-value\"\u003e\n            {% if row[\"last_balloon_ram_size\"].value %}\n              {% assign ram = row[\"last_balloon_ram_size\"].value %}\n              {% if ram \u003e= 1099511627776 %}\n                {{ ram | divided_by: 1099511627776.0 | round: 2 }} TB\n              {% elsif ram \u003e= 1073741824 %}\n                {{ ram | divided_by: 1073741824.0 | round: 2 }} GB\n              {% elsif ram \u003e= 1048576 %}\n                {{ ram | divided_by: 1048576.0 | round: 2 }} MB\n              {% elsif ram \u003e= 1024 %}\n                {{ ram | divided_by: 1024.0 | round: 2 }} KB\n              {% else %}\n                {{ ram }} B\n              {% endif %}\n            {% else %}—{% endif %}\n          \u003c/div\u003e\n        \u003c/div\u003e\n        \u003cdiv class=\"field\"\u003e\n          \u003cdiv class=\"field-label\"\u003eAvg CPU\u003c/div\u003e\n          {% if row[\"avg_cpu_utilization\"].value %}\n            {% assign cpu = row[\"avg_cpu_utilization\"].value | times: 100.0 %}\n            \u003cdiv class=\"field-value {% if cpu \u003e= 90 %}cpu-bad{% elsif cpu \u003e= 70 %}cpu-warn{% else %}cpu-ok{% endif %}\"\u003e{{ cpu | round: 1 }}%\u003c/div\u003e\n          {% else %}\n            \u003cdiv class=\"field-value\"\u003e—\u003c/div\u003e\n          {% endif %}\n        \u003c/div\u003e\n        \u003cdiv class=\"field\"\u003e\n          \u003cdiv class=\"field-label\"\u003eRegion\u003c/div\u003e\n          \u003cdiv class=\"field-value\"\u003e\n            {% if row[\"zone\"].value %}\n              {% assign zone_parts = row[\"zone\"].value | split: \"-\" %}\n              {% assign region_size = zone_parts.size | minus: 1 %}\n              {% assign region_parts = zone_parts | slice: 0, region_size %}\n              {{ region_parts | join: \"-\" }}\n            {% else %}—{% endif %}\n          \u003c/div\u003e\n        \u003c/div\u003e\n        \u003cdiv class=\"field\"\u003e\n          \u003cdiv class=\"field-label\"\u003eUptime\u003c/div\u003e\n          \u003cdiv class=\"field-value\"\u003e\n            {% if row[\"last_uptime_total\"].value and row[\"last_uptime_total\"].value != 0 %}\n              {% assign total_seconds = row[\"last_uptime_total\"].value %}\n              {% assign total_days = total_seconds | divided_by: 86400 | floor %}\n              {% assign days_in_seconds = total_days | times: 86400 %}\n              {% assign remaining_after_days = total_seconds | minus: days_in_seconds | floor %}\n              {% assign total_hours = remaining_after_days | divided_by: 3600 | floor %}\n              {% assign hours_in_seconds = total_hours | times: 3600 %}\n              {% assign remaining_after_hours = remaining_after_days | minus: hours_in_seconds | floor %}\n              {% assign total_minutes = remaining_after_hours | divided_by: 60 | floor %}\n              {% if total_days \u003e 0 %}\n                {{ total_days | floor }}d {{ total_hours | floor }}h\n              {% elsif total_hours \u003e 0 %}\n                {{ total_hours | floor }}h {{ total_minutes | floor }}m\n              {% else %}\n                {{ total_minutes | floor }}m\n              {% endif %}\n            {% else %}—{% endif %}\n          \u003c/div\u003e\n        \u003c/div\u003e\n      \u003c/div\u003e\n    \u003c/div\u003e\n  \u003c/div\u003e\n  {% endfor %}\n{% endif %}"
                 },
@@ -62,7 +62,7 @@
             {
                 "embeddableConfig": {
                     "esql_query": [
-                        "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS instance_name = MAX(LAST_OVER_TIME(instance_name)),\n        avg_cpu_utilization = AVG(AVG_OVER_TIME(compute.googleapis.`com/instance/cpu/utilization`)),\n        last_reserved_cores = MAX(LAST_OVER_TIME(compute.googleapis.`com/instance/cpu/reserved_cores`)),\n        avg_scheduler_wait = AVG(AVG_OVER_TIME(compute.googleapis.`com/instance/cpu/scheduler_wait_time`)),\n        total_ram_used = SUM(AVG_OVER_TIME(compute.googleapis.`com/instance/memory/balloon/ram_used`)),\n        total_ram_size = SUM(AVG_OVER_TIME(compute.googleapis.`com/instance/memory/balloon/ram_size`)),\n        total_swap_in = SUM(AVG_OVER_TIME(compute.googleapis.`com/instance/memory/balloon/swap_in_bytes_count`)),\n        total_swap_out = SUM(AVG_OVER_TIME(compute.googleapis.`com/instance/memory/balloon/swap_out_bytes_count`)),\n        max_io_latency = MAX(MAX_OVER_TIME(compute.googleapis.`com/instance/disk/average_io_latency`)),\n        max_io_queue_depth = MAX(MAX_OVER_TIME(compute.googleapis.`com/instance/disk/average_io_queue_depth`)),\n        total_interruptions = SUM(SUM_OVER_TIME(compute.googleapis.`com/instance/interruption_count`))\n        BY zone = resource.attributes.zone, project_id = resource.attributes.project_id, instance_id = resource.attributes.instance_id\n| EVAL cpu_utilization_pct = avg_cpu_utilization * 100.0, memory_used_pct = total_ram_used * 100.0 / total_ram_size\n| LIMIT 1"
+                        "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS instance_name = MAX(LAST_OVER_TIME(instance_name)),\n        avg_cpu_utilization = AVG(AVG_OVER_TIME(compute.googleapis.`com/instance/cpu/utilization`)),\n        last_reserved_cores = MAX(LAST_OVER_TIME(compute.googleapis.`com/instance/cpu/reserved_cores`)),\n        avg_scheduler_wait = AVG(AVG_OVER_TIME(compute.googleapis.`com/instance/cpu/scheduler_wait_time`)),\n        total_ram_used = SUM(AVG_OVER_TIME(compute.googleapis.`com/instance/memory/balloon/ram_used`)),\n        total_ram_size = SUM(AVG_OVER_TIME(compute.googleapis.`com/instance/memory/balloon/ram_size`)),\n        total_swap_in = SUM(AVG_OVER_TIME(compute.googleapis.`com/instance/memory/balloon/swap_in_bytes_count`)),\n        total_swap_out = SUM(AVG_OVER_TIME(compute.googleapis.`com/instance/memory/balloon/swap_out_bytes_count`)),\n        max_io_latency = MAX(MAX_OVER_TIME(compute.googleapis.`com/instance/disk/average_io_latency`)),\n        max_io_queue_depth = MAX(MAX_OVER_TIME(compute.googleapis.`com/instance/disk/average_io_queue_depth`)),\n        total_interruptions = SUM(SUM_OVER_TIME(compute.googleapis.`com/instance/interruption_count`))\n        BY zone = resource.attributes.zone, project_id = resource.attributes.project_id, instance_id = resource.attributes.instance_id\n| EVAL cpu_utilization_pct = avg_cpu_utilization * 100.0, memory_used_pct = total_ram_used * 100.0 / total_ram_size\n| LIMIT 1"
                     ],
                     "template": "\u003c!DOCTYPE html\u003e\n\u003chtml lang=\"en\"\u003e\n\u003chead\u003e\n\u003cmeta charset=\"utf-8\"\u003e\n\u003cstyle\u003e\n  body {\n    margin: 0;\n    padding: var(--cc-space-l);\n    box-sizing: border-box;\n    font-family: var(--cc-font-family);\n    color: var(--cc-color-text);\n    background: var(--cc-color-background);\n  }\n\n  .panel {\n    border: none;\n    border-radius: var(--cc-radius);\n    background: var(--cc-color-surface);\n    padding: var(--cc-space-l);\n    display: flex;\n    flex-direction: column;\n    gap: var(--cc-space-l);\n  }\n\n  .header {\n    display: flex;\n    align-items: center;\n    gap: var(--cc-space-s);\n    flex-wrap: wrap;\n  }\n\n  .header .title {\n    font-size: 0.875rem;\n    font-weight: 600;\n    letter-spacing: 0.01em;\n  }\n\n  .header .instance-name {\n    font-size: 0.75rem;\n    font-weight: 600;\n    opacity: 0.65;\n    padding: var(--cc-space-xs) var(--cc-space-s);\n    border: 1px solid var(--cc-color-border);\n    border-radius: var(--cc-radius-s);\n  }\n\n  .sparkle {\n    flex: 0 0 auto;\n    display: block;\n  }\n\n  .section-label {\n    font-size: 0.75rem;\n    font-weight: 600;\n    text-transform: uppercase;\n    letter-spacing: 0.06em;\n    opacity: 0.7;\n    margin: 0 0 var(--cc-space-s) 0;\n  }\n\n  ol, ul {\n    margin: 0;\n    padding-left: var(--cc-space-l);\n    display: flex;\n    flex-direction: column;\n    gap: var(--cc-space-s);\n  }\n\n  li {\n    font-size: 0.875rem;\n    line-height: 1.5;\n  }\n\n  ol li::marker {\n    font-weight: 600;\n    color: var(--cc-color-primary);\n  }\n\n  ul li::marker {\n    color: var(--cc-color-accent);\n  }\n\n  .divider {\n    height: 1px;\n    background: var(--cc-color-border);\n    border: 0;\n    margin: 0;\n  }\n\n  .footer {\n    display: flex;\n    flex-direction: column;\n    align-items: flex-start;\n    gap: var(--cc-space-s);\n  }\n\n  .footnote {\n    font-size: 0.75rem;\n    font-style: italic;\n    opacity: 0.65;\n  }\n\n  .empty-state {\n    font-size: 0.875rem;\n    opacity: 0.7;\n    padding: var(--cc-space-m) 0;\n  }\n\u003c/style\u003e\n\u003c/head\u003e\n\u003cbody\u003e\n  \u003cdiv class=\"panel\"\u003e\n\n    \u003cdiv class=\"header\"\u003e\n      \u003csvg class=\"sparkle\" width=\"16\" height=\"16\" viewBox=\"0 0 16 16\" aria-hidden=\"true\"\u003e\n        \u003cpath d=\"M8 0.8 L9.5 5.4 L14 7 L9.5 8.6 L8 13.2 L6.5 8.6 L2 7 L6.5 5.4 Z\"\n              fill=\"var(--cc-color-primary)\"/\u003e\n        \u003cpath d=\"M13 9.6 L13.7 11.5 L15.5 12.2 L13.7 12.9 L13 14.8 L12.3 12.9 L10.5 12.2 L12.3 11.5 Z\"\n              fill=\"var(--cc-color-accent)\"/\u003e\n      \u003c/svg\u003e\n      \u003cspan class=\"title\"\u003eInvestigate and resolve\u003c/span\u003e\n      {% if rows.size \u003e 0 and rows[0][\"instance_name\"].value != null %}\n        \u003cspan class=\"instance-name\"\u003e{{ rows[0][\"instance_name\"].value }}\u003c/span\u003e\n      {% endif %}\n    \u003c/div\u003e\n\n    {% if rows.size == 0 %}\n      \u003cdiv class=\"empty-state\"\u003eNo GCE instance is currently selected — pick an instance to generate an AI analysis of its health signals.\u003c/div\u003e\n    {% else %}\n      {% for row in rows %}\n        {% assign has_cpu = false %}\n        {% assign has_wait = false %}\n        {% assign has_mem = false %}\n        {% assign has_swap = false %}\n        {% assign has_io = false %}\n        {% assign has_interrupt = false %}\n\n        {% if row[\"cpu_utilization_pct\"].value != null and row[\"cpu_utilization_pct\"].value \u003e= 90 %}\n          {% assign has_cpu = true %}\n        {% endif %}\n        {% if row[\"avg_scheduler_wait\"].value != null and row[\"avg_scheduler_wait\"].value \u003e 0 %}\n          {% assign has_wait = true %}\n        {% endif %}\n        {% if row[\"memory_used_pct\"].value != null and row[\"memory_used_pct\"].value \u003e 70 %}\n          {% assign has_mem = true %}\n        {% endif %}\n        {% if row[\"total_swap_in\"].value != null and row[\"total_swap_in\"].value \u003e 0 or row[\"total_swap_out\"].value != null and row[\"total_swap_out\"].value \u003e 0 %}\n          {% assign has_swap = true %}\n        {% endif %}\n        {% if row[\"max_io_latency\"].value != null and row[\"max_io_latency\"].value \u003e 1000 and row[\"max_io_queue_depth\"].value != null and row[\"max_io_queue_depth\"].value \u003e= 1 %}\n          {% assign has_io = true %}\n        {% endif %}\n        {% if row[\"total_interruptions\"].value != null and row[\"total_interruptions\"].value \u003e 0 %}\n          {% assign has_interrupt = true %}\n        {% endif %}\n\n        \u003cdiv\u003e\n          \u003cp class=\"section-label\"\u003eIssues found\u003c/p\u003e\n          \u003col\u003e\n            {% if has_cpu or has_wait %}\n              \u003cli\u003e\n                {% if has_cpu %}\n                  CPU utilization is running at {{ row[\"cpu_utilization_pct\"].value | round: 1 }}% of the {{ row[\"last_reserved_cores\"].value | round: 1 }} reserved core(s) (avg {{ row[\"avg_cpu_utilization\"].value | round: 2 }}), indicating sustained CPU pressure.\n                {% endif %}\n                {% if has_wait %}\n                  {% if has_cpu %} Additionally, average{% else %} Average{% endif %} scheduler wait time is {{ row[\"avg_scheduler_wait\"].value | round: 2 }}, a non-zero value pointing to host-level contention rather than workload growth alone.\n                {% endif %}\n              \u003c/li\u003e\n            {% else %}\n              \u003cli\u003eCPU utilization ({{ row[\"cpu_utilization_pct\"].value | round: 1 }}% of reserved cores) and scheduler wait look healthy — no CPU pressure or host contention detected.\u003c/li\u003e\n            {% endif %}\n\n            {% if has_mem or has_swap %}\n              \u003cli\u003e\n                {% if has_mem %}\n                  Hypervisor-level balloon memory usage is elevated at {{ row[\"memory_used_pct\"].value | round: 1 }}% (guest-level usage is not visible from this pipeline).\n                {% endif %}\n                {% if has_swap %}\n                  {% if has_mem %} This is corroborated by{% else %} There is{% endif %} sustained swap activity: {{ row[\"total_swap_in\"].value | round: 0 }} swap-in and {{ row[\"total_swap_out\"].value | round: 0 }} swap-out, the strongest early signal of real memory pressure.\n                {% endif %}\n              \u003c/li\u003e\n            {% else %}\n              \u003cli\u003eBalloon memory usage ({{ row[\"memory_used_pct\"].value | round: 1 }}%) and swap activity look healthy — no memory pressure detected at the hypervisor level.\u003c/li\u003e\n            {% endif %}\n\n            {% if has_io %}\n              \u003cli\u003eDisk I/O shows signs of saturation: max latency of {{ row[\"max_io_latency\"].value | divided_by: 1000.0 | round: 2 }}ms combined with a queue depth of {{ row[\"max_io_queue_depth\"].value | round: 2 }}, both elevated together.\u003c/li\u003e\n            {% else %}\n              \u003cli\u003eDisk I/O latency ({{ row[\"max_io_latency\"].value | divided_by: 1000.0 | round: 2 }}ms) and queue depth ({{ row[\"max_io_queue_depth\"].value | round: 2 }}) look healthy — no signs of disk saturation.\u003c/li\u003e\n            {% endif %}\n\n            {% if has_interrupt %}\n              \u003cli\u003e{{ row[\"total_interruptions\"].value }} preemption/maintenance interruption(s) occurred during the window, which can explain transient performance dips.\u003c/li\u003e\n            {% else %}\n              \u003cli\u003eNo preemption or maintenance interruptions were recorded during the window.\u003c/li\u003e\n            {% endif %}\n          \u003c/ol\u003e\n        \u003c/div\u003e\n\n        \u003chr class=\"divider\"\u003e\n\n        \u003cdiv\u003e\n          \u003cp class=\"section-label\"\u003eNext best actions\u003c/p\u003e\n          \u003cul\u003e\n            {% if has_cpu %}\n              \u003cli\u003eCompare CPU usage against reserved cores in the capacity section below to decide whether a larger machine type is warranted.\u003c/li\u003e\n            {% endif %}\n            {% if has_wait %}\n              \u003cli\u003eInvestigate the scheduler wait/steal chart — non-zero values with this utilization level point to host contention, not just workload growth.\u003c/li\u003e\n            {% endif %}\n            {% if has_mem %}\n              \u003cli\u003eTreat the {{ row[\"memory_used_pct\"].value | round: 1 }}% balloon memory figure as a hypervisor-only signal and cross-check guest-level memory metrics separately.\u003c/li\u003e\n            {% endif %}\n            {% if has_swap %}\n              \u003cli\u003eReview swap in/out trends over time; sustained swap-in confirms real memory pressure before the used percentage reaches 100%.\u003c/li\u003e\n            {% endif %}\n            {% if has_io %}\n              \u003cli\u003eCorrelate this device's elevated latency ({{ row[\"max_io_latency\"].value | divided_by: 1000.0 | round: 2 }}ms) and queue depth with instance {{ row[\"instance_id\"].value }} to confirm disk saturation before resizing storage.\u003c/li\u003e\n            {% endif %}\n            {% if has_interrupt %}\n              \u003cli\u003eCheck the maintenance/preemption history for this instance to rule out scheduled host events as the cause of any observed dips.\u003c/li\u003e\n            {% endif %}\n            {% unless has_cpu or has_wait or has_mem or has_swap or has_io or has_interrupt %}\n              \u003cli\u003eNo concerning signals detected for this instance — continue routine monitoring, no immediate action required.\u003c/li\u003e\n            {% endunless %}\n          \u003c/ul\u003e\n        \u003c/div\u003e\n      {% endfor %}\n    {% endif %}\n\n    \u003cdiv class=\"footer\"\u003e\n      \u003cspan class=\"footnote\"\u003eGenerated from dashboard context\u003c/span\u003e\n    \u003c/div\u003e\n\n  \u003c/div\u003e\n\u003c/body\u003e\n\u003c/html\u003e"
                 },
@@ -149,7 +149,7 @@
                             "open_in_new_tab": false,
                             "trigger": "on_click_value",
                             "type": "url_drilldown",
-                            "url": "{{kibanaUrl}}/app/dashboards#/view/00311620-fcdf-435c-945b-3d912867b913"
+                            "url": "{{kibanaUrl}}/app/dashboards#/view/gcp_compute_otel-00311620-fcdf-435c-945b-3d912867b913"
                         }
                     ],
                     "hide_border": true,
@@ -261,12 +261,12 @@
                         "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "metrics-googlecloudmonitoringreceiver.otel-default-35b4ab8655154cf4380c55bd1b8275805d2a2a300e24665d828a2df7fa81fb1f": {
+                                "metrics-gcp.compute.otel-default-35b4ab8655154cf4380c55bd1b8275805d2a2a300e24665d828a2df7fa81fb1f": {
                                     "allowNoIndex": false,
-                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-35b4ab8655154cf4380c55bd1b8275805d2a2a300e24665d828a2df7fa81fb1f",
-                                    "name": "metrics-googlecloudmonitoringreceiver.otel-default",
+                                    "id": "metrics-gcp.compute.otel-default-35b4ab8655154cf4380c55bd1b8275805d2a2a300e24665d828a2df7fa81fb1f",
+                                    "name": "metrics-gcp.compute.otel-default",
                                     "sourceFilters": [],
-                                    "title": "metrics-googlecloudmonitoringreceiver.otel-default",
+                                    "title": "metrics-gcp.compute.otel-default",
                                     "type": "esql"
                                 }
                             },
@@ -295,9 +295,9 @@
                                                 }
                                             ],
                                             "ignoreGlobalFilters": false,
-                                            "index": "metrics-googlecloudmonitoringreceiver.otel-default-35b4ab8655154cf4380c55bd1b8275805d2a2a300e24665d828a2df7fa81fb1f",
+                                            "index": "metrics-gcp.compute.otel-default-35b4ab8655154cf4380c55bd1b8275805d2a2a300e24665d828a2df7fa81fb1f",
                                             "query": {
-                                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"gce_instance\" AND TRANGE(?_tstart, ?_tend)\n| STATS `Last Reserved Cores` = MAX(LAST_OVER_TIME(`compute.googleapis.com/instance/cpu/reserved_cores`))"
+                                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"gce_instance\" AND TRANGE(?_tstart, ?_tend)\n| STATS `Last Reserved Cores` = MAX(LAST_OVER_TIME(`compute.googleapis.com/instance/cpu/reserved_cores`))"
                                             }
                                         }
                                     }
@@ -306,13 +306,13 @@
                             "filters": [],
                             "internalReferences": [
                                 {
-                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-35b4ab8655154cf4380c55bd1b8275805d2a2a300e24665d828a2df7fa81fb1f",
+                                    "id": "metrics-gcp.compute.otel-default-35b4ab8655154cf4380c55bd1b8275805d2a2a300e24665d828a2df7fa81fb1f",
                                     "name": "indexpattern-datasource-layer-layer_0",
                                     "type": "index-pattern"
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"gce_instance\" AND TRANGE(?_tstart, ?_tend)\n| STATS `Last Reserved Cores` = MAX(LAST_OVER_TIME(`compute.googleapis.com/instance/cpu/reserved_cores`))"
+                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"gce_instance\" AND TRANGE(?_tstart, ?_tend)\n| STATS `Last Reserved Cores` = MAX(LAST_OVER_TIME(`compute.googleapis.com/instance/cpu/reserved_cores`))"
                             },
                             "visualization": {
                                 "density": "default",
@@ -351,12 +351,12 @@
                         "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "metrics-googlecloudmonitoringreceiver.otel-default-1fa036ae3a7251edc7691747e912fdef078db97e7d033103c0357dd0b7a082ce": {
+                                "metrics-gcp.compute.otel-default-1fa036ae3a7251edc7691747e912fdef078db97e7d033103c0357dd0b7a082ce": {
                                     "allowNoIndex": false,
-                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-1fa036ae3a7251edc7691747e912fdef078db97e7d033103c0357dd0b7a082ce",
-                                    "name": "metrics-googlecloudmonitoringreceiver.otel-default",
+                                    "id": "metrics-gcp.compute.otel-default-1fa036ae3a7251edc7691747e912fdef078db97e7d033103c0357dd0b7a082ce",
+                                    "name": "metrics-gcp.compute.otel-default",
                                     "sourceFilters": [],
-                                    "title": "metrics-googlecloudmonitoringreceiver.otel-default",
+                                    "title": "metrics-gcp.compute.otel-default",
                                     "type": "esql"
                                 }
                             },
@@ -410,9 +410,9 @@
                                                 }
                                             ],
                                             "ignoreGlobalFilters": false,
-                                            "index": "metrics-googlecloudmonitoringreceiver.otel-default-1fa036ae3a7251edc7691747e912fdef078db97e7d033103c0357dd0b7a082ce",
+                                            "index": "metrics-gcp.compute.otel-default-1fa036ae3a7251edc7691747e912fdef078db97e7d033103c0357dd0b7a082ce",
                                             "query": {
-                                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `CPU Consumed` = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/cpu/usage_time`)) / 60, `Reserved Cores Ceiling` = MAX(LAST_OVER_TIME(`compute.googleapis.com/instance/cpu/reserved_cores`)) BY bucket = TBUCKET(50, ?_tstart, ?_tend)"
+                                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `CPU Consumed` = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/cpu/usage_time`)) / 60, `Reserved Cores Ceiling` = MAX(LAST_OVER_TIME(`compute.googleapis.com/instance/cpu/reserved_cores`)) BY bucket = TBUCKET(50, ?_tstart, ?_tend)"
                                             }
                                         }
                                     }
@@ -421,13 +421,13 @@
                             "filters": [],
                             "internalReferences": [
                                 {
-                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-1fa036ae3a7251edc7691747e912fdef078db97e7d033103c0357dd0b7a082ce",
+                                    "id": "metrics-gcp.compute.otel-default-1fa036ae3a7251edc7691747e912fdef078db97e7d033103c0357dd0b7a082ce",
                                     "name": "indexpattern-datasource-layer-line_0",
                                     "type": "index-pattern"
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `CPU Consumed` = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/cpu/usage_time`)) / 60, `Reserved Cores Ceiling` = MAX(LAST_OVER_TIME(`compute.googleapis.com/instance/cpu/reserved_cores`)) BY bucket = TBUCKET(50, ?_tstart, ?_tend)"
+                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `CPU Consumed` = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/cpu/usage_time`)) / 60, `Reserved Cores Ceiling` = MAX(LAST_OVER_TIME(`compute.googleapis.com/instance/cpu/reserved_cores`)) BY bucket = TBUCKET(50, ?_tstart, ?_tend)"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -522,12 +522,12 @@
                         "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "metrics-googlecloudmonitoringreceiver.otel-default-ab710153be861315ed3af0a7228905d3cf6c1a6a69cce81bb82f25a4a9eb032c": {
+                                "metrics-gcp.compute.otel-default-ab710153be861315ed3af0a7228905d3cf6c1a6a69cce81bb82f25a4a9eb032c": {
                                     "allowNoIndex": false,
-                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-ab710153be861315ed3af0a7228905d3cf6c1a6a69cce81bb82f25a4a9eb032c",
-                                    "name": "metrics-googlecloudmonitoringreceiver.otel-default",
+                                    "id": "metrics-gcp.compute.otel-default-ab710153be861315ed3af0a7228905d3cf6c1a6a69cce81bb82f25a4a9eb032c",
+                                    "name": "metrics-gcp.compute.otel-default",
                                     "sourceFilters": [],
-                                    "title": "metrics-googlecloudmonitoringreceiver.otel-default",
+                                    "title": "metrics-gcp.compute.otel-default",
                                     "type": "esql"
                                 }
                             },
@@ -554,9 +554,9 @@
                                                 }
                                             ],
                                             "ignoreGlobalFilters": false,
-                                            "index": "metrics-googlecloudmonitoringreceiver.otel-default-ab710153be861315ed3af0a7228905d3cf6c1a6a69cce81bb82f25a4a9eb032c",
+                                            "index": "metrics-gcp.compute.otel-default-ab710153be861315ed3af0a7228905d3cf6c1a6a69cce81bb82f25a4a9eb032c",
                                             "query": {
-                                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Scheduler Wait Time` = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/cpu/scheduler_wait_time`)) / 60 BY bucket = TBUCKET(50, ?_tstart, ?_tend)"
+                                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Scheduler Wait Time` = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/cpu/scheduler_wait_time`)) / 60 BY bucket = TBUCKET(50, ?_tstart, ?_tend)"
                                             }
                                         }
                                     }
@@ -565,13 +565,13 @@
                             "filters": [],
                             "internalReferences": [
                                 {
-                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-ab710153be861315ed3af0a7228905d3cf6c1a6a69cce81bb82f25a4a9eb032c",
+                                    "id": "metrics-gcp.compute.otel-default-ab710153be861315ed3af0a7228905d3cf6c1a6a69cce81bb82f25a4a9eb032c",
                                     "name": "indexpattern-datasource-layer-area_0",
                                     "type": "index-pattern"
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Scheduler Wait Time` = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/cpu/scheduler_wait_time`)) / 60 BY bucket = TBUCKET(50, ?_tstart, ?_tend)"
+                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Scheduler Wait Time` = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/cpu/scheduler_wait_time`)) / 60 BY bucket = TBUCKET(50, ?_tstart, ?_tend)"
                             },
                             "visualization": {
                                 "areaFill": "gradient",
@@ -661,12 +661,12 @@
                         "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "metrics-googlecloudmonitoringreceiver.otel-default-86255c2bd9c2c8c026dfc99472f175ad5c1a411179c0854aab92199e399806da": {
+                                "metrics-gcp.compute.otel-default-86255c2bd9c2c8c026dfc99472f175ad5c1a411179c0854aab92199e399806da": {
                                     "allowNoIndex": false,
-                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-86255c2bd9c2c8c026dfc99472f175ad5c1a411179c0854aab92199e399806da",
-                                    "name": "metrics-googlecloudmonitoringreceiver.otel-default",
+                                    "id": "metrics-gcp.compute.otel-default-86255c2bd9c2c8c026dfc99472f175ad5c1a411179c0854aab92199e399806da",
+                                    "name": "metrics-gcp.compute.otel-default",
                                     "sourceFilters": [],
-                                    "title": "metrics-googlecloudmonitoringreceiver.otel-default",
+                                    "title": "metrics-gcp.compute.otel-default",
                                     "type": "esql"
                                 }
                             },
@@ -703,9 +703,9 @@
                                                 }
                                             ],
                                             "ignoreGlobalFilters": false,
-                                            "index": "metrics-googlecloudmonitoringreceiver.otel-default-86255c2bd9c2c8c026dfc99472f175ad5c1a411179c0854aab92199e399806da",
+                                            "index": "metrics-gcp.compute.otel-default-86255c2bd9c2c8c026dfc99472f175ad5c1a411179c0854aab92199e399806da",
                                             "query": {
-                                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS ram_used = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/memory/balloon/ram_used`)), ram_size = SUM(LAST_OVER_TIME(`compute.googleapis.com/instance/memory/balloon/ram_size`))\n| EVAL `Avg Memory Used %` = 100.0 * ram_used / ram_size, Min = 0, Max = 100\n| KEEP `Avg Memory Used %`, Min, Max"
+                                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS ram_used = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/memory/balloon/ram_used`)), ram_size = SUM(LAST_OVER_TIME(`compute.googleapis.com/instance/memory/balloon/ram_size`))\n| EVAL `Avg Memory Used %` = 100.0 * ram_used / ram_size, Min = 0, Max = 100\n| KEEP `Avg Memory Used %`, Min, Max"
                                             }
                                         }
                                     }
@@ -714,13 +714,13 @@
                             "filters": [],
                             "internalReferences": [
                                 {
-                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-86255c2bd9c2c8c026dfc99472f175ad5c1a411179c0854aab92199e399806da",
+                                    "id": "metrics-gcp.compute.otel-default-86255c2bd9c2c8c026dfc99472f175ad5c1a411179c0854aab92199e399806da",
                                     "name": "indexpattern-datasource-layer-layer_0",
                                     "type": "index-pattern"
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS ram_used = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/memory/balloon/ram_used`)), ram_size = SUM(LAST_OVER_TIME(`compute.googleapis.com/instance/memory/balloon/ram_size`))\n| EVAL `Avg Memory Used %` = 100.0 * ram_used / ram_size, Min = 0, Max = 100\n| KEEP `Avg Memory Used %`, Min, Max"
+                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS ram_used = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/memory/balloon/ram_used`)), ram_size = SUM(LAST_OVER_TIME(`compute.googleapis.com/instance/memory/balloon/ram_size`))\n| EVAL `Avg Memory Used %` = 100.0 * ram_used / ram_size, Min = 0, Max = 100\n| KEEP `Avg Memory Used %`, Min, Max"
                             },
                             "visualization": {
                                 "applyColorTo": "value",
@@ -805,12 +805,12 @@
                         "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "metrics-googlecloudmonitoringreceiver.otel-default-4a6de58989252a1e53345af369d3ae551e8705b1449b011f38993a0f610217d1": {
+                                "metrics-gcp.compute.otel-default-4a6de58989252a1e53345af369d3ae551e8705b1449b011f38993a0f610217d1": {
                                     "allowNoIndex": false,
-                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-4a6de58989252a1e53345af369d3ae551e8705b1449b011f38993a0f610217d1",
-                                    "name": "metrics-googlecloudmonitoringreceiver.otel-default",
+                                    "id": "metrics-gcp.compute.otel-default-4a6de58989252a1e53345af369d3ae551e8705b1449b011f38993a0f610217d1",
+                                    "name": "metrics-gcp.compute.otel-default",
                                     "sourceFilters": [],
-                                    "title": "metrics-googlecloudmonitoringreceiver.otel-default",
+                                    "title": "metrics-gcp.compute.otel-default",
                                     "type": "esql"
                                 }
                             },
@@ -838,9 +838,9 @@
                                                 }
                                             ],
                                             "ignoreGlobalFilters": false,
-                                            "index": "metrics-googlecloudmonitoringreceiver.otel-default-4a6de58989252a1e53345af369d3ae551e8705b1449b011f38993a0f610217d1",
+                                            "index": "metrics-gcp.compute.otel-default-4a6de58989252a1e53345af369d3ae551e8705b1449b011f38993a0f610217d1",
                                             "query": {
-                                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Last RAM Size` = MAX(LAST_OVER_TIME(`compute.googleapis.com/instance/memory/balloon/ram_size`))"
+                                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Last RAM Size` = MAX(LAST_OVER_TIME(`compute.googleapis.com/instance/memory/balloon/ram_size`))"
                                             }
                                         }
                                     }
@@ -849,13 +849,13 @@
                             "filters": [],
                             "internalReferences": [
                                 {
-                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-4a6de58989252a1e53345af369d3ae551e8705b1449b011f38993a0f610217d1",
+                                    "id": "metrics-gcp.compute.otel-default-4a6de58989252a1e53345af369d3ae551e8705b1449b011f38993a0f610217d1",
                                     "name": "indexpattern-datasource-layer-layer_0",
                                     "type": "index-pattern"
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Last RAM Size` = MAX(LAST_OVER_TIME(`compute.googleapis.com/instance/memory/balloon/ram_size`))"
+                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Last RAM Size` = MAX(LAST_OVER_TIME(`compute.googleapis.com/instance/memory/balloon/ram_size`))"
                             },
                             "visualization": {
                                 "density": "default",
@@ -894,12 +894,12 @@
                         "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "metrics-googlecloudmonitoringreceiver.otel-default-b9ac83bbfc80776e336214e6d0e0311eb030c4ff32a989003fb8966bbfe0c3db": {
+                                "metrics-gcp.compute.otel-default-b9ac83bbfc80776e336214e6d0e0311eb030c4ff32a989003fb8966bbfe0c3db": {
                                     "allowNoIndex": false,
-                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-b9ac83bbfc80776e336214e6d0e0311eb030c4ff32a989003fb8966bbfe0c3db",
-                                    "name": "metrics-googlecloudmonitoringreceiver.otel-default",
+                                    "id": "metrics-gcp.compute.otel-default-b9ac83bbfc80776e336214e6d0e0311eb030c4ff32a989003fb8966bbfe0c3db",
+                                    "name": "metrics-gcp.compute.otel-default",
                                     "sourceFilters": [],
-                                    "title": "metrics-googlecloudmonitoringreceiver.otel-default",
+                                    "title": "metrics-gcp.compute.otel-default",
                                     "type": "esql"
                                 }
                             },
@@ -951,9 +951,9 @@
                                                 }
                                             ],
                                             "ignoreGlobalFilters": false,
-                                            "index": "metrics-googlecloudmonitoringreceiver.otel-default-b9ac83bbfc80776e336214e6d0e0311eb030c4ff32a989003fb8966bbfe0c3db",
+                                            "index": "metrics-gcp.compute.otel-default-b9ac83bbfc80776e336214e6d0e0311eb030c4ff32a989003fb8966bbfe0c3db",
                                             "query": {
-                                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `RAM Used` = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/memory/balloon/ram_used`)), `RAM Size Ceiling` = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/memory/balloon/ram_size`)) BY bucket = TBUCKET(50, ?_tstart, ?_tend)"
+                                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `RAM Used` = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/memory/balloon/ram_used`)), `RAM Size Ceiling` = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/memory/balloon/ram_size`)) BY bucket = TBUCKET(50, ?_tstart, ?_tend)"
                                             }
                                         }
                                     }
@@ -962,13 +962,13 @@
                             "filters": [],
                             "internalReferences": [
                                 {
-                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-b9ac83bbfc80776e336214e6d0e0311eb030c4ff32a989003fb8966bbfe0c3db",
+                                    "id": "metrics-gcp.compute.otel-default-b9ac83bbfc80776e336214e6d0e0311eb030c4ff32a989003fb8966bbfe0c3db",
                                     "name": "indexpattern-datasource-layer-line_0",
                                     "type": "index-pattern"
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `RAM Used` = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/memory/balloon/ram_used`)), `RAM Size Ceiling` = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/memory/balloon/ram_size`)) BY bucket = TBUCKET(50, ?_tstart, ?_tend)"
+                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `RAM Used` = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/memory/balloon/ram_used`)), `RAM Size Ceiling` = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/memory/balloon/ram_size`)) BY bucket = TBUCKET(50, ?_tstart, ?_tend)"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -1063,12 +1063,12 @@
                         "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "metrics-googlecloudmonitoringreceiver.otel-default-fb706eeb57fdcae3fd15cb73732b220e97183fd3820740fa87343d86883dd547": {
+                                "metrics-gcp.compute.otel-default-fb706eeb57fdcae3fd15cb73732b220e97183fd3820740fa87343d86883dd547": {
                                     "allowNoIndex": false,
-                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-fb706eeb57fdcae3fd15cb73732b220e97183fd3820740fa87343d86883dd547",
-                                    "name": "metrics-googlecloudmonitoringreceiver.otel-default",
+                                    "id": "metrics-gcp.compute.otel-default-fb706eeb57fdcae3fd15cb73732b220e97183fd3820740fa87343d86883dd547",
+                                    "name": "metrics-gcp.compute.otel-default",
                                     "sourceFilters": [],
-                                    "title": "metrics-googlecloudmonitoringreceiver.otel-default",
+                                    "title": "metrics-gcp.compute.otel-default",
                                     "type": "esql"
                                 }
                             },
@@ -1122,9 +1122,9 @@
                                                 }
                                             ],
                                             "ignoreGlobalFilters": false,
-                                            "index": "metrics-googlecloudmonitoringreceiver.otel-default-fb706eeb57fdcae3fd15cb73732b220e97183fd3820740fa87343d86883dd547",
+                                            "index": "metrics-gcp.compute.otel-default-fb706eeb57fdcae3fd15cb73732b220e97183fd3820740fa87343d86883dd547",
                                             "query": {
-                                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS swap_in_bps = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/memory/balloon/swap_in_bytes_count`)) / 60, swap_out_bps = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/memory/balloon/swap_out_bytes_count`)) / 60 BY bucket = TBUCKET(50, ?_tstart, ?_tend)"
+                                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS swap_in_bps = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/memory/balloon/swap_in_bytes_count`)) / 60, swap_out_bps = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/memory/balloon/swap_out_bytes_count`)) / 60 BY bucket = TBUCKET(50, ?_tstart, ?_tend)"
                                             }
                                         }
                                     }
@@ -1133,13 +1133,13 @@
                             "filters": [],
                             "internalReferences": [
                                 {
-                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-fb706eeb57fdcae3fd15cb73732b220e97183fd3820740fa87343d86883dd547",
+                                    "id": "metrics-gcp.compute.otel-default-fb706eeb57fdcae3fd15cb73732b220e97183fd3820740fa87343d86883dd547",
                                     "name": "indexpattern-datasource-layer-line_0",
                                     "type": "index-pattern"
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS swap_in_bps = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/memory/balloon/swap_in_bytes_count`)) / 60, swap_out_bps = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/memory/balloon/swap_out_bytes_count`)) / 60 BY bucket = TBUCKET(50, ?_tstart, ?_tend)"
+                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS swap_in_bps = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/memory/balloon/swap_in_bytes_count`)) / 60, swap_out_bps = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/memory/balloon/swap_out_bytes_count`)) / 60 BY bucket = TBUCKET(50, ?_tstart, ?_tend)"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -1234,12 +1234,12 @@
                         "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "metrics-googlecloudmonitoringreceiver.otel-default-5c22916300f7828712ad499b0c89fbdfb2115c88e61448314502d27c2ec2d475": {
+                                "metrics-gcp.compute.otel-default-5c22916300f7828712ad499b0c89fbdfb2115c88e61448314502d27c2ec2d475": {
                                     "allowNoIndex": false,
-                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-5c22916300f7828712ad499b0c89fbdfb2115c88e61448314502d27c2ec2d475",
-                                    "name": "metrics-googlecloudmonitoringreceiver.otel-default",
+                                    "id": "metrics-gcp.compute.otel-default-5c22916300f7828712ad499b0c89fbdfb2115c88e61448314502d27c2ec2d475",
+                                    "name": "metrics-gcp.compute.otel-default",
                                     "sourceFilters": [],
-                                    "title": "metrics-googlecloudmonitoringreceiver.otel-default",
+                                    "title": "metrics-gcp.compute.otel-default",
                                     "type": "esql"
                                 }
                             },
@@ -1276,9 +1276,9 @@
                                                 }
                                             ],
                                             "ignoreGlobalFilters": false,
-                                            "index": "metrics-googlecloudmonitoringreceiver.otel-default-5c22916300f7828712ad499b0c89fbdfb2115c88e61448314502d27c2ec2d475",
+                                            "index": "metrics-gcp.compute.otel-default-5c22916300f7828712ad499b0c89fbdfb2115c88e61448314502d27c2ec2d475",
                                             "query": {
-                                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Avg CPU Utilization` = AVG(AVG_OVER_TIME(`compute.googleapis.com/instance/cpu/utilization`)) * 100\n| EVAL `Min` = 0, `Max` = 100\n| KEEP `Avg CPU Utilization`, `Min`, `Max`"
+                                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Avg CPU Utilization` = AVG(AVG_OVER_TIME(`compute.googleapis.com/instance/cpu/utilization`)) * 100\n| EVAL `Min` = 0, `Max` = 100\n| KEEP `Avg CPU Utilization`, `Min`, `Max`"
                                             }
                                         }
                                     }
@@ -1287,13 +1287,13 @@
                             "filters": [],
                             "internalReferences": [
                                 {
-                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-5c22916300f7828712ad499b0c89fbdfb2115c88e61448314502d27c2ec2d475",
+                                    "id": "metrics-gcp.compute.otel-default-5c22916300f7828712ad499b0c89fbdfb2115c88e61448314502d27c2ec2d475",
                                     "name": "indexpattern-datasource-layer-layer_0",
                                     "type": "index-pattern"
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Avg CPU Utilization` = AVG(AVG_OVER_TIME(`compute.googleapis.com/instance/cpu/utilization`)) * 100\n| EVAL `Min` = 0, `Max` = 100\n| KEEP `Avg CPU Utilization`, `Min`, `Max`"
+                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Avg CPU Utilization` = AVG(AVG_OVER_TIME(`compute.googleapis.com/instance/cpu/utilization`)) * 100\n| EVAL `Min` = 0, `Max` = 100\n| KEEP `Avg CPU Utilization`, `Min`, `Max`"
                             },
                             "visualization": {
                                 "applyColorTo": "value",
@@ -1378,12 +1378,12 @@
                         "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "metrics-googlecloudmonitoringreceiver.otel-default-614c7edb4345bdee1c2eb17f38ae235852f26841f82769b0c0860fcc41628181": {
+                                "metrics-gcp.compute.otel-default-614c7edb4345bdee1c2eb17f38ae235852f26841f82769b0c0860fcc41628181": {
                                     "allowNoIndex": false,
-                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-614c7edb4345bdee1c2eb17f38ae235852f26841f82769b0c0860fcc41628181",
-                                    "name": "metrics-googlecloudmonitoringreceiver.otel-default",
+                                    "id": "metrics-gcp.compute.otel-default-614c7edb4345bdee1c2eb17f38ae235852f26841f82769b0c0860fcc41628181",
+                                    "name": "metrics-gcp.compute.otel-default",
                                     "sourceFilters": [],
-                                    "title": "metrics-googlecloudmonitoringreceiver.otel-default",
+                                    "title": "metrics-gcp.compute.otel-default",
                                     "type": "esql"
                                 }
                             },
@@ -1437,9 +1437,9 @@
                                                 }
                                             ],
                                             "ignoreGlobalFilters": false,
-                                            "index": "metrics-googlecloudmonitoringreceiver.otel-default-614c7edb4345bdee1c2eb17f38ae235852f26841f82769b0c0860fcc41628181",
+                                            "index": "metrics-gcp.compute.otel-default-614c7edb4345bdee1c2eb17f38ae235852f26841f82769b0c0860fcc41628181",
                                             "query": {
-                                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Received Bytes/sec` = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/network/received_bytes_count`)) / 60, `Sent Bytes/sec` = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/network/sent_bytes_count`)) / 60 BY bucket = TBUCKET(50, ?_tstart, ?_tend)"
+                                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Received Bytes/sec` = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/network/received_bytes_count`)) / 60, `Sent Bytes/sec` = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/network/sent_bytes_count`)) / 60 BY bucket = TBUCKET(50, ?_tstart, ?_tend)"
                                             }
                                         }
                                     }
@@ -1448,13 +1448,13 @@
                             "filters": [],
                             "internalReferences": [
                                 {
-                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-614c7edb4345bdee1c2eb17f38ae235852f26841f82769b0c0860fcc41628181",
+                                    "id": "metrics-gcp.compute.otel-default-614c7edb4345bdee1c2eb17f38ae235852f26841f82769b0c0860fcc41628181",
                                     "name": "indexpattern-datasource-layer-line_0",
                                     "type": "index-pattern"
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Received Bytes/sec` = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/network/received_bytes_count`)) / 60, `Sent Bytes/sec` = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/network/sent_bytes_count`)) / 60 BY bucket = TBUCKET(50, ?_tstart, ?_tend)"
+                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Received Bytes/sec` = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/network/received_bytes_count`)) / 60, `Sent Bytes/sec` = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/network/sent_bytes_count`)) / 60 BY bucket = TBUCKET(50, ?_tstart, ?_tend)"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -1549,12 +1549,12 @@
                         "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "metrics-googlecloudmonitoringreceiver.otel-default-795043fa5a162b30c51e82f07e90e34ee2d52a382945a7bd18ebae2571dc6c6b": {
+                                "metrics-gcp.compute.otel-default-795043fa5a162b30c51e82f07e90e34ee2d52a382945a7bd18ebae2571dc6c6b": {
                                     "allowNoIndex": false,
-                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-795043fa5a162b30c51e82f07e90e34ee2d52a382945a7bd18ebae2571dc6c6b",
-                                    "name": "metrics-googlecloudmonitoringreceiver.otel-default",
+                                    "id": "metrics-gcp.compute.otel-default-795043fa5a162b30c51e82f07e90e34ee2d52a382945a7bd18ebae2571dc6c6b",
+                                    "name": "metrics-gcp.compute.otel-default",
                                     "sourceFilters": [],
-                                    "title": "metrics-googlecloudmonitoringreceiver.otel-default",
+                                    "title": "metrics-gcp.compute.otel-default",
                                     "type": "esql"
                                 }
                             },
@@ -1590,9 +1590,9 @@
                                                 }
                                             ],
                                             "ignoreGlobalFilters": false,
-                                            "index": "metrics-googlecloudmonitoringreceiver.otel-default-795043fa5a162b30c51e82f07e90e34ee2d52a382945a7bd18ebae2571dc6c6b",
+                                            "index": "metrics-gcp.compute.otel-default-795043fa5a162b30c51e82f07e90e34ee2d52a382945a7bd18ebae2571dc6c6b",
                                             "query": {
-                                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS rx_pps = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/network/received_packets_count`)) / 60, tx_pps = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/network/sent_packets_count`)) / 60 BY bucket = TBUCKET(50, ?_tstart, ?_tend)"
+                                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS rx_pps = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/network/received_packets_count`)) / 60, tx_pps = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/network/sent_packets_count`)) / 60 BY bucket = TBUCKET(50, ?_tstart, ?_tend)"
                                             }
                                         }
                                     }
@@ -1601,13 +1601,13 @@
                             "filters": [],
                             "internalReferences": [
                                 {
-                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-795043fa5a162b30c51e82f07e90e34ee2d52a382945a7bd18ebae2571dc6c6b",
+                                    "id": "metrics-gcp.compute.otel-default-795043fa5a162b30c51e82f07e90e34ee2d52a382945a7bd18ebae2571dc6c6b",
                                     "name": "indexpattern-datasource-layer-line_0",
                                     "type": "index-pattern"
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS rx_pps = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/network/received_packets_count`)) / 60, tx_pps = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/network/sent_packets_count`)) / 60 BY bucket = TBUCKET(50, ?_tstart, ?_tend)"
+                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS rx_pps = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/network/received_packets_count`)) / 60, tx_pps = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/network/sent_packets_count`)) / 60 BY bucket = TBUCKET(50, ?_tstart, ?_tend)"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -1702,12 +1702,12 @@
                         "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "metrics-googlecloudmonitoringreceiver.otel-default-ca96effd56d4982178833d05d023f24742b98a6696bcfab60c364671c3e65389": {
+                                "metrics-gcp.compute.otel-default-ca96effd56d4982178833d05d023f24742b98a6696bcfab60c364671c3e65389": {
                                     "allowNoIndex": false,
-                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-ca96effd56d4982178833d05d023f24742b98a6696bcfab60c364671c3e65389",
-                                    "name": "metrics-googlecloudmonitoringreceiver.otel-default",
+                                    "id": "metrics-gcp.compute.otel-default-ca96effd56d4982178833d05d023f24742b98a6696bcfab60c364671c3e65389",
+                                    "name": "metrics-gcp.compute.otel-default",
                                     "sourceFilters": [],
-                                    "title": "metrics-googlecloudmonitoringreceiver.otel-default",
+                                    "title": "metrics-gcp.compute.otel-default",
                                     "type": "esql"
                                 }
                             },
@@ -1761,9 +1761,9 @@
                                                 }
                                             ],
                                             "ignoreGlobalFilters": false,
-                                            "index": "metrics-googlecloudmonitoringreceiver.otel-default-ca96effd56d4982178833d05d023f24742b98a6696bcfab60c364671c3e65389",
+                                            "index": "metrics-gcp.compute.otel-default-ca96effd56d4982178833d05d023f24742b98a6696bcfab60c364671c3e65389",
                                             "query": {
-                                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Read B/s` = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/disk/read_bytes_count`)) / 60, `Write B/s` = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/disk/write_bytes_count`)) / 60 BY bucket = TBUCKET(50, ?_tstart, ?_tend)"
+                                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Read B/s` = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/disk/read_bytes_count`)) / 60, `Write B/s` = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/disk/write_bytes_count`)) / 60 BY bucket = TBUCKET(50, ?_tstart, ?_tend)"
                                             }
                                         }
                                     }
@@ -1772,13 +1772,13 @@
                             "filters": [],
                             "internalReferences": [
                                 {
-                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-ca96effd56d4982178833d05d023f24742b98a6696bcfab60c364671c3e65389",
+                                    "id": "metrics-gcp.compute.otel-default-ca96effd56d4982178833d05d023f24742b98a6696bcfab60c364671c3e65389",
                                     "name": "indexpattern-datasource-layer-line_0",
                                     "type": "index-pattern"
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Read B/s` = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/disk/read_bytes_count`)) / 60, `Write B/s` = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/disk/write_bytes_count`)) / 60 BY bucket = TBUCKET(50, ?_tstart, ?_tend)"
+                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Read B/s` = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/disk/read_bytes_count`)) / 60, `Write B/s` = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/disk/write_bytes_count`)) / 60 BY bucket = TBUCKET(50, ?_tstart, ?_tend)"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -1873,12 +1873,12 @@
                         "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "metrics-googlecloudmonitoringreceiver.otel-default-16bec1f85948a3e40243f39b820be7d1b7e2c0b45d4551dff5bb12c906464264": {
+                                "metrics-gcp.compute.otel-default-16bec1f85948a3e40243f39b820be7d1b7e2c0b45d4551dff5bb12c906464264": {
                                     "allowNoIndex": false,
-                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-16bec1f85948a3e40243f39b820be7d1b7e2c0b45d4551dff5bb12c906464264",
-                                    "name": "metrics-googlecloudmonitoringreceiver.otel-default",
+                                    "id": "metrics-gcp.compute.otel-default-16bec1f85948a3e40243f39b820be7d1b7e2c0b45d4551dff5bb12c906464264",
+                                    "name": "metrics-gcp.compute.otel-default",
                                     "sourceFilters": [],
-                                    "title": "metrics-googlecloudmonitoringreceiver.otel-default",
+                                    "title": "metrics-gcp.compute.otel-default",
                                     "type": "esql"
                                 }
                             },
@@ -1928,9 +1928,9 @@
                                                 }
                                             ],
                                             "ignoreGlobalFilters": false,
-                                            "index": "metrics-googlecloudmonitoringreceiver.otel-default-16bec1f85948a3e40243f39b820be7d1b7e2c0b45d4551dff5bb12c906464264",
+                                            "index": "metrics-gcp.compute.otel-default-16bec1f85948a3e40243f39b820be7d1b7e2c0b45d4551dff5bb12c906464264",
                                             "query": {
-                                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Read IOPS` = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/disk/read_ops_count`)) / 60, `Write IOPS` = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/disk/write_ops_count`)) / 60 BY bucket = TBUCKET(50, ?_tstart, ?_tend)"
+                                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Read IOPS` = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/disk/read_ops_count`)) / 60, `Write IOPS` = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/disk/write_ops_count`)) / 60 BY bucket = TBUCKET(50, ?_tstart, ?_tend)"
                                             }
                                         }
                                     }
@@ -1939,13 +1939,13 @@
                             "filters": [],
                             "internalReferences": [
                                 {
-                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-16bec1f85948a3e40243f39b820be7d1b7e2c0b45d4551dff5bb12c906464264",
+                                    "id": "metrics-gcp.compute.otel-default-16bec1f85948a3e40243f39b820be7d1b7e2c0b45d4551dff5bb12c906464264",
                                     "name": "indexpattern-datasource-layer-line_0",
                                     "type": "index-pattern"
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Read IOPS` = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/disk/read_ops_count`)) / 60, `Write IOPS` = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/disk/write_ops_count`)) / 60 BY bucket = TBUCKET(50, ?_tstart, ?_tend)"
+                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Read IOPS` = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/disk/read_ops_count`)) / 60, `Write IOPS` = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/disk/write_ops_count`)) / 60 BY bucket = TBUCKET(50, ?_tstart, ?_tend)"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -2040,12 +2040,12 @@
                         "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "metrics-googlecloudmonitoringreceiver.otel-default-354bb3f3d7f463d37e07a97efff29791ee517d0b9a330ba29daa546721b0682b": {
+                                "metrics-gcp.compute.otel-default-354bb3f3d7f463d37e07a97efff29791ee517d0b9a330ba29daa546721b0682b": {
                                     "allowNoIndex": false,
-                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-354bb3f3d7f463d37e07a97efff29791ee517d0b9a330ba29daa546721b0682b",
-                                    "name": "metrics-googlecloudmonitoringreceiver.otel-default",
+                                    "id": "metrics-gcp.compute.otel-default-354bb3f3d7f463d37e07a97efff29791ee517d0b9a330ba29daa546721b0682b",
+                                    "name": "metrics-gcp.compute.otel-default",
                                     "sourceFilters": [],
-                                    "title": "metrics-googlecloudmonitoringreceiver.otel-default",
+                                    "title": "metrics-gcp.compute.otel-default",
                                     "type": "esql"
                                 }
                             },
@@ -2090,9 +2090,9 @@
                                                 }
                                             ],
                                             "ignoreGlobalFilters": false,
-                                            "index": "metrics-googlecloudmonitoringreceiver.otel-default-354bb3f3d7f463d37e07a97efff29791ee517d0b9a330ba29daa546721b0682b",
+                                            "index": "metrics-gcp.compute.otel-default-354bb3f3d7f463d37e07a97efff29791ee517d0b9a330ba29daa546721b0682b",
                                             "query": {
-                                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS dropped_pps = SUM(AVG_OVER_TIME(`compute.googleapis.com/firewall/dropped_packets_count`)) / 60, dropped_bps = SUM(AVG_OVER_TIME(`compute.googleapis.com/firewall/dropped_bytes_count`)) / 60 BY bucket = TBUCKET(50, ?_tstart, ?_tend)"
+                                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS dropped_pps = SUM(AVG_OVER_TIME(`compute.googleapis.com/firewall/dropped_packets_count`)) / 60, dropped_bps = SUM(AVG_OVER_TIME(`compute.googleapis.com/firewall/dropped_bytes_count`)) / 60 BY bucket = TBUCKET(50, ?_tstart, ?_tend)"
                                             }
                                         }
                                     }
@@ -2101,13 +2101,13 @@
                             "filters": [],
                             "internalReferences": [
                                 {
-                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-354bb3f3d7f463d37e07a97efff29791ee517d0b9a330ba29daa546721b0682b",
+                                    "id": "metrics-gcp.compute.otel-default-354bb3f3d7f463d37e07a97efff29791ee517d0b9a330ba29daa546721b0682b",
                                     "name": "indexpattern-datasource-layer-line_0",
                                     "type": "index-pattern"
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS dropped_pps = SUM(AVG_OVER_TIME(`compute.googleapis.com/firewall/dropped_packets_count`)) / 60, dropped_bps = SUM(AVG_OVER_TIME(`compute.googleapis.com/firewall/dropped_bytes_count`)) / 60 BY bucket = TBUCKET(50, ?_tstart, ?_tend)"
+                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS dropped_pps = SUM(AVG_OVER_TIME(`compute.googleapis.com/firewall/dropped_packets_count`)) / 60, dropped_bps = SUM(AVG_OVER_TIME(`compute.googleapis.com/firewall/dropped_bytes_count`)) / 60 BY bucket = TBUCKET(50, ?_tstart, ?_tend)"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -2207,12 +2207,12 @@
                         "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "metrics-googlecloudmonitoringreceiver.otel-default-e089a1e8c9b3ed35f470d0848f4baa809d50ef0f2575f4b81713cb19f681d231": {
+                                "metrics-gcp.compute.otel-default-e089a1e8c9b3ed35f470d0848f4baa809d50ef0f2575f4b81713cb19f681d231": {
                                     "allowNoIndex": false,
-                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-e089a1e8c9b3ed35f470d0848f4baa809d50ef0f2575f4b81713cb19f681d231",
-                                    "name": "metrics-googlecloudmonitoringreceiver.otel-default",
+                                    "id": "metrics-gcp.compute.otel-default-e089a1e8c9b3ed35f470d0848f4baa809d50ef0f2575f4b81713cb19f681d231",
+                                    "name": "metrics-gcp.compute.otel-default",
                                     "sourceFilters": [],
-                                    "title": "metrics-googlecloudmonitoringreceiver.otel-default",
+                                    "title": "metrics-gcp.compute.otel-default",
                                     "type": "esql"
                                 }
                             },
@@ -2255,9 +2255,9 @@
                                                 }
                                             ],
                                             "ignoreGlobalFilters": false,
-                                            "index": "metrics-googlecloudmonitoringreceiver.otel-default-e089a1e8c9b3ed35f470d0848f4baa809d50ef0f2575f4b81713cb19f681d231",
+                                            "index": "metrics-gcp.compute.otel-default-e089a1e8c9b3ed35f470d0848f4baa809d50ef0f2575f4b81713cb19f681d231",
                                             "query": {
-                                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `I/O Latency` = AVG(AVG_OVER_TIME(`compute.googleapis.com/instance/disk/average_io_latency`)) BY bucket = TBUCKET(50, ?_tstart, ?_tend), `Device` = attributes.device_name"
+                                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `I/O Latency` = AVG(AVG_OVER_TIME(`compute.googleapis.com/instance/disk/average_io_latency`)) BY bucket = TBUCKET(50, ?_tstart, ?_tend), `Device` = attributes.device_name"
                                             }
                                         }
                                     }
@@ -2266,13 +2266,13 @@
                             "filters": [],
                             "internalReferences": [
                                 {
-                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-e089a1e8c9b3ed35f470d0848f4baa809d50ef0f2575f4b81713cb19f681d231",
+                                    "id": "metrics-gcp.compute.otel-default-e089a1e8c9b3ed35f470d0848f4baa809d50ef0f2575f4b81713cb19f681d231",
                                     "name": "indexpattern-datasource-layer-line_0",
                                     "type": "index-pattern"
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `I/O Latency` = AVG(AVG_OVER_TIME(`compute.googleapis.com/instance/disk/average_io_latency`)) BY bucket = TBUCKET(50, ?_tstart, ?_tend), `Device` = attributes.device_name"
+                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `I/O Latency` = AVG(AVG_OVER_TIME(`compute.googleapis.com/instance/disk/average_io_latency`)) BY bucket = TBUCKET(50, ?_tstart, ?_tend), `Device` = attributes.device_name"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -2384,12 +2384,12 @@
                         "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "metrics-googlecloudmonitoringreceiver.otel-default-2f3ef2687109a29865f7803ad9bcac6308d890e2cad043eb2cc5f55131a56dee": {
+                                "metrics-gcp.compute.otel-default-2f3ef2687109a29865f7803ad9bcac6308d890e2cad043eb2cc5f55131a56dee": {
                                     "allowNoIndex": false,
-                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-2f3ef2687109a29865f7803ad9bcac6308d890e2cad043eb2cc5f55131a56dee",
-                                    "name": "metrics-googlecloudmonitoringreceiver.otel-default",
+                                    "id": "metrics-gcp.compute.otel-default-2f3ef2687109a29865f7803ad9bcac6308d890e2cad043eb2cc5f55131a56dee",
+                                    "name": "metrics-gcp.compute.otel-default",
                                     "sourceFilters": [],
-                                    "title": "metrics-googlecloudmonitoringreceiver.otel-default",
+                                    "title": "metrics-gcp.compute.otel-default",
                                     "type": "esql"
                                 }
                             },
@@ -2421,9 +2421,9 @@
                                                 }
                                             ],
                                             "ignoreGlobalFilters": false,
-                                            "index": "metrics-googlecloudmonitoringreceiver.otel-default-2f3ef2687109a29865f7803ad9bcac6308d890e2cad043eb2cc5f55131a56dee",
+                                            "index": "metrics-gcp.compute.otel-default-2f3ef2687109a29865f7803ad9bcac6308d890e2cad043eb2cc5f55131a56dee",
                                             "query": {
-                                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `I/O Queue Depth` = AVG(AVG_OVER_TIME(`compute.googleapis.com/instance/disk/average_io_queue_depth`)) BY bucket = TBUCKET(50, ?_tstart, ?_tend), `Device` = attributes.device_name"
+                                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `I/O Queue Depth` = AVG(AVG_OVER_TIME(`compute.googleapis.com/instance/disk/average_io_queue_depth`)) BY bucket = TBUCKET(50, ?_tstart, ?_tend), `Device` = attributes.device_name"
                                             }
                                         }
                                     }
@@ -2432,13 +2432,13 @@
                             "filters": [],
                             "internalReferences": [
                                 {
-                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-2f3ef2687109a29865f7803ad9bcac6308d890e2cad043eb2cc5f55131a56dee",
+                                    "id": "metrics-gcp.compute.otel-default-2f3ef2687109a29865f7803ad9bcac6308d890e2cad043eb2cc5f55131a56dee",
                                     "name": "indexpattern-datasource-layer-line_0",
                                     "type": "index-pattern"
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `I/O Queue Depth` = AVG(AVG_OVER_TIME(`compute.googleapis.com/instance/disk/average_io_queue_depth`)) BY bucket = TBUCKET(50, ?_tstart, ?_tend), `Device` = attributes.device_name"
+                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `I/O Queue Depth` = AVG(AVG_OVER_TIME(`compute.googleapis.com/instance/disk/average_io_queue_depth`)) BY bucket = TBUCKET(50, ?_tstart, ?_tend), `Device` = attributes.device_name"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -2550,12 +2550,12 @@
                         "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "metrics-googlecloudmonitoringreceiver.otel-default-1bb943bcfe4bd56dd026aea32e2de5e672250d1f693cebb920cf56c9c8fc0486": {
+                                "metrics-gcp.compute.otel-default-1bb943bcfe4bd56dd026aea32e2de5e672250d1f693cebb920cf56c9c8fc0486": {
                                     "allowNoIndex": false,
-                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-1bb943bcfe4bd56dd026aea32e2de5e672250d1f693cebb920cf56c9c8fc0486",
-                                    "name": "metrics-googlecloudmonitoringreceiver.otel-default",
+                                    "id": "metrics-gcp.compute.otel-default-1bb943bcfe4bd56dd026aea32e2de5e672250d1f693cebb920cf56c9c8fc0486",
+                                    "name": "metrics-gcp.compute.otel-default",
                                     "sourceFilters": [],
-                                    "title": "metrics-googlecloudmonitoringreceiver.otel-default",
+                                    "title": "metrics-gcp.compute.otel-default",
                                     "type": "esql"
                                 }
                             },
@@ -2660,9 +2660,9 @@
                                                 }
                                             ],
                                             "ignoreGlobalFilters": false,
-                                            "index": "metrics-googlecloudmonitoringreceiver.otel-default-1bb943bcfe4bd56dd026aea32e2de5e672250d1f693cebb920cf56c9c8fc0486",
+                                            "index": "metrics-gcp.compute.otel-default-1bb943bcfe4bd56dd026aea32e2de5e672250d1f693cebb920cf56c9c8fc0486",
                                             "query": {
-                                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS prov_size = MAX(LAST_OVER_TIME(`compute.googleapis.com/instance/disk/provisioning/size`)), lat_us = MAX(MAX_OVER_TIME(`compute.googleapis.com/instance/disk/average_io_latency`)), qdepth = MAX(MAX_OVER_TIME(`compute.googleapis.com/instance/disk/average_io_queue_depth`)), perf_active = MAX(MAX_OVER_TIME(`compute.googleapis.com/instance/disk/performance_status`)) BY attributes.device_name, attributes.storage_type, attributes.performance_status, resource.attributes.instance_id\n| EVAL status_raw = CASE(perf_active == 1, attributes.performance_status, null)\n| STATS prov_size = MAX(prov_size), lat_us = MAX(lat_us), qdepth = MAX(qdepth), status_mv = VALUES(status_raw), storage_mv = VALUES(attributes.storage_type) BY device = attributes.device_name, instance_id = resource.attributes.instance_id\n| EVAL Status = MV_FIRST(status_mv), Storage = MV_FIRST(storage_mv)\n| WHERE lat_us IS NOT NULL\n| KEEP device, Status, Storage, lat_us, qdepth, prov_size, instance_id\n| SORT Status ASC, lat_us DESC\n| LIMIT 10"
+                                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS prov_size = MAX(LAST_OVER_TIME(`compute.googleapis.com/instance/disk/provisioning/size`)), lat_us = MAX(MAX_OVER_TIME(`compute.googleapis.com/instance/disk/average_io_latency`)), qdepth = MAX(MAX_OVER_TIME(`compute.googleapis.com/instance/disk/average_io_queue_depth`)), perf_active = MAX(MAX_OVER_TIME(`compute.googleapis.com/instance/disk/performance_status`)) BY attributes.device_name, attributes.storage_type, attributes.performance_status, resource.attributes.instance_id\n| EVAL status_raw = CASE(perf_active == 1, attributes.performance_status, null)\n| STATS prov_size = MAX(prov_size), lat_us = MAX(lat_us), qdepth = MAX(qdepth), status_mv = VALUES(status_raw), storage_mv = VALUES(attributes.storage_type) BY device = attributes.device_name, instance_id = resource.attributes.instance_id\n| EVAL Status = MV_FIRST(status_mv), Storage = MV_FIRST(storage_mv)\n| WHERE lat_us IS NOT NULL\n| KEEP device, Status, Storage, lat_us, qdepth, prov_size, instance_id\n| SORT Status ASC, lat_us DESC\n| LIMIT 10"
                                             }
                                         }
                                     }
@@ -2671,13 +2671,13 @@
                             "filters": [],
                             "internalReferences": [
                                 {
-                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-1bb943bcfe4bd56dd026aea32e2de5e672250d1f693cebb920cf56c9c8fc0486",
+                                    "id": "metrics-gcp.compute.otel-default-1bb943bcfe4bd56dd026aea32e2de5e672250d1f693cebb920cf56c9c8fc0486",
                                     "name": "indexpattern-datasource-layer-layer_0",
                                     "type": "index-pattern"
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS prov_size = MAX(LAST_OVER_TIME(`compute.googleapis.com/instance/disk/provisioning/size`)), lat_us = MAX(MAX_OVER_TIME(`compute.googleapis.com/instance/disk/average_io_latency`)), qdepth = MAX(MAX_OVER_TIME(`compute.googleapis.com/instance/disk/average_io_queue_depth`)), perf_active = MAX(MAX_OVER_TIME(`compute.googleapis.com/instance/disk/performance_status`)) BY attributes.device_name, attributes.storage_type, attributes.performance_status, resource.attributes.instance_id\n| EVAL status_raw = CASE(perf_active == 1, attributes.performance_status, null)\n| STATS prov_size = MAX(prov_size), lat_us = MAX(lat_us), qdepth = MAX(qdepth), status_mv = VALUES(status_raw), storage_mv = VALUES(attributes.storage_type) BY device = attributes.device_name, instance_id = resource.attributes.instance_id\n| EVAL Status = MV_FIRST(status_mv), Storage = MV_FIRST(storage_mv)\n| WHERE lat_us IS NOT NULL\n| KEEP device, Status, Storage, lat_us, qdepth, prov_size, instance_id\n| SORT Status ASC, lat_us DESC\n| LIMIT 10"
+                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS prov_size = MAX(LAST_OVER_TIME(`compute.googleapis.com/instance/disk/provisioning/size`)), lat_us = MAX(MAX_OVER_TIME(`compute.googleapis.com/instance/disk/average_io_latency`)), qdepth = MAX(MAX_OVER_TIME(`compute.googleapis.com/instance/disk/average_io_queue_depth`)), perf_active = MAX(MAX_OVER_TIME(`compute.googleapis.com/instance/disk/performance_status`)) BY attributes.device_name, attributes.storage_type, attributes.performance_status, resource.attributes.instance_id\n| EVAL status_raw = CASE(perf_active == 1, attributes.performance_status, null)\n| STATS prov_size = MAX(prov_size), lat_us = MAX(lat_us), qdepth = MAX(qdepth), status_mv = VALUES(status_raw), storage_mv = VALUES(attributes.storage_type) BY device = attributes.device_name, instance_id = resource.attributes.instance_id\n| EVAL Status = MV_FIRST(status_mv), Storage = MV_FIRST(storage_mv)\n| WHERE lat_us IS NOT NULL\n| KEEP device, Status, Storage, lat_us, qdepth, prov_size, instance_id\n| SORT Status ASC, lat_us DESC\n| LIMIT 10"
                             },
                             "visualization": {
                                 "columns": [
@@ -2837,12 +2837,12 @@
                         "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "metrics-googlecloudmonitoringreceiver.otel-default-6b717cc03e5758f1c55f6885615ff0489b171890e3002474e0d41131ef54d27c": {
+                                "metrics-gcp.compute.otel-default-6b717cc03e5758f1c55f6885615ff0489b171890e3002474e0d41131ef54d27c": {
                                     "allowNoIndex": false,
-                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-6b717cc03e5758f1c55f6885615ff0489b171890e3002474e0d41131ef54d27c",
-                                    "name": "metrics-googlecloudmonitoringreceiver.otel-default",
+                                    "id": "metrics-gcp.compute.otel-default-6b717cc03e5758f1c55f6885615ff0489b171890e3002474e0d41131ef54d27c",
+                                    "name": "metrics-gcp.compute.otel-default",
                                     "sourceFilters": [],
-                                    "title": "metrics-googlecloudmonitoringreceiver.otel-default",
+                                    "title": "metrics-gcp.compute.otel-default",
                                     "type": "esql"
                                 }
                             },
@@ -2871,9 +2871,9 @@
                                                 }
                                             ],
                                             "ignoreGlobalFilters": false,
-                                            "index": "metrics-googlecloudmonitoringreceiver.otel-default-6b717cc03e5758f1c55f6885615ff0489b171890e3002474e0d41131ef54d27c",
+                                            "index": "metrics-gcp.compute.otel-default-6b717cc03e5758f1c55f6885615ff0489b171890e3002474e0d41131ef54d27c",
                                             "query": {
-                                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS active = MAX(MAX_OVER_TIME(`compute.googleapis.com/instance/disk/performance_status`)) BY attributes.performance_status, resource.attributes.instance_id, attributes.device_name\n| STATS `Disks` = SUM(active) BY `Status` = attributes.performance_status\n| SORT `Status`"
+                                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS active = MAX(MAX_OVER_TIME(`compute.googleapis.com/instance/disk/performance_status`)) BY attributes.performance_status, resource.attributes.instance_id, attributes.device_name\n| STATS `Disks` = SUM(active) BY `Status` = attributes.performance_status\n| SORT `Status`"
                                             }
                                         }
                                     }
@@ -2882,13 +2882,13 @@
                             "filters": [],
                             "internalReferences": [
                                 {
-                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-6b717cc03e5758f1c55f6885615ff0489b171890e3002474e0d41131ef54d27c",
+                                    "id": "metrics-gcp.compute.otel-default-6b717cc03e5758f1c55f6885615ff0489b171890e3002474e0d41131ef54d27c",
                                     "name": "indexpattern-datasource-layer-layer_0",
                                     "type": "index-pattern"
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS active = MAX(MAX_OVER_TIME(`compute.googleapis.com/instance/disk/performance_status`)) BY attributes.performance_status, resource.attributes.instance_id, attributes.device_name\n| STATS `Disks` = SUM(active) BY `Status` = attributes.performance_status\n| SORT `Status`"
+                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS active = MAX(MAX_OVER_TIME(`compute.googleapis.com/instance/disk/performance_status`)) BY attributes.performance_status, resource.attributes.instance_id, attributes.device_name\n| STATS `Disks` = SUM(active) BY `Status` = attributes.performance_status\n| SORT `Status`"
                             },
                             "visualization": {
                                 "layers": [
@@ -3003,12 +3003,12 @@
                         "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "metrics-googlecloudmonitoringreceiver.otel-default-3c828e11e5534247d412b0a78072d7a79aeb73aa8a37f1c73258f23061a74f8b": {
+                                "metrics-gcp.compute.otel-default-3c828e11e5534247d412b0a78072d7a79aeb73aa8a37f1c73258f23061a74f8b": {
                                     "allowNoIndex": false,
-                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-3c828e11e5534247d412b0a78072d7a79aeb73aa8a37f1c73258f23061a74f8b",
-                                    "name": "metrics-googlecloudmonitoringreceiver.otel-default",
+                                    "id": "metrics-gcp.compute.otel-default-3c828e11e5534247d412b0a78072d7a79aeb73aa8a37f1c73258f23061a74f8b",
+                                    "name": "metrics-gcp.compute.otel-default",
                                     "sourceFilters": [],
-                                    "title": "metrics-googlecloudmonitoringreceiver.otel-default",
+                                    "title": "metrics-gcp.compute.otel-default",
                                     "type": "esql"
                                 }
                             },
@@ -3046,9 +3046,9 @@
                                                 }
                                             ],
                                             "ignoreGlobalFilters": false,
-                                            "index": "metrics-googlecloudmonitoringreceiver.otel-default-3c828e11e5534247d412b0a78072d7a79aeb73aa8a37f1c73258f23061a74f8b",
+                                            "index": "metrics-gcp.compute.otel-default-3c828e11e5534247d412b0a78072d7a79aeb73aa8a37f1c73258f23061a74f8b",
                                             "query": {
-                                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Uptime per interval` = AVG(AVG_OVER_TIME(`compute.googleapis.com/instance/uptime_total`)) BY bucket = TBUCKET(50, ?_tstart, ?_tend)"
+                                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Uptime per interval` = AVG(AVG_OVER_TIME(`compute.googleapis.com/instance/uptime_total`)) BY bucket = TBUCKET(50, ?_tstart, ?_tend)"
                                             }
                                         }
                                     }
@@ -3057,13 +3057,13 @@
                             "filters": [],
                             "internalReferences": [
                                 {
-                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-3c828e11e5534247d412b0a78072d7a79aeb73aa8a37f1c73258f23061a74f8b",
+                                    "id": "metrics-gcp.compute.otel-default-3c828e11e5534247d412b0a78072d7a79aeb73aa8a37f1c73258f23061a74f8b",
                                     "name": "indexpattern-datasource-layer-area_0",
                                     "type": "index-pattern"
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Uptime per interval` = AVG(AVG_OVER_TIME(`compute.googleapis.com/instance/uptime_total`)) BY bucket = TBUCKET(50, ?_tstart, ?_tend)"
+                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Uptime per interval` = AVG(AVG_OVER_TIME(`compute.googleapis.com/instance/uptime_total`)) BY bucket = TBUCKET(50, ?_tstart, ?_tend)"
                             },
                             "visualization": {
                                 "areaFill": "gradient",
@@ -3153,12 +3153,12 @@
                         "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "metrics-googlecloudmonitoringreceiver.otel-default-96efc5cb203d0a5c12eed298c3205dd4aafb23a4a989ab431ccecabe8fd1fca6": {
+                                "metrics-gcp.compute.otel-default-96efc5cb203d0a5c12eed298c3205dd4aafb23a4a989ab431ccecabe8fd1fca6": {
                                     "allowNoIndex": false,
-                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-96efc5cb203d0a5c12eed298c3205dd4aafb23a4a989ab431ccecabe8fd1fca6",
-                                    "name": "metrics-googlecloudmonitoringreceiver.otel-default",
+                                    "id": "metrics-gcp.compute.otel-default-96efc5cb203d0a5c12eed298c3205dd4aafb23a4a989ab431ccecabe8fd1fca6",
+                                    "name": "metrics-gcp.compute.otel-default",
                                     "sourceFilters": [],
-                                    "title": "metrics-googlecloudmonitoringreceiver.otel-default",
+                                    "title": "metrics-gcp.compute.otel-default",
                                     "type": "esql"
                                 }
                             },
@@ -3206,9 +3206,9 @@
                                                 }
                                             ],
                                             "ignoreGlobalFilters": false,
-                                            "index": "metrics-googlecloudmonitoringreceiver.otel-default-96efc5cb203d0a5c12eed298c3205dd4aafb23a4a989ab431ccecabe8fd1fca6",
+                                            "index": "metrics-gcp.compute.otel-default-96efc5cb203d0a5c12eed298c3205dd4aafb23a4a989ab431ccecabe8fd1fca6",
                                             "query": {
-                                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\" AND attributes.interruption_type != \"none\"\n| STATS events = SUM(SUM_OVER_TIME(`compute.googleapis.com/instance/interruption_count`)) BY attributes.interruption_type, attributes.interruption_reason, attributes.instance_name\n| SORT events DESC\n| LIMIT 10"
+                                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\" AND attributes.interruption_type != \"none\"\n| STATS events = SUM(SUM_OVER_TIME(`compute.googleapis.com/instance/interruption_count`)) BY attributes.interruption_type, attributes.interruption_reason, attributes.instance_name\n| SORT events DESC\n| LIMIT 10"
                                             }
                                         }
                                     }
@@ -3217,13 +3217,13 @@
                             "filters": [],
                             "internalReferences": [
                                 {
-                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-96efc5cb203d0a5c12eed298c3205dd4aafb23a4a989ab431ccecabe8fd1fca6",
+                                    "id": "metrics-gcp.compute.otel-default-96efc5cb203d0a5c12eed298c3205dd4aafb23a4a989ab431ccecabe8fd1fca6",
                                     "name": "indexpattern-datasource-layer-layer_0",
                                     "type": "index-pattern"
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\" AND attributes.interruption_type != \"none\"\n| STATS events = SUM(SUM_OVER_TIME(`compute.googleapis.com/instance/interruption_count`)) BY attributes.interruption_type, attributes.interruption_reason, attributes.instance_name\n| SORT events DESC\n| LIMIT 10"
+                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\" AND attributes.interruption_type != \"none\"\n| STATS events = SUM(SUM_OVER_TIME(`compute.googleapis.com/instance/interruption_count`)) BY attributes.interruption_type, attributes.interruption_reason, attributes.instance_name\n| SORT events DESC\n| LIMIT 10"
                             },
                             "visualization": {
                                 "columns": [
