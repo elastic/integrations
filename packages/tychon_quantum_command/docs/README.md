@@ -964,6 +964,7 @@ This stream can contain multiple TYCHON record families in one place, including 
 | tychon.x509.subject_org |  | keyword |
 | tychon.x509.validity.not_after |  | date |
 | tychon.x509.validity.not_before |  | date |
+| tychon.x509.version_number |  | long |
 | x509.is_ca |  | boolean |
 | x509.is_valid |  | boolean |
 | x509.issuer.common_name |  | keyword |
@@ -981,7 +982,6 @@ This stream can contain multiple TYCHON record families in one place, including 
 | x509.subject.organization |  | keyword |
 | x509.validity.not_after |  | date |
 | x509.validity.not_before |  | date |
-| x509.version_number |  | long |
 
 
 **Example event**
