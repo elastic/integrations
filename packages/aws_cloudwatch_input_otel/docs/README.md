@@ -37,6 +37,9 @@ Each AWS service is available as a separate option when you add the integration.
 | AWS RDS | `AWS/RDS` |
 | AWS SQS | `AWS/SQS` |
 | AWS Application ELB | `AWS/ApplicationELB` |
+| AWS Classic ELB | `AWS/ELB` |
+| AWS Network ELB | `AWS/NetworkELB` |
+| AWS Gateway ELB | `AWS/GatewayELB` |
 | AWS ECS / Fargate | `AWS/ECS` |
 
 Each service collects a set of statistics chosen to suit that service's metrics (for example, averages for utilization metrics and sums for counters). These defaults work well out of the box and require no configuration.
