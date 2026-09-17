@@ -351,26 +351,22 @@ processors:
       field: trellix_epo_on_prem.event.EPOEvent.SoftwareInfo.Event.CustomFields.ThreatDetectedOnCreation
       tag: set_customfields_threatdetectedoncreation_false
       value: false
-      if: ctx.trellix_epo_on_prem?.event?.EPOEvent?.SoftwareInfo?.Event?.CustomFields?.ThreatDetectedOnCreation == '0'
+      if: ctx.trellix_epo_on_prem?.event?.EPOEvent?.SoftwareInfo?.Event?.CustomFields?.ThreatDetectedOnCreation != null && (ctx.trellix_epo_on_prem.event.EPOEvent.SoftwareInfo.Event.CustomFields.ThreatDetectedOnCreation.toString() == '0' || ctx.trellix_epo_on_prem.event.EPOEvent.SoftwareInfo.Event.CustomFields.ThreatDetectedOnCreation.toString().equalsIgnoreCase('false'))
   - set:
       field: trellix_epo_on_prem.event.EPOEvent.SoftwareInfo.Event.CustomFields.ThreatDetectedOnCreation
       tag: set_customfields_threatdetectedoncreation_true
       value: true
-      if: ctx.trellix_epo_on_prem?.event?.EPOEvent?.SoftwareInfo?.Event?.CustomFields?.ThreatDetectedOnCreation == '1'
-  - convert:
-      field: trellix_epo_on_prem.event.EPOEvent.SoftwareInfo.Event.CustomFields.ThreatDetectedOnCreation
-      tag: convert_customfields_threatdetectedoncreation_to_boolean
-      type: boolean
-      ignore_missing: true
-      on_failure:
-        - remove:
-            field: trellix_epo_on_prem.event.EPOEvent.SoftwareInfo.Event.CustomFields.ThreatDetectedOnCreation
-            tag: remove_customfields_threatdetectedoncreation_on_convert_failure
-            ignore_missing: true
-        - append:
-            field: error.message
-            tag: append_customfields_threatdetectedoncreation_convert_error
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+      if: ctx.trellix_epo_on_prem?.event?.EPOEvent?.SoftwareInfo?.Event?.CustomFields?.ThreatDetectedOnCreation != null && (ctx.trellix_epo_on_prem.event.EPOEvent.SoftwareInfo.Event.CustomFields.ThreatDetectedOnCreation.toString() == '1' || ctx.trellix_epo_on_prem.event.EPOEvent.SoftwareInfo.Event.CustomFields.ThreatDetectedOnCreation.toString().equalsIgnoreCase('true'))
+  - set:
+      field: trellix_epo_on_prem.event.EPOEvent.ThreatDetectedOnCreation
+      tag: set_threatdetectedoncreation_false
+      value: false
+      if: ctx.trellix_epo_on_prem?.event?.EPOEvent?.ThreatDetectedOnCreation != null && (ctx.trellix_epo_on_prem.event.EPOEvent.ThreatDetectedOnCreation.toString() == '0' || ctx.trellix_epo_on_prem.event.EPOEvent.ThreatDetectedOnCreation.toString().equalsIgnoreCase('false'))
+  - set:
+      field: trellix_epo_on_prem.event.EPOEvent.ThreatDetectedOnCreation
+      tag: set_threatdetectedoncreation_true
+      value: true
+      if: ctx.trellix_epo_on_prem?.event?.EPOEvent?.ThreatDetectedOnCreation != null && (ctx.trellix_epo_on_prem.event.EPOEvent.ThreatDetectedOnCreation.toString() == '1' || ctx.trellix_epo_on_prem.event.EPOEvent.ThreatDetectedOnCreation.toString().equalsIgnoreCase('true'))
   - convert:
       field: trellix_epo_on_prem.event.EPOEvent.SoftwareInfo.Event.Severity
       tag: convert_event_severity_to_long
@@ -401,21 +397,16 @@ processors:
             field: error.message
             tag: append_source_port_convert_error
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - convert:
+  - set:
       field: trellix_epo_on_prem.event.EPOEvent.Success
-      tag: convert_success_to_long
-      type: long
-      if: ctx.trellix_epo_on_prem?.event?.EPOEvent?.Success != ''
-      ignore_missing: true
-      on_failure:
-        - remove:
-            field: trellix_epo_on_prem.event.EPOEvent.Success
-            tag: remove_success_on_convert_failure
-            ignore_missing: true
-        - append:
-            field: error.message
-            tag: append_success_convert_error
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+      tag: set_success_false
+      value: false
+      if: ctx.trellix_epo_on_prem?.event?.EPOEvent?.Success != null && (ctx.trellix_epo_on_prem.event.EPOEvent.Success.toString() == '0' || ctx.trellix_epo_on_prem.event.EPOEvent.Success.toString().equalsIgnoreCase('false'))
+  - set:
+      field: trellix_epo_on_prem.event.EPOEvent.Success
+      tag: set_success_true
+      value: true
+      if: ctx.trellix_epo_on_prem?.event?.EPOEvent?.Success != null && (ctx.trellix_epo_on_prem.event.EPOEvent.Success.toString() == '1' || ctx.trellix_epo_on_prem.event.EPOEvent.Success.toString().equalsIgnoreCase('true'))
   - convert:
       field: trellix_epo_on_prem.event.EPOEvent.TVDSeverity
       tag: convert_tvd_severity_to_long
@@ -463,8 +454,8 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: trellix_epo_on_prem.event.EPOEvent.SoftwareInfo.Event.CustomFields.TargetFileSize
-      tag: convert_customfields_targetfilesize_to_double
-      type: double
+      tag: convert_customfields_targetfilesize_to_long
+      type: long
       if: ctx.trellix_epo_on_prem?.event?.EPOEvent?.SoftwareInfo?.Event?.CustomFields?.TargetFileSize != ''
       ignore_missing: true
       on_failure:
@@ -478,8 +469,8 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: trellix_epo_on_prem.event.EPOEvent.SourceFileSize
-      tag: convert_source_file_size_to_double
-      type: double
+      tag: convert_source_file_size_to_long
+      type: long
       if: ctx.trellix_epo_on_prem?.event?.EPOEvent?.SourceFileSize != ''
       ignore_missing: true
       on_failure:
@@ -493,8 +484,8 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: trellix_epo_on_prem.event.EPOEvent.TargetFileSize
-      tag: convert_targetfilesize_to_double
-      type: double
+      tag: convert_targetfilesize_to_long
+      type: long
       if: ctx.trellix_epo_on_prem?.event?.EPOEvent?.TargetFileSize != ''
       ignore_missing: true
       on_failure:
@@ -506,21 +497,26 @@ processors:
             field: error.message
             tag: append_targetfilesize_convert_error
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - convert:
+  - set:
       field: trellix_epo_on_prem.event.EPOEvent.SoftwareInfo.Event.CommonFields.ThreatHandled
-      tag: convert_commonfields_threathandled_to_boolean
-      type: boolean
-      if: ctx.trellix_epo_on_prem?.event?.EPOEvent?.SoftwareInfo?.Event?.CommonFields?.ThreatHandled != ''
-      ignore_missing: true
-      on_failure:
-        - remove:
-            field: trellix_epo_on_prem.event.EPOEvent.SoftwareInfo.Event.CommonFields.ThreatHandled
-            tag: remove_commonfields_threathandled_on_convert_failure
-            ignore_missing: true
-        - append:
-            field: error.message
-            tag: append_commonfields_threathandled_convert_error
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+      tag: set_commonfields_threathandled_false
+      value: false
+      if: ctx.trellix_epo_on_prem?.event?.EPOEvent?.SoftwareInfo?.Event?.CommonFields?.ThreatHandled != null && (ctx.trellix_epo_on_prem.event.EPOEvent.SoftwareInfo.Event.CommonFields.ThreatHandled.toString() == '0' || ctx.trellix_epo_on_prem.event.EPOEvent.SoftwareInfo.Event.CommonFields.ThreatHandled.toString().equalsIgnoreCase('false'))
+  - set:
+      field: trellix_epo_on_prem.event.EPOEvent.SoftwareInfo.Event.CommonFields.ThreatHandled
+      tag: set_commonfields_threathandled_true
+      value: true
+      if: ctx.trellix_epo_on_prem?.event?.EPOEvent?.SoftwareInfo?.Event?.CommonFields?.ThreatHandled != null && (ctx.trellix_epo_on_prem.event.EPOEvent.SoftwareInfo.Event.CommonFields.ThreatHandled.toString() == '1' || ctx.trellix_epo_on_prem.event.EPOEvent.SoftwareInfo.Event.CommonFields.ThreatHandled.toString().equalsIgnoreCase('true'))
+  - set:
+      field: trellix_epo_on_prem.event.EPOEvent.ThreatHandled
+      tag: set_threathandled_false
+      value: false
+      if: ctx.trellix_epo_on_prem?.event?.EPOEvent?.ThreatHandled != null && (ctx.trellix_epo_on_prem.event.EPOEvent.ThreatHandled.toString() == '0' || ctx.trellix_epo_on_prem.event.EPOEvent.ThreatHandled.toString().equalsIgnoreCase('false'))
+  - set:
+      field: trellix_epo_on_prem.event.EPOEvent.ThreatHandled
+      tag: set_threathandled_true
+      value: true
+      if: ctx.trellix_epo_on_prem?.event?.EPOEvent?.ThreatHandled != null && (ctx.trellix_epo_on_prem.event.EPOEvent.ThreatHandled.toString() == '1' || ctx.trellix_epo_on_prem.event.EPOEvent.ThreatHandled.toString().equalsIgnoreCase('true'))
   - dissect:
       field: trellix_epo_on_prem.event.EPOEvent.SourceUserName
       tag: dissect_source_user_domain
@@ -718,16 +714,16 @@ processors:
       copy_from: trellix_epo_on_prem.event.EPOEvent.AnalyzerRuleName
       ignore_empty_value: true
   - set:
-      field: message
+      field: rule.category
       tag: set_rule_category_threat
       copy_from: trellix_epo_on_prem.event.EPOEvent.ThreatCategory
       ignore_empty_value: true
-      if: ctx.message == null
   - set:
       field: rule.category
       tag: set_rule_category_catname
       copy_from: trellix_epo_on_prem.event.EPOEvent.CatName
       ignore_empty_value: true
+      if: ctx.rule?.category == null
   - set:
       field: rule.category
       tag: set_rule_category_tvd
@@ -1534,6 +1530,97 @@ processors:
       target_field: client.as.organization.name
       ignore_missing: true
       tag: rename_client_as_org
+  - append:
+      field: event.category
+      tag: append_event_category_web
+      value: web
+      allow_duplicates: false
+      if: ctx.url?.original != null && ctx.event?.category == null
+  - append:
+      field: event.type
+      tag: append_event_type_web_access
+      value: access
+      allow_duplicates: false
+      if: ctx.url?.original != null && ctx.event?.category != null && ctx.event.category.contains('web')
+  - append:
+      field: event.category
+      tag: append_event_category_authentication
+      value: authentication
+      allow_duplicates: false
+      if: ctx.trellix_epo_on_prem?.event?.EPOEvent?.CmdName == 'Logon Attempt' && ctx.event?.category == null
+  - append:
+      field: event.type
+      tag: append_event_type_authentication_start
+      value: start
+      allow_duplicates: false
+      if: ctx.event?.category != null && ctx.event.category.contains('authentication')
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_logon_success
+      value: success
+      if: ctx.event?.outcome == null && ctx.trellix_epo_on_prem?.event?.EPOEvent?.CmdName == 'Logon Attempt' && ctx.trellix_epo_on_prem?.event?.EPOEvent?.Success == true
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_logon_failure
+      value: failure
+      if: ctx.event?.outcome == null && ctx.trellix_epo_on_prem?.event?.EPOEvent?.CmdName == 'Logon Attempt' && ctx.trellix_epo_on_prem?.event?.EPOEvent?.Success == false
+  # AV / anti-malware detections that were not classified by a specific event
+  # code above. rule.category carries the vendor ThreatCategory (e.g. av.detect,
+  # av.on-access-scan); only the av.* classes are malware. A named threat
+  # (threat.software.name from ThreatName) is treated the same way. Operational
+  # classes (ops.*, update.*) are intentionally left uncategorized.
+  - append:
+      field: event.category
+      tag: append_event_category_malware
+      value: malware
+      allow_duplicates: false
+      if: >-
+        ctx.event?.category == null &&
+        ((ctx.rule?.category instanceof String && ctx.rule.category.toLowerCase().startsWith('av')) ||
+        ctx.threat?.software?.name != null)
+  # Host IPS / network intrusion detections (hip.nips, *.ips.* threat classes).
+  - append:
+      field: event.category
+      tag: append_event_category_intrusion
+      value: intrusion_detection
+      allow_duplicates: false
+      if: >-
+        ctx.event?.category == null && ctx.rule?.category instanceof String &&
+        (ctx.rule.category.toLowerCase().contains('nips') ||
+        ctx.rule.category.toLowerCase().contains('.ips') ||
+        ctx.rule.category.toLowerCase().startsWith('hip'))
+  - append:
+      field: event.category
+      tag: append_event_category_network_intrusion
+      value: network
+      allow_duplicates: false
+      if: >-
+        ctx.event?.category != null && ctx.event.category.contains('intrusion_detection') &&
+        ctx.rule?.category instanceof String && ctx.rule.category.toLowerCase().contains('nips')
+  # File reputation / hash records: Threat Intelligence Exchange reputation
+  # updates carry a file hash but no threat classification, and malware
+  # detections that reference a file object also get the file category (matching
+  # the code-1027/1278 behaviour above).
+  - append:
+      field: event.category
+      tag: append_event_category_file
+      value: file
+      allow_duplicates: false
+      if: >-
+        (ctx.file?.hash?.md5 != null || ctx.file?.hash?.sha1 != null || ctx.file?.hash?.sha256 != null) &&
+        (ctx.event?.category == null || ctx.event.category.contains('malware'))
+  # event.type for the detection/reputation categories added above. `info` is a
+  # legal type for malware, intrusion_detection, network and file, and models an
+  # observed detection that carries no explicit action-derived type.
+  - append:
+      field: event.type
+      tag: append_event_type_detection_info
+      value: info
+      allow_duplicates: false
+      if: >-
+        ctx.event?.category != null && ctx.event?.type == null &&
+        (ctx.event.category.contains('malware') || ctx.event.category.contains('intrusion_detection') ||
+        ctx.event.category.contains('network') || ctx.event.category.contains('file'))
   - remove:
       tag: remove_custom_fields_mapped_to_ecs
       ignore_missing: true
@@ -1571,7 +1658,6 @@ processors:
         - trellix_epo_on_prem.event.EPOEvent.TargetFileName
         - trellix_epo_on_prem.event.EPOEvent.filename
         - trellix_epo_on_prem.event.EPOEvent.SoftwareInfo.Event.CustomFields.TargetName
-        - trellix_epo_on_prem.event.EPOEvent.Files
         - trellix_epo_on_prem.event.EPOEvent.SoftwareInfo.Event.CommonFields.TargetFileName
         - trellix_epo_on_prem.event.EPOEvent.Hash
         - trellix_epo_on_prem.event.EPOEvent.jtiFileHash
@@ -1584,7 +1670,6 @@ processors:
         - trellix_epo_on_prem.event.EPOEvent.AnalyzerHostName
         - trellix_epo_on_prem.event.EPOEvent.SoftwareInfo.CommonFields.AnalyzerHostName
         - trellix_epo_on_prem.event.EPOEvent.TargetProtocol
-        - trellix_epo_on_prem.event.EPOEvent.Direction
         - trellix_epo_on_prem.event.EPOEvent.Message
         - trellix_epo_on_prem.event.EPOEvent.SourceMAC
         - trellix_epo_on_prem.event.EPOEvent.TargetMAC

@@ -12,7 +12,7 @@ This integration collects data from the Trellix ePO On-Prem REST / Web API and f
 
 ### How it works
 
-For the API-based data streams, this integration periodically queries the Trellix ePO REST / Web API to retrieve records for each enabled data stream. For the `event` data stream, Elastic Agent listens for events that Trellix ePO forwards over TCP or UDP syslog. Each record is mapped to the Elastic Common Schema (ECS) and enriched by the integration's ingest pipeline.
+For the API-based data streams, this integration periodically queries the Trellix ePO REST / Web API to retrieve records for each enabled data stream. For the `event` data stream, Elastic Agent listens for events that Trellix ePO forwards over TCP syslog. Each record is mapped to the Elastic Common Schema (ECS) and enriched by the integration's ingest pipeline.
 
 ## What data does this integration collect?
 
@@ -28,7 +28,7 @@ The Trellix ePO On-Prem integration collects the following types of data:
 | `device_event` | Removable-media device control events, including device backup, protection, and initialization status and the associated agent and user. | `/remote/core.executeQuery` API |
 | `dlp_incident` | Data Loss Prevention incidents, including violation time, severity, status, evidence counts, classifications, and matched rules and actions. | `/remote/core.executeQuery` API |
 | `threat_event` | Endpoint threat events with matching extended details, including detections, rules, actions, severity, network activity, files, processes, and related entities. | `/remote/core.executeQuery` API |
-| `event` | Endpoint security events forwarded by Trellix ePO over syslog, including threat, web control, data loss prevention, product, authentication, and reputation events. | TCP / UDP syslog |
+| `event` | Endpoint security events forwarded by Trellix ePO over syslog, including threat, web control, data loss prevention, product, authentication, and reputation events. | TCP syslog |
 
 ### Supported use cases
 
@@ -92,7 +92,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 5. Enable and configure only the collection methods you will use.
 
     * To collect logs over the REST / Web API, set the **Trellix ePO URL**, **Username**, and **Password**, then enable the data streams you need and adjust their parameters (such as interval, initial cursor, and page size) if required.
-    * To collect the `event` data stream over syslog, enable the TCP or UDP input, set the **Listen Address** and **Listen Port** that Trellix ePO will forward to (and, for TCP with TLS, configure the certificate and key), then configure Trellix ePO to forward events to that host and port.
+    * To collect the `event` data stream over syslog, enable the TCP input, set the **Listen Address** and **Listen Port** that Trellix ePO will forward to, configure the TLS certificate and key, then configure Trellix ePO to forward events to that host and port. Trellix ePO forwards syslog only over TCP with TLS.
 
 6. Select **Save and continue** to save the integration.
 
@@ -1245,17 +1245,17 @@ An example event for `event` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-09-16T16:26:17.459Z",
+    "@timestamp": "2026-09-17T07:44:57.826Z",
     "agent": {
-        "ephemeral_id": "dd0d8894-2e30-4552-b466-fdffd0988d9a",
-        "id": "239f7c59-c44f-4a80-87d4-929286951b29",
-        "name": "elastic-agent-12664",
+        "ephemeral_id": "a642992f-ea1d-44c5-aba2-e0d0f1bbd0e6",
+        "id": "2eb54a94-cfc5-4ed7-bd32-5e1b76a9c0b8",
+        "name": "elastic-agent-98121",
         "type": "filebeat",
         "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "trellix_epo_on_prem.event",
-        "namespace": "85279",
+        "namespace": "69324",
         "type": "logs"
     },
     "destination": {
@@ -1288,21 +1288,28 @@ An example event for `event` looks as following:
         "version": "9.4.0"
     },
     "elastic_agent": {
-        "id": "239f7c59-c44f-4a80-87d4-929286951b29",
+        "id": "2eb54a94-cfc5-4ed7-bd32-5e1b76a9c0b8",
         "snapshot": false,
         "version": "8.19.0"
     },
     "event": {
         "action": "ids-alert-act-tak-del",
         "agent_id_status": "verified",
+        "category": [
+            "malware",
+            "file"
+        ],
         "dataset": "trellix_epo_on_prem.event",
         "id": "01234567-ABCD-ABCD-ABCD-ABCD01234567",
-        "ingested": "2026-09-16T16:26:18Z",
+        "ingested": "2026-09-17T07:44:58Z",
         "kind": "event",
-        "original": "{\"EPOEvent\":{\"ThreatActionTaken\":\"IDS_ALERT_ACT_TAK_DEL\",\"AnalyzerIPv4\":\"198.51.100.10\",\"ThreatHandled\":\"1\",\"AnalyzerIPv6\":\"::ffff:198.51.100.10\",\"TargetIPv6\":\"::ffff:198.51.100.10\",\"SignatureName\":\"Buffer Overflow Detected\",\"TargetFileName\":\"eicar.com\",\"AnalyzerVersion\":\"198.51.100.10\",\"SourceMAC\":\"00005e005323\",\"Cleanable\":\"0\",\"SourceProcessName\":\"On-Demand Scan\",\"Direction\":\"inbound\",\"Subject\":\"Malware Detected\",\"ThreatDetectedOnCreation\":\"0\",\"SourceFilePath\":\"C:\\\\Temp\",\"TargetName\":\"eicar.com\",\"APIName\":\"CreateFile\",\"TargetProtocol\":\"TCP\",\"AnalyzerEngineVersion\":\"5800.7501\",\"AutoGUID\":\"01234567-ABCD-ABCD-ABCD-ABCD01234567\",\"DetectedUTC\":\"2021-05-03 06:26:21.0\",\"AnalyzerGTIQuery\":\"0\",\"AccessRequested\":\"read\",\"TargetProcessName\":\"firefox.exe\",\"ReceivedUTC\":\"2021-05-03 06:27:04.753\",\"Vendor\":\"Trellix\",\"ProductFamily\":\"HOSTIPS\",\"ThreatType\":\"test\",\"ThreatCategory\":\"av.detect\",\"SourcePort\":\"12345\",\"SecondAttemptedAction\":\"IDS_ALERT_THACT_ATT_DEL\",\"RegistryKey\":\"HKLM\\\\Software\\\\Test\\\\Key\",\"TargetHostName\":\"host-1.example.local\",\"TargetUserName\":\"EXAMPLE\\\\alice.johnson\",\"AutoID\":\"17443183\",\"Analyzer\":\"ENDP_AM_1120\",\"BladeName\":\"IDS_BLADE_NAME_SPB\",\"SourceFileSize\":\"68\",\"TargetFileSize\":\"68\",\"RegistryValue\":\"1\",\"SourceUserName\":\"EXAMPLE\\\\alice.johnson\",\"RemotePort\":\"443\",\"AnalyzerName\":\"Trellix EndpointSecurity\",\"HostName\":\"host-1.example.local\",\"LocalPort\":\"12345\",\"ThreatSeverity\":\"2\",\"AnalyzerDetectionMethod\":\"On-Demand Scan\",\"Hash\":\"44d88612fea8a8f36de82e1278abb02f\",\"Files\":\"C:\\\\temp\\\\file.exe\",\"AgentGUID\":\"01234567-ABCD-ABCD-ABCD-ABCD01234567\",\"siem_last_time\":\"2021-05-03 06:27:04\",\"SourceIPv6\":\"::ffff:198.51.100.10\",\"TargetIPv4\":\"198.51.100.10\",\"ServerID\":\"epo-server-1.example.local\",\"TaskName\":\"Host IPS protection\",\"SourceIPv4\":\"198.51.100.10\",\"TargetMAC\":\"00005e005324\",\"SourceHostName\":\"host-1.example.local\",\"FirstAttemptedAction\":\"IDS_ALERT_THACT_ATT_CLE\"}}",
+        "original": "{\"EPOEvent\":{\"HostName\":\"host-1.example.local\",\"ThreatActionTaken\":\"IDS_ALERT_ACT_TAK_DEL\",\"AnalyzerIPv6\":\"::ffff:198.51.100.10\",\"AnalyzerName\":\"Trellix EndpointSecurity\",\"ThreatDetectedOnCreation\":\"0\",\"SecondAttemptedAction\":\"IDS_ALERT_THACT_ATT_DEL\",\"SignatureName\":\"Buffer Overflow Detected\",\"ThreatHandled\":\"1\",\"DetectedUTC\":\"2021-05-03 06:26:21.0\",\"Analyzer\":\"ENDP_AM_1120\",\"Direction\":\"inbound\",\"Hash\":\"44d88612fea8a8f36de82e1278abb02f\",\"ThreatType\":\"test\",\"SourceProcessName\":\"On-Demand Scan\",\"RegistryKey\":\"HKLM\\\\Software\\\\Test\\\\Key\",\"BladeName\":\"IDS_BLADE_NAME_SPB\",\"SourceFileSize\":\"68\",\"Files\":\"C:\\\\temp\\\\file.exe\",\"TargetName\":\"eicar.com\",\"AnalyzerDetectionMethod\":\"On-Demand Scan\",\"SourceFilePath\":\"C:\\\\Temp\",\"TargetUserName\":\"EXAMPLE\\\\alice.johnson\",\"TargetIPv4\":\"198.51.100.10\",\"TargetIPv6\":\"::ffff:198.51.100.10\",\"LocalPort\":\"12345\",\"ReceivedUTC\":\"2021-05-03 06:27:04.753\",\"SourceIPv6\":\"::ffff:198.51.100.10\",\"siem_last_time\":\"2021-05-03 06:27:04\",\"SourceIPv4\":\"198.51.100.10\",\"RemotePort\":\"443\",\"TaskName\":\"Host IPS protection\",\"AccessRequested\":\"read\",\"SourceUserName\":\"EXAMPLE\\\\alice.johnson\",\"TargetHostName\":\"host-1.example.local\",\"Vendor\":\"Trellix\",\"APIName\":\"CreateFile\",\"FirstAttemptedAction\":\"IDS_ALERT_THACT_ATT_CLE\",\"SourceMAC\":\"00005e005323\",\"TargetMAC\":\"00005e005324\",\"ServerID\":\"epo-server-1.example.local\",\"TargetFileSize\":\"68\",\"RegistryValue\":\"1\",\"AnalyzerEngineVersion\":\"5800.7501\",\"AnalyzerGTIQuery\":\"0\",\"AutoID\":\"17443183\",\"TargetFileName\":\"eicar.com\",\"ThreatCategory\":\"av.detect\",\"ThreatSeverity\":\"2\",\"AutoGUID\":\"01234567-ABCD-ABCD-ABCD-ABCD01234567\",\"AnalyzerVersion\":\"198.51.100.10\",\"AgentGUID\":\"01234567-ABCD-ABCD-ABCD-ABCD01234567\",\"TargetProtocol\":\"TCP\",\"Subject\":\"Malware Detected\",\"Cleanable\":\"0\",\"ProductFamily\":\"HOSTIPS\",\"TargetProcessName\":\"firefox.exe\",\"SourceHostName\":\"host-1.example.local\",\"SourcePort\":\"12345\",\"AnalyzerIPv4\":\"198.51.100.10\"}}",
         "outcome": "success",
         "sequence": 17443183,
-        "severity": 2
+        "severity": 2,
+        "type": [
+            "info"
+        ]
     },
     "file": {
         "hash": {
@@ -1316,11 +1323,11 @@ An example event for `event` looks as following:
         "name": "host-1.example.local"
     },
     "input": {
-        "type": "udp"
+        "type": "tcp"
     },
     "log": {
         "source": {
-            "address": "172.19.0.3:51374"
+            "address": "172.19.0.3:51812"
         }
     },
     "message": "Malware Detected",
@@ -1354,6 +1361,9 @@ An example event for `event` looks as following:
         "user": [
             "EXAMPLE\\alice.johnson"
         ]
+    },
+    "rule": {
+        "category": "av.detect"
     },
     "source": {
         "as": {
@@ -1405,6 +1415,8 @@ An example event for `event` looks as following:
                 "blade_name": "IDS_BLADE_NAME_SPB",
                 "cleanable": 0,
                 "detected_utc": "2021-05-03T06:26:21.000Z",
+                "direction": "inbound",
+                "files": "C:\\temp\\file.exe",
                 "first_attempted_action": "IDS_ALERT_THACT_ATT_CLE",
                 "product_family": "HOSTIPS",
                 "received_utc": "2021-05-03T06:27:04.753Z",
@@ -1417,8 +1429,8 @@ An example event for `event` looks as following:
                 "source_process_name": "On-Demand Scan",
                 "target_name": "eicar.com",
                 "task_name": "Host IPS protection",
-                "threat_detected_on_creation": "0",
-                "threat_handled": "1",
+                "threat_detected_on_creation": false,
+                "threat_handled": true,
                 "threat_severity": 2,
                 "threat_type": "test",
                 "vendor": "Trellix"
@@ -1436,111 +1448,113 @@ An example event for `event` looks as following:
 
 **Exported fields**
 
-| Field | Description | Type |
-|---|---|---|
-| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |
-| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
-| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
-| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
-| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
-| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
-| input.type | Type of filebeat input. | keyword |
-| log.offset | Log offset. | long |
-| log.source.address | Source address from which the log event was read / sent from. | keyword |
-| observer.product | The product name of the observer. | constant_keyword |
-| observer.vendor | Vendor name of the observer. | constant_keyword |
-| trellix_epo_on_prem.event.epo_event.access_requested |  | keyword |
-| trellix_epo_on_prem.event.epo_event.action_id |  | keyword |
-| trellix_epo_on_prem.event.epo_event.agent_guid |  | keyword |
-| trellix_epo_on_prem.event.epo_event.analyzer |  | keyword |
-| trellix_epo_on_prem.event.epo_event.analyzer_dat_version |  | keyword |
-| trellix_epo_on_prem.event.epo_event.analyzer_detection_method |  | keyword |
-| trellix_epo_on_prem.event.epo_event.analyzer_engine_version |  | keyword |
-| trellix_epo_on_prem.event.epo_event.analyzer_gti_query |  | keyword |
-| trellix_epo_on_prem.event.epo_event.analyzer_name | Name of the product that detected the threat. | keyword |
-| trellix_epo_on_prem.event.epo_event.analyzer_version | Version of the detecting product. | keyword |
-| trellix_epo_on_prem.event.epo_event.api_name |  | keyword |
-| trellix_epo_on_prem.event.epo_event.attack_vector_type |  | keyword |
-| trellix_epo_on_prem.event.epo_event.bad_link_rating_id |  | keyword |
-| trellix_epo_on_prem.event.epo_event.blade_name |  | keyword |
-| trellix_epo_on_prem.event.epo_event.cleanable |  | long |
-| trellix_epo_on_prem.event.epo_event.content_func_group |  | keyword |
-| trellix_epo_on_prem.event.epo_event.content_name |  | keyword |
-| trellix_epo_on_prem.event.epo_event.content_risk_group |  | keyword |
-| trellix_epo_on_prem.event.epo_event.count |  | long |
-| trellix_epo_on_prem.event.epo_event.dat_version |  | keyword |
-| trellix_epo_on_prem.event.epo_event.detected_utc | Detection time in UTC. | date |
-| trellix_epo_on_prem.event.epo_event.detection_method |  | keyword |
-| trellix_epo_on_prem.event.epo_event.detection_time |  | date |
-| trellix_epo_on_prem.event.epo_event.download_rating_id |  | keyword |
-| trellix_epo_on_prem.event.epo_event.duration_before_detection |  | long |
-| trellix_epo_on_prem.event.epo_event.event_type |  | keyword |
-| trellix_epo_on_prem.event.epo_event.exploit_rating_id |  | keyword |
-| trellix_epo_on_prem.event.epo_event.first_action_status |  | keyword |
-| trellix_epo_on_prem.event.epo_event.first_attempted_action |  | keyword |
-| trellix_epo_on_prem.event.epo_event.hostname |  | keyword |
-| trellix_epo_on_prem.event.epo_event.jti_object_type |  | keyword |
-| trellix_epo_on_prem.event.epo_event.jti_reputation |  | keyword |
-| trellix_epo_on_prem.event.epo_event.list_id |  | keyword |
-| trellix_epo_on_prem.event.epo_event.list_type |  | keyword |
-| trellix_epo_on_prem.event.epo_event.local_reputation |  | keyword |
-| trellix_epo_on_prem.event.epo_event.machine_info.agent_guid |  | keyword |
-| trellix_epo_on_prem.event.epo_event.machine_info.time_zone_bias |  | long |
-| trellix_epo_on_prem.event.epo_event.new_reputations.trust_level |  | keyword |
-| trellix_epo_on_prem.event.epo_event.observer_mode |  | keyword |
-| trellix_epo_on_prem.event.epo_event.old_reputations.trust_level |  | keyword |
-| trellix_epo_on_prem.event.epo_event.phishing_rating_id |  | keyword |
-| trellix_epo_on_prem.event.epo_event.popup_rating_id |  | keyword |
-| trellix_epo_on_prem.event.epo_event.priority |  | long |
-| trellix_epo_on_prem.event.epo_event.product_family |  | keyword |
-| trellix_epo_on_prem.event.epo_event.rating |  | keyword |
-| trellix_epo_on_prem.event.epo_event.reason_id |  | keyword |
-| trellix_epo_on_prem.event.epo_event.reason_type |  | keyword |
-| trellix_epo_on_prem.event.epo_event.received_utc | Time the event was received by the ePO server. | date |
-| trellix_epo_on_prem.event.epo_event.registry_value |  | keyword |
-| trellix_epo_on_prem.event.epo_event.remediation_action |  | keyword |
-| trellix_epo_on_prem.event.epo_event.second_action_status |  | keyword |
-| trellix_epo_on_prem.event.epo_event.second_attempted_action |  | keyword |
-| trellix_epo_on_prem.event.epo_event.server_id |  | keyword |
-| trellix_epo_on_prem.event.epo_event.siem_last_time |  | date |
-| trellix_epo_on_prem.event.epo_event.signature_name |  | keyword |
-| trellix_epo_on_prem.event.epo_event.site_name |  | keyword |
-| trellix_epo_on_prem.event.epo_event.software_info.common_fields.analyzer |  | keyword |
-| trellix_epo_on_prem.event.epo_event.software_info.common_fields.analyzer_dat_version |  | keyword |
-| trellix_epo_on_prem.event.epo_event.software_info.common_fields.analyzer_detection_method |  | keyword |
-| trellix_epo_on_prem.event.epo_event.software_info.common_fields.analyzer_engine_version |  | keyword |
-| trellix_epo_on_prem.event.epo_event.software_info.common_fields.analyzer_name | Name of the product that detected the threat. | keyword |
-| trellix_epo_on_prem.event.epo_event.software_info.common_fields.analyzer_version | Version of the detecting product. | keyword |
-| trellix_epo_on_prem.event.epo_event.software_info.event.common_fields.detected_utc | Detection time in UTC. | date |
-| trellix_epo_on_prem.event.epo_event.software_info.event.common_fields.threat_event_id |  | keyword |
-| trellix_epo_on_prem.event.epo_event.software_info.event.common_fields.threat_handled |  | boolean |
-| trellix_epo_on_prem.event.epo_event.software_info.event.common_fields.threat_severity | Severity level of the threat. | long |
-| trellix_epo_on_prem.event.epo_event.software_info.event.common_fields.threat_type | Type of threat (for example, virus, trojan, or PUP). | keyword |
-| trellix_epo_on_prem.event.epo_event.software_info.event.custom_fields.analyzer_content_creation_date |  | date |
-| trellix_epo_on_prem.event.epo_event.software_info.event.custom_fields.blade_name |  | keyword |
-| trellix_epo_on_prem.event.epo_event.software_info.event.custom_fields.target |  | keyword |
-| trellix_epo_on_prem.event.epo_event.software_info.event.custom_fields.threat_detected_on_creation |  | boolean |
-| trellix_epo_on_prem.event.epo_event.software_info.event.gmt_time |  | date |
-| trellix_epo_on_prem.event.epo_event.software_info.event.severity |  | long |
-| trellix_epo_on_prem.event.epo_event.software_info.product_family |  | keyword |
-| trellix_epo_on_prem.event.epo_event.software_info.product_name |  | keyword |
-| trellix_epo_on_prem.event.epo_event.software_info.product_version |  | keyword |
-| trellix_epo_on_prem.event.epo_event.source_file_size |  | double |
-| trellix_epo_on_prem.event.epo_event.source_process_name |  | keyword |
-| trellix_epo_on_prem.event.epo_event.spam_rating_id |  | keyword |
-| trellix_epo_on_prem.event.epo_event.success |  | long |
-| trellix_epo_on_prem.event.epo_event.target_name |  | keyword |
-| trellix_epo_on_prem.event.epo_event.target_path |  | keyword |
-| trellix_epo_on_prem.event.epo_event.task_name |  | keyword |
-| trellix_epo_on_prem.event.epo_event.threat_detected_on_creation |  | keyword |
-| trellix_epo_on_prem.event.epo_event.threat_handled |  | keyword |
-| trellix_epo_on_prem.event.epo_event.threat_severity | Severity level of the threat. | long |
-| trellix_epo_on_prem.event.epo_event.threat_type | Type of threat (for example, virus, trojan, or PUP). | keyword |
-| trellix_epo_on_prem.event.epo_event.tvd_severity |  | long |
-| trellix_epo_on_prem.event.epo_event.usb_serial_number |  | keyword |
-| trellix_epo_on_prem.event.epo_event.vendor |  | keyword |
-| trellix_epo_on_prem.event.epo_event.version |  | keyword |
-| trellix_epo_on_prem.event.epo_event.wp_rating |  | keyword |
+| Field | Description | Type | Unit |
+|---|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |  |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |  |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |  |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |  |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |  |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |  |
+| input.type | Type of filebeat input. | keyword |  |
+| log.offset | Log offset. | long |  |
+| log.source.address | Source address from which the log event was read / sent from. | keyword |  |
+| observer.product | The product name of the observer. | constant_keyword |  |
+| observer.vendor | Vendor name of the observer. | constant_keyword |  |
+| trellix_epo_on_prem.event.epo_event.access_requested |  | keyword |  |
+| trellix_epo_on_prem.event.epo_event.action_id |  | keyword |  |
+| trellix_epo_on_prem.event.epo_event.agent_guid |  | keyword |  |
+| trellix_epo_on_prem.event.epo_event.analyzer |  | keyword |  |
+| trellix_epo_on_prem.event.epo_event.analyzer_dat_version |  | keyword |  |
+| trellix_epo_on_prem.event.epo_event.analyzer_detection_method |  | keyword |  |
+| trellix_epo_on_prem.event.epo_event.analyzer_engine_version |  | keyword |  |
+| trellix_epo_on_prem.event.epo_event.analyzer_gti_query |  | keyword |  |
+| trellix_epo_on_prem.event.epo_event.analyzer_name | Name of the product that detected the threat. | keyword |  |
+| trellix_epo_on_prem.event.epo_event.analyzer_version | Version of the detecting product. | keyword |  |
+| trellix_epo_on_prem.event.epo_event.api_name |  | keyword |  |
+| trellix_epo_on_prem.event.epo_event.attack_vector_type |  | keyword |  |
+| trellix_epo_on_prem.event.epo_event.bad_link_rating_id |  | keyword |  |
+| trellix_epo_on_prem.event.epo_event.blade_name |  | keyword |  |
+| trellix_epo_on_prem.event.epo_event.cleanable |  | long |  |
+| trellix_epo_on_prem.event.epo_event.content_func_group |  | keyword |  |
+| trellix_epo_on_prem.event.epo_event.content_name |  | keyword |  |
+| trellix_epo_on_prem.event.epo_event.content_risk_group |  | keyword |  |
+| trellix_epo_on_prem.event.epo_event.count |  | long |  |
+| trellix_epo_on_prem.event.epo_event.dat_version |  | keyword |  |
+| trellix_epo_on_prem.event.epo_event.detected_utc | Detection time in UTC. | date |  |
+| trellix_epo_on_prem.event.epo_event.detection_method |  | keyword |  |
+| trellix_epo_on_prem.event.epo_event.detection_time |  | date |  |
+| trellix_epo_on_prem.event.epo_event.direction |  | keyword |  |
+| trellix_epo_on_prem.event.epo_event.download_rating_id |  | keyword |  |
+| trellix_epo_on_prem.event.epo_event.duration_before_detection |  | long |  |
+| trellix_epo_on_prem.event.epo_event.event_type |  | keyword |  |
+| trellix_epo_on_prem.event.epo_event.exploit_rating_id |  | keyword |  |
+| trellix_epo_on_prem.event.epo_event.files |  | keyword |  |
+| trellix_epo_on_prem.event.epo_event.first_action_status |  | keyword |  |
+| trellix_epo_on_prem.event.epo_event.first_attempted_action |  | keyword |  |
+| trellix_epo_on_prem.event.epo_event.hostname |  | keyword |  |
+| trellix_epo_on_prem.event.epo_event.jti_object_type |  | keyword |  |
+| trellix_epo_on_prem.event.epo_event.jti_reputation |  | keyword |  |
+| trellix_epo_on_prem.event.epo_event.list_id |  | keyword |  |
+| trellix_epo_on_prem.event.epo_event.list_type |  | keyword |  |
+| trellix_epo_on_prem.event.epo_event.local_reputation |  | keyword |  |
+| trellix_epo_on_prem.event.epo_event.machine_info.agent_guid |  | keyword |  |
+| trellix_epo_on_prem.event.epo_event.machine_info.time_zone_bias |  | long |  |
+| trellix_epo_on_prem.event.epo_event.new_reputations.trust_level |  | keyword |  |
+| trellix_epo_on_prem.event.epo_event.observer_mode |  | keyword |  |
+| trellix_epo_on_prem.event.epo_event.old_reputations.trust_level |  | keyword |  |
+| trellix_epo_on_prem.event.epo_event.phishing_rating_id |  | keyword |  |
+| trellix_epo_on_prem.event.epo_event.popup_rating_id |  | keyword |  |
+| trellix_epo_on_prem.event.epo_event.priority |  | long |  |
+| trellix_epo_on_prem.event.epo_event.product_family |  | keyword |  |
+| trellix_epo_on_prem.event.epo_event.rating |  | keyword |  |
+| trellix_epo_on_prem.event.epo_event.reason_id |  | keyword |  |
+| trellix_epo_on_prem.event.epo_event.reason_type |  | keyword |  |
+| trellix_epo_on_prem.event.epo_event.received_utc | Time the event was received by the ePO server. | date |  |
+| trellix_epo_on_prem.event.epo_event.registry_value |  | keyword |  |
+| trellix_epo_on_prem.event.epo_event.remediation_action |  | keyword |  |
+| trellix_epo_on_prem.event.epo_event.second_action_status |  | keyword |  |
+| trellix_epo_on_prem.event.epo_event.second_attempted_action |  | keyword |  |
+| trellix_epo_on_prem.event.epo_event.server_id |  | keyword |  |
+| trellix_epo_on_prem.event.epo_event.siem_last_time |  | date |  |
+| trellix_epo_on_prem.event.epo_event.signature_name |  | keyword |  |
+| trellix_epo_on_prem.event.epo_event.site_name |  | keyword |  |
+| trellix_epo_on_prem.event.epo_event.software_info.common_fields.analyzer |  | keyword |  |
+| trellix_epo_on_prem.event.epo_event.software_info.common_fields.analyzer_dat_version |  | keyword |  |
+| trellix_epo_on_prem.event.epo_event.software_info.common_fields.analyzer_detection_method |  | keyword |  |
+| trellix_epo_on_prem.event.epo_event.software_info.common_fields.analyzer_engine_version |  | keyword |  |
+| trellix_epo_on_prem.event.epo_event.software_info.common_fields.analyzer_name | Name of the product that detected the threat. | keyword |  |
+| trellix_epo_on_prem.event.epo_event.software_info.common_fields.analyzer_version | Version of the detecting product. | keyword |  |
+| trellix_epo_on_prem.event.epo_event.software_info.event.common_fields.detected_utc | Detection time in UTC. | date |  |
+| trellix_epo_on_prem.event.epo_event.software_info.event.common_fields.threat_event_id |  | keyword |  |
+| trellix_epo_on_prem.event.epo_event.software_info.event.common_fields.threat_handled |  | boolean |  |
+| trellix_epo_on_prem.event.epo_event.software_info.event.common_fields.threat_severity | Severity level of the threat. | long |  |
+| trellix_epo_on_prem.event.epo_event.software_info.event.common_fields.threat_type | Type of threat (for example, virus, trojan, or PUP). | keyword |  |
+| trellix_epo_on_prem.event.epo_event.software_info.event.custom_fields.analyzer_content_creation_date |  | date |  |
+| trellix_epo_on_prem.event.epo_event.software_info.event.custom_fields.blade_name |  | keyword |  |
+| trellix_epo_on_prem.event.epo_event.software_info.event.custom_fields.target |  | keyword |  |
+| trellix_epo_on_prem.event.epo_event.software_info.event.custom_fields.threat_detected_on_creation |  | boolean |  |
+| trellix_epo_on_prem.event.epo_event.software_info.event.gmt_time |  | date |  |
+| trellix_epo_on_prem.event.epo_event.software_info.event.severity |  | long |  |
+| trellix_epo_on_prem.event.epo_event.software_info.product_family |  | keyword |  |
+| trellix_epo_on_prem.event.epo_event.software_info.product_name |  | keyword |  |
+| trellix_epo_on_prem.event.epo_event.software_info.product_version |  | keyword |  |
+| trellix_epo_on_prem.event.epo_event.source_file_size |  | long | byte |
+| trellix_epo_on_prem.event.epo_event.source_process_name |  | keyword |  |
+| trellix_epo_on_prem.event.epo_event.spam_rating_id |  | keyword |  |
+| trellix_epo_on_prem.event.epo_event.success |  | boolean |  |
+| trellix_epo_on_prem.event.epo_event.target_name |  | keyword |  |
+| trellix_epo_on_prem.event.epo_event.target_path |  | keyword |  |
+| trellix_epo_on_prem.event.epo_event.task_name |  | keyword |  |
+| trellix_epo_on_prem.event.epo_event.threat_detected_on_creation |  | boolean |  |
+| trellix_epo_on_prem.event.epo_event.threat_handled |  | boolean |  |
+| trellix_epo_on_prem.event.epo_event.threat_severity | Severity level of the threat. | long |  |
+| trellix_epo_on_prem.event.epo_event.threat_type | Type of threat (for example, virus, trojan, or PUP). | keyword |  |
+| trellix_epo_on_prem.event.epo_event.tvd_severity |  | long |  |
+| trellix_epo_on_prem.event.epo_event.usb_serial_number |  | keyword |  |
+| trellix_epo_on_prem.event.epo_event.vendor |  | keyword |  |
+| trellix_epo_on_prem.event.epo_event.version |  | keyword |  |
+| trellix_epo_on_prem.event.epo_event.wp_rating |  | keyword |  |
 
 
 ### Inputs used
@@ -1549,7 +1563,6 @@ These inputs are used in this integration:
 
 - [CEL](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-cel)
 - [TCP](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-tcp)
-- [UDP](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-udp)
 
 ### API usage
 
@@ -1566,4 +1579,4 @@ This integration uses the **Trellix ePO executeQuery API** (endpoint: `/remote/c
 | `dlp_incident` | `UDLP_EPD_Incidents` |
 | `threat_event` | `EPOEvents` and `EPExtendedEvent` |
 
-The `event` data stream does not use an API. Event records are pushed by the Trellix ePO event forwarder to the Elastic Agent as RFC 5424 syslog messages over TCP or UDP.
+The `event` data stream does not use an API. Event records are pushed by the Trellix ePO event forwarder to the Elastic Agent as RFC 5424 syslog messages over TCP with TLS.

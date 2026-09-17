@@ -12,7 +12,7 @@ This integration collects data from the Trellix ePO On-Prem REST / Web API and f
 
 ### How it works
 
-For the API-based data streams, this integration periodically queries the Trellix ePO REST / Web API to retrieve records for each enabled data stream. For the `event` data stream, Elastic Agent listens for events that Trellix ePO forwards over TCP or UDP syslog. Each record is mapped to the Elastic Common Schema (ECS) and enriched by the integration's ingest pipeline.
+For the API-based data streams, this integration periodically queries the Trellix ePO REST / Web API to retrieve records for each enabled data stream. For the `event` data stream, Elastic Agent listens for events that Trellix ePO forwards over TCP syslog. Each record is mapped to the Elastic Common Schema (ECS) and enriched by the integration's ingest pipeline.
 
 ## What data does this integration collect?
 
@@ -28,7 +28,7 @@ The Trellix ePO On-Prem integration collects the following types of data:
 | `device_event` | Removable-media device control events, including device backup, protection, and initialization status and the associated agent and user. | `/remote/core.executeQuery` API |
 | `dlp_incident` | Data Loss Prevention incidents, including violation time, severity, status, evidence counts, classifications, and matched rules and actions. | `/remote/core.executeQuery` API |
 | `threat_event` | Endpoint threat events with matching extended details, including detections, rules, actions, severity, network activity, files, processes, and related entities. | `/remote/core.executeQuery` API |
-| `event` | Endpoint security events forwarded by Trellix ePO over syslog, including threat, web control, data loss prevention, product, authentication, and reputation events. | TCP / UDP syslog |
+| `event` | Endpoint security events forwarded by Trellix ePO over syslog, including threat, web control, data loss prevention, product, authentication, and reputation events. | TCP syslog |
 
 ### Supported use cases
 
@@ -92,7 +92,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 5. Enable and configure only the collection methods you will use.
 
     * To collect logs over the REST / Web API, set the **Trellix ePO URL**, **Username**, and **Password**, then enable the data streams you need and adjust their parameters (such as interval, initial cursor, and page size) if required.
-    * To collect the `event` data stream over syslog, enable the TCP or UDP input, set the **Listen Address** and **Listen Port** that Trellix ePO will forward to (and, for TCP with TLS, configure the certificate and key), then configure Trellix ePO to forward events to that host and port.
+    * To collect the `event` data stream over syslog, enable the TCP input, set the **Listen Address** and **Listen Port** that Trellix ePO will forward to, configure the TLS certificate and key, then configure Trellix ePO to forward events to that host and port. Trellix ePO forwards syslog only over TCP with TLS.
 
 6. Select **Save and continue** to save the integration.
 
@@ -205,7 +205,6 @@ These inputs are used in this integration:
 
 - [CEL](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-cel)
 - [TCP](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-tcp)
-- [UDP](https://www.elastic.co/docs/reference/beats/filebeat/filebeat-input-udp)
 
 ### API usage
 
@@ -222,4 +221,4 @@ This integration uses the **Trellix ePO executeQuery API** (endpoint: `/remote/c
 | `dlp_incident` | `UDLP_EPD_Incidents` |
 | `threat_event` | `EPOEvents` and `EPExtendedEvent` |
 
-The `event` data stream does not use an API. Event records are pushed by the Trellix ePO event forwarder to the Elastic Agent as RFC 5424 syslog messages over TCP or UDP.
+The `event` data stream does not use an API. Event records are pushed by the Trellix ePO event forwarder to the Elastic Agent as RFC 5424 syslog messages over TCP with TLS.
