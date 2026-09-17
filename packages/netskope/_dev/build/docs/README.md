@@ -1,6 +1,6 @@
 # Netskope
 
-This integration is for Netskope. It can be used to receive logs sent by [Netskope Cloud Log Shipper](https://docs.netskope.com/en/cloud-exchange-feature-lists.html#UUID-e7c43f4b-8aad-679e-eea0-59ce19f16e29_section-idm4547044691454432680066508785) and [Netskope Log Streaming](https://docs.netskope.com/en/log-streaming/). To receive log from Netskope Cloud Log Shipper use the TCP input, and for Netskope Log Streaming use any of the Cloud based inputs (AWS, GCS, or Azure Blob Storage).
+This integration is for Netskope. It can be used to receive logs sent by [Netskope Cloud Log Shipper](https://docs.netskope.com/en/cloud-exchange-feature-lists.html#UUID-e7c43f4b-8aad-679e-eea0-59ce19f16e29_section-idm4547044691454432680066508785), [Netskope Log Streaming](https://docs.netskope.com/en/log-streaming/), or the REST API v2 dataexport iterator. To receive log from Netskope Cloud Log Shipper use the TCP input, for Netskope Log Streaming use any of the Cloud based inputs (AWS, GCS, or Azure Blob Storage), and for REST API v2 enable the CEL input on the **Alerts V2** and/or **Events V2** data streams.
 
 
 
@@ -35,6 +35,16 @@ ECS fields where applicable and the remaining fields are written under
 
 > Note: For detailed steps refer to [Configure Log Shipper SIEM Mappings](https://docs.netskope.com/en/configure-log-shipper-siem-mappings.html).
 Please make sure to use the given response formats.
+
+### For collecting data via REST API v2 dataexport
+
+1. In the Netskope tenant admin console, create a service account (RBAC v3) or REST API v2 token with **Read** on each dataexport path you will collect (`/api/v2/events/dataexport/events/{type}` and/or `/api/v2/events/dataexport/alerts/{type}`).
+2. In Elastic Fleet, add the Netskope integration and choose **Collect Netskope alerts and events via REST API v2 dataexport** (CEL input).
+3. Set **Tenant URL** (for example `https://example.goskope.com`), **REST API v2 token**, and an **Iterator index** that is unique on your tenant (do not reuse an index used by Cloud Exchange or Splunk).
+4. Enable the **Alerts V2** and/or **Events V2** data streams. Under **Alert export types** or **Event export types**, add the iterator types your token can read (for example `policy`, `dlp` for alerts or `application`, `audit` for events).
+5. Do not collect aggregate `/events/dataexport/events/alert` on the Events V2 stream while typed `/alerts/*` endpoints are enabled on Alerts V2 — the same alert can appear in both feeds with the same `_id`.
+
+The collector uses server-side iterators: the first request for each export type uses `operation=<epoch>` from **Initial Interval**, then `operation=next`. A full page (10,000 events) triggers an immediate follow-up request in the same run; when caught up, the agent waits for **Interval** before the next poll.
 
 ### For receiving log from Netskope Log Streaming
 1. To configure Log streaming please refer to the [Log Streaming Configuration](https://docs.netskope.com/en/configuring-streams). Ensure that compression is set to GZIP when configuring the stream as other compression types are not supported.
@@ -178,11 +188,23 @@ Default port: _9021_
 
 {{event "alerts"}}
 
+### Alerts V2
+
+{{fields "alerts_v2"}}
+
+{{event "alerts_v2"}}
+
 ### Events
 
 {{fields "events"}}
 
 {{event "events"}}
+
+### Events V2
+
+{{fields "events_v2"}}
+
+{{event "events_v2"}}
 
 ### Transaction
 
