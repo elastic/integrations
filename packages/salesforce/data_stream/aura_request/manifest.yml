@@ -1,0 +1,96 @@
+type: logs
+title: Salesforce AuraRequest logs
+streams:
+  - input: salesforce
+    title: Salesforce AuraRequest logs
+    description: Collect Salesforce AuraRequest logs.
+    template_path: salesforce.yml.hbs
+    enabled: false
+    vars:
+      - name: api_version
+        type: text
+        title: API Version
+        description: API Version of Salesforce. The `AuraRequestEventLog` object used by the real-time collection method requires API version 61.0 or later.
+        multi: false
+        required: true
+        show_user: false
+        default: '61.0'
+      - name: event_log_file
+        type: bool
+        title: EventLogFile Data Collection
+        description: "Enable collection from EventLogFile."
+        multi: false
+        required: true
+        show_user: true
+        default: true
+      - name: object
+        type: bool
+        title: Real-Time Object Data Collection
+        description: "Enable collection from real-time events (AuraRequestEventLog). Requires API version 61.0 or later."
+        multi: false
+        required: true
+        show_user: true
+        default: false
+      - name: elf_period
+        type: text
+        title: EventLogFile Period
+        description: "Polling interval for EventLogFile. Supported units: h, m, s."
+        multi: false
+        required: false
+        show_user: true
+        default: 1h
+      - name: real_time_period
+        type: text
+        title: Real-Time Events Period
+        description: "Polling interval for real-time events. Supported units: h, m, s."
+        multi: false
+        required: false
+        show_user: true
+        default: 15m
+      - name: initial_interval
+        type: text
+        title: Initial Interval
+        description: "How far back to fetch historical data on the first run. Supported units: h, m, s."
+        multi: false
+        required: true
+        show_user: true
+        default: 168h
+      - name: log_file_interval
+        type: text
+        title: EventLogFile Interval
+        description: "EventLogFile granularity. Supported values: Hourly or Daily."
+        multi: false
+        required: false
+        show_user: true
+        default: Hourly
+      - name: resource_timeout
+        type: text
+        title: Request Timeout
+        description: "Duration before declaring that the HTTP client connection has timed out. Valid time units are ns, us, ms, s, m, h. Increase this value if log collection times out while downloading large EventLogFile data."
+        multi: false
+        required: false
+        show_user: false
+        default: 30s
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - salesforce-aura_request
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
