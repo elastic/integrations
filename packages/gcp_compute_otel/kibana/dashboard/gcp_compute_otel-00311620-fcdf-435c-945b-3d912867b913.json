@@ -140,13 +140,6 @@
                             },
                             "datasourceStates": {
                                 "textBased": {
-                                    "indexPatternRefs": [
-                                        {
-                                            "id": "metrics-googlecloudmonitoringreceiver.otel-default-59fd3d2e00351b768a0ad9976c45d29211ba27012215440705947f6d84313685",
-                                            "timeField": "@timestamp",
-                                            "title": "metrics-googlecloudmonitoringreceiver.otel-default"
-                                        }
-                                    ],
                                     "layers": {
                                         "layer_0": {
                                             "columns": [
@@ -173,8 +166,7 @@
                                             "index": "metrics-googlecloudmonitoringreceiver.otel-default-59fd3d2e00351b768a0ad9976c45d29211ba27012215440705947f6d84313685",
                                             "query": {
                                                 "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Average CPU Utilization %` = AVG(AVG_OVER_TIME(`compute.googleapis.com/instance/cpu/utilization`))"
-                                            },
-                                            "timeField": "@timestamp"
+                                            }
                                         }
                                     }
                                 }
@@ -1479,9 +1471,9 @@
                         "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "metrics-googlecloudmonitoringreceiver.otel-default-9fe7d75256a681c8ee95a3108b11eb6cc9854ec25d2b22e373661927a2c66d4f": {
+                                "metrics-googlecloudmonitoringreceiver.otel-default-18f452e7f943f80bd006169f54aa9e1fbe1f6c6ccb220b16f0d10dbfe450f267": {
                                     "allowNoIndex": false,
-                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-9fe7d75256a681c8ee95a3108b11eb6cc9854ec25d2b22e373661927a2c66d4f",
+                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-18f452e7f943f80bd006169f54aa9e1fbe1f6c6ccb220b16f0d10dbfe450f267",
                                     "name": "metrics-googlecloudmonitoringreceiver.otel-default",
                                     "sourceFilters": [],
                                     "title": "metrics-googlecloudmonitoringreceiver.otel-default",
@@ -1490,11 +1482,27 @@
                             },
                             "datasourceStates": {
                                 "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "metrics-googlecloudmonitoringreceiver.otel-default-18f452e7f943f80bd006169f54aa9e1fbe1f6c6ccb220b16f0d10dbfe450f267",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics-googlecloudmonitoringreceiver.otel-default"
+                                        }
+                                    ],
                                     "layers": {
                                         "layer_0": {
                                             "columns": [
                                                 {
                                                     "columnId": "datatable_accessor_row_0",
+                                                    "customLabel": true,
+                                                    "fieldName": "Instance ID",
+                                                    "label": "Instance ID",
+                                                    "meta": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "datatable_accessor_row_1",
                                                     "customLabel": true,
                                                     "fieldName": "attributes.instance_name",
                                                     "label": "Instance",
@@ -1503,7 +1511,7 @@
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "datatable_accessor_row_1",
+                                                    "columnId": "datatable_accessor_row_2",
                                                     "customLabel": true,
                                                     "fieldName": "resource.attributes.zone",
                                                     "label": "Zone",
@@ -1610,10 +1618,11 @@
                                                 }
                                             ],
                                             "ignoreGlobalFilters": false,
-                                            "index": "metrics-googlecloudmonitoringreceiver.otel-default-9fe7d75256a681c8ee95a3108b11eb6cc9854ec25d2b22e373661927a2c66d4f",
+                                            "index": "metrics-googlecloudmonitoringreceiver.otel-default-18f452e7f943f80bd006169f54aa9e1fbe1f6c6ccb220b16f0d10dbfe450f267",
                                             "query": {
-                                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS avg_cpu = AVG(AVG_OVER_TIME(`compute.googleapis.com/instance/cpu/utilization`)), peak_cpu = MAX(MAX_OVER_TIME(`compute.googleapis.com/instance/cpu/utilization`)), reserved_cores = MAX(LAST_OVER_TIME(`compute.googleapis.com/instance/cpu/reserved_cores`)), vcpus = MAX(LAST_OVER_TIME(`compute.googleapis.com/instance/cpu/guest_visible_vcpus`)), steal_s = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/cpu/scheduler_wait_time`)) BY `attributes.instance_name`, `resource.attributes.zone`\n| SORT avg_cpu DESC\n| LIMIT 10"
-                                            }
+                                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS avg_cpu = AVG(AVG_OVER_TIME(`compute.googleapis.com/instance/cpu/utilization`)), peak_cpu = MAX(MAX_OVER_TIME(`compute.googleapis.com/instance/cpu/utilization`)), reserved_cores = MAX(LAST_OVER_TIME(`compute.googleapis.com/instance/cpu/reserved_cores`)), vcpus = MAX(LAST_OVER_TIME(`compute.googleapis.com/instance/cpu/guest_visible_vcpus`)), steal_s = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/cpu/scheduler_wait_time`)) BY `Instance ID` = `resource.attributes.instance_id`, `attributes.instance_name`, `resource.attributes.zone`\n| SORT avg_cpu DESC\n| LIMIT 10"
+                                            },
+                                            "timeField": "@timestamp"
                                         }
                                     }
                                 }
@@ -1621,13 +1630,13 @@
                             "filters": [],
                             "internalReferences": [
                                 {
-                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-9fe7d75256a681c8ee95a3108b11eb6cc9854ec25d2b22e373661927a2c66d4f",
+                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-18f452e7f943f80bd006169f54aa9e1fbe1f6c6ccb220b16f0d10dbfe450f267",
                                     "name": "indexpattern-datasource-layer-layer_0",
                                     "type": "index-pattern"
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS avg_cpu = AVG(AVG_OVER_TIME(`compute.googleapis.com/instance/cpu/utilization`)), peak_cpu = MAX(MAX_OVER_TIME(`compute.googleapis.com/instance/cpu/utilization`)), reserved_cores = MAX(LAST_OVER_TIME(`compute.googleapis.com/instance/cpu/reserved_cores`)), vcpus = MAX(LAST_OVER_TIME(`compute.googleapis.com/instance/cpu/guest_visible_vcpus`)), steal_s = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/cpu/scheduler_wait_time`)) BY `attributes.instance_name`, `resource.attributes.zone`\n| SORT avg_cpu DESC\n| LIMIT 10"
+                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS avg_cpu = AVG(AVG_OVER_TIME(`compute.googleapis.com/instance/cpu/utilization`)), peak_cpu = MAX(MAX_OVER_TIME(`compute.googleapis.com/instance/cpu/utilization`)), reserved_cores = MAX(LAST_OVER_TIME(`compute.googleapis.com/instance/cpu/reserved_cores`)), vcpus = MAX(LAST_OVER_TIME(`compute.googleapis.com/instance/cpu/guest_visible_vcpus`)), steal_s = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/cpu/scheduler_wait_time`)) BY `Instance ID` = `resource.attributes.instance_id`, `attributes.instance_name`, `resource.attributes.zone`\n| SORT avg_cpu DESC\n| LIMIT 10"
                             },
                             "visualization": {
                                 "columns": [
@@ -1637,7 +1646,8 @@
                                         "hidden": false,
                                         "isMetric": false,
                                         "isTransposed": false,
-                                        "oneClickFilter": true
+                                        "oneClickFilter": true,
+                                        "width": 136
                                     },
                                     {
                                         "alignment": "left",
@@ -1645,7 +1655,15 @@
                                         "hidden": false,
                                         "isMetric": false,
                                         "isTransposed": false,
-                                        "oneClickFilter": true
+                                        "oneClickFilter": false
+                                    },
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "datatable_accessor_row_2",
+                                        "hidden": false,
+                                        "isMetric": false,
+                                        "isTransposed": false,
+                                        "oneClickFilter": false
                                     },
                                     {
                                         "alignment": "right",
@@ -1663,7 +1681,7 @@
                                                         "stop": null
                                                     },
                                                     {
-                                                        "color": "#fff3c2",
+                                                        "color": "#fcd883",
                                                         "stop": 0.7
                                                     },
                                                     {
@@ -1686,7 +1704,7 @@
                                                         "stop": 0.7
                                                     },
                                                     {
-                                                        "color": "#fff3c2",
+                                                        "color": "#fcd883",
                                                         "stop": 0.95
                                                     },
                                                     {
@@ -1746,7 +1764,16 @@
                         "visualizationType": "lnsDatatable"
                     },
                     "description": "The 10 busiest VMs by average CPU utilization over the selected window, with peak utilization, reserved cores, guest-visible vCPUs and total scheduler wait time. Utilization is a fraction of reserved cores so it can exceed 100% on shared-core types. High avg CPU with near-zero steal is normal workload growth; high steal indicates host contention. Click an instance name to drill down.",
-                    "drilldowns": [],
+                    "drilldowns": [
+                        {
+                            "encode_url": true,
+                            "label": "View Details",
+                            "open_in_new_tab": true,
+                            "trigger": "on_click_value",
+                            "type": "url_drilldown",
+                            "url": "{{kibanaUrl}}/app/dashboards#/view/62a27720-651a-4446-a1ba-0512a69a6ced?_g=(time:(from:'{{context.panel.timeRange.from}}',to:'{{context.panel.timeRange.to}}'))\u0026_a=(filters:!((meta:(alias:!n,disabled:!f,index:'metrics-gcp.compute.otel-default',key:resource.attributes.instance_id,negate:!f,params:(query:'{{event.value}}'),type:phrase),query:(match_phrase:(resource.attributes.instance_id:'{{event.value}}')))),query:(language:kuery,query:''))"
+                        }
+                    ],
                     "title": "Top 10 instances by CPU utilization"
                 },
                 "gridData": {
@@ -2085,9 +2112,9 @@
                         "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "metrics-googlecloudmonitoringreceiver.otel-default-df168164980674bd75752369edfc6fe78628192f11b7e500cf5d40c9be2734b5": {
+                                "metrics-googlecloudmonitoringreceiver.otel-default-61e1b98f75f2f47ca2e3932cd6bc2e8976c2876fe9d693983408baf5be90b60e": {
                                     "allowNoIndex": false,
-                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-df168164980674bd75752369edfc6fe78628192f11b7e500cf5d40c9be2734b5",
+                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-61e1b98f75f2f47ca2e3932cd6bc2e8976c2876fe9d693983408baf5be90b60e",
                                     "name": "metrics-googlecloudmonitoringreceiver.otel-default",
                                     "sourceFilters": [],
                                     "title": "metrics-googlecloudmonitoringreceiver.otel-default",
@@ -2096,11 +2123,27 @@
                             },
                             "datasourceStates": {
                                 "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "metrics-googlecloudmonitoringreceiver.otel-default-61e1b98f75f2f47ca2e3932cd6bc2e8976c2876fe9d693983408baf5be90b60e",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics-googlecloudmonitoringreceiver.otel-default"
+                                        }
+                                    ],
                                     "layers": {
                                         "layer_0": {
                                             "columns": [
                                                 {
                                                     "columnId": "datatable_accessor_row_0",
+                                                    "customLabel": true,
+                                                    "fieldName": "Instance ID",
+                                                    "label": "Instance ID",
+                                                    "meta": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "datatable_accessor_row_1",
                                                     "customLabel": true,
                                                     "fieldName": "attributes.instance_name",
                                                     "label": "Instance",
@@ -2109,7 +2152,7 @@
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "datatable_accessor_row_1",
+                                                    "columnId": "datatable_accessor_row_2",
                                                     "customLabel": true,
                                                     "fieldName": "resource.attributes.zone",
                                                     "label": "Zone",
@@ -2213,10 +2256,11 @@
                                                 }
                                             ],
                                             "ignoreGlobalFilters": false,
-                                            "index": "metrics-googlecloudmonitoringreceiver.otel-default-df168164980674bd75752369edfc6fe78628192f11b7e500cf5d40c9be2734b5",
+                                            "index": "metrics-googlecloudmonitoringreceiver.otel-default-61e1b98f75f2f47ca2e3932cd6bc2e8976c2876fe9d693983408baf5be90b60e",
                                             "query": {
-                                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS ram_used = MAX(LAST_OVER_TIME(`compute.googleapis.com/instance/memory/balloon/ram_used`)), ram_size = MAX(LAST_OVER_TIME(`compute.googleapis.com/instance/memory/balloon/ram_size`)), swap_in_bps = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/memory/balloon/swap_in_bytes_count`)) / 60, swap_out_bps = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/memory/balloon/swap_out_bytes_count`)) / 60 BY attributes.instance_name, resource.attributes.zone\n| EVAL mem_used_pct = 100.0 * ram_used / ram_size\n| EVAL `Mem % color` = CASE(\n    mem_used_pct \u003c 50, \"#e8f7f0\",\n    mem_used_pct \u003c 70, \"#aee8d2\",\n    mem_used_pct \u003c 85, \"#fff3c2\",\n    mem_used_pct \u003c 95, \"#ffc9c2\",\n    \"#f4a79e\"\n  )\n| SORT mem_used_pct DESC\n| LIMIT 10"
-                                            }
+                                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS ram_used = MAX(LAST_OVER_TIME(`compute.googleapis.com/instance/memory/balloon/ram_used`)), ram_size = MAX(LAST_OVER_TIME(`compute.googleapis.com/instance/memory/balloon/ram_size`)), swap_in_bps = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/memory/balloon/swap_in_bytes_count`)) / 60, swap_out_bps = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/memory/balloon/swap_out_bytes_count`)) / 60 BY `Instance ID` = resource.attributes.instance_id, attributes.instance_name, resource.attributes.zone\n| EVAL mem_used_pct = 100.0 * ram_used / ram_size\n| EVAL `Mem % color` = CASE(\n    mem_used_pct \u003c 50, \"#e8f7f0\",\n    mem_used_pct \u003c 70, \"#aee8d2\",\n    mem_used_pct \u003c 85, \"#fff3c2\",\n    mem_used_pct \u003c 95, \"#ffc9c2\",\n    \"#f4a79e\"\n  )\n| SORT mem_used_pct DESC\n| LIMIT 10"
+                                            },
+                                            "timeField": "@timestamp"
                                         }
                                     }
                                 }
@@ -2224,13 +2268,13 @@
                             "filters": [],
                             "internalReferences": [
                                 {
-                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-df168164980674bd75752369edfc6fe78628192f11b7e500cf5d40c9be2734b5",
+                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-61e1b98f75f2f47ca2e3932cd6bc2e8976c2876fe9d693983408baf5be90b60e",
                                     "name": "indexpattern-datasource-layer-layer_0",
                                     "type": "index-pattern"
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS ram_used = MAX(LAST_OVER_TIME(`compute.googleapis.com/instance/memory/balloon/ram_used`)), ram_size = MAX(LAST_OVER_TIME(`compute.googleapis.com/instance/memory/balloon/ram_size`)), swap_in_bps = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/memory/balloon/swap_in_bytes_count`)) / 60, swap_out_bps = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/memory/balloon/swap_out_bytes_count`)) / 60 BY attributes.instance_name, resource.attributes.zone\n| EVAL mem_used_pct = 100.0 * ram_used / ram_size\n| EVAL `Mem % color` = CASE(\n    mem_used_pct \u003c 50, \"#e8f7f0\",\n    mem_used_pct \u003c 70, \"#aee8d2\",\n    mem_used_pct \u003c 85, \"#fff3c2\",\n    mem_used_pct \u003c 95, \"#ffc9c2\",\n    \"#f4a79e\"\n  )\n| SORT mem_used_pct DESC\n| LIMIT 10"
+                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS ram_used = MAX(LAST_OVER_TIME(`compute.googleapis.com/instance/memory/balloon/ram_used`)), ram_size = MAX(LAST_OVER_TIME(`compute.googleapis.com/instance/memory/balloon/ram_size`)), swap_in_bps = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/memory/balloon/swap_in_bytes_count`)) / 60, swap_out_bps = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/memory/balloon/swap_out_bytes_count`)) / 60 BY `Instance ID` = resource.attributes.instance_id, attributes.instance_name, resource.attributes.zone\n| EVAL mem_used_pct = 100.0 * ram_used / ram_size\n| EVAL `Mem % color` = CASE(\n    mem_used_pct \u003c 50, \"#e8f7f0\",\n    mem_used_pct \u003c 70, \"#aee8d2\",\n    mem_used_pct \u003c 85, \"#fff3c2\",\n    mem_used_pct \u003c 95, \"#ffc9c2\",\n    \"#f4a79e\"\n  )\n| SORT mem_used_pct DESC\n| LIMIT 10"
                             },
                             "visualization": {
                                 "columns": [
@@ -2248,7 +2292,15 @@
                                         "hidden": false,
                                         "isMetric": false,
                                         "isTransposed": false,
-                                        "oneClickFilter": true
+                                        "oneClickFilter": false
+                                    },
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "datatable_accessor_row_2",
+                                        "hidden": false,
+                                        "isMetric": false,
+                                        "isTransposed": false,
+                                        "oneClickFilter": false
                                     },
                                     {
                                         "alignment": "right",
@@ -2365,7 +2417,16 @@
                         "visualizationType": "lnsDatatable"
                     },
                     "description": "The 10 VMs with the highest balloon-driver memory utilization, using the latest RAM values in the window and average swap rates. Memory percentage near 100% combined with non-zero swap-in indicates real memory pressure; a high percentage with zero swap is usually just a well-utilized cache. DRILL-DOWN ENTRY POINT: open an instance in the [GCP] GCE Instance detail dashboard to investigate it.",
-                    "drilldowns": [],
+                    "drilldowns": [
+                        {
+                            "encode_url": true,
+                            "label": "View details",
+                            "open_in_new_tab": true,
+                            "trigger": "on_click_value",
+                            "type": "url_drilldown",
+                            "url": "{{kibanaUrl}}/app/dashboards#/view/62a27720-651a-4446-a1ba-0512a69a6ced?_g=(time:(from:'{{context.panel.timeRange.from}}',to:'{{context.panel.timeRange.to}}'))\u0026_a=(filters:!((meta:(alias:!n,disabled:!f,index:'metrics-gcp.compute.otel-default',key:resource.attributes.instance_id,negate:!f,params:(query:'{{event.value}}'),type:phrase),query:(match_phrase:(resource.attributes.instance_id:'{{event.value}}')))),query:(language:kuery,query:''))"
+                        }
+                    ],
                     "title": "Top 10 instances by memory utilization"
                 },
                 "gridData": {
@@ -3056,6 +3117,13 @@
                             },
                             "datasourceStates": {
                                 "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "metrics-googlecloudmonitoringreceiver.otel-default-9616a863d8d7ac54892fea06dfaf5c2c5bfae9cd7c028e6483a0b1efbab8c576",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics-googlecloudmonitoringreceiver.otel-default"
+                                        }
+                                    ],
                                     "layers": {
                                         "layer_0": {
                                             "columns": [
@@ -3113,7 +3181,8 @@
                                             "index": "metrics-googlecloudmonitoringreceiver.otel-default-9616a863d8d7ac54892fea06dfaf5c2c5bfae9cd7c028e6483a0b1efbab8c576",
                                             "query": {
                                                 "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\" AND `compute.googleapis.com/instance/disk/average_io_latency` IS NOT NULL\n| STATS `Max Latency` = MAX(MAX_OVER_TIME(`compute.googleapis.com/instance/disk/average_io_latency`)) BY resource.attributes.instance_id, attributes.device_name, `Storage` = attributes.storage_type\n| EVAL `Max Latency Color` = CASE(\n    `Max Latency` \u003c 1000, \"#aee8d2\",\n    `Max Latency` \u003c= 5000, \"#fff3c2\",\n    `Max Latency` \u003c= 20000, \"#ffc9c2\",\n    `Max Latency` \u003c= 50000, \"#ffc9c2\",\n    \"#ffc9c2\"\n  )\n| SORT `Max Latency` DESC\n| LIMIT 10\n| KEEP resource.attributes.instance_id, attributes.device_name, `Max Latency`, `Max Latency Color`, `Storage`"
-                                            }
+                                            },
+                                            "timeField": "@timestamp"
                                         }
                                     }
                                 }
@@ -3137,7 +3206,7 @@
                                         "hidden": false,
                                         "isMetric": false,
                                         "isTransposed": false,
-                                        "oneClickFilter": false
+                                        "oneClickFilter": true
                                     },
                                     {
                                         "alignment": "left",
@@ -3145,7 +3214,7 @@
                                         "hidden": false,
                                         "isMetric": false,
                                         "isTransposed": false,
-                                        "oneClickFilter": true
+                                        "oneClickFilter": false
                                     },
                                     {
                                         "alignment": "right",
@@ -3225,7 +3294,16 @@
                         "visualizationType": "lnsDatatable"
                     },
                     "description": "The 10 slowest disk devices by peak I/O latency in the window. This series does not carry instance_name, so devices are keyed by instance_id. Queue depth is shown in the companion panel rather than here: GCP emits latency and queue depth as separate samples that share a document only about 5% of the time, so combining them in one table leaves the second metric almost entirely null and breaks the ranking. High latency here means slow I/O service time; cross-reference the queue depth table to tell saturation (both high) from infrastructure degradation (latency high, queue low).",
-                    "drilldowns": [],
+                    "drilldowns": [
+                        {
+                            "encode_url": true,
+                            "label": "View details",
+                            "open_in_new_tab": true,
+                            "trigger": "on_click_value",
+                            "type": "url_drilldown",
+                            "url": "{{kibanaUrl}}/app/dashboards#/view/62a27720-651a-4446-a1ba-0512a69a6ced?_g=(time:(from:'{{context.panel.timeRange.from}}',to:'{{context.panel.timeRange.to}}'))\u0026_a=(filters:!((meta:(alias:!n,disabled:!f,index:'metrics-gcp.compute.otel-default',key:resource.attributes.instance_id,negate:!f,params:(query:'{{event.value}}'),type:phrase),query:(match_phrase:(resource.attributes.instance_id:'{{event.value}}')))),query:(language:kuery,query:''))"
+                        }
+                    ],
                     "title": "Top 10 disk devices by I/O latency"
                 },
                 "gridData": {
@@ -3782,6 +3860,177 @@
             {
                 "embeddableConfig": {
                     "attributes": {
+                        "description": "The 10 largest disk volumes by provisioned capacity, using the last reported size in the window. Keyed on instance_id because the provisioning series does not reliably carry instance_name. Provisioned IOPS and throughput are deliberately not shown: this fleet is entirely pd-standard and pd-balanced, size-based disk types whose performance scales with capacity, so GCP does not emit those ceilings. Use the latency and queue depth panels above as the saturation signal instead.",
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "metrics-googlecloudmonitoringreceiver.otel-default-8c927677eb220229a71f3573c2fdb28fa74c5bf8671196061d0950a93cd53d21": {
+                                    "allowNoIndex": false,
+                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-8c927677eb220229a71f3573c2fdb28fa74c5bf8671196061d0950a93cd53d21",
+                                    "name": "metrics-googlecloudmonitoringreceiver.otel-default",
+                                    "sourceFilters": [],
+                                    "title": "metrics-googlecloudmonitoringreceiver.otel-default",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "metrics-googlecloudmonitoringreceiver.otel-default-8c927677eb220229a71f3573c2fdb28fa74c5bf8671196061d0950a93cd53d21",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics-googlecloudmonitoringreceiver.otel-default"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "layer_0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "datatable_accessor_row_0",
+                                                    "customLabel": true,
+                                                    "fieldName": "resource.attributes.instance_id",
+                                                    "label": "Instance ID",
+                                                    "meta": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "datatable_accessor_row_1",
+                                                    "customLabel": true,
+                                                    "fieldName": "attributes.device_name",
+                                                    "label": "Device",
+                                                    "meta": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "datatable_accessor_metric_0",
+                                                    "customLabel": true,
+                                                    "fieldName": "Size",
+                                                    "inMetricDimension": true,
+                                                    "label": "Size",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "datatable_accessor_metric_1",
+                                                    "customLabel": true,
+                                                    "fieldName": "Storage",
+                                                    "inMetricDimension": true,
+                                                    "label": "Storage",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "ignoreGlobalFilters": false,
+                                            "index": "metrics-googlecloudmonitoringreceiver.otel-default-8c927677eb220229a71f3573c2fdb28fa74c5bf8671196061d0950a93cd53d21",
+                                            "query": {
+                                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Size` = MAX(LAST_OVER_TIME(`compute.googleapis.com/instance/disk/provisioning/size`)) BY resource.attributes.instance_id, attributes.device_name, `Storage` = attributes.storage_type\n| KEEP resource.attributes.instance_id, attributes.device_name, `Storage`, `Size`\n| SORT `Size` DESC\n| LIMIT 10"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-8c927677eb220229a71f3573c2fdb28fa74c5bf8671196061d0950a93cd53d21",
+                                    "name": "indexpattern-datasource-layer-layer_0",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Size` = MAX(LAST_OVER_TIME(`compute.googleapis.com/instance/disk/provisioning/size`)) BY resource.attributes.instance_id, attributes.device_name, `Storage` = attributes.storage_type\n| KEEP resource.attributes.instance_id, attributes.device_name, `Storage`, `Size`\n| SORT `Size` DESC\n| LIMIT 10"
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "datatable_accessor_row_0",
+                                        "hidden": false,
+                                        "isMetric": false,
+                                        "isTransposed": false,
+                                        "oneClickFilter": true
+                                    },
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "datatable_accessor_row_1",
+                                        "hidden": false,
+                                        "isMetric": false,
+                                        "isTransposed": false,
+                                        "oneClickFilter": false
+                                    },
+                                    {
+                                        "alignment": "right",
+                                        "columnId": "datatable_accessor_metric_0",
+                                        "hidden": false,
+                                        "isMetric": true,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "datatable_accessor_metric_1",
+                                        "hidden": false,
+                                        "isMetric": true,
+                                        "isTransposed": false
+                                    }
+                                ],
+                                "density": "compact",
+                                "layerId": "layer_0",
+                                "layerType": "data",
+                                "paging": {
+                                    "enabled": true,
+                                    "size": 10
+                                },
+                                "showRowNumbers": false,
+                                "sorting": {
+                                    "columnId": "datatable_accessor_metric_0",
+                                    "direction": "desc"
+                                }
+                            }
+                        },
+                        "title": "Top 10 disks by provisioned size",
+                        "version": 2,
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "description": "The 10 largest disk volumes by provisioned capacity, using the last reported size in the window. Keyed on instance_id because the provisioning series does not reliably carry instance_name. Provisioned IOPS and throughput are deliberately not shown: this fleet is entirely pd-standard and pd-balanced, size-based disk types whose performance scales with capacity, so GCP does not emit those ceilings. Use the latency and queue depth panels above as the saturation signal instead.",
+                    "drilldowns": [
+                        {
+                            "encode_url": true,
+                            "label": "View details",
+                            "open_in_new_tab": true,
+                            "trigger": "on_click_value",
+                            "type": "url_drilldown",
+                            "url": "{{kibanaUrl}}/app/dashboards#/view/62a27720-651a-4446-a1ba-0512a69a6ced?_g=(time:(from:'{{context.panel.timeRange.from}}',to:'{{context.panel.timeRange.to}}'))\u0026_a=(filters:!((meta:(alias:!n,disabled:!f,index:'metrics-gcp.compute.otel-default',key:resource.attributes.instance_id,negate:!f,params:(query:'{{event.value}}'),type:phrase),query:(match_phrase:(resource.attributes.instance_id:'{{event.value}}')))),query:(language:kuery,query:''))"
+                        }
+                    ],
+                    "title": "Top 10 disks by provisioned size"
+                },
+                "gridData": {
+                    "h": 13,
+                    "i": "c065b7fc-6c6d-44ca-8f8c-f7bc8262b182",
+                    "sectionId": "892a323d-b0ba-4d24-9b45-f9f68779b848",
+                    "w": 24,
+                    "x": 24,
+                    "y": 48
+                },
+                "panelIndex": "c065b7fc-6c6d-44ca-8f8c-f7bc8262b182",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
                         "references": [],
                         "state": {
                             "adHocDataViews": {
@@ -3796,6 +4045,13 @@
                             },
                             "datasourceStates": {
                                 "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "metrics-googlecloudmonitoringreceiver.otel-default-df323047667aa6a2807131c1e094688acd47eca69b5d91f4b72ccd511f5c7c33",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics-googlecloudmonitoringreceiver.otel-default"
+                                        }
+                                    ],
                                     "layers": {
                                         "layer_0": {
                                             "columns": [
@@ -3834,7 +4090,8 @@
                                             "index": "metrics-googlecloudmonitoringreceiver.otel-default-df323047667aa6a2807131c1e094688acd47eca69b5d91f4b72ccd511f5c7c33",
                                             "query": {
                                                 "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE `gcp.resource_type` == \"gce_instance\" AND TRANGE(?_tstart, ?_tend)\n| STATS `Max Queue` = MAX(MAX_OVER_TIME(`metrics.compute.googleapis.com/instance/disk/average_io_queue_depth`)) BY `Instance ID` = `resource.attributes.instance_id`, `Device` = `attributes.device_name`, `Storage` = `attributes.storage_type`\n| EVAL `Max Queue Color` = CASE(\n    `Max Queue` \u003c 33, \"#aee8d2\",\n    `Max Queue` \u003c 66, \"#fff3c2\",\n    \"#ffc9c2\"\n  )\n| SORT `Max Queue` DESC\n| LIMIT 10\n| KEEP `Instance ID`, `Device`, `Max Queue`, `Storage`, `Max Queue Color`"
-                                            }
+                                            },
+                                            "timeField": "@timestamp"
                                         }
                                     }
                                 }
@@ -3858,7 +4115,7 @@
                                         "hidden": false,
                                         "isMetric": false,
                                         "isTransposed": false,
-                                        "oneClickFilter": false
+                                        "oneClickFilter": true
                                     },
                                     {
                                         "alignment": "left",
@@ -3937,172 +4194,27 @@
                         "version": 2,
                         "visualizationType": "lnsDatatable"
                     },
-                    "drilldowns": [],
+                    "drilldowns": [
+                        {
+                            "encode_url": true,
+                            "label": "View details",
+                            "open_in_new_tab": true,
+                            "trigger": "on_click_value",
+                            "type": "url_drilldown",
+                            "url": "{{kibanaUrl}}/app/dashboards#/view/62a27720-651a-4446-a1ba-0512a69a6ced?_g=(time:(from:'{{context.panel.timeRange.from}}',to:'{{context.panel.timeRange.to}}'))\u0026_a=(filters:!((meta:(alias:!n,disabled:!f,index:'metrics-gcp.compute.otel-default',key:resource.attributes.instance_id,negate:!f,params:(query:'{{event.value}}'),type:phrase),query:(match_phrase:(resource.attributes.instance_id:'{{event.value}}')))),query:(language:kuery,query:''))"
+                        }
+                    ],
                     "title": "Top 10 Disk Devices by Peak I/O Queue Depth"
                 },
                 "gridData": {
-                    "h": 14,
+                    "h": 13,
                     "i": "9de70560-edb0-4a85-ae3d-788010162371",
                     "sectionId": "892a323d-b0ba-4d24-9b45-f9f68779b848",
-                    "w": 48,
+                    "w": 24,
                     "x": 0,
                     "y": 48
                 },
                 "panelIndex": "9de70560-edb0-4a85-ae3d-788010162371",
-                "type": "vis"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "description": "The 10 largest disk volumes by provisioned capacity, using the last reported size in the window. Keyed on instance_id because the provisioning series does not reliably carry instance_name. Provisioned IOPS and throughput are deliberately not shown: this fleet is entirely pd-standard and pd-balanced, size-based disk types whose performance scales with capacity, so GCP does not emit those ceilings. Use the latency and queue depth panels above as the saturation signal instead.",
-                        "references": [],
-                        "state": {
-                            "adHocDataViews": {
-                                "metrics-googlecloudmonitoringreceiver.otel-default-8c927677eb220229a71f3573c2fdb28fa74c5bf8671196061d0950a93cd53d21": {
-                                    "allowNoIndex": false,
-                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-8c927677eb220229a71f3573c2fdb28fa74c5bf8671196061d0950a93cd53d21",
-                                    "name": "metrics-googlecloudmonitoringreceiver.otel-default",
-                                    "sourceFilters": [],
-                                    "title": "metrics-googlecloudmonitoringreceiver.otel-default",
-                                    "type": "esql"
-                                }
-                            },
-                            "datasourceStates": {
-                                "textBased": {
-                                    "layers": {
-                                        "layer_0": {
-                                            "columns": [
-                                                {
-                                                    "columnId": "datatable_accessor_row_0",
-                                                    "customLabel": true,
-                                                    "fieldName": "resource.attributes.instance_id",
-                                                    "label": "Instance ID",
-                                                    "meta": {
-                                                        "type": "string"
-                                                    }
-                                                },
-                                                {
-                                                    "columnId": "datatable_accessor_row_1",
-                                                    "customLabel": true,
-                                                    "fieldName": "attributes.device_name",
-                                                    "label": "Device",
-                                                    "meta": {
-                                                        "type": "string"
-                                                    }
-                                                },
-                                                {
-                                                    "columnId": "datatable_accessor_metric_0",
-                                                    "customLabel": true,
-                                                    "fieldName": "Size",
-                                                    "inMetricDimension": true,
-                                                    "label": "Size",
-                                                    "meta": {
-                                                        "type": "number"
-                                                    },
-                                                    "params": {
-                                                        "format": {
-                                                            "id": "bytes",
-                                                            "params": {
-                                                                "decimals": 2
-                                                            }
-                                                        }
-                                                    }
-                                                },
-                                                {
-                                                    "columnId": "datatable_accessor_metric_1",
-                                                    "customLabel": true,
-                                                    "fieldName": "Storage",
-                                                    "inMetricDimension": true,
-                                                    "label": "Storage",
-                                                    "meta": {
-                                                        "type": "number"
-                                                    }
-                                                }
-                                            ],
-                                            "ignoreGlobalFilters": false,
-                                            "index": "metrics-googlecloudmonitoringreceiver.otel-default-8c927677eb220229a71f3573c2fdb28fa74c5bf8671196061d0950a93cd53d21",
-                                            "query": {
-                                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Size` = MAX(LAST_OVER_TIME(`compute.googleapis.com/instance/disk/provisioning/size`)) BY resource.attributes.instance_id, attributes.device_name, `Storage` = attributes.storage_type\n| KEEP resource.attributes.instance_id, attributes.device_name, `Storage`, `Size`\n| SORT `Size` DESC\n| LIMIT 10"
-                                            }
-                                        }
-                                    }
-                                }
-                            },
-                            "filters": [],
-                            "internalReferences": [
-                                {
-                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-8c927677eb220229a71f3573c2fdb28fa74c5bf8671196061d0950a93cd53d21",
-                                    "name": "indexpattern-datasource-layer-layer_0",
-                                    "type": "index-pattern"
-                                }
-                            ],
-                            "query": {
-                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Size` = MAX(LAST_OVER_TIME(`compute.googleapis.com/instance/disk/provisioning/size`)) BY resource.attributes.instance_id, attributes.device_name, `Storage` = attributes.storage_type\n| KEEP resource.attributes.instance_id, attributes.device_name, `Storage`, `Size`\n| SORT `Size` DESC\n| LIMIT 10"
-                            },
-                            "visualization": {
-                                "columns": [
-                                    {
-                                        "alignment": "left",
-                                        "columnId": "datatable_accessor_row_0",
-                                        "hidden": false,
-                                        "isMetric": false,
-                                        "isTransposed": false,
-                                        "oneClickFilter": false
-                                    },
-                                    {
-                                        "alignment": "left",
-                                        "columnId": "datatable_accessor_row_1",
-                                        "hidden": false,
-                                        "isMetric": false,
-                                        "isTransposed": false,
-                                        "oneClickFilter": true
-                                    },
-                                    {
-                                        "alignment": "right",
-                                        "columnId": "datatable_accessor_metric_0",
-                                        "hidden": false,
-                                        "isMetric": true,
-                                        "isTransposed": false
-                                    },
-                                    {
-                                        "alignment": "left",
-                                        "columnId": "datatable_accessor_metric_1",
-                                        "hidden": false,
-                                        "isMetric": true,
-                                        "isTransposed": false
-                                    }
-                                ],
-                                "density": "compact",
-                                "layerId": "layer_0",
-                                "layerType": "data",
-                                "paging": {
-                                    "enabled": true,
-                                    "size": 10
-                                },
-                                "showRowNumbers": false,
-                                "sorting": {
-                                    "columnId": "datatable_accessor_metric_0",
-                                    "direction": "desc"
-                                }
-                            }
-                        },
-                        "title": "Top 10 disks by provisioned size",
-                        "version": 2,
-                        "visualizationType": "lnsDatatable"
-                    },
-                    "description": "The 10 largest disk volumes by provisioned capacity, using the last reported size in the window. Keyed on instance_id because the provisioning series does not reliably carry instance_name. Provisioned IOPS and throughput are deliberately not shown: this fleet is entirely pd-standard and pd-balanced, size-based disk types whose performance scales with capacity, so GCP does not emit those ceilings. Use the latency and queue depth panels above as the saturation signal instead.",
-                    "drilldowns": [],
-                    "title": "Top 10 disks by provisioned size"
-                },
-                "gridData": {
-                    "h": 14,
-                    "i": "c065b7fc-6c6d-44ca-8f8c-f7bc8262b182",
-                    "sectionId": "892a323d-b0ba-4d24-9b45-f9f68779b848",
-                    "w": 48,
-                    "x": 0,
-                    "y": 62
-                },
-                "panelIndex": "c065b7fc-6c6d-44ca-8f8c-f7bc8262b182",
                 "type": "vis"
             },
             {
@@ -4598,13 +4710,13 @@
             {
                 "embeddableConfig": {
                     "attributes": {
-                        "description": "The 10 VMs sending the most traffic, with egress expressed as a percentage of an approximate ceiling of 2 Gbps per reserved core. The ceiling is an estimate, not a hard limit reported by GCP. Values in the low percentages are healthy; anything approaching 100% means the VM is near its practical egress bandwidth. DRILL-DOWN ENTRY POINT: open an instance in the [GCP] GCE Instance detail dashboard to investigate it.",
+                        "description": "The 10 VMs whose inbound traffic is most often dropped by VPC firewall rules. Drops are enforced at the hypervisor, so a high count does not mean the VM is unhealthy. A single instance dominating this list is usually either a deliberately locked-down host absorbing internet noise, or a misconfigured firewall rule. DRILL-DOWN ENTRY POINT: open an instance in the [GCP] GCE Instance detail dashboard to investigate it.",
                         "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "metrics-googlecloudmonitoringreceiver.otel-default-a762f7dddeabd6b2aa8a9f664acd7e053c3acf56b02c21ef3c84deae77d4dc11": {
+                                "metrics-googlecloudmonitoringreceiver.otel-default-b80b8d52139c96f697e4cb70fc9702b3643845d0caa0635fabea9010b9677916": {
                                     "allowNoIndex": false,
-                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-a762f7dddeabd6b2aa8a9f664acd7e053c3acf56b02c21ef3c84deae77d4dc11",
+                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-b80b8d52139c96f697e4cb70fc9702b3643845d0caa0635fabea9010b9677916",
                                     "name": "metrics-googlecloudmonitoringreceiver.otel-default",
                                     "sourceFilters": [],
                                     "title": "metrics-googlecloudmonitoringreceiver.otel-default",
@@ -4613,11 +4725,27 @@
                             },
                             "datasourceStates": {
                                 "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "metrics-googlecloudmonitoringreceiver.otel-default-b80b8d52139c96f697e4cb70fc9702b3643845d0caa0635fabea9010b9677916",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics-googlecloudmonitoringreceiver.otel-default"
+                                        }
+                                    ],
                                     "layers": {
                                         "layer_0": {
                                             "columns": [
                                                 {
                                                     "columnId": "datatable_accessor_row_0",
+                                                    "customLabel": true,
+                                                    "fieldName": "Instance ID",
+                                                    "label": "Instance ID",
+                                                    "meta": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "datatable_accessor_row_1",
                                                     "customLabel": true,
                                                     "fieldName": "attributes.instance_name",
                                                     "label": "Instance",
@@ -4626,7 +4754,240 @@
                                                     }
                                                 },
                                                 {
+                                                    "columnId": "datatable_accessor_row_2",
+                                                    "customLabel": true,
+                                                    "fieldName": "resource.attributes.zone",
+                                                    "label": "Zone",
+                                                    "meta": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "datatable_accessor_metric_0",
+                                                    "customLabel": true,
+                                                    "fieldName": "dropped_pps",
+                                                    "inMetricDimension": true,
+                                                    "label": "Dropped pkt/s",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "datatable_accessor_metric_1",
+                                                    "customLabel": true,
+                                                    "fieldName": "dropped_bps",
+                                                    "inMetricDimension": true,
+                                                    "label": "Dropped B/s",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "bytes",
+                                                            "params": {
+                                                                "decimals": 1,
+                                                                "suffix": "/s"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "ignoreGlobalFilters": false,
+                                            "index": "metrics-googlecloudmonitoringreceiver.otel-default-b80b8d52139c96f697e4cb70fc9702b3643845d0caa0635fabea9010b9677916",
+                                            "query": {
+                                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS dropped_pps = SUM(AVG_OVER_TIME(`compute.googleapis.com/firewall/dropped_packets_count`)) / 60, dropped_bps = SUM(AVG_OVER_TIME(`compute.googleapis.com/firewall/dropped_bytes_count`)) / 60 BY `resource.attributes.instance_id`, `attributes.instance_name`, `resource.attributes.zone`\n| SORT dropped_pps DESC\n| LIMIT 10\n| EVAL `Dropped pkt/s Color` = CASE(\n    dropped_pps \u003c 1, \"#aee8d2\",\n    dropped_pps \u003c= 5, \"#fff3c2\",\n    dropped_pps \u003c= 10, \"#ffc9c2\",\n    dropped_pps \u003c= 20, \"#ffc9c2\",\n    \"#ffc9c2\"\n  )\n| RENAME `resource.attributes.instance_id` AS `Instance ID`"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-b80b8d52139c96f697e4cb70fc9702b3643845d0caa0635fabea9010b9677916",
+                                    "name": "indexpattern-datasource-layer-layer_0",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS dropped_pps = SUM(AVG_OVER_TIME(`compute.googleapis.com/firewall/dropped_packets_count`)) / 60, dropped_bps = SUM(AVG_OVER_TIME(`compute.googleapis.com/firewall/dropped_bytes_count`)) / 60 BY `resource.attributes.instance_id`, `attributes.instance_name`, `resource.attributes.zone`\n| SORT dropped_pps DESC\n| LIMIT 10\n| EVAL `Dropped pkt/s Color` = CASE(\n    dropped_pps \u003c 1, \"#aee8d2\",\n    dropped_pps \u003c= 5, \"#fff3c2\",\n    dropped_pps \u003c= 10, \"#ffc9c2\",\n    dropped_pps \u003c= 20, \"#ffc9c2\",\n    \"#ffc9c2\"\n  )\n| RENAME `resource.attributes.instance_id` AS `Instance ID`"
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "datatable_accessor_row_0",
+                                        "hidden": false,
+                                        "isMetric": false,
+                                        "isTransposed": false,
+                                        "oneClickFilter": true
+                                    },
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "datatable_accessor_row_1",
+                                        "hidden": false,
+                                        "isMetric": false,
+                                        "isTransposed": false,
+                                        "oneClickFilter": false
+                                    },
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "datatable_accessor_row_2",
+                                        "hidden": false,
+                                        "isMetric": false,
+                                        "isTransposed": false,
+                                        "oneClickFilter": false
+                                    },
+                                    {
+                                        "alignment": "right",
+                                        "colorMode": "badge",
+                                        "columnId": "datatable_accessor_metric_0",
+                                        "hidden": false,
+                                        "isMetric": true,
+                                        "isTransposed": false,
+                                        "palette": {
+                                            "name": "custom",
+                                            "params": {
+                                                "colorStops": [
+                                                    {
+                                                        "color": "#fff0ee",
+                                                        "stop": null
+                                                    },
+                                                    {
+                                                        "color": "#ffc9c2",
+                                                        "stop": 33
+                                                    },
+                                                    {
+                                                        "color": "#f4a79e",
+                                                        "stop": 66
+                                                    }
+                                                ],
+                                                "continuity": "all",
+                                                "maxSteps": 5,
+                                                "name": "custom",
+                                                "progression": "fixed",
+                                                "rangeMax": null,
+                                                "rangeMin": null,
+                                                "rangeType": "percent",
+                                                "reverse": false,
+                                                "steps": 3,
+                                                "stops": [
+                                                    {
+                                                        "color": "#fff0ee",
+                                                        "stop": 33
+                                                    },
+                                                    {
+                                                        "color": "#ffc9c2",
+                                                        "stop": 66
+                                                    },
+                                                    {
+                                                        "color": "#f4a79e",
+                                                        "stop": null
+                                                    }
+                                                ]
+                                            },
+                                            "type": "palette"
+                                        }
+                                    },
+                                    {
+                                        "alignment": "right",
+                                        "columnId": "datatable_accessor_metric_1",
+                                        "hidden": false,
+                                        "isMetric": true,
+                                        "isTransposed": false
+                                    }
+                                ],
+                                "density": "compact",
+                                "layerId": "layer_0",
+                                "layerType": "data",
+                                "paging": {
+                                    "enabled": true,
+                                    "size": 10
+                                },
+                                "showRowNumbers": true,
+                                "sorting": {
+                                    "columnId": "datatable_accessor_metric_0",
+                                    "direction": "desc"
+                                }
+                            }
+                        },
+                        "title": "Top 10 instances by firewall drops",
+                        "version": 2,
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "description": "The 10 VMs whose inbound traffic is most often dropped by VPC firewall rules. Drops are enforced at the hypervisor, so a high count does not mean the VM is unhealthy. A single instance dominating this list is usually either a deliberately locked-down host absorbing internet noise, or a misconfigured firewall rule. DRILL-DOWN ENTRY POINT: open an instance in the [GCP] GCE Instance detail dashboard to investigate it.",
+                    "drilldowns": [
+                        {
+                            "encode_url": true,
+                            "label": "View details",
+                            "open_in_new_tab": true,
+                            "trigger": "on_click_value",
+                            "type": "url_drilldown",
+                            "url": "{{kibanaUrl}}/app/dashboards#/view/62a27720-651a-4446-a1ba-0512a69a6ced?_g=(time:(from:'{{context.panel.timeRange.from}}',to:'{{context.panel.timeRange.to}}'))\u0026_a=(filters:!((meta:(alias:!n,disabled:!f,index:'metrics-gcp.compute.otel-default',key:resource.attributes.instance_id,negate:!f,params:(query:'{{event.value}}'),type:phrase),query:(match_phrase:(resource.attributes.instance_id:'{{event.value}}')))),query:(language:kuery,query:''))"
+                        }
+                    ],
+                    "title": "Top 10 instances by firewall drops"
+                },
+                "gridData": {
+                    "h": 14,
+                    "i": "9b72d576-5997-4836-9fb9-7cdcd420a37b",
+                    "sectionId": "ab9f9e37-d5ad-4b33-a762-f7bd4ea60145",
+                    "w": 48,
+                    "x": 0,
+                    "y": 34
+                },
+                "panelIndex": "9b72d576-5997-4836-9fb9-7cdcd420a37b",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "description": "The 10 VMs sending the most traffic, with egress expressed as a percentage of an approximate ceiling of 2 Gbps per reserved core. The ceiling is an estimate, not a hard limit reported by GCP. Values in the low percentages are healthy; anything approaching 100% means the VM is near its practical egress bandwidth. DRILL-DOWN ENTRY POINT: open an instance in the [GCP] GCE Instance detail dashboard to investigate it.",
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "metrics-googlecloudmonitoringreceiver.otel-default-4bdeb4679a5ea3f986cc3a1d7758d2ff7efc3398cb66d1addc84292eaa83c0c9": {
+                                    "allowNoIndex": false,
+                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-4bdeb4679a5ea3f986cc3a1d7758d2ff7efc3398cb66d1addc84292eaa83c0c9",
+                                    "name": "metrics-googlecloudmonitoringreceiver.otel-default",
+                                    "sourceFilters": [],
+                                    "title": "metrics-googlecloudmonitoringreceiver.otel-default",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "metrics-googlecloudmonitoringreceiver.otel-default-4bdeb4679a5ea3f986cc3a1d7758d2ff7efc3398cb66d1addc84292eaa83c0c9",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics-googlecloudmonitoringreceiver.otel-default"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "layer_0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "datatable_accessor_row_0",
+                                                    "customLabel": true,
+                                                    "fieldName": "Instance ID",
+                                                    "label": "Instance ID",
+                                                    "meta": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
                                                     "columnId": "datatable_accessor_row_1",
+                                                    "customLabel": true,
+                                                    "fieldName": "attributes.instance_name",
+                                                    "label": "Instance",
+                                                    "meta": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "datatable_accessor_row_2",
                                                     "customLabel": true,
                                                     "fieldName": "resource.attributes.zone",
                                                     "label": "Zone",
@@ -4713,10 +5074,11 @@
                                                 }
                                             ],
                                             "ignoreGlobalFilters": false,
-                                            "index": "metrics-googlecloudmonitoringreceiver.otel-default-a762f7dddeabd6b2aa8a9f664acd7e053c3acf56b02c21ef3c84deae77d4dc11",
+                                            "index": "metrics-googlecloudmonitoringreceiver.otel-default-4bdeb4679a5ea3f986cc3a1d7758d2ff7efc3398cb66d1addc84292eaa83c0c9",
                                             "query": {
-                                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS tx_bps = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/network/sent_bytes_count`)) / 60, rx_bps = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/network/received_bytes_count`)) / 60, reserved_cores = MAX(LAST_OVER_TIME(`compute.googleapis.com/instance/cpu/reserved_cores`)) BY `attributes.instance_name`, `resource.attributes.zone`\n| EVAL egress_ceiling_bps = reserved_cores * 2000000000 / 8, egress_pct = 100.0 * tx_bps / egress_ceiling_bps\n| EVAL `Egress % Color` = CASE(\n    egress_pct \u003c 20, \"#24c292\",\n    egress_pct \u003c 40, \"#aee8d2\",\n    egress_pct \u003c 60, \"#fcd883\",\n    egress_pct \u003c 80, \"#ffc9c2\",\n    \"#f6726a\")\n| SORT tx_bps DESC\n| LIMIT 10"
-                                            }
+                                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS tx_bps = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/network/sent_bytes_count`)) / 60, rx_bps = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/network/received_bytes_count`)) / 60, reserved_cores = MAX(LAST_OVER_TIME(`compute.googleapis.com/instance/cpu/reserved_cores`)) BY `Instance ID` = resource.attributes.instance_id, `attributes.instance_name`, `resource.attributes.zone`\n| EVAL egress_ceiling_bps = reserved_cores * 2000000000 / 8, egress_pct = 100.0 * tx_bps / egress_ceiling_bps\n| EVAL `Egress % Color` = CASE(\n    egress_pct \u003c 20, \"#24c292\",\n    egress_pct \u003c 40, \"#aee8d2\",\n    egress_pct \u003c 60, \"#fcd883\",\n    egress_pct \u003c 80, \"#ffc9c2\",\n    \"#f6726a\")\n| SORT tx_bps DESC\n| LIMIT 10"
+                                            },
+                                            "timeField": "@timestamp"
                                         }
                                     }
                                 }
@@ -4724,13 +5086,13 @@
                             "filters": [],
                             "internalReferences": [
                                 {
-                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-a762f7dddeabd6b2aa8a9f664acd7e053c3acf56b02c21ef3c84deae77d4dc11",
+                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-4bdeb4679a5ea3f986cc3a1d7758d2ff7efc3398cb66d1addc84292eaa83c0c9",
                                     "name": "indexpattern-datasource-layer-layer_0",
                                     "type": "index-pattern"
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS tx_bps = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/network/sent_bytes_count`)) / 60, rx_bps = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/network/received_bytes_count`)) / 60, reserved_cores = MAX(LAST_OVER_TIME(`compute.googleapis.com/instance/cpu/reserved_cores`)) BY `attributes.instance_name`, `resource.attributes.zone`\n| EVAL egress_ceiling_bps = reserved_cores * 2000000000 / 8, egress_pct = 100.0 * tx_bps / egress_ceiling_bps\n| EVAL `Egress % Color` = CASE(\n    egress_pct \u003c 20, \"#24c292\",\n    egress_pct \u003c 40, \"#aee8d2\",\n    egress_pct \u003c 60, \"#fcd883\",\n    egress_pct \u003c 80, \"#ffc9c2\",\n    \"#f6726a\")\n| SORT tx_bps DESC\n| LIMIT 10"
+                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS tx_bps = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/network/sent_bytes_count`)) / 60, rx_bps = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/network/received_bytes_count`)) / 60, reserved_cores = MAX(LAST_OVER_TIME(`compute.googleapis.com/instance/cpu/reserved_cores`)) BY `Instance ID` = resource.attributes.instance_id, `attributes.instance_name`, `resource.attributes.zone`\n| EVAL egress_ceiling_bps = reserved_cores * 2000000000 / 8, egress_pct = 100.0 * tx_bps / egress_ceiling_bps\n| EVAL `Egress % Color` = CASE(\n    egress_pct \u003c 20, \"#24c292\",\n    egress_pct \u003c 40, \"#aee8d2\",\n    egress_pct \u003c 60, \"#fcd883\",\n    egress_pct \u003c 80, \"#ffc9c2\",\n    \"#f6726a\")\n| SORT tx_bps DESC\n| LIMIT 10"
                             },
                             "visualization": {
                                 "columns": [
@@ -4748,7 +5110,15 @@
                                         "hidden": false,
                                         "isMetric": false,
                                         "isTransposed": false,
-                                        "oneClickFilter": true
+                                        "oneClickFilter": false
+                                    },
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "datatable_accessor_row_2",
+                                        "hidden": false,
+                                        "isMetric": false,
+                                        "isTransposed": false,
+                                        "oneClickFilter": false
                                     },
                                     {
                                         "alignment": "right",
@@ -4798,217 +5168,27 @@
                         "visualizationType": "lnsDatatable"
                     },
                     "description": "The 10 VMs sending the most traffic, with egress expressed as a percentage of an approximate ceiling of 2 Gbps per reserved core. The ceiling is an estimate, not a hard limit reported by GCP. Values in the low percentages are healthy; anything approaching 100% means the VM is near its practical egress bandwidth. DRILL-DOWN ENTRY POINT: open an instance in the [GCP] GCE Instance detail dashboard to investigate it.",
-                    "drilldowns": [],
+                    "drilldowns": [
+                        {
+                            "encode_url": true,
+                            "label": "View details",
+                            "open_in_new_tab": true,
+                            "trigger": "on_click_value",
+                            "type": "url_drilldown",
+                            "url": "{{kibanaUrl}}/app/dashboards#/view/62a27720-651a-4446-a1ba-0512a69a6ced?_g=(time:(from:'{{context.panel.timeRange.from}}',to:'{{context.panel.timeRange.to}}'))\u0026_a=(filters:!((meta:(alias:!n,disabled:!f,index:'metrics-gcp.compute.otel-default',key:resource.attributes.instance_id,negate:!f,params:(query:'{{event.value}}'),type:phrase),query:(match_phrase:(resource.attributes.instance_id:'{{event.value}}')))),query:(language:kuery,query:''))"
+                        }
+                    ],
                     "title": "Top 10 instances by network egress"
                 },
                 "gridData": {
                     "h": 14,
                     "i": "4b1bbd0f-d430-423f-87a0-e6fec6b74961",
                     "sectionId": "ab9f9e37-d5ad-4b33-a762-f7bd4ea60145",
-                    "w": 24,
+                    "w": 48,
                     "x": 0,
                     "y": 20
                 },
                 "panelIndex": "4b1bbd0f-d430-423f-87a0-e6fec6b74961",
-                "type": "vis"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "description": "The 10 VMs whose inbound traffic is most often dropped by VPC firewall rules. Drops are enforced at the hypervisor, so a high count does not mean the VM is unhealthy. A single instance dominating this list is usually either a deliberately locked-down host absorbing internet noise, or a misconfigured firewall rule. DRILL-DOWN ENTRY POINT: open an instance in the [GCP] GCE Instance detail dashboard to investigate it.",
-                        "references": [],
-                        "state": {
-                            "adHocDataViews": {
-                                "metrics-googlecloudmonitoringreceiver.otel-default-82f50ed0aaca2e3e0abe6fb9eb1ceb2dc64f77ac3f92977c7505bd1d85392513": {
-                                    "allowNoIndex": false,
-                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-82f50ed0aaca2e3e0abe6fb9eb1ceb2dc64f77ac3f92977c7505bd1d85392513",
-                                    "name": "metrics-googlecloudmonitoringreceiver.otel-default",
-                                    "sourceFilters": [],
-                                    "title": "metrics-googlecloudmonitoringreceiver.otel-default",
-                                    "type": "esql"
-                                }
-                            },
-                            "datasourceStates": {
-                                "textBased": {
-                                    "layers": {
-                                        "layer_0": {
-                                            "columns": [
-                                                {
-                                                    "columnId": "datatable_accessor_row_0",
-                                                    "customLabel": true,
-                                                    "fieldName": "attributes.instance_name",
-                                                    "label": "Instance",
-                                                    "meta": {
-                                                        "type": "string"
-                                                    }
-                                                },
-                                                {
-                                                    "columnId": "datatable_accessor_row_1",
-                                                    "customLabel": true,
-                                                    "fieldName": "resource.attributes.zone",
-                                                    "label": "Zone",
-                                                    "meta": {
-                                                        "type": "string"
-                                                    }
-                                                },
-                                                {
-                                                    "columnId": "datatable_accessor_metric_0",
-                                                    "customLabel": true,
-                                                    "fieldName": "dropped_pps",
-                                                    "inMetricDimension": true,
-                                                    "label": "Dropped pkt/s",
-                                                    "meta": {
-                                                        "type": "number"
-                                                    }
-                                                },
-                                                {
-                                                    "columnId": "datatable_accessor_metric_1",
-                                                    "customLabel": true,
-                                                    "fieldName": "dropped_bps",
-                                                    "inMetricDimension": true,
-                                                    "label": "Dropped B/s",
-                                                    "meta": {
-                                                        "type": "number"
-                                                    },
-                                                    "params": {
-                                                        "format": {
-                                                            "id": "bytes",
-                                                            "params": {
-                                                                "decimals": 1,
-                                                                "suffix": "/s"
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                            ],
-                                            "ignoreGlobalFilters": false,
-                                            "index": "metrics-googlecloudmonitoringreceiver.otel-default-82f50ed0aaca2e3e0abe6fb9eb1ceb2dc64f77ac3f92977c7505bd1d85392513",
-                                            "query": {
-                                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS dropped_pps = SUM(AVG_OVER_TIME(`compute.googleapis.com/firewall/dropped_packets_count`)) / 60, dropped_bps = SUM(AVG_OVER_TIME(`compute.googleapis.com/firewall/dropped_bytes_count`)) / 60 BY `attributes.instance_name`, `resource.attributes.zone`\n| SORT dropped_pps DESC\n| LIMIT 10\n| EVAL `Dropped pkt/s Color` = CASE(\n    dropped_pps \u003c 1, \"#aee8d2\",\n    dropped_pps \u003c= 5, \"#fff3c2\",\n    dropped_pps \u003c= 10, \"#ffc9c2\",\n    dropped_pps \u003c= 20, \"#ffc9c2\",\n    \"#ffc9c2\"\n  )"
-                                            }
-                                        }
-                                    }
-                                }
-                            },
-                            "filters": [],
-                            "internalReferences": [
-                                {
-                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-82f50ed0aaca2e3e0abe6fb9eb1ceb2dc64f77ac3f92977c7505bd1d85392513",
-                                    "name": "indexpattern-datasource-layer-layer_0",
-                                    "type": "index-pattern"
-                                }
-                            ],
-                            "query": {
-                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS dropped_pps = SUM(AVG_OVER_TIME(`compute.googleapis.com/firewall/dropped_packets_count`)) / 60, dropped_bps = SUM(AVG_OVER_TIME(`compute.googleapis.com/firewall/dropped_bytes_count`)) / 60 BY `attributes.instance_name`, `resource.attributes.zone`\n| SORT dropped_pps DESC\n| LIMIT 10\n| EVAL `Dropped pkt/s Color` = CASE(\n    dropped_pps \u003c 1, \"#aee8d2\",\n    dropped_pps \u003c= 5, \"#fff3c2\",\n    dropped_pps \u003c= 10, \"#ffc9c2\",\n    dropped_pps \u003c= 20, \"#ffc9c2\",\n    \"#ffc9c2\"\n  )"
-                            },
-                            "visualization": {
-                                "columns": [
-                                    {
-                                        "alignment": "left",
-                                        "columnId": "datatable_accessor_row_0",
-                                        "hidden": false,
-                                        "isMetric": false,
-                                        "isTransposed": false,
-                                        "oneClickFilter": true
-                                    },
-                                    {
-                                        "alignment": "left",
-                                        "columnId": "datatable_accessor_row_1",
-                                        "hidden": false,
-                                        "isMetric": false,
-                                        "isTransposed": false,
-                                        "oneClickFilter": true
-                                    },
-                                    {
-                                        "alignment": "right",
-                                        "colorMode": "badge",
-                                        "columnId": "datatable_accessor_metric_0",
-                                        "hidden": false,
-                                        "isMetric": true,
-                                        "isTransposed": false,
-                                        "palette": {
-                                            "name": "custom",
-                                            "params": {
-                                                "colorStops": [
-                                                    {
-                                                        "color": "#fff0ee",
-                                                        "stop": null
-                                                    },
-                                                    {
-                                                        "color": "#ffc9c2",
-                                                        "stop": 33
-                                                    },
-                                                    {
-                                                        "color": "#f4a79e",
-                                                        "stop": 66
-                                                    }
-                                                ],
-                                                "continuity": "all",
-                                                "maxSteps": 5,
-                                                "name": "custom",
-                                                "progression": "fixed",
-                                                "rangeMax": null,
-                                                "rangeMin": null,
-                                                "rangeType": "percent",
-                                                "reverse": false,
-                                                "steps": 3,
-                                                "stops": [
-                                                    {
-                                                        "color": "#fff0ee",
-                                                        "stop": 33
-                                                    },
-                                                    {
-                                                        "color": "#ffc9c2",
-                                                        "stop": 66
-                                                    },
-                                                    {
-                                                        "color": "#f4a79e",
-                                                        "stop": null
-                                                    }
-                                                ]
-                                            },
-                                            "type": "palette"
-                                        }
-                                    },
-                                    {
-                                        "alignment": "right",
-                                        "columnId": "datatable_accessor_metric_1",
-                                        "hidden": false,
-                                        "isMetric": true,
-                                        "isTransposed": false
-                                    }
-                                ],
-                                "density": "compact",
-                                "layerId": "layer_0",
-                                "layerType": "data",
-                                "paging": {
-                                    "enabled": true,
-                                    "size": 10
-                                },
-                                "showRowNumbers": true,
-                                "sorting": {
-                                    "columnId": "datatable_accessor_metric_0",
-                                    "direction": "desc"
-                                }
-                            }
-                        },
-                        "title": "Top 10 instances by firewall drops",
-                        "version": 2,
-                        "visualizationType": "lnsDatatable"
-                    },
-                    "description": "The 10 VMs whose inbound traffic is most often dropped by VPC firewall rules. Drops are enforced at the hypervisor, so a high count does not mean the VM is unhealthy. A single instance dominating this list is usually either a deliberately locked-down host absorbing internet noise, or a misconfigured firewall rule. DRILL-DOWN ENTRY POINT: open an instance in the [GCP] GCE Instance detail dashboard to investigate it.",
-                    "drilldowns": [],
-                    "title": "Top 10 instances by firewall drops"
-                },
-                "gridData": {
-                    "h": 14,
-                    "i": "9b72d576-5997-4836-9fb9-7cdcd420a37b",
-                    "sectionId": "ab9f9e37-d5ad-4b33-a762-f7bd4ea60145",
-                    "w": 24,
-                    "x": 24,
-                    "y": 20
-                },
-                "panelIndex": "9b72d576-5997-4836-9fb9-7cdcd420a37b",
                 "type": "vis"
             },
             {
