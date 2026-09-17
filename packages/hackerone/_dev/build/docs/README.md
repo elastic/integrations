@@ -76,7 +76,7 @@ After the integration is running, open **Discover** in Kibana and search for `ev
 
 When the integration is installed, a transform maintains the latest state of each HackerOne report in a lookup index (`logs-hackerone_latest.report`). You can enrich other security data with HackerOne report metadata at query time using ES|QL [`LOOKUP JOIN`](https://www.elastic.co/docs/reference/query-languages/esql/commands/lookup-join) on `event.id` (the HackerOne report identifier).
 
-Join keys must be single-valued: a report can list several CVE identifiers, so `hackerone.report.attributes.cve_ids` could not matche and adds only `null` columns.
+Join keys must be single-valued: a report can list several CVE identifiers, so `hackerone.report.attributes.cve_ids` could not match and adds only `null` columns.
 
 Joining against the `logs-hackerone_latest.report` alias requires Elasticsearch 9.1 or later, which every stack version supported by this integration satisfies.
 
