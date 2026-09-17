@@ -6,10 +6,10 @@ Currently, there are seven different pipelines:
 - https://buildkite.com/elastic/integrations: pipeline in charge of testing all packages using a local Elastic stack. More info at [section](#pull-requests-and-pushes-to-specific-branches).
 - https://buildkite.com/elastic/integrations-serverless: pipeline in charge of testing all packages using an Elastic Serverless project. More info at [section](#serverless-pipeline).
 - https://buildkite.com/elastic/integrations-publish: pipeline to publish the new versions of packages. More info at [section](#publish-packages).
-- https://buildkite.com/elastic/integrations-schedule-daily/: pipeline running every night to test packages in different scenarios. More info at [section](#daily-job).
-- https://buildkite.com/elastic/integrations-schedule-weekly/: pipeline running once per week to test packages in different scenarios. More info at [section](#weekly-job).
-- https://buildkite.com/elastic/integrations-backport/: pipeline to create backport branches. Triggered automatically by the dispatch pipeline when a new entry is merged into `.backports.yml`, or manually from the UI by members of the `ecosystem` team. More info at [section](#backport-branches-pipeline).
-- `integrations-backport-dispatch` (private): dedicated private pipeline that triggers `integrations-backport` on merges to `main` where `.backports.yml` changed. More info at [section](#backport-branches-pipeline).
+- https://buildkite.com/elastic/integrations-schedule-daily: pipeline running every night to test packages in different scenarios. More info at [section](#daily-job).
+- https://buildkite.com/elastic/integrations-schedule-weekly: pipeline running once per week to test packages in different scenarios. More info at [section](#weekly-job).
+- https://buildkite.com/elastic/integrations-backport: pipeline to create backport branches. Triggered automatically by the dispatch pipeline when a new entry is merged into `.backports.yml`, or manually from the UI by members of the `ecosystem` team. More info at [section](#backport-branches-pipeline).
+- https://buildkite.com/elastic/integrations-backport-dispatch: pipeline that triggers `integrations-backport` on merges to `main` where `.backports.yml` changed. More info at [section](#backport-branches-pipeline).
 
 ## Pull Requests and pushes to specific branches
 
@@ -152,7 +152,7 @@ This environment variable can be defined at:
 
 **Note**: Available only to Elastic employees.
 
-Every night it is configured to run a daily job that will be in charge of testing all packages with different scenarios: https://buildkite.com/elastic/integrations-schedule-daily/
+Every night it is configured to run a daily job that will be in charge of testing all packages with different scenarios: https://buildkite.com/elastic/integrations-schedule-daily
 
 The schedules of this job can be checked [here](https://github.com/elastic/integrations/blob/27d5cd9bb5eee76ce4229312271ceddaba7ebc2c/catalog-info.yaml#L178-L204).
 
@@ -203,7 +203,7 @@ be used in each pipeline are detailed in the corresponding sections of each pipe
 
 **Note**: Available only to Elastic employees.
 
-Every week it is configured to run a job that will be in charge of testing all packages with non-Wolfi Elastic Agent docker images: https://buildkite.com/elastic/integrations-schedule-weekly/
+Every week it is configured to run a job that will be in charge of testing all packages with non-Wolfi Elastic Agent docker images: https://buildkite.com/elastic/integrations-schedule-weekly
 
 The schedule of this job can be checked [here](https://github.com/elastic/integrations/blob/2e72e8524728daca2d47c814d8042031b8f5804f/catalog-info.yaml#L145).
 
@@ -226,7 +226,7 @@ be used in each pipeline are detailed in the corresponding sections of each pipe
 **Note**: Available only to Elastic employees.
 
 Releasing hotfixes from earlier versions of packages requires creating `backport-*` branches from specific commits in the `main` branch.
-The pipeline https://buildkite.com/elastic/integrations-backport/ handles this creation and can be triggered in two ways:
+The pipeline https://buildkite.com/elastic/integrations-backport handles this creation and can be triggered in two ways:
 
 - **Automatically (recommended)**: when a PR adding a new entry to `.backports.yml` is merged into `main`, the private `integrations-backport-dispatch` pipeline detects the change and triggers `integrations-backport` to create the branch. A comment is posted on the merged PR reporting success or failure of the branch creation.
 - **Manually from the UI**: restricted to members of the `ecosystem` Buildkite team.
