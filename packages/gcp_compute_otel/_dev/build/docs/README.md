@@ -12,7 +12,9 @@ the Elastic Stack on your own hardware.
 
 ## Setup
 
-Install the **Google Cloud Monitoring (OpenTelemetry)** input package and configure it to collect Compute Engine Cloud Monitoring metrics (for example, `compute.googleapis.com/instance/cpu/utilization`). This content package provides assets that visualize data collected by that input.
+Install the **[Google Cloud Monitoring OpenTelemetry Input](https://www.elastic.co/docs/reference/integrations/googlecloudmonitor_input_otel)** package (`googlecloudmonitor_input_otel`) and configure it to collect Compute Engine Cloud Monitoring metrics (for example, `compute.googleapis.com/instance/cpu/utilization`). This content package provides assets that visualize data collected by that input.
+
+When configuring the input package, set the dataset name to `gcp.compute.otel` so that data is written to the `metrics-gcp.compute.otel-default` data stream, which these dashboards query.
 
 ## Dashboards
 
