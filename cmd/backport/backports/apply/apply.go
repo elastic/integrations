@@ -6,7 +6,6 @@ package apply
 
 import (
 	"bytes"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"maps"
@@ -21,6 +20,7 @@ import (
 	"github.com/cli/go-gh/v2"
 	"gopkg.in/yaml.v3"
 
+	"github.com/elastic/integrations/cmd/backport/assign"
 	"github.com/elastic/integrations/cmd/backport/backports"
 	"github.com/elastic/integrations/cmd/backport/backports/changelog"
 	"github.com/elastic/integrations/cmd/backport/backports/owners"
@@ -38,16 +38,16 @@ const ownersSourceBranch = "main"
 
 // Options controls the behaviour of Apply.
 type Options struct {
-	SHA         string // commit to cherry-pick (required)
-	Package     string // package name as in manifest.yml (required)
-	Target      string // "6.14", "6.x", or full "backport-aws-6.14" (required)
-	OpenPR      bool   // create a GitHub PR when true
-	DryRun      bool   // commit locally but skip push and PR creation
-	AsJSON      bool   // emit JSON output instead of human-readable text
-	Remote      string // git remote to fetch from and push to; default "origin"
-	PackagesDir string // path to packages dir; default "packages"
-	Repository  string // "org/repo" e.g. "elastic/integrations"
-	WorkDir     string // absolute path to the repository root; defaults to the current working directory
+	SHA            string // commit to cherry-pick (required)
+	Package        string // package name as in manifest.yml (required)
+	Target         string // "6.14", "6.x", or full "backport-aws-6.14" (required)
+	OpenPR         bool   // create a GitHub PR when true
+	DryRun         bool   // commit locally but skip push and PR creation
+	AsJSON         bool   // emit JSON output instead of human-readable text
+	Remote         string // git remote to fetch from and push to; default "origin"
+	PackagesDir    string // path to packages dir; default "packages"
+	Repository     string // "org/repo" e.g. "elastic/integrations"
+	WorkDir        string // absolute path to the repository root; defaults to the current working directory
 	OriginPRNumber string // number of the original main PR; used to resolve the backport PR assignee
 }
 
@@ -195,7 +195,7 @@ func Apply(opts Options) (*Result, error) {
 		return nil, fmt.Errorf("pushing: %w", err)
 	}
 
-	assignee := resolveAssignee(opts.OriginPRNumber, repository)
+	assignee := assign.Resolve(opts.OriginPRNumber, repository)
 	prURL, err := maybeOpenPR(opts.OpenPR, workingBranch, branchName, opts.Package, changes[0].Description, newVersion, opts.SHA, repository, assignee)
 	if err != nil {
 		return nil, err
@@ -897,57 +897,6 @@ func maybeOpenPR(openPR bool, workingBranch, branchName, pkg, description, newVe
 		return "", fmt.Errorf("creating PR: %w", err)
 	}
 	return strings.TrimSpace(stdout.String()), nil
-}
-
-// prActor holds the login and bot flag for a PR participant.
-type prActor struct {
-	Login string `json:"login"`
-	IsBot bool   `json:"is_bot"`
-}
-
-// resolveAssignee fetches author and mergedBy from the given PR and returns
-// the login that should be set as assignee on the backport PR. Returns an
-// empty string on any lookup failure so the caller can skip --assignee.
-func resolveAssignee(prNumber, repository string) string {
-	if prNumber == "" || repository == "" {
-		return ""
-	}
-	stdout, _, err := gh.Exec("pr", "view", prNumber, "--repo", repository,
-		"--json", "author,mergedBy")
-	if err != nil {
-		return ""
-	}
-	var data struct {
-		Author   prActor `json:"author"`
-		MergedBy prActor `json:"mergedBy"`
-	}
-	if err := json.Unmarshal(stdout.Bytes(), &data); err != nil {
-		return ""
-	}
-	hasWriteAccess := func(login string) bool {
-		out, _, err := gh.Exec("api",
-			fmt.Sprintf("repos/%s/collaborators/%s/permission", repository, login),
-			"--jq", ".permission")
-		if err != nil {
-			return false
-		}
-		perm := strings.TrimSpace(out.String())
-		return perm == "write" || perm == "maintain" || perm == "admin"
-	}
-	return pickAssignee(data.Author, data.MergedBy, hasWriteAccess)
-}
-
-// pickAssignee returns the author login when the author is not a bot and has
-// repo write access. Falls back to mergedBy when the author check fails, as
-// long as mergedBy is not a bot. Returns empty string if neither qualifies.
-func pickAssignee(author, mergedBy prActor, hasWriteAccess func(string) bool) string {
-	if !author.IsBot && author.Login != "" && hasWriteAccess(author.Login) {
-		return author.Login
-	}
-	if !mergedBy.IsBot && mergedBy.Login != "" {
-		return mergedBy.Login
-	}
-	return ""
 }
 
 // buildPRBody constructs the PR description, including origin links and an
