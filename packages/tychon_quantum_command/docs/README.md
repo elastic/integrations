@@ -544,8 +544,8 @@ This stream can contain multiple TYCHON record families in one place, including 
 | tychon.keystore.stats.certificate_types.ca |  | long |
 | tychon.keystore.stats.certificate_types.end_entity |  | long |
 | tychon.keystore.stats.expired_certificates |  | long |
-| tychon.keystore.stats.key_algorithms.ECDSA |  | long |
-| tychon.keystore.stats.key_algorithms.RSA |  | long |
+| tychon.keystore.stats.key_algorithms.ecdsa |  | long |
+| tychon.keystore.stats.key_algorithms.rsa |  | long |
 | tychon.keystore.stats.pqc_vulnerable_certificates |  | long |
 | tychon.keystore.stats.vulnerable_certificates |  | long |
 | tychon.keystore.type |  | keyword |

@@ -1170,6 +1170,18 @@ processors:
         }
 
   - script:
+      tag: script_normalize_keystore_algorithm_keys
+      lang: painless
+      description: Normalize dynamic keystore algorithm keys to lowercase field names.
+      if: ctx?.tychon?.keystore?.stats?.key_algorithms instanceof Map
+      source: >
+        Map normalized = [:];
+        for (entry in ctx.tychon.keystore.stats.key_algorithms.entrySet()) {
+          normalized[entry.getKey().toString().toLowerCase()] = entry.getValue();
+        }
+        ctx.tychon.keystore.stats.key_algorithms = normalized;
+
+  - script:
       tag: script_drop_null_empty_values
       lang: painless
       description: Remove null, empty string, empty object, and empty array values from the final event.
