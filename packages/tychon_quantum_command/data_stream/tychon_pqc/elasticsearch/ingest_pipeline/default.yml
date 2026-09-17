@@ -1069,6 +1069,30 @@ processors:
       ignore_empty_value: true
       if: ctx?.tychon?.routing?.target?.ip != null
 
+  - script:
+      tag: script_populate_related_ip
+      lang: painless
+      description: Populate ECS related.ip from normalized network endpoint addresses.
+      if: ctx?.host?.ip != null || ctx?.source?.ip != null || ctx?.destination?.ip != null || ctx?.server?.ip != null
+      source: >
+        void addValues(List target, def value) {
+          if (value instanceof List) {
+            for (def item : value) {
+              if (item != null && item != '' && !target.contains(item)) { target.add(item); }
+            }
+          } else if (value != null && value != '' && !target.contains(value)) {
+            target.add(value);
+          }
+        }
+        if (ctx.related == null || !(ctx.related instanceof Map)) { ctx.related = [:]; }
+        if (ctx.related.ip == null) { ctx.related.ip = []; }
+        else if (!(ctx.related.ip instanceof List)) { ctx.related.ip = [ctx.related.ip]; }
+        addValues(ctx.related.ip, ctx.source?.ip);
+        addValues(ctx.related.ip, ctx.host?.ip);
+        addValues(ctx.related.ip, ctx.destination?.ip);
+        addValues(ctx.related.ip, ctx.server?.ip);
+        if (ctx.related.ip.isEmpty()) { ctx.related.remove('ip'); }
+
   - set:
       tag: set_network_protocol
       field: network.protocol

@@ -256,6 +256,7 @@ This stream can contain multiple TYCHON record families in one place, including 
 | process.name.text | Multi-field of `process.name`. | match_only_text |
 | process.pid | Process id. | long |
 | process.start | The time the process started. | date |
+| related.ip | All of the IPs seen on your event. | ip |
 | server.address | Some event server addresses are defined ambiguously. The event will sometimes list an IP, a domain or a unix socket.  You should always store the raw address in the `.address` field. Then it should be duplicated to `.ip` or `.domain`, depending on which one it is. | keyword |
 | server.ip | IP address of the server (IPv4 or IPv6). | ip |
 | server.port | Port of the server. | long |
