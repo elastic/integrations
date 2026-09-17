@@ -45,13 +45,13 @@
             {
                 "embeddableConfig": {
                     "attributes": {
-                        "description": "Distinct GCE instances emitting metrics in each time bucket, from the googlecloudmonitoringreceiver OTel pipeline. A stable line is healthy. Sudden drops mean instances stopped, crashed or were deleted; sudden rises mean autoscale-out or newly provisioned VMs.",
+                        "description": "Distinct GCE instances emitting metrics, from the googlecloudmonitoringreceiver OTel pipeline. Sudden drops mean instances stopped, crashed or were deleted; sudden rises mean autoscale-out or newly provisioned VMs.",
                         "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "metrics-googlecloudmonitoringreceiver.otel-default-56f5dc14d3bd990df7054783def4145b47f3a3068c37231b84f1f10982aa61d1": {
+                                "metrics-googlecloudmonitoringreceiver.otel-default-3b14bbca005b6286be9a5e8cd85da4f3721f5bc147a31b9007f1610abba8a2a3": {
                                     "allowNoIndex": false,
-                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-56f5dc14d3bd990df7054783def4145b47f3a3068c37231b84f1f10982aa61d1",
+                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-3b14bbca005b6286be9a5e8cd85da4f3721f5bc147a31b9007f1610abba8a2a3",
                                     "name": "metrics-googlecloudmonitoringreceiver.otel-default",
                                     "sourceFilters": [],
                                     "title": "metrics-googlecloudmonitoringreceiver.otel-default",
@@ -74,35 +74,10 @@
                                                 }
                                             ],
                                             "ignoreGlobalFilters": false,
-                                            "index": "metrics-googlecloudmonitoringreceiver.otel-default-56f5dc14d3bd990df7054783def4145b47f3a3068c37231b84f1f10982aa61d1",
+                                            "index": "metrics-googlecloudmonitoringreceiver.otel-default-3b14bbca005b6286be9a5e8cd85da4f3721f5bc147a31b9007f1610abba8a2a3",
                                             "query": {
-                                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Running Instances` = COUNT_DISTINCT(resource.attributes.instance_id) BY `Time Bucket` = TBUCKET(50, ?_tstart, ?_tend)\n| SORT `Time Bucket` ASC"
+                                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Running Instances` = COUNT_DISTINCT(resource.attributes.instance_id)"
                                             }
-                                        },
-                                        "layer_0_trendline": {
-                                            "columns": [
-                                                {
-                                                    "columnId": "x_date_histogram",
-                                                    "fieldName": "Time Bucket",
-                                                    "meta": {
-                                                        "type": "date"
-                                                    }
-                                                },
-                                                {
-                                                    "columnId": "metric_accessor_trendline",
-                                                    "customLabel": true,
-                                                    "fieldName": "Running Instances",
-                                                    "label": "Running Instances",
-                                                    "meta": {
-                                                        "type": "number"
-                                                    }
-                                                }
-                                            ],
-                                            "index": "metrics-googlecloudmonitoringreceiver.otel-default-56f5dc14d3bd990df7054783def4145b47f3a3068c37231b84f1f10982aa61d1",
-                                            "query": {
-                                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default | WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\" | STATS `Running Instances` = COUNT_DISTINCT(resource.attributes.instance_id) BY `Time Bucket` = TBUCKET(50, ?_tstart, ?_tend) | SORT `Time Bucket` ASC"
-                                            },
-                                            "timeField": "@timestamp"
                                         }
                                     }
                                 }
@@ -110,18 +85,13 @@
                             "filters": [],
                             "internalReferences": [
                                 {
-                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-56f5dc14d3bd990df7054783def4145b47f3a3068c37231b84f1f10982aa61d1",
+                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-3b14bbca005b6286be9a5e8cd85da4f3721f5bc147a31b9007f1610abba8a2a3",
                                     "name": "indexpattern-datasource-layer-layer_0",
-                                    "type": "index-pattern"
-                                },
-                                {
-                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-56f5dc14d3bd990df7054783def4145b47f3a3068c37231b84f1f10982aa61d1",
-                                    "name": "indexpattern-datasource-layer-layer_0_trendline",
                                     "type": "index-pattern"
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Running Instances` = COUNT_DISTINCT(resource.attributes.instance_id) BY `Time Bucket` = TBUCKET(50, ?_tstart, ?_tend)\n| SORT `Time Bucket` ASC"
+                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Running Instances` = COUNT_DISTINCT(resource.attributes.instance_id)"
                             },
                             "visualization": {
                                 "density": "default",
@@ -132,10 +102,6 @@
                                 "primaryPosition": "bottom",
                                 "showBar": false,
                                 "titlesTextAlign": "left",
-                                "trendlineLayerId": "layer_0_trendline",
-                                "trendlineLayerType": "metricTrendline",
-                                "trendlineMetricAccessor": "metric_accessor_trendline",
-                                "trendlineTimeAccessor": "x_date_histogram",
                                 "valueFontMode": "default"
                             }
                         },
@@ -143,7 +109,7 @@
                         "version": 2,
                         "visualizationType": "lnsMetric"
                     },
-                    "description": "Distinct GCE instances emitting metrics in each time bucket, from the googlecloudmonitoringreceiver OTel pipeline. A stable line is healthy. Sudden drops mean instances stopped, crashed or were deleted; sudden rises mean autoscale-out or newly provisioned VMs.",
+                    "description": "Distinct GCE instances emitting metrics, from the googlecloudmonitoringreceiver OTel pipeline. Sudden drops mean instances stopped, crashed or were deleted; sudden rises mean autoscale-out or newly provisioned VMs.",
                     "drilldowns": []
                 },
                 "gridData": {
@@ -159,13 +125,13 @@
             {
                 "embeddableConfig": {
                     "attributes": {
-                        "description": "Fleet-wide average of instance/cpu/utilization, averaged per bucket. Correctly scaled to a 0-100% range regardless of whether the raw field is a fraction or already a percentage. Sustained above 90% signals fleet saturation and rising request latency.",
+                        "description": "Fleet-wide average of instance/cpu/utilization across GCE instances, shown as a single static value.",
                         "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "metrics-googlecloudmonitoringreceiver.otel-default-87e591cfc1d033b1c476896614fa04abeeeffca6f572d0d885b533829e8083dc": {
+                                "metrics-googlecloudmonitoringreceiver.otel-default-59fd3d2e00351b768a0ad9976c45d29211ba27012215440705947f6d84313685": {
                                     "allowNoIndex": false,
-                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-87e591cfc1d033b1c476896614fa04abeeeffca6f572d0d885b533829e8083dc",
+                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-59fd3d2e00351b768a0ad9976c45d29211ba27012215440705947f6d84313685",
                                     "name": "metrics-googlecloudmonitoringreceiver.otel-default",
                                     "sourceFilters": [],
                                     "title": "metrics-googlecloudmonitoringreceiver.otel-default",
@@ -174,6 +140,13 @@
                             },
                             "datasourceStates": {
                                 "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "metrics-googlecloudmonitoringreceiver.otel-default-59fd3d2e00351b768a0ad9976c45d29211ba27012215440705947f6d84313685",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics-googlecloudmonitoringreceiver.otel-default"
+                                        }
+                                    ],
                                     "layers": {
                                         "layer_0": {
                                             "columns": [
@@ -197,42 +170,9 @@
                                                 }
                                             ],
                                             "ignoreGlobalFilters": false,
-                                            "index": "metrics-googlecloudmonitoringreceiver.otel-default-87e591cfc1d033b1c476896614fa04abeeeffca6f572d0d885b533829e8083dc",
+                                            "index": "metrics-googlecloudmonitoringreceiver.otel-default-59fd3d2e00351b768a0ad9976c45d29211ba27012215440705947f6d84313685",
                                             "query": {
-                                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Average CPU Utilization %` = AVG(LAST_OVER_TIME(`compute.googleapis.com/instance/cpu/utilization`)) BY `Time Bucket` = TBUCKET(50, ?_tstart, ?_tend)\n| SORT `Time Bucket` ASC"
-                                            }
-                                        },
-                                        "layer_0_trendline": {
-                                            "columns": [
-                                                {
-                                                    "columnId": "x_date_histogram",
-                                                    "fieldName": "Time Bucket",
-                                                    "meta": {
-                                                        "type": "date"
-                                                    }
-                                                },
-                                                {
-                                                    "columnId": "metric_accessor_trendline",
-                                                    "customLabel": true,
-                                                    "fieldName": "Average CPU Utilization %",
-                                                    "label": "Avg CPU utilization",
-                                                    "meta": {
-                                                        "type": "number"
-                                                    },
-                                                    "params": {
-                                                        "format": {
-                                                            "id": "percent",
-                                                            "params": {
-                                                                "compact": false,
-                                                                "decimals": 1
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                            ],
-                                            "index": "metrics-googlecloudmonitoringreceiver.otel-default-87e591cfc1d033b1c476896614fa04abeeeffca6f572d0d885b533829e8083dc",
-                                            "query": {
-                                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default | WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\" | STATS `Average CPU Utilization %` = AVG(LAST_OVER_TIME(`compute.googleapis.com/instance/cpu/utilization`)) BY `Time Bucket` = TBUCKET(50, ?_tstart, ?_tend) | SORT `Time Bucket` ASC"
+                                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Average CPU Utilization %` = AVG(AVG_OVER_TIME(`compute.googleapis.com/instance/cpu/utilization`))"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -242,32 +182,67 @@
                             "filters": [],
                             "internalReferences": [
                                 {
-                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-87e591cfc1d033b1c476896614fa04abeeeffca6f572d0d885b533829e8083dc",
+                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-59fd3d2e00351b768a0ad9976c45d29211ba27012215440705947f6d84313685",
                                     "name": "indexpattern-datasource-layer-layer_0",
-                                    "type": "index-pattern"
-                                },
-                                {
-                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-87e591cfc1d033b1c476896614fa04abeeeffca6f572d0d885b533829e8083dc",
-                                    "name": "indexpattern-datasource-layer-layer_0_trendline",
                                     "type": "index-pattern"
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Average CPU Utilization %` = AVG(LAST_OVER_TIME(`compute.googleapis.com/instance/cpu/utilization`)) BY `Time Bucket` = TBUCKET(50, ?_tstart, ?_tend)\n| SORT `Time Bucket` ASC"
+                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Average CPU Utilization %` = AVG(AVG_OVER_TIME(`compute.googleapis.com/instance/cpu/utilization`))"
                             },
                             "visualization": {
+                                "applyColorTo": "value",
                                 "density": "default",
                                 "layerId": "layer_0",
                                 "layerType": "data",
                                 "metricAccessor": "metric_accessor_metric",
+                                "palette": {
+                                    "name": "custom",
+                                    "params": {
+                                        "colorStops": [
+                                            {
+                                                "color": "#24c292",
+                                                "stop": null
+                                            },
+                                            {
+                                                "color": "#fcd883",
+                                                "stop": 0.7
+                                            },
+                                            {
+                                                "color": "#f6726a",
+                                                "stop": 0.9
+                                            }
+                                        ],
+                                        "continuity": "all",
+                                        "maxSteps": 5,
+                                        "name": "custom",
+                                        "progression": "fixed",
+                                        "rangeMax": null,
+                                        "rangeMin": null,
+                                        "rangeType": "number",
+                                        "reverse": false,
+                                        "steps": 3,
+                                        "stops": [
+                                            {
+                                                "color": "#24c292",
+                                                "stop": 0.7
+                                            },
+                                            {
+                                                "color": "#fcd883",
+                                                "stop": 0.9
+                                            },
+                                            {
+                                                "color": "#f6726a",
+                                                "stop": null
+                                            }
+                                        ]
+                                    },
+                                    "type": "palette"
+                                },
                                 "primaryAlign": "right",
                                 "primaryPosition": "bottom",
                                 "showBar": false,
                                 "titlesTextAlign": "left",
-                                "trendlineLayerId": "layer_0_trendline",
-                                "trendlineLayerType": "metricTrendline",
-                                "trendlineMetricAccessor": "metric_accessor_trendline",
-                                "trendlineTimeAccessor": "x_date_histogram",
                                 "valueFontMode": "default"
                             }
                         },
@@ -275,7 +250,7 @@
                         "version": 2,
                         "visualizationType": "lnsMetric"
                     },
-                    "description": "Fleet-wide average of instance/cpu/utilization, averaged per bucket. Correctly scaled to a 0-100% range regardless of whether the raw field is a fraction or already a percentage. Sustained above 90% signals fleet saturation and rising request latency.",
+                    "description": "Fleet-wide average of instance/cpu/utilization across GCE instances, shown as a single static value.",
                     "drilldowns": []
                 },
                 "gridData": {
@@ -291,13 +266,13 @@
             {
                 "embeddableConfig": {
                     "attributes": {
-                        "description": "Fleet-wide balloon-driver memory utilization, computed as total ram_used divided by total ram_size per bucket. This is the hypervisor view of guest memory, not in-guest filesystem or process memory. Approaching 100% indicates memory pressure; pair with swap activity to confirm overcommit.",
+                        "description": "Fleet-wide balloon-driver memory utilization, computed as total ram_used divided by total ram_size. This is the hypervisor view of guest memory, not in-guest filesystem or process memory. Approaching 100% indicates memory pressure; pair with swap activity to confirm overcommit.",
                         "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "metrics-googlecloudmonitoringreceiver.otel-default-1c9fa237bafd6cfa505591adf2b7cc796463e3b23a8d5584ce5720507d22ddbd": {
+                                "metrics-googlecloudmonitoringreceiver.otel-default-d3e6a2ae62f079204eab3905e4e0ec85814bfad99c282c45ecaeb8d77b5ae22a": {
                                     "allowNoIndex": false,
-                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-1c9fa237bafd6cfa505591adf2b7cc796463e3b23a8d5584ce5720507d22ddbd",
+                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-d3e6a2ae62f079204eab3905e4e0ec85814bfad99c282c45ecaeb8d77b5ae22a",
                                     "name": "metrics-googlecloudmonitoringreceiver.otel-default",
                                     "sourceFilters": [],
                                     "title": "metrics-googlecloudmonitoringreceiver.otel-default",
@@ -330,45 +305,10 @@
                                                 }
                                             ],
                                             "ignoreGlobalFilters": false,
-                                            "index": "metrics-googlecloudmonitoringreceiver.otel-default-1c9fa237bafd6cfa505591adf2b7cc796463e3b23a8d5584ce5720507d22ddbd",
+                                            "index": "metrics-googlecloudmonitoringreceiver.otel-default-d3e6a2ae62f079204eab3905e4e0ec85814bfad99c282c45ecaeb8d77b5ae22a",
                                             "query": {
-                                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Avg memory used` = 100.0 * SUM(LAST_OVER_TIME(`compute.googleapis.com/instance/memory/balloon/ram_used`)) / SUM(LAST_OVER_TIME(`compute.googleapis.com/instance/memory/balloon/ram_size`)) BY `Time Bucket` = TBUCKET(50, ?_tstart, ?_tend)\n| SORT `Time Bucket` ASC"
+                                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Avg memory used` = 100.0 * SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/memory/balloon/ram_used`)) / SUM(MAX_OVER_TIME(`compute.googleapis.com/instance/memory/balloon/ram_size`))"
                                             }
-                                        },
-                                        "layer_0_trendline": {
-                                            "columns": [
-                                                {
-                                                    "columnId": "x_date_histogram",
-                                                    "fieldName": "Time Bucket",
-                                                    "meta": {
-                                                        "type": "date"
-                                                    }
-                                                },
-                                                {
-                                                    "columnId": "metric_accessor_trendline",
-                                                    "customLabel": true,
-                                                    "fieldName": "Avg memory used",
-                                                    "label": "Avg memory used",
-                                                    "meta": {
-                                                        "type": "number"
-                                                    },
-                                                    "params": {
-                                                        "format": {
-                                                            "id": "number",
-                                                            "params": {
-                                                                "compact": false,
-                                                                "decimals": 1,
-                                                                "suffix": "%"
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                            ],
-                                            "index": "metrics-googlecloudmonitoringreceiver.otel-default-1c9fa237bafd6cfa505591adf2b7cc796463e3b23a8d5584ce5720507d22ddbd",
-                                            "query": {
-                                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default | WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\" | STATS `Avg memory used` = 100.0 * SUM(LAST_OVER_TIME(`compute.googleapis.com/instance/memory/balloon/ram_used`)) / SUM(LAST_OVER_TIME(`compute.googleapis.com/instance/memory/balloon/ram_size`)) BY `Time Bucket` = TBUCKET(50, ?_tstart, ?_tend) | SORT `Time Bucket` ASC"
-                                            },
-                                            "timeField": "@timestamp"
                                         }
                                     }
                                 }
@@ -376,32 +316,67 @@
                             "filters": [],
                             "internalReferences": [
                                 {
-                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-1c9fa237bafd6cfa505591adf2b7cc796463e3b23a8d5584ce5720507d22ddbd",
+                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-d3e6a2ae62f079204eab3905e4e0ec85814bfad99c282c45ecaeb8d77b5ae22a",
                                     "name": "indexpattern-datasource-layer-layer_0",
-                                    "type": "index-pattern"
-                                },
-                                {
-                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-1c9fa237bafd6cfa505591adf2b7cc796463e3b23a8d5584ce5720507d22ddbd",
-                                    "name": "indexpattern-datasource-layer-layer_0_trendline",
                                     "type": "index-pattern"
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Avg memory used` = 100.0 * SUM(LAST_OVER_TIME(`compute.googleapis.com/instance/memory/balloon/ram_used`)) / SUM(LAST_OVER_TIME(`compute.googleapis.com/instance/memory/balloon/ram_size`)) BY `Time Bucket` = TBUCKET(50, ?_tstart, ?_tend)\n| SORT `Time Bucket` ASC"
+                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Avg memory used` = 100.0 * SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/memory/balloon/ram_used`)) / SUM(MAX_OVER_TIME(`compute.googleapis.com/instance/memory/balloon/ram_size`))"
                             },
                             "visualization": {
+                                "applyColorTo": "value",
                                 "density": "default",
                                 "layerId": "layer_0",
                                 "layerType": "data",
                                 "metricAccessor": "metric_accessor_metric",
+                                "palette": {
+                                    "name": "custom",
+                                    "params": {
+                                        "colorStops": [
+                                            {
+                                                "color": "#24c292",
+                                                "stop": null
+                                            },
+                                            {
+                                                "color": "#fcd883",
+                                                "stop": 70
+                                            },
+                                            {
+                                                "color": "#f6726a",
+                                                "stop": 90
+                                            }
+                                        ],
+                                        "continuity": "all",
+                                        "maxSteps": 5,
+                                        "name": "custom",
+                                        "progression": "fixed",
+                                        "rangeMax": null,
+                                        "rangeMin": null,
+                                        "rangeType": "number",
+                                        "reverse": false,
+                                        "steps": 3,
+                                        "stops": [
+                                            {
+                                                "color": "#24c292",
+                                                "stop": 70
+                                            },
+                                            {
+                                                "color": "#fcd883",
+                                                "stop": 90
+                                            },
+                                            {
+                                                "color": "#f6726a",
+                                                "stop": null
+                                            }
+                                        ]
+                                    },
+                                    "type": "palette"
+                                },
                                 "primaryAlign": "right",
                                 "primaryPosition": "bottom",
                                 "showBar": false,
                                 "titlesTextAlign": "left",
-                                "trendlineLayerId": "layer_0_trendline",
-                                "trendlineLayerType": "metricTrendline",
-                                "trendlineMetricAccessor": "metric_accessor_trendline",
-                                "trendlineTimeAccessor": "x_date_histogram",
                                 "valueFontMode": "default"
                             }
                         },
@@ -409,7 +384,7 @@
                         "version": 2,
                         "visualizationType": "lnsMetric"
                     },
-                    "description": "Fleet-wide balloon-driver memory utilization, computed as total ram_used divided by total ram_size per bucket. This is the hypervisor view of guest memory, not in-guest filesystem or process memory. Approaching 100% indicates memory pressure; pair with swap activity to confirm overcommit.",
+                    "description": "Fleet-wide balloon-driver memory utilization, computed as total ram_used divided by total ram_size. This is the hypervisor view of guest memory, not in-guest filesystem or process memory. Approaching 100% indicates memory pressure; pair with swap activity to confirm overcommit.",
                     "drilldowns": []
                 },
                 "gridData": {
@@ -429,9 +404,9 @@
                         "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "metrics-googlecloudmonitoringreceiver.otel-default-6ee85114ea174122a71c2cf1e2a5a644b9567a8244d4a791494cf05ae6e09ca9": {
+                                "metrics-googlecloudmonitoringreceiver.otel-default-34c1f22f3d5c7e4e6e4013b9c781e139c2b10599c41f992222b2b1d3bd3aadee": {
                                     "allowNoIndex": false,
-                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-6ee85114ea174122a71c2cf1e2a5a644b9567a8244d4a791494cf05ae6e09ca9",
+                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-34c1f22f3d5c7e4e6e4013b9c781e139c2b10599c41f992222b2b1d3bd3aadee",
                                     "name": "metrics-googlecloudmonitoringreceiver.otel-default",
                                     "sourceFilters": [],
                                     "title": "metrics-googlecloudmonitoringreceiver.otel-default",
@@ -463,44 +438,10 @@
                                                 }
                                             ],
                                             "ignoreGlobalFilters": false,
-                                            "index": "metrics-googlecloudmonitoringreceiver.otel-default-6ee85114ea174122a71c2cf1e2a5a644b9567a8244d4a791494cf05ae6e09ca9",
+                                            "index": "metrics-googlecloudmonitoringreceiver.otel-default-34c1f22f3d5c7e4e6e4013b9c781e139c2b10599c41f992222b2b1d3bd3aadee",
                                             "query": {
-                                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Network egress` = SUM(LAST_OVER_TIME(`compute.googleapis.com/instance/network/sent_bytes_count`)) / 60 BY `Time Bucket` = TBUCKET(50, ?_tstart, ?_tend)\n| SORT `Time Bucket` ASC"
+                                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Network egress` = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/network/sent_bytes_count`)) / 60"
                                             }
-                                        },
-                                        "layer_0_trendline": {
-                                            "columns": [
-                                                {
-                                                    "columnId": "x_date_histogram",
-                                                    "fieldName": "Time Bucket",
-                                                    "meta": {
-                                                        "type": "date"
-                                                    }
-                                                },
-                                                {
-                                                    "columnId": "metric_accessor_trendline",
-                                                    "customLabel": true,
-                                                    "fieldName": "Network egress",
-                                                    "label": "Network egress",
-                                                    "meta": {
-                                                        "type": "number"
-                                                    },
-                                                    "params": {
-                                                        "format": {
-                                                            "id": "bytes",
-                                                            "params": {
-                                                                "decimals": 1,
-                                                                "suffix": "/s"
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                            ],
-                                            "index": "metrics-googlecloudmonitoringreceiver.otel-default-6ee85114ea174122a71c2cf1e2a5a644b9567a8244d4a791494cf05ae6e09ca9",
-                                            "query": {
-                                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default | WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\" | STATS `Network egress` = SUM(LAST_OVER_TIME(`compute.googleapis.com/instance/network/sent_bytes_count`)) / 60 BY `Time Bucket` = TBUCKET(50, ?_tstart, ?_tend) | SORT `Time Bucket` ASC"
-                                            },
-                                            "timeField": "@timestamp"
                                         }
                                     }
                                 }
@@ -508,18 +449,13 @@
                             "filters": [],
                             "internalReferences": [
                                 {
-                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-6ee85114ea174122a71c2cf1e2a5a644b9567a8244d4a791494cf05ae6e09ca9",
+                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-34c1f22f3d5c7e4e6e4013b9c781e139c2b10599c41f992222b2b1d3bd3aadee",
                                     "name": "indexpattern-datasource-layer-layer_0",
-                                    "type": "index-pattern"
-                                },
-                                {
-                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-6ee85114ea174122a71c2cf1e2a5a644b9567a8244d4a791494cf05ae6e09ca9",
-                                    "name": "indexpattern-datasource-layer-layer_0_trendline",
                                     "type": "index-pattern"
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Network egress` = SUM(LAST_OVER_TIME(`compute.googleapis.com/instance/network/sent_bytes_count`)) / 60 BY `Time Bucket` = TBUCKET(50, ?_tstart, ?_tend)\n| SORT `Time Bucket` ASC"
+                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Network egress` = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/network/sent_bytes_count`)) / 60"
                             },
                             "visualization": {
                                 "density": "default",
@@ -530,10 +466,6 @@
                                 "primaryPosition": "bottom",
                                 "showBar": false,
                                 "titlesTextAlign": "left",
-                                "trendlineLayerId": "layer_0_trendline",
-                                "trendlineLayerType": "metricTrendline",
-                                "trendlineMetricAccessor": "metric_accessor_trendline",
-                                "trendlineTimeAccessor": "x_date_histogram",
                                 "valueFontMode": "default"
                             }
                         },
@@ -561,9 +493,9 @@
                         "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "metrics-googlecloudmonitoringreceiver.otel-default-658d59583957482db6ecd7378be8627c6ef9de23c48bba63b5b620a648d69286": {
+                                "metrics-googlecloudmonitoringreceiver.otel-default-44158ed4d181c7759677fa647f0653aa3f1f0a8d4ed1841330ce7ff99a1485e9": {
                                     "allowNoIndex": false,
-                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-658d59583957482db6ecd7378be8627c6ef9de23c48bba63b5b620a648d69286",
+                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-44158ed4d181c7759677fa647f0653aa3f1f0a8d4ed1841330ce7ff99a1485e9",
                                     "name": "metrics-googlecloudmonitoringreceiver.otel-default",
                                     "sourceFilters": [],
                                     "title": "metrics-googlecloudmonitoringreceiver.otel-default",
@@ -586,35 +518,10 @@
                                                 }
                                             ],
                                             "ignoreGlobalFilters": false,
-                                            "index": "metrics-googlecloudmonitoringreceiver.otel-default-658d59583957482db6ecd7378be8627c6ef9de23c48bba63b5b620a648d69286",
+                                            "index": "metrics-googlecloudmonitoringreceiver.otel-default-44158ed4d181c7759677fa647f0653aa3f1f0a8d4ed1841330ce7ff99a1485e9",
                                             "query": {
-                                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Total disk IOPS` = (SUM(LAST_OVER_TIME(`compute.googleapis.com/instance/disk/read_ops_count`)) + SUM(LAST_OVER_TIME(`compute.googleapis.com/instance/disk/write_ops_count`))) / 60 BY `Time Bucket` = TBUCKET(50, ?_tstart, ?_tend)\n| SORT `Time Bucket` ASC"
+                                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Total disk IOPS` = (SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/disk/read_ops_count`)) + SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/disk/write_ops_count`))) / 60"
                                             }
-                                        },
-                                        "layer_0_trendline": {
-                                            "columns": [
-                                                {
-                                                    "columnId": "x_date_histogram",
-                                                    "fieldName": "Time Bucket",
-                                                    "meta": {
-                                                        "type": "date"
-                                                    }
-                                                },
-                                                {
-                                                    "columnId": "metric_accessor_trendline",
-                                                    "customLabel": true,
-                                                    "fieldName": "Total disk IOPS",
-                                                    "label": "Total disk IOPS",
-                                                    "meta": {
-                                                        "type": "number"
-                                                    }
-                                                }
-                                            ],
-                                            "index": "metrics-googlecloudmonitoringreceiver.otel-default-658d59583957482db6ecd7378be8627c6ef9de23c48bba63b5b620a648d69286",
-                                            "query": {
-                                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default | WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\" | STATS `Total disk IOPS` = (SUM(LAST_OVER_TIME(`compute.googleapis.com/instance/disk/read_ops_count`)) + SUM(LAST_OVER_TIME(`compute.googleapis.com/instance/disk/write_ops_count`))) / 60 BY `Time Bucket` = TBUCKET(50, ?_tstart, ?_tend) | SORT `Time Bucket` ASC"
-                                            },
-                                            "timeField": "@timestamp"
                                         }
                                     }
                                 }
@@ -622,18 +529,13 @@
                             "filters": [],
                             "internalReferences": [
                                 {
-                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-658d59583957482db6ecd7378be8627c6ef9de23c48bba63b5b620a648d69286",
+                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-44158ed4d181c7759677fa647f0653aa3f1f0a8d4ed1841330ce7ff99a1485e9",
                                     "name": "indexpattern-datasource-layer-layer_0",
-                                    "type": "index-pattern"
-                                },
-                                {
-                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-658d59583957482db6ecd7378be8627c6ef9de23c48bba63b5b620a648d69286",
-                                    "name": "indexpattern-datasource-layer-layer_0_trendline",
                                     "type": "index-pattern"
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Total disk IOPS` = (SUM(LAST_OVER_TIME(`compute.googleapis.com/instance/disk/read_ops_count`)) + SUM(LAST_OVER_TIME(`compute.googleapis.com/instance/disk/write_ops_count`))) / 60 BY `Time Bucket` = TBUCKET(50, ?_tstart, ?_tend)\n| SORT `Time Bucket` ASC"
+                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Total disk IOPS` = (SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/disk/read_ops_count`)) + SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/disk/write_ops_count`))) / 60"
                             },
                             "visualization": {
                                 "density": "default",
@@ -644,10 +546,6 @@
                                 "primaryPosition": "bottom",
                                 "showBar": false,
                                 "titlesTextAlign": "left",
-                                "trendlineLayerId": "layer_0_trendline",
-                                "trendlineLayerType": "metricTrendline",
-                                "trendlineMetricAccessor": "metric_accessor_trendline",
-                                "trendlineTimeAccessor": "x_date_histogram",
                                 "valueFontMode": "default"
                             }
                         },
@@ -674,9 +572,9 @@
                         "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "metrics-googlecloudmonitoringreceiver.otel-default-534ead5d27484b857f12efb731ed77f73d5b2e494b21652f79e945126577bb3a": {
+                                "metrics-googlecloudmonitoringreceiver.otel-default-a7578c22cba40aefaf0f38b1273a5cccd05d31e7affee57fe10836caaa20ecac": {
                                     "allowNoIndex": false,
-                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-534ead5d27484b857f12efb731ed77f73d5b2e494b21652f79e945126577bb3a",
+                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-a7578c22cba40aefaf0f38b1273a5cccd05d31e7affee57fe10836caaa20ecac",
                                     "name": "metrics-googlecloudmonitoringreceiver.otel-default",
                                     "sourceFilters": [],
                                     "title": "metrics-googlecloudmonitoringreceiver.otel-default",
@@ -699,35 +597,10 @@
                                                 }
                                             ],
                                             "ignoreGlobalFilters": false,
-                                            "index": "metrics-googlecloudmonitoringreceiver.otel-default-534ead5d27484b857f12efb731ed77f73d5b2e494b21652f79e945126577bb3a",
+                                            "index": "metrics-googlecloudmonitoringreceiver.otel-default-a7578c22cba40aefaf0f38b1273a5cccd05d31e7affee57fe10836caaa20ecac",
                                             "query": {
-                                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Firewall Drops` = SUM(LAST_OVER_TIME(`compute.googleapis.com/firewall/dropped_packets_count`)) BY `Time Bucket` = TBUCKET(50, ?_tstart, ?_tend)\n| SORT `Time Bucket` ASC"
+                                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Firewall Drops` = SUM(SUM_OVER_TIME(`compute.googleapis.com/firewall/dropped_packets_count`))"
                                             }
-                                        },
-                                        "layer_0_trendline": {
-                                            "columns": [
-                                                {
-                                                    "columnId": "x_date_histogram",
-                                                    "fieldName": "Time Bucket",
-                                                    "meta": {
-                                                        "type": "date"
-                                                    }
-                                                },
-                                                {
-                                                    "columnId": "metric_accessor_trendline",
-                                                    "customLabel": true,
-                                                    "fieldName": "Firewall Drops",
-                                                    "label": "Firewall Drops",
-                                                    "meta": {
-                                                        "type": "number"
-                                                    }
-                                                }
-                                            ],
-                                            "index": "metrics-googlecloudmonitoringreceiver.otel-default-534ead5d27484b857f12efb731ed77f73d5b2e494b21652f79e945126577bb3a",
-                                            "query": {
-                                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default | WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\" | STATS `Firewall Drops` = SUM(LAST_OVER_TIME(`compute.googleapis.com/firewall/dropped_packets_count`)) BY `Time Bucket` = TBUCKET(50, ?_tstart, ?_tend) | SORT `Time Bucket` ASC"
-                                            },
-                                            "timeField": "@timestamp"
                                         }
                                     }
                                 }
@@ -735,18 +608,13 @@
                             "filters": [],
                             "internalReferences": [
                                 {
-                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-534ead5d27484b857f12efb731ed77f73d5b2e494b21652f79e945126577bb3a",
+                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-a7578c22cba40aefaf0f38b1273a5cccd05d31e7affee57fe10836caaa20ecac",
                                     "name": "indexpattern-datasource-layer-layer_0",
-                                    "type": "index-pattern"
-                                },
-                                {
-                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-534ead5d27484b857f12efb731ed77f73d5b2e494b21652f79e945126577bb3a",
-                                    "name": "indexpattern-datasource-layer-layer_0_trendline",
                                     "type": "index-pattern"
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Firewall Drops` = SUM(LAST_OVER_TIME(`compute.googleapis.com/firewall/dropped_packets_count`)) BY `Time Bucket` = TBUCKET(50, ?_tstart, ?_tend)\n| SORT `Time Bucket` ASC"
+                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Firewall Drops` = SUM(SUM_OVER_TIME(`compute.googleapis.com/firewall/dropped_packets_count`))"
                             },
                             "visualization": {
                                 "density": "default",
@@ -757,10 +625,6 @@
                                 "primaryPosition": "bottom",
                                 "showBar": false,
                                 "titlesTextAlign": "left",
-                                "trendlineLayerId": "layer_0_trendline",
-                                "trendlineLayerType": "metricTrendline",
-                                "trendlineMetricAccessor": "metric_accessor_trendline",
-                                "trendlineTimeAccessor": "x_date_histogram",
                                 "valueFontMode": "default"
                             }
                         },
@@ -3382,9 +3246,9 @@
                         "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "metrics-googlecloudmonitoringreceiver.otel-default-77f96b2e3532d095ec665916e7b5a98c1ea4732be370b2dc8405a6c764625ee0": {
+                                "metrics-googlecloudmonitoringreceiver.otel-default-17fbe45d4cf96b541a92789d1791655cd5da4b46d302664a7bd4c40d0dcf325f": {
                                     "allowNoIndex": false,
-                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-77f96b2e3532d095ec665916e7b5a98c1ea4732be370b2dc8405a6c764625ee0",
+                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-17fbe45d4cf96b541a92789d1791655cd5da4b46d302664a7bd4c40d0dcf325f",
                                     "name": "metrics-googlecloudmonitoringreceiver.otel-default",
                                     "sourceFilters": [],
                                     "title": "metrics-googlecloudmonitoringreceiver.otel-default",
@@ -3416,9 +3280,9 @@
                                                 }
                                             ],
                                             "ignoreGlobalFilters": false,
-                                            "index": "metrics-googlecloudmonitoringreceiver.otel-default-77f96b2e3532d095ec665916e7b5a98c1ea4732be370b2dc8405a6c764625ee0",
+                                            "index": "metrics-googlecloudmonitoringreceiver.otel-default-17fbe45d4cf96b541a92789d1791655cd5da4b46d302664a7bd4c40d0dcf325f",
                                             "query": {
-                                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS active = MAX(MAX_OVER_TIME(`compute.googleapis.com/instance/disk/performance_status`)) BY attributes.performance_status, resource.attributes.instance_id, attributes.device_name\n| STATS `Disks` = SUM(active) BY `Status` = attributes.performance_status\n| SORT `Disks` DESC\n| LIMIT 10"
+                                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS active = MAX(MAX_OVER_TIME(`compute.googleapis.com/instance/disk/performance_status`)) BY attributes.performance_status, resource.attributes.instance_id, attributes.device_name\n| STATS `Disks` = SUM(active) BY `Status` = attributes.performance_status\n| EVAL `Color` = CASE(\n    `Status` == \"healthy\", \"#24C292\",\n    `Status` == \"degraded\", \"#FCD883\",\n    `Status` == \"severely degraded\", \"#EE4C48\",\n    \"#BFDBFF\"\n  )\n| SORT `Disks` DESC\n| LIMIT 10"
                                             }
                                         }
                                     }
@@ -3427,13 +3291,13 @@
                             "filters": [],
                             "internalReferences": [
                                 {
-                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-77f96b2e3532d095ec665916e7b5a98c1ea4732be370b2dc8405a6c764625ee0",
+                                    "id": "metrics-googlecloudmonitoringreceiver.otel-default-17fbe45d4cf96b541a92789d1791655cd5da4b46d302664a7bd4c40d0dcf325f",
                                     "name": "indexpattern-datasource-layer-layer_0",
                                     "type": "index-pattern"
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS active = MAX(MAX_OVER_TIME(`compute.googleapis.com/instance/disk/performance_status`)) BY attributes.performance_status, resource.attributes.instance_id, attributes.device_name\n| STATS `Disks` = SUM(active) BY `Status` = attributes.performance_status\n| SORT `Disks` DESC\n| LIMIT 10"
+                                "esql": "TS metrics-googlecloudmonitoringreceiver.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS active = MAX(MAX_OVER_TIME(`compute.googleapis.com/instance/disk/performance_status`)) BY attributes.performance_status, resource.attributes.instance_id, attributes.device_name\n| STATS `Disks` = SUM(active) BY `Status` = attributes.performance_status\n| EVAL `Color` = CASE(\n    `Status` == \"healthy\", \"#24C292\",\n    `Status` == \"degraded\", \"#FCD883\",\n    `Status` == \"severely degraded\", \"#EE4C48\",\n    \"#BFDBFF\"\n  )\n| SORT `Disks` DESC\n| LIMIT 10"
                             },
                             "visualization": {
                                 "layers": [
@@ -3444,25 +3308,13 @@
                                             "assignments": [
                                                 {
                                                     "color": {
-                                                        "colorCode": "#aee8d2",
+                                                        "colorCode": "#24C292",
                                                         "type": "colorCode"
                                                     },
                                                     "rules": [
                                                         {
                                                             "type": "raw",
-                                                            "value": "NORMAL"
-                                                        },
-                                                        {
-                                                            "type": "raw",
-                                                            "value": "Normal"
-                                                        },
-                                                        {
-                                                            "type": "raw",
-                                                            "value": "normal"
-                                                        },
-                                                        {
-                                                            "type": "raw",
-                                                            "value": "HEALTHY"
+                                                            "value": "healthy"
                                                         },
                                                         {
                                                             "type": "raw",
@@ -3470,56 +3322,32 @@
                                                         },
                                                         {
                                                             "type": "raw",
-                                                            "value": "healthy"
+                                                            "value": "HEALTHY"
                                                         },
                                                         {
                                                             "type": "raw",
-                                                            "value": "GOOD"
+                                                            "value": "normal"
                                                         },
                                                         {
                                                             "type": "raw",
-                                                            "value": "Good"
+                                                            "value": "Normal"
                                                         },
                                                         {
                                                             "type": "raw",
-                                                            "value": "good"
-                                                        },
-                                                        {
-                                                            "type": "raw",
-                                                            "value": "OK"
-                                                        },
-                                                        {
-                                                            "type": "raw",
-                                                            "value": "Ok"
-                                                        },
-                                                        {
-                                                            "type": "raw",
-                                                            "value": "ok"
-                                                        },
-                                                        {
-                                                            "type": "raw",
-                                                            "value": "SUCCEEDED"
-                                                        },
-                                                        {
-                                                            "type": "raw",
-                                                            "value": "Succeeded"
-                                                        },
-                                                        {
-                                                            "type": "raw",
-                                                            "value": "succeeded"
+                                                            "value": "NORMAL"
                                                         }
                                                     ],
                                                     "touched": false
                                                 },
                                                 {
                                                     "color": {
-                                                        "colorCode": "#fff3c2",
+                                                        "colorCode": "#FCD883",
                                                         "type": "colorCode"
                                                     },
                                                     "rules": [
                                                         {
                                                             "type": "raw",
-                                                            "value": "DEGRADED"
+                                                            "value": "degraded"
                                                         },
                                                         {
                                                             "type": "raw",
@@ -3527,56 +3355,20 @@
                                                         },
                                                         {
                                                             "type": "raw",
-                                                            "value": "degraded"
-                                                        },
-                                                        {
-                                                            "type": "raw",
-                                                            "value": "WARNING"
-                                                        },
-                                                        {
-                                                            "type": "raw",
-                                                            "value": "Warning"
-                                                        },
-                                                        {
-                                                            "type": "raw",
-                                                            "value": "warning"
-                                                        },
-                                                        {
-                                                            "type": "raw",
-                                                            "value": "INTERMEDIATE"
-                                                        },
-                                                        {
-                                                            "type": "raw",
-                                                            "value": "Intermediate"
-                                                        },
-                                                        {
-                                                            "type": "raw",
-                                                            "value": "intermediate"
-                                                        },
-                                                        {
-                                                            "type": "raw",
-                                                            "value": "THROTTLED"
-                                                        },
-                                                        {
-                                                            "type": "raw",
-                                                            "value": "Throttled"
-                                                        },
-                                                        {
-                                                            "type": "raw",
-                                                            "value": "throttled"
+                                                            "value": "DEGRADED"
                                                         }
                                                     ],
                                                     "touched": false
                                                 },
                                                 {
                                                     "color": {
-                                                        "colorCode": "#ffc9c2",
+                                                        "colorCode": "#EE4C48",
                                                         "type": "colorCode"
                                                     },
                                                     "rules": [
                                                         {
                                                             "type": "raw",
-                                                            "value": "SEVERELY_DEGRADED"
+                                                            "value": "severely degraded"
                                                         },
                                                         {
                                                             "type": "raw",
@@ -3584,80 +3376,28 @@
                                                         },
                                                         {
                                                             "type": "raw",
+                                                            "value": "SEVERELY DEGRADED"
+                                                        },
+                                                        {
+                                                            "type": "raw",
                                                             "value": "severely_degraded"
                                                         },
                                                         {
                                                             "type": "raw",
-                                                            "value": "CRITICAL"
-                                                        },
-                                                        {
-                                                            "type": "raw",
-                                                            "value": "Critical"
-                                                        },
-                                                        {
-                                                            "type": "raw",
-                                                            "value": "critical"
-                                                        },
-                                                        {
-                                                            "type": "raw",
-                                                            "value": "BAD"
-                                                        },
-                                                        {
-                                                            "type": "raw",
-                                                            "value": "Bad"
-                                                        },
-                                                        {
-                                                            "type": "raw",
-                                                            "value": "bad"
-                                                        },
-                                                        {
-                                                            "type": "raw",
-                                                            "value": "UNHEALTHY"
-                                                        },
-                                                        {
-                                                            "type": "raw",
-                                                            "value": "Unhealthy"
-                                                        },
-                                                        {
-                                                            "type": "raw",
-                                                            "value": "unhealthy"
-                                                        },
-                                                        {
-                                                            "type": "raw",
-                                                            "value": "FAILED"
-                                                        },
-                                                        {
-                                                            "type": "raw",
-                                                            "value": "Failed"
-                                                        },
-                                                        {
-                                                            "type": "raw",
-                                                            "value": "failed"
-                                                        },
-                                                        {
-                                                            "type": "raw",
-                                                            "value": "ERROR"
-                                                        },
-                                                        {
-                                                            "type": "raw",
-                                                            "value": "Error"
-                                                        },
-                                                        {
-                                                            "type": "raw",
-                                                            "value": "error"
+                                                            "value": "SEVERELY_DEGRADED"
                                                         }
                                                     ],
                                                     "touched": false
                                                 },
                                                 {
                                                     "color": {
-                                                        "colorCode": "#bfdbff",
+                                                        "colorCode": "#BFDBFF",
                                                         "type": "colorCode"
                                                     },
                                                     "rules": [
                                                         {
                                                             "type": "raw",
-                                                            "value": "UNKNOWN"
+                                                            "value": "unknown"
                                                         },
                                                         {
                                                             "type": "raw",
@@ -3665,11 +3405,11 @@
                                                         },
                                                         {
                                                             "type": "raw",
-                                                            "value": "unknown"
+                                                            "value": "UNKNOWN"
                                                         },
                                                         {
                                                             "type": "raw",
-                                                            "value": "NO_DATA"
+                                                            "value": "no data"
                                                         },
                                                         {
                                                             "type": "raw",
@@ -3678,6 +3418,10 @@
                                                         {
                                                             "type": "raw",
                                                             "value": "no_data"
+                                                        },
+                                                        {
+                                                            "type": "raw",
+                                                            "value": "NO_DATA"
                                                         },
                                                         {
                                                             "type": "raw",
@@ -3694,7 +3438,7 @@
                                             "specialAssignments": [
                                                 {
                                                     "color": {
-                                                        "colorCode": "#bfdbff",
+                                                        "colorCode": "#BFDBFF",
                                                         "type": "colorCode"
                                                     },
                                                     "rules": [
@@ -6051,7 +5795,7 @@
                 "title": "Availability, Interruptions \u0026 Fleet Size"
             }
         ],
-        "timeFrom": "now-7d/d",
+        "timeFrom": "now-30m",
         "timeRestore": true,
         "timeTo": "now",
         "title": "GCP Compute Overview"
