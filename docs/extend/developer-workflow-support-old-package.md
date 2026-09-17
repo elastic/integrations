@@ -204,6 +204,8 @@ Sometimes, when we drop the support for an earlier version of the stack and late
     - `backport:sync-changelog` — identifies it as an automated sync PR.
     - `changelog-link-check:skip` — skips the changelog link validation (the entry's link points to the backport PR, not the sync PR itself).
 
+    The sync PR is also automatically assigned: the workflow uses the backport PR's author if they are not a bot and have write/maintain/admin access on the repository, otherwise the merger if they are not a bot. If neither qualifies (e.g. both are bots), no assignee is set.
+
     After the workflow runs, a comment is posted on the merged backport PR linking to the sync PR or reporting a failure. No manual action is needed.
 
     **Retrying a failed sync:** if the workflow fails for any reason, the failure comment includes a `/sync-changelog` retry hint. Any repository member with write or maintain access can re-trigger the sync by commenting `/sync-changelog` on the original merged backport PR — no dummy commit required. The workflow will overwrite any stale working branch left by the previous attempt and open the sync PR. Commenting on an unmerged PR exits silently with no side effects.
@@ -261,7 +263,7 @@ Backport a change when it fixes behavior a branch already has; leave new behavio
 > If the branch has a known end-of-life date, prefer `maintained_until: "YYYY-MM-DD"` — it will be excluded automatically once that date passes.
 ```
 
-Tick a checkbox for each branch you want to backport to. When the PR merges into `main`, the `auto-backport.yml` workflow reads the comment and automatically creates a backport PR for every checked branch, updating the comment in real time (✅ = success, ⚠️ = conflict or error). Checking a previously-unchecked branch after the PR has already merged also triggers the workflow to create the missing backport PR. If you do not intend to backport, leave all checkboxes unticked.
+Tick a checkbox for each branch you want to backport to. When the PR merges into `main`, the `auto-backport.yml` workflow reads the comment and automatically creates a backport PR for every checked branch, updating the comment in real time (✅ = success, ⚠️ = conflict or error). Each backport PR is automatically assigned to the original PR's author (if they are not a bot and have write/maintain/admin access on the repository) or to the merger (if they are not a bot). Checking a previously-unchecked branch after the PR has already merged also triggers the workflow to create the missing backport PR. If you do not intend to backport, leave all checkboxes unticked.
 
 **Suppressing a branch from the checklist:**
 
