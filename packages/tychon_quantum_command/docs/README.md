@@ -1025,10 +1025,10 @@ An example event for `tychon_pqc` looks as following:
     "host": {
         "architecture": "x86_64",
         "containerized": true,
-        "domain": "example-lab",
+        "domain": "example.test",
         "hostname": [
             "elastic-agent-30985",
-            "host-1"
+            "test-host-01"
         ],
         "id": "00000000-0000-4000-8000-000000000002",
         "ip": [
@@ -1061,7 +1061,7 @@ An example event for `tychon_pqc` looks as following:
         "offset": 0
     },
     "observer": {
-        "hostname": "host-1",
+        "hostname": "test-host-01",
         "id": "00000000-0000-4000-8000-000000000002"
     },
     "tags": [
@@ -1107,22 +1107,22 @@ An example event for `tychon_pqc` looks as following:
         },
         "observer": {
             "bigfix_client_installed": false,
-            "bios_serial_number": "VMware, Inc. VMware00,1",
+            "bios_serial_number": "Synthetic Test BIOS 0001",
             "cpu_cores": 2,
             "cpu_logical_cores": 2,
             "cpu_model_name": "Intel(R) Xeon(R) CPU E5-2683 v4 @ 2.10GHz",
             "cpu_vendor_id": "GenuineIntel",
-            "current_user": "example-lab\\administrator",
-            "domain": "example-lab",
+            "current_user": "example.test\\test-user",
+            "domain": "example.test",
             "fips_mode_enabled": false,
-            "hostname": "host-1",
+            "hostname": "test-host-01",
             "id": "00000000-0000-4000-8000-000000000002",
-            "ip_addresses": "2001:db8::10, 192.0.2.30, 198.51.100.10, 2001:db8::20, 203.0.113.20",
+            "ip_addresses": "2001:db8::1, 192.0.2.30, 192.0.2.10, 2001:db8::2, 192.0.2.20",
             "is_vdi_environment": false,
             "kernel_arch": "x86_64",
             "kernel_version": "26100.8655",
-            "machine_serial_number": "VMware-00 00 00 00 00 00 00 00-00 00 00 00 00 00 00 01",
-            "organization": "example-lab",
+            "machine_serial_number": "TEST-VM-SERIAL-0001",
+            "organization": "example.test",
             "os": {
                 "build": "26100",
                 "family": "windows",
@@ -1136,10 +1136,10 @@ An example event for `tychon_pqc` looks as following:
             "software_version": "2.0.4.10",
             "system_uptime_seconds": 1725864,
             "total_ram_bytes": 17178578944,
-            "tychon_client_id": "00000000-0000-4000-8000-000000000001",
-            "user_gid": "S-1-5-21-1111111111-2222222222-3333333333-513",
-            "user_home_dir": "C:\\Users\\administrator",
-            "user_uid": "S-1-5-21-1111111111-2222222222-3333333333-500",
+            "tychon_client_id": "11111111-1111-4111-8111-111111111111",
+            "user_gid": "S-1-5-21-0000000000-0000000000-0000000000-1001",
+            "user_home_dir": "C:\\Users\\test-user",
+            "user_uid": "S-1-5-21-0000000000-0000000000-0000000000-1000",
             "vdi_identity_source": "gopsutil",
             "windows_server_role": "workstation"
         },
