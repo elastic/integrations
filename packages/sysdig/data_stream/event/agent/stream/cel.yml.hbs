@@ -29,10 +29,14 @@ program: |
     state.?want_more.orValue(false) ?
       {}
     :
-      {
-        "start_time": state.?cursor.last_timestamp.orValue(timestamp((now - duration(state.initial_interval))).as(ts, int(ts)*1000000000 + int(ts - timestamp(int(ts))))),
-        "end_time": now.as(ts, int(ts)*1000000000 + int(ts - timestamp(int(ts)))),
-      }
+      // Compute start_time first so we can cap end_time to within the 2-week server limit.
+      state.?cursor.last_timestamp.orValue(
+        timestamp((now - duration(state.initial_interval))).as(ts, int(ts)*1000000000 + int(ts - timestamp(int(ts))))
+      ).as(start_time, now.as(ts, int(ts)*1000000000 + int(ts - timestamp(int(ts)))).as(now_ns, {
+        "start_time": start_time,
+        // 1209600000000000 ns = 14 days (Sysdig maximum window width).
+        "end_time": min(start_time + 1209600000000000, now_ns),
+      }))
   ).as(filter, state.with(
     request("GET",
       state.url.trim_right("/") + "/secure/events/v1/events?" + {
@@ -55,7 +59,9 @@ program: |
             has(body.page.next) ?
               state.?cursor.last_timestamp
             :
-              state.?end_time.or(filter.?end_time)
+              // Prefer current window's end; fall back to state.end_time when paginating
+              // (filter is {} on pagination pages so filter.?end_time is absent).
+              filter.?end_time.or(state.?end_time)
           )
         },
         ?"end_time": filter.?end_time,
@@ -66,7 +72,8 @@ program: |
       })
     :
       {
-        "events": {
+        // Wrap in array so the CEL input runtime leaves state.cursor intact on error.
+        "events": [{
           "error": {
             "code": string(resp.StatusCode),
             "id": string(resp.Status),
@@ -77,7 +84,8 @@ program: |
                 string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
             ),
           },
-        },
+        }],
+        ?"end_time": state.?end_time,
         "want_more": false,
         "next": {},
       }
