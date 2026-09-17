@@ -231,21 +231,25 @@ The `ldap_access` data stream provides LDAP access logs from ping_directory.
 
 The `user` data stream provides user identity records collected from PingDirectory.
 
+#### Example event
+
+{{event "user"}}
+
 #### User fields
 
 {{fields "user"}}
-
-{{event "user"}}
 
 ### Group
 
 The `group` data stream provides group membership records collected from PingDirectory.
 
+#### Example event
+
+{{event "group"}}
+
 #### Group fields
 
 {{fields "group"}}
-
-{{event "group"}}
 
 ### Inputs used
 
