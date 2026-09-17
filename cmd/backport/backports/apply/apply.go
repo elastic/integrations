@@ -195,7 +195,10 @@ func Apply(opts Options) (*Result, error) {
 		return nil, fmt.Errorf("pushing: %w", err)
 	}
 
-	assignee := assign.Resolve(opts.OriginPRNumber, repository)
+	var assignee string
+	if opts.OpenPR {
+		assignee = assign.Resolve(opts.OriginPRNumber, repository)
+	}
 	prURL, err := maybeOpenPR(opts.OpenPR, workingBranch, branchName, opts.Package, changes[0].Description, newVersion, opts.SHA, repository, assignee)
 	if err != nil {
 		return nil, err

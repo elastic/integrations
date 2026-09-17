@@ -15,6 +15,10 @@
 #   PR_AUTHOR    Login of the PR author (used in conflict messages).
 #   COMMENT_ID   ID of the checklist comment to patch.
 #   BODY_FILE    Path to a file containing the current checklist comment body.
+#
+# Optional environment variables:
+#   PR_NUMBER    Number of the source PR on main; when set, the backport PR is
+#                assigned to its author or merger via --origin-pr-number.
 
 set -euo pipefail
 

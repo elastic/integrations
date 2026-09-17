@@ -57,6 +57,9 @@ func Resolve(prNumber, repository string) string {
 // Pick returns the author login when the author is not a bot and has repo
 // write access. Falls back to mergedBy when the author check fails, as long
 // as mergedBy is not a bot. Returns empty string if neither qualifies.
+// The mergedBy fallback skips the write-access check: GitHub requires at
+// least write permission to merge a PR, so any non-bot mergedBy login is
+// guaranteed to have sufficient access.
 func Pick(author, mergedBy PRActor, hasWriteAccess func(string) bool) string {
 	if !author.IsBot && author.Login != "" && hasWriteAccess(author.Login) {
 		return author.Login
