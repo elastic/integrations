@@ -156,11 +156,9 @@ Configure the input with one or more paths that point to TYCHON Quantum Command 
 Default package path variables:
 
 * Windows paths:
-  * `C:\Program Files\Tychon\*.ndjson`
-  * `C:\ProgramData\Tychon\*.ndjson`
+  * `C:\ProgramData\Tychon\output\*.ndjson`
 * Linux paths:
-  * `/var/log/tychon/*.ndjson`
-  * `/opt/tychon/*.ndjson`
+  * `/var/log/tychon-pqc/*.ndjson`
 * Additional custom paths:
   * Any extra directories where TYCHON scan exports are written.
 
