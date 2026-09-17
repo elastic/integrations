@@ -19,9 +19,18 @@
         - name: activity
           type: keyword
           description: Description of the user performed activity.
+        - name: activity_type
+          type: keyword
+          description: User performed activity type detected when policy is being applied.
         - name: alert
           type: keyword
           description: Indicates whether alert is generated or not and its populated as yes for all alerts.
+        - name: alert_detection_stage
+          type: keyword
+          description: Specifies the stage at which the policy triggered the alert, such as accessing the application, downloading content, or updating data.
+        - name: alert_generated
+          type: boolean
+          description: Indicates whether alert is generated or not and its populated as true or false.
         - name: alert_name
           type: keyword
           description: Indicates the alert is raised and the carries the name of the alert raised.
@@ -31,12 +40,18 @@
         - name: app
           type: keyword
           description: Specific cloud application used by the user.
-        - name: appact
+        - name: app-cci-apphosting-provider
           type: keyword
-          description: UBA service detect app activities performed by the end user like Download, Upload etc.
+          description: Indicates the hosting provider or platform where the application is hosted, as captured by the APP CCI service. This may include cloud providers or edge hosting services.
+        - name: app_activity
+          type: keyword
+          description: Description of the user performed activity on the app.
         - name: app_session_id
           type: keyword
           description: Unique App/Site Session ID for traffic_type = CloudApp and Web. An app session starts when a user starts using a cloud app/site on and ends once they have been inactive for a certain period of time(15 minutes). Use app_session_id to check all the user activities in a single app session. app_session_id is unique for a user, device, browser and domain.
+        - name: appact
+          type: keyword
+          description: UBA service detect app activities performed by the end user like Download, Upload etc.
         - name: appcategory
           type: keyword
           description: The application category.
@@ -46,18 +61,39 @@
         - name: assignee
           type: keyword
           description: Represents the username to whom the incident is assigned to.
+        - name: audit_category
+          type: keyword
+          description: The sub categories in an application such as IAM, EC in AWS, login, token, file, etc. in case of Google.
+        - name: audit_log_event
+          type: keyword
+          description: Action taken by user while using Netskope's product is captured in Audit events.
         - name: audit_type
           type: keyword
           description: The sub category in audit according to SaaS / IaaS apps.
         - name: bcc
           type: keyword
           description: Breach target references for compromised credentials or BCC users information in the case of SMTP DLP incident.
+        - name: boolean_metric_value
+          type: keyword
+          description: Indicates if metric details are present in the infrastructure events.
         - name: browser
           type: keyword
           description: Shows the actual browser from where the cloud app was accessed.A native browser refers to Safari (iOS), Chrome (Android), or the default browser on the user's laptop.
         - name: browser_session_id
           type: keyword
           description: Browser Session Id.
+        - name: browser_version
+          type: keyword
+          description: Browser version
+        - name: bypass_reason
+          type: keyword
+          description: ByPass Reason for not applying the policy.
+        - name: bypass_traffic
+          type: keyword
+          description: Tells if traffic is bypassed by Netskope
+        - name: category
+          type: keyword
+          description: Application Category information.
         - name: cc
           type: keyword
           description: SMTP Proxy will parse the cc field in the email and send them to DLP in the event object. The cc recipients from the e-mail header, up to 1KB.
@@ -67,6 +103,15 @@
         - name: ccl
           type: keyword
           description: 'Cloud Confidence Level. CCL measures the enterprise readiness of the cloud apps taking into consideration those apps security, auditability and business continuity.Each app is assigned one of five cloud confidence levels: excellent, high, medium, low, or poor. Useful for querying if users are accessing a cloud app with a lower CCL.'
+        - name: channel
+          type: keyword
+          description: Field related to Introspection UserMeta. The type of entity here is channel.Channel name in Messenger applications eg. Microsoft Teams, Slack for Enterprise.
+        - name: channel_id
+          type: keyword
+          description: Field related to Introspection UserMeta. The type of entity here is channel. This field denotes the Channel id in Messenger applications Like Slack, Microsoft teams.
+        - name: classification
+          type: keyword
+          description: Classification of the incident as decided by DLP backend services.
         - name: client_bytes
           type: long
           description: Total number of bytes uploaded from client to server.
@@ -91,6 +136,30 @@
         - name: connection_type
           type: keyword
           description: EndPoint DLP connection mode.
+        - name: CononicalName
+          type: keyword
+          description: CNAME record type is used to create an alias from one domain name to another, allowing multiple domain names to point to the same location.
+        - name: count
+          type: long
+          description: Number of raw log lines/events sessionized or suppressed during the suppressed interval.
+        - name: count_metric_value
+          type: long
+          description: Represents the recorded value for specific metrics, such as N_Log_Volume_Count, collected by on-premise appliances.
+        - name: custom_attr
+          type: flattened
+          description: A map containing all the custom attributes added by customer using ADImporter returned as key-value pair.
+        - name: custom_connector
+          type: keyword
+          description: Indicates whether a custom connector was used.
+        - name: data_center
+          type: keyword
+          description: Data center from the where the events were originated.
+        - name: data_type
+          type: keyword
+          description: The content type of a file or documents scanned.
+        - name: destination_app
+          type: keyword
+          description: The Saas/Iaas App configured as storage for forensics.
         - name: destination_file_directory
           type: keyword
           description: The directory and filename of the destination file on the endpoint.
@@ -100,18 +169,36 @@
         - name: destination_file_path
           type: keyword
           description: Endpoint DLP destination file path.
+        - name: destination_instance_id
+          type: keyword
+          description: "The Saas/Iaas App’s Instance configured as storage for forensics."
+        - name: destination_site
+          type: keyword
+          description: The Sharepoint site ID for forensics storage, if the destination-app is Sharepoint.
+        - name: details
+          type: keyword
+          description: Capture the full details of audit action performed by the user. (array in API JSON).
         - name: device
           type: keyword
           description: Device type from where the user accessed the cloud app. It could be Macintosh Windows device, iPad etc.
         - name: device_classification
           type: keyword
           description: Designation of device as determined by the Netskope Client as to whether the device is managed or not.
+        - name: device_id
+          type: keyword
+          description: Unique device id.
+        - name: device_name
+          type: keyword
+          description: Device name.
         - name: device_sn
           type: keyword
           description: Device serial number.
         - name: device_type
           type: keyword
           description: Device type.
+        - name: dlp_fail_reason
+          type: keyword
+          description: Reason for a failed DLP scan.
         - name: dlp_file
           type: keyword
           description: File/Object name extracted from the file/object.
@@ -121,6 +208,9 @@
         - name: dlp_is_unique_count
           type: boolean
           description: True or false depending upon if rule is unique counted per rule data.
+        - name: dlp_mail_parent_id
+          type: keyword
+          description: Parent Incident ID associated with main container (or non-container) file that was scanned.
         - name: dlp_match_info
           type: keyword
           description: DLP match info carries the details about DLP profile and rule info along with the violation count information.
@@ -142,12 +232,18 @@
         - name: dlp_rule_severity
           type: keyword
           description: Severity of DLP rule.
+        - name: dlp_scan_failed
+          type: keyword
+          description: Denotes whether a DLP scan failed or not.
         - name: dlp_unique_count
           type: long
           description: Integer value of number of unique matches seen per rule data. Only present if rule is uniquely counted.
         - name: dns_profile
           type: keyword
           description: DNS profiles allow you to control, inspect, and log all or blocked DNS traffic. When configuring a DNS profile, you can configure the actions taken for specific domain categories and choose to allow or block specific domains. This field contains the configuration file name.
+        - name: dom
+          type: keyword
+          description: The domain associated with the application event.
         - name: domain
           type: keyword
           description: Domain value. This will hold the host header value or SNI or extracted from absolute URI.
@@ -168,6 +264,7 @@
           description: Latitude of the Application as determined by the Maxmind or IP2Location Geo Database.
         - name: dst_latitude_keyword
           type: keyword
+          description: Original destination latitude when the vendor value is not a single numeric coordinate.
         - name: dst_location
           type: keyword
           description: Application's city as determined by the Maxmind or IP2Location Geo database.
@@ -176,6 +273,7 @@
           description: Longitude of the Application as determined by the Maxmind or IP2Location Geo Database.
         - name: dst_longitude_keyword
           type: keyword
+          description: Original destination longitude when the vendor value is not a single numeric coordinate.
         - name: dst_region
           type: keyword
           description: Application's state or region as determined by the Maxmind or IP2Location Geo Database.
@@ -194,15 +292,36 @@
         - name: dstport
           type: long
           description: Destination port.
+        - name: dynamic_classification
+          type: keyword
+          description: URLs were categorized by NSURLC machine or not.
         - name: end_time
           type: date
           description: When events are suppressed (like collaboration apps), then the suppression end time will be set and only one event will be send with suppression start time and end time and count of occurrence.
+        - name: endpoint_policy_match
+          type: group
+          fields:
+            - name: desired_action
+              type: keyword
+              description: List of desired actions from the defined endpoint policy being triggered. (array in API JSON).
+        - name: event_recovered
+          type: boolean
+          description: Endpoint DLP field - event_recovered is a boolean string. When the user activity evaluation fails for the first time, the evaluation is retried after some time. During the retry, the event_recovered will be set to true.
         - name: executable_hash
           type: keyword
           description: Flag to indicate if executable_hash is signed or not.
         - name: executable_signed
           type: boolean
           description: Flag to indicate if executable_hash is signed or not.
+        - name: exposure
+          type: keyword
+          description: Type for the exposure of a document.The exposure information of the incident ( for ex Public , Private etc ).
+        - name: ext_labels
+          type: keyword
+          description: 'Data Classification and Encryption framework that will support MIP where MIP is Sensitivity labels from Microsoft Purview Information Protection let you classify and protect your organization''s data. ext_labels is list of map which carries the information Sensitivity Labels applied to the file. Data returned will be have 4 sub fields. id: Sensitivity Label ID. name: Sensitivity Label Name. instance: Instance whose Sensitivity Label is applied. vendor: Vendor whose Sensitivity Label is applied. (array in API JSON).'
+        - name: file_lang
+          type: keyword
+          description: Language of the file.
         - name: file_origin
           type: keyword
           description: File origin source location.
@@ -215,12 +334,30 @@
         - name: file_type
           type: keyword
           description: File type as detected by Netskope Solutions.
+        - name: flow_status
+          type: keyword
+          description: The events flow state used by NPA services.
+        - name: forward_to_proxy_profile
+          type: keyword
+          description: '''Forward to Proxy'' is a feature to dynamically configure chain proxy endpoints, so that, traffic can be chained to another proxy based on a policy hit. This allows to re-direct traffic to appropriate destinations for services that have an explicit proxy endpoint (such as browser isolation, structured encryption etc.). forward_to_proxy_profile will be set if a forward to proxy policy is matched. The value will be a string that is the name of the profile selected in the policy.'
+        - name: forward_to_proxy_xau
+          type: keyword
+          description: '''Forward to Proxy'' is a feature to dynamically configure chain proxy endpoints, so that, traffic can be chained to another proxy based on a policy hit. This allows to re-direct traffic to appropriate destinations for services that have an explicit proxy endpoint (such as browser isolation, structured encryption etc.). ''x_authenticated_user'' is one of fields defined for ''Forward to Proxy'' profile - When set, XAU header is attached and sent to the chain proxy service'
         - name: from_user
           type: keyword
           description: Email address used to login to the SAAS app.
+        - name: from_user_category
+          type: keyword
+          description: Category of the file contents shared deteted based on the Email address used to login to the SAAS app.
+        - name: fromlogs
+          type: keyword
+          description: Shows if the event was generated from the Risk Insights log.
         - name: hostname
           type: keyword
           description: User's Host name.
+        - name: http_transaction_count
+          type: long
+          description: HTTP transaction count.
         - name: incident_id
           type: keyword
           description: Unique Incident ID associated with main container (or non-container) file that was scanned.
@@ -233,36 +370,174 @@
         - name: instance_id
           type: keyword
           description: Unique ID associated with an organization application instance.
+        - name: internal_collaborator_count
+          type: long
+          description: Count of internal collaborators on a file/folder. Supported for some apps.
         - name: ip_protocol
           type: keyword
           description: Assigned Internet Protocol Number.
+        - name: ja3
+          type: keyword
+          description: JA3 signature is an MD5 hash of values picked from the TLS Client. It is a method for creating SSL/TLS client fingerprints that are very useful for threat hunting.
+        - name: ja3s
+          type: keyword
+          description: JA3s signature is an MD5 hash of values picked from the TLS Client. It is a method for creating SSL/TLS client fingerprints that are very useful for threat hunting.
+        - name: justification
+          type: keyword
+          description: justification is what user types in their machine when their activity is blocked. it is free form string.
+        - name: justification_reason
+          type: keyword
+          description: Justification reason provided by user.For following policies, justification events are raised. User is displayed a notification popup, user enters justification and can select to proceed or block:useralert policydlp block policyblock policy with custom template which contains justification text box.
+        - name: justification_type
+          type: keyword
+          description: Type of justification provided by user when user bypasses the policy block.
         - name: latest_incident_id
           type: keyword
           description: Latest incident ID captured by DLP backend services.
+        - name: legal_hold_profile_name
+          type: keyword
+          description: Legal Hold is a process that an organization uses to preserve all forms of relevant information when litigation is reasonably anticipated. A Legal Hold profile is used for specifying where the files need to be held for legal purposes when action of Legal Hold is taken. This field is the profile name added during configuration by admin. Legalhold fields are set when an entity (file, chat message, etc.) is legally held by CASB API.
+        - name: lh_custodian_email
+          type: keyword
+          description: "Email address of the custodian associated with the Legal Hold profile. This value is derived from the customer’s Legal Hold configuration."
+        - name: lh_custodian_name
+          type: keyword
+          description: Name of the custodian associated with the Legal Hold profile, as defined in the customer's Legal Hold configuration.
+        - name: lh_dest_app
+          type: keyword
+          description: Name of the destination SaaS application where the entity is copied for legal review as part of a Legal Hold action.
+        - name: lh_dest_instance
+          type: keyword
+          description: Name of the destination instance within the SaaS application where the entity is copied for legal review as part of a Legal Hold action.
+        - name: lh_fileid
+          type: keyword
+          description: Unique identifier of the file placed under Legal Hold.
+        - name: lh_filename
+          type: keyword
+          description: Name of the file that has been placed under Legal Hold.
+        - name: lh_filepath
+          type: keyword
+          description: Full path of the file that has been placed under Legal Hold, indicating its location within the source system.
+        - name: lh_original_filename
+          type: keyword
+          description: The original name of the file before it was placed under Legal Hold.
+        - name: lh_shared
+          type: keyword
+          description: Indicates the sharing status of the file under Legal Hold, such as whether it is private or publicly shared.
+        - name: lh_shared_with
+          type: keyword
+          description: Specifies the user or users with whom the Legal Hold file has been shared.
+        - name: lh_version
+          type: keyword
+          description: Indicates the version number of the original file placed under Legal Hold.
         - name: location
           type: keyword
           description: A string that specifies the physical location of the printer (for example, Bldg. 38, Room 1164).
+        - name: log_file_name
+          type: keyword
+          description: Log file name for Risk Insights.
+        - name: logintype
+          type: keyword
+          description: User's login type.
+        - name: loginurl
+          type: keyword
+          description: URL used for user's login type.
         - name: managed_app
           type: keyword
           description: Whether or not the app in question is managed.
         - name: managementID
           type: keyword
           description: Field value is attached to Devices Host Info Object.
+        - name: mcp_activity
+          type: keyword
+          description: The MCP (Model Context Protocol) activity associated with the event.
+        - name: mcp_client_capabilities
+          type: keyword
+          description: The capabilities advertised by the MCP client.
+        - name: mcp_client_name
+          type: keyword
+          description: The name of the MCP client.
+        - name: mcp_client_protocol_version
+          type: keyword
+          description: The MCP protocol version used by the MCP client.
+        - name: mcp_method
+          type: keyword
+          description: The MCP method invoked in the request.
+        - name: mcp_prompt_list
+          type: keyword
+          description: The list of MCP prompts associated with the event.
+        - name: mcp_prompt_name
+          type: keyword
+          description: The name of the MCP prompt associated with the event.
+        - name: mcp_protocol_version
+          type: keyword
+          description: The MCP protocol version used for the session.
+        - name: mcp_resource_list
+          type: keyword
+          description: The list of MCP resources associated with the event.
+        - name: mcp_resource_url
+          type: keyword
+          description: The URL of the MCP resource associated with the event.
+        - name: mcp_server_capabilities
+          type: keyword
+          description: The capabilities advertised by the MCP server.
+        - name: mcp_server_name
+          type: keyword
+          description: The name of the MCP server.
+        - name: mcp_server_protocol_version
+          type: keyword
+          description: The MCP protocol version used by the MCP server.
+        - name: mcp_tool_list
+          type: keyword
+          description: The list of MCP tools associated with the event.
+        - name: mcp_tool_name
+          type: keyword
+          description: The name of the MCP tool associated with the event.
         - name: md5
           type: keyword
           description: MD5 value of the file content.
+        - name: metric_name
+          type: keyword
+          description: Infrastructure events capture metadata about metrics emitted. This field contains information about Name of the metric.
+        - name: metric_true_count
+          type: keyword
+          description: Number of metrics sent per event types.
+        - name: metric_type
+          type: keyword
+          description: Type of metric captured in infrastructure event.
+        - name: metric_value
+          type: keyword
+          description: Value of metric captured in infrastructure event.
         - name: mime_type
           type: keyword
           description: A media type (also known as a Multipurpose Internet Mail Extensions or MIME type) indicates the nature and format of a document, file, or assortment of bytes.
+        - name: modified
+          type: long
+          description: Timestamp corresponding to the modification time of the entity file, object etc.
+        - name: netskope_activity
+          type: keyword
+          description: Determines if the event is part of the known Netskope subnets Source IP to check for Netskope activity.
         - name: netskope_pop
           type: keyword
           description: Netskope Data Plane name.
+        - name: network
+          type: keyword
+          description: Network indentifier name as detected by Netskope solutions.
         - name: network_session_id
           type: keyword
           description: Network session ID used by NPA services.
+        - name: notify_template
+          type: keyword
+          description: Inline policy notify template definition.
+        - name: ns_activity
+          type: keyword
+          description: Represents the normalized activity type, mapping application-specific actions to standardized activity labels used by the system.
         - name: nsdeviceuid
           type: keyword
           description: Device ID attached to Devices Host Info Object.
+        - name: num_sessions
+          type: long
+          description: Number of open session count.
         - name: numbytes
           type: long
           description: Total number of bytes that were transmitted for the connection - numbytes = client_bytes + server_bytes.
@@ -284,6 +559,12 @@
         - name: organization_unit
           type: keyword
           description: Org Units for which the event correlates to. This ties to user information extracted from Active Directory using the Directory Importer/AD Connector application.
+        - name: original_file_snapshot_id
+          type: keyword
+          description: The file identifier of saved original file.
+        - name: orignal_file_path
+          type: keyword
+          description: Orignal File path detected at the time of scans. If the file is moved, then keep original path of the file in this field.
         - name: os
           type: keyword
           description: Operating system of the host who generated the event.
@@ -299,15 +580,24 @@
         - name: os_version
           type: keyword
           description: OS version of the host.
+        - name: other_categories
+          type: keyword
+          description: Application categories as an array if there are more than one category for an application. (array in API JSON).
         - name: owner
           type: keyword
           description: Owner or the user information of the file object in DLP.
         - name: owner_pdl
           type: keyword
           description: File's owner Preferred Data Location derived from owner uid(OneDrive) and site URL(SharePoint).
+        - name: package_version
+          type: keyword
+          description: Infrastructure data is send by appliances. This field contains version number of the package installed.
         - name: page
           type: keyword
           description: The URL of the originating page.
+        - name: page_site
+          type: keyword
+          description: The Site name of the page events origin.
         - name: parent_id
           type: keyword
           description: Parent ID ( event_id ) of an alert.
@@ -320,6 +610,12 @@
         - name: policy_action
           type: keyword
           description: Endpoint DLP Policy action planned according to the policy. User can override the planned action or actual enforcement action might not be implemented.
+        - name: policy_action_enforced
+          type: keyword
+          description: Actual action taken by Endpoint DLP Policy.
+        - name: policy_id
+          type: keyword
+          description: The Netskope internal ID for the policy created by an admin.
         - name: policy_name
           type: keyword
           description: Endpoint DLP Name of matching policy.
@@ -335,6 +631,9 @@
         - name: port
           type: keyword
           description: A string that identifies the port(s) used to transmit data to the printer. If a printer is connected to more than one port, the names of each port must be separated by commas (for example, LPT1:,LPT2:,LPT3:).
+        - name: printer_identifier
+          type: keyword
+          description: Indentifier of the printer connected. such as printer name, manufacturer, driver name, printer port, location, or UNC path separated by a new line.
         - name: process_cert_subject
           type: keyword
           description: the subject of the certificate that signed the process.
@@ -347,9 +646,42 @@
         - name: product_id
           type: keyword
           description: It's Part of USB specification. Used to identify a USB device.
+        - name: protocol
+          type: keyword
+          description: Protocol value used by applications.
+        - name: protocol_port
+          type: keyword
+          description: Protocol Port used in NPA related applications.
         - name: publisher_cn
           type: keyword
           description: The publisher CName.
+        - name: publisher_ip
+          type: keyword
+          description: The publisher a NPA component runs on customer premise which connects the cloud and customer private app. The IP is the ip address of the publisher connecting to the Netskope Pop.
+        - name: publisher_name
+          type: keyword
+          description: "The publisher name for the Network Events. It’s a NPA component runs on customer’s premise which connects the cloud and customer’s private app."
+        - name: publisher_pop
+          type: keyword
+          description: The publisher a NPA component runs on customer premise which connects the cloud and customer private app. The POP is the Netskope Point of Presence closest to the publisher.
+        - name: publisher_port
+          type: long
+          description: The publisher a NPA component runs on customer premise which connects the cloud and customer private app. The Port is the port number of the publisher connecting to the Netskope Pop.
+        - name: q_shared_with
+          type: keyword
+          description: Email addresses of users with whom the quarantined file has been shared.
+        - name: qdomain
+          type: keyword
+          description: Stands for Fully Qualified Domain Name.
+        - name: qtype
+          type: keyword
+          description: DNS Query/Record Types. Used by APP firewall DNS Sec Exception/Block List.
+        - name: rbi_template_id
+          type: keyword
+          description: RBI stands for Remote Browser Isolation. Netskope RBI is focused on the threat protection use case. It delivers Targeted RBI, isolation of users web browsing of uncategorized and potentially security risky web pages to provide an additional layer of threat protection. This field holds information about template_id created by webUI while configuring RBI template.
+        - name: rbi_template_name
+          type: keyword
+          description: RBI stands for Remote Browser Isolation. Netskope RBI is focused on the threat protection use case. It delivers Targeted RBI, isolation of users web browsing of uncategorized and potentially security risky web pages to provide an additional layer of threat protection. This field holds information about the name used by user while configuring RBI template.
         - name: record_type
           type: keyword
           description: Indicate the event type of the record.
@@ -365,12 +697,33 @@
         - name: resp_cnt
           type: long
           description: Total number of HTTP responses (equal to number of transaction events for this page event) from server to client.
+        - name: resp_content_len
+          type: long
+          description: Response content length.
+        - name: resp_content_type
+          type: keyword
+          description: Response content type.
         - name: response_time
           type: long
           description: Response time in milliseconds from the server/app as captured by NPA solution.
+        - name: retro_scan_name
+          type: keyword
+          description: Name for the retroactive scans. A retroactive policy scans all the files and folders for the app instance right from the inception of the SaaS app. A retroactive scan is decoupled from ongoing (a.k.a future transaction) scan. By default, the name is pre-populated in Retro_Name_[AppName]_[InstanceName]_YYYYMMDD format. Customer can also overwrite the pre-populated name while configuring the retro scan policies.
+        - name: sAMAccountName
+          type: keyword
+          description: The sAMAccountName attribute is a logon name used to support clients and servers from previous version of Windows, such as Windows NT 4.0, Windows 95, Windows 98, and LAN Manager.
+        - name: sampled_text_size
+          type: long
+          description: Indicates the number of bytes sent to the DLP service for inspection when a file is extra large. Represents the amount of extracted text (in MB) from large files on the endpoint. Only a portion of the file is sampled to limit the extracted content size. The sampled text is sent to DLP for processing, and the verdict for the entire file is based on this sample.
         - name: sanctioned_instance
           type: keyword
           description: A sanctioned instance is a company owned account in an external application. A value of yes indicates that the company has granted    access for the specific SaaS / IaaS account to Netskope. A value of no    represents a personal user account or an enterprise account not    authorized by the enterprise Administrator.
+        - name: scan_type
+          type: keyword
+          description: Generated during retroactive scan or new ongoing activity.
+        - name: serial
+          type: keyword
+          description: The serial number of the user's device.
         - name: server_bytes
           type: long
           description: Total number of downloaded bytes from server to client.
@@ -380,9 +733,15 @@
         - name: session_duration
           type: long
           description: Session duration of a session.
+        - name: sessionid
+          type: keyword
+          description: Session ID for an application.
         - name: severity
           type: keyword
           description: Severity used by watchlist and malware alerts. Severity of the incident.
+        - name: severity_level
+          type: keyword
+          description: Severity level of the Malsite ( High / Med / Low).
         - name: sha256
           type: keyword
           description: Sha256 value of a file.
@@ -392,9 +751,21 @@
         - name: site
           type: keyword
           description: For traffic_type = CloudApp, site = app and for traffic_type = Web, it will be the second level domain name + top-level domain name. For example, in www.cnn.com, it is cnn.com.
+        - name: smtp_block_reason
+          type: keyword
+          description: Provides the reason why SMTP email traffic was blocked by CFW, which treats SMTP like any other network traffic.
         - name: smtp_to
           type: keyword
           description: SMTP Proxy will parse the smtp_to field in the email and send them to DLP in the event object. List contains the The recipients from the SMTP envelope.
+        - name: source_file_directory
+          type: keyword
+          description: 'File movement Souce Directory. Ex: File moving from laptop to USB then laptop''s source file diretory name.'
+        - name: source_file_name
+          type: keyword
+          description: User's laptop souce file name.
+        - name: source_file_path
+          type: keyword
+          description: Full file path on the user's device where the source file is located, as captured in Endpoint DLP events.
         - name: src_country
           type: keyword
           description: User's country's two-letter Country Code as determined by the Maxmind or IP2Location Geo Database.
@@ -406,6 +777,7 @@
           description: Latitude of the user as determined by the Maxmind or IP2Location Geo database.
         - name: src_latitude_keyword
           type: keyword
+          description: Original source latitude when the vendor value is not a single numeric coordinate.
         - name: src_location
           type: keyword
           description: User's city as determined by the Maxmind or IP2Location Geo Database.
@@ -414,9 +786,13 @@
           description: Longitude of the user as determined by the Maxmind or IP2Location Geo database.
         - name: src_longitude_keyword
           type: keyword
+          description: Original source longitude when the vendor value is not a single numeric coordinate.
         - name: src_region
           type: keyword
           description: Source state or region as determined by the Maxmind or IP2Location Geo database.
+        - name: src_time
+          type: keyword
+          description: Source timestamp is the time at which the event is created.
         - name: src_timezone
           type: keyword
           description: Source timezone for the location at which the event is created. Shows the long format timezone designation.
@@ -429,12 +805,30 @@
         - name: srcport
           type: long
           description: Port used by the source/user where event is created. It is used by NPA applications.
+        - name: ssl_decrypt_policy
+          type: keyword
+          description: Applicable to only bypass events. There are 2 ways to create rules for bypass:Bypass due to Exception ConfigurationBypass due to SSL Decrypt PolicyThe existing flag bypass_traffic only gives information that a flow has been bypassed, but does not tell exactly which policy was responsible for it. ssl_decrypt_policy field will provide this extra information. In addition, policy field will be also set for every Bypass event.
         - name: start_time
           type: date
           description: Capture NPA user's session start time.
         - name: status
           type: keyword
           description: Specific status name used by the enduser for DLP incidents.
+        - name: sub_type
+          type: keyword
+          description: The type of EPDLP events.
+        - name: supporting_data
+          type: flattened
+          description: Supporting data attached with audit events exaple IP, user_name etc.
+        - name: suppression_end_time
+          type: long
+          description: When events are suppressed (like collaboration apps), then the suppression end time will be set and only one event will be send with suppression start time and end time and count of occurrence.
+        - name: suppression_key
+          type: keyword
+          description: 'To limit the number of events. Example: Suppress block event for browse'
+        - name: suppression_start_time
+          type: long
+          description: When events are suppressed (like collaboration apps), then the suppression end time will be set and only one event will be send with suppression start time and end time and count of occurrence.
         - name: telemetry_app
           type: keyword
           description: Typically SaaS app web sites use web analytics code within the pages to gather analytic data.When a SaaS app action or page is shown, there is subsequent traffic generated to tracking apps such as doubleclick.net, Optimizely, etc. These tracking apps are listed if applicable in theTelemetry App field.
@@ -444,9 +838,15 @@
         - name: timestamp
           type: date
           description: Timestamp when the event/alert happened. Event timestamp in Unix epoch format.
+        - name: title
+          type: keyword
+          description: Title of the file.
         - name: to_user
           type: keyword
           description: Used when a file is moved from user A to user B. Shows the email address of user B.
+        - name: total_collaborator_count
+          type: long
+          description: Count of collaborators on a file/folder. Supported for some apps.
         - name: total_packets
           type: long
           description: Total value of Server Packets + Client Packets.
@@ -456,33 +856,63 @@
         - name: transaction_id
           type: keyword
           description: Unique ID for a given request/response.
+        - name: true_obj_category
+          type: keyword
+          description: DLP incident object category ( ex Text ).
+        - name: true_obj_type
+          type: keyword
+          description: DLP incident object type.
+        - name: tss_fail_reason
+          type: keyword
+          description: TSS is the malware detection engine for Netskope Threat Protection. This field indicates the reason why tss scan was failed to run.
         - name: tss_mode
           type: keyword
           description: Malware scanning mode, specifies whether it's Real-time Protection or API Data Protection.
+        - name: tss_scan_failed
+          type: keyword
+          description: TSS is the malware detection engine for Netskope Threat Protection. This field indicates if tss scan was failed to run.
         - name: tunnel_id
           type: keyword
           description: Shows the Client installation ID. Only available for the Client steering configuration.
+        - name: tunnel_type
+          type: keyword
+          description: GRE Tunnel Type. Used for NPA applications.
+        - name: tunnel_up_time
+          type: long
+          description: GRE Tunnel up time. Used for NPA applications.
         - name: type
           type: keyword
           description: Shows if it is an application event or a connection event. Application events are recorded to track user events inside a cloud app. Connection events shows the actual HTTP connection.
         - name: unc_path
           type: keyword
           description: The Universal Naming Convention path of the network file share, or printer.
+        - name: universal_connector
+          type: keyword
+          description: Universal connector is a common app connector that is built to detect events(upload, download, post, login related) for all the applications that do not have a dedicated connector. This field denotes if a universal connector was used or not
         - name: ur_normalized
           type: keyword
           description: All lower case user email.
         - name: url
           type: wildcard
           description: URL of the application that the user visited as provided by the log or data plane traffic.
+        - name: usb_device
+          type: keyword
+          description: Name of the USB device that was attached to the endpoint.
         - name: user
           type: keyword
           description: User email.
+        - name: user_category
+          type: keyword
+          description: Type of user in an enterprise - external / internal.
         - name: user_confidence_index
           type: long
           description: UCI (User Confidence Index) is one of the ways that UEBA describes how risky the user\u2019s behavior is. The lower UCI is, the more risky the user behavior is. The UCI starts from an initial value and is deducted an amount when the user\u2019s behavior is detected to be anomaly by UEBA engine. The user\u2019s UCI is daily-based, i.e. UEBA engine will create the new UCI with an initial score for users when an UTC day starts. Each user is supposed to start from 1000, but his/her previous day performance will rollover to current day and therefore impact the initial UCI.
         - name: user_confidence_level
           type: keyword
           description: UCI (User Confidence Index) is one of the ways that UEBA describes how risky the user\u2019s behavior is. User confidence level field holds risk level values.
+        - name: user_generated
+          type: keyword
+          description: Tells whether it is user generated page event or not.
         - name: user_id
           type: keyword
           description: User email.
@@ -495,6 +925,207 @@
         - name: userkey
           type: keyword
           description: User ID or email.
+        - name: userPrincipalName
+          type: keyword
+          description: User Principal Name is used to authenticate users on the Windows OS.
         - name: vendor_id
           type: keyword
           description: Netskope's Vendor id.
+        - name: web_universal_connector
+          type: keyword
+          description: If The WEB event detection source was present or not.
+        - name: workspace
+          type: keyword
+          description: Workspace name in case of Slack application configured for Enterprise.
+        - name: workspace_id
+          type: keyword
+          description: Workspace id in case of Slack application configured for Enterprise.
+        - name: zip_file_id
+          type: keyword
+          description: The file identifier of the saved forensic file.
+        - name: zip_password
+          type: keyword
+          description: Password used to zip-compress the quarantined file. Required when quarantine is triggered by TSS detection.
+        - name: account_id
+          type: keyword
+          description: Account ID is an account number as provided by the cloud provider AWS, GCP and AZURE etc.
+        - name: account_name
+          type: keyword
+          description: Account name - in case of AWS this is the instance name set by user. For others, account name is provided by the cloud provider.
+        - name: acked
+          type: boolean
+          description: Whether user has acknowledged the alert or not.
+        - name: alert_id
+          type: keyword
+          description: Indicates the alert is raised and the carries the id of the alert raised.
+        - name: asset_id
+          type: keyword
+          description: Asset ID of referred entity of the Cloud providers AWS, GCP and Azure etc.
+        - name: asset_object_id
+          type: keyword
+          description: Asset object ID of the IAAS/CSA asset. Asset are the referred entity of the Cloud providers AWS, GCP and Azure etc.
+        - name: block_reason
+          type: keyword
+          description: SMTP Block Reason
+        - name: breach_date
+          type: date
+          description: Breach Metric date for compromised credentials.
+        - name: breach_description
+          type: keyword
+          description: Breach description for compromised credentials.
+        - name: breach_id
+          type: keyword
+          description: Breach description for compromised credentials.
+        - name: breach_media_references
+          type: keyword
+          description: Media references of breach in compromised credentials.
+        - name: breach_score
+          type: long
+          description: Breach score for compromised credentials.
+        - name: breach_target_references
+          type: keyword
+          description: Breach target references for compromised credentials.
+        - name: compliance_standards
+          type: keyword
+          description: IAAS/CSPM Security Posture Management Regulatory Compliance Standards. (array in API JSON).
+        - name: email_source
+          type: keyword
+          description: Email Source - values captured are respective Netskope Solutions.
+        - name: event_type
+          type: keyword
+          description: 'Sub event types recorded in alerts: rare_event, risky_country, user_shared_credentials, data_exfiltration, bulk_upload, bulk_download, mlad etc.'
+        - name: evt_src_chnl
+          type: keyword
+          description: Field added by UEBA to capture source of the events.
+        - name: external_collaborator_count
+          type: long
+          description: Count of external collaborators on a file/folder. Supported for some apps.
+        - name: external_email
+          type: long
+          description: Flag to check if External Email ID is detected.
+        - name: file_cls_encrypted
+          type: boolean
+          description: Its a boolean value representing  whether its CLS encrypted or not.
+        - name: iaas_asset_tags
+          type: keyword
+          description: List of tags associated with the asset for which alert is raised. Each tag is a key/value pair (array in API JSON).
+        - name: iaas_remediated
+          type: boolean
+          description: value representing whether IAAS alerts remediated or not.
+        - name: last_app
+          type: keyword
+          description: Last application (app in the first/older event). Applies to only proximity anomaly alert.
+        - name: last_country
+          type: keyword
+          description: Last location (Country). Applies to only proximity anomaly alert.
+        - name: last_device
+          type: keyword
+          description: Last device name (Device Name in the first/older event). Applies to only proximity anomaly alert.
+        - name: last_location
+          type: keyword
+          description: Last location (City) of the user. Applies to only proximity anomaly alert.
+        - name: last_region
+          type: keyword
+          description: Last region of the user. Applies to only proximity anomaly alert.
+        - name: last_timestamp
+          type: long
+          description: Last timestamp (timestamp in the first/older event). Applies to only proximity anomaly alert.
+        - name: malicious
+          type: keyword
+          description: Only exists if some HTTP transaction belonging to the page event resulted in a malsite alert.
+        - name: malsite_category
+          type: keyword
+          description: Category of malsite [Phishing / Botnet / Malicious URL, etc.] (array in API JSON).
+        - name: malsite_country
+          type: keyword
+          description: Malsite country code.
+        - name: malsite_id
+          type: keyword
+          description: Malicious Site ID - Hash of threat match value.
+        - name: malsite_ip_host
+          type: keyword
+          description: IP of the hosts where Malsite is detected.
+        - name: malsite_latitude
+          type: double
+          description: Latitude plot of the Malsite URL/IP/Domain.
+        - name: malsite_longitude
+          type: double
+          description: Longitude plot of the Malsite URL/IP/Domain.
+        - name: malsite_region
+          type: keyword
+          description: Region of the malsite URL/IP/Domain.
+        - name: matched_username
+          type: keyword
+          description: matched_username represent the user name that is compromised.
+        - name: orig_ty
+          type: keyword
+          description: Event Type of original event.
+        - name: password_type
+          type: keyword
+          description: 'The compromized breach events password type ( For ex : Plain / Text ).'
+        - name: policy_actions
+          type: keyword
+          description: UBA policy actions taken for ex [Download, Upload, Delete]. (array in API JSON).
+        - name: profile_id
+          type: keyword
+          description: Anomaly profile ID
+        - name: region_id
+          type: keyword
+          description: Region ID as provided by the cloud provider AWS, GCP and Azure etc.
+        - name: region_name
+          type: keyword
+          description: Region Name as provided by the cloud provider AWS, GCP and Azure etc.
+        - name: resource_category
+          type: keyword
+          description: IAAS assets resource category of the Cloud providers AWS, GCP and Azure etc. For Example Amazon EC2, Amazon ECS are categorized as Compute whereas Amazon RDS and DynamoDB are categorized as database.
+        - name: resource_group
+          type: keyword
+          description: Cloud providers AWS, GCP and Azure have entities called resource groups that organize resources such as VMs, storage, and virtual networking devices etc.
+        - name: sa_profile_id
+          type: long
+          description: IAAS/CSA profile ID as provided by cloud providers AWS, GCP and Azure etc.
+        - name: sa_profile_name
+          type: keyword
+          description: IAAS/CSA profile Name as provided by cloud providers AWS, GCP and Azure etc.
+        - name: sa_rule_id
+          type: keyword
+          description: IAAS/CSA rule ID configured for scans to run on data stored in cloud providers AWS, GCP and Azure data.
+        - name: sa_rule_name
+          type: keyword
+          description: IAAS/CSA rule name configured for scans to run on data stored in cloud providers AWS, GCP and Azure data.
+        - name: sa_rule_severity
+          type: keyword
+          description: IAAS/CSA rule severity as captured by backend policy engines.
+        - name: severity_level_id
+          type: long
+          description: If the Severity Level ID is 1, it means that URL / IP /Domain is detected from Internal threat feed and if Severity Level ID is 2, then it means the detection happened based on the OEM DB Malsite Category.
+        - name: shared_domains
+          type: keyword
+          description: List of domains of users the document is shared with.
+        - name: smtp_client_domain
+          type: keyword
+          description: SMTP client Identity
+        - name: threat_match_field
+          type: keyword
+          description: Threat match field, either from domain or URL or IP.
+        - name: threat_match_value
+          type: keyword
+          description: Threat match field value , either from domain or URL or IP.
+        - name: threat_source_id
+          type: long
+          description: 'Threat source id used by TSS threat engines EX: 1 - NetskopeThreatIntel, 2 - OEM DB etc.'
+        - name: threshold
+          type: long
+          description: Threshold (Count at which the anomaly should trigger). Applicable to Bulk Anomaly types( Bulk Upload/ Download/ Delete) and Failed Login Anomaly type.
+        - name: threshold_time
+          type: long
+          description: 'It captures the time interval in seconds used by UEBA services. Applicable to: Shared Credentials, Data Ex filtration, Bulk Anomaly types( Bulk Upload/ Download/ Delete) and Failed Login Anomaly type.'
+        - name: to_object
+          type: keyword
+          description: Changed name of an object that has been renamed, copied, or moved.
+        - name: two_factor_auth
+          type: keyword
+          description: Two factor authentication is enabled or not.
+        - name: web_url
+          type: keyword
+          description: Endpoint configured by customer to fetch Filemeta scan etc.

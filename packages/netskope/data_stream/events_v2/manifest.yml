@@ -1,3 +1,68 @@
 title: Events V2
 type: logs
 dataset: netskope.events_v2
+streams:
+  - input: cel
+    title: Netskope events via REST API v2 dataexport
+    description: Collect Netskope event records from the REST API v2 dataexport iterator (`/api/v2/events/dataexport/events/{type}`).
+    template_path: cel.yml.hbs
+    enabled: false
+    vars:
+      - name: initial_interval
+        type: text
+        title: Initial Interval
+        description: How far back to pull the Event logs from the Netskope API. Supported units for this parameter are h/m/s.
+        multi: false
+        required: true
+        show_user: true
+        default: 24h
+      - name: interval
+        type: text
+        title: Interval
+        description: Duration between requests to the Netskope API. Supported units for this parameter are h/m/s.
+        default: 5m
+        multi: false
+        required: true
+        show_user: true
+      - name: event_types
+        type: text
+        title: Event export types
+        description: >-
+          Event export types to collect. Each value is the `{type}` segment in `/api/v2/events/dataexport/events/{type}`. Allowed values: `application`, `page`, `network`, `audit`, `incident`, `epdlp`, `infrastructure`, `alert`. Enable only types your token can read. Collecting `alert` here overlaps with the Alerts V2 stream when both are enabled (same records in two datasets).
+        multi: true
+        required: true
+        show_user: true
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - netskope-events_v2
+          - netskope-api
+      - name: preserve_original_event
+        required: true
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
+        type: bool
+        multi: false
+        default: false
+      - name: enable_request_tracer
+        type: bool
+        title: Enable request tracing
+        default: false
+        multi: false
+        required: false
+        show_user: false
+        description: The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#_resource_tracer_filename) for details.
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
