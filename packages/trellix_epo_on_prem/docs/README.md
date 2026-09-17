@@ -1245,202 +1245,167 @@ An example event for `event` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-09-17T07:44:57.826Z",
+    "@timestamp": "2018-06-29T10:53:33.000Z",
     "agent": {
-        "ephemeral_id": "a642992f-ea1d-44c5-aba2-e0d0f1bbd0e6",
-        "id": "2eb54a94-cfc5-4ed7-bd32-5e1b76a9c0b8",
-        "name": "elastic-agent-98121",
+        "ephemeral_id": "ddf122d0-9298-4a48-b1cb-200dbf63effd",
+        "id": "60365a16-550a-459e-ba4f-d7c133a9b813",
+        "name": "elastic-agent-39786",
         "type": "filebeat",
         "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "trellix_epo_on_prem.event",
-        "namespace": "69324",
+        "namespace": "17189",
         "type": "logs"
-    },
-    "destination": {
-        "as": {
-            "number": 64501,
-            "organization": {
-                "name": "Documentation ASN"
-            }
-        },
-        "geo": {
-            "city_name": "Amsterdam",
-            "continent_name": "Europe",
-            "country_iso_code": "NL",
-            "country_name": "Netherlands",
-            "location": {
-                "lat": 52.37404,
-                "lon": 4.88969
-            },
-            "region_iso_code": "NL-NH",
-            "region_name": "North Holland"
-        },
-        "ip": [
-            "198.51.100.10",
-            "::ffff:198.51.100.10"
-        ],
-        "mac": "00-00-5E-00-53-24",
-        "port": 443
     },
     "ecs": {
         "version": "9.4.0"
     },
     "elastic_agent": {
-        "id": "2eb54a94-cfc5-4ed7-bd32-5e1b76a9c0b8",
+        "id": "60365a16-550a-459e-ba4f-d7c133a9b813",
         "snapshot": false,
         "version": "8.19.0"
     },
     "event": {
-        "action": "ids-alert-act-tak-del",
+        "action": "infected-file-deleted",
         "agent_id_status": "verified",
         "category": [
             "malware",
             "file"
         ],
+        "code": "1027",
         "dataset": "trellix_epo_on_prem.event",
-        "id": "01234567-ABCD-ABCD-ABCD-ABCD01234567",
-        "ingested": "2026-09-17T07:44:58Z",
+        "ingested": "2026-09-17T19:03:22Z",
         "kind": "event",
-        "original": "{\"EPOEvent\":{\"HostName\":\"host-1.example.local\",\"ThreatActionTaken\":\"IDS_ALERT_ACT_TAK_DEL\",\"AnalyzerIPv6\":\"::ffff:198.51.100.10\",\"AnalyzerName\":\"Trellix EndpointSecurity\",\"ThreatDetectedOnCreation\":\"0\",\"SecondAttemptedAction\":\"IDS_ALERT_THACT_ATT_DEL\",\"SignatureName\":\"Buffer Overflow Detected\",\"ThreatHandled\":\"1\",\"DetectedUTC\":\"2021-05-03 06:26:21.0\",\"Analyzer\":\"ENDP_AM_1120\",\"Direction\":\"inbound\",\"Hash\":\"44d88612fea8a8f36de82e1278abb02f\",\"ThreatType\":\"test\",\"SourceProcessName\":\"On-Demand Scan\",\"RegistryKey\":\"HKLM\\\\Software\\\\Test\\\\Key\",\"BladeName\":\"IDS_BLADE_NAME_SPB\",\"SourceFileSize\":\"68\",\"Files\":\"C:\\\\temp\\\\file.exe\",\"TargetName\":\"eicar.com\",\"AnalyzerDetectionMethod\":\"On-Demand Scan\",\"SourceFilePath\":\"C:\\\\Temp\",\"TargetUserName\":\"EXAMPLE\\\\alice.johnson\",\"TargetIPv4\":\"198.51.100.10\",\"TargetIPv6\":\"::ffff:198.51.100.10\",\"LocalPort\":\"12345\",\"ReceivedUTC\":\"2021-05-03 06:27:04.753\",\"SourceIPv6\":\"::ffff:198.51.100.10\",\"siem_last_time\":\"2021-05-03 06:27:04\",\"SourceIPv4\":\"198.51.100.10\",\"RemotePort\":\"443\",\"TaskName\":\"Host IPS protection\",\"AccessRequested\":\"read\",\"SourceUserName\":\"EXAMPLE\\\\alice.johnson\",\"TargetHostName\":\"host-1.example.local\",\"Vendor\":\"Trellix\",\"APIName\":\"CreateFile\",\"FirstAttemptedAction\":\"IDS_ALERT_THACT_ATT_CLE\",\"SourceMAC\":\"00005e005323\",\"TargetMAC\":\"00005e005324\",\"ServerID\":\"epo-server-1.example.local\",\"TargetFileSize\":\"68\",\"RegistryValue\":\"1\",\"AnalyzerEngineVersion\":\"5800.7501\",\"AnalyzerGTIQuery\":\"0\",\"AutoID\":\"17443183\",\"TargetFileName\":\"eicar.com\",\"ThreatCategory\":\"av.detect\",\"ThreatSeverity\":\"2\",\"AutoGUID\":\"01234567-ABCD-ABCD-ABCD-ABCD01234567\",\"AnalyzerVersion\":\"198.51.100.10\",\"AgentGUID\":\"01234567-ABCD-ABCD-ABCD-ABCD01234567\",\"TargetProtocol\":\"TCP\",\"Subject\":\"Malware Detected\",\"Cleanable\":\"0\",\"ProductFamily\":\"HOSTIPS\",\"TargetProcessName\":\"firefox.exe\",\"SourceHostName\":\"host-1.example.local\",\"SourcePort\":\"12345\",\"AnalyzerIPv4\":\"198.51.100.10\"}}",
+        "original": "<29>1 2018-06-29T10:53:33.0Z epo-server.example.local EPOEvents - EventFwd [agentInfo@3401 tenantId=\"1\" bpsId=\"1\" tenantGUID=\"{00000000-0000-0000-0000-000000000000}\" tenantNodePath=\"1\\2\"] <?xml version=\"1.0\" encoding=\"UTF-8\"?><EPOEvent><MachineInfo><MachineName>epo-server.example.local</MachineName><AgentGUID>{890cc45c-7b89-11e8-1cd6-005056afc747}</AgentGUID><IPAddress>203.0.113.30</IPAddress><OSName>Windows Server 2012 R2</OSName><UserName>SYSTEM</UserName><TimeZoneBias>-330</TimeZoneBias><RawMACAddress>005056afc747</RawMACAddress></MachineInfo><SoftwareInfo ProductName=\"McAfee Endpoint Security\" ProductVersion=\"10.6.0\" ProductFamily=\"TVD\"><CommonFields><Analyzer>ENDP_AM_1060</Analyzer><AnalyzerName>McAfee Endpoint Security</AnalyzerName><AnalyzerVersion>10.6.0</AnalyzerVersion><AnalyzerHostName>epo-server.example.local</AnalyzerHostName><AnalyzerEngineVersion>5900.7806</AnalyzerEngineVersion><AnalyzerDetectionMethod>On-Access Scan</AnalyzerDetectionMethod><AnalyzerDATVersion>3389.0</AnalyzerDATVersion></CommonFields><Event><EventID>1027</EventID><Severity>3</Severity><GMTTime>2018-06-29T10:52:58</GMTTime><CommonFields><ThreatCategory>av.detect</ThreatCategory><ThreatEventID>1027</ThreatEventID><ThreatSeverity>2</ThreatSeverity><ThreatName>Elspy.worm</ThreatName><ThreatType>virus</ThreatType><DetectedUTC>2018-06-29T10:52:58Z</DetectedUTC><ThreatActionTaken>IDS_ALERT_ACT_TAK_DEL</ThreatActionTaken><ThreatHandled>True</ThreatHandled><SourceHostName>epo-server.example.local</SourceHostName><SourceProcessName>c:\\Program Files\\QRadar\\file1.ext</SourceProcessName><TargetHostName>epo-server.example.local</TargetHostName><TargetUserName>domain\\admin</TargetUserName><TargetFileName>c:\\Program Files\\QRadar_v1\\91</TargetFileName></CommonFields><CustomFields target=\"EPExtendedEventMT\"><BladeName>IDS_BLADE_NAME_SPB</BladeName><AnalyzerContentCreationDate>2018-06-28T02:04:00Z</AnalyzerContentCreationDate><ThreatDetectedOnCreation>True</ThreatDetectedOnCreation><TargetName>91</TargetName><TargetPath>c:\\Program Files\\QRadar_v2\\Desktop</TargetPath><TargetHash>ed066136978a05009cf30c35de92e08e</TargetHash><TargetFileSize>70</TargetFileSize></CustomFields></Event></SoftwareInfo></EPOEvent>",
         "outcome": "success",
-        "sequence": 17443183,
-        "severity": 2,
+        "severity": 47,
         "type": [
-            "info"
+            "deletion"
         ]
     },
     "file": {
+        "directory": "c:\\Program Files\\QRadar_v2\\Desktop",
         "hash": {
-            "md5": "44d88612fea8a8f36de82e1278abb02f"
+            "md5": "ed066136978a05009cf30c35de92e08e"
         },
-        "name": "eicar.com",
-        "path": "C:\\Temp",
-        "size": 68
+        "name": "91",
+        "size": 70
     },
     "host": {
-        "name": "host-1.example.local"
+        "ip": [
+            "203.0.113.30"
+        ],
+        "mac": [
+            "00-50-56-AF-C7-47"
+        ],
+        "name": "epo-server.example.local",
+        "os": {
+            "name": "Windows Server 2012 R2"
+        }
     },
     "input": {
         "type": "tcp"
     },
     "log": {
         "source": {
-            "address": "172.19.0.3:51812"
+            "address": "172.21.0.3:40246"
+        },
+        "syslog": {
+            "appname": "EPOEvents",
+            "facility": {
+                "code": 3,
+                "name": "system"
+            },
+            "hostname": "epo-server.example.local",
+            "msgid": "EventFwd",
+            "priority": 29,
+            "severity": {
+                "code": 5,
+                "name": "Notice"
+            },
+            "version": "1"
         }
     },
-    "message": "Malware Detected",
-    "network": {
-        "direction": "inbound",
-        "transport": "tcp"
-    },
     "observer": {
-        "ip": [
-            "198.51.100.10",
-            "::ffff:198.51.100.10"
-        ]
+        "hostname": "epo-server.example.local"
     },
     "process": {
-        "name": "firefox.exe"
-    },
-    "registry": {
-        "key": "HKLM\\Software\\Test\\Key"
+        "executable": "c:\\Program Files\\QRadar\\file1.ext"
     },
     "related": {
         "hash": [
-            "44d88612fea8a8f36de82e1278abb02f"
+            "ed066136978a05009cf30c35de92e08e"
         ],
         "hosts": [
-            "host-1.example.local"
+            "epo-server.example.local"
         ],
         "ip": [
-            "::ffff:198.51.100.10",
-            "198.51.100.10"
+            "203.0.113.30"
         ],
         "user": [
-            "EXAMPLE\\alice.johnson"
+            "SYSTEM",
+            "domain\\admin"
         ]
     },
     "rule": {
         "category": "av.detect"
-    },
-    "source": {
-        "as": {
-            "number": 64501,
-            "organization": {
-                "name": "Documentation ASN"
-            }
-        },
-        "geo": {
-            "city_name": "Amsterdam",
-            "continent_name": "Europe",
-            "country_iso_code": "NL",
-            "country_name": "Netherlands",
-            "location": {
-                "lat": 52.37404,
-                "lon": 4.88969
-            },
-            "region_iso_code": "NL-NH",
-            "region_name": "North Holland"
-        },
-        "ip": [
-            "198.51.100.10",
-            "::ffff:198.51.100.10"
-        ],
-        "mac": "00-00-5E-00-53-23",
-        "port": 12345,
-        "user": {
-            "domain": "EXAMPLE",
-            "name": "alice.johnson"
-        }
     },
     "tags": [
         "preserve_original_event",
         "forwarded",
         "trellix_epo_on_prem-event"
     ],
+    "threat": {
+        "software": {
+            "name": "Elspy.worm"
+        }
+    },
     "trellix_epo_on_prem": {
         "event": {
             "epo_event": {
-                "access_requested": "read",
-                "agent_guid": "01234567-ABCD-ABCD-ABCD-ABCD01234567",
-                "analyzer": "ENDP_AM_1120",
-                "analyzer_detection_method": "On-Demand Scan",
-                "analyzer_engine_version": "5800.7501",
-                "analyzer_gti_query": "0",
-                "analyzer_name": "Trellix EndpointSecurity",
-                "analyzer_version": "198.51.100.10",
-                "api_name": "CreateFile",
-                "blade_name": "IDS_BLADE_NAME_SPB",
-                "cleanable": 0,
-                "detected_utc": "2021-05-03T06:26:21.000Z",
-                "direction": "inbound",
-                "files": "C:\\temp\\file.exe",
-                "first_attempted_action": "IDS_ALERT_THACT_ATT_CLE",
-                "product_family": "HOSTIPS",
-                "received_utc": "2021-05-03T06:27:04.753Z",
-                "registry_value": "1",
-                "second_attempted_action": "IDS_ALERT_THACT_ATT_DEL",
-                "server_id": "epo-server-1.example.local",
-                "siem_last_time": "2021-05-03T06:27:04.000Z",
-                "signature_name": "Buffer Overflow Detected",
-                "source_file_size": 68,
-                "source_process_name": "On-Demand Scan",
-                "target_name": "eicar.com",
-                "task_name": "Host IPS protection",
-                "threat_detected_on_creation": false,
-                "threat_handled": true,
-                "threat_severity": 2,
-                "threat_type": "test",
-                "vendor": "Trellix"
+                "machine_info": {
+                    "agent_guid": "{890cc45c-7b89-11e8-1cd6-005056afc747}",
+                    "time_zone_bias": -330
+                },
+                "software_info": {
+                    "common_fields": {
+                        "analyzer": "ENDP_AM_1060",
+                        "analyzer_dat_version": "3389.0",
+                        "analyzer_detection_method": "On-Access Scan",
+                        "analyzer_engine_version": "5900.7806",
+                        "analyzer_name": "McAfee Endpoint Security",
+                        "analyzer_version": "10.6.0"
+                    },
+                    "event": {
+                        "common_fields": {
+                            "detected_utc": "2018-06-29T10:52:58.000Z",
+                            "threat_event_id": "1027",
+                            "threat_handled": true,
+                            "threat_severity": 2,
+                            "threat_type": "virus"
+                        },
+                        "custom_fields": {
+                            "analyzer_content_creation_date": "2018-06-28T02:04:00.000Z",
+                            "blade_name": "IDS_BLADE_NAME_SPB",
+                            "target": "EPExtendedEventMT",
+                            "threat_detected_on_creation": true
+                        },
+                        "gmt_time": "2018-06-29T10:52:58.000Z",
+                        "severity": 3
+                    },
+                    "product_family": "TVD",
+                    "product_name": "McAfee Endpoint Security",
+                    "product_version": "10.6.0"
+                }
             }
         }
     },
     "user": {
+        "name": "SYSTEM",
         "target": {
-            "domain": "EXAMPLE",
-            "name": "alice.johnson"
+            "domain": "domain",
+            "name": "admin"
         }
     }
 }
@@ -1555,6 +1520,7 @@ An example event for `event` looks as following:
 | trellix_epo_on_prem.event.epo_event.vendor |  | keyword |  |
 | trellix_epo_on_prem.event.epo_event.version |  | keyword |  |
 | trellix_epo_on_prem.event.epo_event.wp_rating |  | keyword |  |
+| trellix_epo_on_prem.event.original | The decoded JSON representation of the raw Trellix ePO syslog event. Only stored when the "Preserve decoded event" toggle is enabled. | keyword |  |
 
 
 ### Inputs used

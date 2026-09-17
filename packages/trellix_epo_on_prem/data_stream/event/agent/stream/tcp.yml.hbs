@@ -9,6 +9,9 @@ tags:
 {{#if preserve_original_event}}
   - preserve_original_event
 {{/if}}
+{{#if preserve_decoded_event}}
+  - preserve_decoded_event
+{{/if}}
 {{#each tags as |tag|}}
   - {{tag}}
 {{/each}}
@@ -16,21 +19,39 @@ tags:
 publisher_pipeline.disable_host: true
 {{/contains}}
 processors:
+- copy_fields:
+    fields:
+      - from: message
+        to: event.original
+    fail_on_error: false
+    ignore_missing: true
+- syslog:
+    field: message
+    format: rfc5424
+    timezone: UTC
+    ignore_missing: true
+    # Trellix emits Windows-style paths with unescaped backslashes in the RFC 5424
+    # structured data (e.g. tenantNodePath="1\2"), which is invalid per the spec and
+    # makes the parser fail. Ignore that failure so the header fields it already
+    # extracted (@timestamp, log.syslog.*) are kept and the chain continues.
+    ignore_failure: true
+# The syslog processor parses the header (populating @timestamp and log.syslog.*)
+# but leaves the original line in `message`, so trim everything before the XML
+# payload to hand decode_xml only the EPOEvent document.
 - script:
     lang: javascript
     source: >
       function process(event) {
         var msg = event.Get("message");
         if (msg) {
-          var i = msg.indexOf("<" + "?xml");
-          if (i >= 0) { event.Put("xml_payload", msg.substring(i)); }
+          var i = msg.indexOf("<?xml");
+          if (i > 0) { event.Put("message", msg.substring(i)); }
         }
       }
 - decode_xml:
-    field: xml_payload
+    field: message
     target_field: xml_obj
     to_lower: false
-    ignore_failure: true
 - script:
     lang: javascript
     source: >
@@ -39,7 +60,7 @@ processors:
         if (o) { event.Put("message", JSON.stringify(o)); }
       }
 - drop_fields:
-    fields: [xml_payload, xml_obj]
+    fields: [xml_obj]
     ignore_missing: true
 {{#if processors}}
 {{processors}}

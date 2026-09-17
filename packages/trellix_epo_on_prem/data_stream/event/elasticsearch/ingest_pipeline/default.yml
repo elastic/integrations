@@ -5,28 +5,29 @@ processors:
       field: ecs.version
       tag: set_ecs_version
       value: '9.4.0'
-  - rename:
-      field: message
-      tag: rename_message_to_event_original
-      target_field: event.original
-      ignore_missing: true
-      if: ctx.event?.original == null
-      description: Renames the original `message` field to `event.original`.
+  # The agent stores the raw syslog line in `event.original` and the decoded
+  # EPOEvent JSON in `message`. Parse the decoded JSON here.
   - json:
-      field: event.original
-      tag: json_event_original
+      field: message
+      tag: json_message
       target_field: trellix_epo_on_prem.event
       on_failure:
         - append:
             field: error.message
-            tag: append_json_event_original_error
+            tag: append_json_message_error
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: trellix_epo_on_prem.event.original
+      tag: set_decoded_event_original
+      copy_from: message
+      ignore_empty_value: true
+      if: ctx.tags != null && ctx.tags.contains('preserve_decoded_event')
+      description: Optionally preserves the decoded JSON payload when the `preserve_decoded_event` toggle is enabled.
   - remove:
       field: message
       tag: remove_message
       ignore_missing: true
-      if: ctx.event?.original != null
-      description: The `message` field is no longer required when `event.original` exists.
+      description: The `message` field is no longer required once parsed into `trellix_epo_on_prem.event`.
   - set:
       field: event.kind
       tag: set_event_kind_event
@@ -368,6 +369,34 @@ processors:
       value: true
       if: ctx.trellix_epo_on_prem?.event?.EPOEvent?.ThreatDetectedOnCreation != null && (ctx.trellix_epo_on_prem.event.EPOEvent.ThreatDetectedOnCreation.toString() == '1' || ctx.trellix_epo_on_prem.event.EPOEvent.ThreatDetectedOnCreation.toString().equalsIgnoreCase('true'))
   - convert:
+      field: trellix_epo_on_prem.event.EPOEvent.SoftwareInfo.Event.CustomFields.ThreatDetectedOnCreation
+      tag: convert_customfields_threatdetectedoncreation_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: trellix_epo_on_prem.event.EPOEvent.SoftwareInfo.Event.CustomFields.ThreatDetectedOnCreation
+            tag: remove_customfields_threatdetectedoncreation_on_convert_failure
+            ignore_missing: true
+        - append:
+            field: error.message
+            tag: append_customfields_threatdetectedoncreation_convert_error
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: trellix_epo_on_prem.event.EPOEvent.ThreatDetectedOnCreation
+      tag: convert_threatdetectedoncreation_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: trellix_epo_on_prem.event.EPOEvent.ThreatDetectedOnCreation
+            tag: remove_threatdetectedoncreation_on_convert_failure
+            ignore_missing: true
+        - append:
+            field: error.message
+            tag: append_threatdetectedoncreation_convert_error
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
       field: trellix_epo_on_prem.event.EPOEvent.SoftwareInfo.Event.Severity
       tag: convert_event_severity_to_long
       type: long
@@ -407,6 +436,20 @@ processors:
       tag: set_success_true
       value: true
       if: ctx.trellix_epo_on_prem?.event?.EPOEvent?.Success != null && (ctx.trellix_epo_on_prem.event.EPOEvent.Success.toString() == '1' || ctx.trellix_epo_on_prem.event.EPOEvent.Success.toString().equalsIgnoreCase('true'))
+  - convert:
+      field: trellix_epo_on_prem.event.EPOEvent.Success
+      tag: convert_success_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: trellix_epo_on_prem.event.EPOEvent.Success
+            tag: remove_success_on_convert_failure
+            ignore_missing: true
+        - append:
+            field: error.message
+            tag: append_success_convert_error
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: trellix_epo_on_prem.event.EPOEvent.TVDSeverity
       tag: convert_tvd_severity_to_long
@@ -517,6 +560,34 @@ processors:
       tag: set_threathandled_true
       value: true
       if: ctx.trellix_epo_on_prem?.event?.EPOEvent?.ThreatHandled != null && (ctx.trellix_epo_on_prem.event.EPOEvent.ThreatHandled.toString() == '1' || ctx.trellix_epo_on_prem.event.EPOEvent.ThreatHandled.toString().equalsIgnoreCase('true'))
+  - convert:
+      field: trellix_epo_on_prem.event.EPOEvent.SoftwareInfo.Event.CommonFields.ThreatHandled
+      tag: convert_commonfields_threathandled_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: trellix_epo_on_prem.event.EPOEvent.SoftwareInfo.Event.CommonFields.ThreatHandled
+            tag: remove_commonfields_threathandled_on_convert_failure
+            ignore_missing: true
+        - append:
+            field: error.message
+            tag: append_commonfields_threathandled_convert_error
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: trellix_epo_on_prem.event.EPOEvent.ThreatHandled
+      tag: convert_threathandled_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: trellix_epo_on_prem.event.EPOEvent.ThreatHandled
+            tag: remove_threathandled_on_convert_failure
+            ignore_missing: true
+        - append:
+            field: error.message
+            tag: append_threathandled_convert_error
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - dissect:
       field: trellix_epo_on_prem.event.EPOEvent.SourceUserName
       tag: dissect_source_user_domain
