@@ -962,27 +962,37 @@ processors:
   - script:
       tag: script_sync_normalized_x509_certificate_dates
       lang: painless
-      description: Sync normalized certificate dates into ECS x509 fields and the independent TYCHON copy.
-      if: ctx?.x509 != null && ctx.x509 instanceof Map
+      description: Sync normalized certificate dates into ECS x509 fields and the independent TYCHON copies.
+      if: ctx.certificate instanceof Map || ctx.x509 instanceof Map
       source: >
         if (ctx.tychon == null || !(ctx.tychon instanceof Map)) { ctx.tychon = [:]; }
-        if (ctx.tychon.x509 == null || !(ctx.tychon.x509 instanceof Map)) { ctx.tychon.x509 = [:]; }
-        if (ctx.certificate?.not_before != null) { ctx.x509.not_before = ctx.certificate.not_before; }
-        if (ctx.certificate?.not_after != null) { ctx.x509.not_after = ctx.certificate.not_after; }
-        if (ctx.x509.not_before != null) { ctx.tychon.x509.not_before = ctx.x509.not_before; }
-        if (ctx.x509.not_after != null) { ctx.tychon.x509.not_after = ctx.x509.not_after; }
-        if (ctx.x509.validity instanceof Map && !ctx.x509.validity.isEmpty()) {
-          Map validityCopy = [:];
-          for (validityEntry in ctx.x509.validity.entrySet()) {
-            validityCopy[validityEntry.getKey()] = validityEntry.getValue();
+        if (ctx.certificate instanceof Map) {
+          if (ctx.tychon.certificate_leaf_details instanceof Map && ctx.tychon.certificate_leaf_details.validity instanceof Map) {
+            if (ctx.certificate.not_before != null) { ctx.tychon.certificate_leaf_details.validity.not_before = ctx.certificate.not_before; }
+            if (ctx.certificate.not_after != null) { ctx.tychon.certificate_leaf_details.validity.not_after = ctx.certificate.not_after; }
           }
-          ctx.tychon.x509.validity = validityCopy;
+          if (ctx.x509 instanceof Map) {
+            if (ctx.certificate.not_before != null) { ctx.x509.not_before = ctx.certificate.not_before; }
+            if (ctx.certificate.not_after != null) { ctx.x509.not_after = ctx.certificate.not_after; }
+          }
+        }
+        if (ctx.x509 instanceof Map) {
+          if (ctx.tychon.x509 == null || !(ctx.tychon.x509 instanceof Map)) { ctx.tychon.x509 = [:]; }
+          if (ctx.x509.not_before != null) { ctx.tychon.x509.not_before = ctx.x509.not_before; }
+          if (ctx.x509.not_after != null) { ctx.tychon.x509.not_after = ctx.x509.not_after; }
+          if (ctx.x509.validity instanceof Map && !ctx.x509.validity.isEmpty()) {
+            Map validityCopy = [:];
+            for (validityEntry in ctx.x509.validity.entrySet()) {
+              validityCopy[validityEntry.getKey()] = validityEntry.getValue();
+            }
+            ctx.tychon.x509.validity = validityCopy;
+          }
         }
 
   - date:
       tag: date_cipher_last_seen
       field: cipher.last_seen
-      target_field: cipher.last_seen
+      target_field: tychon.cipher_negotiation.last_seen
       formats:
         - ISO8601
         - yyyy-MM-dd'T'HH:mm:ssXXX
@@ -999,6 +1009,11 @@ processors:
             tag: append_error_pipeline_date_cipher_last_seen
             field: error.pipeline
             value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} failed with message: {{{_ingest.on_failure_message}}}"
+
+  - remove:
+      tag: remove_root_cipher
+      field: cipher
+      ignore_missing: true
 
   - set:
       tag: set_host_hostname
