@@ -10,12 +10,14 @@ TMPDIR_PKGS=""
 TMPDIR_REPO=""
 TMPDIR_REPO2=""
 TMPDIR_LINK=""
+TMPDIR_REPO3=""
 
 cleanup() {
     [[ -n "${TMPDIR_PKGS}" ]] && rm -rf "${TMPDIR_PKGS}"
     [[ -n "${TMPDIR_REPO}" ]] && rm -rf "${TMPDIR_REPO}"
     [[ -n "${TMPDIR_REPO2}" ]] && rm -rf "${TMPDIR_REPO2}"
     [[ -n "${TMPDIR_LINK}" ]] && rm -rf "${TMPDIR_LINK}"
+    [[ -n "${TMPDIR_REPO3}" ]] && rm -rf "${TMPDIR_REPO3}"
 }
 trap cleanup EXIT
 
@@ -296,6 +298,67 @@ assert_file_contains ".link pointing to repo-root _dev/shared → warning on std
 rm -f "${WARN_FILE}"
 
 rm -rf "${TMPDIR_LINK}"
+
+# ---------------------------------------------------------------------------
+# Integration test: get_linked_source_package_names + remove_other_packages
+# ---------------------------------------------------------------------------
+echo ""
+echo "--- integration: linked source packages kept by remove_other_packages"
+
+# Repo layout:
+#   packages/nginx_target   — target package; has a .link file pointing into
+#                             nginx_shared's _dev/shared/fields/
+#   packages/nginx_shared   — source package that owns the linked file
+#   packages/unrelated_pkg  — should be removed
+TMPDIR_REPO3="$(mktemp -d)"
+mkdir -p "${TMPDIR_REPO3}/.github"
+mkdir -p "${TMPDIR_REPO3}/packages/nginx_target/data_stream/ds1/fields"
+mkdir -p "${TMPDIR_REPO3}/packages/nginx_shared/_dev/shared/fields"
+mkdir -p "${TMPDIR_REPO3}/packages/unrelated_pkg"
+
+printf 'name: nginx_target\n'   > "${TMPDIR_REPO3}/packages/nginx_target/manifest.yml"
+printf 'name: nginx_shared\n'   > "${TMPDIR_REPO3}/packages/nginx_shared/manifest.yml"
+printf 'name: unrelated_pkg\n'  > "${TMPDIR_REPO3}/packages/unrelated_pkg/manifest.yml"
+
+touch "${TMPDIR_REPO3}/packages/nginx_shared/_dev/shared/fields/ecs.yml"
+# ../../../../ from data_stream/ds1/fields/ reaches packages/, then into nginx_shared
+printf '../../../../nginx_shared/_dev/shared/fields/ecs.yml abc123\n' \
+    > "${TMPDIR_REPO3}/packages/nginx_target/data_stream/ds1/fields/ecs.yml.link"
+
+printf '/packages/nginx_target/ @team\n/packages/nginx_shared/ @team\n/packages/unrelated_pkg/ @team\n' \
+    > "${TMPDIR_REPO3}/.github/CODEOWNERS"
+
+MOCK_REPO_DIR="${TMPDIR_REPO3}"
+
+(
+    cd "${TMPDIR_REPO3}"
+    target_path="packages/nginx_target"
+    packages_to_keep=("${target_path}")
+    while IFS= read -r linked_path; do
+        packages_to_keep+=("${linked_path}")
+    done < <(get_linked_source_package_names "${target_path}")
+    remove_other_packages "${packages_to_keep[@]}"
+)
+
+assert_equals "target package nginx_target is kept" \
+    "true" "$([[ -d "${TMPDIR_REPO3}/packages/nginx_target" ]] && echo true || echo false)"
+
+assert_equals "linked source package nginx_shared is kept" \
+    "true" "$([[ -d "${TMPDIR_REPO3}/packages/nginx_shared" ]] && echo true || echo false)"
+
+assert_equals "unrelated package is removed" \
+    "true" "$([[ ! -d "${TMPDIR_REPO3}/packages/unrelated_pkg" ]] && echo true || echo false)"
+
+assert_equals "nginx_target entry kept in CODEOWNERS" \
+    "true" "$(grep -q 'nginx_target' "${TMPDIR_REPO3}/.github/CODEOWNERS" && echo true || echo false)"
+
+assert_equals "nginx_shared entry kept in CODEOWNERS" \
+    "true" "$(grep -q 'nginx_shared' "${TMPDIR_REPO3}/.github/CODEOWNERS" && echo true || echo false)"
+
+assert_equals "unrelated_pkg entry removed from CODEOWNERS" \
+    "false" "$(grep -q 'unrelated_pkg' "${TMPDIR_REPO3}/.github/CODEOWNERS" && echo true || echo false)"
+
+rm -rf "${TMPDIR_REPO3}"
 
 # ---------------------------------------------------------------------------
 echo ""
