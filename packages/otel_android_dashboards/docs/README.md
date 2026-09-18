@@ -19,13 +19,13 @@ This package has been tested with EDOT Android 1.5.0, EDOT Collector 9.2.0, and 
   - `session.id`
   - `service.name` and `service.version` (which are the OpenTelemetry way to define a telemetry source, in this case your Android application's name and version)
   - `exception.stacktrace`, `exception.type`, and `exception.message` (for crash analysis)
-  - `app.build_id` (for matching an obfuscated stacktrace to its R8 mapping data)
+  - `app.build_id` (for matching an obfuscated stack trace to its R8 mapping data)
   - `os.version` and `device.manufacturer` (for device breakdown charts)
   - `span.name` and `span.status.code` (for span analysis)
 
 EDOT Android populates all of these fields automatically. If you are using a different OpenTelemetry SDK, ensure they are configured in your instrumentation.
 
-Retracing an obfuscated stacktrace also requires the R8 mapping data for the corresponding `app.build_id` to be uploaded to the Elastic Stack. Follow the [EDOT Android documentation](https://www.elastic.co/docs/reference/opentelemetry/edot-sdks/android) for detailed mapping upload instructions.
+Retracing an obfuscated stack trace also requires the R8 mapping data for the corresponding `app.build_id` to be uploaded to the Elastic Stack. Follow the [EDOT Android documentation](https://www.elastic.co/docs/reference/opentelemetry/edot-sdks/android) for detailed mapping upload instructions.
 
 ### Try it out
 
@@ -35,30 +35,52 @@ Check out the EDOT Android's [Demo application](https://github.com/elastic/andro
 
 ### Application Overview
 
-The main dashboard provides a high-level view of your Android application's health and usage. It includes controls to filter by application name and version, along with the following panels:
+The main dashboard provides a high-level view of your Android application's health and usage. It is organized into four collapsible sections:
 
-- **Device installations** — Total number of unique device installations, tracked by an installation ID stored in each device's cache.
+**Overview**
+
+- **Installations** — Total number of unique device installations, tracked by an installation ID stored in each device's cache.
 - **Sessions** — Number of unique sessions. A session represents a period of user interaction with the application.
 - **Installations by manufacturer** — Donut chart showing the distribution of installations across Android device manufacturers.
 - **Installations by OS version** — Donut chart showing the distribution of installations across Android OS versions.
-- **All spans** — Table of spans grouped by name with average duration, which can be further explored by a drilldown into Discover to see more span details with the trace waterfall UI.
+- **Applications** — Table of applications with their number of installations, sessions and crashes. Click an application name to filter the whole dashboard by it.
+- **Versions** — Table of application versions with their number of installations, sessions and crashes. Select an application first, then click a version to narrow the dashboard down to it.
+
+**Logs & Spans**
+
+- **Total recorded logs / Total recorded spans / Total failed spans** — Metric counters for log, span and errored span counts.
+- **All spans** — Table of spans grouped by name with their average duration, which can be further explored by a drilldown into Discover to see more span details with the trace waterfall UI.
 - **Failed spans** — Table of spans with an "Error" status, grouped by name and occurrence count, with a similar drilldown into Discover to see span details with the trace waterfall UI.
-- **Total spans / Failed spans** — Metric counters for total and errored span counts.
-- **Logs** — Total recorded log count.
-- **Crashes** — List of crashes grouped by a computed stacktrace group ID, with total crash count and crashes-per-session average. Clicking a crash group drills down into the Exception Details dashboard.
-- **Event timeline** — Shows a list of logs and spans in chronological order, useful to trace back the steps a user took during a session.
+- **Failed span rate and p95 duration over time** — Line chart with the share of errored spans and the 95th percentile span duration per time bucket.
+
+**Crashes**
+
+- **Total recorded crashes / Crashes per session** — Metric counters for the total crash count and the crashes-per-session average.
+- **Crashes table** — List of crashes grouped by a group ID computed from their stack trace, with a message sample and occurrence count. Clicking a group ID drills down into the Exception Details dashboard.
+- **Crash rate over time** — Line chart with the percentage of sessions active in each time bucket that recorded at least one crash.
+
+**Event timeline**
+
+- **First 100 events** — Shows a list of logs and spans in chronological order, useful to trace back the steps a user took during a session.
 
 ### Exception Details
 
-A drilldown dashboard opened from the Application Overview when selecting a specific crash group. It shows:
+A drilldown dashboard opened from the Application Overview when selecting a specific crash group. The group ID filter at the top narrows every panel to that exception. It is organized into two collapsible sections:
 
-- **Top affected sessions** — Sessions with the most occurrences of the selected exception, with a drilldown to view session details.
-- **Occurrences by session** — Average number of times the exception occurs per session.
-- **Total occurrences** — Total count of the selected exception.
-- **Top exception messages** — Most common messages associated with the exception, useful when stacktraces have variable message content.
+**Overview**
+
 - **Top affected OS versions** — Donut chart of exception occurrences by Android OS version.
 - **Top affected manufacturers** — Donut chart of exception occurrences by device manufacturer.
-- **Stacktrace** — The complete stacktrace for the selected exception, with an action to retrace obfuscated Android stacktraces.
+- **Total occurrences** — Total count of the selected exception.
+- **Affected installations** — Number of distinct device installations that recorded the exception.
+- **Occurrences per session** — Average number of times the exception occurs per session.
+- **Top affected sessions** — Sessions with the most occurrences of the selected exception. Click a session ID to open the Application Overview filtered by that session.
+- **Top exception messages** — Most common messages associated with the exception, useful when stack traces have variable message content.
+- **Occurrences over time** — Line chart with the number of occurrences per time bucket.
+
+**Stack trace**
+
+- **Most recent occurrence** — The complete stack trace of the most recent occurrence of the selected exception, with an action to retrace obfuscated Android stack traces.
 
 ## Setting it up
 
@@ -72,8 +94,8 @@ For the full setup guide, refer to the [EDOT Android getting started documentati
 1. In the top search bar in Kibana, search for **Dashboards**. Alternatively, you can find the dashboards in the **Integrations** page under this package's **Assets** tab.
 2. In the search bar, type **Android OTel**.
 3. Open the **[Android OTel] Application Overview** dashboard and verify that data is populated.
-4. Select your application from the list of "Applications" in one of the top panels of the dashboard.
-5. (Optional) Select the version of your application to narrow down your results.
+4. Select your application by clicking its name in the "Applications" table of the Overview section.
+5. (Optional) Click a version in the "Versions" table to narrow down your results.
 6. (Recommended) Click on values across the dashboard's panels to create filters and focus the dashboard on the specific data you'd like to inspect.
 
 ### Checking trace waterfall details
@@ -92,19 +114,19 @@ You'll see the trace waterfall UI in there. You can expand it to become fullscre
 
 ### Viewing details from a crash
 
-Within the **[Android OTel] Application Overview** dashboard, scroll down to the "Crashes" section to see the list of crashes by group ID. Select one group ID and click on "View crash details" to see that crash's details in a separate dashboard.
+Within the **[Android OTel] Application Overview** dashboard, scroll down to the "Crashes" section to see the list of crashes by group ID. Click one group ID and select "View crash details" to see that crash's details in a separate dashboard.
 
 ![View crash details](../img/drilldown-on-crash-details.png)
 
-### Deobfuscating stacktraces
+### Deobfuscating stack traces
 
-In the **[Android OTel] Exception Details** dashboard, scroll down to the "Stacktrace" panel. Click the menu for a stacktrace row, then select "Retrace stacktrace".
+In the **[Android OTel] Exception Details** dashboard, scroll down to the "Stack trace" section. Click the menu for the stack trace row, then select "Retrace stack trace".
 
-![Retrace stacktrace action](../img/retrace-stacktrace-action.png)
+![Retrace stack trace action](../img/retrace-stacktrace-action.png)
 
 Kibana opens the Android Crash Retrace page with the deobfuscated class names, methods, source files, and line numbers.
 
-![Retraced Android stacktrace](../img/retraced-stacktrace.png)
+![Retraced Android stack trace](../img/retraced-stacktrace.png)
 
 ## Troubleshooting
 
@@ -120,6 +142,6 @@ If you do not see data in the dashboards, make sure that:
 - The `service.name` field is set correctly so the application name filter works as expected.
 - The time range selected in Kibana covers the period when your application was sending telemetry. If the default time range doesn't show any data, try expanding it (for example, to "Last 7 days" or "Last 30 days") to confirm data has been ingested.
 
-If a stacktrace cannot be retraced, make sure that its crash event contains `app.build_id` and that the matching R8 mapping data has been uploaded to the Elastic Stack. See the [EDOT Android documentation](https://www.elastic.co/docs/reference/opentelemetry/edot-sdks/android) for mapping upload and troubleshooting guidance.
+If a stack trace cannot be retraced, make sure that its crash event contains `app.build_id` and that the matching R8 mapping data has been uploaded to the Elastic Stack. See the [EDOT Android documentation](https://www.elastic.co/docs/reference/opentelemetry/edot-sdks/android) for mapping upload and troubleshooting guidance.
 
 For general help with the EDOT Android SDK, refer to [EDOT Android troubleshooting](https://www.elastic.co/docs/troubleshoot/ingest/opentelemetry/edot-sdks/android).
