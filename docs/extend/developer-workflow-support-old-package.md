@@ -164,7 +164,8 @@ When a bug fix needs to be released for an older package version, the backport w
       --sha <merge_commit_sha> \
       --package <package_name> \
       --target <branch_or_version> \
-      --open-pr
+      --open-pr \
+      --origin-pr-number <pr_number>
     ```
 
     Required arguments:
