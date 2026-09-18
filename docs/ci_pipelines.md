@@ -203,6 +203,8 @@ be used in each pipeline are detailed in the corresponding sections of each pipe
 
 **Note**: Available only to Elastic employees.
 
+**Note**: This pipeline is currently disabled.
+
 Every week it is configured to run a job that will be in charge of testing all packages with non-Wolfi Elastic Agent docker images: https://buildkite.com/elastic/integrations-schedule-weekly
 
 The schedule of this job can be checked [here](https://github.com/elastic/integrations/blob/2e72e8524728daca2d47c814d8042031b8f5804f/catalog-info.yaml#L145).
