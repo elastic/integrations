@@ -342,11 +342,11 @@ is_already_published() {
         fi
         count=$((count + 1))
         if [ "${count}" -ge "${retries}" ]; then
-            >&2 echo "Failed to check if ${packageZip} is published after ${retries} attempts (last HTTP status: ${http_code})"
-            return 1
+            echoerr "Failed to check if ${packageZip} is published after ${retries} attempts (last HTTP status: ${http_code})"
+            return 2
         fi
         wait=$((2 ** count))
-        >&2 echo "Unexpected HTTP status ${http_code} checking ${packageZip}, retrying in ${wait}s... ($count/$retries)"
+        echoerr "Unexpected HTTP status ${http_code} checking ${packageZip}, retrying in ${wait}s... ($count/$retries)"
         sleep "${wait}"
     done
 }

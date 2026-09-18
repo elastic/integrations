@@ -77,8 +77,14 @@ build_packages() {
             continue
         fi
 
-        if is_already_published "${package_zip}" ; then
+        published_status=0
+        is_already_published "${package_zip}" || published_status=$?
+        if [ "${published_status}" -eq 0 ]; then
             echo "Skipping. ${package_zip} already published"
+            popd > /dev/null
+            continue
+        elif [ "${published_status}" -eq 2 ]; then
+            echo "Skipping. Could not determine if ${package_zip} is published, skipping to avoid duplicate publish"
             popd > /dev/null
             continue
         fi
