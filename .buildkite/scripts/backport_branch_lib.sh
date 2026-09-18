@@ -35,6 +35,43 @@ get_required_package_names() {
   yq -r '.requires.content[].package' "${manifest}" 2>/dev/null || true
 }
 
+# get_linked_source_package_names returns (one per line) the paths of packages
+# that own the source files of any *.link files found under the given package
+# path. The target package itself is excluded from the output. If a resolved
+# source path does not belong to any known package a warning is printed to
+# stderr and that file is skipped.
+get_linked_source_package_names() {
+  local package_path="${1}"
+  local target_abs
+  target_abs=$(realpath "${package_path}")
+
+  local link_file relative_src resolved_src
+  while IFS= read -r link_file; do
+    relative_src=$(awk '{print $1; exit}' "${link_file}")
+    if [[ -z "${relative_src}" ]]; then
+      continue
+    fi
+    resolved_src=$(realpath -m "$(dirname "${link_file}")/${relative_src}")
+
+    local matched=false
+    local pkg_path pkg_abs
+    while IFS= read -r pkg_path; do
+      pkg_abs=$(realpath "${pkg_path}")
+      if [[ "${resolved_src}" == "${pkg_abs}"/* || "${resolved_src}" == "${pkg_abs}" ]]; then
+        matched=true
+        if [[ "${pkg_abs}" != "${target_abs}" ]]; then
+          echo "${pkg_path}"
+        fi
+        break
+      fi
+    done < <(list_all_directories)
+
+    if [[ "${matched}" == "false" ]]; then
+      echo "Warning: source '${resolved_src}' (from ${link_file}) does not belong to any known package, skipping" >&2
+    fi
+  done < <(find "${package_path}" -name "*.link")
+}
+
 remove_other_packages() {
   local -a packages_to_keep=("$@")
   local package_path
