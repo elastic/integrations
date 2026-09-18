@@ -181,6 +181,7 @@ When a bug fix needs to be released for an older package version, the backport w
     |------|-------------|
     | `--open-pr` | Create a GitHub PR after pushing the working branch. |
     | `--dry-run` | Commit locally and skip push and PR creation; use to review the result before opening a PR. |
+    | `--origin-pr-number` | Number of the source PR on `main`; used to auto-assign the backport PR to the original author or merger. Optional — omit if running outside a PR context. |
 
     What the script does, in order:
 
