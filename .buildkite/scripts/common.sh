@@ -346,7 +346,7 @@ is_already_published() {
             return 2
         fi
         wait=$((2 ** count))
-        echoerr "Unexpected HTTP status ${http_code} checking ${packageZip}, retrying in ${wait}s... ($count/$retries)"
+        echoerr "Unexpected HTTP status ${http_code} checking ${packageZip}, retrying in ${wait}s... (attempt $((count + 1))/${retries})"
         sleep "${wait}"
     done
 }
