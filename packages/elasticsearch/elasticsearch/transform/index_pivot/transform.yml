@@ -31,6 +31,17 @@ source:
                         elasticsearch.index.name: ".ds-."
                     - prefix:
                         elasticsearch.index.name: ".ds-ilm-history"
+      # Exclude monitoring documents that have aged into the cold or frozen
+      # tiers. Those indices are backed by searchable snapshots, which the
+      # transform cannot page through fast enough: the checkpoint stalls and
+      # never advances for deployments with a long monitoring retention.
+      # This transform only ever needs recent data (10m buckets, 60s sync
+      # delay), so anything that has aged out of hot/warm was already
+      # processed. Backfilling older data is still possible with a manual
+      # copy of this transform that drops this clause.
+      must_not:
+        - terms:
+            _tier: ["data_cold", "data_frozen"]
 
 pivot:
   group_by:
@@ -131,5 +142,5 @@ sync:
     delay: 60s
     field: '@timestamp'
 _meta:
-  fleet_transform_version: 0.3.0
+  fleet_transform_version: 0.4.0
   run_as_kibana_system: false
