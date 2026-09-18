@@ -315,8 +315,6 @@ An example event for `audit` looks as following:
 
 
 
-### Data streams using ILM policies
-
 
 
 
