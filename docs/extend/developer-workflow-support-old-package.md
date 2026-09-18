@@ -10,7 +10,7 @@ When a bug fix needs to be released for an older package version, the backport w
 **Overview of the process:**
 
 1. Find the git commit that introduced the target package version.
-2. Open a PR adding a new entry to `.backports.yml` — CI validates and dry-runs the branch creation, and the branch is created automatically on merge.
+2. Open a PR adding a new entry to `.backports.yml` *(skip if the branch already exists)* — CI validates and dry-runs the branch creation, and the branch is created automatically on merge.
 3. Create a PR with the bug fix against that backport branch.
 4. Update the changelog in `main` to include the new version.
 
