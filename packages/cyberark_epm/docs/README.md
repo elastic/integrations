@@ -35,8 +35,8 @@ The integration supports two authentication methods against the CyberArk EPM RES
 
 This method uses the native EPM logon API with an EPM username and password. It is the default and remains supported for tenants that are not connected to the CyberArk Identity Security Platform Shared Services (ISPSS).
 
-1. Navigate to **Administration > Account Management** and create a user. While creating the user, check the **Allow to manage Sets** option and provide **ViewOnlySetAdmin** for all the required sets.
-2. Log in with the newly created user and navigate to **Administration > Account Configuration**. 
+1. Navigate to **Administration → Account Management** and create a user. While creating the user, check the **Allow to manage Sets** option and provide **ViewOnlySetAdmin** for all the required sets.
+2. Log in with the newly created user and navigate to **Administration → Account Configuration**. 
 3. Update the **Timeout for inactive session** parameter, which is a prerequisite for creating an integration in Elastic.
 
 NOTE: Set a high value for the **Timeout for inactive session** parameter to minimize multiple authentication calls.
@@ -47,14 +47,14 @@ This method uses the OAuth2 client credentials flow with a CyberArk Identity ser
 
 1. In Identity Administration, create a service user with **Is service user** and **Is OAuth confidential client** enabled. Note its login name, for example `svc_elastic@cyberark.cloud.1234`, and its password. These are used as `[Identity] Client ID` and `[Identity] Client Secret`.
 2. Add the service user as a member of an EPM role that grants the EPM API permissions required for the data streams you want to collect.
-3. In Identity Administration, go to **Apps & Widgets > Web Apps**, click **Add Web Apps**, and add the **CyberArk EPM API Client** app. Configure the required fields under the **Settings** tab and note the Application ID, which is used as `[Identity] Application ID`.
+3. In Identity Administration, go to **Apps & Widgets → Web Apps**, click **Add Web Apps**, and add the **CyberArk EPM API Client** app. Configure the required fields under the **Settings** tab and note the Application ID, which is used as `[Identity] Application ID`.
 4. On the **Tokens** tab of the web app, define the token expiration period. On the **Permissions** tab, add the service user.
 5. Note your Identity ID: click your user name, select **About**, and copy the **ID** shown under **Identity**, for example `ACF4874`. This is used as `[Identity] Identity ID`.
 6. Note your EPM server name, which is the subdomain of your EPM console URL. For example, if the console URL is `https://na101.epm.cyberark.com/management-options`, then `[Identity] EPM Server URL` is `https://na101.epm.cyberark.com`.
 
 ### Enable the integration in Elastic
 
-1. In Kibana navigate to **Management** > **Integrations**.
+1. In Kibana navigate to **Management → Integrations**.
 2. In the search bar, type **CyberArk EPM**.
 3. Select the **CyberArk EPM** integration and add it.
 4. Select the **Authentication Method** and fill in the parameters prefixed with the matching label. Parameters prefixed with the other label can be left empty.
@@ -64,8 +64,8 @@ This method uses the OAuth2 client credentials flow with a CyberArk Identity ser
 6. Save the integration.
 
 **Note**:
-  - The default `[EPM] URL` is `https://login.epm.cyberark.com`, but this may vary depending on your region. Please refer to the [Documentation](https://docs.cyberark.com/epm/latest/en/content/webservices/webservicesintro.htm#EPMdispatcherservername) to find the correct URL for your region. This URL is the EPM dispatcher server and is only used with the **EPM** authentication method; the **CyberArk Identity** method uses `[Identity] EPM Server URL` instead.
-  - If you encounter an error indicating that the usage limit has been reached, consider lowering the "Resource Rate Limit" parameter in the advanced section. For more details, please refer to the [documentation](https://docs.cyberark.com/epm/latest/en/content/webservices/webservicesintro.htm#APIlimitations).
+  - The default `[EPM] URL` is `https://login.epm.cyberark.com`, but this can vary depending on your region. Refer to the [Documentation](https://docs.cyberark.com/epm/latest/en/content/webservices/webservicesintro.htm#EPMdispatcherservername) to find the correct URL for your region. This URL is the EPM dispatcher server and is only used with the **EPM** authentication method. The **CyberArk Identity** method uses `[Identity] EPM Server URL` instead.
+  - If you encounter an error indicating that the usage limit has been reached, consider lowering the "Resource Rate Limit" parameter in the advanced section. For more details, refer to the [documentation](https://docs.cyberark.com/epm/latest/en/content/webservices/webservicesintro.htm#APIlimitations).
 
 ## Logs reference
 
