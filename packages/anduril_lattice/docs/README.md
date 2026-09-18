@@ -513,7 +513,5 @@ An example event for `entity` looks as following:
 ```
 
 
-### Data streams using ILM policies
-
 
 

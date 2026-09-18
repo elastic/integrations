@@ -42,6 +42,12 @@ processors:
       field: json
       target_field: greenhouse.audit
       ignore_missing: true
+  - remove:
+      tag: remove_non_object_performer_meta_9f2a6c4d
+      description: Remove non-object performer.meta values that conflict with the integration mapping
+      field: greenhouse.audit.performer.meta
+      ignore_missing: true
+      if: ctx.greenhouse?.audit?.performer?.meta != null && !(ctx.greenhouse.audit.performer.meta instanceof Map)
 
   # Timestamp
   - date:

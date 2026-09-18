@@ -4,10 +4,10 @@
 The Doppel integration for Elastic enables the automated collection of security alerts directly from the Doppel API. By ingesting these alerts into the Elastic Common Schema (ECS), security teams can centralize their threat monitoring, perform cross-source correlation, and visualize Doppel data within Kibana dashboards.
 
 ### Compatibility
-This integration is compatible with the Doppel API v1 and Elastic Stack version 8.12.0 or higher.
+This integration is compatible with the Doppel API v1 and v2. Refer to the version constraints shown in Kibana for the Elastic Stack versions this release supports.
 
 ### How it works
-This integration uses the `httpjson` input to periodically poll the Doppel `/v1/alerts` endpoint. It uses a cursor-based polling mechanism (stateful) to ensure that only new or updated alerts are ingested, minimizing API overhead and preventing data gaps.
+This integration uses the `cel` input to periodically poll the Doppel alerts endpoint. It uses a cursor-based polling mechanism (stateful) to ensure that only new or updated alerts are ingested, minimizing API overhead and preventing data gaps.
 
 ## What data does this integration collect?
 The Doppel integration collects security alerts, including:
@@ -23,9 +23,17 @@ All data is mapped to the [Elastic Common Schema (ECS)](https://www.elastic.co/g
 * **Historical Analysis:** Trend Doppel alert severity and volume over time to identify persistent threat patterns.
 
 ## What do I need to use this integration?
-To use this integration, you will need:
+This integration supports two versions of the Doppel API. Choose one with the **API Version** setting:
+
+**V1 (API Key)** — the default. You will need:
 * A valid Doppel **API Key**.
-* An optional **Organization Code** (if required by your Doppel instance).
+* An optional **User API Key**.
+* An optional **Organization Code** (if your user belongs to more than one organization).
+
+**V2 (OAuth 2.0)** — client credentials. You will need:
+* An **OAuth Client ID** and **Client Secret** issued by Doppel.
+
+With V2 the integration requests an access token from Doppel and sends it as a bearer token on every request. The organization is taken from the token, so the User API Key and Organization Code do not apply. Contact Doppel to have OAuth credentials issued for your organization.
 
 ## How do I deploy this integration?
 
@@ -35,12 +43,12 @@ Elastic Agent must be installed on a host with outbound internet access to reach
 The agent will act as a centralized poller, fetching data from the API and shipping it to your Elastic cluster.
 
 ### Agentless deployment
-This integration supports **Agentless (BETA)** deployment in Elastic Cloud environments. When using Agentless mode, Elastic manages the polling infrastructure for you, eliminating the need to install or maintain a local Elastic Agent.
+This integration supports **Agentless** deployment in Elastic Cloud environments. When using Agentless mode, Elastic manages the polling infrastructure for you, eliminating the need to install or maintain a local Elastic Agent.
 
 ## Onboard / configure
 1. Navigate to **Management > Integrations** in Kibana.
 2. Search for **Doppel** and click **Add Doppel**.
-3. Enter your **API Key** and configure the **Polling Interval**.
+3. Select the **API Version**, then enter the credentials it requires — the **API Key** for V1, or the **Client ID** and **Client Secret** for V2 — and configure the **Polling Interval**.
 4. Choose your deployment mode (Agent-based or Agentless).
 5. Save the integration to begin ingesting data.
 
