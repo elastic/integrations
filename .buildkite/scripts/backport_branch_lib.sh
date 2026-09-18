@@ -45,6 +45,17 @@ get_linked_source_package_names() {
   local target_abs
   target_abs=$(realpath "${package_path}")
 
+  # Build the package list and their absolute paths once so we don't re-invoke
+  # list_all_directories (and realpath) for every .link file.
+  local -a pkg_paths=()
+  local -a pkg_abss=()
+  local pkg_path pkg_abs
+  while IFS= read -r pkg_path; do
+    pkg_paths+=("${pkg_path}")
+    pkg_abss+=("$(realpath "${pkg_path}")")
+  done < <(list_all_directories)
+
+  local -A emitted=()
   local link_file relative_src resolved_src
   while IFS= read -r link_file; do
     relative_src=$(awk '{print $1; exit}' "${link_file}")
@@ -53,18 +64,28 @@ get_linked_source_package_names() {
     fi
     resolved_src=$(realpath -m "$(dirname "${link_file}")/${relative_src}")
 
+    # Self-link: source is within the target package — skip silently.
+    if [[ "${resolved_src}" == "${target_abs}"/* || "${resolved_src}" == "${target_abs}" ]]; then
+      continue
+    fi
+
     local matched=false
-    local pkg_path pkg_abs
-    while IFS= read -r pkg_path; do
-      pkg_abs=$(realpath "${pkg_path}")
+    local i
+    for (( i=0; i<${#pkg_paths[@]}; i++ )); do
+      pkg_abs="${pkg_abss[$i]}"
+      if [[ "${pkg_abs}" == "${target_abs}" ]]; then
+        continue
+      fi
       if [[ "${resolved_src}" == "${pkg_abs}"/* || "${resolved_src}" == "${pkg_abs}" ]]; then
         matched=true
-        if [[ "${pkg_abs}" != "${target_abs}" ]]; then
+        pkg_path="${pkg_paths[$i]}"
+        if [[ -z "${emitted[${pkg_path}]+x}" ]]; then
           echo "${pkg_path}"
+          emitted["${pkg_path}"]=1
         fi
         break
       fi
-    done < <(list_all_directories)
+    done
 
     if [[ "${matched}" == "false" ]]; then
       echo "Warning: source '${resolved_src}' (from ${link_file}) does not belong to any known package, skipping" >&2
