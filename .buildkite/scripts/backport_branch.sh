@@ -298,6 +298,12 @@ updateBackportBranchContents() {
       fi
     done < <(get_required_package_names "${PACKAGE_PATH}")
 
+    # Also keep any packages that are sources of .link files inside the target package.
+    while IFS= read -r linked_path; do
+      echo "Keeping linked source package: ${linked_path} (linked by ${PACKAGE_NAME})"
+      packages_to_keep+=("${linked_path}")
+    done < <(get_linked_source_package_names "${PACKAGE_PATH}")
+
     remove_other_packages "${packages_to_keep[@]}"
     ls -la "${PACKAGES_FOLDER_PATH}"
 
