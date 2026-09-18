@@ -46,18 +46,18 @@ processors:
           ctx._tmp = [:];
         }
         ctx._tmp.url = url;
+  - uri_parts:
+      field: _tmp.url
+      tag: uri_parts_request_url
+      keep_original: true
+      ignore_missing: true
+      ignore_failure: true
   - set:
       field: url.full
       copy_from: _tmp.url
       ignore_empty_value: true
       tag: set_url_full
       if: ctx._tmp?.url instanceof String
-  - uri_parts:
-      field: _tmp.url
-      tag: uri_parts_request_url
-      keep_original: false
-      ignore_missing: true
-      ignore_failure: true
   - grok:
       field: url.full
       tag: grok_url_path_from_full
@@ -132,7 +132,7 @@ processors:
       target_field: elastic_cloud.audit.api_key.name
       ignore_missing: true
       tag: rename_api_key_name
-      if: ctx.api_key_name != null && ctx.api_key_name != '' && ctx.api_key_id != null && ctx.api_key_id != '' && ctx.api_key_id != 'unknown'
+      if: ctx.api_key_name != null && ctx.api_key_name != '' && ctx.elastic_cloud?.audit?.api_key?.id != null
   - rename:
       field: request_payload
       target_field: http.request.body.content
