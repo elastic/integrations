@@ -54,6 +54,15 @@ report_build_failure() {
     fi
 }
 
+report_publish_check_failure() {
+    local package="${1}"
+    echo "[${package}] Skipped. Could not determine if already published after retries"
+
+    if [ -n "${BUILDKITE_BRANCH+x}" ]; then
+        buildkite-agent annotate "Could not determine if ${package} is already published (storage unreachable). Package was skipped to avoid duplicate publish." --context "ctx-check-${package}" --style "error"
+    fi
+}
+
 build_packages() {
     local packages=""
     local version=""
@@ -84,7 +93,7 @@ build_packages() {
             popd > /dev/null
             continue
         elif [ "${published_status}" -eq 2 ]; then
-            echo "Skipping. Could not determine if ${package_zip} is published, skipping to avoid duplicate publish"
+            report_publish_check_failure "${package_zip}"
             popd > /dev/null
             continue
         fi
