@@ -904,7 +904,7 @@ processors:
   - set:
       field: event.kind
       tag: set_event_kind_code_1027
-      value: event
+      value: alert
       if: ctx.event?.code == '1027'
   - set:
       field: event.action
@@ -1668,6 +1668,15 @@ processors:
       if: >-
         ctx.event?.category != null && ctx.event.category.contains('intrusion_detection') &&
         ctx.rule?.category instanceof String && ctx.rule.category.toLowerCase().contains('nips')
+  # Detections (malware or intrusion_detection) are alerts per ECS, keeping
+  # event.kind consistent with the specific code-1027/1278 branches above.
+  - set:
+      field: event.kind
+      tag: set_event_kind_detection_alert
+      value: alert
+      if: >-
+        ctx.event?.category != null &&
+        (ctx.event.category.contains('malware') || ctx.event.category.contains('intrusion_detection'))
   # File reputation / hash records: Threat Intelligence Exchange reputation
   # updates carry a file hash but no threat classification, and malware
   # detections that reference a file object also get the file category (matching
