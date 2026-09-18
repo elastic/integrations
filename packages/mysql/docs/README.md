@@ -52,6 +52,7 @@ You need Elasticsearch for storing and searching your data and Kibana for visual
 To ingest data from MySQL, you have to:
 
 - Specify the hostname, username, and password to connect to the MySQL database. Additionally, there is query parameter in replica_status data stream(default query is `SHOW REPLICA STATUS;` user can change it to `SHOW SLAVE STATUS`).
+- For replica status metrics, set the MySQL DSN without credentials (for example `tcp(127.0.0.1:3306)/`) and enter the username and password in the Username and Password fields. Do not put the password in the DSN. Passwords in the DSN are stored as plain text in the integration policy. Existing DSNs that still include `username:password@` continue to work if you leave Username and Password empty.
 - Specify the paths of MySQL error logs and slow logs. (default paths are:- Error logs: `/var/log/mysql/error.log*` and `/var/log/mysqld.log*`, Slow logs: `/var/log/mysql/*-slow.log*` and `/var/lib/mysql/*-slow.log*`)
 
 Before you can start sending data to Elastic, make sure you have the necessary MySQL user permissions configured appropriately. It's important to create a user password that does not include special characters to ensure compatibility with the integration.

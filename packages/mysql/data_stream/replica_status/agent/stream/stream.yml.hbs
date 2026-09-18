@@ -2,7 +2,11 @@ metricsets: ["query"]
 period: {{period}}
 hosts:
 {{#each hosts}}
-  - {{this}}
+{{#if ../username}}
+  - '{{../username}}{{#if ../password}}:{{../password}}{{/if}}@{{this}}'
+{{else}}
+  - {{escape_string this}}
+{{/if}}
 {{/each}}
 tags:
 {{#each tags as |tag|}}

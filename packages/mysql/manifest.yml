@@ -1,7 +1,7 @@
 format_version: "3.4.0"
 name: mysql
 title: MySQL
-version: "1.30.3"
+version: "1.30.4"
 description: Collect error logs, slow logs, and performance metrics from MySQL via Elastic Agent.
 type: integration
 group: mysql
@@ -112,11 +112,27 @@ policy_templates:
           - name: hosts
             type: text
             title: MySQL DSN
+            description: MySQL DSN without credentials, for example `tcp(127.0.0.1:3306)/`. Use the Username and Password fields for authentication so the password is stored as a Fleet secret. Existing DSNs that still include `username:password@` continue to work if Username is left empty. Do not set Username when the DSN already includes credentials.
             multi: true
             required: true
             show_user: true
             default:
-              - username:password@tcp(localhost:3306)/
+              - tcp(127.0.0.1:3306)/
+          - name: username
+            type: text
+            title: Username
+            description: Leave empty if the DSN already includes credentials.
+            multi: false
+            required: false
+            show_user: true
+          - name: password
+            type: password
+            title: Password
+            description: Stored as a Fleet secret. Leave empty if the DSN already includes credentials. Do not use special characters; they can break the MySQL DSN.
+            multi: false
+            required: false
+            show_user: true
+            secret: true
           - name: replication_status_query
             type: text
             title: Replica status query
