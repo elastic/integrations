@@ -59,7 +59,7 @@ report_publish_check_failure() {
     echo "[${package}] Skipped. Could not determine if already published after retries"
 
     if [ -n "${BUILDKITE_BRANCH+x}" ]; then
-        buildkite-agent annotate "Could not determine if ${package} is already published (storage unreachable). Package was skipped to avoid duplicate publish." --context "ctx-check-${package}" --style "error"
+        buildkite-agent annotate "Could not determine if ${package} is already published (storage unreachable). Package was skipped to avoid duplicate publish." --context "ctx-check-${package}" --style "error" || true
     fi
 }
 
