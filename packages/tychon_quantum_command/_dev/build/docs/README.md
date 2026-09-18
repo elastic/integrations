@@ -164,7 +164,7 @@ Default package path variables:
 Optional package settings:
 
 * `preserve_original_event`: copies the original message to `event.original` before ingest processing.
-* `tags`: appends custom tags to collected events.
+* `tags`: custom tags to add to collected events. When set, they replace the default `tychon` and `quantum` tags.
 
 </details>
 
