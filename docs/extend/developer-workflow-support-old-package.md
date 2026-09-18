@@ -5,7 +5,7 @@ mapped_pages:
 
 # Release a bug fix for supporting older package version [developer-workflow-support-old-package]
 
-Sometimes, when we drop the support for an earlier version of the stack and later on find out needing to add a bug fix to some old package version, we have to make some manual changes to release the bug fix to users. For example: in this [PR](https://github.com/elastic/integrations/pull/3688) (AWS package version 1.23.4), support for Kibana version 7.x was dropped and bumped the AWS package version from 1.19.5 to 1.20.0. But we found a bug in the EC2 dashboard that needs to be fixed with Kibana version 7.x, so instead of adding a new AWS package version 1.23.5, we need to fix it between 1.19.5 and 1.20.0. This means creating a new version (for example, 1.19.6) based on 1.19.5.
+When a bug fix needs to be released for an older package version, the backport workflow handles most of the process automatically: branch creation, cherry-picking, changelog syncing, and PR assignment. The steps below cover how to set up a backport branch and apply a fix. For example: in this [PR](https://github.com/elastic/integrations/pull/3688) (AWS package version 1.23.4), support for Kibana version 7.x was dropped and the AWS package version was bumped from 1.19.5 to 1.20.0. A bug was later found in the EC2 dashboard that needed to be fixed for Kibana version 7.x, so instead of adding a new AWS package version 1.23.5, a fix was needed between 1.19.5 and 1.20.0 — creating a new version (for example, 1.19.6) based on 1.19.5.
 
 **Overview of the process:**
 
@@ -13,6 +13,8 @@ Sometimes, when we drop the support for an earlier version of the stack and late
 2. Open a PR adding a new entry to `.backports.yml` — CI validates and dry-runs the branch creation, and the branch is created automatically on merge.
 3. Create a PR with the bug fix against that backport branch.
 4. Update the changelog in `main` to include the new version.
+
+> The [backport checklist comment](#backport-checklist-comment) on PRs targeting `main` drives step 3 automatically for most cases — tick the branches you want and the workflow creates the backport PRs on merge.
 
 **Detailed steps:**
 
@@ -149,9 +151,13 @@ Sometimes, when we drop the support for an earlier version of the stack and late
 
 3. **Create a PR for the bug fix**
 
-    **Recommended: use `backport_apply.sh`**
+    **Automatic: via the backport checklist**
 
-    `backport_apply.sh` handles the entire process: cherry-picking the commit, bumping the patch version, writing the changelog entry, syncing package owners, and opening a PR.
+    If the fix was merged to `main` with checklist branches ticked, the `auto-backport.yml` workflow creates the backport PR automatically — see [Backport checklist comment](#backport-checklist-comment). If the workflow encounters a conflict or error it marks the branch with ⚠️ in the checklist; use `backport_apply.sh` below to resolve it manually.
+
+    **Manual: use `backport_apply.sh`**
+
+    For ad-hoc backports, retries, or fixes applied directly to a backport branch, `backport_apply.sh` handles the entire process: cherry-picking the commit, bumping the patch version, writing the changelog entry, syncing package owners, and opening a PR.
 
     ```bash
     dev/scripts/backport_apply.sh \
@@ -185,9 +191,7 @@ Sometimes, when we drop the support for an earlier version of the stack and late
     5. Pushes the working branch and opens a PR against the backport branch (with `--open-pr`).
     6. Replaces the placeholder link in `changelog.yml` with the real backport PR URL and pushes a second `Fix changelog link to backport PR` commit.
 
-    If the cherry-pick conflicts on files beyond a version-line difference in `manifest.yml`, the script reports the conflicting files and cleans up. In this case, apply the fix manually (see the alternative path below).
-
-    > The `auto-backport.yml` workflow handles backports automatically: when the PR merges into `main`, the workflow reads the checklist comment and runs `backport apply` for every checked branch, updating the comment in real time (✅ = success, ⚠️ = conflict or error). Checking a previously-unchecked branch after the PR has already merged also triggers the workflow to create the missing backport PR. `backport_apply.sh` remains useful for ad-hoc backports and retries.
+    If the cherry-pick conflicts on files beyond a version-line difference in `manifest.yml`, the script reports the conflicting files and cleans up. In this case, apply the fix manually using the alternative path below.
 
     **Alternative: manual cherry-pick**
 
@@ -236,6 +240,8 @@ A Buildkite step runs on every pull request targeting a `backport-*` branch (tri
 The step is currently `soft_fail: true` — a mismatch posts a warning comment but does not block merge.
 
 ## Backport checklist comment
+
+This section describes the backport checklist that appears on every pull request targeting `main` — not just hotfix flows. If you landed here looking for "what is this comment on my PR?", this is the right place.
 
 When you open or update a pull request targeting `main`, the `post-backport-checklist.yml` workflow automatically posts a comment listing the active backport branches for every package touched by that PR. The comment is recreated (deleted and re-posted) on every push — any manual edits are overwritten, and the PR author receives a fresh notification. It only appears when at least one package in the PR's diff has active backport branches in `.backports.yml`.
 
