@@ -335,6 +335,18 @@ assert_equals "link from depth-2 pkg to depth-3 pkg → depth-3 path returned" \
     "packages/technology/pkg1" \
     "$(cd "${TMPDIR_LINK}" && get_linked_source_package_names "packages/pkg3")"
 
+# 5c. .link inside a depth-3 package points to the same depth-3 package → empty (filtered)
+mkdir -p "${TMPDIR_LINK}/packages/technology/pkg_self/data_stream/ds1/fields"
+mkdir -p "${TMPDIR_LINK}/packages/technology/pkg_self/_dev/shared/fields"
+printf 'name: pkg_self\n' > "${TMPDIR_LINK}/packages/technology/pkg_self/manifest.yml"
+touch "${TMPDIR_LINK}/packages/technology/pkg_self/_dev/shared/fields/ecs.yml"
+# ../../../ from data_stream/ds1/fields/ reaches the package root, then into _dev/shared
+printf '../../../_dev/shared/fields/ecs.yml abc123\n' \
+    > "${TMPDIR_LINK}/packages/technology/pkg_self/data_stream/ds1/fields/ecs.yml.link"
+assert_equals ".link in depth-3 pkg pointing to same pkg _dev/shared → empty (filtered)" \
+    "" \
+    "$(cd "${TMPDIR_LINK}" && get_linked_source_package_names "packages/technology/pkg_self")"
+
 rm -rf "${TMPDIR_LINK}"
 
 # ---------------------------------------------------------------------------
