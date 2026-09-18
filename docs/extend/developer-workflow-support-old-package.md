@@ -160,6 +160,14 @@ When a bug fix needs to be released for an older package version, the backport w
     For ad-hoc backports, retries, or fixes applied directly to a backport branch, `backport_apply.sh` handles the entire process: cherry-picking the commit, bumping the patch version, writing the changelog entry, syncing package owners, and opening a PR.
 
     ```bash
+    # Basic usage
+    dev/scripts/backport_apply.sh \
+      --sha <merge_commit_sha> \
+      --package <package_name> \
+      --target <branch_or_version> \
+      --open-pr
+
+    # With assignee resolution (pass the original PR number on main)
     dev/scripts/backport_apply.sh \
       --sha <merge_commit_sha> \
       --package <package_name> \
@@ -199,7 +207,7 @@ When a bug fix needs to be released for an older package version, the backport w
 
     Create a new branch in your own remote (do **not** use a name starting with `backport-`), apply the bug fix, bump the patch version in `manifest.yml`, and add a `changelog.yml` entry. Open a PR targeting the backport branch.
 
-    Once this PR is merged, the new version of the package is published automatically. Wait for it to appear in the [Elastic Package Registry](https://epr.elastic.co/) before proceeding to the next step.
+    Once this PR is merged, the new version of the package is published automatically. The changelog sync to `main` (step 4) fires automatically — no manual action needed.
 
     For subsequent fixes to the same version, no new branch is needed — open a new PR against the same backport branch.
 
@@ -294,6 +302,8 @@ skip_checklist_packages:
 Packages in `skip_checklist_packages` are excluded from the checklist comment (no checkboxes are shown) but still participate in changelog syncing and other automated backport flows. Use this for packages whose backport workflow is managed separately.
 
 ## Known issues
+
+These issues occur when working on backport branches based on older commits where CI infrastructure has since changed. If CI on your backport branch is failing with an unfamiliar error, check here first.
 
 1. Missing `elastic-package stack shellinit` in backport branch:
 
