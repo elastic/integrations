@@ -23,12 +23,18 @@ trap cleanup EXIT
 
 TMPDIR_PKGS="$(mktemp -d)"
 
-# Single mock controlled by MOCK_REPO_DIR. Strips the absolute prefix so the
-# output is always relative (e.g. packages/nginx_otel), matching what the real
-# list_all_directories returns in production.
+# Single mock controlled by MOCK_REPO_DIR. Discovers packages by finding
+# manifest.yml at depth 2 (packages/pkg) and depth 3 (packages/technology/pkg),
+# mirroring what mage listPackages does in production. Using bounded depths
+# avoids picking up manifest.yml files that live deeper inside packages (e.g.
+# data stream manifests at depth 4+). Strips the absolute prefix so the output
+# is always relative (e.g. packages/nginx_otel), matching production output.
 MOCK_REPO_DIR="${TMPDIR_PKGS}"
 list_all_directories() {
-    find "${MOCK_REPO_DIR}/packages" -mindepth 1 -maxdepth 1 -type d | sort | sed "s|${MOCK_REPO_DIR}/||"
+    {
+        find "${MOCK_REPO_DIR}/packages" -mindepth 2 -maxdepth 2 -name "manifest.yml" -exec dirname {} \;
+        find "${MOCK_REPO_DIR}/packages" -mindepth 3 -maxdepth 3 -name "manifest.yml" -exec dirname {} \;
+    } | sort | sed "s|${MOCK_REPO_DIR}/||"
 }
 
 source "${REPO_ROOT}/.buildkite/scripts/backport_branch_lib.sh"
@@ -136,6 +142,9 @@ echo "--- remove_other_packages tests"
 TMPDIR_REPO="$(mktemp -d)"
 mkdir -p "${TMPDIR_REPO}/.github"
 mkdir -p "${TMPDIR_REPO}/packages/"{pkg_a,pkg_b,pkg_c}
+printf 'name: pkg_a\n' > "${TMPDIR_REPO}/packages/pkg_a/manifest.yml"
+printf 'name: pkg_b\n' > "${TMPDIR_REPO}/packages/pkg_b/manifest.yml"
+printf 'name: pkg_c\n' > "${TMPDIR_REPO}/packages/pkg_c/manifest.yml"
 printf '/packages/pkg_a/ @team-a\n/packages/pkg_b/ @team-b\n/packages/pkg_c/ @team-c\n' \
     > "${TMPDIR_REPO}/.github/CODEOWNERS"
 
@@ -296,6 +305,35 @@ assert_file_contains ".link pointing to repo-root _dev/shared → warning on std
     "Warning:" \
     "${WARN_FILE}"
 rm -f "${WARN_FILE}"
+
+# 5. Packages nested under a technology sub-folder (packages/technology/pkg1 etc.)
+# The updated mock finds manifest.yml at depth 2 and depth 3, so these packages
+# are discovered automatically via MOCK_REPO_DIR without any subshell override.
+mkdir -p "${TMPDIR_LINK}/packages/technology/pkg1/data_stream/ds1/fields"
+mkdir -p "${TMPDIR_LINK}/packages/technology/pkg1/_dev/shared/fields"
+mkdir -p "${TMPDIR_LINK}/packages/technology/pkg2/_dev/shared/fields"
+mkdir -p "${TMPDIR_LINK}/packages/pkg3/data_stream/ds1/fields"
+printf 'name: pkg1\n' > "${TMPDIR_LINK}/packages/technology/pkg1/manifest.yml"
+printf 'name: pkg2\n' > "${TMPDIR_LINK}/packages/technology/pkg2/manifest.yml"
+printf 'name: pkg3\n' > "${TMPDIR_LINK}/packages/pkg3/manifest.yml"
+touch "${TMPDIR_LINK}/packages/technology/pkg2/_dev/shared/fields/ecs.yml"
+touch "${TMPDIR_LINK}/packages/technology/pkg1/_dev/shared/fields/beats.yml"
+
+# 5a. Link from depth-3 package (technology/pkg1) → sibling depth-3 package (technology/pkg2)
+# ../../../../ from data_stream/ds1/fields/ reaches packages/technology/
+printf '../../../../pkg2/_dev/shared/fields/ecs.yml abc123\n' \
+    > "${TMPDIR_LINK}/packages/technology/pkg1/data_stream/ds1/fields/ecs.yml.link"
+assert_equals "link from depth-3 pkg to sibling depth-3 pkg → sibling path returned" \
+    "packages/technology/pkg2" \
+    "$(cd "${TMPDIR_LINK}" && get_linked_source_package_names "packages/technology/pkg1")"
+
+# 5b. Link from depth-2 package (pkg3) → depth-3 package (technology/pkg1)
+# ../../../../ from data_stream/ds1/fields/ reaches packages/
+printf '../../../../technology/pkg1/_dev/shared/fields/beats.yml abc123\n' \
+    > "${TMPDIR_LINK}/packages/pkg3/data_stream/ds1/fields/beats.yml.link"
+assert_equals "link from depth-2 pkg to depth-3 pkg → depth-3 path returned" \
+    "packages/technology/pkg1" \
+    "$(cd "${TMPDIR_LINK}" && get_linked_source_package_names "packages/pkg3")"
 
 rm -rf "${TMPDIR_LINK}"
 
