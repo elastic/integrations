@@ -77,7 +77,7 @@ build_packages() {
             continue
         fi
 
-        published_status=0
+        local published_status=0
         is_already_published "${package_zip}" || published_status=$?
         if [ "${published_status}" -eq 0 ]; then
             echo "Skipping. ${package_zip} already published"

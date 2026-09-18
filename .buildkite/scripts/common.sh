@@ -323,13 +323,19 @@ elastic_package_verbosity() {
 
 ELASTIC_PACKAGE_VERBOSITY=$(elastic_package_verbosity)
 
+# Check whether a package zip is already published on the package storage.
+# Returns 0 (published), 1 (not published / 404), or 2 (transient error after retries).
+# retry() is not used because it retries on any non-zero exit, making it impossible
+# to distinguish a definitive 404 (exit 1) from a transient failure (exit 2).
+# On retry exhaustion the caller skips publishing rather than proceeding, accepting
+# the risk of a missed publish to avoid the harder-to-fix risk of a duplicate publish.
 is_already_published() {
     local packageZip=$1
     local url="https://package-storage.elastic.co/artifacts/packages/${packageZip}"
     local retries=3
     local count=0
     local http_code
-    local wait
+    local delay
 
     while true; do
         http_code=$(curl -s -o /dev/null -w "%{http_code}" --head "${url}")
@@ -345,9 +351,9 @@ is_already_published() {
             echoerr "Failed to check if ${packageZip} is published after ${retries} attempts (last HTTP status: ${http_code})"
             return 2
         fi
-        wait=$((2 ** count))
-        echoerr "Unexpected HTTP status ${http_code} checking ${packageZip}, retrying in ${wait}s... (attempt $((count + 1))/${retries})"
-        sleep "${wait}"
+        delay=$((2 ** count))
+        echoerr "Unexpected HTTP status ${http_code} checking ${packageZip}, retrying in ${delay}s... (attempt $((count + 1))/${retries})"
+        sleep "${delay}"
     done
 }
 
