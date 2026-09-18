@@ -41,7 +41,9 @@ processors:
         FUTURE_USE and Receive Time fields, so they cannot match the first pattern, and
         the tcp and udp inputs run the syslog processor on the agent, which consumes the
         header the second pattern requires. The third pattern is the audit CSV as it
-        arrives once that header has been consumed.
+        arrives once that header has been consumed, and its AUDIT token is limited to the
+        spellings the audit router below accepts so that a header which parses here is
+        always routed.
       field: _temp_.message
       patterns:
         - "^%{DATA},%{TIMESTAMP:_temp_.received_time},%{FIELD:observer.serial_number},%{FIELD:panw.panos.type},(?:%{FIELD:panw.panos.sub_type})?,%{FIELD:_temp_.config_version},%{TIMESTAMP:_temp_.generated_time},%{GREEDYDATA:message}$"
@@ -51,7 +53,7 @@ processors:
         TIMESTAMP: "%{PANW_DATE}|%{TIMESTAMP_ISO8601}"
         PANW_DATE: "%{YEAR}/%{MONTHNUM}/%{MONTHDAY} %{TIME}"
         FIELD: "[^,]*"
-        AUDIT: "[Aa][Uu][Dd][Ii][Tt]"
+        AUDIT: "(?:AUDIT|audit)"
 
   ## TRAFFIC
   - pipeline:
