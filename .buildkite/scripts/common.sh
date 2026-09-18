@@ -330,8 +330,8 @@ ELASTIC_PACKAGE_VERBOSITY=$(elastic_package_verbosity)
 # On retry exhaustion the caller skips publishing rather than proceeding, accepting
 # the risk of a missed publish to avoid the harder-to-fix risk of a duplicate publish.
 is_already_published() {
-    local packageZip=$1
-    local url="https://package-storage.elastic.co/artifacts/packages/${packageZip}"
+    local package_zip="$1"
+    local url="https://package-storage.elastic.co/artifacts/packages/${package_zip}"
     local retries=3
     local count=0
     local http_code
@@ -340,19 +340,19 @@ is_already_published() {
     while true; do
         http_code=$(curl -s -o /dev/null -w "%{http_code}" --head "${url}")
         if [ "${http_code}" == "200" ]; then
-            echo "- Already published ${packageZip}"
+            echo "- Already published ${package_zip}"
             return 0
         elif [ "${http_code}" == "404" ]; then
-            echo "- Not published ${packageZip}"
+            echo "- Not published ${package_zip}"
             return 1
         fi
         count=$((count + 1))
         if [ "${count}" -ge "${retries}" ]; then
-            echoerr "Failed to check if ${packageZip} is published after ${retries} attempts (last HTTP status: ${http_code})"
+            echoerr "Failed to check if ${package_zip} is published after ${retries} attempts (last HTTP status: ${http_code})"
             return 2
         fi
         delay=$((2 ** count))
-        echoerr "Unexpected HTTP status ${http_code} checking ${packageZip}, retrying in ${delay}s... (attempt $((count + 1))/${retries})"
+        echoerr "Unexpected HTTP status ${http_code} checking ${package_zip}, retrying in ${delay}s... (attempt $((count + 1))/${retries})"
         sleep "${delay}"
     done
 }
