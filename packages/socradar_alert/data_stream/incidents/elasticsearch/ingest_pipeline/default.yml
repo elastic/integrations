@@ -97,7 +97,13 @@ processors:
       formats:
         - "yyyy-MM-dd HH:mm:ss"
       timezone: UTC
+      if: ctx.socradar_alert?.date != null
       ignore_failure: false
+      description: >-
+        Use the alarm's own date as the event timestamp. Guarded on the field
+        being present so an alarm without a date keeps the collection timestamp
+        instead of failing the document; a date that is present but malformed
+        still surfaces as an error.
   - rename:
       field: socradar_alert.alarm_type_details.alarm_sub_type
       target_field: socradar_alert.alarm_sub_type
