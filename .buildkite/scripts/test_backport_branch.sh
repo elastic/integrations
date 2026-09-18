@@ -9,11 +9,13 @@ REPO_ROOT="$(git rev-parse --show-toplevel)"
 TMPDIR_PKGS=""
 TMPDIR_REPO=""
 TMPDIR_REPO2=""
+TMPDIR_LINK=""
 
 cleanup() {
     [[ -n "${TMPDIR_PKGS}" ]] && rm -rf "${TMPDIR_PKGS}"
     [[ -n "${TMPDIR_REPO}" ]] && rm -rf "${TMPDIR_REPO}"
     [[ -n "${TMPDIR_REPO2}" ]] && rm -rf "${TMPDIR_REPO2}"
+    [[ -n "${TMPDIR_LINK}" ]] && rm -rf "${TMPDIR_LINK}"
 }
 trap cleanup EXIT
 
@@ -232,6 +234,68 @@ assert_equals "nginx_otel entry kept in CODEOWNERS" \
     "true" "$(grep -q 'nginx_otel' "${TMPDIR_REPO2}/.github/CODEOWNERS" && echo true || echo false)"
 
 rm -rf "${TMPDIR_REPO2}"
+
+# ---------------------------------------------------------------------------
+# Tests: get_linked_source_package_names
+# ---------------------------------------------------------------------------
+echo ""
+echo "--- get_linked_source_package_names tests"
+
+TMPDIR_LINK="$(mktemp -d)"
+mkdir -p "${TMPDIR_LINK}/packages"
+MOCK_REPO_DIR="${TMPDIR_LINK}"
+
+# 1. No .link files → empty output
+mkdir -p "${TMPDIR_LINK}/packages/pkg_no_links"
+printf 'name: pkg_no_links\n' > "${TMPDIR_LINK}/packages/pkg_no_links/manifest.yml"
+assert_equals "no .link files → empty output" \
+    "" \
+    "$(cd "${TMPDIR_LINK}" && get_linked_source_package_names "packages/pkg_no_links")"
+
+# 2. .link file pointing to _dev/shared inside the same package → empty (filtered)
+# Layout mirrors the real pattern: link file is in data_stream/*/fields/ and source
+# is in the package's own _dev/shared/fields/.
+mkdir -p "${TMPDIR_LINK}/packages/pkg_self_link/data_stream/ds1/fields"
+mkdir -p "${TMPDIR_LINK}/packages/pkg_self_link/_dev/shared/fields"
+printf 'name: pkg_self_link\n' > "${TMPDIR_LINK}/packages/pkg_self_link/manifest.yml"
+touch "${TMPDIR_LINK}/packages/pkg_self_link/_dev/shared/fields/ecs.yml"
+# ../../../ from data_stream/ds1/fields/ goes up to the package root
+printf '../../../_dev/shared/fields/ecs.yml abc123\n' \
+    > "${TMPDIR_LINK}/packages/pkg_self_link/data_stream/ds1/fields/ecs.yml.link"
+assert_equals ".link pointing to same package _dev/shared → empty (filtered)" \
+    "" \
+    "$(cd "${TMPDIR_LINK}" && get_linked_source_package_names "packages/pkg_self_link")"
+
+# 3. .link file with ../ traversal pointing to _dev/shared in a different package
+mkdir -p "${TMPDIR_LINK}/packages/pkg_target/data_stream/ds1/fields"
+printf 'name: pkg_target\n' > "${TMPDIR_LINK}/packages/pkg_target/manifest.yml"
+mkdir -p "${TMPDIR_LINK}/packages/pkg_source/_dev/shared/fields"
+printf 'name: pkg_source\n' > "${TMPDIR_LINK}/packages/pkg_source/manifest.yml"
+touch "${TMPDIR_LINK}/packages/pkg_source/_dev/shared/fields/beats.yml"
+# ../../../../ from data_stream/ds1/fields/ reaches packages/, then into pkg_source
+printf '../../../../pkg_source/_dev/shared/fields/beats.yml abc123\n' \
+    > "${TMPDIR_LINK}/packages/pkg_target/data_stream/ds1/fields/beats.yml.link"
+assert_equals ".link with ../ traversal pointing to different package _dev/shared → that package path" \
+    "packages/pkg_source" \
+    "$(cd "${TMPDIR_LINK}" && get_linked_source_package_names "packages/pkg_target")"
+
+# 4. .link file pointing to _dev/shared at repo root (outside all packages) → empty + warning
+# Layout: link is 5 levels deep; ../../../../../ reaches repo root where _dev/shared lives.
+mkdir -p "${TMPDIR_LINK}/packages/pkg_outside_link/data_stream/ds1/fields"
+printf 'name: pkg_outside_link\n' > "${TMPDIR_LINK}/packages/pkg_outside_link/manifest.yml"
+printf '../../../../../_dev/shared/fields/ecs.yml abc123\n' \
+    > "${TMPDIR_LINK}/packages/pkg_outside_link/data_stream/ds1/fields/ecs.yml.link"
+WARN_FILE="$(mktemp)"
+actual_outside="$(cd "${TMPDIR_LINK}" && get_linked_source_package_names "packages/pkg_outside_link" 2>"${WARN_FILE}")"
+assert_equals ".link pointing to repo-root _dev/shared → empty stdout" \
+    "" \
+    "${actual_outside}"
+assert_file_contains ".link pointing to repo-root _dev/shared → warning on stderr" \
+    "Warning:" \
+    "${WARN_FILE}"
+rm -f "${WARN_FILE}"
+
+rm -rf "${TMPDIR_LINK}"
 
 # ---------------------------------------------------------------------------
 echo ""
