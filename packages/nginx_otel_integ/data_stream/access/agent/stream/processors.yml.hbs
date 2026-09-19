@@ -1,0 +1,35 @@
+processors:
+  transform/parse_nginx_access:
+    error_mode: ignore
+    log_statements:
+      - context: log
+        conditions:
+          - IsMatch(body, "^[\\d.]+ - .+ \\[.+\\] \".+\" \\d+ \\d+ \".+\" \".+\"")
+        statements:
+          - set(body, ExtractGrokPatterns(body, "%{IPORHOST:source.address} - (-|%{DATA:user.name}) \\[%{HTTPDATE:nginx.access.time}\\] \"%{WORD:http.request.method} %{DATA:url.original} HTTP/%{NUMBER:http.version}\" %{NUMBER:http.response.status_code:long} %{NUMBER:http.response.body.size:long} \"(-|%{DATA:http.request.referrer})\" \"(-|%{DATA:user_agent.original})\"", true))
+          - set(attributes["event.name"], "nginx.access")
+          - set(time, Time(body["nginx.access.time"], "%d/%b/%Y:%H:%M:%S %z"))
+          - delete_key(body, "nginx.access.time")
+          - set(attributes["http.response.status_code"], body["http.response.status_code"])
+          - set(attributes["http.request.method"], body["http.request.method"])
+          - set(attributes["url.original"], body["url.original"])
+          - set(attributes["source.address"], body["source.address"])
+          - set(attributes["http.response.body.size"], body["http.response.body.size"])
+          - set(attributes["http.version"], body["http.version"])
+          - set(attributes["user_agent.original"], body["user_agent.original"])
+      - context: log
+        conditions:
+          - body["user_agent.original"] != nil
+        statements:
+          - merge_maps(body, UserAgent(body["user_agent.original"]), "upsert")
+          - set(attributes["user_agent.name"], body["user_agent.name"])
+  resourcedetection/system:
+    detectors: ["system"]
+    system:
+      hostname_sources: ["os"]
+service:
+  pipelines:
+    logs:
+      processors:
+        - transform/parse_nginx_access
+        - resourcedetection/system
