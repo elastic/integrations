@@ -1,0 +1,74 @@
+config_version: 2
+interval: {{interval}}
+resource.url: {{url}}
+state:
+  api_key: {{api_key}}
+  query: {{query}}
+{{#if max_pages}}
+  max_pages: {{max_pages}}
+{{/if}}
+redact:
+  fields:
+    - api_key
+program: |
+  state.with(
+    request(
+      "GET",
+      state.url.trim_right("/") + "/shodan/host/search?" + {
+        "key": [state.api_key],
+        "query": [state.query],
+        "minify": ["false"],
+        "page": [string(has(state.?next.page) ? state.next.page : 1)],
+      }.format_query()
+    ).do_request().as(resp, resp.StatusCode == 200 ?
+      resp.Body.decode_json().as(body,
+        (has(body.matches) && size(body.matches) > 0 &&
+          (!has(state.max_pages) ||
+            (has(state.?next.page) ? int(state.next.page) : 1) < int(state.max_pages))
+        ).as(wantMore, {
+          "events": (
+            has(body.matches) && size(body.matches) > 0 ?
+              body.matches.map(e, {
+                "message": e.encode_json(),
+              })
+            :
+              []
+          ),
+          "want_more": wantMore,
+          "next": wantMore ? {
+            "page": (has(state.?next.page) ? int(state.next.page) : 1) + 1,
+          } : {},
+        })
+      )
+    :
+      {
+        "events": [{
+          "error": {
+            "code": string(resp.StatusCode),
+            "id": string(resp.Status),
+            "message": "GET " + state.url.trim_right("/") + "/shodan/host/search: " + (
+                size(resp.Body) != 0 ?
+                  string(resp.Body)
+                :
+                  string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+              ),
+          },
+        }],
+        "next": {},
+        "want_more": false,
+      }
+    )
+  )
+
+processors:
+  - decode_json_fields:
+      fields: ["message"]
+      target: shodan
+
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
