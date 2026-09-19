@@ -1,4 +1,15 @@
 # newer versions go on top
+- version: "8.5.0"
+  changes:
+    - description: Migrate the Security Hub CSPM Findings (`securityhub_findings`) and Findings Full Posture (`securityhub_findings_full_posture`) data streams from the `httpjson` input to CEL via `run_as_cel`, preserving the native `auth.aws` configuration (static keys, assume-role, shared credentials, and Identity Federation / Cloud Connectors) and the persisted collection cursor.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/20818
+    - description: Add a `filters` variable to the Findings and Findings Full Posture data streams to apply server-side `AwsSecurityFindingFilters` to `GetFindings`, and a `Maximum Executions` variable to bound the number of pages fetched per collection interval.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/20818
+    - description: Fix `Invalid NextToken` errors (HTTP 403/400) observed when paginating large `GetFindings` result sets. The `httpjson` input re-evaluates the request transforms on every page, so the hour-truncated `UpdatedAt` window start could change mid-pagination and invalidate the `NextToken`, forcing collection to restart. The CEL program pins the window once per collection interval and only appends `NextToken` between pages.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/20818
 - version: "8.4.0"
   changes:
     - description: "Set `number_of_shards: 3` on the `latest_cdr_misconfigurations`, `latest_cdr_misconfigurations_awsconfig`, and `latest_cdr_vulnerabilities_awsinspector` transform destination indices and bump their destination index version to avoid Elasticsearch shard-size warnings at scale."
