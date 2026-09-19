@@ -1,0 +1,435 @@
+---
+description: Pipeline for parsing Eclipse Mosquitto broker logs.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: '9.3.0'
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+
+  # Mosquitto writes a timezone-less local timestamp when `log_timestamp_format` is
+  # configured, so an explicit offset from the integration policy wins over the
+  # Elastic Agent host timezone supplied by `add_locale`.
+  - set:
+      field: event.timezone
+      tag: set_event_timezone_from_tz_offset
+      value: '{{{_conf.tz_offset}}}'
+      if: ctx._conf?.tz_offset != null && ctx._conf.tz_offset != ''
+
+  # Split the log line into its timestamp prefix and the human readable body.
+  # Mosquitto emits Unix epoch seconds by default and a strftime-formatted local
+  # timestamp when `log_timestamp_format` is set. Both variants are handled here,
+  # as is `log_timestamp false`, which omits the prefix entirely.
+  - grok:
+      field: event.original
+      tag: grok_timestamp_prefix
+      patterns:
+        - '^%{TIMESTAMP_ISO8601:_temp.timestamp_iso}: %{GREEDYDATA:message}$'
+        - '^%{NONNEGINT:_temp.timestamp_epoch}: %{GREEDYDATA:message}$'
+        - '^%{GREEDYDATA:message}$'
+      if: ctx.event?.original != null
+  - append:
+      field: tags
+      tag: append_missing_timestamp_tag
+      value: mosquitto_missing_timestamp
+      allow_duplicates: false
+      description: >-
+        Neither a Unix epoch nor a recognised formatted timestamp was found. The
+        broker either runs with `log_timestamp false` or with a
+        `log_timestamp_format` that omits the date, so `@timestamp` falls back to
+        the time the line was collected.
+      if: ctx._temp?.timestamp_iso == null && ctx._temp?.timestamp_epoch == null && ctx.event?.original != null
+
+  - date:
+      field: _temp.timestamp_epoch
+      tag: date_timestamp_epoch
+      target_field: '@timestamp'
+      formats:
+        - UNIX
+      description: Mosquitto's default timestamp is Unix epoch seconds and is always UTC.
+      if: ctx._temp?.timestamp_epoch != null
+  - date:
+      field: _temp.timestamp_iso
+      tag: date_timestamp_formatted_with_timezone
+      target_field: '@timestamp'
+      formats:
+        - ISO8601
+        - "yyyy-MM-dd'T'HH:mm:ss"
+        - 'yyyy-MM-dd HH:mm:ss'
+      timezone: '{{{event.timezone}}}'
+      if: ctx._temp?.timestamp_iso != null && ctx.event?.timezone != null
+  - date:
+      field: _temp.timestamp_iso
+      tag: date_timestamp_formatted
+      target_field: '@timestamp'
+      formats:
+        - ISO8601
+        - "yyyy-MM-dd'T'HH:mm:ss"
+        - 'yyyy-MM-dd HH:mm:ss'
+      if: ctx._temp?.timestamp_iso != null && ctx.event?.timezone == null
+
+  # Parse the message body. Patterns are ordered from most specific and most
+  # frequent to most general; the trailing alternatives must stay last so they do
+  # not shadow the structured forms above them.
+  - grok:
+      field: message
+      tag: grok_message_body
+      ignore_missing: true
+      pattern_definitions:
+        MOSQ_DIRECTION: '(?:Received|Sending)'
+        MOSQ_CONNECT_ARGS: '\(p%{INT:mosquitto.log.protocol_version:long}, c%{INT:_temp.clean_session:long}, k%{INT:mosquitto.log.keepalive:long}(?:, u''%{DATA:user.name}'')?\)'
+      patterns:
+        # Every MQTT packet the broker sends or receives shares one shape:
+        # "<direction> <PACKET> <from|to> <client id>" with an optional argument
+        # list that `grok_packet_args` below decomposes.
+        - '^%{MOSQ_DIRECTION:_temp.direction} %{WORD:mosquitto.log.packet_type} (?:from|to) %{DATA:mosquitto.log.client_id}(?: %{GREEDYDATA:_temp.packet_args})?$'
+        - '^Dropped too large PUBLISH from %{DATA:mosquitto.log.client_id} %{GREEDYDATA:_temp.packet_args}$'
+        # Connection lifecycle.
+        - '^New connection from %{IP:source.ip}:%{POSINT:source.port:long} on port %{POSINT:server.port:long}\.$'
+        - '^New connection from %{IP:source.ip}:%{POSINT:source.port:long}\.$'
+        - '^New (?:client|bridge) connected from %{IP:source.ip}:%{POSINT:source.port:long} as %{DATA:mosquitto.log.client_id} %{MOSQ_CONNECT_ARGS}\.$'
+        - '^Client %{DATA:mosquitto.log.client_id} \[%{IP:source.ip}:%{POSINT:source.port:long}\] disconnected: %{DATA:mosquitto.log.reason}\.?$'
+        - '^Client %{DATA:mosquitto.log.client_id} \[%{IP:source.ip}:%{POSINT:source.port:long}\] disconnected\.$'
+        - '^Client %{DATA:mosquitto.log.client_id} disconnected: %{DATA:mosquitto.log.reason}\.?$'
+        - '^Client %{DATA:mosquitto.log.client_id} disconnected\.$'
+        - '^Socket error on client %{DATA:mosquitto.log.client_id}, disconnecting\.$'
+        - '^Client %{DATA:mosquitto.log.client_id} has exceeded timeout, disconnecting\.$'
+        - '^Client %{DATA:mosquitto.log.client_id} already connected, closing old connection\.$'
+        - '^Expiring client %{DATA:mosquitto.log.client_id} due to timeout\.$'
+        - '^Bad client %{IP:source.ip}:%{POSINT:source.port:long} sending multiple CONNECT messages\.$'
+        - '^Client connection from %{IP:source.ip} denied access by tcpd\.$'
+        - '^Client connection from %{IP:source.ip} denied: %{DATA:mosquitto.log.reason}\.$'
+        - '^Connection from %{IP:source.ip}:%{POSINT:source.port:long} rejected, %{DATA:mosquitto.log.reason}\.$'
+        - '^Connection Refused: %{GREEDYDATA:mosquitto.log.reason}$'
+        # Will messages.
+        - '^Will message specified \(%{INT:mosquitto.log.payload_size:long} bytes\) \(r%{INT:_temp.retain:long}, q%{INT:mosquitto.log.qos:long}\)\.$'
+        # Broker lifecycle and configuration.
+        - '^mosquitto version %{NOTSPACE:mosquitto.log.version} %{WORD:_temp.broker_state}$'
+        - '^Config loaded from %{GREEDYDATA:mosquitto.log.config_file}\.$'
+        - '^Opening (?:ipv4|ipv6|websockets|http api) listen socket on port %{POSINT:server.port:long}\.$'
+        - '^Opening unix listen socket on path %{GREEDYDATA:mosquitto.log.socket_path}\.$'
+        - '^Saving in-memory database to %{GREEDYDATA:mosquitto.log.persistence_file}\.$'
+        - '^Restored %{INT:mosquitto.log.restored_count:long} %{GREEDYDATA:mosquitto.log.restored_type}$'
+        # Protocol errors reported against a client or a peer address.
+        - '^Protocol error from %{IP:source.ip}:%{POSINT:source.port:long}:? %{GREEDYDATA:mosquitto.log.reason}$'
+        - '^Protocol error from %{DATA:mosquitto.log.client_id}: %{GREEDYDATA:mosquitto.log.reason}$'
+        # Subscription detail lines, emitted indented under a SUBSCRIBE packet.
+        - '^\t%{DATA:mosquitto.log.topic} \(QoS %{INT:mosquitto.log.qos:long}\)$'
+        - '^\t%{DATA:mosquitto.log.topic} \(denied\)$'
+        - '^\t%{GREEDYDATA:mosquitto.log.topic}$'
+        # `log_type subscribe` lines: client id, granted QoS, topic filter.
+        - '^%{NOTSPACE:mosquitto.log.client_id} %{INT:mosquitto.log.qos:long} %{NOTSPACE:mosquitto.log.topic}$'
+        # Bridge-side packet logging.
+        - '^Client %{DATA:mosquitto.log.client_id} (?:received|sending) %{WORD:mosquitto.log.packet_type}$'
+        # Anything else is kept verbatim in `message`.
+        - '^%{GREEDYDATA}$'
+      if: ctx.message != null
+  - trim:
+      field: message
+      tag: trim_message
+      ignore_missing: true
+      description: Strips the leading tab from indented subscription detail lines.
+
+  # Decompose the argument list that follows an MQTT packet. The shape depends on
+  # the packet type; anything unrecognised is left alone because the full text is
+  # still available in `message` and `event.original`.
+  - grok:
+      field: _temp.packet_args
+      tag: grok_packet_args
+      ignore_failure: true
+      patterns:
+        - '^\(d%{INT:_temp.dup:long}, q%{INT:mosquitto.log.qos:long}, r%{INT:_temp.retain:long}, m%{INT:mosquitto.log.message_id:long}, ''%{DATA:mosquitto.log.topic}'', \.\.\. \(%{INT:mosquitto.log.payload_size:long} bytes\)\)$'
+        - '^\(m%{INT:mosquitto.log.message_id:long}, rc%{INT:mosquitto.log.reason_code:long}\)$'
+        - '^\(m%{INT:mosquitto.log.message_id:long}\)$'
+        - '^\(Mid: %{INT:mosquitto.log.message_id:long}, RC:%{INT:mosquitto.log.reason_code:long}\)$'
+        - '^\(Mid: %{INT:mosquitto.log.message_id:long}\)$'
+        - '^\(rc%{INT:mosquitto.log.reason_code:long}, %{DATA:mosquitto.log.auth_method}\)$'
+        - '^\(rc%{INT:mosquitto.log.reason_code:long}\)$'
+        - '^\(%{INT:_temp.session_present:long}, %{INT:mosquitto.log.reason_code:long}\)$'
+      if: ctx._temp?.packet_args != null
+
+  # Normalise the direction words used by the packet patterns.
+  - set:
+      field: network.direction
+      tag: set_network_direction_inbound
+      value: inbound
+      if: ctx._temp?.direction == 'Received'
+  - set:
+      field: network.direction
+      tag: set_network_direction_outbound
+      value: outbound
+      if: ctx._temp?.direction == 'Sending'
+  - lowercase:
+      field: mosquitto.log.packet_type
+      tag: lowercase_packet_type
+      target_field: _temp.packet_type_lower
+      ignore_missing: true
+
+  # Booleans arrive as the numeric MQTT flags `d`, `r` and `c`.
+  - set:
+      field: mosquitto.log.dup
+      tag: set_dup_true
+      value: true
+      if: ctx._temp?.dup == 1
+  - set:
+      field: mosquitto.log.dup
+      tag: set_dup_false
+      value: false
+      if: ctx._temp?.dup == 0
+  - set:
+      field: mosquitto.log.retain
+      tag: set_retain_true
+      value: true
+      if: ctx._temp?.retain == 1
+  - set:
+      field: mosquitto.log.retain
+      tag: set_retain_false
+      value: false
+      if: ctx._temp?.retain == 0
+  - set:
+      field: mosquitto.log.clean_session
+      tag: set_clean_session_true
+      value: true
+      if: ctx._temp?.clean_session == 1
+  - set:
+      field: mosquitto.log.clean_session
+      tag: set_clean_session_false
+      value: false
+      if: ctx._temp?.clean_session == 0
+  - set:
+      field: mosquitto.log.session_present
+      tag: set_session_present_true
+      value: true
+      if: ctx._temp?.session_present == 1
+  - set:
+      field: mosquitto.log.session_present
+      tag: set_session_present_false
+      value: false
+      if: ctx._temp?.session_present == 0
+
+  # Derive log.level. Mosquitto's file and stdout destinations write no severity
+  # marker, so it is inferred from the wording the broker uses.
+  - set:
+      field: log.level
+      tag: set_log_level_error
+      value: error
+      if: ctx.message != null && (ctx.message.startsWith('Error') || ctx.message.startsWith('Connection Refused:') || ctx.message.startsWith('Socket error'))
+  - set:
+      field: log.level
+      tag: set_log_level_warning
+      value: warning
+      if: ctx.message != null && (ctx.message.startsWith('Warning') || ctx.message.startsWith('Protocol error from'))
+  - set:
+      field: log.level
+      tag: set_log_level_information
+      value: information
+      if: ctx.log?.level == null && ctx.message != null
+
+  # ECS categorization. `event.action` is decided first so the category and type
+  # appends below can key off it.
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+  - set:
+      field: event.action
+      tag: set_event_action_packet_received
+      value: 'mqtt-{{{_temp.packet_type_lower}}}-received'
+      if: ctx._temp?.packet_type_lower != null && ctx.network?.direction == 'inbound'
+  - set:
+      field: event.action
+      tag: set_event_action_packet_sent
+      value: 'mqtt-{{{_temp.packet_type_lower}}}-sent'
+      if: ctx._temp?.packet_type_lower != null && ctx.network?.direction == 'outbound'
+  - set:
+      field: event.action
+      tag: set_event_action_connection_opened
+      value: connection-opened
+      if: ctx.message != null && ctx.message.startsWith('New connection from')
+  - set:
+      field: event.action
+      tag: set_event_action_client_connected
+      value: client-connected
+      if: ctx.message != null && (ctx.message.startsWith('New client connected from') || ctx.message.startsWith('New bridge connected from'))
+  - set:
+      field: event.action
+      tag: set_event_action_client_disconnected
+      value: client-disconnected
+      if: ctx.message != null && ((ctx.message.startsWith('Client ') && ctx.message.contains(' disconnect')) || ctx.message.contains(', disconnecting'))
+  - set:
+      field: event.action
+      tag: set_event_action_connection_refused
+      value: connection-refused
+      if: ctx.message != null && (ctx.message.startsWith('Connection Refused:') || ctx.message.contains(' rejected, ') || ctx.message.contains(' denied'))
+  - set:
+      field: event.action
+      tag: set_event_action_subscription_denied
+      value: subscription-denied
+      if: ctx.message != null && ctx.message.endsWith('(denied)')
+  - set:
+      field: event.action
+      tag: set_event_action_protocol_error
+      value: protocol-error
+      if: ctx.message != null && ctx.message.startsWith('Protocol error from')
+  - set:
+      field: event.action
+      tag: set_event_action_broker_lifecycle
+      value: 'broker-{{{_temp.broker_state}}}'
+      if: ctx._temp?.broker_state != null
+  - set:
+      field: event.action
+      tag: set_event_action_config_loaded
+      value: config-loaded
+      if: ctx.mosquitto?.log?.config_file != null
+  - set:
+      field: event.action
+      tag: set_event_action_listener_opened
+      value: listener-opened
+      if: ctx.message != null && ctx.message.startsWith('Opening ')
+  - set:
+      field: event.action
+      tag: set_event_action_subscription_granted
+      value: subscription-granted
+      description: >-
+        A `log_type subscribe` line carries only a client id, the granted QoS and
+        a topic filter, with no other wording to key off.
+      if: ctx.event?.action == null && ctx.mosquitto?.log?.client_id != null && ctx.mosquitto?.log?.topic != null && ctx.mosquitto?.log?.qos != null && ctx.mosquitto?.log?.packet_type == null
+
+  - append:
+      field: event.category
+      tag: append_event_category_network
+      value: network
+      allow_duplicates: false
+      if: >-
+        ctx._temp?.packet_type_lower != null || ctx.source?.ip != null || ctx.mosquitto?.log?.client_id != null ||
+        ctx.event?.action == 'connection-refused' || ctx.event?.action == 'protocol-error' ||
+        ctx.event?.action == 'subscription-denied' || ctx.event?.action == 'listener-opened'
+  - append:
+      field: event.category
+      tag: append_event_category_process
+      value: process
+      allow_duplicates: false
+      if: ctx._temp?.broker_state != null
+  - append:
+      field: event.category
+      tag: append_event_category_configuration
+      value: configuration
+      allow_duplicates: false
+      if: ctx.mosquitto?.log?.config_file != null
+
+  - append:
+      field: event.type
+      tag: append_event_type_protocol
+      value: protocol
+      allow_duplicates: false
+      if: ctx._temp?.packet_type_lower != null || ctx.event?.action == 'protocol-error'
+  - append:
+      field: event.type
+      tag: append_event_type_start
+      value: start
+      allow_duplicates: false
+      if: ctx.event?.action == 'connection-opened' || ctx.event?.action == 'client-connected' || ctx.event?.action == 'broker-starting' || ctx.event?.action == 'broker-running' || ctx.event?.action == 'listener-opened'
+  - append:
+      field: event.type
+      tag: append_event_type_end
+      value: end
+      allow_duplicates: false
+      if: ctx.event?.action == 'client-disconnected' || ctx.event?.action == 'broker-terminating'
+  - append:
+      field: event.type
+      tag: append_event_type_connection
+      value: connection
+      allow_duplicates: false
+      if: ctx.event?.action == 'connection-opened' || ctx.event?.action == 'client-connected' || ctx.event?.action == 'client-disconnected' || ctx.event?.action == 'connection-refused'
+  - append:
+      field: event.type
+      tag: append_event_type_denied
+      value: denied
+      allow_duplicates: false
+      if: ctx.event?.action == 'connection-refused' || ctx.event?.action == 'subscription-denied'
+  - append:
+      field: event.type
+      tag: append_event_type_allowed
+      value: allowed
+      allow_duplicates: false
+      if: ctx.event?.action == 'subscription-granted'
+  - append:
+      field: event.type
+      tag: append_event_type_info
+      value: info
+      allow_duplicates: false
+      if: ctx.mosquitto?.log?.config_file != null
+  - append:
+      field: event.type
+      tag: append_event_type_error
+      value: error
+      allow_duplicates: false
+      description: >-
+        ECS does not allow the `error` event type alongside the `network`
+        category, so it is only added to events that are not network scoped.
+      if: (ctx.log?.level == 'error' || ctx.event?.action == 'protocol-error') && !(ctx.event?.category != null && ctx.event.category.contains('network'))
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_failure
+      value: failure
+      if: ctx.event?.action == 'connection-refused' || ctx.event?.action == 'protocol-error' || ctx.event?.action == 'subscription-denied' || ctx.log?.level == 'error'
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_success
+      value: success
+      if: ctx.event?.action == 'client-connected'
+
+  - append:
+      field: related.ip
+      tag: append_source_ip_to_related
+      value: '{{{source.ip}}}'
+      allow_duplicates: false
+      if: ctx.source?.ip != null
+  - append:
+      field: related.user
+      tag: append_user_name_to_related
+      value: '{{{user.name}}}'
+      allow_duplicates: false
+      if: ctx.user?.name != null
+
+  - remove:
+      field:
+        - _temp
+        - _conf
+      tag: remove_temp_fields
+      ignore_missing: true
+
+  - append:
+      field: tags
+      tag: append_preserve_original_event_on_error
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
