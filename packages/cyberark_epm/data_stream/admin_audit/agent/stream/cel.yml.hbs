@@ -14,9 +14,21 @@ resource.ssl: {{ssl}}
 resource.timeout: {{http_client_timeout}}
 {{/if}}
 resource.url: {{url}}
+{{#contains "identity" auth_type}}
+auth.oauth2:
+  client.id: {{escape_string client_id}}
+  client.secret: {{escape_string client_secret}}
+  token_url: https://{{identity_id}}.id.cyberark.cloud/oauth2/token/{{identity_application_id}}
+{{/contains}}
 state:
+{{#contains "identity" auth_type}}
+  auth_type: identity
+  epm_server_url: {{epm_server_url}}
+{{/contains}}
+{{#contains "epm" auth_type}}
   username: {{escape_string username}}
   password: {{escape_string password}}
+{{/contains}}
   initial_interval: {{initial_interval}}
   session_timeout: {{session_timeout}}
   limit: {{page_size}}
@@ -35,6 +47,14 @@ program: |
         "access_token": state.access_token,
         "expiry": state.expiry,
         "manager_url": state.manager_url
+      }
+    : state.?auth_type.orValue("epm") == "identity" ?
+      // The oauth2 client attaches the bearer token to every request, so there is no
+      // token to fetch here and only the EPM host has to be resolved.
+      {
+        "access_token": "",
+        "expiry": (now() + duration(state.session_timeout)).format(time_layout.RFC3339),
+        "manager_url": state.epm_server_url
       }
     :
       post_request(
@@ -83,9 +103,12 @@ program: |
               "Limit": ["1000"]
             }.format_query()
           ).with({
-            "Header":{
-              "Authorization": ["basic " + string(token.access_token)],
-            }
+            "Header": state.?auth_type.orValue("epm") == "identity" ?
+              {}
+            :
+              {
+                "Authorization": ["basic " + string(token.access_token)],
+              }
           }).do_request().as(resp, resp.StatusCode == 200 ?
             resp.Body.decode_json().as(body, {
               "worklist": body.Sets.map(e, e.Id),
@@ -124,9 +147,12 @@ program: |
               "DateTo": [token.current_time]
             }.format_query()
           ).with({
-            "Header":{
-              "Authorization": ["basic " + string(token.access_token)]
-            }
+            "Header": state.?auth_type.orValue("epm") == "identity" ?
+              {}
+            :
+              {
+                "Authorization": ["basic " + string(token.access_token)]
+              }
           }).do_request().as(resp, resp.StatusCode == 200 ?
             resp.Body.decode_json().as(body, {
               "events": (
