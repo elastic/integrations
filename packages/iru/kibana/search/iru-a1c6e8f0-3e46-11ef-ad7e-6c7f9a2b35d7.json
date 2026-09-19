@@ -1,0 +1,136 @@
+{
+    "attributes": {
+        "columns": [
+            "@timestamp",
+            "host.name",
+            "host.id",
+            "device.serial_number",
+            "iru.device.platform",
+            "iru.device.last_check_in",
+            "iru.device.is_missing",
+            "iru.device.is_removed",
+            "user.email"
+        ],
+        "description": "",
+        "grid": {},
+        "hideChart": false,
+        "isTextBasedQuery": false,
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "field": "data_stream.dataset",
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+                            "key": "data_stream.dataset",
+                            "negate": false,
+                            "params": {
+                                "query": "iru.device"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "iru.device"
+                            }
+                        }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+                            "negate": false,
+                            "params": [
+                                {
+                                    "meta": {
+                                        "disabled": false,
+                                        "field": "iru.device.is_missing",
+                                        "index": "logs-*",
+                                        "key": "iru.device.is_missing",
+                                        "negate": false,
+                                        "params": {
+                                            "query": true
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "iru.device.is_missing": true
+                                        }
+                                    }
+                                },
+                                {
+                                    "meta": {
+                                        "disabled": false,
+                                        "field": "iru.device.is_removed",
+                                        "index": "logs-*",
+                                        "key": "iru.device.is_removed",
+                                        "negate": false,
+                                        "params": {
+                                            "query": true
+                                        },
+                                        "type": "phrase"
+                                    },
+                                    "query": {
+                                        "match_phrase": {
+                                            "iru.device.is_removed": true
+                                        }
+                                    }
+                                }
+                            ],
+                            "relation": "OR",
+                            "type": "combined"
+                        },
+                        "query": {}
+                    }
+                ],
+                "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
+                "query": {
+                    "language": "kuery",
+                    "query": "data_stream.dataset: \"iru.device\" and (iru.device.is_missing: true or iru.device.is_removed: true)"
+                }
+            }
+        },
+        "sort": [
+            [
+                "@timestamp",
+                "desc"
+            ]
+        ],
+        "timeRestore": false,
+        "title": "[Logs Iru] Non-Reporting Devices",
+        "version": 1
+    },
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2026-09-03T17:23:31.440Z",
+    "id": "iru-a1c6e8f0-3e46-11ef-ad7e-6c7f9a2b35d7",
+    "references": [
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[0].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+            "type": "index-pattern"
+        }
+    ],
+    "type": "search",
+    "typeMigrationVersion": "10.5.0",
+    "updated_by": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0"
+}
