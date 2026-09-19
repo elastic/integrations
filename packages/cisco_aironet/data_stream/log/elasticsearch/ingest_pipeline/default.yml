@@ -93,16 +93,58 @@ processors:
       value: debug
 
   # Parse the date included in logs
-  - set:
-      tag: set__conf_tz_offset_3fab6936
-      field: _conf.tz_offset
-      if: "ctx._temp_?.raw_date_timezone != null"
-      value: "{{{_temp_.raw_date_timezone}}}"
-      override: false
+  - script:
+      tag: script_resolve_timezone
+      lang: painless
+      description: >-
+        The controller stamps a time zone abbreviation into the syslog header, but
+        the date processor's `timezone` option is resolved with ZoneId.of(), which
+        rejects abbreviations outright. tz_map takes precedence over the log because
+        abbreviations are ambiguous: CST is both China and US Central, IST is India,
+        Ireland and Israel.
+      if: ctx._temp_?.raw_date_timezone != null
+      source: |
+        def tz = ctx._temp_.raw_date_timezone;
+        // tz_map is operator input, so treat a malformed entry as absent: a missing
+        // tz_long costs this event its time zone, not the whole document.
+        if (ctx._conf?.tz_map instanceof List) {
+          for (def item : ctx._conf.tz_map) {
+            if (item instanceof Map && item.tz_short == tz && item.tz_long != null && item.tz_long != '') {
+              ctx._temp_.date_timezone = item.tz_long;
+              return;
+            }
+          }
+        }
+        if (tz == 'Z') {
+          ctx._temp_.date_timezone = 'UTC';
+          return;
+        }
+        try {
+          // Locale decides which table of time zone names is consulted, so without
+          // it pinned the same log resolves on one host and silently falls back to
+          // _conf.tz_offset on another.
+          SimpleDateFormat sdf = new SimpleDateFormat("z", Locale.ENGLISH);
+          sdf.parse(tz);
+          // Resolves to a region id, so a bare CET in July is read as Europe/Paris
+          // and therefore as CEST. Use tz_map to pin a fixed offset if that is wrong.
+          // SHORT_IDS is required, not decorative: AEST resolves to the legacy id AET,
+          // which ZoneId.of() rejects on its own and would fail the date processor.
+          ctx._temp_.date_timezone = ZoneId.of(sdf.getTimeZone().getID(), ZoneId.SHORT_IDS).getId();
+        } catch (Exception e) {
+          // Java knows no zone for SGT, ART, or the seven-character names the
+          // controller truncates to ('Singapo'). Leaving date_timezone unset drops the
+          // event onto _conf.tz_offset, which is what an operator sets it for; use
+          // tz_map to resolve the abbreviation exactly.
+        }
   - set:
       tag: set__conf_tz_offset_473d581a
       field: _conf.tz_offset
       value: UTC
+      override: false
+  - set:
+      tag: set_date_timezone_from_conf
+      field: _temp_.date_timezone
+      copy_from: _conf.tz_offset
       override: false
   - set:
       field: _temp_.raw_date
@@ -123,9 +165,10 @@ processors:
       tag: "raw_date_processor"
       formats:
         - "MMM d yyyy HH:mm:ss.SSS"
+        - "MMM d yyyy HH:mm:ss"
         - "MMM d HH:mm:ss.SSS"
         - "MMM d HH:mm:ss"
-      timezone: '{{{_conf.tz_offset}}}'
+      timezone: '{{{_temp_.date_timezone}}}'
 
   # Adding information to event types
   - grok:
