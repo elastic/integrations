@@ -1,0 +1,17 @@
+wait_for_data_timeout: 1m
+service: mqtt-broker
+input: mqtt
+vars:
+  hosts:
+    - "tcp://{{Hostname}}:{{Port}}"
+data_stream:
+  vars:
+    topics:
+      - sensors/#
+    # MQTT caps client identifiers at 23 characters.
+    client_id: ep-mqtt-metrics
+    qos: "1"
+    data_stream.dataset: mqtt.metrics
+    preserve_original_event: true
+assert:
+  hit_count: 5
