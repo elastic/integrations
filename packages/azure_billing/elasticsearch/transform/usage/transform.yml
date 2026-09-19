@@ -1,0 +1,170 @@
+source:
+  index:
+    - "metrics-azure.billing-*"
+  # Only the usage detail rows. The forecast rows produced by the same metricset
+  # have no `pretax_cost` and are handled by the `latest_forecast` transform.
+  query:
+    bool:
+      filter:
+        - exists:
+            field: azure.billing.pretax_cost
+        - exists:
+            field: azure.billing.usage_date
+# Why a pivot and not a `latest` transform keyed on `billing_period_id`:
+#
+# The Azure Usage Details API does not give every cost row a unique ID. Rows for
+# the same day, meter, and resource share one `id`, and legitimately appear more
+# than once, for example one row per VM instance of a scale set or one row per
+# storage billing event. The fields that tell those rows apart (`additionalInfo`)
+# are not part of the indexed document, so a per-row unique key does not exist.
+#
+# What is unique is the collection run: the metricset re-fetches whole days, and
+# every fetch is a complete snapshot of that day at that moment. Deduplication
+# therefore happens at fetch level. For each day/meter/resource bucket the script
+# below keeps only the rows written by the most recent fetch and sums those. Older
+# fetches of the same day, agent restarts, and short collection periods are all
+# discarded; the newest snapshot wins, which is also the one that carries Azure's
+# latest revision of the cost.
+#
+# Rows of one fetch are created within milliseconds of each other, and distinct
+# fetches are at least a restart apart, so a gap of more than 5 seconds between
+# consecutive `@timestamp` values separates two fetches.
+pivot:
+  group_by:
+    azure.billing.usage_date:
+      date_histogram:
+        field: azure.billing.usage_date
+        calendar_interval: 1d
+    azure.billing.billing_period_id:
+      terms:
+        field: azure.billing.billing_period_id
+        missing_bucket: true
+    azure.billing.currency:
+      terms:
+        field: azure.billing.currency
+        missing_bucket: true
+    azure.subscription_id:
+      terms:
+        field: azure.subscription_id
+        missing_bucket: true
+    azure.billing.account_name:
+      terms:
+        field: azure.billing.account_name
+        missing_bucket: true
+    azure.billing.department_name:
+      terms:
+        field: azure.billing.department_name
+        missing_bucket: true
+    azure.resource.group:
+      terms:
+        field: azure.resource.group
+        missing_bucket: true
+    azure.resource.name:
+      terms:
+        field: azure.resource.name
+        missing_bucket: true
+    azure.resource.type:
+      terms:
+        field: azure.resource.type
+        missing_bucket: true
+    azure.billing.product:
+      terms:
+        field: azure.billing.product
+        missing_bucket: true
+    cloud.region:
+      terms:
+        field: cloud.region
+        missing_bucket: true
+  aggregations:
+    # Time of the fetch whose rows are counted. Kibana applies the dashboard time
+    # picker to this field.
+    "@timestamp":
+      max:
+        field: "@timestamp"
+    # Number of raw rows in the bucket across all fetches. Divided by
+    # `row_count`, this is the duplication factor of the raw data stream.
+    azure.billing.raw_row_count:
+      value_count:
+        field: azure.billing.pretax_cost
+    azure.billing.pretax_cost:
+      scripted_metric:
+        init_script: "state.rows = new ArrayList();"
+        map_script: |-
+          state.rows.add([
+            doc['@timestamp'].value.toInstant().toEpochMilli(),
+            doc['azure.billing.pretax_cost'].value
+          ]);
+        combine_script: "return state.rows;"
+        reduce_script: |-
+          def all = new ArrayList();
+          for (s in states) {
+            if (s != null) {
+              all.addAll(s);
+            }
+          }
+          if (all.isEmpty()) {
+            return null;
+          }
+          all.sort((a, b) -> Long.compare(a[0], b[0]));
+          // Walk back from the newest row while consecutive rows are less than
+          // 5 seconds apart; that span is the most recent fetch.
+          int start = all.size() - 1;
+          while (start > 0 && all[start][0] - all[start - 1][0] <= 5000L) {
+            start--;
+          }
+          double sum = 0.0;
+          for (int i = start; i < all.size(); i++) {
+            sum += all[i][1];
+          }
+          return sum;
+    azure.billing.row_count:
+      scripted_metric:
+        init_script: "state.ts = new ArrayList();"
+        map_script: "state.ts.add(doc['@timestamp'].value.toInstant().toEpochMilli());"
+        combine_script: "return state.ts;"
+        reduce_script: |-
+          def all = new ArrayList();
+          for (s in states) {
+            if (s != null) {
+              all.addAll(s);
+            }
+          }
+          if (all.isEmpty()) {
+            return null;
+          }
+          Collections.sort(all);
+          int start = all.size() - 1;
+          while (start > 0 && all[start] - all[start - 1] <= 5000L) {
+            start--;
+          }
+          return all.size() - start;
+dest:
+  # The destination index must not match `metrics-*`, so that a `metrics-*` data
+  # view never counts both the raw and the deduplicated documents.
+  index: "azure_billing.usage-v1"
+  aliases:
+    - alias: "azure_billing.usage_latest"
+      move_on_creation: true
+description: >-
+  Deduplicated Azure billing usage details. The Azure billing metricset re-fetches recent days on every run, which creates duplicate documents in the metrics-azure.billing-* data stream. For each day, meter, and resource this transform keeps only the rows collected by the most recent fetch.
+# Billing data arrives once a day, so there is nothing to gain from a faster
+# checkpoint interval.
+frequency: 1h
+settings:
+  # This is required to prevent the transform from clobbering the Fleet-managed
+  # mappings.
+  deduce_mappings: false
+  unattended: true
+sync:
+  time:
+    field: "@timestamp"
+    # 120s instead of the default 60s because of the index refresh delay in
+    # Serverless.
+    delay: 120s
+_meta:
+  # Bump this version to delete, reinstall, and restart the transform during
+  # package installation. The source has no `@timestamp` range filter on purpose:
+  # Fleet rebuilds the destination index from scratch on a version bump, and a
+  # relative range filter would silently drop all history.
+  fleet_transform_version: 0.1.0
+  run_as_kibana_system: false
