@@ -80,14 +80,10 @@ dashboards:
         esql:
           type: metric
           query:
-            - FROM metrics-traefik.otel-*
+            - TS metrics-traefik.otel-*
             - WHERE data_stream.dataset == "traefik.otel"
             - WHERE traefik_entrypoint_requests_tls_total IS NOT NULL
-            - STATS total = SUM(traefik_entrypoint_requests_tls_total),
-              min_ts = MIN(@timestamp), max_ts = MAX(@timestamp)
-            - EVAL duration_sec = DATE_DIFF("seconds", min_ts, max_ts)
-            - EVAL tls_rate = CASE(duration_sec > 0, total / duration_sec, 0.0)
-            - KEEP tls_rate
+            - STATS tls_rate = SUM(RATE(traefik_entrypoint_requests_tls_total))
           primary:
             field: tls_rate
             label: TLS Req/sec
@@ -102,10 +98,10 @@ dashboards:
         esql:
           type: metric
           query:
-            - FROM metrics-traefik.otel-*
+            - TS metrics-traefik.otel-*
             - WHERE data_stream.dataset == "traefik.otel"
             - WHERE traefik_config_reloads_total IS NOT NULL
-            - STATS reloads = MAX(traefik_config_reloads_total)
+            - STATS reloads = MAX(LAST_OVER_TIME(traefik_config_reloads_total))
           primary:
             field: reloads
             label: Total Reloads
@@ -138,15 +134,11 @@ dashboards:
           type: area
           mode: stacked
           query:
-            - FROM metrics-traefik.otel-*
+            - TS metrics-traefik.otel-*
             - WHERE data_stream.dataset == "traefik.otel"
             - WHERE traefik_entrypoint_requests_tls_total IS NOT NULL
-            - STATS total = SUM(traefik_entrypoint_requests_tls_total),
-              min_ts = MIN(@timestamp), max_ts = MAX(@timestamp)
-              BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend),
-                attributes.tls_version
-            - EVAL bucket_secs = GREATEST(DATE_DIFF("seconds", min_ts, max_ts), 1)
-            - EVAL tls_rate = total / bucket_secs
+            - STATS tls_rate = SUM(RATE(traefik_entrypoint_requests_tls_total))
+              BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), attributes.tls_version
             - KEEP time_bucket, attributes.tls_version, tls_rate
             - SORT time_bucket ASC
           dimension:
@@ -170,10 +162,10 @@ dashboards:
         esql:
           type: pie
           query:
-            - FROM metrics-traefik.otel-*
+            - TS metrics-traefik.otel-*
             - WHERE data_stream.dataset == "traefik.otel"
             - WHERE traefik_entrypoint_requests_tls_total IS NOT NULL
-            - STATS tls_requests = SUM(traefik_entrypoint_requests_tls_total)
+            - STATS tls_requests = SUM(INCREASE(traefik_entrypoint_requests_tls_total))
               BY attributes.tls_version
             - SORT tls_requests DESC
             - LIMIT 10
@@ -217,14 +209,11 @@ dashboards:
         esql:
           type: line
           query:
-            - FROM metrics-traefik.otel-*
+            - TS metrics-traefik.otel-*
             - WHERE data_stream.dataset == "traefik.otel"
             - WHERE traefik_config_reloads_total IS NOT NULL
-            - STATS total = SUM(traefik_config_reloads_total),
-              min_ts = MIN(@timestamp), max_ts = MAX(@timestamp)
+            - STATS reload_rate = SUM(RATE(traefik_config_reloads_total))
               BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
-            - EVAL bucket_secs = GREATEST(DATE_DIFF("seconds", min_ts, max_ts), 1)
-            - EVAL reload_rate = total / bucket_secs
             - KEEP time_bucket, reload_rate
             - SORT time_bucket ASC
           dimension:
@@ -243,10 +232,10 @@ dashboards:
         esql:
           type: pie
           query:
-            - FROM metrics-traefik.otel-*
+            - TS metrics-traefik.otel-*
             - WHERE data_stream.dataset == "traefik.otel"
             - WHERE traefik_entrypoint_requests_tls_total IS NOT NULL
-            - STATS tls_requests = SUM(traefik_entrypoint_requests_tls_total)
+            - STATS tls_requests = SUM(INCREASE(traefik_entrypoint_requests_tls_total))
               BY attributes.tls_cipher
             - SORT tls_requests DESC
             - LIMIT 10
