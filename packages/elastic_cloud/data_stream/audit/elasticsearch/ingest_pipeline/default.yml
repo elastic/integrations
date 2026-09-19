@@ -1,0 +1,277 @@
+---
+description: Parse Elastic Cloud Hosted organization API audit logs.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: '9.3.0'
+  - set:
+      field: data_stream.namespace
+      tag: set_data_stream_namespace
+      value: default
+      override: false
+
+  - date:
+      field: '@timestamp'
+      target_field: '@timestamp'
+      formats:
+        - ISO8601
+      tag: date_timestamp
+      if: ctx['@timestamp'] != null
+
+  - convert:
+      field: status_code
+      target_field: http.response.status_code
+      type: long
+      ignore_missing: true
+      tag: convert_status_code
+      if: ctx.status_code != null && ctx.status_code != ''
+
+  - rename:
+      field: request_method
+      target_field: http.request.method
+      ignore_missing: true
+      tag: rename_request_method
+  - script:
+      tag: normalize_url_for_parts
+      lang: painless
+      description: Prepend https:// when request_url is host+path with no scheme.
+      if: ctx.request_url instanceof String && ctx.request_url != ''
+      source: |-
+        def url = ctx.request_url;
+        if (url.indexOf('://') < 0) {
+          url = 'https://' + url;
+        }
+        if (ctx._tmp == null) {
+          ctx._tmp = [:];
+        }
+        ctx._tmp.url = url;
+  - uri_parts:
+      field: _tmp.url
+      tag: uri_parts_request_url
+      keep_original: true
+      ignore_missing: true
+      ignore_failure: true
+  - set:
+      field: url.full
+      copy_from: _tmp.url
+      ignore_empty_value: true
+      tag: set_url_full
+      if: ctx._tmp?.url instanceof String
+  - grok:
+      field: url.full
+      tag: grok_url_path_from_full
+      patterns:
+        - '^https?://[^/]+(?<url.path>/.*)$'
+      if: ctx.url?.path == null || !(ctx.url.path instanceof String) || !ctx.url.path.startsWith('/')
+      ignore_missing: true
+      ignore_failure: true
+  - script:
+      tag: keep_url_ecs_fields
+      lang: painless
+      if: ctx.url instanceof Map
+      source: |-
+        def keep = ['full', 'scheme', 'domain', 'path'];
+        ctx.url.entrySet().removeIf(e -> e.getValue() == null || !keep.contains(e.getKey()));
+  - remove:
+      field: _tmp
+      ignore_missing: true
+      tag: remove_url_tmp
+  - grok:
+      field: url.path
+      tag: grok_service_id_from_url_path
+      patterns:
+        - '(?:/[^?/\s#]+)*/deployments/(?<service.id>[A-Fa-f0-9]{32})(?:/[^?\s#]+)*/?(?:\?.*)?'
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: client_ip
+      target_field: client.ip
+      ignore_missing: true
+      tag: rename_client_ip
+  - set:
+      field: client.address
+      copy_from: client.ip
+      ignore_empty_value: true
+      tag: set_client_address
+  - convert:
+      field: client.ip
+      type: ip
+      ignore_missing: true
+      tag: convert_client_ip
+      if: ctx.client?.ip != null && ctx.client.ip != ''
+  - rename:
+      field: organization_id
+      target_field: organization.id
+      ignore_missing: true
+      tag: rename_organization_id
+  - rename:
+      field: user_id
+      target_field: user.id
+      ignore_missing: true
+      tag: rename_user_id
+  - rename:
+      field: unvalidated_auth_user
+      target_field: elastic_cloud.audit.unvalidated_auth_user
+      ignore_missing: true
+      tag: rename_unvalidated_auth_user
+      if: ctx.unvalidated_auth_user != null && ctx.unvalidated_auth_user != '' && ctx.unvalidated_auth_user != 'unknown'
+  - rename:
+      field: user_email
+      target_field: user.email
+      ignore_missing: true
+      tag: rename_user_email
+  - rename:
+      field: api_key_id
+      target_field: elastic_cloud.audit.api_key.id
+      ignore_missing: true
+      tag: rename_api_key_id
+      if: ctx.api_key_id != null && ctx.api_key_id != '' && ctx.api_key_id != 'unknown'
+  - rename:
+      field: api_key_name
+      target_field: elastic_cloud.audit.api_key.name
+      ignore_missing: true
+      tag: rename_api_key_name
+      if: ctx.api_key_name != null && ctx.api_key_name != '' && ctx.elastic_cloud?.audit?.api_key?.id != null
+  - rename:
+      field: request_payload
+      target_field: http.request.body.content
+      ignore_missing: true
+      tag: rename_request_payload
+  - script:
+      tag: set_http_request_body_bytes
+      lang: painless
+      description: Set http.request.body.bytes from the length of http.request.body.content.
+      if: ctx.http?.request?.body?.content instanceof String && ctx.http.request.body.content != ''
+      source: |-
+        ctx.http.request.body.bytes = ctx.http.request.body.content.length();
+
+  - geoip:
+      field: client.ip
+      target_field: client.geo
+      ignore_missing: true
+      ignore_failure: true
+      tag: enrich_client_geo
+      if: ctx.client?.ip != null && ctx.client.geo == null
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: client.ip
+      target_field: client.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+      ignore_failure: true
+      tag: enrich_client_asn
+      if: ctx.client?.ip != null && ctx.client.as == null
+  - rename:
+      field: client.as.asn
+      target_field: client.as.number
+      ignore_missing: true
+      tag: rename_client_asn
+  - rename:
+      field: client.as.organization_name
+      target_field: client.as.organization.name
+      ignore_missing: true
+      tag: rename_client_as_org
+
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+  - append:
+      field: event.category
+      tag: append_event_category
+      value: api
+      allow_duplicates: false
+  - append:
+      field: event.type
+      tag: append_event_type
+      value: access
+      allow_duplicates: false
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_success
+      value: success
+      if: ctx.http?.response?.status_code != null && ctx.http.response.status_code < 400
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_failure
+      value: failure
+      if: ctx.http?.response?.status_code != null && ctx.http.response.status_code >= 400
+  - set:
+      field: log.level
+      tag: set_log_level_error
+      value: ERROR
+      if: ctx.http?.response?.status_code != null && ctx.http.response.status_code >= 500
+  - set:
+      field: log.level
+      tag: set_log_level_info
+      value: INFO
+      if: ctx.http?.response?.status_code != null && ctx.http.response.status_code < 500
+  - append:
+      field: related.ip
+      tag: append_client_ip_to_related
+      value: '{{{client.ip}}}'
+      allow_duplicates: false
+      if: ctx.client?.ip != null
+  - append:
+      field: related.user
+      tag: append_user_id_to_related
+      value: '{{{user.id}}}'
+      allow_duplicates: false
+      if: ctx.user?.id != null && ctx.user.id != 'unknown'
+  - append:
+      field: related.user
+      tag: append_user_email_to_related
+      value: '{{{user.email}}}'
+      allow_duplicates: false
+      if: ctx.user?.email != null
+  - append:
+      field: related.user
+      tag: append_unvalidated_auth_user_to_related
+      value: '{{{elastic_cloud.audit.unvalidated_auth_user}}}'
+      allow_duplicates: false
+      if: ctx.elastic_cloud?.audit?.unvalidated_auth_user != null
+
+  - remove:
+      field:
+        - status_code
+        - request_method
+        - request_url
+        - client_ip
+        - organization_id
+        - user_id
+        - user_email
+        - api_key_id
+        - api_key_name
+        - request_payload
+        - unvalidated_auth_user
+        - '@version'
+      ignore_missing: true
+      tag: remove_raw_landing_fields
+
+  - append:
+      field: tags
+      tag: append_preserve_on_collector_error
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+
+on_failure:
+  - append:
+      field: error.message
+      tag: append_pipeline_error_message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      tag: append_preserve_original_event_on_failure
+      value: preserve_original_event
+      allow_duplicates: false
