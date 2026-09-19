@@ -1,0 +1,160 @@
+---
+description: Pipeline for processing Resecurity RISK IOC hash lookup results.
+processors:
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null
+      description: error message set and no data to process.
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: '9.4.0'
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      if: ctx.event?.original != null
+      description: The `message` field is no longer required if the document has an `event.original` field.
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: resecurity_risk.ioc
+      description: The whole record is kept under its own namespace so that no vendor field collides with an ECS field.
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: enrichment
+  - set:
+      field: event.category
+      tag: set_event_category
+      value: [threat]
+  - set:
+      field: event.type
+      tag: set_event_type
+      value: [indicator]
+  - set:
+      field: event.dataset
+      tag: set_event_dataset
+      value: resecurity_risk.ioc_lookup
+  - fingerprint:
+      fields:
+        - resecurity_risk.ioc.hash_query
+      tag: fingerprint_hash_query
+      target_field: _id
+      if: ctx.resecurity_risk?.ioc?.hash_query != null
+      description: Documents are keyed by the queried hash so that repeated lookups update the same document.
+  - date:
+      field: resecurity_risk.ioc.add_date
+      tag: date_add_date
+      target_field: resecurity_risk.ioc.add_date
+      formats:
+        - ISO8601
+        - UNIX
+      if: ctx.resecurity_risk?.ioc?.add_date != null
+      on_failure:
+        - remove:
+            field: resecurity_risk.ioc.add_date
+            tag: remove_unparsable_add_date
+            ignore_missing: true
+        - append:
+            field: error.message
+            tag: append_error_add_date
+            value: 'failed to parse add_date: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: resecurity_risk.ioc.analysis_date
+      tag: date_analysis_date
+      target_field: resecurity_risk.ioc.analysis_date
+      formats:
+        - ISO8601
+        - UNIX
+      if: ctx.resecurity_risk?.ioc?.analysis_date != null
+      on_failure:
+        - remove:
+            field: resecurity_risk.ioc.analysis_date
+            tag: remove_unparsable_analysis_date
+            ignore_missing: true
+        - append:
+            field: error.message
+            tag: append_error_analysis_date
+            value: 'failed to parse analysis_date: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: resecurity_risk.ioc.update_date
+      tag: date_update_date
+      target_field: resecurity_risk.ioc.update_date
+      formats:
+        - ISO8601
+        - UNIX
+      if: ctx.resecurity_risk?.ioc?.update_date != null
+      on_failure:
+        - remove:
+            field: resecurity_risk.ioc.update_date
+            tag: remove_unparsable_update_date
+            ignore_missing: true
+        - append:
+            field: error.message
+            tag: append_error_update_date
+            value: 'failed to parse update_date: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      tag: set_timestamp
+      copy_from: resecurity_risk.ioc.update_date
+      if: ctx.resecurity_risk?.ioc?.update_date != null
+  - set:
+      field: file.name
+      tag: set_file_name
+      copy_from: resecurity_risk.ioc.file_name
+      if: ctx.resecurity_risk?.ioc?.file_name != null
+  - set:
+      field: file.hash.md5
+      tag: set_file_hash_md5
+      copy_from: resecurity_risk.ioc.md5
+      if: ctx.resecurity_risk?.ioc?.md5 != null
+  - set:
+      field: file.hash.sha256
+      tag: set_file_hash_sha256
+      copy_from: resecurity_risk.ioc.sha256
+      if: ctx.resecurity_risk?.ioc?.sha256 != null
+  - append:
+      field: related.hash
+      tag: append_related_hash_md5
+      value: '{{{resecurity_risk.ioc.md5}}}'
+      if: ctx.resecurity_risk?.ioc?.md5 != null
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      tag: append_related_hash_sha256
+      value: '{{{resecurity_risk.ioc.sha256}}}'
+      if: ctx.resecurity_risk?.ioc?.sha256 != null
+      allow_duplicates: false
+  - append:
+      field: related.hash
+      tag: append_related_hash_query
+      value: '{{{resecurity_risk.ioc.hash_query}}}'
+      if: ctx.resecurity_risk?.ioc?.hash_query != null
+      allow_duplicates: false
+  - remove:
+      field: event.original
+      tag: remove_event_original
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+      ignore_missing: true
+      description: The `event.original` field is no longer required if the `preserve_original_event` tag is not set.
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{ _ingest.on_failure_processor_type }}'
+        {{#_ingest.on_failure_processor_tag}}with tag '{{ _ingest.on_failure_processor_tag }}'{{/_ingest.on_failure_processor_tag}}
+        failed with message '{{ _ingest.on_failure_message }}'
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
