@@ -73,11 +73,11 @@ To collect the `event` data stream over syslog, you need the following:
 
 The API-based data streams support both Elastic Managed (Agentless) and Agent-based installations. The `event` data stream is collected over syslog and therefore supports Agent-based installation only.
 
-### Agentless-based installation
+### Elastic Managed installation
 
-Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+Elastic Managed integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Elastic Managed integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Elastic Managed integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
 
-Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+Elastic Managed deployments are only supported in Elastic Serverless and Elastic Cloud environments. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
 
 ### Agent-based installation
 
@@ -135,24 +135,24 @@ An example event for `audit` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-07-16T13:45:04+05:30",
+    "@timestamp": "2026-07-16T08:15:04.000Z",
     "agent": {
-        "ephemeral_id": "3be91bce-ea5d-471d-ad0a-d987cb228710",
-        "id": "ade4f196-bf69-41e7-8900-8f0deb243267",
-        "name": "elastic-agent-42258",
+        "ephemeral_id": "aa45b205-9fbf-4307-9e33-88620b8dc991",
+        "id": "b87ad57f-6cad-4627-9f38-0ad698413315",
+        "name": "elastic-agent-99491",
         "type": "filebeat",
         "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "trellix_epo_on_prem.audit",
-        "namespace": "37110",
+        "namespace": "87952",
         "type": "logs"
     },
     "ecs": {
         "version": "9.4.0"
     },
     "elastic_agent": {
-        "id": "ade4f196-bf69-41e7-8900-8f0deb243267",
+        "id": "b87ad57f-6cad-4627-9f38-0ad698413315",
         "snapshot": false,
         "version": "8.19.0"
     },
@@ -163,13 +163,13 @@ An example event for `audit` looks as following:
             "iam"
         ],
         "dataset": "trellix_epo_on_prem.audit",
-        "end": "2026-07-16T13:45:05+05:30",
+        "end": "2026-07-16T08:15:05.000Z",
         "id": "1943",
-        "ingested": "2026-09-09T10:47:26Z",
+        "ingested": "2026-09-19T04:07:01Z",
         "kind": "event",
-        "original": "{\"OrionAuditLog.AutoId\":1943,\"OrionAuditLog.CmdName\":\"Delete user\",\"OrionAuditLog.EndTime\":\"2026-07-16T13:45:05+05:30\",\"OrionAuditLog.Message\":\"User \\\"bob.smith\\\" deleted from system\",\"OrionAuditLog.Priority\":3,\"OrionAuditLog.StartTime\":\"2026-07-16T13:45:04+05:30\",\"OrionAuditLog.Success\":true,\"OrionAuditLog.UserId\":1,\"OrionAuditLog.UserName\":\"admin\"}",
+        "original": "{\"OrionAuditLog.AutoId\":1943,\"OrionAuditLog.CmdName\":\"Delete user\",\"OrionAuditLog.EndTime\":\"2026-07-16T13:45:05+05:30\",\"OrionAuditLog.Message\":\"User \\\"tempuser\\\" deleted from system\",\"OrionAuditLog.Priority\":3,\"OrionAuditLog.StartTime\":\"2026-07-16T13:45:04+05:30\",\"OrionAuditLog.Success\":true,\"OrionAuditLog.UserId\":1,\"OrionAuditLog.UserName\":\"admin\"}",
         "outcome": "success",
-        "start": "2026-07-16T13:45:04+05:30",
+        "start": "2026-07-16T08:15:04.000Z",
         "type": [
             "user",
             "deletion"
@@ -178,7 +178,7 @@ An example event for `audit` looks as following:
     "input": {
         "type": "cel"
     },
-    "message": "User \"bob.smith\" deleted from system",
+    "message": "User \"tempuser\" deleted from system",
     "related": {
         "user": [
             "1",
@@ -425,22 +425,22 @@ An example event for `system` looks as following:
 {
     "@timestamp": "2026-08-03T07:01:28.000Z",
     "agent": {
-        "ephemeral_id": "296e6de5-a662-4c4d-bd25-c1e72554804b",
-        "id": "e7b50650-6fc9-4be9-9fd0-eb606d3c75c8",
-        "name": "elastic-agent-61982",
+        "ephemeral_id": "7d640bc0-2497-4ebd-9f2f-1d5719e9d453",
+        "id": "6511cef8-1ea9-46d8-9735-7ee6b7637519",
+        "name": "elastic-agent-90634",
         "type": "filebeat",
         "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "trellix_epo_on_prem.system",
-        "namespace": "88538",
+        "namespace": "43491",
         "type": "logs"
     },
     "ecs": {
         "version": "9.4.0"
     },
     "elastic_agent": {
-        "id": "e7b50650-6fc9-4be9-9fd0-eb606d3c75c8",
+        "id": "6511cef8-1ea9-46d8-9735-7ee6b7637519",
         "snapshot": false,
         "version": "8.19.0"
     },
@@ -451,7 +451,7 @@ An example event for `system` looks as following:
         ],
         "dataset": "trellix_epo_on_prem.system",
         "id": "3",
-        "ingested": "2026-09-09T17:02:42Z",
+        "ingested": "2026-09-19T04:10:32Z",
         "kind": "state",
         "original": "{\"EPOLeafNode.AgentGUID\":\"65E387D4-DD78-406F-9765-2A3AAC1DF958\",\"EPOLeafNode.AgentVersion\":\"5.8.6.185\",\"EPOLeafNode.AutoID\":3,\"EPOLeafNode.ExcludedTags\":\"\",\"EPOLeafNode.LastCommSecure\":\"1\",\"EPOLeafNode.LastUpdate\":\"2026-08-03T12:31:28+05:30\",\"EPOLeafNode.ManagedState\":1,\"EPOLeafNode.NodeName\":\"DESKTOP-B9TTHQE\",\"EPOLeafNode.NodePath\":null,\"EPOLeafNode.ParentID\":2,\"EPOLeafNode.SequenceErrorCount\":0,\"EPOLeafNode.SequenceErrorCountLastUpdate\":null,\"EPOLeafNode.ServerKeyHash\":\"zCpCbtDGJO5y9CB7kjIW+lY9lEPxhJhunES4S5Aayao=\",\"EPOLeafNode.Tags\":\"Escalated, Workstation\",\"EPOLeafNode.TenantId\":1,\"EPOLeafNode.TransferSiteListsID\":false,\"EPOLeafNode.Type\":1}",
         "type": [
@@ -534,30 +534,24 @@ An example event for `product_event` looks as following:
 {
     "@timestamp": "2026-07-21T09:23:20.000Z",
     "agent": {
-        "ephemeral_id": "47cc9dac-90df-494c-b767-21b9f420cb94",
-        "id": "b20a7386-b912-4d58-b4f6-3bc59e054607",
-        "name": "elastic-agent-82828",
+        "ephemeral_id": "d18a339e-9558-45c9-80bd-d4ada7e0a222",
+        "id": "a2eaea29-29e9-402b-9b54-78b8b3a0afb5",
+        "name": "elastic-agent-58014",
         "type": "filebeat",
         "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "trellix_epo_on_prem.product_event",
-        "namespace": "88150",
+        "namespace": "38010",
         "type": "logs"
     },
     "ecs": {
         "version": "9.4.0"
     },
     "elastic_agent": {
-        "id": "b20a7386-b912-4d58-b4f6-3bc59e054607",
+        "id": "a2eaea29-29e9-402b-9b54-78b8b3a0afb5",
         "snapshot": false,
         "version": "8.19.0"
-    },
-    "entity": {
-        "name": "HOST-EXAMPLE-02",
-        "type": [
-            "host"
-        ]
     },
     "event": {
         "action": "deployment-successful",
@@ -569,7 +563,7 @@ An example event for `product_event` looks as following:
         "created": "2026-07-21T09:23:47.000Z",
         "dataset": "trellix_epo_on_prem.product_event",
         "id": "1",
-        "ingested": "2026-09-09T10:49:07Z",
+        "ingested": "2026-09-19T04:09:42Z",
         "kind": "event",
         "original": "{\"EPOProductEvents.AgentGUID\":\"89A1D5C1-2B3E-4F67-8A9B-0C1D2E3F4A5B\",\"EPOProductEvents.AutoID\":1,\"EPOProductEvents.DetectedUTC\":\"2026-07-21T14:53:20+05:30\",\"EPOProductEvents.Error\":0,\"EPOProductEvents.ExtraDATNames\":null,\"EPOProductEvents.HostName\":\"HOST-EXAMPLE-02\",\"EPOProductEvents.IPV6\":\"2001:DB8:85A3:0:8A2E:370:7334:1\",\"EPOProductEvents.InitiatorID\":null,\"EPOProductEvents.InitiatorType\":\"CommandLine\",\"EPOProductEvents.Locale\":1033,\"EPOProductEvents.NodeID\":1,\"EPOProductEvents.ProductCode\":\"EPOAGENT3000\",\"EPOProductEvents.ReceivedUTC\":\"2026-07-21T14:53:47+05:30\",\"EPOProductEvents.SPHotFix\":null,\"EPOProductEvents.SiteName\":null,\"EPOProductEvents.TVDEventID\":2411,\"EPOProductEvents.TVDSeverity\":0,\"EPOProductEvents.TenantId\":1,\"EPOProductEvents.Type\":\"Install\",\"EPOProductEvents.UserName\":\"SYSTEM\"}",
         "outcome": "success",
@@ -1247,22 +1241,22 @@ An example event for `event` looks as following:
 {
     "@timestamp": "2018-06-29T10:53:33.000Z",
     "agent": {
-        "ephemeral_id": "d0d2c426-2f13-4d22-a738-db0165aede19",
-        "id": "027558c6-8268-4fd4-a239-2acacbad7e15",
-        "name": "elastic-agent-79511",
+        "ephemeral_id": "9c7de2ee-e912-4ce3-9b95-ede8e1724ff2",
+        "id": "6865871b-95fc-4a75-b9fc-15eb2ece2127",
+        "name": "elastic-agent-97787",
         "type": "filebeat",
         "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "trellix_epo_on_prem.event",
-        "namespace": "66495",
+        "namespace": "23613",
         "type": "logs"
     },
     "ecs": {
         "version": "9.4.0"
     },
     "elastic_agent": {
-        "id": "027558c6-8268-4fd4-a239-2acacbad7e15",
+        "id": "6865871b-95fc-4a75-b9fc-15eb2ece2127",
         "snapshot": false,
         "version": "8.19.0"
     },
@@ -1275,10 +1269,10 @@ An example event for `event` looks as following:
         ],
         "code": "1027",
         "dataset": "trellix_epo_on_prem.event",
-        "ingested": "2026-09-18T06:09:05Z",
+        "ingested": "2026-09-19T04:24:26Z",
         "kind": "alert",
         "outcome": "success",
-        "severity": 47,
+        "severity": 2,
         "type": [
             "deletion"
         ]
@@ -1308,7 +1302,7 @@ An example event for `event` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.19.0.3:43870"
+            "address": "172.19.0.3:41824"
         },
         "syslog": {
             "appname": "EPOEvents",
@@ -1431,14 +1425,14 @@ An example event for `event` looks as following:
 | trellix_epo_on_prem.event.epo_event.analyzer_dat_version |  | keyword |  |
 | trellix_epo_on_prem.event.epo_event.analyzer_detection_method |  | keyword |  |
 | trellix_epo_on_prem.event.epo_event.analyzer_engine_version |  | keyword |  |
-| trellix_epo_on_prem.event.epo_event.analyzer_gti_query |  | keyword |  |
+| trellix_epo_on_prem.event.epo_event.analyzer_gti_query |  | boolean |  |
 | trellix_epo_on_prem.event.epo_event.analyzer_name | Name of the product that detected the threat. | keyword |  |
 | trellix_epo_on_prem.event.epo_event.analyzer_version | Version of the detecting product. | keyword |  |
 | trellix_epo_on_prem.event.epo_event.api_name |  | keyword |  |
 | trellix_epo_on_prem.event.epo_event.attack_vector_type |  | keyword |  |
 | trellix_epo_on_prem.event.epo_event.bad_link_rating_id |  | keyword |  |
 | trellix_epo_on_prem.event.epo_event.blade_name |  | keyword |  |
-| trellix_epo_on_prem.event.epo_event.cleanable |  | long |  |
+| trellix_epo_on_prem.event.epo_event.cleanable |  | boolean |  |
 | trellix_epo_on_prem.event.epo_event.content_func_group |  | keyword |  |
 | trellix_epo_on_prem.event.epo_event.content_name |  | keyword |  |
 | trellix_epo_on_prem.event.epo_event.content_risk_group |  | keyword |  |
@@ -1453,7 +1447,7 @@ An example event for `event` looks as following:
 | trellix_epo_on_prem.event.epo_event.event_type |  | keyword |  |
 | trellix_epo_on_prem.event.epo_event.exploit_rating_id |  | keyword |  |
 | trellix_epo_on_prem.event.epo_event.files |  | keyword |  |
-| trellix_epo_on_prem.event.epo_event.first_action_status |  | keyword |  |
+| trellix_epo_on_prem.event.epo_event.first_action_status |  | boolean |  |
 | trellix_epo_on_prem.event.epo_event.first_attempted_action |  | keyword |  |
 | trellix_epo_on_prem.event.epo_event.hostname |  | keyword |  |
 | trellix_epo_on_prem.event.epo_event.jti_object_type |  | keyword |  |
@@ -1476,7 +1470,7 @@ An example event for `event` looks as following:
 | trellix_epo_on_prem.event.epo_event.received_utc | Time the event was received by the ePO server. | date |  |
 | trellix_epo_on_prem.event.epo_event.registry_value |  | keyword |  |
 | trellix_epo_on_prem.event.epo_event.remediation_action |  | keyword |  |
-| trellix_epo_on_prem.event.epo_event.second_action_status |  | keyword |  |
+| trellix_epo_on_prem.event.epo_event.second_action_status |  | boolean |  |
 | trellix_epo_on_prem.event.epo_event.second_attempted_action |  | keyword |  |
 | trellix_epo_on_prem.event.epo_event.server_id |  | keyword |  |
 | trellix_epo_on_prem.event.epo_event.siem_last_time |  | date |  |

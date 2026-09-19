@@ -228,20 +228,27 @@ processors:
             field: error.message
             tag: append_target_ipv6_convert_error
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - convert:
-      field: trellix_epo_on_prem.event.EPOEvent.Cleanable
-      tag: convert_cleanable_to_long
-      type: long
-      if: ctx.trellix_epo_on_prem?.event?.EPOEvent?.Cleanable != ''
-      ignore_missing: true
+  - script:
+      lang: painless
+      tag: coerce_boolean_flags
+      description: Coerce vendor 0/1 flag fields to booleans so they match the threat_event data stream types.
+      if: ctx.trellix_epo_on_prem?.event?.EPOEvent instanceof Map
+      source: |-
+        def epo = ctx.trellix_epo_on_prem.event.EPOEvent;
+        for (def f : ['Cleanable', 'AnalyzerGTIQuery', 'FirstActionStatus', 'SecondActionStatus']) {
+          if (epo.containsKey(f) && epo[f] != null) {
+            def v = epo[f].toString();
+            if (v == '1' || v.equalsIgnoreCase('true')) {
+              epo[f] = true;
+            } else if (v == '0' || v.equalsIgnoreCase('false')) {
+              epo[f] = false;
+            }
+          }
+        }
       on_failure:
-        - remove:
-            field: trellix_epo_on_prem.event.EPOEvent.Cleanable
-            tag: remove_cleanable_on_convert_failure
-            ignore_missing: true
         - append:
             field: error.message
-            tag: append_cleanable_convert_error
+            tag: append_coerce_boolean_flags_on_failure
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: trellix_epo_on_prem.event.EPOEvent.Count
@@ -897,11 +904,6 @@ processors:
       value: success
       if: ctx.event?.code == '1278'
   - set:
-      field: event.severity
-      tag: set_event_severity_code_1278
-      value: 47
-      if: ctx.event?.code == '1278'
-  - set:
       field: event.kind
       tag: set_event_kind_code_1027
       value: alert
@@ -930,11 +932,6 @@ processors:
       field: event.outcome
       tag: set_event_outcome_code_1027
       value: success
-      if: ctx.event?.code == '1027'
-  - set:
-      field: event.severity
-      tag: set_event_severity_code_1027
-      value: 47
       if: ctx.event?.code == '1027'
   - set:
       field: _temp.threat_handled
