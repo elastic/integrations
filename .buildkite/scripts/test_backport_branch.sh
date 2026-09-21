@@ -333,7 +333,12 @@ assert_equals "link from depth-3 pkg to sibling depth-3 pkg → sibling path ret
     "packages/technology/pkg2" \
     "$(cd "${TMPDIR_LINK}" && collect_linked_packages_from_roots "packages/technology/pkg1")"
 
-# 5b. Link from depth-2 package (pkg3) → depth-3 package (technology/pkg1)
+# 5b. Link from depth-2 package (pkg3) → depth-3 package (technology/pkg1),
+# which itself links to technology/pkg2 (set up explicitly here so this test
+# does not implicitly depend on the .link file written in 5a).
+# ../../../../ from data_stream/ds1/fields/ reaches packages/technology/
+printf '../../../../pkg2/_dev/shared/fields/ecs.yml abc123\n' \
+    > "${TMPDIR_LINK}/packages/technology/pkg1/data_stream/ds1/fields/ecs.yml.link"
 # ../../../../ from data_stream/ds1/fields/ reaches packages/
 printf '../../../../technology/pkg1/_dev/shared/fields/beats.yml abc123\n' \
     > "${TMPDIR_LINK}/packages/pkg3/data_stream/ds1/fields/beats.yml.link"
