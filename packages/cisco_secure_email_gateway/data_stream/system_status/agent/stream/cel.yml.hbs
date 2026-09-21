@@ -1,0 +1,82 @@
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: "http://localhost"
+redact.fields:
+  - password
+state:
+  username: {{username}}
+  password: {{password}}
+  hosts:
+{{#each hosts}}
+    - {{this}}
+{{/each}}
+program: |-
+  state.hosts.map(host,
+    (!host.contains("://")) ?
+      {
+        "error": {
+          "code": "400",
+          "id": "invalid_url",
+          "message": "Host URL must include a scheme (http:// or https://): " + host,
+        },
+        "host.name": host,
+      }
+    :
+    request("GET", host.split("://")[0] + "://" + state.username + ":" + state.password + "@" + host.split("://")[1].split("/")[0] + "/esa/api/v2.0/health/system_status").with(
+      {
+        "Header": {
+          "Accept": ["application/json"],
+          "cache-control": ["no-cache"],
+        }
+      }
+    ).do_request().as(resp,
+      (resp.StatusCode == 200) ?
+        {
+          "message": string(resp.Body),
+          "host.name": host.split("://")[1].split("/")[0],
+        }
+      :
+        {
+          "error": {
+            "code": string(resp.StatusCode),
+            "id": string(resp.Status),
+            "message": "GET " + host + "/esa/api/v2.0/health/system_status: " + ((size(resp.Body) != 0) ? string(resp.Body) : string(resp.Status)),
+          },
+          "host.name": host.split("://")[1].split("/")[0],
+        }
+    )
+  ).as(results,
+    {
+      "events": results,
+      "hosts": state.hosts,
+      "username": state.username,
+      "password": state.password,
+      "want_more": false,
+    }
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

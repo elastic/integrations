@@ -1,0 +1,52 @@
+---
+description: Pipeline for Cisco Secure Email Gateway delivery status metrics.
+processors:
+  - set:
+      tag: set_ecs_version
+      field: ecs.version
+      value: "8.17.0"
+  - set:
+      tag: set_event_kind
+      field: event.kind
+      value: metric
+  - append:
+      tag: set_event_category
+      field: event.category
+      value: host
+      allow_duplicates: false
+  - append:
+      tag: set_event_type
+      field: event.type
+      value: info
+      allow_duplicates: false
+  - rename:
+      tag: rename_host_name
+      field: host.name
+      target_field: host.hostname
+      ignore_missing: true
+  - set:
+      tag: set_event_original
+      field: event.original
+      copy_from: message
+      ignore_failure: true
+      if: "ctx.tags != null && ctx.tags.contains('preserve_original_event')"
+  - set:
+      tag: set_timestamp
+      field: "@timestamp"
+      value: "{{{_ingest.timestamp}}}"
+      override: false
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor "{{{ _ingest.on_failure_processor_type }}}" with tag
+        "{{{ _ingest.on_failure_processor_tag }}}" in pipeline
+        "{{{ _ingest.pipeline }}}" failed with message
+        "{{{ _ingest.on_failure_message }}}"
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

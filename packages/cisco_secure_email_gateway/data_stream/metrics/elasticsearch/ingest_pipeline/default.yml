@@ -1,0 +1,108 @@
+---
+description: Pipeline for Cisco Secure Email Gateway health metrics.
+processors:
+  - set:
+      tag: set_ecs_version
+      field: ecs.version
+      value: "8.17.0"
+  - set:
+      tag: set_event_kind
+      field: event.kind
+      value: metric
+  - append:
+      tag: set_event_category
+      field: event.category
+      value: host
+      allow_duplicates: false
+  - append:
+      tag: set_event_type
+      field: event.type
+      value: info
+      allow_duplicates: false
+  - rename:
+      tag: rename_host_name
+      field: host.name
+      target_field: host.hostname
+      ignore_missing: true
+  - set:
+      tag: set_event_original
+      field: event.original
+      copy_from: message
+      ignore_failure: true
+      if: "ctx.tags != null && ctx.tags.contains('preserve_original_event')"
+  - json:
+      tag: parse_message_json
+      field: message
+      target_field: _tmp
+      if: ctx.message != null && ctx.message != ""
+      on_failure:
+        - set:
+            tag: set_parse_error_message
+            field: error.message
+            value: "Failed to parse JSON response: {{{_ingest.on_failure_message}}}"
+  - rename:
+      tag: rename_cpu_load
+      field: _tmp.data.percentage_cpu_load
+      target_field: cisco_secure_email_gateway.metrics.cpu_load_pct
+      ignore_missing: true
+  - rename:
+      tag: rename_ram_utilization
+      field: _tmp.data.percentage_ram_utilization
+      target_field: cisco_secure_email_gateway.metrics.ram_utilization_pct
+      ignore_missing: true
+  - rename:
+      tag: rename_swap_utilization
+      field: _tmp.data.percentage_swap_utilization
+      target_field: cisco_secure_email_gateway.metrics.swap_utilization_pct
+      ignore_missing: true
+  - rename:
+      tag: rename_queue_utilization
+      field: _tmp.data.percentage_queue_utilization
+      target_field: cisco_secure_email_gateway.metrics.queue_utilization_pct
+      ignore_missing: true
+  - rename:
+      tag: rename_disk_io
+      field: _tmp.data.percentage_diskio
+      target_field: cisco_secure_email_gateway.metrics.disk_io_pct
+      ignore_missing: true
+  - rename:
+      tag: rename_workqueue_messages
+      field: _tmp.data.messages_in_workqueue
+      target_field: cisco_secure_email_gateway.metrics.workqueue_messages
+      ignore_missing: true
+  - rename:
+      tag: rename_pvo_quarantine
+      field: _tmp.data.messages_in_pvo_quarantines
+      target_field: cisco_secure_email_gateway.metrics.pvo_quarantine_messages
+      ignore_missing: true
+  - rename:
+      tag: rename_resource_conservation
+      field: _tmp.data.resource_conservation
+      target_field: cisco_secure_email_gateway.metrics.resource_conservation
+      ignore_missing: true
+  - remove:
+      tag: remove_tmp_message
+      field:
+        - _tmp
+        - message
+      ignore_missing: true
+  - set:
+      tag: set_timestamp
+      field: "@timestamp"
+      value: "{{{_ingest.timestamp}}}"
+      override: false
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor "{{{ _ingest.on_failure_processor_type }}}" with tag
+        "{{{ _ingest.on_failure_processor_tag }}}" in pipeline
+        "{{{ _ingest.pipeline }}}" failed with message
+        "{{{ _ingest.on_failure_message }}}"
+  - set:
+      field: event.kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
