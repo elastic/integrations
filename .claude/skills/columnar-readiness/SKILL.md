@@ -103,27 +103,41 @@ The audit proposes one per data stream. Confirm it before writing it — the pro
 static analysis, and the person who knows the dataset should sanity-check the
 cardinality.
 
-The call is made from the **input types alone**:
+The **input types** pick the regime, and the regime picks the evidence:
 
-- `host.name asc, @timestamp desc` (the default) is right when the agent runs on the
-  machine that produced the log: `logfile`, `filestream`, `journald`, `winlog`, `etw`,
-  `system/*`, container inputs, syslog/tcp/udp receivers. Note that Elastic Agent's
-  `add_host_metadata` populates `host.name` on every event regardless of the package's
-  `fields/*.yml`, and Elasticsearch injects the mapping when the template has none —
-  so "`host.name` is not in the field definitions" is **not** evidence against the
-  default.
-- It is wrong for API pollers (`httpjson`, `cel`, `aws-s3`, `gcp-pubsub`,
-  `azure-eventhub`, `o365audit`, …) where `host.name` is the collector. Propose an
-  explicit sort on the dataset's dominant grouping field — a tenant/account/org id
-  first, then `agent.id`/`observer.name`, then whatever the dashboards **filter** on
-  most.
+| Input class | Inputs | Regime |
+| --- | --- | --- |
+| host-local | `logfile`, `filestream`, `journald`, `winlog`, `etw`, `system/*`, `audit/*`, container inputs | the default `host.name asc, @timestamp desc` is right |
+| receiver | `tcp`, `udp`, `syslog` | read the ingest pipeline |
+| collector / poller | `httpjson`, `cel`, `aws-s3`, `gcp-pubsub`, `azure-eventhub`, `o365audit`, … | propose an explicit sort on the dataset's grouping dimension |
+
+- **Host-local.** Elastic Agent's `add_host_metadata` populates `host.name` on every
+  event regardless of the package's `fields/*.yml`, and Elasticsearch injects the
+  mapping when the template has none — so "`host.name` is not in the field
+  definitions" is **not** evidence against the default.
+- **Receiver.** `tcp`/`udp`/`syslog` are *not* host-local: the agent is a syslog sink
+  and `host.name` holds whatever the pipeline put there — the collector in
+  `cisco_asa`, the *client* in `fortinet_fortigate`, nothing at all on most events in
+  `checkpoint` and `panw`. The audit scans the stream's pipelines: if they populate
+  `observer.name` / `observer.hostname` / `observer.serial_number`, that is the
+  proposal; if they set `host.name` unconditionally from the header, the default is
+  fine; otherwise it asks for a human choice.
+- **Collector.** `host.name` is the collector. Propose an explicit sort on a
+  tenant/account/org id first — declared in `fields/*.yml` **or** merely populated in
+  `sample_event.json`, since ECS fields arrive via `ecs@mappings` and packages
+  routinely leave them undeclared — then a vendor tenant id, then whatever the
+  dashboards **filter** on most. `agent.id` is not proposed here: for a poller it is
+  the collector, one value for the whole data stream.
 - The only mapping fact that matters is a *downgrade*: if the package maps `host.name`
   as something other than a keyword/number with doc values, Elasticsearch falls back
   to `@timestamp` only.
 
-A weak candidate is worse than none. If no field survives validation — single-valued,
-`keyword`/`ip`/integer, doc values, not constant — the audit says
-`no confident candidate; needs human choice` rather than inventing a sort key.
+A weak candidate is worse than none. A field survives validation only if it is
+single-valued — itself *and* every object it lives inside, checked against the sample
+event, `nested`/`normalize: [array]` declarations and the objects the pipeline
+iterates — has doc values, is `keyword`/`ip` or an integer whose **name** says it is
+an identifier rather than a measurement, and is not constant. Otherwise the audit
+says `no confident candidate; needs human choice` rather than inventing a sort key.
 
 Constraints, candidate ranking and the YAML to write:
 **[references/sorting.md](references/sorting.md)**.
@@ -136,7 +150,9 @@ applied the fix):
 1. Apply the mechanical fixes: `copy_to` → `set`/`append` in the ingest pipeline; a
    non-`lowercase` `normalizer` → ingest processor or a multi-field; `store: true` →
    delete it; `doc_values: false` → delete it, or, for an `external: ecs` field, add
-   `doc_values: true`.
+   `doc_values: true`; `dynamic: runtime` → `dynamic: true`. The first two change
+   what the ingest pipeline emits, so pipeline test expectations will have to be
+   regenerated — see step 5.
 2. `data_stream/<ds>/manifest.yml`:
    ```yaml
    elasticsearch:
@@ -184,9 +200,16 @@ surfaces. Every affected package will fail `build` once it opts in, independent 
 which spec version it declares. Always run both.
 
 Pipeline tests are run through `_ingest/pipeline/_simulate` — nothing is indexed, so
-the index mode cannot influence their output. Their result must be **identical** in
-both modes; a diff there is a real bug, never an expected columnar effect, and `-g`
-should never be needed for this migration.
+the index mode cannot influence their output. **If the only change is `index_mode`,
+the results must be identical in both modes**; a diff there is a real bug, never an
+expected columnar effect, and `-g` should never be needed.
+
+That stops being true the moment an auto-fix touches the pipeline. Moving a `copy_to`
+into a `set` processor, or replacing a non-`lowercase` normalizer with a `lowercase`
+processor, changes what `_simulate` returns — by design. Then `*-expected.json` does
+have to be regenerated with `-g`, and every hunk of the resulting diff has to be read
+and justified: the only changes you should see are the fields the auto-fix moved or
+normalised.
 
 ## Where things live in a package
 
