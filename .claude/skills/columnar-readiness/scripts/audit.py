@@ -350,6 +350,12 @@ COLUMNAR_INDEX_MODES = {"logsdb_columnar", "columnar"}
 #    still needs an inverted index. This audit only ever *reports* that one and
 #    asks for the evidence; it never proposes it (rollout rule 2).
 #
+#    Fleet applies it to STATIC LEAF FIELDS ONLY. It does not apply it to a
+#    field it renders as a `dynamic_templates` entry (`type: object`/`group`
+#    with `object_type`), nor to anything under `multi_fields:`, and
+#    package-spec 3.7.0 rejects the block in both places. A `doc_values: false`
+#    there has no scoped fix: `columnar_override_misplaced`.
+#
 # 2. Stream-level readiness flag in `data_stream/<ds>/manifest.yml`:
 #
 #        elasticsearch:
@@ -360,7 +366,9 @@ COLUMNAR_INDEX_MODES = {"logsdb_columnar", "columnar"}
 #    Fleet only offers the per-stream opt-in toggle for streams that set it (or
 #    that already declare a columnar `index_mode`).
 #
-# Both require `format_version: "3.7.0"`.
+# Both require `format_version: "3.7.0"` (`columnar_requires_spec_3_7`) and a
+# `conditions.kibana.version` of at least COLUMNAR_KIBANA_CONSTRAINT, because
+# both are read by Fleet and a Kibana without that support ignores them.
 # --------------------------------------------------------------------------- #
 
 
@@ -465,6 +473,64 @@ def columnar_block(container: Any) -> Dict[str, Any]:
     return block if isinstance(block, dict) else {}
 
 
+# The package-spec version that introduced both columnar constructs.
+COLUMNAR_SPEC_VERSION = (3, 7)
+
+# `conditions.kibana.version` a migrated package has to declare.
+#
+# The constraint is NOT about Elasticsearch: 9.5 already has the index mode.
+# It is about Fleet. Fleet has to (a) parse `elasticsearch.columnar.supported`
+# in order to offer the per-stream opt-in toggle at all, and (b) apply the
+# field-level `columnar:` overrides when it builds the mapping — on the install
+# path and on the toggle path. A Kibana without those changes silently ignores
+# both: the toggle is not offered, and a manual columnar opt-in still ships the
+# unpatched `doc_values: false`, so the index template PUT fails. So the
+# constraint must be at least the first Kibana minor that ships that Fleet
+# support.
+COLUMNAR_KIBANA_CONSTRAINT = "^9.7.0"
+COLUMNAR_KIBANA_NOTE = (
+    "adjust to the actual Fleet release; on older Kibana the override and the flag are "
+    "silently ignored, so the toggle is unavailable and any `doc_values: false` field "
+    "will make a manual columnar opt-in fail"
+)
+
+# Finding codes that describe the columnar *declaration* itself rather than a
+# mapping feature Elasticsearch or the validator would reject on its own merits.
+# They are excluded when deciding whether a `columnar.supported: true` stream is
+# inconsistent, so the report does not accuse a declaration of blocking itself.
+DECLARATION_CODES = {"columnar_requires_spec_3_7", "columnar_supported_with_blockers"}
+
+
+def spec_version_tuple(raw: Any) -> Optional[Tuple[int, int]]:
+    """(major, minor) of a `format_version`, or None if it cannot be parsed.
+
+    Tolerates pre-release suffixes (`3.7.0-next`, `3.7.0-rc1`).
+    """
+    if raw is None:
+        return None
+    text = str(raw).strip().strip('"').strip("'")
+    if not text:
+        return None
+    text = re.split(r"[-+]", text, maxsplit=1)[0]
+    parts = text.split(".")
+    try:
+        return (int(parts[0]), int(parts[1]) if len(parts) > 1 else 0)
+    except (ValueError, IndexError):
+        return None
+
+
+def spec_supports_columnar(raw: Any) -> bool:
+    """True when `format_version` is >= 3.7.0.
+
+    An unparseable / missing `format_version` returns True: the audit does not
+    invent a finding it cannot substantiate.
+    """
+    parsed = spec_version_tuple(raw)
+    if parsed is None:
+        return True
+    return parsed >= COLUMNAR_SPEC_VERSION
+
+
 # Severity drives the data stream status:
 #   blocker  -> BLOCKED              (Class A, no mechanical fix)
 #   auto_fix -> READY_AFTER_AUTO_FIX (Class A, mechanical fix available)
@@ -541,8 +607,22 @@ def check_field(fdef: Dict[str, Any], flat: str, nested_depth: int,
     # package-spec 3.7.0 mode-scoped override block: only applied by Fleet when
     # the resolved index mode is columnar, so it repairs a columnar blocker
     # without touching logsdb/standard installs of the same package version.
+    #
+    # Fleet only applies it to **static leaf fields**. Two places it does not:
+    #   * a dynamic-template field — `type: object` (or `group`) with an
+    #     `object_type`, which Fleet renders as a `dynamic_templates` entry and
+    #     not as a concrete mapping;
+    #   * anything inside `multi_fields:`.
+    # package-spec 3.7.0 rejects a `columnar:` block in both places, so an
+    # override written there does not merely do nothing — it fails the build.
+    # Consequence for remediation: a `doc_values: false` on such a field cannot
+    # be repaired by a scoped override, it has to be deleted outright, which is
+    # mode-agnostic and therefore also costs storage on logsdb and standard.
     columnar = columnar_block(fdef)
-    columnar_doc_values_fix = is_true(columnar.get("doc_values"))
+    dynamic_template_field = fdef.get("object_type") is not None
+    columnar_override_allowed = not dynamic_template_field and not in_multi_field
+    columnar_doc_values_fix = (is_true(columnar.get("doc_values"))
+                               and columnar_override_allowed)
 
     # --- Class A: rejected by Elasticsearch -------------------------------- #
     if ftype == "nested":
@@ -565,27 +645,48 @@ def check_field(fdef: Dict[str, Any], flat: str, nested_depth: int,
     # (`MappingLookup#firstFieldNotReconstructableFromDocValues` skips
     # `isMultiField(...)`), so only top-level fields matter here.
     if is_false(fdef.get("doc_values")) and not in_multi_field and not columnar_doc_values_fix:
+        if dynamic_template_field:
+            # No scoped override is available here — see `columnar_override_allowed`.
+            remediation = (
+                "Delete the `doc_values: false` line. The mode-scoped "
+                "`columnar: {doc_values: true}` override is **not** an option on this "
+                f"field: it declares `object_type: {fdef.get('object_type')}`, so Fleet "
+                "renders it as a `dynamic_templates` entry and never applies a `columnar:` "
+                "block to it, and package-spec 3.7.0 rejects the block there outright "
+                "(`columnar_override_misplaced`). The removal is therefore mode-agnostic: "
+                "doc values come on for logsdb and standard installs of this package "
+                "version too, and those indices grow. If that cost is unacceptable, the "
+                "honest alternative is to leave the field alone and keep this data stream "
+                "on logsdb. `store: true` is NOT an alternative either: Elasticsearch "
+                "rejects `store` outright in columnar modes "
+                "(`FieldMapper.Builder#storeParam`)."
+            )
+        else:
+            remediation = (
+                "Keep `doc_values: false` and add the mode-scoped override next to it "
+                "(package-spec 3.7.0):\n"
+                f"    - name: {flat}\n"
+                "      ...\n"
+                "      doc_values: false      # kept: still applies to logsdb/standard\n"
+                "      columnar:\n"
+                "        doc_values: true\n"
+                "Fleet applies the `columnar:` block only when the resolved index mode is "
+                "`logsdb_columnar`/`columnar` (the same way `dimension: true` is only "
+                "emitted for `time_series`), so a logsdb or standard install of this same "
+                "package version keeps exactly today's storage profile — the fix costs "
+                "nothing off-columnar, which is why it is preferred over deleting the "
+                "line. Deleting `doc_values: false` outright also unblocks columnar, but "
+                "it turns doc values on in every mode and grows those indices. Requires "
+                "`format_version: \"3.7.0\"`. `store: true` is NOT an alternative: "
+                "Elasticsearch rejects `store` outright in columnar modes "
+                "(`FieldMapper.Builder#storeParam`). For message-like content "
+                "`match_only_text` also works, but only on fields the package defines "
+                "itself."
+            )
         out.append(finding(
             "doc_values_false", "A", "auto_fix",
             f"`{flat}` sets `doc_values: false`; columnar mode cannot reconstruct it.",
-            "Keep `doc_values: false` and add the mode-scoped override next to it "
-            "(package-spec 3.7.0):\n"
-            f"    - name: {flat}\n"
-            "      ...\n"
-            "      doc_values: false      # kept: still applies to logsdb/standard\n"
-            "      columnar:\n"
-            "        doc_values: true\n"
-            "Fleet applies the `columnar:` block only when the resolved index mode is "
-            "`logsdb_columnar`/`columnar` (the same way `dimension: true` is only emitted "
-            "for `time_series`), so a logsdb or standard install of this same package "
-            "version keeps exactly today's storage profile — the fix costs nothing "
-            "off-columnar, which is why it is preferred over deleting the line. Deleting "
-            "`doc_values: false` outright also unblocks columnar, but it turns doc values "
-            "on in every mode and grows those indices. Requires "
-            "`format_version: \"3.7.0\"`. `store: true` is NOT an alternative: "
-            "Elasticsearch rejects `store` outright in columnar modes "
-            "(`FieldMapper.Builder#storeParam`). For message-like content "
-            "`match_only_text` also works, but only on fields the package defines itself.",
+            remediation,
             rel_file, flat))
 
     if is_false(columnar.get("doc_values")):
@@ -611,6 +712,28 @@ def check_field(fdef: Dict[str, Any], flat: str, nested_depth: int,
             "indexes, and index sorting is the per-integration lever "
             "(`references/sorting.md`). Keep it only if a benchmark on this specific field "
             "is linked from the PR that added it; otherwise remove it.",
+            rel_file, flat))
+
+    if columnar and not columnar_override_allowed:
+        placement = ("inside `multi_fields:`" if in_multi_field
+                     else f"a dynamic-template field (`object_type: "
+                          f"{fdef.get('object_type')}`)")
+        out.append(finding(
+            "columnar_override_misplaced", "A", "blocker",
+            f"`{flat}` carries a mode-scoped `columnar:` block on {placement}, where it "
+            f"does nothing. Fleet only applies `columnar` overrides to static leaf "
+            f"fields: it skips them for `multi_fields:` entries and for fields it renders "
+            f"as a `dynamic_templates` entry (`object_type`). package-spec 3.7.0 rejects "
+            f"the block in both places, so the package fails validation before the "
+            f"override ever gets a chance to be ignored.",
+            "Delete the `columnar:` block here. If it was added to repair a "
+            "`doc_values: false`: a multi-field needs no repair at all (multi-fields are "
+            "exempt from the reconstructability check, "
+            "`MappingLookup#firstFieldNotReconstructableFromDocValues`), and on an "
+            "`object_type` field the only fix is to delete the `doc_values: false` itself "
+            "— which applies in every index mode, not just columnar. Not treated as a "
+            "mechanical fix: deleting the block may re-expose the blocker it was meant to "
+            "hide, so decide what the field should actually do.",
             rel_file, flat))
 
     if is_true(fdef.get("store")):
@@ -729,7 +852,13 @@ def check_field(fdef: Dict[str, Any], flat: str, nested_depth: int,
                 f"ECS's `doc_values: false` and store not one byte more. A plain "
                 f"`doc_values: true` would also unblock columnar, but it would turn doc "
                 f"values on for `{flat}` in every mode. Requires "
-                f"`format_version: \"3.7.0\"`.",
+                f"`format_version: \"3.7.0\"`."
+                + ("" if columnar_override_allowed else
+                   " NOTE: this entry declares `object_type`, so Fleet renders it as a "
+                   "`dynamic_templates` entry and will not apply a `columnar:` block to "
+                   "it, and package-spec 3.7.0 rejects the block there. Here the only "
+                   "fix is a plain `doc_values: true`, which applies in every index "
+                   "mode."),
                 rel_file, flat))
 
     return out
@@ -1659,7 +1788,8 @@ def audit_package(pkg_dir: str, scan_dashboards: bool = True) -> Dict[str, Any]:
         ds_dir = os.path.join(ds_root, ds_name)
         if not os.path.isdir(ds_dir):
             continue
-        stream = audit_data_stream(pkg_dir, ds_dir, ds_name, dash_fields, filter_fields)
+        stream = audit_data_stream(pkg_dir, ds_dir, ds_name, dash_fields, filter_fields,
+                                   format_version=result.get("format_version"))
         result["data_streams"].append(stream)
         status = worse(status, stream["status"])
     result["status"] = status
@@ -1667,7 +1797,8 @@ def audit_package(pkg_dir: str, scan_dashboards: bool = True) -> Dict[str, Any]:
 
 
 def audit_data_stream(pkg_dir: str, ds_dir: str, ds_name: str,
-                      dash_fields: Counter, filter_fields: Counter) -> Dict[str, Any]:
+                      dash_fields: Counter, filter_fields: Counter,
+                      format_version: Any = None) -> Dict[str, Any]:
     rel = lambda p: os.path.relpath(p, pkg_dir)  # noqa: E731
     stream: Dict[str, Any] = {
         "data_stream": ds_name,
@@ -1676,6 +1807,7 @@ def audit_data_stream(pkg_dir: str, ds_dir: str, ds_name: str,
         "index_mode": None,
         "columnar_supported": False,
         "columnar_enabled": False,
+        "columnar_supported_with_blockers": False,
         "inputs": [],
         "findings": [],
         "errors": [],
@@ -1713,6 +1845,13 @@ def audit_data_stream(pkg_dir: str, ds_dir: str, ds_name: str,
 
     findings = check_stream_manifest(manifest, rel(manifest_path))
 
+    # Every place the package uses one of the two package-spec 3.7.0 columnar
+    # constructs, for the `format_version` gate below.
+    columnar_construct_sites: List[str] = []
+    if columnar_block(es_section):
+        columnar_construct_sites.append(
+            f"`elasticsearch.columnar` ({rel(manifest_path)})")
+
     # Fields
     field_index: Dict[str, Dict[str, Any]] = {}
     fields_dir = os.path.join(ds_dir, "fields")
@@ -1729,7 +1868,53 @@ def audit_data_stream(pkg_dir: str, ds_dir: str, ds_name: str,
             for fdef, flat, depth, in_mf in walk_fields(defs):
                 if not in_mf:
                     field_index.setdefault(flat, fdef)
+                if columnar_block(fdef):
+                    columnar_construct_sites.append(f"`{flat}` ({rel(fpath)})")
                 findings.extend(check_field(fdef, flat, depth, in_mf, rel(fpath)))
+
+    # --- package-spec version gate -------------------------------------- #
+    # Both constructs are new in package-spec 3.7.0. Declaring either one under
+    # an older `format_version` fails validation: the field-level `columnar:`
+    # block is an unknown property in the fields schema, and
+    # `elasticsearch.columnar` is an unknown property in the data stream
+    # manifest schema. It is the root manifest that decides, not the data stream.
+    if columnar_construct_sites and not spec_supports_columnar(format_version):
+        findings.append(finding(
+            "columnar_requires_spec_3_7", "A", "auto_fix",
+            f"The package declares a package-spec 3.7.0 columnar construct "
+            f"({', '.join(columnar_construct_sites[:4])}"
+            f"{', …' if len(columnar_construct_sites) > 4 else ''}) but the root "
+            f"`manifest.yml` says `format_version: {format_version}`. Both the "
+            f"field-level `columnar:` block and `elasticsearch.columnar` are new in "
+            f"package-spec 3.7.0, so the package fails validation as an unknown "
+            f"property.",
+            "Bump `format_version` to `\"3.7.0\"` in the root `manifest.yml`. That turns "
+            "on validators this package never had to satisfy before, so expect unrelated "
+            "pre-existing failures to surface — those may go in `validation.yml` with a "
+            "comment each, but never a columnar validator error.",
+            "manifest.yml"))
+
+    # --- `columnar.supported: true` with unresolved Class A findings ----- #
+    # The 3.7.0 validator rejects the declaration while a blocker remains, so
+    # this is a contradiction inside the package, not merely a readiness gap.
+    blocking = [f for f in findings
+                if f["class"] == "A" and f["code"] not in DECLARATION_CODES]
+    if stream["columnar_supported"] and blocking:
+        stream["columnar_supported_with_blockers"] = True
+        codes = sorted({f["code"] for f in blocking})
+        findings.append(finding(
+            "columnar_supported_with_blockers", "A", "blocker",
+            f"`elasticsearch.columnar.supported: true` asserts this data stream is "
+            f"columnar-ready, but it still has {len(blocking)} Class A finding(s) "
+            f"({', '.join('`%s`' % c for c in codes)}). The package-spec 3.7.0 columnar "
+            f"validator rejects the declaration while any of them remains, and a user who "
+            f"did manage to turn the Fleet toggle on would get a failed index template "
+            f"PUT.",
+            "Fix the Class A findings listed above, or drop "
+            "`elasticsearch.columnar.supported: true` from this data stream's manifest "
+            "until they are fixed. The flag is per data stream, so the other streams in "
+            "the package can keep it.",
+            f"data_stream/{ds_name}/manifest.yml"))
 
     sample = load_sample_event(ds_dir)
     pipeline_arrays = scan_pipelines(ds_dir)
@@ -1814,9 +1999,17 @@ def columnar_optin_label(stream: Dict[str, Any]) -> str:
         return ("not declared (`elasticsearch.columnar.supported` unset, no columnar "
                 "`index_mode`) — Fleet offers no opt-in for this stream yet")
     label = "; ".join(parts)
-    if any(f["class"] == "A" for f in stream.get("findings", [])):
-        label += (". **Inconsistent**: the stream still has Class A findings, which the "
-                  "3.7.0 columnar validator rejects — fix them or drop the declaration")
+    blocking = [f for f in stream.get("findings", [])
+                if f["class"] == "A" and f["code"] not in DECLARATION_CODES]
+    if blocking:
+        code = (" (`columnar_supported_with_blockers`)"
+                if stream.get("columnar_supported_with_blockers") else "")
+        label += (f". **Inconsistent**{code}: the stream still has {len(blocking)} Class A "
+                  "finding(s), which the 3.7.0 columnar validator rejects — fix them or "
+                  "drop the declaration")
+    label += (f". Either declaration also needs "
+              f"`conditions.kibana.version: \"{COLUMNAR_KIBANA_CONSTRAINT}\"` "
+              f"({COLUMNAR_KIBANA_NOTE})")
     return label
 
 
@@ -1829,7 +2022,9 @@ def md_package(result: Dict[str, Any]) -> str:
                  f"format_version `{result.get('format_version')}`")
     if result.get("kibana_condition"):
         lines.append(f"- Kibana condition: `{result['kibana_condition']}` "
-                     f"(needs `^9.5.0` for logsdb_columnar)")
+                     f"(needs at least `{COLUMNAR_KIBANA_CONSTRAINT}`, the first Kibana "
+                     f"minor with Fleet support for `columnar.supported` and the "
+                     f"field-level `columnar` overrides — {COLUMNAR_KIBANA_NOTE})")
     if result.get("out_of_scope_reason"):
         lines.append(f"- Out of scope: {result['out_of_scope_reason']}")
     for err in result.get("errors", []):
@@ -2004,8 +2199,13 @@ def md_catalog(results: List[Dict[str, Any]]) -> str:
     lines.append("Union of `nested_in_nested` and `doc_values_false`. This is the set the "
                  "preliminary catalog analysis called *blocked*; under the status rules in "
                  "`references/report-template.md` the `doc_values_false` ones are "
-                 "READY_AFTER_AUTO_FIX because deleting the `doc_values: false` line fixes "
-                 "them mechanically.")
+                 "READY_AFTER_AUTO_FIX because the fix is mechanical: keep the existing "
+                 "`doc_values: false` and add a mode-scoped "
+                 "`columnar: {doc_values: true}` beside it, so logsdb and standard installs "
+                 "of the same package version are unchanged. (On the two placements Fleet "
+                 "does not apply overrides to — a `multi_fields:` entry, or an "
+                 "`object_type` dynamic-template field — there is no scoped form and the "
+                 "`doc_values: false` has to be deleted outright, in every index mode.)")
     lines.append("")
     lines.append(", ".join(f"`{p}`" for p in pkglist) or "(none)")
     lines.append("")
@@ -2038,6 +2238,24 @@ def md_catalog(results: List[Dict[str, Any]]) -> str:
     lines.append(f"## Judgement calls — review ({npkg} packages, {nds} data streams)")
     lines.append("")
     lines.extend(code_rows(REVIEW_CODES) or ["(none)", ""])
+
+    # Problems with the package-spec 3.7.0 columnar declarations themselves.
+    # Kept out of the blocker/auto-fix sections above on purpose: those count
+    # mapping features, these count mistakes in the opt-in plumbing. Omitted
+    # while empty, like "Already columnar-enabled".
+    DECLARATION_PROBLEM_CODES = ["columnar_supported_with_blockers",
+                                 "columnar_requires_spec_3_7",
+                                 "columnar_override_misplaced",
+                                 "columnar_doc_values_false"]
+    npkg, nds, _ = union(DECLARATION_PROBLEM_CODES)
+    if npkg:
+        lines.append("## Columnar declaration problems "
+                     f"({npkg} packages, {nds} data streams)")
+        lines.append("")
+        lines.append("Mistakes in the package-spec 3.7.0 opt-in plumbing itself, not in "
+                     "the mappings. See `references/blockers.md`.")
+        lines.append("")
+        lines.extend(code_rows(DECLARATION_PROBLEM_CODES))
 
     npkg, nds, _ = union(["keyword_normalizer_lowercase"])
     lines.append("## Informational — Class C "

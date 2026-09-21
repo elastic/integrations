@@ -30,7 +30,17 @@ means columnar is the default for new installs. Either one counts as
 columnar-enabled for reporting; in JSON they are `columnar_supported`,
 `index_mode` and the derived `columnar_enabled`. A stream that declares one while
 still carrying Class A findings is called out as inconsistent — the 3.7.0
-validator rejects that combination.
+validator rejects that combination — and when the declaration is
+`columnar.supported: true` that inconsistency also gets its own Class A finding,
+`columnar_supported_with_blockers` (severity `blocker`), plus the boolean
+`columnar_supported_with_blockers` on the data stream in JSON.
+
+Two more checks on the plumbing rather than the mappings:
+`columnar_requires_spec_3_7` (Class A, `auto_fix`) fires when either construct
+appears while the root `format_version` is below 3.7.0 — bump it — and
+`columnar_override_misplaced` (Class A, `blocker`) fires on a field-level
+`columnar:` block that Fleet would never apply, i.e. on an `object_type`
+dynamic-template field or inside `multi_fields:`.
 
 Per package: the worst status among its data streams, plus a sort recommendation.
 **A package can be mixed** — `aws` has one blocked data stream (`waf`) and eighteen
@@ -71,7 +81,7 @@ migration PR cannot pick up a dashboard hint by accident.
 
 - Status: **<STATUS>**
 - Package type: `integration`, version `X.Y.Z`, format_version `3.x.y`
-- Kibana condition: `^9.x.0` (needs `^9.5.0` for logsdb_columnar)
+- Kibana condition: `^9.x.0` (needs at least `^9.7.0`, the first Kibana minor with Fleet support for `columnar.supported` and the field-level `columnar` overrides — adjust to the actual Fleet release; on older Kibana the override and the flag are silently ignored, so the toggle is unavailable and any `doc_values: false` field will make a manual columnar opt-in fail)
 
 | Data stream | Status | Findings | Index sort |
 | --- | --- | --- | --- |
@@ -186,7 +196,8 @@ Per data stream, alongside `index_mode`:
 ```json
 {
   "columnar_supported": true,
-  "columnar_enabled": true
+  "columnar_enabled": true,
+  "columnar_supported_with_blockers": false
 }
 ```
 

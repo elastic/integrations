@@ -59,6 +59,22 @@ Valid keys:
 
 `columnar: {doc_values: false}` is invalid — see A2d.
 
+**Where the block may go: static leaf fields only.** Fleet applies `columnar`
+overrides when it builds the concrete mapping for a field. Two kinds of field
+never get that treatment:
+
+- a **dynamic-template field** — `type: object` (or `group`) carrying an
+  `object_type`, which Fleet turns into a `dynamic_templates` entry rather than
+  a named mapping;
+- anything inside **`multi_fields:`**.
+
+Fleet ignores a `columnar:` block in both places, and package-spec 3.7.0 rejects
+it there, so the package does not even build. See A2e. The practical consequence
+is for A2: on those two placements there is **no mode-scoped fix**, and a
+`doc_values: false` has to be deleted outright — which applies in every index
+mode, not only columnar. (A multi-field needs no fix in the first place; an
+`object_type` field does.)
+
 ### 2. The stream-level readiness flag
 
 ```yaml
@@ -82,6 +98,18 @@ it (or that already declares a columnar `index_mode`).
 
 For the tech-preview wave the answer is `supported: true` alone, with
 `index_mode` left unset: the rollout strategy is that users opt in.
+
+Both constructs are read by **Fleet**, not only by the spec validator, so both
+need a `conditions.kibana.version` of at least the first Kibana minor that ships
+that Fleet support — currently written as `"^9.7.0"` (adjust to the actual Fleet
+release; on older Kibana the override and the flag are silently ignored, so the
+toggle is unavailable and any `doc_values: false` field will make a manual
+columnar opt-in fail). And both need `format_version: "3.7.0"` in the root
+manifest: declaring either one under an older spec version is
+`columnar_requires_spec_3_7`. Setting `supported: true` on a stream that still
+has a Class A finding is `columnar_supported_with_blockers` — the 3.7.0
+validator rejects it, and a user who did turn the toggle on would get a failed
+index template PUT.
 
 ---
 
@@ -134,6 +162,22 @@ Deleting the `doc_values: false` line also unblocks columnar, and it is the righ
 call if the attribute was never justified in the first place. It is the bigger
 change: it turns doc values on in every index mode, for every install of the new
 version. Prefer the scoped form unless you have decided you want that.
+
+**Two placements where the scoped form is not available.** Fleet only applies
+`columnar` overrides to static leaf fields, and package-spec 3.7.0 rejects the
+block anywhere else (A2e):
+
+- **`object_type` dynamic-template fields** (`type: object` with
+  `object_type: keyword`, and friends). Fleet renders these as a
+  `dynamic_templates` entry and never applies a `columnar:` block to them. The
+  only fix is to delete the `doc_values: false` itself, and it is mode-agnostic:
+  logsdb and standard installs of the new version get doc values too, and those
+  indices grow. If that cost is not acceptable, leave the field alone and keep
+  the data stream on logsdb — that is a legitimate outcome.
+- **`multi_fields:` entries.** Nothing to fix: multi-fields are exempt from the
+  reconstructability check to begin with (see the rule above), so a
+  `doc_values: false` there is not a blocker and the audit does not report one.
+  Do not add a `columnar:` block to "fix" it.
 
 `match_only_text` is an alternative for message-like content, but **only** for fields
 the package defines itself — elastic-package refuses to override the type of an
@@ -258,7 +302,37 @@ purpose and the audit cannot tell whether they meant "this field must not have
 doc values" (in which case the stream is not a columnar candidate at all) or
 simply inverted the flag. Ask.
 
+A wrong *value* is this finding; a `columnar:` block in a place Fleet will never
+look at is A2e.
+
 **Known in catalog:** none.
+
+### A2e. `columnar:` where Fleet will not apply it — `columnar_override_misplaced`
+
+**Rule.** A field-level `columnar:` block on a field that declares `object_type`,
+or on a field inside `multi_fields:`.
+
+Fleet applies `columnar` overrides only to **static leaf fields**, the ones it
+turns into a named mapping. It skips a field it renders as a `dynamic_templates`
+entry (`type: object`/`group` with an `object_type`) and it skips everything
+under `multi_fields:`. package-spec 3.7.0 refuses the block in both places, so
+this does not even reach Fleet: the package fails validation first.
+
+The finding therefore means one of two things, and they need different answers:
+
+- the block was written to repair a `doc_values: false` on an **`object_type`**
+  field — the repair is not possible in scoped form; delete the
+  `doc_values: false` instead and accept that it applies in every index mode
+  (A2);
+- the block was written to repair a `doc_values: false` on a **multi-field** —
+  there was nothing to repair; multi-fields are exempt from the
+  reconstructability check.
+
+**Remediation.** Delete the `columnar:` block. Deliberately **not** an auto-fix:
+deleting it may re-expose the blocker it was meant to hide, so decide what the
+field should actually do first.
+
+**Known in catalog:** none — no package uses a field-level `columnar:` block yet.
 
 ### A3. `copy_to` — `copy_to`
 

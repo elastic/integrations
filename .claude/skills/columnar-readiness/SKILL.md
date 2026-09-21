@@ -60,6 +60,15 @@ scoped form leaves their mapping byte for byte what it is today, so the fix is f
 off-columnar. The block also accepts `index`, which this skill never writes; see
 rollout rule 2 and `references/blockers.md` C5.
 
+**Static leaf fields only.** Fleet applies the block when it builds a concrete
+mapping, so it does *not* apply it to a field it renders as a `dynamic_templates`
+entry (`type: object`/`group` with an `object_type`) or to anything inside
+`multi_fields:` — and package-spec 3.7.0 rejects the block in both places, so the
+package will not build. There is no scoped fix on those two placements: an
+`object_type` field's `doc_values: false` has to be deleted outright, in every index
+mode, and a multi-field needs no fix at all. The audit reports a misplaced block as
+`columnar_override_misplaced` (`references/blockers.md` A2e).
+
 **2. The stream-level readiness flag**, in `data_stream/<ds>/manifest.yml`:
 
 ```yaml
@@ -78,6 +87,10 @@ blocker remains. It is **not** the same as setting a columnar `index_mode`:
 
 **For the tech-preview wave, write `supported: true` and leave `index_mode` unset** —
 the rollout strategy is that users opt in.
+
+Both constructs need `format_version: "3.7.0"` in the root manifest, and because both
+are read by **Fleet** they also need a `conditions.kibana.version` of at least the
+first Kibana minor that ships that Fleet support — see step 3 of the migration.
 
 ## Workflow
 
@@ -118,10 +131,14 @@ remediation for each — is in **[references/blockers.md](references/blockers.md
 Short version:
 
 - **Class A, rejected by Elasticsearch:** `nested` in `nested`; `doc_values: false`
-  (unless it is a multi-field, or a `columnar: {doc_values: true}` override already
-  resolves it); `store: true`; `copy_to`; `keyword` + a non-`lowercase` `normalizer`;
-  mapping-level runtime fields and `dynamic: runtime`; stored-`_source` overrides;
-  types with no doc values; an invalid `columnar: {doc_values: false}`.
+  (unless it is a multi-field, or a `columnar: {doc_values: true}` override on a
+  static leaf field already resolves it); `store: true`; `copy_to`; `keyword` + a
+  non-`lowercase` `normalizer`; mapping-level runtime fields and `dynamic: runtime`;
+  stored-`_source` overrides; types with no doc values; an invalid
+  `columnar: {doc_values: false}`; a `columnar:` block where Fleet will never apply
+  it (`columnar_override_misplaced`); a 3.7.0 construct under an older
+  `format_version` (`columnar_requires_spec_3_7`); and `columnar.supported: true` on a
+  stream that still has blockers (`columnar_supported_with_blockers`).
 - **Class B, accepted but lossy:** `dynamic: false`; `enabled: false`. With no stored
   `_source` the unmapped data is gone for good, not merely unsearchable. Always a
   human decision.
@@ -257,7 +274,18 @@ applied the fix):
        supported: true
    ```
 3. Root `manifest.yml`: `format_version: "3.7.0"`,
-   `conditions.kibana.version: "^9.5.0"`, and a minor version bump.
+   `conditions.kibana.version: "^9.7.0"`, and a minor version bump.
+
+   The Kibana constraint is **not** about Elasticsearch — 9.5 already has the index
+   mode. Both constructs are read by **Fleet**: Fleet parses
+   `elasticsearch.columnar.supported` to decide whether to offer the per-stream opt-in
+   toggle, and Fleet applies the field-level `columnar:` overrides when it builds the
+   mapping, on the install path and on the toggle path. So the constraint has to be at
+   least the first Kibana minor that ships that Fleet support. Write
+   `conditions.kibana.version: "^9.7.0"` *(adjust to the actual Fleet release; on
+   older Kibana the override and the flag are silently ignored, so the toggle is
+   unavailable and any `doc_values: false` field will make a manual columnar opt-in
+   fail)*.
 4. `changelog.yml` — a new entry at the top, type `enhancement`, with a placeholder
    link the user must replace:
    ```yaml
@@ -288,10 +316,25 @@ explains how to build `elastic-package` against a local package-spec checkout.
 
 ### 5. Validate
 
-Static lint and **build** → install against a 9.5+ stack and verify `index.mode` and
-`index.sort.field` on the real index → run `elastic-package test pipeline` and
-`test system` with and without the opt-in and diff → benchmark the dashboard workload
-at scale. Which test diffs are expected and which are bugs, and the exact commands:
+Static lint and **build** → install against a 9.5+ stack (with a Kibana new enough to
+have the Fleet support from step 3) and verify `index.mode` and `index.sort.field` on
+the real index → run `elastic-package test pipeline` and `test system` with and
+without columnar and diff → benchmark the dashboard workload at scale.
+
+**`supported: true` on its own never produces a columnar index.** The stream still
+installs on logsdb, `index.mode` reads `logsdb`, and no `elastic-package` flag flips
+the Fleet per-stream toggle — so a system test run against a package that only
+declares `supported: true` does not exercise columnar at all, and a green run proves
+nothing about it. To actually exercise columnar locally, pick one of:
+
+- temporarily add `elasticsearch.index_mode: logsdb_columnar` to the stream manifest,
+  leave it **uncommitted**, run `elastic-package install` and
+  `elastic-package test system`, then revert it; or
+- install the package as it is and opt the data stream in afterwards through the Fleet
+  API (`experimental_data_stream_features`), then re-run the system tests.
+
+Both routes, the exact commands, and which test diffs are expected versus which are
+bugs:
 **[references/correctness-and-performance.md](references/correctness-and-performance.md)**.
 
 `elastic-package lint` validates the package **source**, where an `external: ecs`
