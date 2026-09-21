@@ -392,7 +392,7 @@ MOCK_REPO_DIR="${TMPDIR_REPO3}"
     packages_to_keep=("${target_path}")
     while IFS= read -r linked_path; do
         packages_to_keep+=("${linked_path}")
-    done < <(get_linked_source_package_names "${target_path}")
+    done < <(collect_linked_packages_from_roots "${packages_to_keep[@]}")
     remove_other_packages "${packages_to_keep[@]}"
 )
 
@@ -488,7 +488,7 @@ MOCK_REPO_DIR="${TMPDIR_REPO4}"
     packages_to_keep=("${target_path}")
     while IFS= read -r linked_path; do
         packages_to_keep+=("${linked_path}")
-    done < <(collect_linked_package_paths "${target_path}")
+    done < <(collect_linked_packages_from_roots "${packages_to_keep[@]}")
     remove_other_packages "${packages_to_keep[@]}"
 )
 
