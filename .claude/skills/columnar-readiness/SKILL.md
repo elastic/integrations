@@ -74,20 +74,27 @@ remediation for each — is in **[references/blockers.md](references/blockers.md
 Short version:
 
 - **Class A, rejected by Elasticsearch:** `nested` in `nested`; `doc_values: false`
-  (unless multi-field, or paired with `store: true`); `copy_to`; `keyword` +
-  `normalizer`; mapping-level runtime fields; stored-`_source` overrides; types with
-  no doc values.
+  (unless it is a multi-field); `store: true`; `copy_to`; `keyword` + a
+  non-`lowercase` `normalizer`; mapping-level runtime fields and `dynamic: runtime`;
+  stored-`_source` overrides; types with no doc values.
 - **Class B, accepted but lossy:** `dynamic: false`; `enabled: false`. With no stored
   `_source` the unmapped data is gone for good, not merely unsearchable. Always a
   human decision.
 - **Class C, informational:** no inverted index on non-`text` fields; flattened
-  synthetic-source shape; dynamic fields become non-indexed doc values.
+  synthetic-source shape; dynamic fields become non-indexed doc values;
+  `normalizer: lowercase` returns the lowercased value from synthetic source.
+
+**`store: true` is not an escape hatch.** Elasticsearch rejects `store` outright in
+columnar modes (`[store] cannot be enabled on field [...] in [logsdb_columnar] index
+mode`, `FieldMapper.Builder#storeParam`). The only mechanical fix for
+`doc_values: false` is `doc_values: true`.
 
 **The trap worth knowing about:** `external: ecs` imports `doc_values` from the ECS
 schema at build time, and ECS defines `event.original` with `doc_values: false`. Around
 50 packages therefore carry a Class A blocker that is invisible in their source and
 only appears after `elastic-package build`. The audit detects it as
-`doc_values_false_ecs`; the fix is `store: true`. See
+`doc_values_false_ecs`; the fix is to add `doc_values: true` next to the
+`external: ecs` reference. See
 [references/blockers.md](references/blockers.md), section A2b.
 
 ### 3. Decide the index sort
@@ -96,13 +103,27 @@ The audit proposes one per data stream. Confirm it before writing it — the pro
 static analysis, and the person who knows the dataset should sanity-check the
 cardinality.
 
+The call is made from the **input types alone**:
+
 - `host.name asc, @timestamp desc` (the default) is right when the agent runs on the
-  machine that produced the log: `logfile`, `filestream`, `journald`, `winlog`,
-  syslog.
+  machine that produced the log: `logfile`, `filestream`, `journald`, `winlog`, `etw`,
+  `system/*`, container inputs, syslog/tcp/udp receivers. Note that Elastic Agent's
+  `add_host_metadata` populates `host.name` on every event regardless of the package's
+  `fields/*.yml`, and Elasticsearch injects the mapping when the template has none —
+  so "`host.name` is not in the field definitions" is **not** evidence against the
+  default.
 - It is wrong for API pollers (`httpjson`, `cel`, `aws-s3`, `gcp-pubsub`,
   `azure-eventhub`, `o365audit`, …) where `host.name` is the collector. Propose an
   explicit sort on the dataset's dominant grouping field — a tenant/account/org id
-  first, then `agent.id`/`observer.name`, then whatever the dashboards filter on most.
+  first, then `agent.id`/`observer.name`, then whatever the dashboards **filter** on
+  most.
+- The only mapping fact that matters is a *downgrade*: if the package maps `host.name`
+  as something other than a keyword/number with doc values, Elasticsearch falls back
+  to `@timestamp` only.
+
+A weak candidate is worse than none. If no field survives validation — single-valued,
+`keyword`/`ip`/integer, doc values, not constant — the audit says
+`no confident candidate; needs human choice` rather than inventing a sort key.
 
 Constraints, candidate ranking and the YAML to write:
 **[references/sorting.md](references/sorting.md)**.
@@ -112,9 +133,10 @@ Constraints, candidate ranking and the YAML to write:
 For each data stream whose status is `READY` (or `READY_AFTER_AUTO_FIX` once you have
 applied the fix):
 
-1. Apply the mechanical fixes: `copy_to` → `set`/`append` in the ingest pipeline;
-   `normalizer` → `lowercase` processor or a multi-field; `doc_values: false` →
-   `store: true`.
+1. Apply the mechanical fixes: `copy_to` → `set`/`append` in the ingest pipeline; a
+   non-`lowercase` `normalizer` → ingest processor or a multi-field; `store: true` →
+   delete it; `doc_values: false` → delete it, or, for an `external: ecs` field, add
+   `doc_values: true`.
 2. `data_stream/<ds>/manifest.yml`:
    ```yaml
    elasticsearch:
@@ -135,9 +157,11 @@ applied the fix):
    ```
 5. `elastic-package build` to regenerate `docs/README.md` (never edit it directly —
    edit `_dev/build/docs/README.md`).
-6. `elastic-package lint`. Add `validation.yml` exclusions **only** for pre-existing
-   failures that the `format_version` bump surfaced, each with a comment. **Never**
-   exclude a columnar validator error.
+6. `elastic-package lint` **and** `elastic-package build` — `build` is the only one
+   that sees the resolved ECS attributes. Add `validation.yml` exclusions **only** for
+   pre-existing failures that the `format_version` bump surfaced, each with a comment.
+   **Never** exclude a columnar validator error (`SVR00011`, `SVR00012`, `SVR00013`);
+   the hard mapping errors have no code and cannot be excluded at all.
 
 Tell the user that `index_mode: logsdb_columnar` requires package-spec 3.7.0, which is
 unreleased (`3.7.0-next`), so a stock `elastic-package` binary will reject the manifest
@@ -146,11 +170,23 @@ explains how to build `elastic-package` against a local package-spec checkout.
 
 ### 5. Validate
 
-Static lint → install against a 9.5+ stack and verify `index.mode` and
+Static lint and **build** → install against a 9.5+ stack and verify `index.mode` and
 `index.sort.field` on the real index → run `elastic-package test pipeline` and
 `test system` with and without the opt-in and diff → benchmark the dashboard workload
 at scale. Which test diffs are expected and which are bugs, and the exact commands:
 **[references/correctness-and-performance.md](references/correctness-and-performance.md)**.
+
+`elastic-package lint` validates the package **source**, where an `external: ecs`
+reference to `event.original` carries no `doc_values` at all — so the ECS blocker is
+invisible to it. `elastic-package build` validates the **built zip**, where ECS has
+already been resolved into `doc_values: false`, and that is where the blocker
+surfaces. Every affected package will fail `build` once it opts in, independent of
+which spec version it declares. Always run both.
+
+Pipeline tests are run through `_ingest/pipeline/_simulate` — nothing is indexed, so
+the index mode cannot influence their output. Their result must be **identical** in
+both modes; a diff there is a real bug, never an expected columnar effect, and `-g`
+should never be needed for this migration.
 
 ## Where things live in a package
 

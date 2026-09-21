@@ -10,8 +10,8 @@ Per data stream, worst finding wins:
 | Status | Meaning |
 | --- | --- |
 | `READY` | No findings. Opt in. |
-| `READY_AFTER_AUTO_FIX` | Only Class A findings with a mechanical fix: `copy_to` → ingest pipeline, `normalizer` → pipeline or multi-field, `doc_values: false` → `store: true`. |
-| `NEEDS_REVIEW` | A Class B data-loss finding (`dynamic: false`, `enabled: false`), a single-level `nested` field, or a mapping-level runtime field. Needs a human decision before opting in. |
+| `READY_AFTER_AUTO_FIX` | Only Class A findings with a mechanical fix: `copy_to` → ingest pipeline, a non-`lowercase` `normalizer` → pipeline or multi-field, `store: true` → removed, `doc_values: false` → removed (or `doc_values: true` on an `external: ecs` field). |
+| `NEEDS_REVIEW` | A Class B data-loss finding (`dynamic: false`, `enabled: false`), a single-level `nested` field, a mapping-level runtime field, or `dynamic: runtime`. Needs a human decision before opting in. |
 | `BLOCKED` | `nested` inside `nested`, an unsupported field type, or a stored-`_source` override. No mechanical fix. |
 | `OUT_OF_SCOPE` | Not a `type: logs` data stream, or the package is `type: input`. |
 
@@ -23,8 +23,12 @@ stream.
 Sort recommendation is one of:
 
 - `default OK` — `host.name asc, @timestamp desc` suits this data stream
+- `default DEGRADED: falls back to @timestamp desc only` — host-local inputs, but the
+  package maps `host.name` as something Elasticsearch cannot sort on
 - `explicit sort proposed: <field> asc, @timestamp desc`
-- `explicit sort proposed: @timestamp desc only (no grouping field found)`
+- `explicit sort proposed: @timestamp desc only — no confident candidate; needs human
+  choice` — no field passed validation. Deliberately not a guess: a weak or
+  multi-valued sort key is worse than none.
 
 ## Per-package report
 
@@ -73,7 +77,11 @@ Sort recommendation is one of:
 
 - `<ds>`: data stream type is `metrics` (logs only)
 
-## Dashboard fields (benchmark workload / sort tie-break)
+## Dashboard fields (benchmark workload)
+
+`field.a`, `field.b`, …
+
+## Dashboard filter fields (sort tie-break)
 
 `field.a`, `field.b`, …
 ```
@@ -104,6 +112,7 @@ Candidate packages (at least one `type: logs` data stream): <n>
 ## Class A, mechanically fixable — inherited from ECS
 ## Data-loss review — Class B (<n> packages, <n> data streams)
 ## Judgement calls — review (<n> packages, <n> data streams)
+## Informational — Class C (<n> packages, <n> data streams)
 ## Packages by status
 ## Index sort
 ```
