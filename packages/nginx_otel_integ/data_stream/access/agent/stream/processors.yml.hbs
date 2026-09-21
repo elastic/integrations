@@ -7,22 +7,33 @@ processors:
           - IsMatch(body, "^[\\d.]+ - .+ \\[.+\\] \".+\" \\d+ \\d+ \".+\" \".+\"")
         statements:
           - set(body, ExtractGrokPatterns(body, "%{IPORHOST:source.address} - (-|%{DATA:user.name}) \\[%{HTTPDATE:nginx.access.time}\\] \"%{WORD:http.request.method} %{DATA:url.original} HTTP/%{NUMBER:http.version}\" %{NUMBER:http.response.status_code:long} %{NUMBER:http.response.body.size:long} \"(-|%{DATA:http.request.referrer})\" \"(-|%{DATA:user_agent.original})\"", true))
+          - set(event_name, "nginx.access")
           - set(attributes["event.name"], "nginx.access")
           - set(time, Time(body["nginx.access.time"], "%d/%b/%Y:%H:%M:%S %z"))
           - delete_key(body, "nginx.access.time")
           - set(attributes["http.response.status_code"], body["http.response.status_code"])
           - set(attributes["http.request.method"], body["http.request.method"])
           - set(attributes["url.original"], body["url.original"])
+          - set(attributes["url.path"], Split(body["url.original"], "?")[0]) where body["url.original"] != nil
+          - set(attributes["url.query"], Split(body["url.original"], "?")[1]) where body["url.original"] != nil and Len(Split(body["url.original"], "?")) > 1
           - set(attributes["source.address"], body["source.address"])
+          - set(attributes["client.address"], body["source.address"])
           - set(attributes["http.response.body.size"], body["http.response.body.size"])
           - set(attributes["http.version"], body["http.version"])
+          - set(attributes["network.protocol.name"], "http")
+          - set(attributes["network.protocol.version"], body["http.version"])
           - set(attributes["user_agent.original"], body["user_agent.original"])
+          - set(attributes["user.name"], body["user.name"]) where body["user.name"] != nil and body["user.name"] != "-"
+          - set(attributes["http.request.header.referer"], body["http.request.referrer"]) where body["http.request.referrer"] != nil and body["http.request.referrer"] != "-"
       - context: log
         conditions:
           - body["user_agent.original"] != nil
         statements:
           - merge_maps(body, UserAgent(body["user_agent.original"]), "upsert")
           - set(attributes["user_agent.name"], body["user_agent.name"])
+          - set(attributes["user_agent.version"], body["user_agent.version"]) where body["user_agent.version"] != nil
+          - set(attributes["os.name"], body["os.name"]) where body["os.name"] != nil
+          - set(attributes["os.version"], body["os.version"]) where body["os.version"] != nil
   resourcedetection/system:
     detectors: ["system"]
     system:

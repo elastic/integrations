@@ -7,11 +7,71 @@ processors:
           - IsMatch(body, "^\\d{4}/\\d{2}/\\d{2} \\d{2}:\\d{2}:\\d{2} \\[.+\\]")
         statements:
           - 'set(body, ExtractGrokPatterns(body, "%{DATA:nginx.error.time} \\[%{LOGLEVEL:log.level}\\] %{NUMBER:process.pid:long}#%{NUMBER:process.thread.id:long}: (\\*%{NUMBER:nginx.error.connection_id:long} )?%{GREEDYMULTILINE:message}", true, ["GREEDYMULTILINE=(.|\\n)*", "LOGLEVEL=[a-zA-Z]+"]))'
+          - set(event_name, "nginx.error")
           - set(attributes["event.name"], "nginx.error")
+          - set(time, Time(body["nginx.error.time"], "%Y/%m/%d %H:%M:%S"))
+          - delete_key(body, "nginx.error.time")
           - set(severity_text, body["log.level"])
           - set(attributes["log.level"], body["log.level"])
           - set(attributes["message"], body["message"])
           - set(attributes["process.pid"], body["process.pid"])
+          - set(attributes["process.thread.id"], body["process.thread.id"])
+          - set(attributes["nginx.error.connection_id"], body["nginx.error.connection_id"]) where body["nginx.error.connection_id"] != nil
+      - context: log
+        conditions:
+          - body["log.level"] == "debug"
+        statements:
+          - set(severity_number, 5)
+      - context: log
+        conditions:
+          - body["log.level"] == "info"
+        statements:
+          - set(severity_number, 9)
+      - context: log
+        conditions:
+          - body["log.level"] == "notice"
+        statements:
+          - set(severity_number, 10)
+      - context: log
+        conditions:
+          - body["log.level"] == "warn"
+        statements:
+          - set(severity_number, 13)
+      - context: log
+        conditions:
+          - body["log.level"] == "error"
+        statements:
+          - set(severity_number, 17)
+      - context: log
+        conditions:
+          - body["log.level"] == "crit"
+        statements:
+          - set(severity_number, 21)
+      - context: log
+        conditions:
+          - body["log.level"] == "alert"
+        statements:
+          - set(severity_number, 22)
+      - context: log
+        conditions:
+          - body["log.level"] == "emerg"
+        statements:
+          - set(severity_number, 23)
+      - context: log
+        conditions:
+          - body["message"] != nil
+        statements:
+          - 'merge_maps(body, ExtractPatterns(body["message"], "client: (?P<client_address>[^,\\s]+)(?:, server: (?P<nginx_error_server>[^,\\s]+))?(?:, request: \"(?P<http_request_method>\\w+) (?P<url_original>\\S+) HTTP/(?P<http_version>[\\d.]+)\")?(?:, host: \"(?P<server_address>[^\"]+)\")?"), "upsert")'
+          - set(attributes["client.address"], body["client_address"]) where body["client_address"] != nil and body["client_address"] != ""
+          - set(attributes["server.address"], body["server_address"]) where body["server_address"] != nil and body["server_address"] != ""
+          - set(attributes["server.address"], body["nginx_error_server"]) where attributes["server.address"] == nil and body["nginx_error_server"] != nil and body["nginx_error_server"] != ""
+          - set(attributes["http.request.method"], body["http_request_method"]) where body["http_request_method"] != nil and body["http_request_method"] != ""
+          - set(attributes["url.original"], body["url_original"]) where body["url_original"] != nil and body["url_original"] != ""
+          - set(attributes["url.path"], Split(body["url_original"], "?")[0]) where body["url_original"] != nil and body["url_original"] != ""
+          - set(attributes["url.query"], Split(body["url_original"], "?")[1]) where body["url_original"] != nil and Len(Split(body["url_original"], "?")) > 1
+          - set(attributes["http.version"], body["http_version"]) where body["http_version"] != nil and body["http_version"] != ""
+          - set(attributes["network.protocol.name"], "http") where body["http_version"] != nil and body["http_version"] != ""
+          - set(attributes["network.protocol.version"], body["http_version"]) where body["http_version"] != nil and body["http_version"] != ""
   resourcedetection/system:
     detectors: ["system"]
     system:
