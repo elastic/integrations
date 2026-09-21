@@ -49,10 +49,14 @@ get_linked_source_package_names() {
   # list_all_directories (and realpath) for every .link file.
   local -a pkg_paths=()
   local -a pkg_abss=()
-  local pkg_path pkg_abs
+  local pkg_path pkg_abs_tmp
   while IFS= read -r pkg_path; do
-    pkg_paths+=("${pkg_path}")
-    pkg_abss+=("$(realpath "${pkg_path}")")
+    if pkg_abs_tmp=$(realpath "${pkg_path}" 2>/dev/null); then
+      pkg_paths+=("${pkg_path}")
+      pkg_abss+=("${pkg_abs_tmp}")
+    else
+      echo "Warning: cannot resolve package path '${pkg_path}', skipping" >&2
+    fi
   done < <(list_all_directories)
 
   local -A emitted=()

@@ -34,7 +34,7 @@ list_all_directories() {
     {
         find "${MOCK_REPO_DIR}/packages" -mindepth 2 -maxdepth 2 -name "manifest.yml" -exec dirname {} \;
         find "${MOCK_REPO_DIR}/packages" -mindepth 3 -maxdepth 3 -name "manifest.yml" -exec dirname {} \;
-    } | sort | sed "s|${MOCK_REPO_DIR}/||"
+    } | sort -u | sed "s|${MOCK_REPO_DIR}/||"
 }
 
 source "${REPO_ROOT}/.buildkite/scripts/backport_branch_lib.sh"
