@@ -41,13 +41,18 @@ processors:
       tag: grok_cisco_ise_log_log_details_raw_5f2c91ab
       description: >-
         ConfigChangeData carries free-form text whose commas are not field
-        separators, so lift it out whole before the key-value split. It is
-        sometimes trailed by ObjectType and related fields, which must stay parsed.
+        separators, so lift it out whole before the key-value split. ISE
+        appends further fields after it that must stay parsed, and the set of
+        keys it appends is not fixed, so an unlisted one such as AcsInstance
+        must not be swallowed into the value. Appended keys are recognisable
+        because their names never contain spaces, unlike the "Name = Value"
+        text inside ConfigChangeData itself.
       field: cisco_ise.log.log_details_raw
       if: ctx.cisco_ise?.log?.message?.code == "52001"
       ignore_failure: true
       patterns:
         - '^%{DATA:_tmp.kv_head}, ConfigChangeData=%{DATA:_tmp.config_change_data}, (?<_tmp.kv_tail>(?:ObjectType|ObjectName|Component|ObjectInternalID|OperationMessageText)=%{GREEDYDATA})$'
+        - '^%{DATA:_tmp.kv_head}, ConfigChangeData=%{DATA:_tmp.config_change_data}, (?<_tmp.kv_tail>[A-Za-z][A-Za-z0-9_]*=%{GREEDYDATA})$'
         - '^%{DATA:_tmp.kv_head}, ConfigChangeData=%{GREEDYDATA:_tmp.config_change_data}$'
   - kv:
       tag: kv__tmp_kv_head_to_cisco_ise_log_log_details_7c1d40e6
