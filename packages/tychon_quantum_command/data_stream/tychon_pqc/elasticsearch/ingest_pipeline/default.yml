@@ -6,31 +6,42 @@ processors:
       field: ecs.version
       value: 8.17.0
 
+  - set:
+      tag: preserve_original_event
+      field: event.original
+      copy_from: message
+      override: false
+      ignore_empty_value: true
+      if: ctx.tags instanceof List && ctx.tags.contains('preserve_original_event') && ctx.message != null && ctx.event?.original == null
+
   - json:
       tag: json_message
       field: message
       add_to_root: true
       if: ctx.tychon == null && ctx.message != null
+      ignore_failure: true
       on_failure:
         - set:
             tag: initialize_tychon_json_message
             field: tychon
             value: {}
             override: false
-        - set:
-            tag: preserve_malformed_json_message
-            field: event.original
-            copy_from: message
-            override: false
-            ignore_empty_value: true
         - append:
-            tag: append_error_pipeline_json_message
-            field: tychon.error.pipeline
-            value: "Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} failed with message: {{{_ingest.on_failure_message}}}"
+            tag: append_error_message_json_message
+            field: error.message
+            value: |-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
         - set:
             tag: set_pipeline_error_to_event_kind_json_message
             field: event.kind
             value: pipeline_error
+        - append:
+            tag: append_preserve_original_event_tag_json_message
+            field: tags
+            value: preserve_original_event
+            allow_duplicates: false
 
   - script:
       tag: script_lift_raw_tqc_ndjson_fields_parsed_under_tychon_raw_be
@@ -1169,6 +1180,9 @@ processors:
           ctx.tychon = [:];
         }
         for (String root : ['asset_type', 'certificate', 'config', 'crypto', 'error', 'ipsec_tunnel', 'kerberos', 'keystore', 'migration_priority', 'omb', 'pipeline', 'port', 'pqc', 'pqc_readiness', 'quantum_readiness', 'quantum_risk', 'scan_mode', 'scanner_version', 'security', 'ssh', 'target_host', 'tls', 'tunnel_details', 'type', 'vulnerability', 'vpn_client', 'vpn_config']) {
+          if (root == 'error' && ctx.error instanceof Map && ctx.error.message != null) {
+            continue;
+          }
           if (ctx[root] == null) {
             continue;
           }
