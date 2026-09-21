@@ -327,6 +327,42 @@ ECS_CACHE_DIR = os.path.expanduser("~/.elastic-package/cache/fields/ecs")
 
 FIELD_CHILD_KEYS = ("fields",)
 
+# Index modes that make a data stream columnar.
+COLUMNAR_INDEX_MODES = {"logsdb_columnar", "columnar"}
+
+# --------------------------------------------------------------------------- #
+# package-spec 3.7.0 columnar constructs
+#
+# 1. Field-level, mode-scoped override block. Fleet applies it ONLY when the
+#    resolved index mode is `logsdb_columnar` or `columnar` — the same way it
+#    only emits TSDB's `dimension: true` for `time_series`:
+#
+#        - name: event.original
+#          external: ecs
+#          columnar:
+#            doc_values: true    # only `true` is valid
+#
+#    That mode scoping is the point: the same package version installed on a
+#    logsdb or standard stack keeps today's mapping byte for byte, so repairing
+#    a columnar blocker costs nothing on the installs that are not columnar.
+#
+#    The block also accepts `index`, for the rare field that benchmarks prove
+#    still needs an inverted index. This audit only ever *reports* that one and
+#    asks for the evidence; it never proposes it (rollout rule 2).
+#
+# 2. Stream-level readiness flag in `data_stream/<ds>/manifest.yml`:
+#
+#        elasticsearch:
+#          columnar:
+#            supported: true
+#
+#    The 3.7.0 validator enforces zero columnar blockers when it is set, and
+#    Fleet only offers the per-stream opt-in toggle for streams that set it (or
+#    that already declare a columnar `index_mode`).
+#
+# Both require `format_version: "3.7.0"`.
+# --------------------------------------------------------------------------- #
+
 
 # --------------------------------------------------------------------------- #
 # Helpers
@@ -420,6 +456,15 @@ def is_true(value: Any) -> bool:
     return False
 
 
+def columnar_block(container: Any) -> Dict[str, Any]:
+    """The mode-scoped `columnar:` block of a field definition or of the
+    `elasticsearch:` section of a data stream manifest ({} when absent)."""
+    if not isinstance(container, dict):
+        return {}
+    block = container.get("columnar")
+    return block if isinstance(block, dict) else {}
+
+
 # Severity drives the data stream status:
 #   blocker  -> BLOCKED              (Class A, no mechanical fix)
 #   auto_fix -> READY_AFTER_AUTO_FIX (Class A, mechanical fix available)
@@ -493,6 +538,12 @@ def check_field(fdef: Dict[str, Any], flat: str, nested_depth: int,
     out: List[Dict[str, Any]] = []
     ftype = fdef.get("type")
 
+    # package-spec 3.7.0 mode-scoped override block: only applied by Fleet when
+    # the resolved index mode is columnar, so it repairs a columnar blocker
+    # without touching logsdb/standard installs of the same package version.
+    columnar = columnar_block(fdef)
+    columnar_doc_values_fix = is_true(columnar.get("doc_values"))
+
     # --- Class A: rejected by Elasticsearch -------------------------------- #
     if ftype == "nested":
         if nested_depth >= 1:
@@ -513,16 +564,53 @@ def check_field(fdef: Dict[str, Any], flat: str, nested_depth: int,
     # Multi-fields are exempt from the reconstructability check
     # (`MappingLookup#firstFieldNotReconstructableFromDocValues` skips
     # `isMultiField(...)`), so only top-level fields matter here.
-    if is_false(fdef.get("doc_values")) and not in_multi_field:
+    if is_false(fdef.get("doc_values")) and not in_multi_field and not columnar_doc_values_fix:
         out.append(finding(
             "doc_values_false", "A", "auto_fix",
             f"`{flat}` sets `doc_values: false`; columnar mode cannot reconstruct it.",
-            "Remove `doc_values: false` — under columnar mode the field is stored as doc "
-            "values and there is no inverted index to pay for, so the original "
-            "\"save space\" motivation is gone. `store: true` is NOT an alternative: "
+            "Keep `doc_values: false` and add the mode-scoped override next to it "
+            "(package-spec 3.7.0):\n"
+            f"    - name: {flat}\n"
+            "      ...\n"
+            "      doc_values: false      # kept: still applies to logsdb/standard\n"
+            "      columnar:\n"
+            "        doc_values: true\n"
+            "Fleet applies the `columnar:` block only when the resolved index mode is "
+            "`logsdb_columnar`/`columnar` (the same way `dimension: true` is only emitted "
+            "for `time_series`), so a logsdb or standard install of this same package "
+            "version keeps exactly today's storage profile — the fix costs nothing "
+            "off-columnar, which is why it is preferred over deleting the line. Deleting "
+            "`doc_values: false` outright also unblocks columnar, but it turns doc values "
+            "on in every mode and grows those indices. Requires "
+            "`format_version: \"3.7.0\"`. `store: true` is NOT an alternative: "
             "Elasticsearch rejects `store` outright in columnar modes "
             "(`FieldMapper.Builder#storeParam`). For message-like content "
             "`match_only_text` also works, but only on fields the package defines itself.",
+            rel_file, flat))
+
+    if is_false(columnar.get("doc_values")):
+        out.append(finding(
+            "columnar_doc_values_false", "A", "blocker",
+            f"`{flat}` sets `columnar.doc_values: false`. That is not a valid value: the "
+            f"mode-scoped `columnar:` block exists only to turn doc values back ON for "
+            f"columnar modes, and a columnar index cannot reconstruct a field that has "
+            f"none. package-spec 3.7.0 allows `true` only.",
+            "Set `columnar.doc_values: true`, or delete the `columnar:` block. Whoever "
+            "wrote `false` meant something — find out what before flipping it, which is "
+            "why this is not treated as a mechanical fix.",
+            rel_file, flat))
+
+    if is_true(columnar.get("index")):
+        out.append(finding(
+            "columnar_index_true", "C", "info",
+            f"`{flat}` keeps an inverted index under columnar modes "
+            f"(`columnar.index: true`) — benchmark-justified inverted index; confirm the "
+            f"evidence exists.",
+            "This skill never proposes this override and no static analysis can justify "
+            "it: the premise of the rollout is that columnar does not need inverted "
+            "indexes, and index sorting is the per-integration lever "
+            "(`references/sorting.md`). Keep it only if a benchmark on this specific field "
+            "is linked from the PR that added it; otherwise remove it.",
             rel_file, flat))
 
     if is_true(fdef.get("store")):
@@ -625,15 +713,23 @@ def check_field(fdef: Dict[str, Any], flat: str, nested_depth: int,
         # attributes win. `store: true` is not an option (rejected by Elasticsearch),
         # and `type: match_only_text` is not either — elastic-package forces the ECS
         # type unless the field is in `allowedTypeOverride`.
-        if not is_true(fdef.get("doc_values")):
+        if not is_true(fdef.get("doc_values")) and not columnar_doc_values_fix:
             out.append(finding(
                 "doc_values_false_ecs", "A", "auto_fix",
                 f"`{flat}` is imported from ECS, which defines it with `doc_values: false`; "
                 f"elastic-package copies that into the built package.",
-                f"Override it in the package fields file:\n"
-                f"    - name: {flat}\n      external: ecs\n      doc_values: true\n"
-                f"(package attributes win over the imported ECS ones via "
-                f"`transformed.DeepUpdate(def)`.)",
+                f"Add the mode-scoped override to the field entry in the package's ECS "
+                f"fields file:\n"
+                f"    - name: {flat}\n      external: ecs\n      columnar:\n"
+                f"        doc_values: true\n"
+                f"Package attributes win over the imported ECS ones "
+                f"(`transformed.DeepUpdate(def)`), and Fleet applies the `columnar:` block "
+                f"only when the resolved index mode is `logsdb_columnar`/`columnar` — so "
+                f"logsdb and standard installs of this same package version still get "
+                f"ECS's `doc_values: false` and store not one byte more. A plain "
+                f"`doc_values: true` would also unblock columnar, but it would turn doc "
+                f"values on for `{flat}` in every mode. Requires "
+                f"`format_version: \"3.7.0\"`.",
                 rel_file, flat))
 
     return out
@@ -1578,6 +1674,8 @@ def audit_data_stream(pkg_dir: str, ds_dir: str, ds_name: str,
         "status": "OUT_OF_SCOPE",
         "type": None,
         "index_mode": None,
+        "columnar_supported": False,
+        "columnar_enabled": False,
         "inputs": [],
         "findings": [],
         "errors": [],
@@ -1594,8 +1692,16 @@ def audit_data_stream(pkg_dir: str, ds_dir: str, ds_name: str,
         return stream
 
     stream["type"] = manifest.get("type")
-    stream["index_mode"] = ((manifest.get("elasticsearch") or {}) or {}).get("index_mode") \
-        if isinstance(manifest.get("elasticsearch"), dict) else None
+    es_section = manifest.get("elasticsearch") if isinstance(manifest.get("elasticsearch"), dict) else {}
+    stream["index_mode"] = es_section.get("index_mode")
+    # package-spec 3.7.0 stream-level readiness flag. Fleet shows the per-stream
+    # opt-in toggle when it is set; a columnar `index_mode` makes columnar the
+    # default for new installs instead. Either one means "this stream is
+    # columnar-enabled" as far as this report is concerned.
+    stream["columnar_supported"] = is_true(columnar_block(es_section).get("supported"))
+    stream["columnar_enabled"] = bool(
+        stream["columnar_supported"] or stream["index_mode"] in COLUMNAR_INDEX_MODES
+    )
 
     if stream["type"] != "logs":
         stream["out_of_scope_reason"] = f"data stream type is `{stream['type']}` (logs only)"
@@ -1687,6 +1793,33 @@ def sample_array_fields(doc: Dict[str, Any], prefix: str = "") -> set:
 # Reporting
 # --------------------------------------------------------------------------- #
 
+def columnar_optin_label(stream: Dict[str, Any]) -> str:
+    """How (and whether) the data stream is already columnar-enabled.
+
+    Two independent declarations, and the difference matters:
+      * `elasticsearch.columnar.supported: true` — the stream is *ready*; Fleet
+        exposes the per-stream opt-in toggle, but logsdb stays the default.
+      * `elasticsearch.index_mode: logsdb_columnar` — columnar is the *default*
+        for new installs of this package version.
+    """
+    mode = stream.get("index_mode")
+    parts: List[str] = []
+    if mode in COLUMNAR_INDEX_MODES:
+        parts.append(f"**columnar by default** via `index_mode: {mode}` — new installs of "
+                     f"this package version get columnar without the user asking")
+    if stream.get("columnar_supported"):
+        parts.append("**declared ready** via `elasticsearch.columnar.supported: true` — "
+                     "Fleet offers the per-stream opt-in toggle; users have to turn it on")
+    if not parts:
+        return ("not declared (`elasticsearch.columnar.supported` unset, no columnar "
+                "`index_mode`) — Fleet offers no opt-in for this stream yet")
+    label = "; ".join(parts)
+    if any(f["class"] == "A" for f in stream.get("findings", [])):
+        label += (". **Inconsistent**: the stream still has Class A findings, which the "
+                  "3.7.0 columnar validator rejects — fix them or drop the declaration")
+    return label
+
+
 def md_package(result: Dict[str, Any]) -> str:
     lines: List[str] = []
     lines.append(f"# Columnar readiness: `{result['package']}`")
@@ -1719,6 +1852,7 @@ def md_package(result: Dict[str, Any]) -> str:
         lines.append("")
         lines.append(f"- Inputs: {', '.join(f'`{i}`' for i in s['inputs']) or '(none declared)'}")
         lines.append(f"- Current `index_mode`: `{s['index_mode'] or 'unset (logsdb default)'}`")
+        lines.append(f"- Columnar opt-in: {columnar_optin_label(s)}")
         lines.append(f"- Sort: **{s['sort']['recommendation']}** — {s['sort']['reason']}")
         if s["sort"]["explicit_sort_yaml"]:
             lines.append("")
@@ -1829,6 +1963,28 @@ def md_catalog(results: List[Dict[str, Any]]) -> str:
     lines.append(f"| OUT_OF_SCOPE (input package / no logs streams) | "
                  f"{len(by_status['OUT_OF_SCOPE'])} | {stream_status['OUT_OF_SCOPE']} |")
     lines.append("")
+
+    # Streams that already carry one of the package-spec 3.7.0 columnar
+    # declarations. Omitted entirely while the count is zero, so the section
+    # only appears once the rollout has actually landed somewhere.
+    supported = [(r["package"], s_["data_stream"]) for r in results for s_ in r["data_streams"]
+                 if s_.get("columnar_supported")]
+    default_mode = [(r["package"], s_["data_stream"]) for r in results for s_ in r["data_streams"]
+                    if s_.get("index_mode") in COLUMNAR_INDEX_MODES]
+    if supported or default_mode:
+        lines.append("## Already columnar-enabled")
+        lines.append("")
+        plural = lambda n: "data stream" if n == 1 else "data streams"  # noqa: E731
+        if supported:
+            lines.append(f"`elasticsearch.columnar.supported: true` — opt-in toggle offered, "
+                         f"logsdb still the default ({len(supported)} {plural(len(supported))}): "
+                         + ", ".join(f"`{p}`/{d}" for p, d in sorted(supported)))
+            lines.append("")
+        if default_mode:
+            lines.append(f"Columnar `index_mode` — columnar is the default for new installs "
+                         f"({len(default_mode)} {plural(len(default_mode))}): "
+                         + ", ".join(f"`{p}`/{d}" for p, d in sorted(default_mode)))
+            lines.append("")
 
     BLOCKER_CODES = ["nested_in_nested", "unsupported_type", "source_mode_stored", "source_disabled"]
     AUTOFIX_SRC_CODES = ["doc_values_false", "store_true", "copy_to", "keyword_normalizer",
