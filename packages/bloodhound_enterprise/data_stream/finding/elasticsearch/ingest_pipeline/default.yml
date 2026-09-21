@@ -34,13 +34,19 @@ processors:
       ignore_missing: true
   - set:
       field: message
-      value: "{{json.title}}"
+      value: "{{{json.title}}}"
       override: true
       ignore_empty_value: true
   - rename:
       field: json.finding_type
       target_field: bloodhound_enterprise.finding_type
       ignore_missing: true
+  - set:
+      field: bloodhound_enterprise.finding_type
+      copy_from: json.Finding
+      ignore_empty_value: true
+      if: ctx.bloodhound_enterprise?.finding_type == null
+      tag: set_finding_type_from_finding
   - rename:
       field: json.category
       target_field: bloodhound_enterprise.category
@@ -202,43 +208,32 @@ processors:
       if: ctx.json?.remediation instanceof String
   - set:
       field: message
-      value: "BloodHound Finding: {{event.action}} (From {{user.name}} to {{destination.user.name}})"
+      value: "BloodHound Finding: {{{event.action}}} (From {{{user.name}}} to {{{destination.user.name}}})"
       override: true
       ignore_empty_value: true
   - set:
       field: rule.name
-      value: "{{message}}"
+      value: "{{{message}}}"
       override: true
       ignore_empty_value: true
   - remove:
       field: json
       ignore_missing: true
 on_failure:
-  - set:
-      tag: set_event_kind_92954dfa
-      field: event.kind
-      value: pipeline_error
-      if: ctx.error?.message != null
   - append:
-      tag: append_tags_9fe66b2c
-      field: tags
-      value: preserve_original_event
-      allow_duplicates: false
-      if: ctx.error?.message != null
-on_failure:
-  - set:
-      tag: set_event_kind_72b1902f
-      field: event.kind
-      value: pipeline_error
-  - append:
-      tag: append_tags_279d5a5c
-      field: tags
-      value: preserve_original_event
-      allow_duplicates: false
-  - append:
-      tag: append_error_message_fb774d38
       field: error.message
+      tag: append_error_message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
-        {{#_ingest.on_failure_processor_tag}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
-        {{/_ingest.on_failure_processor_tag}}failed with message '{{{ _ingest.on_failure_message }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      tag: append_preserve_original_event
+      value: preserve_original_event
+      allow_duplicates: false
+

@@ -19,20 +19,11 @@ rules:
             - application/json
         body: |-
           {"data":["T0GenericAll"]}
-  - path: /api/v2/findings/{type}
-    methods: ['GET']
-    responses:
-      - status_code: 200
-        headers:
-          Content-Type:
-            - application/json
-        body: |-
-          {"data":{"title":"GenericAll on Tier Zero","type":"T0GenericAll","short_remediation":"Remove GenericAll rights.","long_remediation":"Remove GenericAll rights from the principal."}}
   - path: /api/v2/domains/{id}/details
     methods: ['GET']
     query_params:
       finding: "{finding:.*}"
-      skip: "{skip:.*}"
+      skip: "0"
       limit: "{limit:.*}"
       Accepted: "{accepted:.*}"
       asset_group_tag_id: "{tag:.*}"
@@ -42,4 +33,34 @@ rules:
           Content-Type:
             - application/json
         body: |-
-          {"count":1,"data":[{"id":"100001","Finding":"T0GenericAll","Severity":"critical","Environment":"EXAMPLE.CORP","FromPrincipal":"S-1-5-21-000000000-000000000-000000000-1100","FromPrincipalName":"alice@example.corp","FromPrincipalKind":"User","ToPrincipal":"S-1-5-21-000000000-000000000-000000000-512","ToPrincipalName":"DOMAIN ADMINS@EXAMPLE.CORP","ToPrincipalKind":"Group","ImpactPercentage":0.85,"GraphURL":"https://bloodhound.example.com/ui/findings/100001"}]}
+          {"count":3,"data":[{"id":"100001","Finding":"T0GenericAll","Severity":"critical","Environment":"EXAMPLE.CORP","FromPrincipal":"S-1-5-21-000000000-000000000-000000000-1100","FromPrincipalName":"alice@example.corp","FromPrincipalKind":"User","ToPrincipal":"S-1-5-21-000000000-000000000-000000000-512","ToPrincipalName":"DOMAIN ADMINS@EXAMPLE.CORP","ToPrincipalKind":"Group","ImpactPercentage":0.85,"GraphURL":"https://bloodhound.example.com/ui/findings/100001"}]}
+  - path: /api/v2/domains/{id}/details
+    methods: ['GET']
+    query_params:
+      finding: "{finding:.*}"
+      skip: "1"
+      limit: "{limit:.*}"
+      Accepted: "{accepted:.*}"
+      asset_group_tag_id: "{tag:.*}"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          {"count":3,"data":[{"id":"100002","Finding":"T0GenericAll","Severity":"high","Environment":"EXAMPLE.CORP","FromPrincipal":"S-1-5-21-000000000-000000000-000000000-1101","FromPrincipalName":"bob@example.corp","FromPrincipalKind":"User","ToPrincipal":"S-1-5-21-000000000-000000000-000000000-512","ToPrincipalName":"DOMAIN ADMINS@EXAMPLE.CORP","ToPrincipalKind":"Group","ImpactPercentage":0.4,"GraphURL":"https://bloodhound.example.com/ui/findings/100002"}]}
+  - path: /api/v2/domains/{id}/details
+    methods: ['GET']
+    query_params:
+      finding: "{finding:.*}"
+      skip: "2"
+      limit: "{limit:.*}"
+      Accepted: "{accepted:.*}"
+      asset_group_tag_id: "{tag:.*}"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - application/json
+        body: |-
+          {"count":3,"data":[{"id":"100003","Finding":"T0GenericAll","Severity":"low","Environment":"EXAMPLE.CORP","FromPrincipal":"S-1-5-21-000000000-000000000-000000000-1102","FromPrincipalName":"carol@example.corp","FromPrincipalKind":"User","ToPrincipal":"S-1-5-21-000000000-000000000-000000000-512","ToPrincipalName":"DOMAIN ADMINS@EXAMPLE.CORP","ToPrincipalKind":"Group","ImpactPercentage":0.1,"GraphURL":"https://bloodhound.example.com/ui/findings/100003"}]}

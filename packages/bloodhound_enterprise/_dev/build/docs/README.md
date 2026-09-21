@@ -33,7 +33,7 @@ Optional filters (`selected_environment`, `bhe_zones`) limit which domains and z
 This integration collects the following data:
 
 - **health_check**: Case & Alert Sync metadata events (domain discovery, case create/update/delete, alert attach) for troubleshooting. This is the primary stream.
-- **finding**: Optional raw attack-path finding documents collected via CEL. Disabled by default. The Attack Path dashboard uses Security Alerts created by Case & Alert Sync, so this stream can stay off to avoid BloodHound API contention.
+- **finding**: Optional raw attack-path finding documents. Disabled by default. The Attack Path dashboard uses Security Alerts created by Case & Alert Sync, so this stream can stay off to avoid BloodHound API contention.
 
 ### Supported use cases
 
@@ -165,7 +165,7 @@ Enable **Enable request tracer** only temporarily for CEL HTTP debugging; it can
 
 For more information on architectures that can be used for scaling this integration, check the [Ingest Architectures](https://www.elastic.co/docs/manage-data/ingest/ingest-reference-architectures) documentation.
 
-Large BloodHound environments may require longer intervals and the package's fixed CEL execution budget (`max_executions`). Prefer filtering by environment or zone rather than lowering page sizes unless Elastic Support advises otherwise.
+Large BloodHound environments may require longer intervals. Prefer filtering by environment or zone rather than lowering page sizes unless Elastic Support advises otherwise.
 
 ## Reference
 
@@ -210,6 +210,6 @@ This is the `health_check` dataset. Events describe Case & Alert Sync steps for 
 
 #### finding
 
-This is the `finding` dataset. Optional raw BloodHound attack-path finding documents collected via CEL.
+This is the `finding` dataset. Optional raw BloodHound attack-path finding documents.
 
 {{fields "finding"}}
