@@ -102,14 +102,16 @@ program: |
               "Offset": [string(state.offset)],
               "Limit": ["1000"]
             }.format_query()
-          ).with({
-            "Header": state.?auth_type.orValue("epm") == "identity" ?
+          ).with(
+            state.?auth_type.orValue("epm") == "identity" ?
               {}
             :
               {
-                "Authorization": ["basic " + string(token.access_token)],
+                "Header": {
+                  "Authorization": ["basic " + string(token.access_token)],
+                }
               }
-          }).do_request().as(resp, resp.StatusCode == 200 ?
+          ).do_request().as(resp, resp.StatusCode == 200 ?
             resp.Body.decode_json().as(body, {
               "worklist": body.Sets.map(e, e.Id),
               "next": 0,
@@ -151,15 +153,13 @@ program: |
               "filter": "eventDate GE " + filter.start_time + " AND eventDate LE " + filter.end_time
             }.encode_json())
           ).with({
-            "Header": (state.?auth_type.orValue("epm") == "identity" ?
-              {}
-            :
-              {
-                "Authorization": ["basic " + string(token.access_token)],
-              }
-            ).with({
+            "Header": {
+              ?"Authorization": state.?auth_type.orValue("epm") == "identity" ?
+                optional.none()
+              :
+                optional.of(["basic " + string(token.access_token)]),
               "Content-Type": ["application/json"],
-            })
+            },
           }).do_request().as(resp, resp.StatusCode == 200 ?
             resp.Body.decode_json().as(body, {
               "events": (
