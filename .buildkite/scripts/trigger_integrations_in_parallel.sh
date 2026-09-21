@@ -64,6 +64,10 @@ else
             # which has no manifest.yml). mage listPackages discovers valid package roots at any
             # depth via WalkDir, so we cross-reference its output against the changed files.
             all_pkgs=$(list_all_directories)
+            # Avoid using "grep -q" in these pipes. With "set -o pipefail", grep -q exits on the
+            # first match while "echo" may still be writing (changed_files can exceed the pipe
+            # buffer on large PRs), so "echo" fails with SIGPIPE (141) and the match is lost.
+            # Example: https://buildkite.com/elastic/integrations/builds/50152
             while IFS= read -r pkg_path; do
                 if echo "${changed_files}" | grep "^${pkg_path}/" > /dev/null; then
                     echo "${pkg_path}"

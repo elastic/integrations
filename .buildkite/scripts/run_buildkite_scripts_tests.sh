@@ -66,4 +66,4 @@ run_tests_if_exists "${REPO_ROOT}/.buildkite/scripts/test_backport_branch.sh"
 
 echo ""
 echo "=== Running non_package_patterns tests ==="
-run_tests_if_exists "${REPO_ROOT}/.buildkite/scripts/test_non_package_patterns.sh" || true
+run_tests_if_exists "${REPO_ROOT}/.buildkite/scripts/test_non_package_patterns.sh"
