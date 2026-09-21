@@ -283,29 +283,12 @@ updateBackportBranchContents() {
   if [ "${REMOVE_OTHER_PACKAGES}" == "true" ]; then
     echo "--- Removing all packages from $PACKAGES_FOLDER_PATH folder"
 
-    # Build the list of packages to keep: the target package plus any packages
-    # it requires (composable packages declare dependencies under requires.input
-    # and requires.content in their manifest.yml).
-    local -a packages_to_keep=("${PACKAGE_PATH}")
-    while IFS= read -r req_name; do
-      local req_path
-      req_path=$(get_package_path "${req_name}" || true)
-      if [[ -n "${req_path}" ]]; then
-        echo "Keeping required package: ${req_path} (required by ${PACKAGE_NAME})"
-        packages_to_keep+=("${req_path}")
-      else
-        echo "Warning: required package '${req_name}' not found in packages folder"
-      fi
-    done < <(get_required_package_names "${PACKAGE_PATH}")
-
-    # Also keep any packages reachable via .link files, transitively, starting
-    # from the target package and each required package. Required packages cannot
-    # declare their own requires.* dependencies, but they can have .link files
-    # that point into other packages — those must be kept too.
-    while IFS= read -r linked_path; do
-      echo "Keeping linked source package: ${linked_path} (linked transitively)"
-      packages_to_keep+=("${linked_path}")
-    done < <(collect_linked_packages_from_roots "${packages_to_keep[@]}")
+    # Build the list of packages to keep: target + requires.* deps + .link
+    # source packages, expanded transitively until stable.
+    local -a packages_to_keep=()
+    while IFS= read -r pkg; do
+      packages_to_keep+=("${pkg}")
+    done < <(collect_packages_to_keep "${PACKAGE_PATH}")
 
     remove_other_packages "${packages_to_keep[@]}"
     ls -la "${PACKAGES_FOLDER_PATH}"

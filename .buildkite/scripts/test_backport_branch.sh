@@ -14,6 +14,7 @@ TMPDIR_REPO3=""
 TMPDIR_TRANS=""  # unit tests for collect_linked_packages_from_roots (transitive cases)
 TMPDIR_REPO4=""
 TMPDIR_REPO5=""
+TMPDIR_REPO6=""
 
 cleanup() {
     [[ -n "${TMPDIR_PKGS}" ]] && rm -rf "${TMPDIR_PKGS}"
@@ -24,6 +25,7 @@ cleanup() {
     [[ -n "${TMPDIR_TRANS}" ]] && rm -rf "${TMPDIR_TRANS}"
     [[ -n "${TMPDIR_REPO4}" ]] && rm -rf "${TMPDIR_REPO4}"
     [[ -n "${TMPDIR_REPO5}" ]] && rm -rf "${TMPDIR_REPO5}"
+    [[ -n "${TMPDIR_REPO6}" ]] && rm -rf "${TMPDIR_REPO6}"
 }
 trap cleanup EXIT
 
@@ -58,6 +60,7 @@ make_package() {
     mkdir -p "${dir}"
     printf '%s\n' "${2}" > "${dir}/manifest.yml"
 }
+
 
 # ---------------------------------------------------------------------------
 # Tests: get_required_package_names
@@ -211,12 +214,9 @@ MOCK_REPO_DIR="${TMPDIR_REPO2}"
 # TMPDIR_REPO2 so relative paths (packages/<name>) resolve correctly.
 (
     cd "${TMPDIR_REPO2}"
-    target_path="packages/nginx_integration_otel"
-    packages_to_keep=("${target_path}")
-    while IFS= read -r req_name; do
-        req_path="$(get_package_path "${req_name}" || true)"
-        [[ -n "${req_path}" ]] && packages_to_keep+=("${req_path}")
-    done < <(get_required_package_names "${target_path}")
+    packages_to_keep=()
+    while IFS= read -r pkg; do packages_to_keep+=("${pkg}"); done \
+        < <(collect_packages_to_keep "packages/nginx_integration_otel")
     remove_other_packages "${packages_to_keep[@]}"
 )
 
@@ -388,11 +388,9 @@ MOCK_REPO_DIR="${TMPDIR_REPO3}"
 
 (
     cd "${TMPDIR_REPO3}"
-    target_path="packages/nginx_target"
-    packages_to_keep=("${target_path}")
-    while IFS= read -r linked_path; do
-        packages_to_keep+=("${linked_path}")
-    done < <(collect_linked_packages_from_roots "${packages_to_keep[@]}")
+    packages_to_keep=()
+    while IFS= read -r pkg; do packages_to_keep+=("${pkg}"); done \
+        < <(collect_packages_to_keep "packages/nginx_target")
     remove_other_packages "${packages_to_keep[@]}"
 )
 
@@ -484,11 +482,9 @@ MOCK_REPO_DIR="${TMPDIR_REPO4}"
 
 (
     cd "${TMPDIR_REPO4}"
-    target_path="packages/pkg_chain_a"
-    packages_to_keep=("${target_path}")
-    while IFS= read -r linked_path; do
-        packages_to_keep+=("${linked_path}")
-    done < <(collect_linked_packages_from_roots "${packages_to_keep[@]}")
+    packages_to_keep=()
+    while IFS= read -r pkg; do packages_to_keep+=("${pkg}"); done \
+        < <(collect_packages_to_keep "packages/pkg_chain_a")
     remove_other_packages "${packages_to_keep[@]}"
 )
 
@@ -551,20 +547,9 @@ MOCK_REPO_DIR="${TMPDIR_REPO5}"
 
 (
     cd "${TMPDIR_REPO5}"
-    target_path="packages/pkg_target"
-    packages_to_keep=("${target_path}")
-
-    while IFS= read -r req_name; do
-        req_path=$(get_package_path "${req_name}" || true)
-        if [[ -n "${req_path}" ]]; then
-            packages_to_keep+=("${req_path}")
-        fi
-    done < <(get_required_package_names "${target_path}")
-
-    while IFS= read -r linked_path; do
-        packages_to_keep+=("${linked_path}")
-    done < <(collect_linked_packages_from_roots "${packages_to_keep[@]}")
-
+    packages_to_keep=()
+    while IFS= read -r pkg; do packages_to_keep+=("${pkg}"); done \
+        < <(collect_packages_to_keep "packages/pkg_target")
     remove_other_packages "${packages_to_keep[@]}"
 )
 
@@ -582,6 +567,70 @@ assert_equals "req-link: pkg_unrelated entry removed from CODEOWNERS" \
     "false" "$(grep -q 'pkg_unrelated' "${TMPDIR_REPO5}/.github/CODEOWNERS" && echo true || echo false)"
 
 rm -rf "${TMPDIR_REPO5}"
+
+# ---------------------------------------------------------------------------
+# Integration test: link-discovered package has its own requires.* dependency
+# ---------------------------------------------------------------------------
+echo ""
+echo "--- integration: requires.* deps of link-discovered packages kept"
+
+# Repo layout:
+#   packages/pkg_target       — target; has a .link pointing into pkg_linked
+#   packages/pkg_linked       — discovered via .link; declares requires.input: [pkg_utils]
+#   packages/pkg_utils        — required by pkg_linked; must also be kept
+#   packages/pkg_unrelated    — should be removed
+#
+# This exercises the iterative expansion: the first pass discovers pkg_linked
+# via .link, the second pass discovers pkg_utils via pkg_linked's requires.
+TMPDIR_REPO6="$(mktemp -d)"
+mkdir -p "${TMPDIR_REPO6}/.github"
+mkdir -p "${TMPDIR_REPO6}/packages/pkg_target/data_stream/ds1/fields"
+mkdir -p "${TMPDIR_REPO6}/packages/pkg_linked/_dev/shared/fields"
+mkdir -p "${TMPDIR_REPO6}/packages/pkg_utils"
+mkdir -p "${TMPDIR_REPO6}/packages/pkg_unrelated"
+
+printf 'name: pkg_target\n' > "${TMPDIR_REPO6}/packages/pkg_target/manifest.yml"
+cat > "${TMPDIR_REPO6}/packages/pkg_linked/manifest.yml" <<'EOF'
+name: pkg_linked
+requires:
+  input:
+    - package: pkg_utils
+EOF
+printf 'name: pkg_utils\n'     > "${TMPDIR_REPO6}/packages/pkg_utils/manifest.yml"
+printf 'name: pkg_unrelated\n' > "${TMPDIR_REPO6}/packages/pkg_unrelated/manifest.yml"
+
+touch "${TMPDIR_REPO6}/packages/pkg_linked/_dev/shared/fields/ecs.yml"
+# ../../../../ from data_stream/ds1/fields/ reaches packages/, then into pkg_linked
+printf '../../../../pkg_linked/_dev/shared/fields/ecs.yml abc123\n' \
+    > "${TMPDIR_REPO6}/packages/pkg_target/data_stream/ds1/fields/ecs.yml.link"
+
+printf '/packages/pkg_target/ @team\n/packages/pkg_linked/ @team\n/packages/pkg_utils/ @team\n/packages/pkg_unrelated/ @team\n' \
+    > "${TMPDIR_REPO6}/.github/CODEOWNERS"
+
+MOCK_REPO_DIR="${TMPDIR_REPO6}"
+
+(
+    cd "${TMPDIR_REPO6}"
+    packages_to_keep=()
+    while IFS= read -r pkg; do packages_to_keep+=("${pkg}"); done \
+        < <(collect_packages_to_keep "packages/pkg_target")
+    remove_other_packages "${packages_to_keep[@]}"
+)
+
+assert_equals "link-req: pkg_target (target) is kept" \
+    "true" "$([[ -d "${TMPDIR_REPO6}/packages/pkg_target" ]] && echo true || echo false)"
+assert_equals "link-req: pkg_linked (discovered via .link) is kept" \
+    "true" "$([[ -d "${TMPDIR_REPO6}/packages/pkg_linked" ]] && echo true || echo false)"
+assert_equals "link-req: pkg_utils (required by pkg_linked) is kept" \
+    "true" "$([[ -d "${TMPDIR_REPO6}/packages/pkg_utils" ]] && echo true || echo false)"
+assert_equals "link-req: pkg_unrelated is removed" \
+    "true" "$([[ ! -d "${TMPDIR_REPO6}/packages/pkg_unrelated" ]] && echo true || echo false)"
+assert_equals "link-req: pkg_utils entry kept in CODEOWNERS" \
+    "true" "$(grep -q 'pkg_utils' "${TMPDIR_REPO6}/.github/CODEOWNERS" && echo true || echo false)"
+assert_equals "link-req: pkg_unrelated entry removed from CODEOWNERS" \
+    "false" "$(grep -q 'pkg_unrelated' "${TMPDIR_REPO6}/.github/CODEOWNERS" && echo true || echo false)"
+
+rm -rf "${TMPDIR_REPO6}"
 
 # ---------------------------------------------------------------------------
 echo ""

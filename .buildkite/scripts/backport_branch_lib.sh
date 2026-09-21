@@ -110,6 +110,61 @@ collect_linked_packages_from_roots() {
   done
 }
 
+# collect_packages_to_keep returns (one per line) all packages that must be
+# retained for the given target package: the target itself, its requires.*
+# dependencies, packages reachable via .link files, and any requires.*
+# dependencies of those packages. Expanded iteratively until stable so that
+# any cross-type chaining (link → requires, requires → link) is fully covered.
+# Package paths are emitted on stdout; informational and warning messages go
+# to stderr.
+collect_packages_to_keep() {
+  local target_path="${1}"
+  echo "${target_path}"
+
+  local -a packages_to_keep=("${target_path}")
+  local -A seen_pkgs=()
+  seen_pkgs["${target_path}"]=1
+  local -A requires_expanded=()
+  local expanded=true
+
+  while [[ "${expanded}" == "true" ]]; do
+    expanded=false
+
+    # Expand via requires.* for each package not yet checked.
+    local pkg req_name req_path
+    for pkg in "${packages_to_keep[@]}"; do
+      [[ -n "${requires_expanded[${pkg}]+x}" ]] && continue
+      requires_expanded["${pkg}"]=1
+      while IFS= read -r req_name; do
+        req_path=$(get_package_path "${req_name}" || true)
+        if [[ -n "${req_path}" ]]; then
+          if [[ -z "${seen_pkgs[${req_path}]+x}" ]]; then
+            echo "Keeping required package: ${req_path} (required by ${pkg})" >&2
+            echo "${req_path}"
+            packages_to_keep+=("${req_path}")
+            seen_pkgs["${req_path}"]=1
+            expanded=true
+          fi
+        else
+          echo "Warning: required package '${req_name}' not found in packages folder" >&2
+        fi
+      done < <(get_required_package_names "${pkg}")
+    done
+
+    # Expand via .link files for all current packages.
+    # collect_linked_packages_from_roots deduplicates against its inputs so
+    # only packages not already in packages_to_keep are returned.
+    local linked_path
+    while IFS= read -r linked_path; do
+      echo "Keeping linked source package: ${linked_path} (linked transitively)" >&2
+      echo "${linked_path}"
+      packages_to_keep+=("${linked_path}")
+      seen_pkgs["${linked_path}"]=1
+      expanded=true
+    done < <(collect_linked_packages_from_roots "${packages_to_keep[@]}")
+  done
+}
+
 remove_other_packages() {
   local -a packages_to_keep=("$@")
   local package_path
