@@ -69,7 +69,10 @@ collect_linked_packages_from_roots() {
   while [[ ${#queue[@]} -gt 0 ]]; do
     local current="${queue[0]}"; queue=("${queue[@]:1}")
     local current_abs
-    current_abs=$(realpath "${current}")
+    if ! current_abs=$(realpath "${current}" 2>/dev/null); then
+      echo "Warning: cannot resolve path '${current}', skipping" >&2
+      continue
+    fi
 
     local link_file relative_src resolved_src matched i pkg_abs
     while IFS= read -r link_file; do
