@@ -1,0 +1,115 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects the first time an AWS identity requests a service quota increase via the AWS Service Quotas API within a 7-day history window. Service quota increases are submitted to AWS Support and, when approved, raise the limits on EC2 instances, Lambda concurrency, VPC resources, and other services. An adversary who obtains AWS credentials may request quota increases as infrastructure preparation for large-scale cryptomining, DDoS amplification, phishing campaigns, or data exfiltration operations that require compute or network resources beyond the account's current limits.",
+        "false_positives": [
+            "Cloud infrastructure teams requesting quota increases for planned capacity expansions, new region deployments, or scaling events will trigger this rule. Validate the requested service and limit against your infrastructure roadmap before closing."
+        ],
+        "from": "now-6m",
+        "history_window_start": "now-7d",
+        "index": [
+            "logs-aws.cloudtrail-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "aws.cloudtrail.user_identity.arn",
+                "aws.cloudtrail.user_identity.type",
+                "aws.cloudtrail.user_identity.access_key_id",
+                "user.name",
+                "event.action",
+                "event.outcome",
+                "aws.cloudtrail.request_parameters",
+                "source.ip",
+                "cloud.region",
+                "cloud.account.id"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "AWS Service Quota Increase Requested by Rare Identity",
+        "new_terms_fields": [
+            "cloud.account.id",
+            "user.name"
+        ],
+        "note": "## Triage and analysis\n\n### Investigating AWS Service Quota Increase Requested by Rare Identity\n\nAWS Service Quotas (formerly Service Limits) cap how many resources of each type an account can create. Default limits exist to prevent accidental runaway provisioning, but an adversary who requests an increase can scale operations far beyond what the default limits allow: requesting 1000 EC2 On-Demand vCPUs enables cryptomining at industrial scale; requesting higher SES sending limits enables large-scale phishing campaigns; requesting higher Lambda concurrency enables large-scale credential-stuffing operations.\n\n### Possible investigation steps\n\n- Identify the caller from aws.cloudtrail.user_identity.arn and user.name.\n- Review aws.cloudtrail.request_parameters for the serviceCode (which AWS service), the quotaCode (which specific limit), and the requested value.\n- Determine whether the requested quota increase aligns with a known infrastructure project.\n- Check whether the same identity has recently created resources in the service being scaled (EC2 RunInstances, Lambda CreateFunction, SES SendEmail).\n- Review whether this is the first quota increase request for this service from this identity or a continuation of a known capacity planning effort.\n\n### Response and remediation\n\n- If unauthorized, submit a cancellation request to AWS Support for the quota increase.\n- Revoke active sessions for the requesting identity.\n- Apply an SCP restricting servicequotas:RequestServiceQuotaIncrease to approved cloud-operations roles that require prior approval.\n",
+        "query": "data_stream.dataset: \"aws.cloudtrail\"\n    and event.provider: \"servicequotas.amazonaws.com\"\n    and event.action: \"RequestServiceQuotaIncrease\"\n    and event.outcome: \"success\"\n    and not user_agent.original: (*Terraform* or *Pulumi* or *Ansible* or \"cloudformation.amazonaws.com\")\n",
+        "references": [
+            "https://docs.aws.amazon.com/servicequotas/2019-06-24/apireference/API_RequestServiceQuotaIncrease.html",
+            "https://www.rapid7.com/blog/post/dr-threat-actors-aws-workmail-phishing-campaigns/"
+        ],
+        "related_integrations": [
+            {
+                "integration": "cloudtrail",
+                "package": "aws",
+                "version": "^6.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.provider",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user_agent.original",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "7e1b0654-b6c0-4b1b-ab47-75588533083c",
+        "setup": "The AWS integration must be ingesting management events into `logs-aws.cloudtrail-*`. Service Quotas management events are logged by default.",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Data Source: AWS",
+            "Data Source: Amazon Web Services",
+            "Platform: AWS",
+            "Data Source: AWS CloudTrail",
+            "Service: AWS Service Quotas",
+            "Rule Type: New Terms",
+            "Tactic: Resource Development",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0042",
+                    "name": "Resource Development",
+                    "reference": "https://attack.mitre.org/tactics/TA0042/"
+                },
+                "technique": [
+                    {
+                        "id": "T1583",
+                        "name": "Acquire Infrastructure",
+                        "reference": "https://attack.mitre.org/techniques/T1583/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "new_terms",
+        "version": 2
+    },
+    "id": "7e1b0654-b6c0-4b1b-ab47-75588533083c_2",
+    "type": "security-rule"
+}
