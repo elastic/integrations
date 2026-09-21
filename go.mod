@@ -8,7 +8,7 @@ require (
 	github.com/cli/go-gh/v2 v2.16.0
 	github.com/elastic/elastic-package v0.126.4
 	github.com/elastic/go-licenser v0.4.2
-	github.com/elastic/go-ucfg v0.9.1
+	github.com/elastic/go-ucfg v0.9.2
 	github.com/elastic/package-registry v1.40.0
 	github.com/magefile/mage v1.17.2
 	github.com/pkg/errors v0.9.1
