@@ -63,8 +63,10 @@ processors:
           def value = entry.getValue();
           if (key == '@timestamp') {
             ctx['@timestamp'] = value;
-          } else if (key == 'timestamp' && ctx['@timestamp'] == null) {
-            ctx['@timestamp'] = value;
+          } else if (key == 'timestamp') {
+            if (ctx['@timestamp'] == null || !raw.containsKey('@timestamp')) {
+              ctx['@timestamp'] = value;
+            }
           } else if (key == 'tychon') {
             if (value instanceof Map) {
               for (tychonEntry in value.entrySet()) {
@@ -104,7 +106,12 @@ processors:
       field: timestamp
       target_field: "@timestamp"
       ignore_missing: true
-      ignore_failure: true
+      if: ctx['@timestamp'] == null
+
+  - remove:
+      tag: remove_timestamp
+      field: timestamp
+      ignore_missing: true
 
   - date:
       tag: date_timestamp
@@ -680,6 +687,12 @@ processors:
       target_field: tychon.routing
       ignore_missing: true
       if: ctx?.routing != null && ctx?.tychon?.routing == null
+
+  - remove:
+      tag: remove_root_routing
+      field: routing
+      ignore_missing: true
+      if: ctx.routing != null && ctx.tychon?.routing != null
 
   - split:
       tag: split_tychon_routing_original_host_ip
