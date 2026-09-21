@@ -10,8 +10,8 @@ Per data stream, worst finding wins:
 | Status | Meaning |
 | --- | --- |
 | `READY` | No findings. Opt in. |
-| `READY_AFTER_AUTO_FIX` | Only Class A findings with a mechanical fix: `copy_to` → ingest pipeline, a non-`lowercase` `normalizer` → pipeline or multi-field, `store: true` → removed, `doc_values: false` → removed (or `doc_values: true` on an `external: ecs` field). |
-| `NEEDS_REVIEW` | A Class B data-loss finding (`dynamic: false`, `enabled: false`), a single-level `nested` field, a mapping-level runtime field, or `dynamic: runtime`. Needs a human decision before opting in. |
+| `READY_AFTER_AUTO_FIX` | Only Class A findings with a mechanical fix: `copy_to` → ingest pipeline, a non-`lowercase` `normalizer` → pipeline or multi-field, `store: true` → removed, `doc_values: false` → removed (or `doc_values: true` on an `external: ecs` field), `dynamic: runtime` → `dynamic: true`. |
+| `NEEDS_REVIEW` | A Class B data-loss finding (`dynamic: false`, `enabled: false`), a single-level `nested` field, or a mapping-level runtime field. Needs a human decision before opting in. |
 | `BLOCKED` | `nested` inside `nested`, an unsupported field type, or a stored-`_source` override. No mechanical fix. |
 | `OUT_OF_SCOPE` | Not a `type: logs` data stream, or the package is `type: input`. |
 
@@ -20,15 +20,22 @@ Per package: the worst status among its data streams, plus a sort recommendation
 migratable ones. Opt in per data stream; never hold a whole package back for one
 stream.
 
-Sort recommendation is one of:
+Sort recommendation is one of (JSON: `sort.class`):
 
-- `default OK` — `host.name asc, @timestamp desc` suits this data stream
-- `default DEGRADED: falls back to @timestamp desc only` — host-local inputs, but the
-  package maps `host.name` as something Elasticsearch cannot sort on
-- `explicit sort proposed: <field> asc, @timestamp desc`
+- `default OK` (`default_ok`) — `host.name asc, @timestamp desc` suits this data
+  stream, either because the inputs are host-local or because a receiver pipeline
+  sets `host.name` from the header on every event
+- `default DEGRADED: falls back to @timestamp desc only` (`degraded`) — host-local
+  inputs, but the package maps `host.name` as something Elasticsearch cannot sort on
+- `explicit sort proposed: <field> asc, @timestamp desc` — from a receiver pipeline's
+  `observer.*` device identifier (`receiver_proposed`) or from the candidate tiers
+  (`explicit`)
+- `receiver input — no confident candidate; needs human choice`
+  (`receiver_no_candidate`) — a `tcp`/`udp`/`syslog` stream whose pipeline populates
+  no `observer.*` field and sets `host.name` only on some branches
 - `explicit sort proposed: @timestamp desc only — no confident candidate; needs human
-  choice` — no field passed validation. Deliberately not a guess: a weak or
-  multi-valued sort key is worse than none.
+  choice` (`no_candidate`) — no field passed validation. Deliberately not a guess: a
+  weak or multi-valued sort key is worse than none.
 
 ## Per-package report
 

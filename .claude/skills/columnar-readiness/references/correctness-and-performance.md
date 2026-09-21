@@ -129,12 +129,25 @@ There is no index, no index template and no index mode involved, so
 
 Consequences:
 
-- The two runs must produce **identical** pipeline results. Any diff is a real bug in
-  the change, or pre-existing test nondeterminism (a timestamp, a generated id) —
-  never an expected columnar effect.
-- **`elastic-package test pipeline -g` should never be needed for this migration.**
-  If you feel the urge to regenerate expectations, stop: you are about to bake
-  something else into the repo.
+- **When `index_mode` is the only change**, the two runs must produce **identical**
+  pipeline results. Any diff is a real bug in the change, or pre-existing test
+  nondeterminism (a timestamp, a generated id) — never an expected columnar effect.
+  `-g` should never be needed, and if you feel the urge to regenerate expectations,
+  stop: you are about to bake something else into the repo.
+- **When the migration also applied an auto-fix that touches the pipeline**, the
+  output legitimately changes and `-g` is the correct tool. Two of the mechanical
+  fixes do this:
+  - `copy_to` → a `set`/`append` processor: the copied field now appears in the
+    simulated document, because the copy happens at ingest instead of at mapping
+    time;
+  - a non-`lowercase` `normalizer` → a `lowercase` (or `gsub`) processor: the value
+    is normalised in the document rather than only in the index.
+
+  Regenerate with `elastic-package test pipeline -g`, then **read every hunk** of the
+  resulting diff. The only fields that may move are the ones the auto-fix touched;
+  anything else in the diff is a bug in the fix. Say so explicitly in the PR
+  description, and keep the regeneration in its own commit so a reviewer can see the
+  expectation churn separately from the manifest change.
 
 ### System tests: where the shape changes show up
 

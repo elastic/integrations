@@ -70,7 +70,16 @@ UNSUPPORTED_TYPES = {
 #     sort on them destroys time locality and compresses worse, not better;
 #   * `date` other than `@timestamp` is a second clock, not a grouping dimension;
 #   * `constant_keyword` has exactly one value per index.
-SORTABLE_TYPES = {"keyword", "ip", "long", "integer", "short", "byte", "unsigned_long"}
+SORTABLE_STRING_TYPES = {"keyword", "ip"}
+
+# Integer types are sortable *in Lucene*, but the overwhelming majority of integer
+# fields in an integration are measurements (`*.total.bytes`, `*.time_to_close.sec`,
+# `*.progress`), and sorting on a measurement is actively harmful: it shuffles
+# documents out of time order and compresses worse. So an integer field is only
+# accepted when its **name** says it is an identifier — see `_numeric_leaf_is_id`.
+SORTABLE_NUMERIC_TYPES = {"long", "integer", "short", "byte", "unsigned_long"}
+
+SORTABLE_TYPES = SORTABLE_STRING_TYPES | SORTABLE_NUMERIC_TYPES
 
 # ECS fields that ship with `doc_values: false`. elastic-package's dependency
 # manager (internal/fields/dependency_manager.go, transformImportedField) copies
@@ -103,11 +112,35 @@ ECS_DOC_VALUES_FALSE = {
 # that the default sort is wrong.
 HOST_MEANINGFUL_INPUTS = {
     "logfile", "filestream", "log", "journald", "winlog", "unix", "system/metrics",
-    "docker", "containerd", "filestream-container", "event/file", "udp", "tcp",
-    "syslog", "etw", "audit/auditd", "audit/file_integrity", "audit/system",
+    "docker", "containerd", "filestream-container", "event/file",
+    "etw", "audit/auditd", "audit/file_integrity", "audit/system",
     "auditd-logfile", "system/auth", "unifiedlogs", "osquery", "packet",
     "cloud_defend/control", "kubernetes/container_logs",
 }
+
+# Network receivers: the agent listens and a *remote* device pushes to it. The agent
+# host is neither the subject (as with `filestream`) nor a poller of a single tenant
+# (as with `httpjson`) — it is a syslog sink for many devices, and what `host.name`
+# ends up holding is decided by the ingest pipeline, not by the input:
+#
+#   * `cisco_asa` sets `host.name` in one grok branch only, and copies
+#     `host.hostname` into `observer.hostname`;
+#   * `fortinet_fortigate` renames `devname` to `observer.name` but sets `host.name`
+#     from `fortinet.firewall.srcname` — the *client*, not the firewall;
+#   * `checkpoint` sets `observer.name` from `origin`, and `host.name` only on
+#     login events;
+#   * `panw` fills `observer.hostname`/`observer.serial_number` from the syslog
+#     header in every sub-pipeline and sets `host.name` only for client events.
+#
+# So these get their own class and their own evidence source: the pipeline.
+# Deliberately narrow — `http_endpoint`, `netflow`, `lumberjack`, `cometd` and
+# `kafka` are also push-style, but they stay in `COLLECTOR_INPUTS` because their
+# payloads carry a tenant/exporter identity rather than a syslog device header.
+RECEIVER_INPUTS = {"tcp", "udp", "syslog"}
+
+# Device identifiers a receiver pipeline may populate from the syslog header, best
+# first. These are the only sort keys proposed for a receiver stream.
+RECEIVER_SORT_FIELDS = ["observer.name", "observer.hostname", "observer.serial_number"]
 
 # Inputs that poll or receive from a remote API: the agent host is the collector, not
 # the subject, so the default `host.name` sort degenerates to one value per agent.
@@ -123,6 +156,12 @@ COLLECTOR_INPUTS = {
 }
 
 # Preferred index-sort grouping fields, best first.
+#
+# These are accepted from two sources: a declaration in `fields/*.yml`, and — because
+# ECS fields are supplied by the `ecs@mappings` component template at install time and
+# therefore frequently left undeclared — a scalar value in `sample_event.json`, with
+# the type and the array flag resolved from the ECS cache. See
+# `_ecs_sample_candidate`.
 SORT_CANDIDATES = [
     "cloud.account.id",
     "organization.id",
@@ -135,6 +174,15 @@ SORT_CANDIDATES = [
     "agent.id",
 ]
 
+# `agent.id` identifies the *collector*, so it is only a grouping dimension when the
+# agent is the subject. For an API poller it is one value for the whole data stream,
+# and 334 poller streams carry it in their sample event — so it is never taken from
+# the sample-event path, and it is dropped from tier 1 entirely when the stream
+# offers a poller input. It is kept for streams that declare no input at all
+# (`elastic_agent`/`fleet_server` self-telemetry), where the agent *is* the subject
+# and `agent.id` is one series per agent across the fleet.
+SORT_CANDIDATES_COLLECTOR_ONLY = {"agent.id"}
+
 # Vendor-specific tenant identifiers, matched on the normalised leaf name
 # ("OrganizationId" and "organization_id" both normalise to "organizationid"),
 # best first.
@@ -144,6 +192,68 @@ SORT_CANDIDATE_LEAVES = [
     "instanceid", "siteid",
 ]
 
+# --------------------------------------------------------------------------- #
+# Leaf-name vocabulary
+#
+# The tiers below decide from the *name* whether a field is a grouping dimension.
+# All of these match on **tokens** of the last path segment — the leaf is split on
+# `_`, `-` and camelCase boundaries and lowercased, so `errorMessage` is
+# `{error, message}` and `response_time_in_seconds` is
+# `{response, time, in, seconds}`. Token matching, not substring matching, is what
+# keeps `security_id` out of the `sec` (seconds) bucket.
+# --------------------------------------------------------------------------- #
+
+# Marks an integer field as an identifier rather than a measurement. Either the leaf
+# carries an id token (`id`, `uid`, so `account_id` / `eventId` / plain `id`), or it
+# names a tenant-like entity outright (`tenant`, `organization`, …).
+ID_TOKENS = {"id", "uid", "identifier"}  # `guid` is in HASH_TOKENS: it is per-event
+TENANT_TOKENS = {
+    "account", "tenant", "organization", "organisation", "org", "customer",
+    "project", "subscription", "workspace", "client", "site", "instance",
+}
+
+# Measurement words. A field whose leaf carries one of these is a per-event number:
+# sorting on it destroys time locality, and it prunes nothing a dashboard filters on.
+MEASUREMENT_TOKENS = {
+    "bytes", "byte", "bits", "kb", "mb", "gb", "count", "total", "sum", "avg", "mean",
+    "min", "max", "seconds", "second", "sec", "ms", "millis", "duration", "time",
+    "memory", "size", "length", "progress", "percent", "pct", "ratio", "rate",
+    "value", "latency", "elapsed", "age", "score", "usage", "credits", "remaining",
+}
+
+# Per-event hashes and UUIDs: maximum cardinality, zero grouping. Any token ending in
+# `hash` counts too, which is what catches `pehash`, `imphash` and `authentihash`.
+HASH_TOKENS = {
+    "hash", "uuid", "guid", "checksum", "fingerprint", "digest", "nonce",
+    "md5", "sha", "sha1", "sha256", "sha384", "sha512", "ssdeep", "tlsh", "imphash",
+}
+
+# Free text. An `external: ecs` reference carries no local `type`, and plenty of
+# vendor fields map prose as `keyword`, so the type allow-list does not catch these.
+FREE_TEXT_TOKENS = {
+    "message", "description", "summary", "comment", "note", "reason", "solution",
+    "text", "title", "body", "detail", "details", "remediation", "recommendation",
+    "command", "commandline", "query", "useragent", "synopsis",
+}
+
+# Path segment *before* an `id`/`uid` leaf that makes it a per-event id rather than a
+# tenant id: `blacklens.alert.id` is one value per document, `netbox.tenant.id` is
+# the grouping dimension. Only the `<entity>.id` path form is rejected — a leaf that
+# spells the whole thing out (`event_id`, `alert_id`) still has to pass the other
+# rules, and `event_id` is a legitimate, low-ish cardinality identifier.
+PER_EVENT_ENTITIES = {
+    "alert", "event", "incident", "item", "message", "record", "request", "finding",
+    "detection", "document", "doc", "log", "case", "ticket", "notification", "job",
+    "task", "scan", "report", "trace", "span", "run", "execution", "invocation",
+    "batch", "transaction", "upload", "download",
+}
+
+# A leaf ending in `s` is an array in disguise (`threat_types`,
+# `product_vulnerabilities`, `tags`, `roles`, `actors`) unless it ends in one of
+# these — English singulars that happen to end in `s` (`address`, `status`,
+# `process`, `alias`, `analysis`, `os`).
+SINGULAR_S_ENDINGS = ("ss", "us", "is", "as", "os")
+
 # Low-cardinality enum leaves: a poor leading sort key, so they are not accepted
 # from the dashboard-filter fallback tier. Matched as a **suffix** of the normalised
 # leaf name, so `tls_verify_status`, `http_status`, `log_type` and `scanResult` are
@@ -152,7 +262,22 @@ LOW_CARDINALITY_LEAVES = {
     "severity", "priority", "level", "status", "state", "type", "action", "outcome",
     "category", "kind", "result", "verdict", "code", "reason", "provider", "direction",
     "evaluation", "decision", "disposition", "enabled", "flag", "class", "activity",
+    "role", "mode", "protocol", "input", "stage", "phase", "tier", "family", "method",
+    "health", "criticality", "classification", "version", "dataset", "operation",
+    "whitelisted", "blacklisted",
 }
+
+# Matched on the whole normalised leaf rather than as a suffix, because they are too
+# short to suffix-match safely (`op` would eat `desktop`).
+LOW_CARDINALITY_EXACT = {"op", "verb", "rc", "env"}
+
+# `<low-cardinality thing>.name` is the same enum spelled out: `alert_type.name` has
+# as many values as `alert_type` does.
+LOW_CARDINALITY_NAME_LEAVES = {"name", "label", "title", "display", "displayname"}
+
+# Boolean-in-disguise prefixes: `is_portable`, `has_agent` are keyword-mapped yes/no
+# flags, so they prune nothing.
+BOOLEAN_LEAF_PREFIXES = ("is", "has", "can", "should", "was", "allow")
 
 # A vendor tenant/account id nested this deep is an artifact of some request payload
 # (`...context.http_request.args.client_id`), not the dataset's grouping dimension.
@@ -258,10 +383,15 @@ def _version_key(name: str) -> Tuple[int, ...]:
     return tuple(int(p) for p in re.findall(r"\d+", name)) or (0,)
 
 
+# libyaml when it is available: the catalog run now parses every ingest pipeline in
+# the repo, and the pure-Python loader makes that several times slower.
+YAML_LOADER = getattr(yaml, "CSafeLoader", yaml.SafeLoader)
+
+
 def load_yaml(path: str) -> Any:
     try:
         with open(path, "r", encoding="utf-8") as fh:
-            return yaml.safe_load(fh)
+            return yaml.load(fh, Loader=YAML_LOADER)
     except Exception as exc:  # unparseable file: surfaced as a finding by the caller
         raise RuntimeError(f"{path}: {exc}") from exc
 
@@ -436,9 +566,12 @@ def check_field(fdef: Dict[str, Any], flat: str, nested_depth: int,
 
     if str(fdef.get("dynamic", "")).strip().lower() == "runtime":
         out.append(finding(
-            "dynamic_runtime", "A", "review",
-            f"`{flat}` sets `dynamic: runtime`; unmapped leaves become mapping-level "
-            f"runtime fields, which columnar mode rejects.",
+            "dynamic_runtime", "A", "auto_fix",
+            f"`{flat}` sets `dynamic: runtime`, which columnar mode rejects at "
+            f"**mapping-parse time**: `ObjectMapper` refuses the value outright "
+            f"(`dynamic [runtime] is not supported in strict columnar mode`), so the "
+            f"index template PUT fails and the data stream is never created. It does "
+            f"not wait for a document with an unknown field.",
             "Use `dynamic: true` (unmapped leaves become non-indexed doc values — cheap "
             "under columnar mode), or map the sub-fields explicitly.",
             rel_file, flat))
@@ -541,9 +674,11 @@ def check_stream_manifest(manifest: Dict[str, Any], rel_file: str) -> List[Dict[
 
     if str(mappings.get("dynamic", "")).strip().lower() == "runtime":
         out.append(finding(
-            "dynamic_runtime", "A", "review",
-            "`elasticsearch.index_template.mappings.dynamic: runtime` creates mapping-level "
-            "runtime fields at ingest, which columnar mode rejects.",
+            "dynamic_runtime", "A", "auto_fix",
+            "`elasticsearch.index_template.mappings.dynamic: runtime` is rejected when the "
+            "mapping is parsed (`ObjectMapper`: `dynamic [runtime] is not supported in "
+            "strict columnar mode`) — the index template PUT fails, before any document "
+            "is indexed.",
             "Use `dynamic: true` (unmapped leaves become non-indexed doc values) or map the "
             "fields explicitly.",
             rel_file))
@@ -660,6 +795,151 @@ def _collect_filter_fields(node: Any, counts: Counter, depth: int = 0) -> None:
         _collect_filter_fields(value, counts, depth + 1)
 
 
+# --------------------------------------------------------------------------- #
+# Ingest-pipeline evidence
+#
+# Two questions the mapping cannot answer:
+#   * which object paths actually hold *lists* (CloudTrail's
+#     `aws.cloudtrail.resources` is a plain `group` in `fields.yml`);
+#   * which fields a **receiver** pipeline populates, and whether it does so
+#     unconditionally (`host.name` set in one grok branch out of twelve is not the
+#     same thing as `host.name` parsed from every syslog header).
+# --------------------------------------------------------------------------- #
+
+# Painless roots used for the not-yet-renamed source document. A path under one of
+# these is matched against a field's ancestors by its tail, because
+# `$("json.resources", []).stream()` and `aws.cloudtrail.resources` are the same
+# object at two points in the pipeline.
+PIPELINE_TEMP_ROOTS = {"json", "_temp_", "_temp", "_tmp", "_conf", "_ingest"}
+
+# Painless array idioms.
+_PAINLESS_ARRAY_RES = [
+    re.compile(r'\$\(\s*"([\w.@]+)"\s*,\s*\[\s*\]\s*\)\s*\.stream\(\)'),
+    re.compile(r'ctx\.?\??\.?([\w.?@]+?)\s*\.stream\(\)'),
+    re.compile(r'ctx\.?\??\.?([\w.?@]+?)\s+instanceof\s+List'),
+    re.compile(r'for\s*\(\s*def\s+\w+\s*:\s*ctx\.?\??\.?([\w.?@]+?)\s*\)'),
+    re.compile(r'ctx\.?\??\.?([\w.?@]+?)\s*=\s*new\s+ArrayList'),
+]
+
+# `%{PATTERN:target.field}` / `%{PATTERN:target.field:type}` inside a grok pattern,
+# and `%{target.field}` inside a dissect pattern.
+_GROK_TARGET_RE = re.compile(r'%\{[A-Z0-9_]+:([\w.@]+)(?::\w+)?\}')
+_DISSECT_TARGET_RE = re.compile(r'%\{[+&?*]?([\w.@]+)[^}]*\}')
+
+# Processors that do not produce their `field` as an output.
+_NON_PRODUCING_PROCESSORS = {
+    "remove", "drop", "fail", "pipeline", "grok", "dissect", "script", "enrich",
+    "terminate", "reroute",
+}
+
+
+class PipelineFacts:
+    """What the ingest pipelines of one data stream say about its fields."""
+
+    def __init__(self) -> None:
+        self.array_paths: set = set()        # exact dotted paths iterated as lists
+        self.array_tails: set = set()        # same, below a temp root: matched by tail
+        self.targets: set = set()            # every field the pipelines write
+        self.unconditional_targets: set = set()
+
+    def is_array(self, path: str) -> bool:
+        if path in self.array_paths:
+            return True
+        return any(path == tail or path.endswith("." + tail) for tail in self.array_tails)
+
+    def _add_array(self, raw: str) -> None:
+        path = raw.replace("?", "").strip(".")
+        if not path:
+            return
+        self.array_paths.add(path)
+        head, _, tail = path.partition(".")
+        if head in PIPELINE_TEMP_ROOTS and tail:
+            self.array_tails.add(tail)
+
+
+def scan_pipelines(ds_dir: str) -> PipelineFacts:
+    facts = PipelineFacts()
+    pipeline_dir = os.path.join(ds_dir, "elasticsearch", "ingest_pipeline")
+    if not os.path.isdir(pipeline_dir):
+        return facts
+    for fname in sorted(os.listdir(pipeline_dir)):
+        if not fname.endswith((".yml", ".yaml")):
+            continue
+        path = os.path.join(pipeline_dir, fname)
+        try:
+            with open(path, "r", encoding="utf-8", errors="replace") as fh:
+                text = fh.read()
+        except OSError:
+            continue
+        for regex in _PAINLESS_ARRAY_RES:
+            for match in regex.finditer(text):
+                facts._add_array(match.group(1))
+        try:
+            doc = yaml.load(text, Loader=YAML_LOADER)
+        except Exception:
+            continue
+        if isinstance(doc, dict):
+            _walk_processors(doc.get("processors") or [], facts, conditional=False)
+            _walk_processors(doc.get("on_failure") or [], facts, conditional=True)
+    return facts
+
+
+def _walk_processors(procs: Any, facts: PipelineFacts, conditional: bool) -> None:
+    if not isinstance(procs, list):
+        return
+    for entry in procs:
+        if not isinstance(entry, dict):
+            continue
+        for ptype, body in entry.items():
+            if not isinstance(body, dict):
+                continue
+            cond = conditional or body.get("if") is not None
+            if ptype == "foreach":
+                field = body.get("field")
+                if isinstance(field, str):
+                    facts._add_array(field)
+                _walk_processors([body.get("processor")] if body.get("processor") else [],
+                                 facts, conditional=True)
+            elif ptype in ("grok", "dissect"):
+                _add_pattern_targets(ptype, body, facts, cond)
+            elif ptype not in _NON_PRODUCING_PROCESSORS:
+                target = body.get("target_field") or body.get("field")
+                if isinstance(target, str):
+                    facts.targets.add(target)
+                    if not cond:
+                        facts.unconditional_targets.add(target)
+            _walk_processors(body.get("on_failure") or [], facts, conditional=True)
+
+
+def _add_pattern_targets(ptype: str, body: Dict[str, Any], facts: PipelineFacts,
+                         conditional: bool) -> None:
+    """Grok/dissect targets.
+
+    A target is unconditional only when it appears in **every** pattern of the
+    processor: `cisco_asa` sets `host.name` in one branch of a twelve-pattern grok,
+    which is not the same as a syslog header parsed the same way every time.
+    """
+    regex = _GROK_TARGET_RE if ptype == "grok" else _DISSECT_TARGET_RE
+    # Named sub-patterns are always a branch of an alternation, never guaranteed.
+    for definition in (body.get("pattern_definitions") or {}).values():
+        if isinstance(definition, str):
+            facts.targets |= {m.group(1) for m in regex.finditer(definition)}
+    patterns = body.get("patterns") or body.get("pattern") or []
+    if isinstance(patterns, str):
+        patterns = [patterns]
+    if not isinstance(patterns, list):
+        return
+    per_pattern = []
+    for pattern in patterns:
+        if not isinstance(pattern, str):
+            continue
+        found = {m.group(1) for m in regex.finditer(pattern)}
+        per_pattern.append(found)
+        facts.targets |= found
+    if per_pattern and not conditional:
+        facts.unconditional_targets |= set.intersection(*per_pattern)
+
+
 SORT_YAML_HEADER = (
     "elasticsearch:\n"
     "  index_template:\n"
@@ -679,25 +959,41 @@ def _sort_yaml(fields: List[str], orders: List[str]) -> str:
 
 def recommend_sort(stream: Dict[str, Any], field_index: Dict[str, Dict[str, Any]],
                    dash_fields: Counter, filter_fields: Counter,
-                   array_fields: Optional[set] = None) -> Dict[str, Any]:
+                   array_fields: Optional[set] = None,
+                   pipeline_arrays: Optional[PipelineFacts] = None,
+                   sample: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     """Decide whether the logsdb_columnar default sort is right for this stream.
 
-    Decided from the **input types alone**. Elastic Agent populates `host.name` on
-    every event via `add_host_metadata`, and Elasticsearch injects the mapping when
-    the template lacks one, so the absence of `host.name` from `fields/*.yml` or from
-    `sample_event.json` proves nothing. Mapping evidence is used only to downgrade:
-    a `host.name` mapped as something other than keyword/number with doc values makes
-    Elasticsearch fall back to sorting on `@timestamp` alone.
+    The input types pick the **regime**:
+
+      * host-local (`filestream`, `winlog`, …) — the agent runs on the subject, so
+        the default `host.name asc, @timestamp desc` is right. Elastic Agent
+        populates `host.name` on every event via `add_host_metadata`, and
+        Elasticsearch injects the mapping when the template lacks one, so the
+        absence of `host.name` from `fields/*.yml` or from `sample_event.json`
+        proves nothing. Mapping evidence is used only to downgrade.
+      * receiver (`tcp`, `udp`, `syslog`) — a remote device pushes to the agent, and
+        what `host.name` holds is whatever the pipeline put there. Evidence comes
+        from the pipeline, not from the input.
+      * collector / API poller — the agent host is one value, so an explicit sort on
+        a tenant-like dimension is needed.
     """
     inputs = stream["inputs"]
     host_inputs = sorted(i for i in inputs if i in HOST_MEANINGFUL_INPUTS)
+    receiver_inputs = sorted(i for i in inputs if i in RECEIVER_INPUTS)
     api_inputs = sorted(i for i in inputs if i in COLLECTOR_INPUTS)
-    unknown_inputs = sorted(set(inputs) - HOST_MEANINGFUL_INPUTS - COLLECTOR_INPUTS)
+    unknown_inputs = sorted(
+        set(inputs) - HOST_MEANINGFUL_INPUTS - RECEIVER_INPUTS - COLLECTOR_INPUTS)
     top_dash = [f for f, _ in dash_fields.most_common(10)]
+    pipeline_arrays = pipeline_arrays or PipelineFacts()
+    sample = sample or {}
 
     reason_bits = []
     if host_inputs:
         reason_bits.append(f"host-local input(s): {', '.join(host_inputs)}")
+    if receiver_inputs:
+        reason_bits.append(f"receiver input(s): {', '.join(receiver_inputs)} "
+                           f"(host = whatever the pipeline sets)")
     if api_inputs:
         reason_bits.append(f"remote/API input(s): {', '.join(api_inputs)} (host = collector)")
     if unknown_inputs:
@@ -705,52 +1001,74 @@ def recommend_sort(stream: Dict[str, Any], field_index: Dict[str, Dict[str, Any]
     if not inputs:
         reason_bits.append("no inputs declared")
 
-    host_meaningful = bool(host_inputs) and not api_inputs and not unknown_inputs
+    def result(klass: str, recommendation: str, fields: List[str], orders: List[str],
+               extra_reason: str = "", explicit: bool = False) -> Dict[str, Any]:
+        return {
+            "class": klass,
+            "recommendation": recommendation,
+            "sort_fields": fields,
+            "sort_orders": orders,
+            "reason": "; ".join(reason_bits + ([extra_reason] if extra_reason else [])),
+            "explicit_sort_yaml": _sort_yaml(fields, orders) if explicit else None,
+            "dashboard_top_fields": top_dash,
+        }
 
-    if host_meaningful:
+    def default_or_degraded(extra_reason: str) -> Dict[str, Any]:
         bad_type = _host_name_sort_problem(field_index)
         if bad_type:
-            reason_bits.append(bad_type)
-            return {
-                "recommendation": "default DEGRADED: falls back to `@timestamp` desc only",
-                "sort_fields": ["@timestamp"],
-                "sort_orders": ["desc"],
-                "reason": "; ".join(reason_bits),
-                "explicit_sort_yaml": None,
-                "dashboard_top_fields": top_dash,
-            }
-        reason_bits.append("`host.name` is agent-populated and sort-compatible")
-        return {
-            "recommendation": "default OK",
-            "sort_fields": ["host.name", "@timestamp"],
-            "sort_orders": ["asc", "desc"],
-            "reason": "; ".join(reason_bits),
-            "explicit_sort_yaml": None,
-            "dashboard_top_fields": top_dash,
-        }
+            return result("degraded",
+                          "default DEGRADED: falls back to `@timestamp` desc only",
+                          ["@timestamp"], ["desc"], bad_type)
+        return result("default_ok", "default OK", ["host.name", "@timestamp"],
+                      ["asc", "desc"], extra_reason)
 
-    candidate, tier = _pick_sort_candidate(field_index, filter_fields, array_fields or set())
+    host_meaningful = bool(host_inputs) and not receiver_inputs and not api_inputs \
+        and not unknown_inputs
+
+    if host_meaningful:
+        return default_or_degraded("`host.name` is agent-populated and sort-compatible")
+
+    # Receiver regime: the pipeline decides. Do not fall through to the tenant tiers —
+    # a syslog stream has no tenant, and the device identity is the whole question.
+    if receiver_inputs and not api_inputs:
+        device = next((f for f in RECEIVER_SORT_FIELDS if f in pipeline_arrays.targets), None)
+        if device:
+            return result(
+                "receiver_proposed",
+                f"explicit sort proposed: {device} asc, @timestamp desc",
+                [device, "@timestamp"], ["asc", "desc"],
+                f"receiver input: sort on the device identifier the pipeline "
+                f"populates (`{device}`)",
+                explicit=True)
+        if "host.name" in pipeline_arrays.unconditional_targets:
+            return default_or_degraded(
+                "the pipeline sets `host.name` from the header on every event")
+        return result(
+            "receiver_no_candidate",
+            "receiver input — no confident candidate; needs human choice",
+            ["@timestamp"], ["desc"],
+            "the pipeline populates no `observer.*` device identifier, and `host.name` "
+            "only on some branches — a human has to say which field identifies the "
+            "sending device",
+            explicit=True)
+
+    candidate, tier = _pick_sort_candidate(
+        field_index, filter_fields, array_fields or set(), pipeline_arrays, sample,
+        allow_agent_id=not api_inputs)
     if candidate:
-        reason_bits.append(f"candidate from {tier}")
-        return {
-            "recommendation": f"explicit sort proposed: {candidate} asc, @timestamp desc",
-            "sort_fields": [candidate, "@timestamp"],
-            "sort_orders": ["asc", "desc"],
-            "reason": "; ".join(reason_bits),
-            "explicit_sort_yaml": _sort_yaml([candidate, "@timestamp"], ["asc", "desc"]),
-            "dashboard_top_fields": top_dash,
-        }
+        return result("explicit",
+                      f"explicit sort proposed: {candidate} asc, @timestamp desc",
+                      [candidate, "@timestamp"], ["asc", "desc"],
+                      f"candidate from {tier}", explicit=True)
 
-    return {
-        "recommendation": "explicit sort proposed: @timestamp desc only — no confident "
-                          "candidate; needs human choice",
-        "sort_fields": ["@timestamp"],
-        "sort_orders": ["desc"],
-        "reason": "; ".join(reason_bits) + "; no single-valued tenant/account/observer "
-                  "field and no dashboard filter field survived validation",
-        "explicit_sort_yaml": _sort_yaml(["@timestamp"], ["desc"]),
-        "dashboard_top_fields": top_dash,
-    }
+    return result(
+        "no_candidate",
+        "explicit sort proposed: @timestamp desc only — no confident candidate; "
+        "needs human choice",
+        ["@timestamp"], ["desc"],
+        "no single-valued tenant/account/observer field and no dashboard filter "
+        "field survived validation",
+        explicit=True)
 
 
 def _host_name_sort_problem(field_index: Dict[str, Dict[str, Any]]) -> Optional[str]:
@@ -773,8 +1091,90 @@ def _host_name_sort_problem(field_index: Dict[str, Dict[str, Any]]) -> Optional[
     return None
 
 
-def _normalise_leaf(name: str) -> str:
-    return name.rsplit(".", 1)[-1].replace("_", "").replace("-", "").lower()
+def _normalise_leaf(name: str, segments: int = 1) -> str:
+    """Last `segments` path segments, squashed to lowercase letters/digits.
+
+    `segments=1` turns `o365.audit.OrganizationId` into `organizationid`.
+    `segments=2` turns `netbox.tenant.id` into `tenantid`, which is how the
+    `<object>.id` spelling of a tenant identifier is recognised. A trailing `uid` is
+    folded to `id` so the OCSF spelling (`cloud.account.uid`) matches too.
+    """
+    tail = ".".join(name.split(".")[-segments:])
+    out = re.sub(r"[^a-z0-9]", "", tail.lower())
+    if out.endswith("uid"):
+        out = out[:-3] + "id"
+    return out
+
+
+_CAMEL_RE = re.compile(r"(?<=[a-z0-9])(?=[A-Z])")
+
+
+def _leaf_tokens(name: str) -> List[str]:
+    """Lowercased words of the last path segment.
+
+    `errorMessage` -> `["error", "message"]`; `response_time_in_seconds` ->
+    `["response", "time", "in", "seconds"]`. Token matching (rather than a substring
+    test on the squashed name) is what keeps `security_id` out of the `sec` bucket
+    and `account_number` out of the `num` one.
+    """
+    leaf = name.rsplit(".", 1)[-1]
+    return [t for t in re.split(r"[^a-zA-Z0-9]+", _CAMEL_RE.sub(" ", leaf)) if t]
+
+
+def _numeric_leaf_is_id(name: str) -> bool:
+    """Whether an integer-typed field's name claims to be an identifier.
+
+    Integers are only admitted as a sort key on the strength of their name: either an
+    id token (`id`, `uid`) or a tenant-like entity word. Everything else — `bytes`,
+    `count`, `progress`, `seconds_to_triaged`, `observables_count` — is a
+    measurement, and sorting a log index by a measurement is worse than not sorting
+    it at all.
+    """
+    tokens = {t.lower() for t in _leaf_tokens(name)}
+    return bool(tokens & ID_TOKENS) or bool(tokens & TENANT_TOKENS)
+
+
+def _is_per_event_id(name: str) -> bool:
+    """`<per-event entity>.id` / `.uid`, e.g. `blacklens.alert.id`."""
+    parts = name.split(".")
+    if len(parts) < 2:
+        return False
+    if parts[-1].lower() not in ID_TOKENS:
+        return False
+    return parts[-2].lower() in PER_EVENT_ENTITIES
+
+
+def _is_plural_leaf(name: str) -> bool:
+    squashed = _normalise_leaf(name)
+    if not squashed.endswith("s") or squashed.endswith(SINGULAR_S_ENDINGS):
+        return False
+    return not _numeric_leaf_is_id(name)
+
+
+def _weak_sort_leaf(name: str) -> Optional[str]:
+    """Why this field name disqualifies it as the dashboard-tier sort key, or None.
+
+    Applied to tier 3 only: tiers 1 and 2 match curated field/leaf lists, so their
+    names are known good. Tier 3 takes whatever the package's dashboards filter on,
+    which is where measurements, hashes, prose and enums get in.
+    """
+    tokens = {t.lower() for t in _leaf_tokens(name)}
+    if tokens & MEASUREMENT_TOKENS:
+        return "measurement"
+    if (tokens & HASH_TOKENS) or any(t.endswith("hash") for t in tokens):
+        return "per-event hash/uuid"
+    if tokens & FREE_TEXT_TOKENS:
+        return "free text"
+    if _is_per_event_id(name):
+        return "per-event id"
+    if _is_plural_leaf(name):
+        return "plural / array-ish"
+    leaf_tokens = _leaf_tokens(name)
+    if leaf_tokens and leaf_tokens[0].lower() in BOOLEAN_LEAF_PREFIXES:
+        return "boolean flag"
+    if _is_low_cardinality(name):
+        return "low-cardinality enum"
+    return None
 
 
 def _resolved_type(fdef: Dict[str, Any], name: str) -> Optional[str]:
@@ -787,64 +1187,182 @@ def _resolved_type(fdef: Dict[str, Any], name: str) -> Optional[str]:
     return None
 
 
+def _declared_multi_valued(field_index: Dict[str, Dict[str, Any]], name: str,
+                           array_fields: set, pipeline_arrays: "PipelineFacts") -> bool:
+    """Whether `name`, or any object it lives inside, holds a list.
+
+    Index sorting on a multi-valued field is a *correctness* hazard, not a weak pick:
+    Lucene picks one value out of the array and every later pruning decision silently
+    follows that choice. A member of an array of objects is just as multi-valued as
+    the array itself — `aws.cloudtrail.resources.account_id` is one value *per
+    resource*, not per event — so every ancestor is checked, from three directions:
+
+      1. the `sample_event.json` shows the ancestor as a list;
+      2. the ancestor is declared `type: nested` or `normalize: [array]`;
+      3. the ingest pipeline iterates the ancestor (`foreach`, `.stream()`,
+         `instanceof List`, a Painless `for (def x : ctx.<path>)` loop).
+
+    (3) is what catches CloudTrail: the sample event has no `resources` at all, and
+    `fields.yml` declares it as a plain `group`, but the pipeline builds it with
+    `$("json.resources", []).stream()` and `ctx.aws.cloudtrail.resources = new
+    ArrayList(...)`.
+    """
+    parts = name.split(".")
+    for i in range(1, len(parts) + 1):
+        path = ".".join(parts[:i])
+        if path in array_fields:
+            return True
+        if pipeline_arrays.is_array(path):
+            return True
+        anc = field_index.get(path)
+        if anc is None:
+            continue
+        if anc.get("type") == "nested":
+            return True
+        normalize = anc.get("normalize")
+        if isinstance(normalize, list) and "array" in normalize:
+            return True
+        if is_true(anc.get("normalize_as_array")):
+            return True
+        if anc.get("external") == "ecs" and (ecs_schema().get(path) or {}).get("array"):
+            return True
+    return False
+
+
 def _sortable(field_index: Dict[str, Dict[str, Any]], name: str,
-              array_fields: set) -> bool:
+              array_fields: set,
+              pipeline_arrays: Optional["PipelineFacts"] = None) -> bool:
     """Whether `name` may be used as the leading index-sort field.
 
-    Rejects anything that is not a single-valued identifier-ish type. A multi-valued
-    sort field is a correctness hazard, not merely a weak pick: Lucene sorts the
-    document by one selected value from the array and the rest of the pruning logic
-    silently follows that choice.
+    Rejects anything that is not a single-valued identifier-ish type.
     """
+    pipeline_arrays = pipeline_arrays or PipelineFacts()
     fdef = field_index.get(name)
     if fdef is None:
         return False
     if name in SORT_EXCLUDED_FIELDS:
         return False
-    if _resolved_type(fdef, name) not in SORTABLE_TYPES:
+    ftype = _resolved_type(fdef, name)
+    if ftype not in SORTABLE_TYPES:
         # Also covers `constant_keyword`, `boolean`, all floating-point types,
         # `date`, every type Lucene cannot sort on, and `external: ecs` fields whose
         # ECS type is unknown (the cache is missing) — in which case "no confident
         # candidate" is the right answer anyway.
         return False
+    if ftype in SORTABLE_NUMERIC_TYPES and not _numeric_leaf_is_id(name):
+        # An integer that is not named like an identifier is a measurement.
+        return False
     if is_false(fdef.get("doc_values")):
         return False
-    if name in array_fields:
-        return False
     normalize = fdef.get("normalize")
-    if isinstance(normalize, list) and "array" in normalize:
+    if normalize and not isinstance(normalize, list):
         return False
-    if is_true(fdef.get("normalize_as_array")) or (normalize and not isinstance(normalize, list)):
-        return False
-    if fdef.get("external") == "ecs" and (ecs_schema().get(name) or {}).get("array"):
+    if _declared_multi_valued(field_index, name, array_fields, pipeline_arrays):
         return False
     return True
 
 
+def _sample_scalar(sample: Dict[str, Any], name: str) -> bool:
+    """Whether `sample_event.json` holds a non-empty **scalar** at `name`.
+
+    Handles both the nested (`{"cloud": {"account": {"id": ...}}}`) and the dotted
+    (`{"cloud.account.id": ...}`) spellings, and refuses to descend through a list.
+    """
+    parts = name.split(".")
+    for split in range(len(parts), 0, -1):
+        node: Any = sample
+        ok = True
+        for i, part in enumerate(parts[:split]):
+            key = part if i < split - 1 else ".".join(parts[split - 1:])
+            if not isinstance(node, dict) or key not in node:
+                ok = False
+                break
+            node = node[key]
+        if ok:
+            return isinstance(node, (str, int, float)) and not isinstance(node, bool) \
+                and str(node) != ""
+    return False
+
+
+def _ecs_sample_candidate(name: str, field_index: Dict[str, Dict[str, Any]],
+                          sample: Dict[str, Any]) -> bool:
+    """Tier 1 acceptance for an ECS field the package never declares.
+
+    ECS fields are installed by the `ecs@mappings` component template, so a package
+    that populates `cloud.account.id` in its pipeline has no reason to list it in
+    `fields/*.yml` — and most do not (21 streams for `cloud.account.id`, 31 for
+    `organization.id`). The sample event is then the only static evidence that the
+    field exists at all. Type and array flag still come from the ECS cache, so a
+    missing cache falls back to "no confident candidate", the safe direction.
+    """
+    if name in field_index:
+        return False  # declared: the normal `_sortable` path already ruled on it
+    if name in SORT_CANDIDATES_COLLECTOR_ONLY:
+        return False
+    ecs = ecs_schema().get(name)
+    if not ecs or ecs.get("array"):
+        return False
+    if ecs.get("type") not in SORTABLE_STRING_TYPES:
+        return False
+    return _sample_scalar(sample, name)
+
+
+def _tier2_hits(field_index: Dict[str, Dict[str, Any]], leaf: str,
+                array_fields: set, pipeline_arrays: PipelineFacts) -> List[str]:
+    """Fields whose last one *or two* path segments normalise to `leaf`.
+
+    The two-segment form is how the `<object>.id` spelling of a tenant identifier is
+    found: `netbox.tenant.id`, `sentinel_one.*.account.id`,
+    `withsecure_elements.security_events.organization.id`, `ocsf.cloud.account.uid`.
+    The depth cap is applied to the *effective* depth — the path with the matched
+    suffix collapsed to one segment — so those survive it while a tenant id buried in
+    a request payload (`...context.http_request.args.client_id`) still does not.
+    """
+    hits: List[Tuple[int, int, str]] = []
+    for name in field_index:
+        for segments in (1, 2):
+            if name.count(".") + 1 < segments:
+                continue
+            if _normalise_leaf(name, segments) != leaf:
+                continue
+            depth = name.count(".") - (segments - 1)
+            if depth > SORT_CANDIDATE_MAX_DEPTH:
+                continue
+            if not _sortable(field_index, name, array_fields, pipeline_arrays):
+                continue
+            hits.append((depth, len(name), name))
+            break
+    return [n for _d, _l, n in sorted(hits)]
+
+
 def _pick_sort_candidate(field_index: Dict[str, Dict[str, Any]],
                          filter_fields: Counter,
-                         array_fields: set) -> Tuple[Optional[str], str]:
-    # Tier 1: well-known ECS grouping fields.
+                         array_fields: set,
+                         pipeline_arrays: Optional[PipelineFacts] = None,
+                         sample: Optional[Dict[str, Any]] = None,
+                         allow_agent_id: bool = True) -> Tuple[Optional[str], str]:
+    pipeline_arrays = pipeline_arrays or PipelineFacts()
+    sample = sample or {}
+    # Tier 1: well-known ECS grouping fields, declared or merely populated.
     for name in SORT_CANDIDATES:
-        if _sortable(field_index, name, array_fields):
+        if name in SORT_CANDIDATES_COLLECTOR_ONLY and not allow_agent_id:
+            continue
+        if _sortable(field_index, name, array_fields, pipeline_arrays):
             return name, "tier 1 (ECS grouping field)"
+        if _ecs_sample_candidate(name, field_index, sample):
+            return name, "tier 1 (ECS grouping field, populated in sample_event.json)"
     # Tier 2: vendor tenant/account identifiers, by normalised leaf name.
     for leaf in SORT_CANDIDATE_LEAVES:
-        hits = sorted(
-            (n for n in field_index
-             if _normalise_leaf(n) == leaf
-             and n.count(".") <= SORT_CANDIDATE_MAX_DEPTH
-             and _sortable(field_index, n, array_fields)),
-            key=lambda n: (n.count("."), len(n)),
-        )
+        hits = _tier2_hits(field_index, leaf, array_fields, pipeline_arrays)
         if hits:
             return hits[0], "tier 2 (vendor tenant/account id)"
     # Tier 3: a field the package's own dashboards actually FILTER on. Being plotted
-    # or grouped by is not enough — sorting only pays off for pruning.
+    # or grouped by is not enough — sorting only pays off for pruning. Unlike tiers 1
+    # and 2 this is an uncurated name, so the leaf vocabulary applies here.
     for name, _count in filter_fields.most_common(40):
-        if name.startswith("_") or _is_low_cardinality(name):
+        if name.startswith("_") or _weak_sort_leaf(name):
             continue
-        if _sortable(field_index, name, array_fields):
+        if _sortable(field_index, name, array_fields, pipeline_arrays):
             return name, "tier 3 (dashboard filter field)"
     return None, ""
 
@@ -857,6 +1375,13 @@ def _is_low_cardinality(name: str) -> bool:
     (`account_id`, `tenant_id`, `event_id`) alone.
     """
     leaf = _normalise_leaf(name)
+    if leaf in LOW_CARDINALITY_EXACT:
+        return True
+    if leaf in LOW_CARDINALITY_NAME_LEAVES and "." in name:
+        # `alert_type.name` is the `alert_type` enum with a nicer spelling.
+        parent = name.rsplit(".", 2)[-2] if name.count(".") >= 1 else ""
+        if parent and _is_low_cardinality(parent):
+            return True
     variants = [leaf]
     for suffix in ("uid", "id"):
         if leaf.endswith(suffix) and len(leaf) > len(suffix):
@@ -979,11 +1504,14 @@ def audit_data_stream(pkg_dir: str, ds_dir: str, ds_name: str,
                 findings.extend(check_field(fdef, flat, depth, in_mf, rel(fpath)))
 
     sample = load_sample_event(ds_dir)
+    pipeline_arrays = scan_pipelines(ds_dir)
     stream["findings"] = findings
     stream["field_count"] = len(field_index)
     stream["host_name_in_sample"] = sample_has_host_name(sample)
     stream["sort"] = recommend_sort(stream, field_index, dash_fields, filter_fields,
-                                    array_fields=sample_array_fields(sample))
+                                    array_fields=sample_array_fields(sample),
+                                    pipeline_arrays=pipeline_arrays,
+                                    sample=sample)
     stream["status"] = status_from_findings(findings)
     return stream
 
@@ -1181,7 +1709,8 @@ def md_catalog(results: List[Dict[str, Any]]) -> str:
     lines.append("")
 
     BLOCKER_CODES = ["nested_in_nested", "unsupported_type", "source_mode_stored", "source_disabled"]
-    AUTOFIX_SRC_CODES = ["doc_values_false", "store_true", "copy_to", "keyword_normalizer"]
+    AUTOFIX_SRC_CODES = ["doc_values_false", "store_true", "copy_to", "keyword_normalizer",
+                         "dynamic_runtime"]
     LOSS_CODES = ["dynamic_false_manifest", "dynamic_false_field", "dynamic_false_template",
                   "enabled_false"]
 
@@ -1226,7 +1755,7 @@ def md_catalog(results: List[Dict[str, Any]]) -> str:
     lines.append("")
     lines.extend(code_rows(LOSS_CODES))
 
-    REVIEW_CODES = ["nested_single_level", "runtime_field", "dynamic_runtime"]
+    REVIEW_CODES = ["nested_single_level", "runtime_field"]
     npkg, nds, _ = union(REVIEW_CODES)
     lines.append(f"## Judgement calls — review ({npkg} packages, {nds} data streams)")
     lines.append("")
@@ -1247,34 +1776,36 @@ def md_catalog(results: List[Dict[str, Any]]) -> str:
         lines.append(", ".join(f"`{p}`" for p in pkgs) or "(none)")
         lines.append("")
 
-    default_ok = degraded = explicit_field = no_candidate = 0
+    sort_class: Counter = Counter()
     for r in results:
         for s in r["data_streams"]:
             if s["status"] == "OUT_OF_SCOPE":
                 continue
-            rec = s["sort"]["recommendation"]
-            if rec == "default OK":
-                default_ok += 1
-            elif rec.startswith("default DEGRADED"):
-                degraded += 1
-            elif "no confident candidate" in rec:
-                no_candidate += 1
-            else:
-                explicit_field += 1
+            sort_class[s["sort"].get("class", "no_candidate")] += 1
     lines.append("## Index sort")
     lines.append("")
-    lines.append(f"- Default `host.name asc, @timestamp desc` looks right: {default_ok} data streams")
+    lines.append(f"- Default `host.name asc, @timestamp desc` looks right: "
+                 f"{sort_class['default_ok']} data streams")
     lines.append(f"- Default would degrade to `@timestamp` only (incompatible `host.name` "
-                 f"mapping): {degraded} data streams")
-    lines.append(f"- Explicit sort proposed on a validated grouping field: {explicit_field} "
-                 "data streams (run the audit per package to see the proposal)")
+                 f"mapping): {sort_class['degraded']} data streams")
+    lines.append(f"- Receiver input, explicit sort proposed on the device identifier the "
+                 f"pipeline populates: {sort_class['receiver_proposed']} data streams")
+    lines.append(f"- Receiver input, no confident candidate — needs a human choice: "
+                 f"{sort_class['receiver_no_candidate']} data streams")
+    lines.append(f"- Explicit sort proposed on a validated grouping field: "
+                 f"{sort_class['explicit']} data streams (run the audit per package to see "
+                 "the proposal)")
     lines.append(f"- No confident candidate — `@timestamp desc` only, needs a human choice: "
-                 f"{no_candidate} data streams")
+                 f"{sort_class['no_candidate']} data streams")
     lines.append("")
-    lines.append("Candidate fields are validated: only `keyword`, `ip` and integer types "
-                 "with doc values are accepted, arrays (ECS `normalize: [array]`, a list in "
-                 "`sample_event.json`) are rejected, and the dashboard tier requires the "
-                 "field to appear in a filter or query clause, not merely on an axis.")
+    lines.append("Candidate fields are validated: `keyword` and `ip` are accepted, integer "
+                 "types only when the leaf name says the field is an identifier rather than "
+                 "a measurement, and the field must have doc values. Arrays are rejected — "
+                 "ECS `normalize: [array]`, a list in `sample_event.json`, a `nested` or "
+                 "list-valued *ancestor*, or an object the ingest pipeline iterates. The "
+                 "dashboard tier additionally requires the field to appear in a filter or "
+                 "query clause, not merely on an axis, and drops measurement, hash/uuid, "
+                 "free-text, plural and enum leaf names.")
     lines.append("")
     if not any(r.get("dashboard_filter_fields") for r in results):
         lines.append("Kibana assets were not scanned (`--catalog` defaults to "

@@ -234,10 +234,24 @@ containing a script.
 **Rule.** `dynamic: runtime` on a field definition, or on
 `elasticsearch.index_template.mappings.dynamic`.
 
-Unmapped leaves are then materialised as **mapping-level** runtime fields at ingest
-time, which is exactly what `validateNoMappingRuntimeFields` refuses under columnar
-mode. It is the dynamic-mapping variant of A5 and fails the same way, just later —
-when the first document with an unknown field arrives.
+Unmapped leaves would be materialised as **mapping-level** runtime fields, which is
+what columnar mode refuses. But it does **not** wait for a document to prove it:
+`ObjectMapper` rejects the value while the mapping is being parsed —
+
+```
+dynamic [runtime] is not supported in strict columnar mode
+```
+
+— so the **index template PUT fails** and the data stream is never created. It is a
+setup-time failure, exactly like the rest of Class A, not a surprise on first ingest.
+(An earlier version of this document said it failed "later, when the first document
+with an unknown field arrives". That was wrong.)
+
+**Severity: `auto_fix`.** The fix is mechanical and has a single obvious form —
+replace `runtime` with `true` — with no judgement call about what the data means, so
+it belongs with `copy_to` and `doc_values: false` rather than with the review items.
+The behaviour change it implies (unmapped leaves become concrete doc values instead
+of computed-on-read fields) is what columnar mode wants anyway.
 
 **Remediation.** Use `dynamic: true`: unmapped leaves become non-indexed
 `keyword`/`long`/`double` doc values, which is cheap in columnar mode because no
