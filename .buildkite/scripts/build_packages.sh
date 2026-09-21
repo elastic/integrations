@@ -78,7 +78,7 @@ is_already_published() {
     local delay
 
     while true; do
-        http_code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 --head "${url}")
+        http_code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 --head "${url}")
         if [ "${http_code}" == "200" ]; then
             echo "- Already published ${package_zip}"
             return 0
