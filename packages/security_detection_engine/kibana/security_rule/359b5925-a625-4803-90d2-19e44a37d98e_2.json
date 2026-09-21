@@ -1,0 +1,127 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies HTTP requests to Azure WireServer (168.63.129.16) for GoalState, certificates, versions, or HostGAPlugin vmSettings that do not use a known guest-agent user agent. These requests retrieve transport certificates and extension protectedSettings, including embedded SAS URLs. Azure Linux Agent, Windows guest agent, and related platform UAs are excluded. Requests with no user agent are also excluded; that pattern is common for the Windows guest agent.",
+        "false_positives": [
+            "Custom health checks that call HostGAPlugin /versions or /vmSettings with curl. Exclude the specific user agent or host group after validating the script."
+        ],
+        "from": "now-9m",
+        "index": [
+            "logs-network_traffic.http*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Azure WireServer HTTP Request from Unexpected User Agent",
+        "note": "## Triage and analysis\n\n### Investigating Azure WireServer HTTP Request from Unexpected User Agent\n\nNetwork Packet Capture with HTTP decoding on ports 80 and 32526 shows the URI that Elastic Defend network events\nlack. The match is the WireServer path or query, not a scripting-tool user-agent allowlist.\n\n- `url.query` contains `comp=versions` (discovery)\n- `url.query` contains `comp=goalstate` (incarnation, container, extension list, statusUploadBlob pointer)\n- `url.query` contains `comp=certificates` (often with request header `x-ms-guest-agent-public-x509-cert`)\n- `destination.port == 32526` and `url.path` in `/versions`, `/vmSettings`\n\nExcluded user agents from lab guest-agent traffic: `WALinuxAgent/*`, `VMAgent/*`, `Python-urllib/*`,\n`cpprestsdk/*`, `ACMS/*`, and a missing user agent (Windows guest agent). Curl and Windows PowerShell are not\nexcluded and will fire.\n\n`/vmSettings` response bodies are often dropped when they exceed keyword `ignore_above`. The URI, port, and user\nagent are sufficient. Do not enable body capture to chase this rule.\n\n### Possible investigation steps\n\n- Confirm `url.path`, `url.query`, `destination.port`, and `user_agent.original`.\n- GoalState (`comp=goalstate`) is reconnaissance; `comp=certificates` means the client presented a transport\n  certificate. Look on the host for `openssl req ... LinuxTransport` or a stolen `.crt`/`.key`.\n- Correlate with endpoint network events from the same `host.name` to `168.63.129.16` and process start events for\n  openssl cms decrypt.\n- Search StorageRead platform logs for anonymous or SAS GetBlob against the same storage account after the scrape.\n\n### False positive analysis\n\n- Administrative curl or other non-agent clients against WireServer during incident response. Exclude the specific\n  user agent or host after the change window.\n- A new Microsoft guest-agent build with an unfamiliar user agent will fire until that UA is excluded.\n- Omitting the user agent looks like the Windows guest agent and is not matched. Do not treat a missing UA as\n  suspicious on its own.\n\n### Response and remediation\n\n- Isolate the VM, rotate secrets recovered from vmSettings, and review extension protectedSettings.\n- Enable Metadata Security Protocol in audit or enforce mode to restrict WireServer callers.\n",
+        "query": "network where event.module == \"network_traffic\" and\ndestination.ip == \"168.63.129.16\" and\nuser_agent.original != null and\nnot user_agent.original : (\n  \"WALinuxAgent*\",\n  \"VMAgent*\",\n  \"Python-urllib*\",\n  \"cpprestsdk*\",\n  \"ACMS/*\"\n) and\n(\n  url.query : (\"*comp=versions*\", \"*comp=goalstate*\", \"*comp=certificates*\") or\n  (destination.port == 32526 and url.path : (\"/versions\", \"/vmSettings\"))\n)\n",
+        "references": [
+            "https://cybercx.com.au/blog/azure-ssrf-metadata/",
+            "https://www.netspi.com/blog/technical-blog/cloud-pentesting/decrypting-vm-extension-settings-with-azure-wireserver/",
+            "https://cloud.google.com/blog/topics/threat-intelligence/escalating-privileges-azure-kubernetes-services",
+            "https://learn.microsoft.com/en-us/azure/virtual-network/what-is-ip-address-168-63-129-16"
+        ],
+        "related_integrations": [
+            {
+                "package": "network_traffic",
+                "version": "^1.33.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "destination.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": true,
+                "name": "destination.port",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "event.module",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "url.path",
+                "type": "wildcard"
+            },
+            {
+                "ecs": true,
+                "name": "url.query",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user_agent.original",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "359b5925-a625-4803-90d2-19e44a37d98e",
+        "setup": "## Setup\n\nDeploy the [Network Packet Capture](https://www.elastic.co/docs/reference/integrations/network_traffic) integration\nvia Fleet on Azure virtual machines. Default HTTP port lists do not include HostGAPlugin.\n\nRequired integration settings:\n\n- Enable **Capture HTTP Traffic**.\n- Set HTTP ports to include **80** (WireServer GoalState, versions, certificates) and **32526** (HostGAPlugin\n  `/versions`, `/vmSettings`). Without 32526, HostGAPlugin requests are invisible.\n- Enable **Monitor Processes** so HTTP events include `process.*` when available.\n- Optional: **Send all headers** to retain `x-ms-version` and `x-ms-guest-agent-public-x509-cert` for investigation.\n  The rule matches URI, port, and user agent, not the certificate PEM.\n- Do not enable request or response body capture for this rule. `/vmSettings` bodies are large and often dropped;\n  other WireServer XML is not required for the match.\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: Network",
+            "OS: Linux",
+            "OS: Windows",
+            "Platform: Azure",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Tactic: Discovery",
+            "Data Source: Network Packet Capture",
+            "Resources: Investigation Guide",
+            "Rule Type: Event Correlation (EQL)",
+            "Platform: Windows",
+            "Platform: Linux"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1552",
+                        "name": "Unsecured Credentials",
+                        "reference": "https://attack.mitre.org/techniques/T1552/",
+                        "subtechnique": [
+                            {
+                                "id": "T1552.005",
+                                "name": "Cloud Instance Metadata API",
+                                "reference": "https://attack.mitre.org/techniques/T1552/005/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0007",
+                    "name": "Discovery",
+                    "reference": "https://attack.mitre.org/tactics/TA0007/"
+                },
+                "technique": [
+                    {
+                        "id": "T1082",
+                        "name": "System Information Discovery",
+                        "reference": "https://attack.mitre.org/techniques/T1082/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 2
+    },
+    "id": "359b5925-a625-4803-90d2-19e44a37d98e_2",
+    "type": "security-rule"
+}
