@@ -9,9 +9,9 @@ REPO_ROOT="$(git rev-parse --show-toplevel)"
 TMPDIR_PKGS=""
 TMPDIR_REPO=""
 TMPDIR_REPO2=""
-TMPDIR_LINK=""
+TMPDIR_LINK=""   # unit tests for collect_linked_packages_from_roots (single-hop cases)
 TMPDIR_REPO3=""
-TMPDIR_TRANS=""
+TMPDIR_TRANS=""  # unit tests for collect_linked_packages_from_roots (transitive cases)
 TMPDIR_REPO4=""
 TMPDIR_REPO5=""
 
@@ -253,10 +253,10 @@ assert_equals "nginx_otel entry kept in CODEOWNERS" \
 rm -rf "${TMPDIR_REPO2}"
 
 # ---------------------------------------------------------------------------
-# Tests: get_linked_source_package_names
+# Tests: collect_linked_packages_from_roots (single-package, edge cases)
 # ---------------------------------------------------------------------------
 echo ""
-echo "--- get_linked_source_package_names tests"
+echo "--- collect_linked_packages_from_roots unit tests"
 
 TMPDIR_LINK="$(mktemp -d)"
 mkdir -p "${TMPDIR_LINK}/packages"
@@ -267,7 +267,7 @@ mkdir -p "${TMPDIR_LINK}/packages/pkg_no_links"
 printf 'name: pkg_no_links\n' > "${TMPDIR_LINK}/packages/pkg_no_links/manifest.yml"
 assert_equals "no .link files → empty output" \
     "" \
-    "$(cd "${TMPDIR_LINK}" && get_linked_source_package_names "packages/pkg_no_links")"
+    "$(cd "${TMPDIR_LINK}" && collect_linked_packages_from_roots "packages/pkg_no_links")"
 
 # 2. .link file pointing to _dev/shared inside the same package → empty (filtered)
 # Layout mirrors the real pattern: link file is in data_stream/*/fields/ and source
@@ -281,7 +281,7 @@ printf '../../../_dev/shared/fields/ecs.yml abc123\n' \
     > "${TMPDIR_LINK}/packages/pkg_self_link/data_stream/ds1/fields/ecs.yml.link"
 assert_equals ".link pointing to same package _dev/shared → empty (filtered)" \
     "" \
-    "$(cd "${TMPDIR_LINK}" && get_linked_source_package_names "packages/pkg_self_link")"
+    "$(cd "${TMPDIR_LINK}" && collect_linked_packages_from_roots "packages/pkg_self_link")"
 
 # 3. .link file with ../ traversal pointing to _dev/shared in a different package
 mkdir -p "${TMPDIR_LINK}/packages/pkg_target/data_stream/ds1/fields"
@@ -294,7 +294,7 @@ printf '../../../../pkg_source/_dev/shared/fields/beats.yml abc123\n' \
     > "${TMPDIR_LINK}/packages/pkg_target/data_stream/ds1/fields/beats.yml.link"
 assert_equals ".link with ../ traversal pointing to different package _dev/shared → that package path" \
     "packages/pkg_source" \
-    "$(cd "${TMPDIR_LINK}" && get_linked_source_package_names "packages/pkg_target")"
+    "$(cd "${TMPDIR_LINK}" && collect_linked_packages_from_roots "packages/pkg_target")"
 
 # 4. .link file pointing to _dev/shared at repo root (outside all packages) → empty + warning
 # Layout: link is 5 levels deep; ../../../../../ reaches repo root where _dev/shared lives.
@@ -303,7 +303,7 @@ printf 'name: pkg_outside_link\n' > "${TMPDIR_LINK}/packages/pkg_outside_link/ma
 printf '../../../../../_dev/shared/fields/ecs.yml abc123\n' \
     > "${TMPDIR_LINK}/packages/pkg_outside_link/data_stream/ds1/fields/ecs.yml.link"
 WARN_FILE="$(mktemp)"
-actual_outside="$(cd "${TMPDIR_LINK}" && get_linked_source_package_names "packages/pkg_outside_link" 2>"${WARN_FILE}")"
+actual_outside="$(cd "${TMPDIR_LINK}" && collect_linked_packages_from_roots "packages/pkg_outside_link" 2>"${WARN_FILE}")"
 assert_equals ".link pointing to repo-root _dev/shared → empty stdout" \
     "" \
     "${actual_outside}"
@@ -331,15 +331,15 @@ printf '../../../../pkg2/_dev/shared/fields/ecs.yml abc123\n' \
     > "${TMPDIR_LINK}/packages/technology/pkg1/data_stream/ds1/fields/ecs.yml.link"
 assert_equals "link from depth-3 pkg to sibling depth-3 pkg → sibling path returned" \
     "packages/technology/pkg2" \
-    "$(cd "${TMPDIR_LINK}" && get_linked_source_package_names "packages/technology/pkg1")"
+    "$(cd "${TMPDIR_LINK}" && collect_linked_packages_from_roots "packages/technology/pkg1")"
 
 # 5b. Link from depth-2 package (pkg3) → depth-3 package (technology/pkg1)
 # ../../../../ from data_stream/ds1/fields/ reaches packages/
 printf '../../../../technology/pkg1/_dev/shared/fields/beats.yml abc123\n' \
     > "${TMPDIR_LINK}/packages/pkg3/data_stream/ds1/fields/beats.yml.link"
-assert_equals "link from depth-2 pkg to depth-3 pkg → depth-3 path returned" \
-    "packages/technology/pkg1" \
-    "$(cd "${TMPDIR_LINK}" && get_linked_source_package_names "packages/pkg3")"
+assert_equals "link from depth-2 pkg to depth-3 pkg → depth-3 pkg and its transitive links returned" \
+    $'packages/technology/pkg1\npackages/technology/pkg2' \
+    "$(cd "${TMPDIR_LINK}" && collect_linked_packages_from_roots "packages/pkg3")"
 
 # 5c. .link inside a depth-3 package points to the same depth-3 package → empty (filtered)
 mkdir -p "${TMPDIR_LINK}/packages/technology/pkg_self/data_stream/ds1/fields"
@@ -351,12 +351,12 @@ printf '../../../_dev/shared/fields/ecs.yml abc123\n' \
     > "${TMPDIR_LINK}/packages/technology/pkg_self/data_stream/ds1/fields/ecs.yml.link"
 assert_equals ".link in depth-3 pkg pointing to same pkg _dev/shared → empty (filtered)" \
     "" \
-    "$(cd "${TMPDIR_LINK}" && get_linked_source_package_names "packages/technology/pkg_self")"
+    "$(cd "${TMPDIR_LINK}" && collect_linked_packages_from_roots "packages/technology/pkg_self")"
 
 rm -rf "${TMPDIR_LINK}"
 
 # ---------------------------------------------------------------------------
-# Integration test: get_linked_source_package_names + remove_other_packages
+# Integration test: collect_linked_packages_from_roots + remove_other_packages
 # ---------------------------------------------------------------------------
 echo ""
 echo "--- integration: linked source packages kept by remove_other_packages"
@@ -417,10 +417,10 @@ assert_equals "unrelated_pkg entry removed from CODEOWNERS" \
 rm -rf "${TMPDIR_REPO3}"
 
 # ---------------------------------------------------------------------------
-# Tests: collect_linked_package_paths (transitive .link traversal)
+# Tests: collect_linked_packages_from_roots (transitive chain)
 # ---------------------------------------------------------------------------
 echo ""
-echo "--- collect_linked_package_paths tests"
+echo "--- collect_linked_packages_from_roots transitive tests"
 
 # Set up a chain: pkg_chain_a → pkg_chain_b → pkg_chain_c (no further links)
 # ../../../../ from data_stream/ds1/fields/ reaches packages/
@@ -442,11 +442,11 @@ MOCK_REPO_DIR="${TMPDIR_TRANS}"
 
 assert_equals "collect: package with no .link files → empty" \
     "" \
-    "$(cd "${TMPDIR_TRANS}" && collect_linked_package_paths "packages/pkg_chain_c")"
+    "$(cd "${TMPDIR_TRANS}" && collect_linked_packages_from_roots "packages/pkg_chain_c")"
 
 assert_equals "collect: two-hop chain A→B→C returns B then C (BFS order)" \
     $'packages/pkg_chain_b\npackages/pkg_chain_c' \
-    "$(cd "${TMPDIR_TRANS}" && collect_linked_package_paths "packages/pkg_chain_a")"
+    "$(cd "${TMPDIR_TRANS}" && collect_linked_packages_from_roots "packages/pkg_chain_a")"
 
 rm -rf "${TMPDIR_TRANS}"
 
@@ -519,8 +519,9 @@ echo "--- integration: linked packages from required package kept by remove_othe
 #   packages/pkg_linked_shared — owns the source file linked by pkg_required; must be kept
 #   packages/pkg_unrelated     — should be removed
 #
-# This exercises the fix where collect_linked_package_paths is also called on each
-# required package, not only on the target package.
+# This exercises the fix where collect_linked_packages_from_roots receives all
+# packages_to_keep (target + required) so required packages' .link files are
+# also walked, not only those of the target package.
 TMPDIR_REPO5="$(mktemp -d)"
 mkdir -p "${TMPDIR_REPO5}/.github"
 mkdir -p "${TMPDIR_REPO5}/packages/pkg_target"
