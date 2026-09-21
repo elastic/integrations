@@ -120,6 +120,8 @@ For Filebeat input documentation, refer to the following pages:
 | github.pull_request_id |  | keyword |
 | github.pull_request_title |  | keyword |
 | github.pull_request_url |  | keyword |
+| github.query_string | The query string of the API request. GraphQL API request queries regularly exceed the default `ignore_above` limit of 1024, which leaves them unindexed. | keyword |
+| github.query_string.text | Multi-field of `github.query_string`. | match_only_text |
 | github.reason |  | keyword |
 | github.repo | GitHub repository name. | keyword |
 | github.repo_id |  | keyword |
@@ -130,6 +132,8 @@ For Filebeat input documentation, refer to the following pages:
 | github.repository | The name of the repository. | keyword |
 | github.repository_public | Whether the GitHub repository is publicly visible. | boolean |
 | github.repository_selection | Whether all repositories have been selected or there's a selection involved. | keyword |
+| github.request_body | The request body of the API request. GraphQL API request queries regularly exceed the default `ignore_above` limit of 1024, which leaves them unindexed. | keyword |
+| github.request_body.text | Multi-field of `github.request_body`. | match_only_text |
 | github.request_category |  | keyword |
 | github.ruleset_bypass_actors.actor_id |  | long |
 | github.ruleset_bypass_actors.actor_type |  | keyword |
@@ -200,7 +204,7 @@ For Filebeat input documentation, refer to the following pages:
 | github.target_branch |  | keyword |
 | github.team | GitHub team name. | keyword |
 | github.token_id |  | keyword |
-| github.token_scopes |  | keyword |
+| github.token_scopes | Scopes associated with the token used to perform the action. | keyword |
 | github.topic |  | keyword |
 | github.transport_protocol | The type of protocol (for example, HTTP or SSH) used to transfer Git data. | long |
 | github.transport_protocol_name | A human readable name for the protocol (for example, HTTP or SSH) used to transfer Git data. | keyword |
