@@ -49,6 +49,8 @@ echo "--- Compute affected packages from git diff"
 COMMIT_MERGE=$(git merge-base "${from}" "${to}")
 export COMMIT_MERGE
 changed_files=$(git diff --name-only "${COMMIT_MERGE}" "${to}")
+echo "Commit merge: ${COMMIT_MERGE}"
+echo "Commit to: ${to}"
 
 if [[ "${FORCE_CHECK_ALL}" == "true" ]] || echo "${changed_files}" | pr_has_package_related_files; then
     echo "Non-package files changed or FORCE_CHECK_ALL set: scanning all packages"
@@ -63,9 +65,9 @@ else
             # depth via WalkDir, so we cross-reference its output against the changed files.
             all_pkgs=$(list_all_directories)
             while IFS= read -r pkg_path; do
-                if echo "${changed_files}" | grep -q "^${pkg_path}/"; then
+                if echo "${changed_files}" | grep "^${pkg_path}/" > /dev/null; then
                     echo "${pkg_path}"
-                elif echo "${changed_files}" | grep -q "^\.buildkite/scripts/${pkg_path}\.sh$"; then
+                elif echo "${changed_files}" | grep "^\.buildkite/scripts/${pkg_path}\.sh$" > /dev/null; then
                     echo "${pkg_path}"
                 fi
             done <<< "${all_pkgs}"
