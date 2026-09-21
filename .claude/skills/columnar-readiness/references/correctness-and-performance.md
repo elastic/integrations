@@ -25,15 +25,31 @@ declares.
 
 ### The spec version problem
 
-`elasticsearch.index_mode: logsdb_columnar` and `format_version: "3.7.0"` are
-package-spec **3.7.0**, which is currently unreleased (`3.7.0-next`). A stock
-`elastic-package` binary bundles an older spec and will reject both:
+Everything this skill writes is package-spec **3.7.0**, which is currently unreleased
+(`3.7.0-next`): `format_version: "3.7.0"` itself, the stream-level
+`elasticsearch.columnar.supported: true`, the field-level `columnar: {doc_values: true}`
+override, and `elasticsearch.index_mode: logsdb_columnar` if you use it. A stock
+`elastic-package` binary bundles an older spec and will reject all of them:
 
 ```
 found 2 validation errors
   1. field format_version: Must validate one and only one schema (oneOf)
   2. field elasticsearch.index_mode: elasticsearch.index_mode must be one of the following: ...
 ```
+
+The three 3.7.0 constructs also have to agree with each other, which the audit checks:
+`columnar` anywhere with `format_version` below 3.7.0 is `columnar_requires_spec_3_7`
+(bump `format_version`); `columnar.supported: true` on a stream that still has a Class A
+finding is `columnar_supported_with_blockers`; and a field-level `columnar:` block on a
+multi-field or on an `object_type` dynamic-template field is
+`columnar_override_misplaced` — Fleet does not apply overrides in either place and the
+spec rejects them there.
+
+Separately, `conditions.kibana.version` has to be at least the first Kibana minor that
+ships the Fleet support for these constructs — currently written as `"^9.7.0"` (adjust
+to the actual Fleet release). Elasticsearch 9.5 already has the index mode, but
+`columnar.supported` and the field-level `columnar` overrides are read by **Fleet**, and
+an older Kibana ignores both silently.
 
 That is a **tooling** failure, not a package failure. To validate locally, build
 `elastic-package` against a local package-spec checkout:
@@ -93,7 +109,10 @@ GET .ds-logs-<pkg>.<ds>-*/_settings?filter_path=**.index.mode,**.index.sort
 Check that:
 
 - `index.mode` is `logsdb_columnar` — if the opt-in did not reach Elasticsearch the
-  data stream silently stays on logsdb and every later measurement is meaningless;
+  data stream silently stays on logsdb and every later measurement is meaningless.
+  **But read the next subsection first**: with the tech-preview plumbing
+  (`columnar.supported: true`, no `index_mode`) `logsdb` is the *correct* answer here
+  and nothing has failed — the package just has not been opted in yet;
 - `index.sort.field` / `index.sort.order` match the intended sort. If you relied on
   the default, verify it resolved to `host.name, @timestamp` and not to the
   `@timestamp`-only fallback (which is what happens when an existing `host.name`
@@ -102,21 +121,87 @@ Check that:
 A template PUT that fails here is a Class A blocker the static audit missed — capture
 the Elasticsearch error and report it.
 
+### Getting a columnar index locally
+
+`elasticsearch.columnar.supported: true` does **not** change the index mode. All it
+does is tell Fleet the stream is ready, so Fleet offers the per-stream columnar opt-in
+toggle; logsdb stays the default and nothing is columnar until a user turns the toggle
+on. `elastic-package` has no flag that flips that toggle, so `elastic-package install`
+and `elastic-package test system` against a package that only declares
+`supported: true` install on **logsdb** and never exercise columnar at all — the run is
+green and proves nothing about columnar.
+
+Two ways to actually get a columnar index for the duration of the testing. Pick one:
+
+**A. Temporarily declare the mode (simplest).** Add the index mode to the stream
+manifest, keep the edit **uncommitted**, test, revert:
+
+```
+# data_stream/<ds>/manifest.yml — TEMPORARY, do not commit
+elasticsearch:
+  index_mode: logsdb_columnar      # local testing only
+  columnar:
+    supported: true                # this is the line that ships
+```
+
+```
+elastic-package install
+elastic-package test system
+git checkout -- data_stream/<ds>/manifest.yml   # revert before committing
+```
+
+This is the route the diffing procedure in section 3 below uses, and it is the only
+one that also exercises the install path Fleet takes when a package ships a columnar
+`index_mode`.
+
+**B. Opt in through the Fleet API after install.** Install the package unmodified,
+then set the experimental data stream feature that the toggle sets, and let the data
+stream roll over:
+
+```
+POST kbn:/api/fleet/epm/packages/<pkg>/<version>
+{
+  "experimental_data_stream_features": [
+    { "data_stream": "logs-<pkg>.<ds>", "features": { "columnar": true } }
+  ]
+}
+```
+
+Closer to what a real user does — it goes through exactly the Fleet toggle path,
+including the code that applies the field-level `columnar:` overrides — but it needs a
+Kibana with the Fleet support (see `conditions.kibana.version` above) and it leaves the
+already-created backing index on the old mode, so force a rollover
+(`POST logs-<pkg>.<ds>/_rollover`) and check `index.mode` on the **new** backing index.
+
+Either way, re-run the `GET _settings` check above and confirm `index.mode` is
+`logsdb_columnar` before believing any correctness or performance result.
+
 ---
 
 ## 3. Correctness
 
-Run the package's own tests **with and without** the opt-in and diff the results.
+Run the package's own tests **with and without** columnar and diff the results.
+
+The "with columnar" half needs one of the two routes from
+[Getting a columnar index locally](#getting-a-columnar-index-locally) — the shipped
+`columnar.supported: true` is not enough on its own, and if you skip that step both
+halves run on logsdb and the diff is empty for the wrong reason. Using route A, with
+the temporary `index_mode: logsdb_columnar` edit uncommitted in the working tree:
 
 ```
-git stash                                 # remove index_mode: logsdb_columnar
+git stash                                 # remove the temporary index_mode: logsdb_columnar
 elastic-package test pipeline  2>&1 | tee /tmp/pipeline-logsdb.txt
 elastic-package test system    2>&1 | tee /tmp/system-logsdb.txt
-git stash pop
+git stash pop                             # put it back
 elastic-package test pipeline  2>&1 | tee /tmp/pipeline-columnar.txt
 elastic-package test system    2>&1 | tee /tmp/system-columnar.txt
 diff /tmp/pipeline-logsdb.txt /tmp/pipeline-columnar.txt
 ```
+
+Then drop the temporary edit for good (`git checkout -- data_stream/<ds>/manifest.yml`)
+and make sure it is not in the commit: shipping `index_mode: logsdb_columnar` makes
+columnar the **default** for every new install of the version, which is a different
+decision from declaring the stream ready.
 
 ### Pipeline tests: the output must be identical
 
@@ -129,7 +214,8 @@ There is no index, no index template and no index mode involved, so
 
 Consequences:
 
-- **When `index_mode` is the only change**, the two runs must produce **identical**
+- **When the index mode is the only difference between the two runs**, they must
+  produce **identical**
   pipeline results. Any diff is a real bug in the change, or pre-existing test
   nondeterminism (a timestamp, a generated id) — never an expected columnar effect.
   `-g` should never be needed, and if you feel the urge to regenerate expectations,
@@ -150,6 +236,12 @@ Consequences:
   expectation churn separately from the manifest change.
 
 ### System tests: where the shape changes show up
+
+System tests are the only stage that indexes anything, so they are the only stage the
+index mode can affect — and therefore the only stage that is worth running twice. That
+also makes them the stage that silently tells you nothing if the columnar half was
+never actually columnar: confirm `index.mode` on the backing index (section 2) before
+reading the diff.
 
 Synthetic source is only observable once documents are actually indexed, i.e. in
 system tests, or by installing the package twice (one data stream on `logsdb`, one on
