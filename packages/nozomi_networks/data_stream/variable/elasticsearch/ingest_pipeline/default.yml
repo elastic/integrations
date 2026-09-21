@@ -107,6 +107,11 @@ processors:
       tag: set_event_start_from_variable_first_activity_time_698d8b9a
       copy_from: nozomi_networks.variable.first_activity_time
       ignore_empty_value: true
+  - set:
+      field: '@timestamp'
+      tag: set_@timestamp_from_variable_first_activity_time
+      copy_from: nozomi_networks.variable.first_activity_time
+      ignore_empty_value: true
   - rename:
       field: json.flow_anomalies
       tag: rename_flow_anomalies_7595147b
@@ -449,11 +454,6 @@ processors:
             tag: append_error_message_9e0fe6f3
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - set:
-      field: '@timestamp'
-      tag: set_@timestamp_from_variable_record_created_at_ebacd134
-      copy_from: nozomi_networks.variable.record_created_at
-      ignore_empty_value: true
   - convert:
       field: json.request_count
       tag: convert_request_count_to_long_f178ee7f
@@ -514,6 +514,11 @@ processors:
       tag: remove_custom_duplicate_fields_ad9af7e4
       ignore_missing: true
       if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
+  - rename:
+      field: json.host_uid
+      tag: map_host_uid_cmc
+      target_field: nozomi_networks.variable.host_uid
+      ignore_missing: true
   - remove:
       field: json
       tag: remove_json_94dc55cd
