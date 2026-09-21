@@ -124,7 +124,14 @@ processors:
           // it pinned the same log resolves on one host and silently falls back to
           // _conf.tz_offset on another.
           SimpleDateFormat sdf = new SimpleDateFormat("z", Locale.ENGLISH);
-          sdf.parse(tz);
+          // parse(String) accepts any recognised prefix, so CESTX would resolve as
+          // CEST and ESTIMATE as EST. Require the whole token to be consumed;
+          // otherwise leave date_timezone unset so _conf.tz_offset applies.
+          ParsePosition pos = new ParsePosition(0);
+          def parsed = sdf.parse(tz, pos);
+          if (parsed == null || pos.getIndex() != tz.length()) {
+            return;
+          }
           // Resolves to a region id, so a bare CET in July is read as Europe/Paris
           // and therefore as CEST. Use tz_map to pin a fixed offset if that is wrong.
           // SHORT_IDS is required, not decorative: AEST resolves to the legacy id AET,
@@ -158,6 +165,14 @@ processors:
       value: "{{{_temp_.raw_date_month}}} {{{_temp_.raw_date_monthday}}} {{{_temp_.raw_date_time}}}"
       tag: "set_raw_date"
       override: false
+  - set:
+      tag: set_event_timezone
+      description: >-
+        Record the zone @timestamp was interpreted in, whether it came from tz_map,
+        the abbreviation in the log, or the fallback to _conf.tz_offset.
+      field: event.timezone
+      copy_from: _temp_.date_timezone
+      if: ctx._temp_?.raw_date != null && ctx._temp_?.date_timezone != null
   - date:
       if: "ctx._temp_?.raw_date != null"
       field: "_temp_.raw_date"
