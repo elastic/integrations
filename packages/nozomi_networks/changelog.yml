@@ -1,4 +1,43 @@
 # newer versions go on top
+- version: "0.5.0"
+  changes:
+    - description: >-
+        Support Nozomi CMC (N2OS) by using cursor fields available on both Vantage and CMC:
+        `time` for alert, audit, health and node CVE; `last_activity_time` for node and asset;
+        `first_activity_time` for session and variable. Map additional CMC payload fields.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/21303
+    - description: >-
+        Cursor semantics changed from `record_created_at`/`created_at` to event and activity
+        timestamps. Existing cursors are reinterpreted on upgrade, which can skip events whose
+        event time is earlier than the previous cursor and re-fetch all active assets once.
+        Nodes and assets are now re-collected whenever their activity advances; sessions and
+        variables are collected once and later updates are not re-ingested.
+      type: breaking-change
+      link: https://github.com/elastic/integrations/pull/21303
+    - description: Overlap incremental query lower bounds so late-replicated CMC records are not skipped after the cursor advances.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/21303
+- version: "0.4.3"
+  changes:
+    - description: Treat null or empty `error` values in HTTP 200 responses as success instead of failing evaluation, and surface non-string error values without a type error.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/21184
+- version: "0.4.2"
+  changes:
+    - description: Surface Nozomi query errors returned in HTTP 200 responses instead of silently collecting no data.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/20936
+- version: "0.4.1"
+  changes:
+    - description: Fix pipeline errors on string epoch uptime values, non-numeric variable values, and comma-separated audit IP addresses.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/20849
+- version: "0.4.0"
+  changes:
+    - description: Add tags to ingest pipeline processors and add `preserve_original_event` to pipeline-level `on_failure` handlers.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/20575
 - version: "0.3.1"
   changes:
     - description: Set agentless deployment mode `release` field to `ga`.

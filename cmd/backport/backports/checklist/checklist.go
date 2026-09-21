@@ -132,6 +132,8 @@ func BuildComment(pkgs []PackageBranches, checked map[string]bool) string {
 	fmt.Fprintln(&b, "> This comment is updated automatically on each push — manual edits will be overwritten.")
 	fmt.Fprintln(&b)
 	fmt.Fprintln(&b, "Tick the branches you want to backport to. PRs will be created automatically on merge, or when you update this checklist after merge.")
+	fmt.Fprintln(&b)
+	fmt.Fprintln(&b, "Backport a change when it fixes behavior a branch already has; leave new behavior on `main`. See [when and why to backport](https://github.com/elastic/integrations/wiki/Package-Backports) if you are unsure.")
 
 	for _, p := range pkgs {
 		if len(p.Branches) == 0 {

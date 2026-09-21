@@ -10,6 +10,11 @@ provider "aws" {
       branch       = var.BRANCH
       build        = var.BUILD_ID
       created_date = var.CREATED_DATE
+
+      division = "engineering"
+      org      = "obs"
+      team     = "obs-ds-hosted-services" # owner.github in packages/aws_logs/manifest.yml
+      project  = "integrations-aws_logs-package" # name in packages/aws_logs/manifest.yml
     }
   }
 }

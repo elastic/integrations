@@ -1,39 +1,46 @@
 ---
 description: Ingest pipeline for Varonis DatAdvantage syslog messages
 processors:
-############
-# ECS Fields
-############
+  ############
+  # ECS Fields
+  ############
   - set:
+      tag: set_ecs_version_dbf680ba
       field: ecs.version
       value: '8.17.0'
 
   - set:
+      tag: set_event_kind_d452ef2c
       field: event.kind
       value: event
 
   - append:
+      tag: append_event_category_a5212642
       field: event.category
       value: configuration
       allow_duplicates: false
 
   - append:
+      tag: append_event_type_a75e9a8a
       field: event.type
       value: info
       allow_duplicates: false
 
   - set:
+      tag: set_event_dataset_156a2fb5
       field: event.dataset
       value: varonis.logs
 
   - set:
+      tag: set_event_module_9e029184
       field: event.module
       value: varonis
 
-############
-# syslog Fields
-############
+  ############
+  # syslog Fields
+  ############
   - script:
+      tag: script_create_new_fields_custom_string_60d689f5
       lang: painless
       description: Create new fields for the custom string label and its value only if value is present
       source: >
@@ -54,14 +61,14 @@ processors:
         }
 
         changeLabelsToKeys(ctx.cef.extensions);
-
   - rename:
+      tag: rename_cef_extensions_to_varonis_logs_eb1d8541
       field: cef.extensions
       target_field: varonis.logs
 
   - script:
       description: Convert Additional Info keys to snake case.
-      tag: additional-info-keys-to-snake-case
+      tag: additional-info-keys-to-snake-case_a2f16140
       lang: painless
       source: |
         Map keysToSnakeCase(Map m) {
@@ -95,12 +102,14 @@ processors:
 
   # processor to lowercase the value of event.outcome
   - lowercase:
+      tag: lowercase_event_outcome_to_event_outcome_cbb1f978
       field: event.outcome
       target_field: event.outcome
       ignore_missing: true
 
   # script to create a new field to assign label to event.severity
   - script:
+      tag: script_convert_event_severity_to_their_71db19d8
       description: Convert event severity to their text meaning using params
       lang: painless
       params:
@@ -125,6 +134,7 @@ processors:
   ## Cleanup Fields ##
   ####################
   - remove:
+      tag: remove_cleanup_fields_ceeaa648
       field:
         - cef
         - log
@@ -146,8 +156,15 @@ processors:
 
 on_failure:
   - append:
+      tag: append_error_message_9b078312
       field: error.message
       value: '{{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
+  - append:
+      tag: append_tags_279d5a5c
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

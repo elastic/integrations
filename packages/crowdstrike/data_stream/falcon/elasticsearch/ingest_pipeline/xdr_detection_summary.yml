@@ -3,15 +3,15 @@ processors:
   - set:
       field: event.kind
       value: alert
-      tag: set_event_kind
+      tag: set_event_kind_ab1166ce
   - append:
       field: event.category
       value: malware
-      tag: append_malware_category
+      tag: append_malware_category_00df95f0
   - append:
       field: event.type
       value: info
-      tag: append_info_type
+      tag: append_info_type_5eab37e6
   - set:
       tag: set_event_action_2bbdf18c
       field: event.action
@@ -19,7 +19,7 @@ processors:
   - append:
       field: rule.author
       value: "{{{crowdstrike.event.Author}}}"
-      tag: append_author
+      tag: append_author_0c250a47
       if: ctx.crowdstrike?.event?.Author != null
   - rename:
       tag: rename_crowdstrike_event_Name_to_rule_name_fcf360bf
@@ -30,128 +30,128 @@ processors:
       field: crowdstrike.event.DetectId
       target_field: rule.id
       ignore_missing: true
-      tag: rename_detect_id
+      tag: rename_detect_id_a74b89ee
   - convert:
       field: crowdstrike.event.PatternId
       target_field: rule.uuid
       type: string
-      tag: convert_pattern_id
+      tag: convert_pattern_id_af3129f2
       ignore_missing: true
   - rename:
       field: crowdstrike.event.Description
       target_field: message
       ignore_missing: true
-      tag: rename_description
+      tag: rename_description_d3527fb0
   - split:
       field: crowdstrike.event.DataDomains
       separator: ","
-      tag: split_data_domains
+      tag: split_data_domains_87fff309
       if: ctx.crowdstrike?.event?.DataDomains != null && ctx.crowdstrike?.event?.DataDomains.contains(",")
   - split:
       field: crowdstrike.event.EmailAddresses
       separator: ","
-      tag: split_email_addresses
+      tag: split_email_addresses_4009c9f2
       if: ctx.crowdstrike?.event?.EmailAddresses != null && ctx.crowdstrike?.event?.EmailAddresses.contains(",")
   - split:
       field: crowdstrike.event.IPV4Addresses
       separator: ","
       target_field: related.ip
-      tag: split_ipv4_addresses
+      tag: split_ipv4_addresses_ca6123dd
       if: ctx.crowdstrike?.event?.IPV4Addresses != null && ctx.crowdstrike?.event?.IPV4Addresses.contains(",")
   - append:
       field: related.ip
       value: "{{{crowdstrike.event.IPV4Addresses}}}"
       allow_duplicates: false
-      tag: append_ipv4_addresses
+      tag: append_ipv4_addresses_a8407770
       if: ctx.crowdstrike?.event?.IPV4Addresses != null && !ctx.crowdstrike?.event?.IPV4Addresses.contains(",")
   - split:
       field: crowdstrike.event.IPV6Addresses
       separator: ","
       target_field: related.ip
-      tag: split_ipv6_addresses
+      tag: split_ipv6_addresses_5c52227b
       if: ctx.crowdstrike?.event?.IPV6Addresses != null && ctx.crowdstrike?.event?.IPV6Addresses.contains(",")
   - append:
       field: related.ip
       value: "{{{crowdstrike.event.IPV6Addresses}}}"
       allow_duplicates: false
-      tag: append_ipv6_addresses
+      tag: append_ipv6_addresses_3f810160
       if: ctx.crowdstrike?.event?.IPV6Addresses != null && !ctx.crowdstrike?.event?.IPV6Addresses.contains(",")
   - split:
       field: crowdstrike.event.HostNames
       separator: ","
       target_field: related.hosts
-      tag: split_host_names
+      tag: split_host_names_291631f9
       if: ctx.crowdstrike?.event?.HostNames != null && ctx.crowdstrike?.event?.HostNames.contains(",")
   - append:
       field: related.hosts
       value: "{{{crowdstrike.event.HostNames}}}"
       allow_duplicates: false
-      tag: append_host_names
+      tag: append_host_names_36ee2dae
       if: ctx.crowdstrike?.event?.HostNames != null && !ctx.crowdstrike?.event?.HostNames.contains(",")
   - split:
       field: crowdstrike.event.DomainNames
       separator: ","
       target_field: related.hosts
-      tag: split_domain_names
+      tag: split_domain_names_32a47412
       if: ctx.crowdstrike?.event?.DomainNames != null && ctx.crowdstrike?.event?.DomainNames.contains(",")
   - append:
       field: related.hosts
       value: "{{{crowdstrike.event.DomainNames}}}"
       allow_duplicates: false
-      tag: append_domain_names
+      tag: append_domain_names_57272dbd
       if: ctx.crowdstrike?.event?.DomainNames != null && !ctx.crowdstrike?.event?.DomainNames.contains(",")
   - split:
       field: crowdstrike.event.SHA256Hashes
       separator: ","
       target_field: related.hash
-      tag: split_sha256_hashes
+      tag: split_sha256_hashes_fffb9212
       if: ctx.crowdstrike?.event?.SHA256Hashes != null && ctx.crowdstrike?.event?.SHA256Hashes.contains(",")
   - append:
       field: related.hash
       value: "{{{crowdstrike.event.SHA256Hashes}}}"
       allow_duplicates: false
-      tag: append_sha256_hashes
+      tag: append_sha256_hashes_15fdecbd
       if: ctx.crowdstrike?.event?.SHA256Hashes != null && !ctx.crowdstrike?.event?.SHA256Hashes.contains(",")
   - split:
       field: crowdstrike.event.MD5Hashes
       separator: ","
       target_field: related.hash
-      tag: split_md5_hashes
+      tag: split_md5_hashes_f5aea7d0
       if: ctx.crowdstrike?.event?.MD5Hashes != null && ctx.crowdstrike?.event?.MD5Hashes.contains(",")
   - append:
       field: related.hash
       value: "{{{crowdstrike.event.MD5Hashes}}}"
       allow_duplicates: false
-      tag: append_md5_hashes
+      tag: append_md5_hashes_aa4b752c
       if: ctx.crowdstrike?.event?.MD5Hashes != null && !ctx.crowdstrike?.event?.MD5Hashes.contains(",")
   - split:
       field: crowdstrike.event.Users
       separator: ","
       target_field: related.user
-      tag: split_users
+      tag: split_users_73590b0b
       if: ctx.crowdstrike?.event?.Users != null && ctx.crowdstrike?.event?.Users.contains(",")
   - append:
       field: related.user
       value: "{{{crowdstrike.event.Users}}}"
       allow_duplicates: false
-      tag: append_users
+      tag: append_users_ddf800b3
       if: ctx.crowdstrike?.event?.Users != null && !ctx.crowdstrike?.event?.Users.contains(",")
   - set:
       field: rule.description
       copy_from: message
-      tag: set_rule_description
+      tag: set_rule_description_cd529b3d
       if: ctx.message != null
   - convert:
       field: crowdstrike.event.StartTimeEpoch
       type: string
-      tag: convert_start_time_epoch
+      tag: convert_start_time_epoch_62ab3375
       ignore_missing: true
       if: ctx.crowdstrike?.event?.StartTimeEpoch != null
   - gsub:
       field: crowdstrike.event.StartTimeEpoch
       pattern: "\\d{6}$"
       replacement: ""
-      tag: gsub_start_time_epoch
+      tag: gsub_start_time_epoch_b981d9c6
       if: "ctx.crowdstrike?.event?.StartTimeEpoch != null && String.valueOf(ctx.crowdstrike.event.StartTimeEpoch).length() > 18"
   - date:
       field: crowdstrike.event.StartTimeEpoch
@@ -159,7 +159,7 @@ processors:
       timezone: UTC
       formats:
         - UNIX_MS
-      tag: date_event_start_time_epoch_ms
+      tag: date_event_start_time_epoch_ms_9f18286a
       if: "ctx.crowdstrike?.event?.StartTimeEpoch != null && String.valueOf(ctx.crowdstrike.event.StartTimeEpoch).length() >= 12"
   - date:
       field: crowdstrike.event.StartTimeEpoch
@@ -167,24 +167,24 @@ processors:
       timezone: UTC
       formats:
         - UNIX
-      tag: date_event_start_time_epoch
+      tag: date_event_start_time_epoch_04e9549e
       if: 'ctx.crowdstrike?.event?.StartTimeEpoch != null && String.valueOf(ctx.crowdstrike.event.StartTimeEpoch).length() <= 11'
   - set:
       field: '@timestamp'
       copy_from: event.start
-      tag: copy_timestamp_from_event_start
+      tag: copy_timestamp_from_event_start_080b2fb1
       if: ctx.event?.start != null
   - convert:
       field: crowdstrike.event.EndTimeEpoch
       type: string
-      tag: convert_end_time_epoch
+      tag: convert_end_time_epoch_72ebd5fd
       ignore_missing: true
       if: ctx.crowdstrike?.event?.EndTimeEpoch != null
   - gsub:
       field: crowdstrike.event.EndTimeEpoch
       pattern: "\\d{6}$"
       replacement: ""
-      tag: gsub_end_time_epoch
+      tag: gsub_end_time_epoch_7441e006
       if: "ctx.crowdstrike?.event?.EndTimeEpoch != null && String.valueOf(ctx.crowdstrike.event.EndTimeEpoch).length() > 18"
   - date:
       field: crowdstrike.event.EndTimeEpoch
@@ -192,7 +192,7 @@ processors:
       timezone: UTC
       formats:
         - UNIX_MS
-      tag: date_event_end_time_epoch_ms
+      tag: date_event_end_time_epoch_ms_8fbcb6c9
       if: "ctx.crowdstrike?.event?.EndTimeEpoch != null && String.valueOf(ctx.crowdstrike.event.EndTimeEpoch).length() >= 12"
   - date:
       field: crowdstrike.event.EndTimeEpoch
@@ -200,7 +200,7 @@ processors:
       timezone: UTC
       formats:
         - UNIX
-      tag: date_event_end_time_epoch
+      tag: date_event_end_time_epoch_fc472ac6
       if: "ctx.crowdstrike?.event?.EndTimeEpoch != null && String.valueOf(ctx.crowdstrike.event.EndTimeEpoch).length() <= 11"
 
 # Threat fields: the default pipeline sets threat.framework from the threat.* fields.
@@ -208,36 +208,39 @@ processors:
       field: crowdstrike.event.Techniques
       separator: ","
       target_field: threat.technique.name
-      tag: split_techniques
+      tag: split_techniques_bbc49993
       if: ctx.crowdstrike?.event?.Techniques != null
   - split:
       field: crowdstrike.event.TechniqueIds
       separator: ","
       target_field: threat.technique.id
-      tag: split_technique_ids
+      tag: split_technique_ids_b59d69d3
       if: ctx.crowdstrike?.event?.TechniqueIds != null
   - split:
       field: crowdstrike.event.Tactics
       separator: ","
       target_field: threat.tactic.name
-      tag: split_tactics
+      tag: split_tactics_38178cae
       if: ctx.crowdstrike?.event?.Tactics != null
   - split:
       field: crowdstrike.event.TacticIds
       separator: ","
       target_field: threat.tactic.id
-      tag: split_tactic_ids
+      tag: split_tactic_ids_52947a75
       if: ctx.crowdstrike?.event?.TacticIds != null
 
 on_failure:
   - append:
+      tag: append_error_message_9c9ce5dc
       field: error.message
       value: |-
         Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

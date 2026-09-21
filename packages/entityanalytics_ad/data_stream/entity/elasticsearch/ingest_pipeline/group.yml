@@ -3,116 +3,116 @@ description: Pipeline for processing empty group logs.
 processors:
   - set:
       field: event.kind
-      tag: set_event_kind
+      tag: set_event_kind_50075a0b
       value: asset
   - set:
       field: event.category
-      tag: set_event_category
+      tag: set_event_category_5b3c8dc9
       value: ['iam']
   - set:
       field: event.type
-      tag: set_event_type
-      value: ['group','info']
+      tag: set_event_type_5137aca8
+      value: ['group', 'info']
   - set:
       field: asset.category
-      tag: set_asset_category
+      tag: set_asset_category_3ebede69
       value: entity
   - set:
       field: asset.type
-      tag: set_asset_type
+      tag: set_asset_type_2fcff362
       value: activedirectory_group
 
   - pipeline:
       name: '{{ IngestPipeline "common" }}'
-      tag: pipeline_common
+      tag: pipeline_common_e2cc926a
       ignore_missing_pipeline: true
 
   - date:
       field: activedirectory.group.when_created
       target_field: asset.create_date
-      tag: date_group_created
+      tag: date_group_created_d59e84ab
       formats:
         - ISO8601
       if: ctx.activedirectory?.group?.when_created != null && ctx.activedirectory.group.when_created != ''
       on_failure:
         - remove:
-            tag: on_failure_remove_date_group_created
+            tag: on_failure_remove_date_group_created_aa7eccbd
             field: activedirectory.group.when_created
         - append:
-            tag: on_failure_append_date_group_created
+            tag: on_failure_append_date_group_created_4dfd4f69
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: activedirectory.group.when_changed
       target_field: asset.last_updated
-      tag: date_group_changed
+      tag: date_group_changed_3ea47c74
       formats:
         - ISO8601
       if: ctx.activedirectory?.group?.when_changed != null && ctx.activedirectory.group.when_changed != ''
       on_failure:
         - remove:
-            tag: on_failure_remove_date_group_changed
+            tag: on_failure_remove_date_group_changed_4ac400c4
             field: activedirectory.group.when_changed
         - append:
-            tag: on_failure_append_date_group_changed
+            tag: on_failure_append_date_group_changed_60b48b0f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   - set:
-      tag: set_group_asset_name
+      tag: set_group_asset_name_e775a3b0
       field: asset.name
       copy_from: activedirectory.group.sam_account_name
       ignore_empty_value: true
   - set:
-      tag: set_group_asset_id
+      tag: set_group_asset_id_81e8beab
       field: asset.id
       copy_from: activedirectory.group.object_sid
       ignore_empty_value: true
   - set:
-      tag: set_group_id
+      tag: set_group_id_732165d6
       field: group.id
       copy_from: activedirectory.group.object_sid
       ignore_empty_value: true
   - set:
-      tag: set_group_name
+      tag: set_group_name_079722a2
       field: group.name
       copy_from: activedirectory.group.sam_account_name
       ignore_empty_value: true
   - gsub:
-      tag: gsub_group_dn
+      tag: gsub_group_dn_2f89f17c
       field: activedirectory.group.distinguished_name
       pattern: '^.*?DC='
       replacement: ''
       target_field: group.domain
       if: ctx.activedirectory?.group?.distinguished_name != null
   - gsub:
-      tag: gsub_group_domain
+      tag: gsub_group_domain_fab6a154
       field: group.domain
       pattern: ',DC='
       replacement: '.'
       if: ctx.group?.domain != null
 
   - rename:
-      tag: rename_activedirectory_id_to_group_object_dn
+      tag: rename_activedirectory_id_to_group_object_dn_1dca8b37
       field: activedirectory.id
       target_field: activedirectory.group.object_dn
 
   - rename:
-      tag: rename_activedirectory_to_entityanalytics_ad
+      tag: rename_activedirectory_to_entityanalytics_ad_3c2c8fd4
       field: activedirectory
       target_field: entityanalytics_ad
 
 on_failure:
   - append:
-      tag: pipeline_error
+      tag: pipeline_error_0841b325
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
-      tag: pipeline_error_kind
+      tag: pipeline_error_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
-      tag: pipeline_error_preserve_original_event
+      tag: pipeline_error_preserve_original_event_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

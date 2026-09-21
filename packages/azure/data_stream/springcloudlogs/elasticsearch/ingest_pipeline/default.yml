@@ -2,62 +2,75 @@
 description: Pipeline for parsing azure spring apps logs.
 processors:
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: "8.11.0"
   - rename:
+      tag: rename_azure_to_azure-eventhub_e7f48148
       field: azure
       target_field: azure-eventhub
       ignore_missing: true
   - remove:
+      tag: remove_routing_category_681b150d
       field: routing.category
       ignore_missing: true
       description: Remove the routing.category field if it exists.
   - script:
+      tag: script_b08e84a2
       source: ctx.message = ctx.message.replace(params.empty_field_name, '')
       params:
         empty_field_name: '"":"",'
       ignore_failure: true
   - rename:
+      tag: rename_message_to_event_original_c74b1d7e
       field: message
       target_field: event.original
       ignore_missing: true
       if: 'ctx.event?.original == null'
       description: 'Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.'
   - remove:
+      tag: remove_message_2ee3a7d4
       field: message
       ignore_missing: true
       if: 'ctx.event?.original != null'
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
+      tag: json_event_original_to_azure_springcloudlogs_792d00fc
       field: event.original
       target_field: azure.springcloudlogs
       on_failure:
         - grok:
+            tag: grok_event_original_78fa5a31
             field: event.original
             patterns:
               - "resourceId\": ?\"%{DATA:azure.springcloudlogs.resourceId}\""
             ignore_failure: true
             ignore_missing: true
         - grok:
+            tag: grok_event_original_c0df5719
             field: event.original
             patterns:
               - "category\": ?\"%{DATA:azure.springcloudlogs.category}\""
             ignore_failure: true
             ignore_missing: true
         - grok:
+            tag: grok_event_original_ad453a31
             field: event.original
             patterns:
               - "time\": ?\"%{DATA:azure.springcloudlogs.time}\""
             ignore_failure: true
             ignore_missing: true
         - set:
+            tag: set_error_message_1287b3cb
             field: error.message
             value: 'Received invalid json from the Azure Cloud platform. Unable to parse the source log message'
             ignore_failure: true
   - drop:
+      tag: drop_385e17e1
       if: 'ctx.azure.springcloudlogs.category != "SystemLogs" && ctx.azure.springcloudlogs.category != "ApplicationConsole" && ctx.azure.springcloudlogs.category != "IngressLogs" && ctx.azure.springcloudlogs.category != "BuildLogs" && ctx.azure.springcloudlogs.category != "ContainerEventLogs"'
       ignore_failure: true
   - date:
+      tag: date_azure_springcloudlogs_time_to_timestamp_0efb05bb
       field: azure.springcloudlogs.time
       target_field: '@timestamp'
       ignore_failure: true
@@ -66,13 +79,14 @@ processors:
       # We expect the first format to be used in 99% of cases.
       # However, we include the other formats seen in other
       # categories as a necessary fallback.
-      formats: 
+      formats:
         - ISO8601
         - "M/d/yyyy h:mm:ss a XXX"
         - "M/d/yyyy h:mm:ss a"
         - "M/d/yyyy H:mm:ss"
         - yyyy-MM-dd'T'H:mm:ss.SSS'Z'
   - date:
+      tag: date_azure_springcloudlogs_EventTimeString_to_timestamp_f6ff572c
       field: azure.springcloudlogs.EventTimeString
       target_field: '@timestamp'
       ignore_failure: true
@@ -81,137 +95,166 @@ processors:
       # We expect the first format to be used in 99% of cases.
       # However, we include the other formats seen in other
       # categories as a necessary fallback.
-      formats: 
+      formats:
         - ISO8601
         - "M/d/yyyy h:mm:ss a XXX"
         - "M/d/yyyy h:mm:ss a"
         - "M/d/yyyy H:mm:ss"
         - yyyy-MM-dd'T'H:mm:ss.SSS'Z'
   - remove:
+      tag: remove_azure_springcloudlogs_time_711cf8bb
       field: azure.springcloudlogs.time
       ignore_missing: true
   - rename:
+      tag: rename_azure_springcloudlogs_resourceId_to_azure_resource_id_63714f10
       field: azure.springcloudlogs.resourceId
       target_field: azure.resource_id
       ignore_missing: true
   - rename:
+      tag: rename_azure_springcloudlogs_LogFormat_to_azure_springcloudlogs_log_format_225eb28d
       field: azure.springcloudlogs.LogFormat
       target_field: azure.springcloudlogs.log_format
       ignore_missing: true
   - rename:
+      tag: rename_azure_springcloudlogs_properties_InstanceName_to_azure_springcloudlogs_properties_instance_name_3fb33311
       field: azure.springcloudlogs.properties.InstanceName
       target_field: azure.springcloudlogs.properties.instance_name
       ignore_missing: true
   - rename:
+      tag: rename_azure_springcloudlogs_properties_Log_to_azure_springcloudlogs_properties_log_c68a05e8
       field: azure.springcloudlogs.properties.Log
       target_field: azure.springcloudlogs.properties.log
       ignore_missing: true
   - rename:
+      tag: rename_azure_springcloudlogs_properties_ServiceName_to_azure_springcloudlogs_properties_service_name_a1ab50e1
       field: azure.springcloudlogs.properties.ServiceName
       target_field: azure.springcloudlogs.properties.service_name
       ignore_missing: true
   - rename:
+      tag: rename_azure_springcloudlogs_properties_Stream_to_azure_springcloudlogs_properties_stream_bb699344
       field: azure.springcloudlogs.properties.Stream
       target_field: azure.springcloudlogs.properties.stream
       ignore_missing: true
   - rename:
+      tag: rename_azure_springcloudlogs_properties_AppName_to_azure_springcloudlogs_properties_app_name_d84e7411
       field: azure.springcloudlogs.properties.AppName
       target_field: azure.springcloudlogs.properties.app_name
       ignore_missing: true
   - rename:
+      tag: rename_azure_springcloudlogs_properties_ServiceId_to_azure_springcloudlogs_properties_service_id_d64f02d1
       field: azure.springcloudlogs.properties.ServiceId
       target_field: azure.springcloudlogs.properties.service_id
       ignore_missing: true
   - rename:
+      tag: rename_azure_springcloudlogs_properties_Type_to_azure_springcloudlogs_properties_type_20b595c4
       field: azure.springcloudlogs.properties.Type
       target_field: azure.springcloudlogs.properties.type
       ignore_missing: true
   - rename:
+      tag: rename_azure_springcloudlogs_properties_Level_to_azure_springcloudlogs_level_cf52824b
       field: azure.springcloudlogs.properties.Level
       target_field: azure.springcloudlogs.level
       ignore_missing: true
   - rename:
+      tag: rename_azure_springcloudlogs_properties_Logger_to_azure_springcloudlogs_properties_logger_361dee2c
       field: azure.springcloudlogs.properties.Logger
       target_field: azure.springcloudlogs.properties.logger
       ignore_missing: true
   - rename:
+      tag: rename_azure_springcloudlogs_properties_Stack_to_azure_springcloudlogs_properties_stack_b6124b54
       field: azure.springcloudlogs.properties.Stack
       target_field: azure.springcloudlogs.properties.stack
       ignore_missing: true
   - rename:
+      tag: rename_azure_springcloudlogs_properties_Thread_to_azure_springcloudlogs_properties_thread_4158af24
       field: azure.springcloudlogs.properties.Thread
       target_field: azure.springcloudlogs.properties.thread
       ignore_missing: true
   - rename:
+      tag: rename_azure_springcloudlogs_Region_to_cloud_region_77bb0be1
       field: azure.springcloudlogs.Region
       target_field: cloud.region
       ignore_missing: true
   - json:
+      tag: json_azure_springcloudlogs_EventProperties_to_azure_springcloudlogs_properties_94c422b4
       field: azure.springcloudlogs.EventProperties
       target_field: azure.springcloudlogs.properties
       ignore_failure: true
   - remove:
+      tag: remove_29b9aefb
       if: ctx.azure.springcloudlogs.properties != null
       field:
         - azure.springcloudlogs.EventProperties
       ignore_missing: true
   - json:
+      tag: json_azure_springcloudlogs_properties_log_to_azure_springcloudlogs_properties_log_6e88b21a
       field: azure.springcloudlogs.properties.log
       target_field: azure.springcloudlogs.properties.log
       ignore_failure: true
   - rename:
+      tag: rename_azure_springcloudlogs_properties_log_to_message_a60ad479
       field: azure.springcloudlogs.properties.log
       target_field: message
       ignore_missing: true
       if: "ctx.azure?.springcloudlogs?.properties?.log != null && ctx.azure?.springcloudlogs?.properties?.log instanceof String"
   - rename:
+      tag: rename_azure_springcloudlogs_EventName_to_event_action_dd26a13d
       field: azure.springcloudlogs.EventName
       target_field: event.action
       ignore_missing: true
   - convert:
+      tag: convert_azure_springcloudlogs_callerIpAddress_to_source_ip_517b48a1
       field: azure.springcloudlogs.callerIpAddress
       target_field: source.ip
       type: ip
       ignore_missing: true
       on_failure:
-        - rename: 
+        - rename:
+            tag: rename_azure_springcloudlogs_callerIpAddress_to_source_address_77c06086
             field: azure.springcloudlogs.callerIpAddress
             target_field: source.address
-            ignore_missing: true 
+            ignore_missing: true
             ignore_failure: true
   - remove:
+      tag: remove_azure_springcloudlogs_callerIpAddress_bf6e6260
       field: azure.springcloudlogs.callerIpAddress
       if: 'ctx.source?.ip != null'
       ignore_missing: true
   - set:
+      tag: set_client_ip_b6d15cbc
       field: client.ip
       value: '{{source.ip}}'
       ignore_empty_value: true
   - append:
+      tag: append_related_ip_d7aecc5f
       field: related.ip
       value: '{{source.ip}}'
       allow_duplicates: false
       if: 'ctx.source?.ip != null'
   - rename:
+      tag: rename_azure_springcloudlogs_level_to_log_level_3073bea0
       field: azure.springcloudlogs.level
       target_field: log.level
       ignore_missing: true
   - rename:
+      tag: rename_azure_springcloudlogs_durationMs_to_event_duration_ecc2e33c
       field: azure.springcloudlogs.durationMs
       target_field: event.duration
       ignore_missing: true
   - script:
+      tag: script_7f8b9902
       lang: painless
-      source: if (ctx.event.duration!= null) {ctx.event.duration = ctx.event.duration
-        * params.param_nano;}
+      source: if (ctx.event.duration!= null) {ctx.event.duration = ctx.event.duration * params.param_nano;}
       params:
         param_nano: 1000000
       ignore_failure: true
   - rename:
+      tag: rename_azure_springcloudlogs_location_to_geo_name_ac9f72d5
       field: azure.springcloudlogs.location
       target_field: geo.name
       ignore_missing: true
   - script:
+      tag: script_611ee47b
       lang: painless
       source: >-
         if (ctx?.azure?.springcloudlogs?.properties?.eventCategory != null) {
@@ -225,54 +268,66 @@ processors:
         }
       ignore_failure: true
   - rename:
+      tag: rename_azure_springcloudlogs_resultType_to_azure_springcloudlogs_result_type_333fd587
       field: azure.springcloudlogs.resultType
       target_field: azure.springcloudlogs.result_type
       ignore_missing: true
   - convert:
+      tag: convert_azure_springcloudlogs_result_type_to_event_outcome_e16f2471
       field: azure.springcloudlogs.result_type
       target_field: event.outcome
       type: string
       if: "ctx?.azure?.springcloudlogs?.result_type != null && ctx.azure.springcloudlogs.result_type instanceof String && (ctx.azure.springcloudlogs.result_type.toLowerCase() == 'success' || ctx.azure.springcloudlogs.result_type.toLowerCase() == 'failure')"
   - convert:
+      tag: convert_azure_springcloudlogs_properties_result_to_event_outcome_6db4896d
       field: azure.springcloudlogs.properties.result
       target_field: event.outcome
       type: string
       if: "ctx?.event?.outcome == null && ctx?.azure?.springcloudlogs?.properties?.result != null && ctx?.azure?.springcloudlogs?.properties?.result instanceof String && ['success', 'failure', 'unknown'].contains(ctx.azure?.springcloudlogs?.properties?.result)"
   - convert:
+      tag: convert_azure_springcloudlogs_Status_to_event_outcome_147575c0
       field: azure.springcloudlogs.Status
       target_field: event.outcome
       type: string
       if: "ctx?.event?.outcome == null && ctx?.azure?.springcloudlogs?.Status != null && ctx?.azure?.springcloudlogs?.Status instanceof String && ['success', 'failure', 'unknown', 'Succeeded', 'Failed'].contains(ctx.azure?.springcloudlogs?.Status)"
   - rename:
+      tag: rename_azure_springcloudlogs_operationName_to_azure_springcloudlogs_operation_name_35462723
       field: azure.springcloudlogs.operationName
       target_field: azure.springcloudlogs.operation_name
       ignore_missing: true
   - convert:
+      tag: convert_azure_springcloudlogs_operation_name_to_event_action_e1ae6023
       field: azure.springcloudlogs.operation_name
       target_field: event.action
       type: string
       ignore_missing: true
   - rename:
+      tag: rename_azure_springcloudlogs_resultSignature_to_azure_springcloudlogs_result_signature_b1606fa5
       field: azure.springcloudlogs.resultSignature
       target_field: azure.springcloudlogs.result_signature
       ignore_missing: true
   - rename:
+      tag: rename_azure_springcloudlogs_correlationId_to_azure_correlation_id_ae6896da
       field: azure.springcloudlogs.correlationId
       target_field: azure.correlation_id
       ignore_missing: true
   - rename:
+      tag: rename_azure_springcloudlogs_properties_statusCode_to_azure_springcloudlogs_properties_status_code_aa28599b
       field: azure.springcloudlogs.properties.statusCode
       target_field: azure.springcloudlogs.properties.status_code
       ignore_missing: true
   - rename:
+      tag: rename_azure_springcloudlogs_Status_to_azure_springcloudlogs_status_bf8693fc
       field: azure.springcloudlogs.Status
       target_field: azure.springcloudlogs.status
       ignore_missing: true
   - geoip:
+      tag: geoip_source_ip_to_geo_d0a7dae7
       field: source.ip
       target_field: geo
       ignore_missing: true
   - script:
+      tag: script_b6b7e900
       lang: painless
       params:
         "write":
@@ -298,10 +353,12 @@ processors:
         def hm = new HashMap(params.get(category));
         hm.forEach((k, v) -> ctx.event[k] = v);
   - geoip:
+      tag: geoip_source_ip_to_source_geo_da2e41b2
       field: source.ip
       target_field: source.geo
       ignore_missing: true
   - geoip:
+      tag: geoip_source_ip_to_source_as_28d69883
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
       target_field: source.as
@@ -310,36 +367,45 @@ processors:
         - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_source_as_asn_to_source_as_number_a917047d
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
   - rename:
+      tag: rename_source_as_organization_name_to_source_as_organization_name_f1362d0b
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - pipeline:
+      tag: pipeline_azure_shared_pipeline_7877e1a4
       name: '{{ IngestPipeline "azure-shared-pipeline" }}'
   - set:
+      tag: set_event_kind_92954dfa
       field: event.kind
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message_fb774d38
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'

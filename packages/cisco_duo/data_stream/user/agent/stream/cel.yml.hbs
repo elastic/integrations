@@ -1,0 +1,138 @@
+config_version: 2
+interval: {{interval}}
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+resource.url: {{hostname}}
+resource.rate_limit.burst: 1
+resource.rate_limit.limit: {{rate_limit}}
+{{#if resource_retry_max_attempts}}
+resource.retry.max_attempts: {{resource_retry_max_attempts}}
+{{/if}}
+{{#if resource_retry_wait_min}}
+resource.retry.wait_min: {{resource_retry_wait_min}}
+{{/if}}
+{{#if resource_retry_wait_max}}
+resource.retry.wait_max: {{resource_retry_wait_max}}
+{{/if}}
+
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+  maxsize: 5
+
+state:
+  url: {{hostname}}
+  integration_key: {{integration_key}}
+  secret_key: {{secret_key}}
+  limit: {{limit}}
+  want_more: false
+redact:
+  fields:
+    - integration_key
+    - secret_key
+
+program: |-
+  (
+    state.want_more ?
+      state
+    :
+      state.with(
+        {
+          "offset": "0",
+        }
+      )
+  ).as(state,
+    state.with(
+      {
+        // data should be calculated for each request to avoid error_code 40103.
+        "date": now.format(time_layout.RFC1123Z),
+        "url_base": state.url.trim_right("/"),
+        "url_path": "/admin/v1/users",
+        "query_string": {
+          "limit": [string(state.limit)],
+          "offset": [state.offset],
+        }.format_query(),
+      }.as(r,
+        r.with(
+          {
+            // add an authorization header value using prepared data from r.
+            "authorization": "Basic " + (
+              state.integration_key + ":" + [
+                r.date,
+                "GET",
+                r.url_base.trim_prefix("https://"),
+                r.url_path,
+                r.query_string,
+              ].join("\n").hmac("sha1", bytes(state.secret_key)).hex()
+            ).base64(),
+          }
+        )
+      ).as(r,
+        // perform request using prepared data from r.
+        request(
+          "GET",
+          r.url_base + r.url_path + "?" + r.query_string
+        ).with(
+          {
+            "Header": {
+              "Content-Type": ["application/x-www-form-urlencoded"],
+              "Date": [r.date],
+              "Authorization": [r.authorization],
+            },
+          }
+        ).do_request().as(resp, (resp.StatusCode == 200) ?
+          resp.Body.decode_json().as(body, (has(body.response) && size(body.response) > 0) ?
+            {
+              "events": body.response.map(user,
+                {
+                  "message": user.encode_json(),
+                }
+              ),
+              "want_more": has(body.?metadata.next_offset),
+              ?"offset": (body.?metadata.next_offset.orValue(null) != null) ?
+                optional.of(string(body.metadata.next_offset))
+              :
+                optional.none(),
+            }
+          :
+            {
+              "events": [],
+              "want_more": false,
+            }
+          )
+        :
+          {
+            "events": {
+              "error": {
+                "code": string(resp.StatusCode),
+                "id": resp.Status,
+                "message": "GET:" + (
+                  (size(resp.Body) != 0) ?
+                    string(resp.Body)
+                  :
+                    resp.Status + " (" + string(resp.StatusCode) + ")"
+                ),
+              },
+            },
+            "want_more": false,
+          }
+        )
+      )
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

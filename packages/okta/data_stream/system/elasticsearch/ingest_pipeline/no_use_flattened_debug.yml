@@ -2,50 +2,50 @@
 description: Pipeline for Okta debug data not using flattened.
 processors:
   - rename:
-      tag: rename_debugData
+      tag: rename_debugData_7e98f357
       field: json.debugContext.debugData
       target_field: okta.debug_context.debug_data
       ignore_failure: true
   - json:
-      tag: json_logOnlySecurityData
+      tag: json_logOnlySecurityData_09efbca1
       field: okta.debug_context.debug_data.logOnlySecurityData
       ignore_failure: true
   - dissect:
-      tag: dissect_behaviors
+      tag: dissect_behaviors_8ff28be1
       field: okta.debug_context.debug_data.behaviors
       pattern: "{%{okta.debug_context.debug_data.behaviors}}"
       ignore_missing: true
       ignore_failure: true
   - kv:
-      tag: kv_behaviors
+      tag: kv_behaviors_f0436bad
       field: okta.debug_context.debug_data.behaviors
       field_split: ", "
       value_split: "="
       target_field: _behaviors_object
       if: ctx.okta?.debug_context?.debug_data?.behaviors != null
   - remove:
-      tag: remove_behaviors
+      tag: remove_behaviors_4afbd386
       field: okta.debug_context.debug_data.behaviors
       if: ctx._behaviors_object != null
   - rename:
-      tag: rename_behaviors_object
+      tag: rename_behaviors_object_c703095f
       field: _behaviors_object
       target_field: okta.debug_context.debug_data.behaviors
       ignore_missing: true
       ignore_failure: true
   - set:
-      tag: set_risk_object
+      tag: set_risk_object_2ad892ed
       field: okta.debug_context.debug_data.risk_object
       copy_from: okta.debug_context.debug_data.risk
       if: ctx.okta?.debug_context?.debug_data?.risk != null
   - dissect:
-      tag: dissect_risk
+      tag: dissect_risk_3ed17f17
       field: okta.debug_context.debug_data.risk
       pattern: "{%{okta.debug_context.debug_data.risk}}"
       ignore_missing: true
       ignore_failure: true
   - kv:
-      tag: kv_risk
+      tag: kv_risk_d1fb4642
       field: okta.debug_context.debug_data.risk
       field_split: ", "
       value_split: "="
@@ -53,22 +53,22 @@ processors:
       if: ctx.okta?.debug_context?.debug_data?.risk != null
       on_failure:
         - remove:
-            tag: remove_risk_object
+            tag: remove_risk_object_50921671
             field: _risk_object
   - remove:
-      tag: remove_risk_object_2
+      tag: remove_risk_object_2_31ff4dfd
       field: okta.debug_context.debug_data.risk_object
       if: ctx._risk_object != null
   # Make heroic efforts to capture risk level and reason if kv could not get them.
   - grok:
-      tag: grok_risk
+      tag: grok_risk_89fb1b9b
       field: okta.debug_context.debug_data.risk
       patterns:
         - level=%{NOTSPACE:_risk_object.level}
       if: ctx.okta?.debug_context?.debug_data?.risk_object != null && ctx.okta?.debug_context?.debug_data?.risk != null
       ignore_failure: true
   - grok:
-      tag: grok_risk_2
+      tag: grok_risk_2_c32f576a
       field: okta.debug_context.debug_data.risk
       patterns:
         - reasons=%{DATA:_risk_object.reasons}, %{KEY}
@@ -78,57 +78,57 @@ processors:
       if: ctx.okta?.debug_context?.debug_data?.risk_object != null && ctx.okta?.debug_context?.debug_data?.risk != null
       ignore_failure: true
   - remove:
-      tag: remove_risk
+      tag: remove_risk_921e63be
       field: okta.debug_context.debug_data.risk
       if: ctx._risk_object != null
   - rename:
-      tag: rename_risk_object
+      tag: rename_risk_object_0442b3ff
       field: _risk_object
       target_field: okta.debug_context.debug_data.risk
       ignore_missing: true
       ignore_failure: true
   - set:
-      tag: set_risk_level
+      tag: set_risk_level_400d2225
       field: okta.debug_context.debug_data.risk_level
       value: "{{{okta.debug_context.debug_data.logOnlySecurityData.risk.level}}}"
       if: 'ctx.okta?.debug_context?.debug_data?.logOnlySecurityData?.risk?.level != null && ctx.okta?.debug_context?.debug_data?.logOnlySecurityData?.risk?.level != ""'
   - split:
-      tag: split_reasons
+      tag: split_reasons_ed3f91f2
       field: okta.debug_context.debug_data.logOnlySecurityData.risk.reasons
       target_field: okta.debug_context.debug_data.risk_reasons
       separator: ',\s*'
       if: 'ctx.okta?.debug_context?.debug_data?.logOnlySecurityData?.risk?.reasons != null && ctx.okta?.debug_context?.debug_data?.logOnlySecurityData?.risk?.reasons != ""'
   - set:
-      tag: set_risk_level_2
+      tag: set_risk_level_2_ef47650c
       field: okta.debug_context.debug_data.risk_level
       value: "{{{okta.debug_context.debug_data.risk.level}}}"
       if: 'ctx.okta?.debug_context?.debug_data?.risk_level == null && ctx.okta?.debug_context?.debug_data?.risk?.level != null && ctx.okta?.debug_context?.debug_data?.risk?.level != ""'
   - set:
-      tag: set_factor
+      tag: set_factor_ecacf2a9
       field: okta.debug_context.debug_data.factor
       value: "{{{okta.debug_context.debug_data.factor}}}"
       if: 'ctx.okta?.debug_context?.debug_data?.factor == null && ctx.okta?.debug_context?.debug_data?.factor != null && ctx.okta?.debug_context?.debug_data?.factor != ""'
   - split:
-      tag: split_reasons_2
+      tag: split_reasons_2_45b6add1
       field: okta.debug_context.debug_data.risk.reasons
       target_field: okta.debug_context.debug_data.risk_reasons
       separator: ',\s*'
       if: 'ctx.okta?.debug_context?.debug_data?.risk_reasons == null && ctx.okta?.debug_context?.debug_data?.risk?.reasons != null && ctx.okta?.debug_context?.debug_data?.risk?.reasons != ""'
   - json:
-      tag: json_okta_debug_context_debug_data_tunnels
+      tag: json_okta_debug_context_debug_data_tunnels_dcf03cf0
       field: okta.debug_context.debug_data.tunnels
       if: ctx.okta?.debug_context?.debug_data?.tunnels != null
       on_failure:
         - append:
-            tag: append_message
+            tag: append_message_2cafec30
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - remove:
-            tag: remove_tunnels
+            tag: remove_tunnels_a9d2e5b3
             field: okta.debug_context.debug_data.tunnels
             ignore_failure: true
   - script:
-      tag: script
+      tag: script_409de098
       lang: painless
       source: |
         def src = ctx.okta?.debug_context?.debug_data?.behaviors;
@@ -147,61 +147,61 @@ processors:
 
   # Special cases for fields that were previously extracted from flattened.
   - rename:
-      tag: rename_deviceFingerprint
+      tag: rename_deviceFingerprint_2e2c9f29
       field: okta.debug_context.debug_data.deviceFingerprint
       target_field: okta.debug_context.debug_data.device_fingerprint
       ignore_missing: true
       ignore_failure: true
   - rename:
-      tag: rename_dtHash
+      tag: rename_dtHash_88dde8a6
       field: okta.debug_context.debug_data.dtHash
       target_field: okta.debug_context.debug_data.dt_hash
       ignore_missing: true
       ignore_failure: true
   - rename:
-      tag: rename_requestId
+      tag: rename_requestId_b648d370
       field: okta.debug_context.debug_data.requestId
       target_field: okta.debug_context.debug_data.request_id
       ignore_missing: true
       ignore_failure: true
   - rename:
-      tag: rename_requestUri
+      tag: rename_requestUri_8dd51a7d
       field: okta.debug_context.debug_data.requestUri
       target_field: okta.debug_context.debug_data.request_uri
       ignore_missing: true
       ignore_failure: true
   - rename:
-      tag: rename_threatSuspected
+      tag: rename_threatSuspected_31d2c15b
       field: okta.debug_context.debug_data.threatSuspected
       target_field: okta.debug_context.debug_data.threat_suspected
       ignore_missing: true
       ignore_failure: true
   - rename:
-      tag: rename_clientSecret
+      tag: rename_clientSecret_bd0bea73
       field: json.debugContext.debugData.clientSecret
       target_field: okta.debug_context.debug_data.client_secret
       ignore_missing: true
       ignore_failure: true
   - rename:
-      tag: rename_requestedScopes
+      tag: rename_requestedScopes_7634d587
       field: json.debugContext.debugData.requestedScopes
       target_field: okta.debug_context.debug_data.requested_scopes
       ignore_missing: true
       ignore_failure: true
   - rename:
-      tag: rename_grantedScopes
+      tag: rename_grantedScopes_f30d472a
       field: json.debugContext.debugData.grantedScopes
       target_field: okta.debug_context.debug_data.granted_scopes
       ignore_missing: true
       ignore_failure: true
   - rename:
-      tag: rename_grantType
+      tag: rename_grantType_cbf0e309
       field: json.debugContext.debugData.grantType
       target_field: okta.debug_context.debug_data.grant_type
       ignore_missing: true
       ignore_failure: true
   - script:
-      tag: painless_purge_spaces_and_dashes
+      tag: painless_purge_spaces_and_dashes_f41c0d8a
       lang: painless
       description: Replace spaces and dashes in field names under okta.debug_context.debug_data.
       if: ctx.okta?.debug_context?.debug_data != null
@@ -233,15 +233,20 @@ processors:
 
 on_failure:
   - set:
-      tag: set_kind
+      tag: set_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
-      tag: append_message_2
+      tag: append_message_2_14080786
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
         {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
         {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}'
         failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      tag: append_tags_279d5a5c
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
 

@@ -87,6 +87,7 @@ Subcommands:
           --remote string     Git remote (default: origin).
           --repository string GitHub repository in org/repo form.
           --packages-dir string  Path to packages directory (default: packages).
+          --origin-pr-number string  Number of the source PR on main; used to auto-assign the backport PR (optional).
 
   check-changelog-versions <base-branch>
         Verify that changelog versions introduced in the current PR do not
@@ -467,17 +468,22 @@ func runSyncChangelog(_ []string) error {
 		packagesDir = "packages"
 	}
 
-	collectResult, err := changelog.Collect(before, after, repository)
+	collectResult, err := changelog.Collect(before, after, repository, os.Getenv("BACKPORT_PR_NUMBER"))
 	if err != nil {
 		return err
 	}
 
 	if !collectResult.HasChanges {
+		outcome := "skipped"
+		if collectResult.ExistingSyncPRURL != "" {
+			outcome = "already_exists"
+		}
 		return writeGitHubOutputs(map[string]string{
-			"backport_pr_number": collectResult.BackportPRNumber,
-			"working_branch":     collectResult.WorkingBranch,
-			"not_found_packages": "",
-			"create_outcome":     "skipped",
+			"backport_pr_number":   collectResult.BackportPRNumber,
+			"working_branch":       collectResult.WorkingBranch,
+			"not_found_packages":   "",
+			"create_outcome":       outcome,
+			"existing_sync_pr_url": collectResult.ExistingSyncPRURL,
 		})
 	}
 
@@ -491,13 +497,23 @@ func runSyncChangelog(_ []string) error {
 		repository,
 	)
 	if err != nil {
+		// Write outputs before returning so the comment step can post a failure
+		// message on the backport PR even when CreateSyncPR errors out.
+		_ = writeGitHubOutputs(map[string]string{
+			"backport_pr_number":   collectResult.BackportPRNumber,
+			"working_branch":       collectResult.WorkingBranch,
+			"not_found_packages":   "",
+			"create_outcome":       "failure",
+			"existing_sync_pr_url": "",
+		})
 		return err
 	}
 	return writeGitHubOutputs(map[string]string{
-		"backport_pr_number": collectResult.BackportPRNumber,
-		"working_branch":     collectResult.WorkingBranch,
-		"not_found_packages": strings.Join(syncResult.NotFoundPackages, ","),
-		"create_outcome":     syncResult.Outcome,
+		"backport_pr_number":   collectResult.BackportPRNumber,
+		"working_branch":       collectResult.WorkingBranch,
+		"not_found_packages":   strings.Join(syncResult.NotFoundPackages, ","),
+		"create_outcome":       syncResult.Outcome,
+		"existing_sync_pr_url": "",
 	})
 }
 
@@ -515,6 +531,7 @@ func runPostComment(_ []string) error {
 		os.Getenv("CREATE_OUTCOME"),
 		os.Getenv("RUN_ID"),
 		repository,
+		os.Getenv("EXISTING_SYNC_PR_URL"),
 	)
 }
 
@@ -555,6 +572,7 @@ func runApply(args []string) error {
 	remote := fs.String("remote", "", "git remote to fetch from and push to (default: origin)")
 	repository := fs.String("repository", "", "GitHub repository in org/repo form")
 	packagesDir := fs.String("packages-dir", "", "path to packages directory (default: packages)")
+	originPRNumber := fs.String("origin-pr-number", "", "number of the source PR on main; used to auto-assign the backport PR")
 
 	if err := fs.Parse(args); err != nil {
 		return err
@@ -567,15 +585,16 @@ func runApply(args []string) error {
 	target := fs.Arg(2)
 
 	opts := apply.Options{
-		SHA:         sha,
-		Package:     pkg,
-		Target:      target,
-		OpenPR:      *openPR,
-		AsJSON:      *asJSON,
-		DryRun:      *dryRun,
-		Remote:      *remote,
-		Repository:  *repository,
-		PackagesDir: *packagesDir,
+		SHA:            sha,
+		Package:        pkg,
+		Target:         target,
+		OpenPR:         *openPR,
+		AsJSON:         *asJSON,
+		DryRun:         *dryRun,
+		Remote:         *remote,
+		Repository:     *repository,
+		PackagesDir:    *packagesDir,
+		OriginPRNumber: *originPRNumber,
 	}
 
 	result, err := apply.Apply(opts)
