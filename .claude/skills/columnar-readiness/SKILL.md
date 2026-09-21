@@ -125,9 +125,12 @@ The **input types** pick the regime, and the regime picks the evidence:
 - **Collector.** `host.name` is the collector. Propose an explicit sort on a
   tenant/account/org id first — declared in `fields/*.yml` **or** merely populated in
   `sample_event.json`, since ECS fields arrive via `ecs@mappings` and packages
-  routinely leave them undeclared — then a vendor tenant id, then whatever the
-  dashboards **filter** on most. `agent.id` is not proposed here: for a poller it is
-  the collector, one value for the whole data stream.
+  routinely leave them undeclared — then a vendor tenant id. `agent.id` is not
+  proposed here: for a poller it is the collector, one value for the whole data
+  stream. What the dashboards **filter** on is reported as a *hint* only
+  (`review_candidate`), never as a proposal — two thirds of those picks are junk.
+- **Mixed receiver + collector inputs** (`zscaler_zia/firewall`, `gigamon/ami`): the
+  tenant tiers go first, then the pipeline's `observer.*` evidence, then the hint.
 - The only mapping fact that matters is a *downgrade*: if the package maps `host.name`
   as something other than a keyword/number with doc values, Elasticsearch falls back
   to `@timestamp` only.

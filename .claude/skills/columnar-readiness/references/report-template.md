@@ -28,14 +28,24 @@ Sort recommendation is one of (JSON: `sort.class`):
 - `default DEGRADED: falls back to @timestamp desc only` (`degraded`) — host-local
   inputs, but the package maps `host.name` as something Elasticsearch cannot sort on
 - `explicit sort proposed: <field> asc, @timestamp desc` — from a receiver pipeline's
-  `observer.*` device identifier (`receiver_proposed`) or from the candidate tiers
+  `observer.*` device identifier (`receiver_proposed`) or from candidate tier 1 or 2
   (`explicit`)
 - `receiver input — no confident candidate; needs human choice`
   (`receiver_no_candidate`) — a `tcp`/`udp`/`syslog` stream whose pipeline populates
   no `observer.*` field and sets `host.name` only on some branches
+- `no confident candidate — dashboard hint: <field> (filtered N×); needs human choice`
+  (`review_candidate`) — tier 1 and tier 2 found nothing and the only lead is a field
+  the package's own dashboards filter on. Reported for a human to judge: **no**
+  `index.sort` YAML is emitted, and `sort_fields` stays `["@timestamp"]`. The field
+  and its filter count are in the JSON as `sort.dashboard_sort_hint` and
+  `sort.dashboard_sort_hint_filters`
 - `explicit sort proposed: @timestamp desc only — no confident candidate; needs human
   choice` (`no_candidate`) — no field passed validation. Deliberately not a guess: a
   weak or multi-valued sort key is worse than none.
+
+Only `default_ok`, `degraded`, `receiver_proposed`, `explicit` and `no_candidate`
+carry an `explicit_sort_yaml` block; `review_candidate` deliberately does not, so a
+migration PR cannot pick up a dashboard hint by accident.
 
 ## Per-package report
 
