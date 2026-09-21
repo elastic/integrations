@@ -1,7 +1,7 @@
 format_version: "3.4.0"
 name: microsoft_defender_endpoint
 title: Microsoft Defender for Endpoint
-version: "4.11.0"
+version: "4.12.0"
 description: Collect logs from Microsoft Defender for Endpoint with Elastic Agent.
 categories:
   - security
@@ -16,8 +16,8 @@ conditions:
     version: "^8.19.3 || ^9.1.2"
 policy_templates:
   - name: microsoft_defender_endpoint
-    title: Microsoft Defender for Endpoint
-    description: Collect logs from Microsoft Defender for Endpoint
+    title: Microsoft Defender for Endpoint Logs
+    description: Collect logs from Microsoft Defender for Endpoint.
     deployment_modes:
       default:
         enabled: true
@@ -31,15 +31,9 @@ policy_templates:
           requests:
             memory: 4Gi # Due to the large volume of data being processed in memory, a 4 GB allocation is required for agentless deployment-anything less may lead to out-of-memory (OOM) issue.
     inputs:
-      - type: httpjson
-        title: "Collect Microsoft Defender for Endpoint logs via API"
-        description: "Collecting Defender for Endpoint logs via API"
-      - type: logfile
-        title: "Collect Microsoft Defender for Endpoint logs via file"
-        description: "Collecting Defender for Endpoint logs via file"
       - type: cel
-        title: Collect Microsoft Defender for Endpoint logs via API
-        description: Collecting Defender for Endpoint logs via API.
+        title: "Collect machines, machine actions, and vulnerabilities using Microsoft Defender for Endpoint API"
+        description: "Collect machines, machine actions, and vulnerabilities from Microsoft Defender for Endpoint using Microsoft Defender for Endpoint API."
         vars:
           - name: client_id
             type: text
@@ -131,6 +125,12 @@ policy_templates:
               #    yvgJ38BRsFOtkRuAGSf6ZUwTO8JJRRIFnpUzXflAnGivK9M13D5GEQMmIl6U9Pvk
               #    sxSmbIUfc2SGJGCJD4I=
               #    -----END CERTIFICATE-----
+      - type: httpjson
+        title: "Collect alerts using Microsoft Defender for Endpoint API"
+        description: "Collect alerts from Microsoft Defender for Endpoint using Microsoft Defender for Endpoint API."
+      - type: logfile
+        title: "Collect alerts using a log file"
+        description: "Collect alerts from Microsoft Defender for Endpoint using a log file."
 icons:
   - src: /img/logo.svg
     title: Microsoft Defender for Endpoint logo
