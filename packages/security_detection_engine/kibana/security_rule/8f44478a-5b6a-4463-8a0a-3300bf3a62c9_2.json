@@ -1,0 +1,195 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies anomalous execution of BrowserCore.exe, the Windows component used by Chromium-based browsers for native messaging with the Web Account Manager (WAM). Adversaries abuse BrowserCore to extract Entra ID Primary Refresh Tokens (PRTs) without interactive browser context, enabling session hijacking. Legitimate BrowserCore launches carry a chrome-extension:// argument from the browser native-messaging host.",
+        "from": "now-9m",
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "host.id",
+                "host.name",
+                "user.name",
+                "user.id",
+                "process.entity_id",
+                "process.name",
+                "process.executable",
+                "process.command_line",
+                "process.pe.original_file_name",
+                "process.parent.name",
+                "process.parent.executable",
+                "process.parent.command_line"
+            ]
+        },
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Potential Entra ID PRT Extraction via BrowserCore",
+        "note": "## Triage and analysis\n\n### Investigating Potential Entra ID PRT Extraction via BrowserCore\n\nBrowserCore.exe is the Chromium native-messaging helper that brokers Web Account Manager (WAM) / Entra ID token\noperations for Edge and Chrome. Tools such as PRTRemote and PrtExtractor invoke it outside the browser's\nnative-messaging context to obtain Primary Refresh Tokens (PRTs).\n\n#### Possible investigation steps\n\n- Is BrowserCore running from a non-canonical path or with a mismatched original filename?\n  - Focus: `process.executable`, `process.name`, `process.pe.original_file_name`, `process.hash.sha256`, and signer fields.\n  - Implication: escalate when the PE original name is BrowserCore.exe but the path is outside\n    `C:\\Windows\\BrowserCore\\`, or when the binary is recently dropped/renamed.\n\n- Does the command line lack the browser native-messaging extension URI?\n  - Focus: `process.command_line`, `process.parent.name`, `process.parent.executable`, `process.parent.command_line`.\n  - Hint: legitimate launches include `chrome-extension://`. Abuse often omits that URI and may be launched by Task\n    Scheduler, scripts, or remote tools.\n  - Implication: escalate when `chrome-extension://` is absent and the parent is `svchost.exe` (task), `powershell.exe`,\n    `wscript.exe`, or another unexpected launcher.\n\n- Was there related token theft or Entra ID activity around the same time?\n  - Focus: related alerts for `user.id` / `host.id` covering credential access, unusual logons, or cloud session abuse.\n  - Implication: broaden scope when PRT extraction coincides with suspicious Azure/Entra sign-ins or cookie theft.\n\n### False positive analysis\n\n- Legitimate browser SSO and account linking launch BrowserCore with a `chrome-extension://` argument and should not\n  match pivot 2. Rare custom helpers that invoke BrowserCore without that URI may need exceptions scoped to\n  `process.executable`, `process.parent.executable`, `user.id`, and `host.id`.\n\n### Response and remediation\n\n- If confirmed malicious, isolate the host, terminate the anomalous BrowserCore tree, and assume the user's Entra ID\n  PRT/session may be compromised: revoke refresh tokens / sign the user out of all sessions and rotate credentials.\n- Hunt for the same `process.command_line` pattern, scheduled tasks, or scripts that invoke BrowserCore across the estate.\n- Remove persistence (scheduled tasks, scripts) that launched BrowserCore outside the browser native-messaging flow.\n",
+        "query": "from logs-endpoint.events.process-*, logs-windows.sysmon_operational-*, logs-system.security-*, logs-windows.*, winlogbeat-*, logs-crowdstrike.fdr*, logs-sentinel_one_cloud_funnel.*, logs-m365_defender.event-* metadata _id, _version, _index\n| where KQL(\"\"\" event.category : \"process\" and event.type : \"start\" and host.os.type : \"windows\" \"\"\") and \n        to_lower(process.name) == \"browsercore.exe\" and process.parent.name is not null and process.command_line is not null and\n        not to_lower(process.command_line) like \"*chrome-extension://*\"\n| keep\n    @timestamp, \n    _id, \n    _version, \n    _index,\n    data_stream.namespace,\n    host.id,\n    host.name,\n    user.name,\n    user.id,\n    process.entity_id,\n    process.name,\n    process.executable,\n    process.command_line,\n    process.pe.original_file_name,\n    process.parent.name,\n    process.parent.executable,\n    process.parent.command_line\n",
+        "references": [
+            "https://www.armadin.com/blog-posts/prtremote-extract-prt-cookies-remotely-with-interactivetoken-scheduled-task",
+            "https://github.com/dmcxblue/ANIMO/blob/master/helpers/scripts/GrabTokenAzureAD/PrtExtractor.cs",
+            "https://attack.mitre.org/techniques/T1528/"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^8.2.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "system",
+                "version": "^2.0.0"
+            },
+            {
+                "package": "crowdstrike",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.0.0"
+            },
+            {
+                "package": "m365_defender",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "@timestamp",
+                "type": "date"
+            },
+            {
+                "ecs": false,
+                "name": "_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "_index",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "_version",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.namespace",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.command_line",
+                "type": "wildcard"
+            },
+            {
+                "ecs": true,
+                "name": "process.entity_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.command_line",
+                "type": "wildcard"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.pe.original_file_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "8f44478a-5b6a-4463-8a0a-3300bf3a62c9",
+        "setup": "## Setup\n\nThis rule is designed for data generated by [Elastic Defend](https://www.elastic.co/security/endpoint-security), which provides native endpoint detection and response, along with event enrichments designed to work with our detection rules.\n\nSetup instructions: https://ela.st/install-elastic-defend\n\n### Additional data sources\n\nThis rule also supports the following third-party data sources. For setup instructions, refer to the links below:\n\n- [CrowdStrike](https://ela.st/crowdstrike-integration)\n- [Microsoft Defender XDR](https://ela.st/m365-defender)\n- [SentinelOne Cloud Funnel](https://ela.st/sentinel-one-cloud-funnel)\n- [Sysmon Event ID 1 - Process Creation](https://ela.st/sysmon-event-1-setup)\n- [Windows Process Creation Logs](https://ela.st/audit-process-creation)\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Platform: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Resources: Investigation Guide",
+            "Rule Type: ES|QL",
+            "Data Source: Elastic Defend",
+            "Data Source: Sysmon",
+            "Data Source: Windows Security Event Logs",
+            "Data Source: Crowdstrike",
+            "Data Source: SentinelOne",
+            "Data Source: Microsoft Defender XDR"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1528",
+                        "name": "Steal Application Access Token",
+                        "reference": "https://attack.mitre.org/techniques/T1528/"
+                    },
+                    {
+                        "id": "T1539",
+                        "name": "Steal Web Session Cookie",
+                        "reference": "https://attack.mitre.org/techniques/T1539/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 2
+    },
+    "id": "8f44478a-5b6a-4463-8a0a-3300bf3a62c9_2",
+    "type": "security-rule"
+}
