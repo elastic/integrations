@@ -68,10 +68,10 @@ jobs:
         run: |
           PERMISSION=$(gh api "repos/$REPOSITORY/collaborators/$ACTOR/permission" \
             --jq '.permission' 2>/dev/null || echo "none")
-          if [[ "$PERMISSION" == "write" || "$PERMISSION" == "admin" ]]; then
+          if [[ "$PERMISSION" == "write" || "$PERMISSION" == "maintain" || "$PERMISSION" == "admin" ]]; then
             echo "permitted=true" >> "$GITHUB_OUTPUT"
           else
-            echo "Actor $ACTOR lacks write/admin permission ($PERMISSION) — skipping"
+            echo "Actor $ACTOR lacks write/maintain/admin permission ($PERMISSION) — skipping"
           fi
 
       - name: Resolve merge SHA and PR metadata
@@ -171,6 +171,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPOSITORY: ${{ github.repository }}
           MERGE_SHA: ${{ steps.resolve.outputs.merge_sha }}
+          PR_NUMBER: ${{ steps.resolve.outputs.pr_number }}
           PR_AUTHOR: ${{ steps.resolve.outputs.pr_author }}
           COMMENT_ID: ${{ steps.find-comment.outputs.comment_id }}
           BODY_FILE: ${{ steps.find-comment.outputs.body_file }}
