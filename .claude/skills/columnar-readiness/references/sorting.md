@@ -12,45 +12,61 @@ of YAML in the data stream manifest, no mapping or pipeline changes.
 - default index sort `host.name asc, @timestamp desc`
 - `ignore_malformed` and `ignore_above` defaults
 
-If the data stream has no `host.name` mapping, Elasticsearch **adds one**. If an
-existing `host.name` mapping is incompatible with sorting (wrong type, multi-valued),
-it falls back to `@timestamp` only.
+If the data stream has no `host.name` mapping, Elasticsearch **adds one**
+(`LogsdbIndexModeSettingsProvider.MappingHints`). It keeps `host.name` in the sort
+when the mapping is a keyword or a number **with doc values**; otherwise
+`IndexSortConfig#buildIndexSort` falls back to `@timestamp` alone.
 
 So the default is never an error — it is just frequently useless.
 
+## Decide from the inputs, not from the field files
+
+The single most common mistake here is to read "`host.name` is not in
+`data_stream/<ds>/fields/*.yml`" or "`sample_event.json` has no `host.name`" as
+evidence that the default sort is wrong. It is not evidence of anything:
+
+- Elastic Agent's `add_host_metadata` processor populates `host.name` on **every**
+  event, whatever the package declares;
+- Elasticsearch injects the `host.name` mapping itself when the index template does
+  not define one.
+
+So the question "is `host.name` a meaningful dimension for this dataset?" is answered
+by **what the input collects**, not by what the package happens to have written down.
+
+The only mapping fact that matters is a *downgrade*: if the package maps `host.name`
+as something other than a keyword/number with doc values — `text`,
+`match_only_text`, `doc_values: false` — the default silently degenerates to
+`@timestamp` only, and you need an explicit sort (or a fixed `host.name` mapping).
+
 ## When the default is right
 
-`host.name asc, @timestamp desc` is a good sort key when `host.name` is a meaningful,
-populated, reasonably high-cardinality dimension for the dataset. That is the case for
-infrastructure logs collected on the machine that produced them:
+`host.name asc, @timestamp desc` is a good sort key for anything the agent collects
+on, or immediately next to, the machine that produced it:
 
 - `system`, `nginx`, `apache`, `kubernetes/container_logs`, `auditd`, `windows`
 
-Signals that say "host is meaningful":
-
-- the data stream's inputs are local: `logfile`, `filestream`, `journald`, `winlog`,
-  `unix`, `tcp`/`udp` syslog, `docker`, `audit/*`;
-- `host.name` is mapped **and** populated with something other than the collector
-  hostname in `sample_event.json`, `_dev/test/pipeline/*-expected.json`, or
-  `_dev/test/system/*`.
+Host-local inputs: `logfile`, `filestream`, `journald`, `winlog`, `etw`, `unix`,
+`system/*`, `audit/*`, `auditd-logfile`, `unifiedlogs`, `osquery`, `packet`,
+`docker`, `containerd`, `filestream-container`, and the `tcp`/`udp`/`syslog`
+receivers.
 
 ## When the default is wrong
 
-For SaaS and cloud audit logs the agent is a poller: `host.name` is either absent or is
-the single collector host, so a sort on it is a no-op that also wastes a sort slot.
+For SaaS and cloud audit logs the agent is a poller: `host.name` is the single
+collector host, so a sort on it is a no-op that also wastes a sort slot.
 Examples: `o365`, `okta`, `aws/cloudtrail`, `github`, `salesforce`, `google_workspace`,
 `atlassian_cloud`.
 
-Signals that say "host is the collector, not the subject":
-
-- inputs are `httpjson`, `cel`, `aws-s3`, `aws-cloudwatch`, `gcp-pubsub`, `gcs`,
-  `azure-eventhub`, `azure-blob-storage`, `o365audit`, `entity-analytics`,
-  `salesforce`, `http_endpoint`, `streaming`, `websocket`;
-- `host.name` is unmapped, or present only via `base-fields.yml` boilerplate.
+Collector inputs: `httpjson`, `cel`, `aws-s3`, `aws-cloudwatch`, `gcp-pubsub`, `gcs`,
+`azure-eventhub`, `azure-blob-storage`, `azure-monitor`, `o365audit`,
+`entity-analytics`, `salesforce`, `okta`, `http_endpoint`, `streaming`, `websocket`,
+`lumberjack`, `netflow`, `cloudbeat/*`, `kafka`, `redis`, `mqtt`.
 
 Careful: a data stream can offer both (`kubernetes/audit_logs` accepts `filestream`
 *and* `gcp-pubsub`). If any collector-style input is offered, treat host as not
 meaningful — a deployment using the API input would otherwise get a degenerate sort.
+Same for an input the audit does not recognise: unknown means "propose an explicit
+sort and let a human look".
 
 ## Proposing an explicit sort
 
@@ -78,29 +94,63 @@ field rarely pays for the extra sort cost at index time.
    `aws.cloudtrail.resources.account_id`.
 2. **A collector / sensor identity** when there is no tenant: `observer.name`,
    `observer.serial_number`, `agent.id`.
-3. **The field the package's own dashboards filter or group by most often.** Extract
-   these from `kibana/dashboard/*.json`, `kibana/lens/*.json`, `kibana/search/*.json`
-   and `kibana/ml_module/*.json`. `scripts/audit.py <package>` prints the ranked list
-   under "Dashboard fields".
+3. **A field the package's own dashboards actually FILTER on.** Being plotted on an
+   axis, used as a group-by or listed as a table column is *not* enough — index
+   sorting only pays off for fields that queries **prune** on. The audit counts only
+   Kibana filter pills (`filter[].meta.key`) and KQL/Lucene query clauses, and prints
+   them under "Dashboard filter fields". The broader "Dashboard fields" list is the
+   benchmark workload, not a source of sort candidates.
 
 ### Hard constraints on a sort field
 
 A sort field must be:
 
-- **single-valued** — arrays break index sorting. ECS fields marked
-  `normalize: [array]` are out.
+- **single-valued.** A multi-valued sort field is a *correctness* hazard, not a weak
+  pick: Lucene sorts the document by one selected value from the array and every
+  later pruning decision silently follows that choice. Out: ECS fields marked
+  `normalize: [array]` (`tags`, `event.category`, `event.type`, `related.ip`,
+  `host.ip`, `host.mac`, `process.args`, …), package fields declaring
+  `normalize: [array]`, and any field the `sample_event.json` shows as a list.
 - **backed by doc values** — so not a field carrying `doc_values: false`.
-- **not** `text`, `match_only_text`, `wildcard`, `flattened`, `nested`, `object`,
-  `geo_point`, `geo_shape`, `histogram`, `aggregate_metric_double` or `binary`.
+- **one of `keyword`, `ip`, `long`, `integer`, `short`, `byte`, `unsigned_long`.**
+  This is an allow-list, and it is deliberately narrower than "what Lucene can sort":
+  - `boolean` and low-cardinality enums (`*.log_type`, `*.entity_state`,
+    `result.evaluation`) prune almost nothing;
+  - `double`/`float`/`scaled_float`/`half_float` are per-event measurements
+    (`*.response_time`) — sorting on them destroys time locality and compresses
+    *worse*;
+  - `date` other than `@timestamp` is a second clock, not a grouping dimension;
+  - `text`, `match_only_text`, `wildcard`, `flattened`, `nested`, `object`, `group`,
+    `geo_point`, `geo_shape`, `histogram`, `aggregate_metric_double` and `binary`
+    cannot be sorted on at all.
 - **not constant within the index** — `data_stream.dataset`, `data_stream.namespace`,
   `event.dataset`, `event.module`, `agent.type`, any `constant_keyword`. These are
   frequent in dashboard filters and completely useless as a sort prefix.
+- **not a collector artifact.** `aws.s3.bucket.name`, `aws.s3.object.key`,
+  `log.file.path` and friends describe where the agent picked the data up, not who
+  the data is about. They look like a grouping field and are not one.
+
+An `external: ecs` reference carries no local `type`, so the audit resolves the type
+and the array flag from elastic-package's ECS cache
+(`~/.elastic-package/cache/fields/ecs/<version>/ecs_nested.yml`). Without that cache
+it falls back to a small deny-list and rejects ECS fields whose type it cannot
+determine, which biases it towards "no confident candidate" — the safe direction.
+
+### When nothing survives
+
+Say so. `explicit sort proposed: @timestamp desc only — no confident candidate; needs
+human choice` is a legitimate, useful outcome: `@timestamp desc` still beats sorting
+on a field that prunes nothing, and it tells the package owner exactly what decision
+is being asked of them. Never promote a weak candidate just to fill the slot.
 
 ### Soft guidance
 
 - Prefer higher cardinality for the leading field, but not unbounded: a tenant id with
   hundreds to millions of values is ideal; a `severity` enum with five values barely
-  prunes anything; a per-event UUID prunes nothing and destroys compression.
+  prunes anything; a per-event UUID prunes nothing and destroys compression. The audit
+  drops dashboard candidates whose leaf name ends in an enum word — `*_status`,
+  `*_type`, `*_result`, `*.evaluation`, and the OCSF-style `class_uid`, `severity_id`,
+  `activity_id` — while keeping real identifiers such as `account_id` and `tenant_id`.
 - The leading field should be the one queries **filter on**, not the one they sort by.
 - Sorting improves compression too: co-locating documents from the same tenant makes
   the doc-value blocks far more compressible.

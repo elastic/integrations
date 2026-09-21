@@ -39,25 +39,30 @@ the query surface, so this is never an automatic fix.
 
 ### A2. `doc_values: false` — `doc_values_false`
 
-**Rule.** `doc_values: false` on a field that is **not** a multi-field, **unless** the
-same field also sets `store: true`.
+**Rule.** `doc_values: false` on a field that is **not** a multi-field.
 
-- Multi-fields (`multi_fields:`) are exempt: the parent field carries the value, so the
-  sub-field does not need to be reconstructable.
-- `doc_values: false` + `store: true` is accepted by Elasticsearch — the value is
-  reconstructable from the stored field.
+Multi-fields (`multi_fields:`) are exempt: `MappingLookup.firstFieldNotReconstructableFromDocValues`
+skips anything `isMultiField(...)` returns true for, because a multi-field never
+appears in `_source` on its own. For a top-level keyword,
+`KeywordFieldMapper.syntheticSourceSupport` returns `FALLBACK` when neither `stored()`
+nor doc values are available, and columnar mode disables the `_ignored_source`
+fallback and forbids `synthetic_source_keep`, so the index template is rejected
+(`IndexMode.LOGSDB_COLUMNAR#validateMapping`).
 
-**Remediation**, in order of preference:
+**Remediation.** Set `doc_values: true` — i.e. delete the `doc_values: false` line, or
+for an `external: ecs` field add an explicit `doc_values: true` (see A2b). Under
+columnar mode the field is stored as doc values anyway and there is no inverted index
+to pay for, so the original "save space by not indexing" motivation is gone.
 
-1. Remove `doc_values: false`. Under columnar mode the field is stored as doc values
-   anyway and there is no inverted index to pay for, so the original "save space by
-   not indexing" motivation largely disappears.
-2. Add `store: true`. Right answer for large, search-only strings — `event.original`
-   is the canonical case.
-3. Change the type to `match_only_text` for message-like content.
+`match_only_text` is an alternative for message-like content, but **only** for fields
+the package defines itself — elastic-package refuses to override the type of an
+`external: ecs` field unless it is on the `allowedTypeOverride` list.
+
+**`store: true` is not an option.** See A2c: Elasticsearch rejects `store` in columnar
+modes.
 
 **Known in catalog (declared in source):** `doppel/alerts`
-(`doppel.alerts.cred_leaks_password`), `withsecure_elements/incidents` and
+(`doppel.darkweb.cred_leaks_password`), `withsecure_elements/incidents` and
 `withsecure_elements/security_events` (`event.original`).
 
 ### A2b. `doc_values: false` inherited from ECS — `doc_values_false_ecs`
@@ -96,29 +101,70 @@ ECS fields that carry `doc_values: false` (checked against ECS v8.11.0 and v9.3.
   `threat.indicator.file.`, `threat.enrichments.indicator.`,
   `threat.enrichments.indicator.file.`)
 
-**Remediation.** Override locally — package attributes win over imported ones
-(`transformed.DeepUpdate(def)`), except for `type`:
+**Remediation.** Override `doc_values` locally — package attributes win over imported
+ones, because elastic-package merges with `transformed.DeepUpdate(def)`
+(`internal/fields/dependency_manager.go`):
 
 ```yaml
 - name: event.original
   external: ecs
-  store: true
+  doc_values: true
 ```
 
-`store: true` keeps `event.original` retrievable and searchable-by-fetch without paying
-for doc values on a large string, which is exactly what the ECS definition was trying
-to achieve.
+Two things that do **not** work here:
 
-**Known in catalog:** 49 packages. Run `scripts/audit.py packages/ --catalog` for the
-current list.
+- `store: true` — rejected by Elasticsearch in columnar modes (A2c).
+- `type: match_only_text` — elastic-package forces the ECS type for an
+  `external: ecs` field unless the field is in `allowedTypeOverride`
+  (`dependency_manager.go`), and `event.original` is not.
+
+**Where it surfaces.** `elastic-package lint` validates the package *source*, where
+the field has no `doc_values` at all, so it sees nothing. `elastic-package build`
+validates the *built zip*, where ECS has been resolved — that is where every affected
+package will fail, whatever spec version it declares.
+
+**Known in catalog:** 49 packages, 72 data streams. Run
+`scripts/audit.py packages/ --catalog` for the current list.
+
+### A2c. `store: true` — `store_true`
+
+**Rule.** Any field with `store: true`.
+
+Elasticsearch refuses it while parsing the mapping
+(`FieldMapper.Builder#storeParam`):
+
+```
+[store] cannot be enabled on field [foo] in [logsdb_columnar] index mode
+```
+
+(see `KeywordFieldMapperTests.testStoreNotAllowedInColumnarMode`). This is why
+`store: true` can never be the answer to A2 or A2b — the two settings are rejected by
+different checks, and swapping one for the other just trades one failure for another.
+
+**Remediation.** Remove `store: true`. The value is reconstructed from doc values;
+`fields` retrieval and `_source` retrieval keep working.
+
+**Known in catalog:** none in a `type: logs` data stream. The only two occurrences
+(`cisco_meraki_metrics/device_health`, `panw_metrics/system`) are in `type: metrics`
+streams, which are out of scope.
 
 ### A3. `copy_to` — `copy_to`
 
-**Rule.** Any field with a `copy_to` attribute.
+**Rule.** Any field with a `copy_to` attribute. **No multi-field exemption**, unlike
+`doc_values: false`.
 
 `copy_to` writes into a second field that is not present in the document, so the
-synthetic source cannot be reconstructed faithfully
-(`FieldMapper.calculateSyntheticSourceMode`).
+synthetic source cannot be reconstructed faithfully. Columnar mode does not reason
+about it at all: `FieldMapper.TypeParser#parse` throws as soon as it sees the
+attribute under `isStrictColumnar()` —
+
+```
+[copy_to] is not allowed on field [foo] in [logsdb_columnar] index mode
+```
+
+— and that parse path is the same one used for the sub-fields of a `multi_fields:`
+block. (`FieldMapper#validate` separately refuses `copy_to` from or to a multi-field
+in every index mode.)
 
 **Remediation.** Do the copy in the ingest pipeline with a `set` processor (or `append`
 when the target is multi-valued), or drop the target field if nothing queries it.
@@ -131,33 +177,45 @@ when the target is multi-valued), or drop the target field if nothing queries it
     ignore_empty_value: true
 ```
 
-### A4. `keyword` with `normalizer` — `keyword_normalizer`
+### A4. `keyword` with a non-`lowercase` `normalizer` — `keyword_normalizer`
 
-**Rule.** `type: keyword` together with a `normalizer`.
+**Rule.** `type: keyword` with a `normalizer` **other than** `lowercase`, on a field
+that is **not** a multi-field.
 
-The normalizer rewrites the value before it is stored, so doc values hold the
-normalized form and the original cannot be reconstructed.
+Two exemptions, both of them easy to get wrong:
+
+1. **Multi-fields are exempt.** `MappingLookup.firstFieldNotReconstructableFromDocValues`
+   skips `isMultiField(...)`, so a `caseless` sub-field under `multi_fields:` is fine
+   no matter what normalizer it uses. The parent carries the raw value.
+2. **`normalizer: lowercase` is exempt.** `KeywordFieldMapper.Builder` defaults
+   `normalizer_skip_store_original_value` to `true` when the normalizer resolves to
+   the built-in `LowercaseNormalizer` (`AnalysisModule`), so
+   `syntheticSourceSupport()` returns `Native` rather than `FALLBACK`. The field is
+   accepted; it is merely lossy — see C4.
+
+Anything else (a custom normalizer with `asciifolding`, a custom char filter, …)
+returns `FALLBACK` and is rejected on a top-level field.
 
 **Remediation.**
 
-- Apply the transformation in the ingest pipeline (usually a `lowercase` processor) and
-  map a plain `keyword`; or
-- move the normalized variant into `multi_fields:` — multi-fields are exempt from the
-  reconstructability check, so `field` stays raw and `field.lowercase` carries the
-  normalizer.
+- Apply the transformation in the ingest pipeline and map a plain `keyword`; or
+- move the normalized variant into `multi_fields:` — `field` stays raw and
+  `field.caseless` carries the normalizer.
 
 ```yaml
 - name: user.name
   type: keyword
   multi_fields:
-    - name: lowercase
+    - name: caseless
       type: keyword
       normalizer: lowercase
 ```
 
-**Known in catalog:** `crowdstrike/fdr`, `m365_defender/event`,
-`sentinel_one_cloud_funnel/event`, `system/security`, `windows/forwarded`,
-`windows/sysmon_operational`.
+**Known in catalog:** none. The six data streams the earlier analysis flagged —
+`crowdstrike/fdr`, `m365_defender/event`, `sentinel_one_cloud_funnel/event`,
+`system/security`, `windows/forwarded`, `windows/sysmon_operational` — all declare the
+normalizer on a `caseless` **multi-field**, which is exempt. They are clean;
+`system/security` is `READY`.
 
 ### A5. Mapping-level runtime fields — `runtime_field`
 
@@ -171,13 +229,31 @@ containing a script.
 - move it to query time: ES|QL `EVAL`, or a runtime field defined in the search
   request rather than in the mapping. Both still work against a columnar index.
 
+### A5b. `dynamic: runtime` — `dynamic_runtime`
+
+**Rule.** `dynamic: runtime` on a field definition, or on
+`elasticsearch.index_template.mappings.dynamic`.
+
+Unmapped leaves are then materialised as **mapping-level** runtime fields at ingest
+time, which is exactly what `validateNoMappingRuntimeFields` refuses under columnar
+mode. It is the dynamic-mapping variant of A5 and fails the same way, just later —
+when the first document with an unknown field arrives.
+
+**Remediation.** Use `dynamic: true`: unmapped leaves become non-indexed
+`keyword`/`long`/`double` doc values, which is cheap in columnar mode because no
+inverted index is built for them anyway. Or map the fields explicitly.
+
 ### A6. Stored `_source` overrides — `source_mode_stored`, `source_disabled`
 
-**Rule.** Any of:
+**Rule.** Either of:
 
-- `elasticsearch.source_mode: stored` in `data_stream/<ds>/manifest.yml`
 - `elasticsearch.index_template.mappings._source.enabled: false`
 - `elasticsearch.index_template.mappings._source.mode: stored`
+
+(`elasticsearch.source_mode` is **not** one of them: its package-spec enum is
+`default | synthetic`, so there is no `stored` value to catch and neither value
+conflicts with columnar mode. A stored `_source` can only be requested through the raw
+index-template mappings above.)
 
 Columnar mode never stores `_source`; these settings are a direct contradiction.
 
@@ -278,12 +354,25 @@ The document you get back is a reconstruction, not the bytes that were ingested:
 - multi-value arrays keep their original order (in plain logsdb synthetic source they
   are sorted and de-duplicated).
 
-Pipeline test expected documents
-(`data_stream/<ds>/_dev/test/pipeline/*-expected.json`) will therefore show diffs. See
-[`correctness-and-performance.md`](correctness-and-performance.md) for which diffs are
-expected and which are bugs.
+**This does not change pipeline test expectations.** `elastic-package test pipeline`
+calls `_ingest/pipeline/_simulate`; no document is ever indexed, so `index_mode` has
+no way to influence `*-expected.json`. Those files must be byte-identical between the
+two modes — a diff there is a real bug or test nondeterminism, never an expected
+columnar effect. The shape changes above are only observable in a system test or in a
+`GET _search` against documents actually indexed in both modes. See
+[`correctness-and-performance.md`](correctness-and-performance.md).
 
 ### C3. Dynamically mapped fields
 
 Fields created by dynamic mapping become non-indexed `keyword`/`long`/`double` doc
 values rather than indexed fields.
+
+### C4. `normalizer: lowercase` is lossy — `keyword_normalizer_lowercase`
+
+A top-level keyword with `normalizer: lowercase` is accepted (see A4), but the
+original value is not stored anywhere: synthetic source returns the **lowercased**
+form. Anything that round-trips a document — reindex, a UI that displays `_source`,
+a detection rule that string-compares the raw value — sees the normalized casing.
+
+No change is required. If the original casing has to survive a read, keep the parent
+field raw and move the normalizer into `multi_fields:`.

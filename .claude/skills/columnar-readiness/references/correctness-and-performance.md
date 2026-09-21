@@ -10,8 +10,18 @@ today; stage 4 is manual.
 ```
 cd packages/<pkg>
 elastic-package lint
+elastic-package build
 elastic-package check
 ```
+
+**Run `build`, not just `lint`.** `lint` validates the package **source**. `build`
+resolves `external: ecs` references first and validates the **built zip**. The two see
+different documents, and the difference matters: in the source an `external: ecs`
+reference to `event.original` carries no `doc_values` at all, while in the built
+package it carries `doc_values: false`. The ECS blocker (`doc_values_false_ecs`,
+~49 packages) is therefore invisible to `lint` and will fail `build` for every
+affected package the moment it opts in — independent of which `format_version` it
+declares.
 
 ### The spec version problem
 
@@ -44,9 +54,24 @@ Bumping `format_version` to 3.7.0 turns on validators the package never had to s
 before, so unrelated pre-existing problems can surface. Those may be excluded in
 `validation.yml`, with a comment explaining each one.
 
-**Never add an exclusion for a columnar validator error** (`SVR00013`,
-`SVR00014`, … — the `CodeColumnar*` codes). Those are the findings this whole exercise
-is about; silencing them ships broken data streams.
+**Never add an exclusion for a columnar validator error.** The `CodeColumnar*` codes in
+`code/go/pkg/specerrors/constants.go` are:
+
+| Code | Constant | Finding |
+| --- | --- | --- |
+| `SVR00011` | `CodeColumnarNestedField` | `nested` type has limited support in columnar mode |
+| `SVR00012` | `CodeColumnarDynamicFalse` | `dynamic: false` causes data loss (no `_source`) |
+| `SVR00013` | `CodeColumnarEnabledFalse` | `enabled: false` on an object causes data loss |
+
+Those are the findings this whole exercise is about; silencing them ships broken data
+streams.
+
+The **hard** columnar errors — `doc_values: false`, `store: true`, `copy_to`, a
+non-`lowercase` `normalizer`, mapping-level runtime fields, a type with no doc values —
+have **no `SVR` code at all**. They are raised by Elasticsearch when the index
+template is applied, not by a package-spec validator, so they cannot be excluded via
+`validation.yml` under any circumstances. There is nothing to silence: fix them or
+leave the data stream on logsdb.
 
 ---
 
@@ -93,29 +118,43 @@ elastic-package test system    2>&1 | tee /tmp/system-columnar.txt
 diff /tmp/pipeline-logsdb.txt /tmp/pipeline-columnar.txt
 ```
 
-Pipeline tests run the ingest pipeline and compare against
-`data_stream/<ds>/_dev/test/pipeline/*-expected.json`. Regenerate with:
+### Pipeline tests: the output must be identical
 
-```
-elastic-package test pipeline -g
-```
+`elastic-package test pipeline` posts the documents to
+`_ingest/pipeline/_simulate` (`internal/testrunner/runners/pipeline/tester.go` →
+`internal/elasticsearch/ingest/pipeline.go`) and compares the simulated result with
+`data_stream/<ds>/_dev/test/pipeline/*-expected.json`. **Nothing is ever indexed.**
+There is no index, no index template and no index mode involved, so
+`index_mode: logsdb_columnar` cannot change the output by construction.
 
-Regenerate **only after** you have reviewed the diff and confirmed every change is on
-the expected list below. `-g` overwrites the expectations, so it will happily bake a
-real regression into the repo.
+Consequences:
 
-### Expected diffs
+- The two runs must produce **identical** pipeline results. Any diff is a real bug in
+  the change, or pre-existing test nondeterminism (a timestamp, a generated id) —
+  never an expected columnar effect.
+- **`elastic-package test pipeline -g` should never be needed for this migration.**
+  If you feel the urge to regenerate expectations, stop: you are about to bake
+  something else into the repo.
 
-| Diff | Why |
+### System tests: where the shape changes show up
+
+Synthetic source is only observable once documents are actually indexed, i.e. in
+system tests, or by installing the package twice (one data stream on `logsdb`, one on
+`logsdb_columnar`), ingesting the same documents and diffing `GET _search` output.
+
+Expected differences **in indexed documents**:
+
+| Difference | Why |
 | --- | --- |
 | Objects appear flattened (`a.b.c` instead of nested objects) | Synthetic source is reconstructed from doc values |
 | Arrays of objects lose their per-object grouping | Object arrays are not retained faithfully |
 | Multi-value arrays keep ingest order instead of being sorted/de-duplicated | Columnar preserves original order; plain logsdb synthetic source sorts and dedupes |
 | A field under `dynamic: false` disappears | Class B data loss — must already have been reviewed |
+| A keyword with `normalizer: lowercase` comes back lowercased | Class C4 — the original casing is not stored |
 
 ### Anything else is a bug
 
-Report it with the package, data stream, the input document and the two expected
+Report it with the package, data stream, the input document and the two indexed
 documents. Specifically not expected: values changing, numeric precision loss,
 `null`/empty-string confusion, dropped fields that *are* explicitly mapped, or
 `ignore_malformed` behaviour differences.
