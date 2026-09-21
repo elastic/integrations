@@ -1,0 +1,1295 @@
+---
+description: Parse Veeam Backup & Replication Event Forwarding syslog.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: '9.5.0'
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  - grok:
+      field: event.original
+      tag: grok_severity_and_payload
+      description: Parse the Veeam [INF]/[WRN]/[ERR] token and event payload. RFC 5424 header fields come from the Agent syslog processor (`log.syslog.*`).
+      if: ctx.event?.original != null && ctx.event.original != ''
+      patterns:
+        - '^%{DATA}\[(?<_temp.severity_token>INF|WRN|ERR)\] %{GREEDYDATA:_temp.payload}$'
+        - '^%{GREEDYDATA:_temp.payload}$'
+      ignore_failure: true
+  - set:
+      field: log.level
+      tag: set_log_level_info
+      value: info
+      if: ctx._temp?.severity_token == 'INF'
+  - set:
+      field: log.level
+      tag: set_log_level_warning
+      value: warning
+      if: ctx._temp?.severity_token == 'WRN'
+  - set:
+      field: log.level
+      tag: set_log_level_error
+      value: error
+      if: ctx._temp?.severity_token == 'ERR'
+  - set:
+      field: event.provider
+      tag: set_event_provider
+      copy_from: log.syslog.appname
+      ignore_empty_value: true
+      if: ctx.event?.provider == null && ctx.log?.syslog?.appname != null && ctx.log.syslog.appname != '-'
+  - set:
+      field: observer.hostname
+      tag: set_observer_hostname
+      copy_from: log.syslog.hostname
+      ignore_empty_value: true
+      if: ctx.observer?.hostname == null && ctx.log?.syslog?.hostname != null && ctx.log.syslog.hostname != '-'
+  - trim:
+      field: _temp.payload
+      tag: trim_payload
+      ignore_missing: true
+  - grok:
+      field: _temp.payload
+      tag: grok_kv_src
+      description: Strip wrapping brackets from the Veeam structured-data payload before kv parsing.
+      patterns:
+        - '^\[%{GREEDYDATA:_temp.kv_src}\]$'
+        - '%{DATA}\[%{GREEDYDATA:_temp.kv_src}\]$'
+      ignore_failure: true
+      if: ctx._temp?.payload != null && ctx._temp.payload.contains('[categoryId=')
+  - kv:
+      field: _temp.kv_src
+      tag: kv_structured_data
+      description: Parse all Veeam structured-data key=value pairs, including XML-valued parameters. Split only on PascalCase SD keys plus categoryId/instanceId/isDisabled/param3 so camelCase XML attributes stay inside the value.
+      target_field: _temp.kv
+      field_split: ' (?=(?:[A-Z][A-Za-z0-9_]*|instanceId|categoryId|isDisabled|param3)=)'
+      value_split: '='
+      trim_key: ' '
+      trim_value: '"'
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx._temp?.kv_src != null && ctx._temp.kv_src != ''
+  - script:
+      lang: painless
+      tag: parse_xml_sd_values
+      description: Parse XML payloads already stored by kv on UserFullInfo, InitiatorFullInfo, and SupervisorFullInfo.
+      if: ctx._temp?.kv instanceof Map
+      params:
+        user_info_keys:
+          - UserFullInfo
+          - InitiatorFullInfo
+          - SupervisorFullInfo
+      source: |-
+        def parseUserInfo(def raw) {
+          def obj = new HashMap();
+          obj.put('original', raw);
+          if (raw.startsWith('<')) {
+            int fn = raw.indexOf('fullName="');
+            if (fn >= 0) {
+              int start = fn + 10;
+              int end = raw.indexOf('"', start);
+              if (end > start) {
+                obj.put('full_name', raw.substring(start, end));
+              }
+            }
+            int lt = raw.indexOf('loginType="');
+            if (lt >= 0) {
+              int start = lt + 11;
+              int end = raw.indexOf('"', start);
+              if (end > start) {
+                obj.put('login_type', raw.substring(start, end));
+              }
+            }
+          } else {
+            obj.put('full_name', raw);
+          }
+          return obj;
+        }
+        def kv = ctx._temp.kv;
+        for (def key : params.user_info_keys) {
+          def raw = kv.get(key);
+          if (raw instanceof String && raw != '') {
+            kv.put(key, parseUserInfo(raw));
+          }
+        }
+  - script:
+      lang: painless
+      tag: copy_kv_to_vendor_fields
+      description: Copy remaining structured-data keys into veeam.event using snake_case names.
+      if: ctx._temp?.kv instanceof Map
+      params:
+        skip:
+          - Description
+          - Message
+          - VbrHostName
+          - VbrVersion
+          - SourceIpAddress
+          - UserName
+          - SID
+      source: |-
+        def toSnake(def key) {
+          if (key == 'RestorePointTIme') {
+            return 'restore_point_time';
+          }
+          def snake = /([a-z0-9])([A-Z])/.matcher(key).replaceAll('$1_$2');
+          snake = /([A-Z]+)([A-Z][a-z])/.matcher(snake).replaceAll('$1_$2');
+          return snake.toLowerCase().replace('_i_ds', '_ids');
+        }
+        if (ctx.veeam == null) {
+          ctx.veeam = new HashMap();
+        }
+        if (ctx.veeam.event == null) {
+          ctx.veeam.event = new HashMap();
+        }
+        def skip = params.skip;
+        for (def e : ctx._temp.kv.entrySet()) {
+          if (skip.contains(e.getKey())) {
+            continue;
+          }
+          ctx.veeam.event.put(toSnake(e.getKey()), e.getValue());
+        }
+  - set:
+      field: veeam.event.enterprise_id
+      tag: set_enterprise_id
+      copy_from: log.syslog.structured_data.origin.enterpriseId
+      ignore_empty_value: true
+      if: ctx.veeam?.event?.enterprise_id == null && ctx.log?.syslog?.structured_data?.origin?.enterpriseId != null
+  - set:
+      field: event.code
+      tag: set_event_code
+      copy_from: veeam.event.instance_id
+      ignore_empty_value: true
+      if: ctx.veeam?.event?.instance_id != null
+  - set:
+      field: rule.name
+      tag: set_rule_name
+      copy_from: veeam.event.activity_type
+      ignore_empty_value: true
+      if: ctx.veeam?.event?.activity_type != null
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_success_from_job_result
+      value: success
+      if: 'ctx.event?.outcome == null && ctx.veeam?.event?.job_result != null && ["0", "success"].contains(ctx.veeam.event.job_result.toString().toLowerCase())'
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_failure_from_job_result
+      value: failure
+      if: 'ctx.event?.outcome == null && ctx.veeam?.event?.job_result != null && ["2", "failed", "fail", "failure"].contains(ctx.veeam.event.job_result.toString().toLowerCase())'
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_success_from_result
+      value: success
+      if: 'ctx.event?.outcome == null && ctx.veeam?.event?.result != null && ["0", "success"].contains(ctx.veeam.event.result.toString().toLowerCase())'
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_failure_from_result
+      value: failure
+      if: 'ctx.event?.outcome == null && ctx.veeam?.event?.result != null && ["2", "fail","failed", "failure"].contains(ctx.veeam.event.result.toString().toLowerCase())'
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_success_from_status
+      value: success
+      if: 'ctx.event?.outcome == null && ctx.veeam?.event?.status != null && ["0", "success"].contains(ctx.veeam.event.status.toString().toLowerCase())'
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_failure_from_status
+      value: failure
+      if: 'ctx.event?.outcome == null && ctx.veeam?.event?.status != null && ["2", "fail", "failed", "failure"].contains(ctx.veeam.event.status.toString().toLowerCase())'
+  - set:
+      field: message
+      tag: set_message_from_sd_message
+      copy_from: _temp.kv.Message
+      ignore_empty_value: true
+      if: ctx._temp?.kv?.Message != null
+  - set:
+      field: message
+      tag: set_message_from_description
+      copy_from: _temp.kv.Description
+      ignore_empty_value: true
+      if: ctx.message == null && ctx._temp?.kv?.Description != null
+  - set:
+      field: message
+      tag: set_message_from_free_text
+      copy_from: _temp.payload
+      ignore_empty_value: true
+      if: ctx.message == null && ctx._temp?.kv_src == null && ctx._temp?.payload != null
+  - set:
+      field: host.name
+      tag: set_host_name
+      copy_from: _temp.kv.VbrHostName
+      ignore_empty_value: true
+      if: ctx._temp?.kv?.VbrHostName != null
+  - set:
+      field: observer.version
+      tag: set_observer_version
+      copy_from: _temp.kv.VbrVersion
+      ignore_empty_value: true
+      if: ctx._temp?.kv?.VbrVersion != null
+  - convert:
+      field: _temp.kv.SourceIpAddress
+      type: ip
+      tag: convert_source_ip_address
+      ignore_missing: true
+      if: ctx._temp?.kv?.SourceIpAddress != ''
+      on_failure:
+        - remove:
+            field: _temp.kv.SourceIpAddress
+            ignore_missing: true
+            tag: remove_invalid_source_ip_address
+        - append:
+            tag: append_convert_source_ip_address_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.ip
+      tag: set_source_ip
+      copy_from: _temp.kv.SourceIpAddress
+      ignore_empty_value: true
+      if: ctx.source?.ip == null && ctx._temp?.kv?.SourceIpAddress != null
+  - set:
+      field: source.address
+      tag: set_source_address
+      copy_from: veeam.event.source_host_name
+      ignore_empty_value: true
+      if: ctx.veeam?.event?.source_host_name != null
+  - set:
+      field: user.id
+      tag: set_user_id
+      copy_from: _temp.kv.SID
+      ignore_empty_value: true
+      if: ctx._temp?.kv?.SID != null
+  - grok:
+      field: _temp.kv.UserName
+      tag: grok_user_name
+      description: Split Veeam UserName DOMAIN\user into ECS user.domain and user.name.
+      patterns:
+        - '^(?<user.domain>[^\\]+)\\(?<user.name>.+)$'
+        - '^(?<user.name>.+)$'
+      ignore_failure: true
+      if: ctx.user?.name == null && ctx._temp?.kv?.UserName != null && ctx._temp.kv.UserName != ''
+  - grok:
+      field: veeam.event.friendly_name
+      tag: grok_friendly_name
+      description: Split FriendlyName DOMAIN\user into ECS user fields when UserName is absent.
+      patterns:
+        - '^(?<user.domain>[^\\]+)\\(?<user.name>.+)$'
+        - '^(?<user.name>.+)$'
+      ignore_failure: true
+      if: ctx.user?.name == null && ctx.veeam?.event?.friendly_name != null && ctx.veeam.event.friendly_name != ''
+  - grok:
+      field: veeam.event.initiator_name
+      tag: grok_initiator_name
+      description: Split InitiatorName DOMAIN\user into ECS user fields when no prior user name is set.
+      patterns:
+        - '^(?<user.domain>[^\\]+)\\(?<user.name>.+)$'
+        - '^(?<user.name>.+)$'
+      ignore_failure: true
+      if: ctx.user?.name == null && ctx.veeam?.event?.initiator_name != null && ctx.veeam.event.initiator_name != ''
+  - grok:
+      field: veeam.event.user_full_info.full_name
+      tag: grok_user_full_info_name
+      description: Split UserFullInfo full_name DOMAIN\user into ECS user fields when no prior user name is set.
+      patterns:
+        - '^(?<user.domain>[^\\]+)\\(?<user.name>.+)$'
+        - '^(?<user.name>.+)$'
+      ignore_failure: true
+      if: ctx.user?.name == null && ctx.veeam?.event?.user_full_info?.full_name != null
+  - grok:
+      field: veeam.event.initiator_full_info.full_name
+      tag: grok_initiator_full_info_name
+      description: Split InitiatorFullInfo full_name DOMAIN\user into ECS user fields when no prior user name is set.
+      patterns:
+        - '^(?<user.domain>[^\\]+)\\(?<user.name>.+)$'
+        - '^(?<user.name>.+)$'
+      ignore_failure: true
+      if: ctx.user?.name == null && ctx.veeam?.event?.initiator_full_info?.full_name != null
+  - grok:
+      field: veeam.event.supervisor_full_info.full_name
+      tag: grok_supervisor_full_info_name
+      description: Split SupervisorFullInfo full_name DOMAIN\user into ECS user fields when no prior user name is set.
+      patterns:
+        - '^(?<user.domain>[^\\]+)\\(?<user.name>.+)$'
+        - '^(?<user.name>.+)$'
+      ignore_failure: true
+      if: ctx.user?.name == null && ctx.veeam?.event?.supervisor_full_info?.full_name != null
+  - grok:
+      field: veeam.event.endpoint
+      tag: grok_endpoint
+      description: Parse Endpoint ip:port into source.ip and source.port when SourceIpAddress is absent.
+      patterns:
+        - '^\[%{IP:source.ip}\]:%{NUMBER:source.port}$'
+        - '^%{IP:source.ip}:%{NUMBER:source.port}$'
+      ignore_failure: true
+      if: ctx.source?.ip == null && ctx.veeam?.event?.endpoint != null && ctx.veeam.event.endpoint != ''
+  - grok:
+      field: veeam.event.friendly_name
+      tag: grok_friendly_name_related
+      description: Split FriendlyName DOMAIN\user for related.user when it is not the ECS user.name source.
+      patterns:
+        - '^(?:[^\\]+\\)?(?<_temp.friendly_user>.+)$'
+      ignore_failure: true
+      if: ctx.veeam?.event?.friendly_name != null && ctx.veeam.event.friendly_name != ''
+  - grok:
+      field: veeam.event.initiator_name
+      tag: grok_initiator_name_related
+      description: Split InitiatorName DOMAIN\user for related.user.
+      patterns:
+        - '^(?:[^\\]+\\)?(?<_temp.initiator_user>.+)$'
+      ignore_failure: true
+      if: ctx.veeam?.event?.initiator_name != null && ctx.veeam.event.initiator_name != ''
+  - grok:
+      field: veeam.event.user_full_info.full_name
+      tag: grok_user_full_info_related
+      description: Split UserFullInfo full_name DOMAIN\user for related.user.
+      patterns:
+        - '^(?:[^\\]+\\)?(?<_temp.user_full_info_user>.+)$'
+      ignore_failure: true
+      if: ctx.veeam?.event?.user_full_info?.full_name != null
+  - grok:
+      field: veeam.event.initiator_full_info.full_name
+      tag: grok_initiator_full_info_related
+      description: Split InitiatorFullInfo full_name DOMAIN\user for related.user.
+      patterns:
+        - '^(?:[^\\]+\\)?(?<_temp.initiator_full_info_user>.+)$'
+      ignore_failure: true
+      if: ctx.veeam?.event?.initiator_full_info?.full_name != null
+  - grok:
+      field: veeam.event.supervisor_full_info.full_name
+      tag: grok_supervisor_full_info_related
+      description: Split SupervisorFullInfo full_name DOMAIN\user for related.user.
+      patterns:
+        - '^(?:[^\\]+\\)?(?<_temp.supervisor_full_info_user>.+)$'
+      ignore_failure: true
+      if: ctx.veeam?.event?.supervisor_full_info?.full_name != null
+  - grok:
+      field: veeam.event.account_name
+      tag: grok_account_name_related
+      description: Split AccountName DOMAIN\user for related.user.
+      patterns:
+        - '^(?:[^\\]+\\)?(?<_temp.account_user>.+)$'
+      ignore_failure: true
+      if: ctx.veeam?.event?.account_name != null && ctx.veeam.event.account_name != ''
+  - grok:
+      field: veeam.event.initiator_user_name
+      tag: grok_initiator_user_name_related
+      description: Split InitiatorUserName DOMAIN\user for related.user.
+      patterns:
+        - '^(?:[^\\]+\\)?(?<_temp.initiator_user_name>.+)$'
+      ignore_failure: true
+      if: ctx.veeam?.event?.initiator_user_name != null && ctx.veeam.event.initiator_user_name != ''
+  - append:
+      field: related.user
+      tag: append_user_name_to_related
+      value: '{{{user.name}}}'
+      allow_duplicates: false
+      if: ctx.user?.name != null
+  - append:
+      field: related.user
+      tag: append_friendly_user_to_related
+      value: '{{{_temp.friendly_user}}}'
+      allow_duplicates: false
+      if: ctx._temp?.friendly_user != null
+  - append:
+      field: related.user
+      tag: append_initiator_user_to_related
+      value: '{{{_temp.initiator_user}}}'
+      allow_duplicates: false
+      if: ctx._temp?.initiator_user != null
+  - append:
+      field: related.user
+      tag: append_user_full_info_to_related
+      value: '{{{_temp.user_full_info_user}}}'
+      allow_duplicates: false
+      if: ctx._temp?.user_full_info_user != null
+  - append:
+      field: related.user
+      tag: append_initiator_full_info_to_related
+      value: '{{{_temp.initiator_full_info_user}}}'
+      allow_duplicates: false
+      if: ctx._temp?.initiator_full_info_user != null
+  - append:
+      field: related.user
+      tag: append_supervisor_full_info_to_related
+      value: '{{{_temp.supervisor_full_info_user}}}'
+      allow_duplicates: false
+      if: ctx._temp?.supervisor_full_info_user != null
+  - append:
+      field: related.user
+      tag: append_account_user_to_related
+      value: '{{{_temp.account_user}}}'
+      allow_duplicates: false
+      if: ctx._temp?.account_user != null
+  - append:
+      field: related.user
+      tag: append_initiator_user_name_to_related
+      value: '{{{_temp.initiator_user_name}}}'
+      allow_duplicates: false
+      if: ctx._temp?.initiator_user_name != null
+  - append:
+      field: related.hosts
+      tag: append_host_name_to_related
+      value: '{{{host.name}}}'
+      allow_duplicates: false
+      if: ctx.host?.name != null && ctx.host?.ip == null
+  - append:
+      field: related.hosts
+      tag: append_observer_hostname_to_related
+      value: '{{{observer.hostname}}}'
+      allow_duplicates: false
+      if: ctx.observer?.hostname != null
+  - append:
+      field: related.hosts
+      tag: append_vm_name_to_related
+      value: '{{{veeam.event.vm_name}}}'
+      allow_duplicates: false
+      if: ctx.veeam?.event?.vm_name != null
+  - append:
+      field: related.hosts
+      tag: append_object_name_to_related
+      value: '{{{veeam.event.object_name}}}'
+      allow_duplicates: false
+      if: ctx.veeam?.event?.object_name != null
+  - append:
+      field: related.hosts
+      tag: append_source_host_name_to_related
+      value: '{{{veeam.event.source_host_name}}}'
+      allow_duplicates: false
+      if: ctx.veeam?.event?.source_host_name != null
+  - append:
+      field: related.hosts
+      tag: append_server_name_to_related
+      value: '{{{veeam.event.server_name}}}'
+      allow_duplicates: false
+      if: ctx.veeam?.event?.server_name != null
+  - append:
+      field: related.hosts
+      tag: append_event_host_name_to_related
+      value: '{{{veeam.event.host_name}}}'
+      allow_duplicates: false
+      if: ctx.veeam?.event?.host_name != null
+  - append:
+      field: related.hosts
+      tag: append_last_known_host_name_to_related
+      value: '{{{veeam.event.last_known_host_name}}}'
+      allow_duplicates: false
+      if: ctx.veeam?.event?.last_known_host_name != null
+  - append:
+      field: related.hosts
+      tag: append_cluster_name_to_related
+      value: '{{{veeam.event.cluster_name}}}'
+      allow_duplicates: false
+      if: ctx.veeam?.event?.cluster_name != null
+  - append:
+      field: related.hosts
+      tag: append_esx_name_to_related
+      value: '{{{veeam.event.esx_name}}}'
+      allow_duplicates: false
+      if: ctx.veeam?.event?.esx_name != null
+  - append:
+      field: related.hosts
+      tag: append_gateway_name_to_related
+      value: '{{{veeam.event.gateway_name}}}'
+      allow_duplicates: false
+      if: ctx.veeam?.event?.gateway_name != null
+  - append:
+      field: related.hosts
+      tag: append_mount_server_to_related
+      value: '{{{veeam.event.mount_server}}}'
+      allow_duplicates: false
+      if: ctx.veeam?.event?.mount_server != null
+  - append:
+      field: related.hosts
+      tag: append_proxy_name_to_related
+      value: '{{{veeam.event.proxy_name}}}'
+      allow_duplicates: false
+      if: ctx.veeam?.event?.proxy_name != null
+  - append:
+      field: related.hosts
+      tag: append_proxy_server_to_related
+      value: '{{{veeam.event.proxy_server}}}'
+      allow_duplicates: false
+      if: ctx.veeam?.event?.proxy_server != null
+  - append:
+      field: related.hosts
+      tag: append_new_primary_node_name_to_related
+      value: '{{{veeam.event.new_primary_node_name}}}'
+      allow_duplicates: false
+      if: ctx.veeam?.event?.new_primary_node_name != null
+  - append:
+      field: related.hosts
+      tag: append_new_secondary_node_name_to_related
+      value: '{{{veeam.event.new_secondary_node_name}}}'
+      allow_duplicates: false
+      if: ctx.veeam?.event?.new_secondary_node_name != null
+  - append:
+      field: related.hosts
+      tag: append_secondary_node_name_to_related
+      value: '{{{veeam.event.secondary_node_name}}}'
+      allow_duplicates: false
+      if: ctx.veeam?.event?.secondary_node_name != null
+  - convert:
+      field: veeam.event.will_be_retried
+      type: boolean
+      tag: convert_will_be_retried
+      ignore_missing: true
+      if: ctx.veeam?.event?.will_be_retried != ''
+      on_failure:
+        - remove:
+            field: veeam.event.will_be_retried
+            ignore_missing: true
+            tag: remove_invalid_will_be_retried
+        - append:
+            tag: append_convert_will_be_retried_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: veeam.event.is_retry
+      type: boolean
+      tag: convert_is_retry
+      ignore_missing: true
+      if: ctx.veeam?.event?.is_retry != ''
+      on_failure:
+        - remove:
+            field: veeam.event.is_retry
+            ignore_missing: true
+            tag: remove_invalid_is_retry
+        - append:
+            tag: append_convert_is_retry_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: veeam.event.is_corrupted
+      type: boolean
+      tag: convert_is_corrupted
+      ignore_missing: true
+      if: ctx.veeam?.event?.is_corrupted != ''
+      on_failure:
+        - remove:
+            field: veeam.event.is_corrupted
+            ignore_missing: true
+            tag: remove_invalid_is_corrupted
+        - append:
+            tag: append_convert_is_corrupted_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: veeam.event.is_full
+      type: boolean
+      tag: convert_is_full
+      ignore_missing: true
+      if: ctx.veeam?.event?.is_full != ''
+      on_failure:
+        - remove:
+            field: veeam.event.is_full
+            ignore_missing: true
+            tag: remove_invalid_is_full
+        - append:
+            tag: append_convert_is_full_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: veeam.event.false_positive
+      type: boolean
+      tag: convert_false_positive
+      ignore_missing: true
+      if: ctx.veeam?.event?.false_positive != ''
+      on_failure:
+        - remove:
+            field: veeam.event.false_positive
+            ignore_missing: true
+            tag: remove_invalid_false_positive
+        - append:
+            tag: append_convert_false_positive_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: veeam.event.is_manual_run
+      type: boolean
+      tag: convert_is_manual_run
+      ignore_missing: true
+      if: ctx.veeam?.event?.is_manual_run != ''
+      on_failure:
+        - remove:
+            field: veeam.event.is_manual_run
+            ignore_missing: true
+            tag: remove_invalid_is_manual_run
+        - append:
+            tag: append_convert_is_manual_run_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: veeam.event.is_disabled
+      type: boolean
+      tag: convert_is_disabled
+      ignore_missing: true
+      if: ctx.veeam?.event?.is_disabled != ''
+      on_failure:
+        - remove:
+            field: veeam.event.is_disabled
+            ignore_missing: true
+            tag: remove_invalid_is_disabled
+        - append:
+            tag: append_convert_is_disabled_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: veeam.event.is_sure_replica
+      type: boolean
+      tag: convert_is_sure_replica
+      ignore_missing: true
+      if: ctx.veeam?.event?.is_sure_replica != ''
+      on_failure:
+        - remove:
+            field: veeam.event.is_sure_replica
+            ignore_missing: true
+            tag: remove_invalid_is_sure_replica
+        - append:
+            tag: append_convert_is_sure_replica_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: veeam.event.is_install_or_upgrade
+      type: boolean
+      tag: convert_is_install_or_upgrade
+      ignore_missing: true
+      if: ctx.veeam?.event?.is_install_or_upgrade != ''
+      on_failure:
+        - remove:
+            field: veeam.event.is_install_or_upgrade
+            ignore_missing: true
+            tag: remove_invalid_is_install_or_upgrade
+        - append:
+            tag: append_convert_is_install_or_upgrade_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: veeam.event.is_throttling_enabled
+      type: boolean
+      tag: convert_is_throttling_enabled
+      ignore_missing: true
+      if: ctx.veeam?.event?.is_throttling_enabled != ''
+      on_failure:
+        - remove:
+            field: veeam.event.is_throttling_enabled
+            ignore_missing: true
+            tag: remove_invalid_is_throttling_enabled
+        - append:
+            tag: append_convert_is_throttling_enabled_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: veeam.event.storage_size
+      type: long
+      tag: convert_storage_size
+      ignore_missing: true
+      if: ctx.veeam?.event?.storage_size != ''
+      on_failure:
+        - remove:
+            field: veeam.event.storage_size
+            ignore_missing: true
+            tag: remove_invalid_storage_size
+        - append:
+            tag: append_convert_storage_size_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: veeam.event.success
+      type: long
+      tag: convert_success
+      ignore_missing: true
+      if: ctx.veeam?.event?.success != ''
+      on_failure:
+        - remove:
+            field: veeam.event.success
+            ignore_missing: true
+            tag: remove_invalid_success
+        - append:
+            tag: append_convert_success_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: veeam.event.unable_to_check
+      type: long
+      tag: convert_unable_to_check
+      ignore_missing: true
+      if: ctx.veeam?.event?.unable_to_check != ''
+      on_failure:
+        - remove:
+            field: veeam.event.unable_to_check
+            ignore_missing: true
+            tag: remove_invalid_unable_to_check
+        - append:
+            tag: append_convert_unable_to_check_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: veeam.event.not_implemented
+      type: long
+      tag: convert_not_implemented
+      ignore_missing: true
+      if: ctx.veeam?.event?.not_implemented != ''
+      on_failure:
+        - remove:
+            field: veeam.event.not_implemented
+            ignore_missing: true
+            tag: remove_invalid_not_implemented
+        - append:
+            tag: append_convert_not_implemented_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: veeam.event.suppressed
+      type: long
+      tag: convert_suppressed
+      ignore_missing: true
+      if: ctx.veeam?.event?.suppressed != ''
+      on_failure:
+        - remove:
+            field: veeam.event.suppressed
+            ignore_missing: true
+            tag: remove_invalid_suppressed
+        - append:
+            tag: append_convert_suppressed_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: veeam.event.suppressed_count
+      type: long
+      tag: convert_suppressed_count
+      ignore_missing: true
+      if: ctx.veeam?.event?.suppressed_count != ''
+      on_failure:
+        - remove:
+            field: veeam.event.suppressed_count
+            ignore_missing: true
+            tag: remove_invalid_suppressed_count
+        - append:
+            tag: append_convert_suppressed_count_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: veeam.event.reset_count
+      type: long
+      tag: convert_reset_count
+      ignore_missing: true
+      if: ctx.veeam?.event?.reset_count != ''
+      on_failure:
+        - remove:
+            field: veeam.event.reset_count
+            ignore_missing: true
+            tag: remove_invalid_reset_count
+        - append:
+            tag: append_convert_reset_count_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: veeam.event.tape_used_size
+      type: long
+      tag: convert_tape_used_size
+      ignore_missing: true
+      if: ctx.veeam?.event?.tape_used_size != ''
+      on_failure:
+        - remove:
+            field: veeam.event.tape_used_size
+            ignore_missing: true
+            tag: remove_invalid_tape_used_size
+        - append:
+            tag: append_convert_tape_used_size_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: veeam.event.new_quota_in_megabytes
+      type: long
+      tag: convert_new_quota_in_megabytes
+      ignore_missing: true
+      if: ctx.veeam?.event?.new_quota_in_megabytes != ''
+      on_failure:
+        - remove:
+            field: veeam.event.new_quota_in_megabytes
+            ignore_missing: true
+            tag: remove_invalid_new_quota_in_megabytes
+        - append:
+            tag: append_convert_new_quota_in_megabytes_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: veeam.event.quota_in_megabytes
+      type: long
+      tag: convert_quota_in_megabytes
+      ignore_missing: true
+      if: ctx.veeam?.event?.quota_in_megabytes != ''
+      on_failure:
+        - remove:
+            field: veeam.event.quota_in_megabytes
+            ignore_missing: true
+            tag: remove_invalid_quota_in_megabytes
+        - append:
+            tag: append_convert_quota_in_megabytes_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: veeam.event.transferred_gb
+      type: double
+      tag: convert_transferred_gb
+      ignore_missing: true
+      if: ctx.veeam?.event?.transferred_gb != ''
+      on_failure:
+        - remove:
+            field: veeam.event.transferred_gb
+            ignore_missing: true
+            tag: remove_invalid_transferred_gb
+        - append:
+            tag: append_convert_transferred_gb_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: source.port
+      type: long
+      tag: convert_source_port
+      ignore_missing: true
+      if: ctx.source?.port != ''
+      on_failure:
+        - remove:
+            field: source.port
+            ignore_missing: true
+            tag: remove_invalid_source_port
+        - append:
+            tag: append_convert_source_port_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: veeam.event.detection_time_utc
+      tag: parse_detection_time_utc
+      if: ctx.veeam?.event?.detection_time_utc != null && ctx.veeam.event.detection_time_utc != ''
+      target_field: veeam.event.detection_time_utc
+      formats:
+        - MM/dd/yyyy HH:mm:ss
+        - M/d/yyyy H:mm:ss
+      on_failure:
+        - remove:
+            field: veeam.event.detection_time_utc
+            ignore_missing: true
+            tag: remove_invalid_detection_time_utc
+        - append:
+            tag: append_parse_detection_time_utc_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: veeam.event.creation_time_utc
+      tag: parse_creation_time_utc
+      if: ctx.veeam?.event?.creation_time_utc != null && ctx.veeam.event.creation_time_utc != ''
+      target_field: veeam.event.creation_time_utc
+      formats:
+        - MM/dd/yyyy HH:mm:ss
+        - M/d/yyyy H:mm:ss
+      on_failure:
+        - remove:
+            field: veeam.event.creation_time_utc
+            ignore_missing: true
+            tag: remove_invalid_creation_time_utc
+        - append:
+            tag: append_parse_creation_time_utc_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: veeam.event.expiration_time_utc
+      tag: parse_expiration_time_utc
+      if: ctx.veeam?.event?.expiration_time_utc != null && ctx.veeam.event.expiration_time_utc != ''
+      target_field: veeam.event.expiration_time_utc
+      formats:
+        - MM/dd/yyyy HH:mm:ss
+        - M/d/yyyy H:mm:ss
+      on_failure:
+        - remove:
+            field: veeam.event.expiration_time_utc
+            ignore_missing: true
+            tag: remove_invalid_expiration_time_utc
+        - append:
+            tag: append_parse_expiration_time_utc_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: veeam.event.creation_time
+      tag: parse_creation_time
+      if: ctx.veeam?.event?.creation_time != null && ctx.veeam.event.creation_time != ''
+      target_field: veeam.event.creation_time
+      formats:
+        - MM/dd/yyyy HH:mm:ss
+        - M/d/yyyy H:mm:ss
+      on_failure:
+        - remove:
+            field: veeam.event.creation_time
+            ignore_missing: true
+            tag: remove_invalid_creation_time
+        - append:
+            tag: append_parse_creation_time_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: veeam.event.date_time
+      tag: parse_date_time
+      if: ctx.veeam?.event?.date_time != null && ctx.veeam.event.date_time != ''
+      target_field: veeam.event.date_time
+      formats:
+        - MM/dd/yyyy HH:mm:ss
+        - M/d/yyyy H:mm:ss
+      on_failure:
+        - remove:
+            field: veeam.event.date_time
+            ignore_missing: true
+            tag: remove_invalid_date_time
+        - append:
+            tag: append_parse_date_time_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: veeam.event.restore_point_time_stamp
+      tag: parse_restore_point_time_stamp
+      if: ctx.veeam?.event?.restore_point_time_stamp != null && ctx.veeam.event.restore_point_time_stamp != ''
+      target_field: veeam.event.restore_point_time_stamp
+      formats:
+        - MM/dd/yyyy HH:mm:ss
+        - M/d/yyyy H:mm:ss
+      on_failure:
+        - remove:
+            field: veeam.event.restore_point_time_stamp
+            ignore_missing: true
+            tag: remove_invalid_restore_point_time_stamp
+        - append:
+            tag: append_parse_restore_point_time_stamp_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: veeam.event.restore_point_time
+      tag: parse_restore_point_time
+      if: ctx.veeam?.event?.restore_point_time != null && ctx.veeam.event.restore_point_time != ''
+      target_field: veeam.event.restore_point_time
+      formats:
+        - MM/dd/yyyy HH:mm:ss
+        - M/d/yyyy H:mm:ss
+      on_failure:
+        - remove:
+            field: veeam.event.restore_point_time
+            ignore_missing: true
+            tag: remove_invalid_restore_point_time
+        - append:
+            tag: append_parse_restore_point_time_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: veeam.event.scan_time_utc
+      tag: parse_scan_time_utc
+      if: ctx.veeam?.event?.scan_time_utc != null && ctx.veeam.event.scan_time_utc != ''
+      target_field: veeam.event.scan_time_utc
+      formats:
+        - MM/dd/yyyy HH:mm:ss
+        - M/d/yyyy H:mm:ss
+      on_failure:
+        - remove:
+            field: veeam.event.scan_time_utc
+            ignore_missing: true
+            tag: remove_invalid_scan_time_utc
+        - append:
+            tag: append_parse_scan_time_utc_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: veeam.event.expiration_utc
+      tag: parse_expiration_utc
+      if: ctx.veeam?.event?.expiration_utc != null && ctx.veeam.event.expiration_utc != ''
+      target_field: veeam.event.expiration_utc
+      formats:
+        - MM/dd/yyyy HH:mm:ss
+        - M/d/yyyy H:mm:ss
+      on_failure:
+        - remove:
+            field: veeam.event.expiration_utc
+            ignore_missing: true
+            tag: remove_invalid_expiration_utc
+        - append:
+            tag: append_parse_expiration_utc_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: veeam.event.tape_storage_creation_time
+      tag: parse_tape_storage_creation_time
+      if: ctx.veeam?.event?.tape_storage_creation_time != null && ctx.veeam.event.tape_storage_creation_time != ''
+      target_field: veeam.event.tape_storage_creation_time
+      formats:
+        - MM/dd/yyyy HH:mm:ss
+        - M/d/yyyy H:mm:ss
+      on_failure:
+        - remove:
+            field: veeam.event.tape_storage_creation_time
+            ignore_missing: true
+            tag: remove_invalid_tape_storage_creation_time
+        - append:
+            tag: append_parse_tape_storage_creation_time_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      tag: set_event_created_from_detection_time
+      copy_from: veeam.event.detection_time_utc
+      if: ctx.veeam?.event?.detection_time_utc != null
+  - geoip:
+      field: source.ip
+      target_field: source.geo
+      ignore_missing: true
+      tag: enrich_source_geo
+      if: ctx.source?.ip != null && ctx.source.geo == null
+  - geoip:
+      database_file: GeoLite2-ASN.mmdb
+      field: source.ip
+      target_field: source.as
+      properties:
+        - asn
+        - organization_name
+      ignore_missing: true
+      tag: enrich_source_asn
+      if: ctx.source?.ip != null && ctx.source.as == null
+  - rename:
+      field: source.as.asn
+      target_field: source.as.number
+      ignore_missing: true
+      tag: rename_source_asn
+  - rename:
+      field: source.as.organization_name
+      target_field: source.as.organization.name
+      ignore_missing: true
+      tag: rename_source_as_org
+  - append:
+      field: related.ip
+      tag: append_source_ip_to_related
+      value: '{{{source.ip}}}'
+      allow_duplicates: false
+      if: ctx.source?.ip != null
+  - set:
+      field: event.kind
+      tag: set_event_kind_malware
+      value: alert
+      if: 'ctx.event?.code != null && ["41600", "41610", "41615", "42200", "42205", "42210", "42220", "42230", "42260", "42270", "42280", "42290", "44200", "44201", "44202"].contains(ctx.event.code)'
+  - append:
+      field: event.category
+      tag: append_event_category_malware
+      value: malware
+      if: 'ctx.event?.code != null && ["41600", "41610", "41615", "42200", "42205", "42210", "42220", "42230", "42260", "42270", "42280", "42290", "44200", "44201", "44202"].contains(ctx.event.code)'
+  - append:
+      field: event.type
+      tag: append_event_type_info_malware
+      value: info
+      if: 'ctx.event?.code != null && ["41600", "41610", "41615", "42200", "42205", "42210", "42220", "42230", "42260", "42270", "42280", "42290", "44200", "44201", "44202"].contains(ctx.event.code)'
+  - set:
+      field: event.kind
+      tag: set_event_kind_users
+      value: event
+      if: 'ctx.event?.code != null && ["31200", "31210", "31300", "31310", "31320", "31400", "40200", "40201", "40202", "40203", "40204", "40205", "40206", "40207", "42400", "42401", "42402", "42403", "42404", "42405", "42800", "44000", "44001", "44002", "44003", "44004", "44005", "44006"].contains(ctx.event.code)'
+  - append:
+      field: event.category
+      tag: append_event_category_iam_users
+      value: iam
+      if: 'ctx.event?.code != null && ["31200", "31210", "31300", "31310", "31320", "31400", "40200", "40201", "40202", "40203", "40204", "40205", "40206", "40207", "42400", "42401", "42402", "42403", "42404", "42405", "42800", "44000", "44001", "44002", "44003", "44004", "44005", "44006"].contains(ctx.event.code)'
+  - append:
+      field: event.type
+      tag: append_event_type_info_users
+      value: info
+      if: 'ctx.event?.code != null && ["31200", "31210", "31300", "31310", "31320", "31400", "40200", "40201", "40202", "40203", "40204", "40205", "40206", "40207", "42400", "42401", "42402", "42403", "42404", "42405", "42800", "44000", "44001", "44002", "44003", "44004", "44005", "44006"].contains(ctx.event.code)'
+  - set:
+      field: event.kind
+      tag: set_event_kind_configuration
+      value: event
+      if: 'ctx.event?.code != null && ["31000", "31100", "31500", "32300", "32400", "32500", "32600", "32700", "32800", "40001", "40300", "40400", "40500", "40600", "40700", "40800"].contains(ctx.event.code)'
+  - append:
+      field: event.category
+      tag: append_event_category_configuration
+      value: configuration
+      if: 'ctx.event?.code != null && ["31000", "31100", "31500", "32300", "32400", "32500", "32600", "32700", "32800", "40001", "40300", "40400", "40500", "40600", "40700", "40800"].contains(ctx.event.code)'
+  - append:
+      field: event.type
+      tag: append_event_type_info_configuration
+      value: info
+      if: 'ctx.event?.code != null && ["31000", "31100", "31500", "32300", "32400", "32500", "32600", "32700", "32800", "40001", "40300", "40400", "40500", "40600", "40700", "40800"].contains(ctx.event.code)'
+  - set:
+      field: event.kind
+      tag: set_event_kind_credential_records
+      value: event
+      if: 'ctx.event?.code != null && ["25300", "25400", "25500", "31600", "31700", "31800", "31850", "31855", "31900", "41810", "42300", "42301", "42302", "42500"].contains(ctx.event.code)'
+  - append:
+      field: event.category
+      tag: append_event_category_iam_credential_records
+      value: iam
+      if: 'ctx.event?.code != null && ["25300", "25400", "25500", "31600", "31700", "31800", "31850", "31855", "31900", "41810", "42300", "42301", "42302", "42500"].contains(ctx.event.code)'
+  - append:
+      field: event.type
+      tag: append_event_type_info_credential_records
+      value: info
+      if: 'ctx.event?.code != null && ["25300", "25400", "25500", "31600", "31700", "31800", "31850", "31855", "31900", "41810", "42300", "42301", "42302", "42500"].contains(ctx.event.code)'
+  - set:
+      field: event.kind
+      tag: set_event_kind_security_compliance
+      value: event
+      if: 'ctx.event?.code != null && ["42900", "42901", "42902", "42903"].contains(ctx.event.code)'
+  - append:
+      field: event.category
+      tag: append_event_category_configuration_security_compliance
+      value: configuration
+      if: 'ctx.event?.code != null && ["42900", "42901", "42902", "42903"].contains(ctx.event.code)'
+  - append:
+      field: event.type
+      tag: append_event_type_info_security_compliance
+      value: info
+      if: 'ctx.event?.code != null && ["42900", "42901", "42902", "42903"].contains(ctx.event.code)'
+  - set:
+      field: event.kind
+      tag: set_event_kind_backup
+      value: event
+      if: 'ctx.event?.code != null && ["110", "114", "115", "116", "117", "118", "119", "120", "121", "122", "123", "124", "125", "126", "150", "151", "190", "194", "195", "196", "197", "198", "199", "200", "203", "204", "205", "206", "207", "208", "310", "350", "351", "360", "361", "390", "410", "450", "451", "490", "510", "512", "590", "592", "601", "10010", "10014", "10050", "10090", "20114", "23010", "23050", "23090", "23110", "23130", "23210", "23220", "23230", "23310", "23320", "23410", "23420", "23440", "23450", "23490", "23610", "23611", "23620", "23621", "23622", "23623", "23630", "23631", "23632", "23633", "28600", "28650", "28700", "28750", "28800", "28850", "28900", "28910", "28920", "28930", "28940", "28950", "30300", "30400", "30500", "30600", "30700", "30800", "32120", "41000", "41001", "41200", "41201", "41202", "41700", "41710", "41800", "42000", "42001"].contains(ctx.event.code)'
+  - set:
+      field: event.kind
+      tag: set_event_kind_restore
+      value: event
+      if: 'ctx.event?.code != null && ["210", "250", "251", "290", "40210", "40290", "41500", "41510"].contains(ctx.event.code)'
+  - append:
+      field: event.category
+      tag: append_event_category_file_restore
+      value: file
+      if: 'ctx.event?.code != null && ["210", "250", "251", "290", "40210", "40290", "41500", "41510"].contains(ctx.event.code)'
+  - append:
+      field: event.type
+      tag: append_event_type_info_restore
+      value: info
+      if: 'ctx.event?.code != null && ["210", "250", "251", "290", "40210", "40290", "41500", "41510"].contains(ctx.event.code)'
+  - set:
+      field: event.kind
+      tag: set_event_kind_infrastructure
+      value: event
+      if: 'ctx.event?.code != null && ["600", "610", "810", "890", "21210", "21214", "21220", "21224", "21230", "21234", "25600", "25700", "25800", "25900", "26000", "26010", "26100", "26110", "26500", "26600", "26700", "27100", "27200", "27300", "27700", "27800", "27900", "28000", "28100", "28200", "28300", "28400", "28500", "28960", "28970", "28980", "29700", "29800", "29900", "30000", "30100", "30200", "32000", "32100", "32200", "32900", "33000", "33001", "36100", "36200", "36300", "36400", "36500", "36600", "36700", "36800", "36900", "40002", "40100", "40101", "40900", "40901", "40902", "40903", "41400", "41401", "41402", "41403", "41404", "41405", "43000", "43001", "43002", "43003", "43004", "43006"].contains(ctx.event.code)'
+  - append:
+      field: event.category
+      tag: append_event_category_host_infrastructure
+      value: host
+      if: 'ctx.event?.code != null && ["600", "610", "810", "890", "21210", "21214", "21220", "21224", "21230", "21234", "25600", "25700", "25800", "25900", "26000", "26010", "26100", "26110", "26500", "26600", "26700", "27100", "27200", "27300", "27700", "27800", "27900", "28000", "28100", "28200", "28300", "28400", "28500", "28960", "28970", "28980", "29700", "29800", "29900", "30000", "30100", "30200", "32000", "32100", "32200", "32900", "33000", "33001", "36100", "36200", "36300", "36400", "36500", "36600", "36700", "36800", "36900", "40002", "40100", "40101", "40900", "40901", "40902", "40903", "41400", "41401", "41402", "41403", "41404", "41405", "43000", "43001", "43002", "43003", "43004", "43006"].contains(ctx.event.code)'
+  - append:
+      field: event.type
+      tag: append_event_type_info_infrastructure
+      value: info
+      if: 'ctx.event?.code != null && ["600", "610", "810", "890", "21210", "21214", "21220", "21224", "21230", "21234", "25600", "25700", "25800", "25900", "26000", "26010", "26100", "26110", "26500", "26600", "26700", "27100", "27200", "27300", "27700", "27800", "27900", "28000", "28100", "28200", "28300", "28400", "28500", "28960", "28970", "28980", "29700", "29800", "29900", "30000", "30100", "30200", "32000", "32100", "32200", "32900", "33000", "33001", "36100", "36200", "36300", "36400", "36500", "36600", "36700", "36800", "36900", "40002", "40100", "40101", "40900", "40901", "40902", "40903", "41400", "41401", "41402", "41403", "41404", "41405", "43000", "43001", "43002", "43003", "43004", "43006"].contains(ctx.event.code)'
+  - set:
+      field: event.kind
+      tag: set_event_kind_agent_management
+      value: event
+      if: 'ctx.event?.code != null && ["650", "652", "710", "790", "29100", "29110", "29120", "29130", "29140", "29150", "41302", "41303", "41304", "41305", "44100", "44101", "44102"].contains(ctx.event.code)'
+  - append:
+      field: event.category
+      tag: append_event_category_host_agent_management
+      value: host
+      if: 'ctx.event?.code != null && ["650", "652", "710", "790", "29100", "29110", "29120", "29130", "29140", "29150", "41302", "41303", "41304", "41305", "44100", "44101", "44102"].contains(ctx.event.code)'
+  - append:
+      field: event.type
+      tag: append_event_type_info_agent_management
+      value: info
+      if: 'ctx.event?.code != null && ["650", "652", "710", "790", "29100", "29110", "29120", "29130", "29140", "29150", "41302", "41303", "41304", "41305", "44100", "44101", "44102"].contains(ctx.event.code)'
+  - set:
+      field: event.kind
+      tag: set_event_kind_licenses
+      value: event
+      if: 'ctx.event?.code != null && ["24010", "24020", "24030", "24040", "24050", "24060", "24070", "24080", "41300", "41301", "41306"].contains(ctx.event.code)'
+  - append:
+      field: event.category
+      tag: append_event_category_configuration_licenses
+      value: configuration
+      if: 'ctx.event?.code != null && ["24010", "24020", "24030", "24040", "24050", "24060", "24070", "24080", "41300", "41301", "41306"].contains(ctx.event.code)'
+  - append:
+      field: event.type
+      tag: append_event_type_info_licenses
+      value: info
+      if: 'ctx.event?.code != null && ["24010", "24020", "24030", "24040", "24050", "24060", "24070", "24080", "41300", "41301", "41306"].contains(ctx.event.code)'
+  - set:
+      field: event.kind
+      tag: set_event_kind_plugins
+      value: event
+      if: 'ctx.event?.code != null && ["36011", "36012", "36013", "36014", "36021", "36022", "36023", "36024", "36025", "36026"].contains(ctx.event.code)'
+  - append:
+      field: event.category
+      tag: append_event_category_configuration_plugins
+      value: configuration
+      if: 'ctx.event?.code != null && ["36011", "36012", "36013", "36014", "36021", "36022", "36023", "36024", "36025", "36026"].contains(ctx.event.code)'
+  - append:
+      field: event.type
+      tag: append_event_type_info_plugins
+      value: info
+      if: 'ctx.event?.code != null && ["36011", "36012", "36013", "36014", "36021", "36022", "36023", "36024", "36025", "36026"].contains(ctx.event.code)'
+  - set:
+      field: event.kind
+      tag: set_event_kind_cloud_connect
+      value: event
+      if: 'ctx.event?.code != null && ["24110", "24114", "24120", "24130", "24131", "24140", "24141", "24142", "24143", "24150", "24160", "24170", "24180", "25000", "25100", "25200", "25210", "25220", "25230", "26200", "26300", "26400", "26510", "26800", "26900", "27000", "27400", "27500", "27600"].contains(ctx.event.code)'
+  - append:
+      field: event.category
+      tag: append_event_category_configuration_cloud_connect
+      value: configuration
+      if: 'ctx.event?.code != null && ["24110", "24114", "24120", "24130", "24131", "24140", "24141", "24142", "24143", "24150", "24160", "24170", "24180", "25000", "25100", "25200", "25210", "25220", "25230", "26200", "26300", "26400", "26510", "26800", "26900", "27000", "27400", "27500", "27600"].contains(ctx.event.code)'
+  - append:
+      field: event.type
+      tag: append_event_type_info_cloud_connect
+      value: info
+      if: 'ctx.event?.code != null && ["24110", "24114", "24120", "24130", "24131", "24140", "24141", "24142", "24143", "24150", "24160", "24170", "24180", "25000", "25100", "25200", "25210", "25220", "25230", "26200", "26300", "26400", "26510", "26800", "26900", "27000", "27400", "27500", "27600"].contains(ctx.event.code)'
+  - set:
+      field: event.kind
+      tag: set_event_kind_default
+      value: event
+      if: ctx.event?.kind == null
+  - remove:
+      field:
+        - veeam.event.activity_type
+        - veeam.event.instance_id
+        - veeam.event.source_host_name
+      ignore_missing: true
+      tag: remove_unconditional_ecs_mapped_fields
+      description: Drop vendor copies of fields that are always mapped to ECS.
+  - remove:
+      field:
+        - _temp
+      ignore_missing: true
+      tag: remove_temp_fields
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      tag: append_preserve_original_event_on_error
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      tag: append_error_message_on_failure
+      value: >-
+        Processor {{{_ingest.on_failure_processor_type}}}
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{_ingest.on_failure_processor_tag}}}'
+        {{{/_ingest.on_failure_processor_tag}}}
+        in pipeline '{{{_ingest.pipeline}}}'
+        failed with message '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_event_kind_to_pipeline_error
+      value: pipeline_error
+  - append:
+      field: tags
+      tag: append_tags
+      value: preserve_original_event
+      allow_duplicates: false
