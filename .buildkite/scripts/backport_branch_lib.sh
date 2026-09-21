@@ -127,19 +127,68 @@ collect_linked_package_paths() {
 # and returns (one per line) all packages reachable via .link files from any
 # of those roots, transitively. The roots themselves are excluded. Output is
 # deduplicated across all roots so each package appears at most once.
+# list_all_directories is called exactly once regardless of the number of
+# roots or BFS hops.
 collect_linked_packages_from_roots() {
+  # Build the package cache once upfront.
+  local -a pkg_paths=() pkg_abss=()
+  local pkg_path pkg_abs_tmp
+  while IFS= read -r pkg_path; do
+    if pkg_abs_tmp=$(realpath "${pkg_path}" 2>/dev/null); then
+      pkg_paths+=("${pkg_path}")
+      pkg_abss+=("${pkg_abs_tmp}")
+    else
+      echo "Warning: cannot resolve package path '${pkg_path}', skipping" >&2
+    fi
+  done < <(list_all_directories)
+
+  # BFS over .link reachability. The queue is needed because a discovered
+  # package may itself contain .link files pointing into further packages
+  # (transitive chain: A links B, B links C → C must also be kept).
+  # Roots are pre-seeded into seen so they are never emitted as output.
   local -A seen=()
   local root
   for root in "$@"; do seen["${root}"]=1; done
+  local -a queue=("$@")
 
-  for root in "$@"; do
-    local linked_path
-    while IFS= read -r linked_path; do
-      if [[ -z "${seen[${linked_path}]+x}" ]]; then
-        seen["${linked_path}"]=1
-        echo "${linked_path}"
+  while [[ ${#queue[@]} -gt 0 ]]; do
+    local current="${queue[0]}"; queue=("${queue[@]:1}")
+    local current_abs
+    current_abs=$(realpath "${current}")
+
+    local link_file relative_src resolved_src matched i pkg_abs
+    while IFS= read -r link_file; do
+      relative_src=$(awk '{print $1; exit}' "${link_file}")
+      [[ -z "${relative_src}" ]] && continue
+      resolved_src=$(realpath -m "$(dirname "${link_file}")/${relative_src}")
+
+      # Self-link: source is within the current package — skip silently.
+      if [[ "${resolved_src}" == "${current_abs}"/* || \
+            "${resolved_src}" == "${current_abs}" ]]; then
+        continue
       fi
-    done < <(collect_linked_package_paths "${root}")
+
+      matched=false
+      for (( i=0; i<${#pkg_paths[@]}; i++ )); do
+        pkg_abs="${pkg_abss[$i]}"
+        [[ "${pkg_abs}" == "${current_abs}" ]] && continue
+        if [[ "${resolved_src}" == "${pkg_abs}"/* || \
+              "${resolved_src}" == "${pkg_abs}" ]]; then
+          matched=true
+          pkg_path="${pkg_paths[$i]}"
+          if [[ -z "${seen[${pkg_path}]+x}" ]]; then
+            seen["${pkg_path}"]=1
+            echo "${pkg_path}"
+            queue+=("${pkg_path}")
+          fi
+          break
+        fi
+      done
+
+      if [[ "${matched}" == "false" ]]; then
+        echo "Warning: source '${resolved_src}' (from ${link_file}) does not belong to any known package, skipping" >&2
+      fi
+    done < <(find "${current}" -type f -name "*.link")
   done
 }
 
