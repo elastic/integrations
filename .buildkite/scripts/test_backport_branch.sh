@@ -11,6 +11,8 @@ TMPDIR_REPO=""
 TMPDIR_REPO2=""
 TMPDIR_LINK=""
 TMPDIR_REPO3=""
+TMPDIR_TRANS=""
+TMPDIR_REPO4=""
 
 cleanup() {
     [[ -n "${TMPDIR_PKGS}" ]] && rm -rf "${TMPDIR_PKGS}"
@@ -18,6 +20,8 @@ cleanup() {
     [[ -n "${TMPDIR_REPO2}" ]] && rm -rf "${TMPDIR_REPO2}"
     [[ -n "${TMPDIR_LINK}" ]] && rm -rf "${TMPDIR_LINK}"
     [[ -n "${TMPDIR_REPO3}" ]] && rm -rf "${TMPDIR_REPO3}"
+    [[ -n "${TMPDIR_TRANS}" ]] && rm -rf "${TMPDIR_TRANS}"
+    [[ -n "${TMPDIR_REPO4}" ]] && rm -rf "${TMPDIR_REPO4}"
 }
 trap cleanup EXIT
 
@@ -409,6 +413,97 @@ assert_equals "unrelated_pkg entry removed from CODEOWNERS" \
     "false" "$(grep -q 'unrelated_pkg' "${TMPDIR_REPO3}/.github/CODEOWNERS" && echo true || echo false)"
 
 rm -rf "${TMPDIR_REPO3}"
+
+# ---------------------------------------------------------------------------
+# Tests: collect_linked_package_paths (transitive .link traversal)
+# ---------------------------------------------------------------------------
+echo ""
+echo "--- collect_linked_package_paths tests"
+
+# Set up a chain: pkg_chain_a → pkg_chain_b → pkg_chain_c (no further links)
+# ../../../../ from data_stream/ds1/fields/ reaches packages/
+TMPDIR_TRANS="$(mktemp -d)"
+mkdir -p "${TMPDIR_TRANS}/packages/pkg_chain_a/data_stream/ds1/fields"
+mkdir -p "${TMPDIR_TRANS}/packages/pkg_chain_b/data_stream/ds1/fields"
+mkdir -p "${TMPDIR_TRANS}/packages/pkg_chain_b/_dev/shared/fields"
+mkdir -p "${TMPDIR_TRANS}/packages/pkg_chain_c/_dev/shared/fields"
+printf 'name: pkg_chain_a\n' > "${TMPDIR_TRANS}/packages/pkg_chain_a/manifest.yml"
+printf 'name: pkg_chain_b\n' > "${TMPDIR_TRANS}/packages/pkg_chain_b/manifest.yml"
+printf 'name: pkg_chain_c\n' > "${TMPDIR_TRANS}/packages/pkg_chain_c/manifest.yml"
+touch "${TMPDIR_TRANS}/packages/pkg_chain_b/_dev/shared/fields/ecs.yml"
+touch "${TMPDIR_TRANS}/packages/pkg_chain_c/_dev/shared/fields/ecs.yml"
+printf '../../../../pkg_chain_b/_dev/shared/fields/ecs.yml abc123\n' \
+    > "${TMPDIR_TRANS}/packages/pkg_chain_a/data_stream/ds1/fields/b.yml.link"
+printf '../../../../pkg_chain_c/_dev/shared/fields/ecs.yml abc123\n' \
+    > "${TMPDIR_TRANS}/packages/pkg_chain_b/data_stream/ds1/fields/c.yml.link"
+MOCK_REPO_DIR="${TMPDIR_TRANS}"
+
+assert_equals "collect: package with no .link files → empty" \
+    "" \
+    "$(cd "${TMPDIR_TRANS}" && collect_linked_package_paths "packages/pkg_chain_c")"
+
+assert_equals "collect: two-hop chain A→B→C returns B then C (BFS order)" \
+    $'packages/pkg_chain_b\npackages/pkg_chain_c' \
+    "$(cd "${TMPDIR_TRANS}" && collect_linked_package_paths "packages/pkg_chain_a")"
+
+rm -rf "${TMPDIR_TRANS}"
+
+# ---------------------------------------------------------------------------
+# Integration test: transitive chain + remove_other_packages
+# ---------------------------------------------------------------------------
+echo ""
+echo "--- integration: transitive linked packages kept by remove_other_packages"
+
+# Repo layout:
+#   packages/pkg_chain_a  — target; links into pkg_chain_b
+#   packages/pkg_chain_b  — direct link from a; links into pkg_chain_c
+#   packages/pkg_chain_c  — transitive link (b→c); no further links
+#   packages/pkg_unrelated — should be removed
+TMPDIR_REPO4="$(mktemp -d)"
+mkdir -p "${TMPDIR_REPO4}/.github"
+mkdir -p "${TMPDIR_REPO4}/packages/pkg_chain_a/data_stream/ds1/fields"
+mkdir -p "${TMPDIR_REPO4}/packages/pkg_chain_b/data_stream/ds1/fields"
+mkdir -p "${TMPDIR_REPO4}/packages/pkg_chain_b/_dev/shared/fields"
+mkdir -p "${TMPDIR_REPO4}/packages/pkg_chain_c/_dev/shared/fields"
+mkdir -p "${TMPDIR_REPO4}/packages/pkg_unrelated"
+printf 'name: pkg_chain_a\n'  > "${TMPDIR_REPO4}/packages/pkg_chain_a/manifest.yml"
+printf 'name: pkg_chain_b\n'  > "${TMPDIR_REPO4}/packages/pkg_chain_b/manifest.yml"
+printf 'name: pkg_chain_c\n'  > "${TMPDIR_REPO4}/packages/pkg_chain_c/manifest.yml"
+printf 'name: pkg_unrelated\n' > "${TMPDIR_REPO4}/packages/pkg_unrelated/manifest.yml"
+touch "${TMPDIR_REPO4}/packages/pkg_chain_b/_dev/shared/fields/ecs.yml"
+touch "${TMPDIR_REPO4}/packages/pkg_chain_c/_dev/shared/fields/ecs.yml"
+printf '../../../../pkg_chain_b/_dev/shared/fields/ecs.yml abc123\n' \
+    > "${TMPDIR_REPO4}/packages/pkg_chain_a/data_stream/ds1/fields/b.yml.link"
+printf '../../../../pkg_chain_c/_dev/shared/fields/ecs.yml abc123\n' \
+    > "${TMPDIR_REPO4}/packages/pkg_chain_b/data_stream/ds1/fields/c.yml.link"
+printf '/packages/pkg_chain_a/ @team\n/packages/pkg_chain_b/ @team\n/packages/pkg_chain_c/ @team\n/packages/pkg_unrelated/ @team\n' \
+    > "${TMPDIR_REPO4}/.github/CODEOWNERS"
+MOCK_REPO_DIR="${TMPDIR_REPO4}"
+
+(
+    cd "${TMPDIR_REPO4}"
+    target_path="packages/pkg_chain_a"
+    packages_to_keep=("${target_path}")
+    while IFS= read -r linked_path; do
+        packages_to_keep+=("${linked_path}")
+    done < <(collect_linked_package_paths "${target_path}")
+    remove_other_packages "${packages_to_keep[@]}"
+)
+
+assert_equals "transitive: pkg_chain_a (target) is kept" \
+    "true" "$([[ -d "${TMPDIR_REPO4}/packages/pkg_chain_a" ]] && echo true || echo false)"
+assert_equals "transitive: pkg_chain_b (direct link) is kept" \
+    "true" "$([[ -d "${TMPDIR_REPO4}/packages/pkg_chain_b" ]] && echo true || echo false)"
+assert_equals "transitive: pkg_chain_c (transitive link) is kept" \
+    "true" "$([[ -d "${TMPDIR_REPO4}/packages/pkg_chain_c" ]] && echo true || echo false)"
+assert_equals "transitive: pkg_unrelated is removed" \
+    "true" "$([[ ! -d "${TMPDIR_REPO4}/packages/pkg_unrelated" ]] && echo true || echo false)"
+assert_equals "transitive: pkg_chain_c CODEOWNERS entry kept" \
+    "true" "$(grep -q 'pkg_chain_c' "${TMPDIR_REPO4}/.github/CODEOWNERS" && echo true || echo false)"
+assert_equals "transitive: pkg_unrelated CODEOWNERS entry removed" \
+    "false" "$(grep -q 'pkg_unrelated' "${TMPDIR_REPO4}/.github/CODEOWNERS" && echo true || echo false)"
+
+rm -rf "${TMPDIR_REPO4}"
 
 # ---------------------------------------------------------------------------
 echo ""

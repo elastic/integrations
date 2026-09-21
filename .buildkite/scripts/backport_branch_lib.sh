@@ -23,6 +23,8 @@ get_package_path() {
 # get_required_package_names returns (one per line) the names of all packages
 # listed under requires.input and requires.content in the manifest.yml of the
 # given package path. Outputs nothing if the section is absent.
+# Note: transitive chaining is not possible here — input and content packages
+# are not allowed to declare their own requires.* dependencies.
 get_required_package_names() {
   local package_path="${1}"
   local manifest="${package_path}/manifest.yml"
@@ -95,6 +97,30 @@ get_linked_source_package_names() {
       echo "Warning: source '${resolved_src}' (from ${link_file}) does not belong to any known package, skipping" >&2
     fi
   done < <(find "${package_path}" -name "*.link")
+}
+
+# collect_linked_package_paths returns (one per line) all packages reachable
+# from the given package via .link files, transitively. The starting package is
+# excluded. Each package is emitted at most once, in BFS discovery order.
+collect_linked_package_paths() {
+  local target_path="${1}"
+  local -A seen=()
+  seen["${target_path}"]=1
+  local -a queue=("${target_path}")
+
+  while [[ ${#queue[@]} -gt 0 ]]; do
+    local current="${queue[0]}"
+    queue=("${queue[@]:1}")
+
+    local linked_path
+    while IFS= read -r linked_path; do
+      if [[ -z "${seen[${linked_path}]+x}" ]]; then
+        seen["${linked_path}"]=1
+        echo "${linked_path}"
+        queue+=("${linked_path}")
+      fi
+    done < <(get_linked_source_package_names "${current}")
+  done
 }
 
 remove_other_packages() {
