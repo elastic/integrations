@@ -1,0 +1,129 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies a successful SonicWall VPN- or WAN-zone administrator or remote-user login from a source IP that was not previously observed with the same user on the same appliance during the prior 14 days. This may indicate stolen credentials, compromised administrator access, or unauthorized remote access.",
+        "false_positives": [
+            "New administrators or VPN users, travel, mobile networks, ISP address rotation, managed service providers, and first observations after integration onboarding or retention loss can trigger this rule."
+        ],
+        "from": "now-9m",
+        "history_window_start": "now-14d",
+        "index": [
+            "logs-sonicwall_firewall.log-*"
+        ],
+        "interval": "5m",
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "message",
+                "event.code",
+                "event.action",
+                "event.outcome",
+                "source.ip",
+                "source.port",
+                "source.geo.country_iso_code",
+                "user.name",
+                "observer.serial_number",
+                "observer.name",
+                "observer.ip",
+                "sonicwall.firewall.vpnpolicy",
+                "sonicwall.firewall.vpnpolicyDst"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "First Seen SonicWall Remote Access Login by User and Source",
+        "new_terms_fields": [
+            "observer.serial_number",
+            "user.name",
+            "source.ip"
+        ],
+        "note": "## Triage and analysis\n\n### Investigating First Seen SonicWall Remote Access Login by User and Source\n\nThis rule detects a newly observed combination of SonicWall appliance serial number, user name, and source IP for a\nsuccessful VPN- or WAN-zone login. Event IDs `235` and `236` are administrator logins from VPN and WAN zones, `237` and\n`238` are remote-user logins from VPN and WAN zones, and `1080` is a successful SSL VPN user login.\n\n### Possible investigation steps\n\n- Confirm the user, source IP, appliance, login type, VPN policy, MFA result, and assigned tunnel address.\n- Review the source geolocation, reputation, and prior authentication activity.\n- Correlate with failed logins, configuration changes, internal reconnaissance, and endpoint activity.\n- Prefer exceptions scoped to the appliance, user, and expected source rather than globally excluding an identity.\n\n### False positive analysis\n\n- Validate new users, travel, ISP address changes, managed service provider activity, and integration onboarding before\n  treating the alert as unauthorized access.\n\n### Response and remediation\n\n- If unauthorized access is suspected, terminate active sessions, disable the affected account, rotate credentials and\n  tokens, verify MFA, and review downstream activity from the assigned tunnel address.\n- Preserve SonicWall authentication, VPN session, and configuration audit logs before making broad changes.\n",
+        "query": "data_stream.dataset:\"sonicwall_firewall.log\" and\n  event.action:\"login-success\" and\n  event.code:(\"235\" or \"236\" or \"237\" or \"238\" or \"1080\") and\n  source.ip:* and user.name:* and observer.serial_number:*\n",
+        "references": [
+            "https://www.elastic.co/docs/reference/integrations/sonicwall_firewall",
+            "https://www.sonicwall.com/support/knowledge-base/monitoring-sslvpn-user-logins/kA1VN0000000JQz0AM",
+            "https://www.huntress.com/blog/sonicwall-credential-stuffing-campaign"
+        ],
+        "related_integrations": [
+            {
+                "package": "sonicwall_firewall",
+                "version": ">=1.18.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.code",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "observer.serial_number",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": true,
+                "name": "user.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "7df97e5b-1722-4305-80c7-7a203f2ff36e",
+        "setup": "## Setup\n\nThis rule requires the Elastic SonicWall Firewall integration and SonicWall Enhanced Syslog authentication events.\nConfigure the appliance to forward **Users > Authentication Access** events, including event IDs `235`, `236`, `237`,\n`238`, and `1080`. Verify that the integration populates `data_stream.dataset`, `event.action`, `event.code`,\n`source.ip`, `user.name`, and `observer.serial_number`.\n\nThe new-terms key requires `observer.serial_number`. Events without that field do not match. Ensure serial numbers are\nstable and unique across tenants in a shared Kibana space.\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Network",
+            "Domain: Identity",
+            "Use Case: Threat Detection",
+            "Use Case: Identity and Access Audit",
+            "Tactic: Initial Access",
+            "Data Source: SonicWall Firewall Logs",
+            "Rule Type: New Terms",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0001",
+                    "name": "Initial Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0001/"
+                },
+                "technique": [
+                    {
+                        "id": "T1078",
+                        "name": "Valid Accounts",
+                        "reference": "https://attack.mitre.org/techniques/T1078/"
+                    },
+                    {
+                        "id": "T1133",
+                        "name": "External Remote Services",
+                        "reference": "https://attack.mitre.org/techniques/T1133/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "new_terms",
+        "version": 1
+    },
+    "id": "7df97e5b-1722-4305-80c7-7a203f2ff36e_1",
+    "type": "security-rule"
+}
