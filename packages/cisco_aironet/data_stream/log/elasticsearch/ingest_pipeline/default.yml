@@ -124,6 +124,11 @@ processors:
           // it pinned the same log resolves on one host and silently falls back to
           // _conf.tz_offset on another.
           SimpleDateFormat sdf = new SimpleDateFormat("z", Locale.ENGLISH);
+          // A new format carries the JVM default zone, and the parser matches the
+          // token against that zone's names first. On an Elasticsearch host that is
+          // not on UTC, a log stamped GMT would otherwise be read as the host's zone
+          // and shift @timestamp. Pin the format to UTC so the host cannot decide.
+          sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
           // parse(String) accepts any recognised prefix, so CESTX would resolve as
           // CEST and ESTIMATE as EST. Require the whole token to be consumed;
           // otherwise leave date_timezone unset so _conf.tz_offset applies.
@@ -137,11 +142,14 @@ processors:
           // SHORT_IDS is required, not decorative: AEST resolves to the legacy id AET,
           // which ZoneId.of() rejects on its own and would fail the date processor.
           ctx._temp_.date_timezone = ZoneId.of(sdf.getTimeZone().getID(), ZoneId.SHORT_IDS).getId();
+          ctx._temp_.date_timezone_from_log = true;
         } catch (Exception e) {
-          // Java knows no zone for SGT, ART, or the seven-character names the
-          // controller truncates to ('Singapo'). Leaving date_timezone unset drops the
-          // event onto _conf.tz_offset, which is what an operator sets it for; use
-          // tz_map to resolve the abbreviation exactly.
+          // Java knows no zone for the seven-character names the controller truncates
+          // to ('Singapo'), and which abbreviations it does know varies with the
+          // Elasticsearch version's zone data (8.11 resolves SGT and ART, 9.x does
+          // not). Leaving date_timezone unset drops the event onto _conf.tz_offset,
+          // which is what an operator sets it for; use tz_map to resolve the
+          // abbreviation exactly and independently of the stack version.
         }
   - set:
       tag: set__conf_tz_offset_473d581a
@@ -165,14 +173,6 @@ processors:
       value: "{{{_temp_.raw_date_month}}} {{{_temp_.raw_date_monthday}}} {{{_temp_.raw_date_time}}}"
       tag: "set_raw_date"
       override: false
-  - set:
-      tag: set_event_timezone
-      description: >-
-        Record the zone @timestamp was interpreted in, whether it came from tz_map,
-        the abbreviation in the log, or the fallback to _conf.tz_offset.
-      field: event.timezone
-      copy_from: _temp_.date_timezone
-      if: ctx._temp_?.raw_date != null && ctx._temp_?.date_timezone != null
   - date:
       if: "ctx._temp_?.raw_date != null"
       field: "_temp_.raw_date"
@@ -184,6 +184,32 @@ processors:
         - "MMM d HH:mm:ss.SSS"
         - "MMM d HH:mm:ss"
       timezone: '{{{_temp_.date_timezone}}}'
+
+  # Record the time zone @timestamp was interpreted in
+  - set:
+      tag: set_event_timezone
+      description: >-
+        tz_map entries and the configured Timezone are operator input, so they are
+        recorded as the operator wrote them.
+      field: event.timezone
+      copy_from: _temp_.date_timezone
+      if: ctx._temp_?.raw_date != null && ctx._temp_?.date_timezone != null && ctx._temp_?.date_timezone_from_log != true
+  - script:
+      tag: script_event_timezone_from_offset
+      lang: painless
+      description: >-
+        A zone resolved from an abbreviation in the log is recorded as the offset that
+        was applied rather than as a region id, because the region is not stable: Java
+        matches the abbreviation against the Elasticsearch host's own zone before
+        scanning the rest, so CEST is Europe/Berlin on one host and Europe/Paris on
+        another. Both apply +02:00, which is the part that describes the event.
+      if: ctx._temp_?.date_timezone_from_log == true && ctx._temp_?.raw_date != null && ctx['@timestamp'] != null
+      source: |
+        if (ctx.event == null) {
+          ctx.event = new HashMap();
+        }
+        def offset = ZonedDateTime.parse(ctx['@timestamp']).getOffset().getId();
+        ctx.event.timezone = offset == 'Z' ? 'UTC' : offset;
 
   # Adding information to event types
   - grok:
