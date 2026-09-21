@@ -76,7 +76,7 @@ get_linked_source_package_names() {
     fi
 
     local matched=false
-    local i
+    local i pkg_abs
     for (( i=0; i<${#pkg_paths[@]}; i++ )); do
       pkg_abs="${pkg_abss[$i]}"
       if [[ "${pkg_abs}" == "${target_abs}" ]]; then
@@ -96,7 +96,7 @@ get_linked_source_package_names() {
     if [[ "${matched}" == "false" ]]; then
       echo "Warning: source '${resolved_src}' (from ${link_file}) does not belong to any known package, skipping" >&2
     fi
-  done < <(find "${package_path}" -name "*.link")
+  done < <(find "${package_path}" -type f -name "*.link")
 }
 
 # collect_linked_package_paths returns (one per line) all packages reachable
@@ -120,6 +120,26 @@ collect_linked_package_paths() {
         queue+=("${linked_path}")
       fi
     done < <(get_linked_source_package_names "${current}")
+  done
+}
+
+# collect_linked_packages_from_roots accepts any number of root package paths
+# and returns (one per line) all packages reachable via .link files from any
+# of those roots, transitively. The roots themselves are excluded. Output is
+# deduplicated across all roots so each package appears at most once.
+collect_linked_packages_from_roots() {
+  local -A seen=()
+  local root
+  for root in "$@"; do seen["${root}"]=1; done
+
+  for root in "$@"; do
+    local linked_path
+    while IFS= read -r linked_path; do
+      if [[ -z "${seen[${linked_path}]+x}" ]]; then
+        seen["${linked_path}"]=1
+        echo "${linked_path}"
+      fi
+    done < <(collect_linked_package_paths "${root}")
   done
 }
 

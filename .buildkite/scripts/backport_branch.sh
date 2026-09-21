@@ -298,11 +298,14 @@ updateBackportBranchContents() {
       fi
     done < <(get_required_package_names "${PACKAGE_PATH}")
 
-    # Also keep any packages reachable via .link files, transitively.
+    # Also keep any packages reachable via .link files, transitively, starting
+    # from the target package and each required package. Required packages cannot
+    # declare their own requires.* dependencies, but they can have .link files
+    # that point into other packages — those must be kept too.
     while IFS= read -r linked_path; do
-      echo "Keeping linked source package: ${linked_path} (linked by ${PACKAGE_NAME})"
+      echo "Keeping linked source package: ${linked_path} (linked transitively)"
       packages_to_keep+=("${linked_path}")
-    done < <(collect_linked_package_paths "${PACKAGE_PATH}")
+    done < <(collect_linked_packages_from_roots "${packages_to_keep[@]}")
 
     remove_other_packages "${packages_to_keep[@]}"
     ls -la "${PACKAGES_FOLDER_PATH}"

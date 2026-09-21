@@ -13,6 +13,7 @@ TMPDIR_LINK=""
 TMPDIR_REPO3=""
 TMPDIR_TRANS=""
 TMPDIR_REPO4=""
+TMPDIR_REPO5=""
 
 cleanup() {
     [[ -n "${TMPDIR_PKGS}" ]] && rm -rf "${TMPDIR_PKGS}"
@@ -22,6 +23,7 @@ cleanup() {
     [[ -n "${TMPDIR_REPO3}" ]] && rm -rf "${TMPDIR_REPO3}"
     [[ -n "${TMPDIR_TRANS}" ]] && rm -rf "${TMPDIR_TRANS}"
     [[ -n "${TMPDIR_REPO4}" ]] && rm -rf "${TMPDIR_REPO4}"
+    [[ -n "${TMPDIR_REPO5}" ]] && rm -rf "${TMPDIR_REPO5}"
 }
 trap cleanup EXIT
 
@@ -504,6 +506,81 @@ assert_equals "transitive: pkg_unrelated CODEOWNERS entry removed" \
     "false" "$(grep -q 'pkg_unrelated' "${TMPDIR_REPO4}/.github/CODEOWNERS" && echo true || echo false)"
 
 rm -rf "${TMPDIR_REPO4}"
+
+# ---------------------------------------------------------------------------
+# Integration test: required package's .link files are also walked
+# ---------------------------------------------------------------------------
+echo ""
+echo "--- integration: linked packages from required package kept by remove_other_packages"
+
+# Repo layout:
+#   packages/pkg_target        — target; requires pkg_required (no .link files of its own)
+#   packages/pkg_required      — required by target; has a .link pointing into pkg_linked_shared
+#   packages/pkg_linked_shared — owns the source file linked by pkg_required; must be kept
+#   packages/pkg_unrelated     — should be removed
+#
+# This exercises the fix where collect_linked_package_paths is also called on each
+# required package, not only on the target package.
+TMPDIR_REPO5="$(mktemp -d)"
+mkdir -p "${TMPDIR_REPO5}/.github"
+mkdir -p "${TMPDIR_REPO5}/packages/pkg_target"
+mkdir -p "${TMPDIR_REPO5}/packages/pkg_required/data_stream/ds1/fields"
+mkdir -p "${TMPDIR_REPO5}/packages/pkg_linked_shared/_dev/shared/fields"
+mkdir -p "${TMPDIR_REPO5}/packages/pkg_unrelated"
+
+cat > "${TMPDIR_REPO5}/packages/pkg_target/manifest.yml" <<'EOF'
+name: pkg_target
+requires:
+  input:
+    - package: pkg_required
+EOF
+printf 'name: pkg_required\n'      > "${TMPDIR_REPO5}/packages/pkg_required/manifest.yml"
+printf 'name: pkg_linked_shared\n' > "${TMPDIR_REPO5}/packages/pkg_linked_shared/manifest.yml"
+printf 'name: pkg_unrelated\n'     > "${TMPDIR_REPO5}/packages/pkg_unrelated/manifest.yml"
+
+touch "${TMPDIR_REPO5}/packages/pkg_linked_shared/_dev/shared/fields/ecs.yml"
+# ../../../../ from data_stream/ds1/fields/ reaches packages/, then into pkg_linked_shared
+printf '../../../../pkg_linked_shared/_dev/shared/fields/ecs.yml abc123\n' \
+    > "${TMPDIR_REPO5}/packages/pkg_required/data_stream/ds1/fields/ecs.yml.link"
+
+printf '/packages/pkg_target/ @team\n/packages/pkg_required/ @team\n/packages/pkg_linked_shared/ @team\n/packages/pkg_unrelated/ @team\n' \
+    > "${TMPDIR_REPO5}/.github/CODEOWNERS"
+
+MOCK_REPO_DIR="${TMPDIR_REPO5}"
+
+(
+    cd "${TMPDIR_REPO5}"
+    target_path="packages/pkg_target"
+    packages_to_keep=("${target_path}")
+
+    while IFS= read -r req_name; do
+        req_path=$(get_package_path "${req_name}" || true)
+        if [[ -n "${req_path}" ]]; then
+            packages_to_keep+=("${req_path}")
+        fi
+    done < <(get_required_package_names "${target_path}")
+
+    while IFS= read -r linked_path; do
+        packages_to_keep+=("${linked_path}")
+    done < <(collect_linked_packages_from_roots "${packages_to_keep[@]}")
+
+    remove_other_packages "${packages_to_keep[@]}"
+)
+
+assert_equals "req-link: pkg_target (target) is kept" \
+    "true" "$([[ -d "${TMPDIR_REPO5}/packages/pkg_target" ]] && echo true || echo false)"
+assert_equals "req-link: pkg_required (required) is kept" \
+    "true" "$([[ -d "${TMPDIR_REPO5}/packages/pkg_required" ]] && echo true || echo false)"
+assert_equals "req-link: pkg_linked_shared (linked by required) is kept" \
+    "true" "$([[ -d "${TMPDIR_REPO5}/packages/pkg_linked_shared" ]] && echo true || echo false)"
+assert_equals "req-link: pkg_unrelated is removed" \
+    "true" "$([[ ! -d "${TMPDIR_REPO5}/packages/pkg_unrelated" ]] && echo true || echo false)"
+assert_equals "req-link: pkg_linked_shared entry kept in CODEOWNERS" \
+    "true" "$(grep -q 'pkg_linked_shared' "${TMPDIR_REPO5}/.github/CODEOWNERS" && echo true || echo false)"
+assert_equals "req-link: pkg_unrelated entry removed from CODEOWNERS" \
+    "false" "$(grep -q 'pkg_unrelated' "${TMPDIR_REPO5}/.github/CODEOWNERS" && echo true || echo false)"
+
+rm -rf "${TMPDIR_REPO5}"
 
 # ---------------------------------------------------------------------------
 echo ""
