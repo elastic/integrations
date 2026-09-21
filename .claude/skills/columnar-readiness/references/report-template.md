@@ -10,10 +10,27 @@ Per data stream, worst finding wins:
 | Status | Meaning |
 | --- | --- |
 | `READY` | No findings. Opt in. |
-| `READY_AFTER_AUTO_FIX` | Only Class A findings with a mechanical fix: `copy_to` → ingest pipeline, a non-`lowercase` `normalizer` → pipeline or multi-field, `store: true` → removed, `doc_values: false` → removed (or `doc_values: true` on an `external: ecs` field), `dynamic: runtime` → `dynamic: true`. |
+| `READY_AFTER_AUTO_FIX` | Only Class A findings with a mechanical fix: `copy_to` → ingest pipeline, a non-`lowercase` `normalizer` → pipeline or multi-field, `store: true` → removed, `doc_values: false` → a mode-scoped `columnar: {doc_values: true}` override on the field (package-owned or `external: ecs` alike), `dynamic: runtime` → `dynamic: true`. |
 | `NEEDS_REVIEW` | A Class B data-loss finding (`dynamic: false`, `enabled: false`), a single-level `nested` field, or a mapping-level runtime field. Needs a human decision before opting in. |
-| `BLOCKED` | `nested` inside `nested`, an unsupported field type, or a stored-`_source` override. No mechanical fix. |
+| `BLOCKED` | `nested` inside `nested`, an unsupported field type, a stored-`_source` override, or an invalid `columnar: {doc_values: false}`. No mechanical fix. |
 | `OUT_OF_SCOPE` | Not a `type: logs` data stream, or the package is `type: input`. |
+
+A field that already carries `columnar: {doc_values: true}` is **resolved**: the
+`doc_values_false` / `doc_values_false_ecs` finding is not raised, because Fleet
+supplies doc values for exactly the modes that need them. An existing
+`columnar: {index: true}` is reported as Class C (`columnar_index_true`,
+"benchmark-justified inverted index — confirm evidence exists") and never
+affects the status.
+
+The **Columnar opt-in** line reports how (and whether) the stream is already
+columnar-enabled, and the two declarations are not interchangeable:
+`elasticsearch.columnar.supported: true` means Fleet offers the per-stream opt-in
+toggle while logsdb stays the default, and a columnar `elasticsearch.index_mode`
+means columnar is the default for new installs. Either one counts as
+columnar-enabled for reporting; in JSON they are `columnar_supported`,
+`index_mode` and the derived `columnar_enabled`. A stream that declares one while
+still carrying Class A findings is called out as inconsistent — the 3.7.0
+validator rejects that combination.
 
 Per package: the worst status among its data streams, plus a sort recommendation.
 **A package can be mixed** — `aws` has one blocked data stream (`waf`) and eighteen
@@ -64,6 +81,7 @@ migration PR cannot pick up a dashboard hint by accident.
 
 - Inputs: `cel`, `httpjson`
 - Current `index_mode`: `unset (logsdb default)`
+- Columnar opt-in: <declared ready via `elasticsearch.columnar.supported: true` | columnar by default via `index_mode: logsdb_columnar` | not declared>
 - Sort: **<recommendation>** — <why: inputs, host.name evidence>
 
   Add to `data_stream/<ds>/manifest.yml`:
@@ -119,6 +137,10 @@ Candidate packages (at least one `type: logs` data stream): <n>
 | READY | | |
 | OUT_OF_SCOPE (input package / no logs streams) | | |
 
+## Already columnar-enabled
+`elasticsearch.columnar.supported: true` — opt-in toggle offered, logsdb still the default (<n> data streams): `<pkg>`/<ds>
+Columnar `index_mode` — columnar is the default for new installs (<n> data streams): `<pkg>`/<ds>
+
 ## Blockers — Class A, no mechanical fix (<n> packages, <n> data streams)
 ### `<code>` — class A, blocker
 <n> packages, <n> data streams.
@@ -133,6 +155,10 @@ Candidate packages (at least one `type: logs` data stream): <n>
 ## Packages by status
 ## Index sort
 ```
+
+The **Already columnar-enabled** section is omitted entirely while both counts are
+zero, which is where the catalog stands today — so its appearance in a run is
+itself the signal that the rollout has landed somewhere.
 
 Findings are grouped **by code**, not only by status, so a run can be diffed against a
 previous one and against the preliminary catalog analysis even when the status rules
@@ -152,6 +178,15 @@ change.
   "where": "data_stream/incidents/fields/ecs.yml",
   "message": "...",
   "remediation": "..."
+}
+```
+
+Per data stream, alongside `index_mode`:
+
+```json
+{
+  "columnar_supported": true,
+  "columnar_enabled": true
 }
 ```
 
