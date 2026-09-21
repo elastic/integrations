@@ -166,11 +166,18 @@ SORT_CANDIDATES = [
     "cloud.account.id",
     "organization.id",
     "cloud.project.id",
-    "cloud.instance.id",
-    "orchestrator.namespace",
     "observer.name",
     "observer.serial_number",
     "service.name",
+    # Demoted to the bottom of tier 1. Both are frequently *present* without being
+    # the dataset's grouping dimension: `orchestrator.namespace` is carried by every
+    # Kubernetes-adjacent sample event and its value is very often the literal
+    # placeholder `"string"` (`sentinel_one/alert`, `sentinel_one/unified_alert`),
+    # and `cloud.instance.id` is the collector VM for a poller. A vendor tenant id
+    # from tier 2 is a better key than either, so they now rank below tier 1's
+    # curated leaders and, in practice, below tier 2 for streams that have one.
+    "cloud.instance.id",
+    "orchestrator.namespace",
     "agent.id",
 ]
 
@@ -832,6 +839,37 @@ _NON_PRODUCING_PROCESSORS = {
     "terminate", "reroute",
 }
 
+# `observer.name` / `observer.hostname` / `observer.serial_number` written or read
+# anywhere in a pipeline's *text*. `script` is in `_NON_PRODUCING_PROCESSORS` — its
+# `field` is not its output — so the structured walk never sees the very common
+# "params map -> ECS field" idiom, where the mapping lives in the processor's
+# `params` and only Painless writes it:
+#
+#     - script:
+#         params:
+#           fw:  [{to: observer.hostname}]
+#           id:  [{to: observer.name}]
+#           sn:  [{to: observer.serial_number}]
+#
+# (`sonicwall_firewall/log`). The optional `?` covers Painless null-safe access
+# (`ctx?.observer?.hostname`), which is how `cef/log` refers to the CEF header
+# fields that the Beats `decode_cef` processor populates before ingest.
+_OBSERVER_DEVICE_RE = re.compile(
+    r"(?<!\w)observer\??\.\??(name|hostname|serial_number)\b")
+# `ctx['observer']['hostname']` — the bracket spelling of the same thing.
+_OBSERVER_DEVICE_BRACKET_RE = re.compile(
+    r"""\[\s*['"]observer['"]\s*\]\s*\[\s*['"](name|hostname|serial_number)['"]\s*\]""")
+
+
+def _observer_device_hits(text: str) -> set:
+    """Device identifiers named in a chunk of pipeline text."""
+    if not text:
+        return set()
+    hits = {"observer." + m.group(1) for m in _OBSERVER_DEVICE_RE.finditer(text)}
+    hits |= {"observer." + m.group(1)
+             for m in _OBSERVER_DEVICE_BRACKET_RE.finditer(text)}
+    return hits
+
 
 class PipelineFacts:
     """What the ingest pipelines of one data stream say about its fields."""
@@ -862,6 +900,7 @@ def scan_pipelines(ds_dir: str) -> PipelineFacts:
     pipeline_dir = os.path.join(ds_dir, "elasticsearch", "ingest_pipeline")
     if not os.path.isdir(pipeline_dir):
         return facts
+    texts: List[str] = []
     for fname in sorted(os.listdir(pipeline_dir)):
         if not fname.endswith((".yml", ".yaml")):
             continue
@@ -871,6 +910,7 @@ def scan_pipelines(ds_dir: str) -> PipelineFacts:
                 text = fh.read()
         except OSError:
             continue
+        texts.append(text)
         for regex in _PAINLESS_ARRAY_RES:
             for match in regex.finditer(text):
                 facts._add_array(match.group(1))
@@ -881,6 +921,16 @@ def scan_pipelines(ds_dir: str) -> PipelineFacts:
         if isinstance(doc, dict):
             _walk_processors(doc.get("processors") or [], facts, conditional=False)
             _walk_processors(doc.get("on_failure") or [], facts, conditional=True)
+    # Last resort for the receiver device pick only: if neither the structured walk
+    # nor the `script` scan found an `observer.*` device identifier, look for one in
+    # the raw pipeline text. This is deliberately loose — a mention is not a write —
+    # but it feeds `targets` ONLY (never `unconditional_targets`), the allow-list it
+    # can match is three fields long, and the alternative outcome is "no confident
+    # candidate". It never overrides a structured hit, so a precisely detected
+    # `observer.hostname` is not displaced by a loosely mentioned `observer.name`.
+    if not facts.targets.intersection(RECEIVER_SORT_FIELDS):
+        for text in texts:
+            facts.targets |= _observer_device_hits(text)
     return facts
 
 
@@ -900,6 +950,18 @@ def _walk_processors(procs: Any, facts: PipelineFacts, conditional: bool) -> Non
                     facts._add_array(field)
                 _walk_processors([body.get("processor")] if body.get("processor") else [],
                                  facts, conditional=True)
+            elif ptype == "script":
+                # Painless writes are invisible to the structured walk, so the
+                # `observer.*` device identifiers are recovered from the text of
+                # `source` and `params`. `targets` only: a Painless write is almost
+                # always branch-dependent, so it is never evidence of an
+                # unconditional target.
+                chunks = [body.get("source") or ""]
+                params = body.get("params")
+                if params is not None:
+                    chunks.append(json.dumps(params, default=str))
+                for chunk in chunks:
+                    facts.targets |= _observer_device_hits(chunk)
             elif ptype in ("grok", "dissect"):
                 _add_pattern_targets(ptype, body, facts, cond)
             elif ptype not in _NON_PRODUCING_PROCESSORS:
@@ -1002,7 +1064,8 @@ def recommend_sort(stream: Dict[str, Any], field_index: Dict[str, Dict[str, Any]
         reason_bits.append("no inputs declared")
 
     def result(klass: str, recommendation: str, fields: List[str], orders: List[str],
-               extra_reason: str = "", explicit: bool = False) -> Dict[str, Any]:
+               extra_reason: str = "", explicit: bool = False,
+               hint: Optional[str] = None) -> Dict[str, Any]:
         return {
             "class": klass,
             "recommendation": recommendation,
@@ -1011,6 +1074,10 @@ def recommend_sort(stream: Dict[str, Any], field_index: Dict[str, Dict[str, Any]
             "reason": "; ".join(reason_bits + ([extra_reason] if extra_reason else [])),
             "explicit_sort_yaml": _sort_yaml(fields, orders) if explicit else None,
             "dashboard_top_fields": top_dash,
+            # The tier-3 dashboard hint: a field the package's own dashboards filter
+            # on. Never a proposal — see `review_candidate` below.
+            "dashboard_sort_hint": hint,
+            "dashboard_sort_hint_filters": filter_fields.get(hint, 0) if hint else 0,
         }
 
     def default_or_degraded(extra_reason: str) -> Dict[str, Any]:
@@ -1028,10 +1095,13 @@ def recommend_sort(stream: Dict[str, Any], field_index: Dict[str, Dict[str, Any]
     if host_meaningful:
         return default_or_degraded("`host.name` is agent-populated and sort-compatible")
 
+    device = next((f for f in RECEIVER_SORT_FIELDS if f in pipeline_arrays.targets), None)
+
     # Receiver regime: the pipeline decides. Do not fall through to the tenant tiers —
-    # a syslog stream has no tenant, and the device identity is the whole question.
+    # a pure syslog stream has no tenant, and the device identity is the whole
+    # question. A stream that *also* offers a collector input is not in this regime:
+    # see the mixed-input step below.
     if receiver_inputs and not api_inputs:
-        device = next((f for f in RECEIVER_SORT_FIELDS if f in pipeline_arrays.targets), None)
         if device:
             return result(
                 "receiver_proposed",
@@ -1060,6 +1130,37 @@ def recommend_sort(stream: Dict[str, Any], field_index: Dict[str, Dict[str, Any]
                       f"explicit sort proposed: {candidate} asc, @timestamp desc",
                       [candidate, "@timestamp"], ["asc", "desc"],
                       f"candidate from {tier}", explicit=True)
+
+    # Mixed inputs (`tcp`/`udp` *and* `http_endpoint`, as in `zscaler_zia/firewall`
+    # and `gigamon/ami`): tiers 1-2 above already had first refusal, because a tenant
+    # id carried in the collector payload beats a syslog device. But receiver
+    # evidence — an `observer.*` identifier the pipeline actually populates — is
+    # still real evidence, and it outranks the dashboard hint below.
+    if receiver_inputs and device:
+        return result(
+            "receiver_proposed",
+            f"explicit sort proposed: {device} asc, @timestamp desc",
+            [device, "@timestamp"], ["asc", "desc"],
+            f"mixed receiver/collector inputs and no tenant id: sort on the device "
+            f"identifier the pipeline populates (`{device}`)",
+            explicit=True)
+
+    # Tier 3 is a *hint*, not a proposal. It takes whatever the package's dashboards
+    # happen to filter on, and across the catalog two thirds of its picks are junk
+    # (`aws.elb.listener`, `domaintools.domain`, `zscaler_zia.web.threat.name`). It
+    # is printed for a human to judge and deliberately emits no `index.sort` YAML.
+    hint = _dashboard_sort_hint(
+        field_index, filter_fields, array_fields or set(), pipeline_arrays)
+    if hint:
+        return result(
+            "review_candidate",
+            f"no confident candidate — dashboard hint: {hint} "
+            f"(filtered {filter_fields[hint]}\u00d7); needs human choice",
+            ["@timestamp"], ["desc"],
+            f"no single-valued tenant/account/observer field; the package's own "
+            f"dashboards filter on `{hint}` ({filter_fields[hint]}\u00d7), which is a "
+            f"lead for a human, not a validated grouping dimension",
+            hint=hint)
 
     return result(
         "no_candidate",
@@ -1341,6 +1442,11 @@ def _pick_sort_candidate(field_index: Dict[str, Dict[str, Any]],
                          pipeline_arrays: Optional[PipelineFacts] = None,
                          sample: Optional[Dict[str, Any]] = None,
                          allow_agent_id: bool = True) -> Tuple[Optional[str], str]:
+    """Tiers 1 and 2 — the curated lists, the only tiers that yield a *proposal*.
+
+    Tier 3 (dashboard filter fields) lives in `_dashboard_sort_hint`, because it is
+    reported as a human-review hint rather than proposed.
+    """
     pipeline_arrays = pipeline_arrays or PipelineFacts()
     sample = sample or {}
     # Tier 1: well-known ECS grouping fields, declared or merely populated.
@@ -1356,15 +1462,31 @@ def _pick_sort_candidate(field_index: Dict[str, Dict[str, Any]],
         hits = _tier2_hits(field_index, leaf, array_fields, pipeline_arrays)
         if hits:
             return hits[0], "tier 2 (vendor tenant/account id)"
-    # Tier 3: a field the package's own dashboards actually FILTER on. Being plotted
-    # or grouped by is not enough — sorting only pays off for pruning. Unlike tiers 1
-    # and 2 this is an uncurated name, so the leaf vocabulary applies here.
+    return None, ""
+
+
+def _dashboard_sort_hint(field_index: Dict[str, Dict[str, Any]],
+                         filter_fields: Counter,
+                         array_fields: set,
+                         pipeline_arrays: Optional[PipelineFacts] = None
+                         ) -> Optional[str]:
+    """Tier 3: a field the package's own dashboards actually FILTER on.
+
+    Being plotted or grouped by is not enough — sorting only pays off for pruning.
+    Unlike tiers 1 and 2 this is an uncurated name, so the leaf vocabulary applies
+    here. And unlike tiers 1 and 2 the result is only a **hint**: the caller reports
+    it as `review_candidate` and writes no `index.sort` YAML, because the vocabulary
+    filters out bad *names*, not fields that are merely irrelevant — a dashboard
+    filtering on `domaintools.domain` says nothing about whether it is the dataset's
+    grouping dimension.
+    """
+    pipeline_arrays = pipeline_arrays or PipelineFacts()
     for name, _count in filter_fields.most_common(40):
         if name.startswith("_") or _weak_sort_leaf(name):
             continue
         if _sortable(field_index, name, array_fields, pipeline_arrays):
-            return name, "tier 3 (dashboard filter field)"
-    return None, ""
+            return name
+    return None
 
 
 def _is_low_cardinality(name: str) -> bool:
@@ -1795,6 +1917,9 @@ def md_catalog(results: List[Dict[str, Any]]) -> str:
     lines.append(f"- Explicit sort proposed on a validated grouping field: "
                  f"{sort_class['explicit']} data streams (run the audit per package to see "
                  "the proposal)")
+    lines.append(f"- No confident candidate, but the package's dashboards filter on "
+                 f"something — reported as a hint, no sort proposed: "
+                 f"{sort_class['review_candidate']} data streams")
     lines.append(f"- No confident candidate — `@timestamp desc` only, needs a human choice: "
                  f"{sort_class['no_candidate']} data streams")
     lines.append("")
@@ -1805,7 +1930,8 @@ def md_catalog(results: List[Dict[str, Any]]) -> str:
                  "list-valued *ancestor*, or an object the ingest pipeline iterates. The "
                  "dashboard tier additionally requires the field to appear in a filter or "
                  "query clause, not merely on an axis, and drops measurement, hash/uuid, "
-                 "free-text, plural and enum leaf names.")
+                 "free-text, plural and enum leaf names — but even then it only yields a "
+                 "hint for a human, never an `index.sort` proposal.")
     lines.append("")
     if not any(r.get("dashboard_filter_fields") for r in results):
         lines.append("Kibana assets were not scanned (`--catalog` defaults to "

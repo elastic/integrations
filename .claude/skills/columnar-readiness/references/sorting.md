@@ -42,9 +42,14 @@ as something other than a keyword/number with doc values — `text`,
 
 | Class | Inputs | Who `host.name` identifies | Decision |
 | --- | --- | --- | --- |
-| **host-local** | `logfile`, `filestream`, `journald`, `winlog`, `etw`, `unix`, `system/*`, `audit/*`, `auditd-logfile`, `unifiedlogs`, `osquery`, `packet`, `docker`, `containerd`, `filestream-container`, `kubernetes/container_logs` | the subject | default is right |
+| **host-local** | `logfile`, `log`, `filestream`, `journald`, `winlog`, `etw`, `unix`, `system/metrics`, `system/auth`, `audit/auditd`, `audit/file_integrity`, `audit/system`, `auditd-logfile`, `unifiedlogs`, `osquery`, `packet`, `event/file`, `docker`, `containerd`, `filestream-container`, `kubernetes/container_logs`, `cloud_defend/control` | the subject | default is right |
 | **receiver** | `tcp`, `udp`, `syslog` | whatever the ingest pipeline put there | read the pipeline |
-| **collector / poller** | `httpjson`, `cel`, `aws-s3`, `aws-cloudwatch`, `gcp-pubsub`, `gcs`, `azure-eventhub`, `azure-blob-storage`, `azure-monitor`, `o365audit`, `entity-analytics`, `salesforce`, `okta`, `http_endpoint`, `streaming`, `websocket`, `lumberjack`, `netflow`, `cloudbeat/*`, `kafka`, `redis`, `mqtt` | the collector — one value | propose an explicit sort |
+| **collector / poller** | `httpjson`, `cel`, `aws-s3`, `aws-cloudwatch`, `gcp-pubsub`, `gcs`, `azure-eventhub`, `azure-blob-storage`, `azure-monitor`, `o365audit`, `entity-analytics`, `salesforce`, `okta`, `http_endpoint`, `streaming`, `websocket`, `lumberjack`, `cometd`, `netflow`, `benchmark`, `cloudfoundry`, `cloudbeat/*`, `kafka`, `redis`, `mqtt` | the collector — one value | propose an explicit sort |
+
+The three lists are `HOST_MEANINGFUL_INPUTS`, `RECEIVER_INPUTS` and
+`COLLECTOR_INPUTS` at the top of `scripts/audit.py`; the table above is the same
+membership spelled out, so keep the two in step when you add an input. An input in
+none of them is *unclassified* and is treated as a collector.
 
 ### When the default is right
 
@@ -91,6 +96,34 @@ Other push-style inputs (`http_endpoint`, `netflow`, `lumberjack`, `cometd`, `ka
 stay in the collector class: their payloads carry a tenant or exporter identity
 rather than a syslog device header.
 
+#### `script` processors write fields the structured scan cannot see
+
+A `script` processor's `field` is not its output, so it is in
+`_NON_PRODUCING_PROCESSORS` and the walk skips it — and with it the single most
+common way a receiver pipeline sets the device identity: a `params` map from vendor
+key to ECS field, applied by Painless.
+
+```yaml
+- script:
+    params:
+      fw: [{to: observer.hostname}]   # sonicwall_firewall/log
+      id: [{to: observer.name}]
+      sn: [{to: observer.serial_number}]
+```
+
+So `observer.name` / `observer.hostname` / `observer.serial_number` are additionally
+recovered by a **regex over the text** of a `script` processor's `source` and
+`params`, covering both the `to: observer.x` / `"observer.hostname"` spellings and
+the Painless `ctx.observer.hostname` / `ctx['observer']['hostname']` ones. If that
+still finds nothing, the whole pipeline text is searched the same way, which is how
+`cef/log` is resolved: the CEF header fields are populated by the Beats `decode_cef`
+processor before ingest, and the pipeline only *reads* `ctx?.observer?.hostname`.
+
+Both paths feed the `targets` set **only**, never `unconditional_targets`: a mention
+is not proof of an unconditional write, so it can propose a device identifier but it
+can never conclude that `host.name` is safe. The loose whole-text pass never
+overrides a structurally detected field either.
+
 ### Mixed inputs
 
 A data stream can offer several (`kubernetes/audit_logs` accepts `filestream` *and*
@@ -101,6 +134,19 @@ A data stream can offer several (`kubernetes/audit_logs` accepts `filestream` *a
 - otherwise any receiver input → **receiver**;
 - an input the audit does not recognise → collector: unknown means "propose an
   explicit sort and let a human look".
+
+**Receiver *and* collector inputs** (`zscaler_zia/firewall` and `zscaler_zia/web`
+take `tcp` + `http_endpoint`, `gigamon/ami` takes `udp` + `http_endpoint`,
+`prisma_cloud/host` takes `tcp`/`udp` + `cel`) is not an either/or. Such a stream
+does not enter the receiver regime — it would lose the tenant id that the collector
+payload carries — but it does not lose the pipeline evidence either. The order is:
+
+1. **tiers 1 and 2** — a tenant/account id from the payload is the best key, and it
+   is the one thing the pure receiver regime cannot offer;
+2. **receiver evidence** — an `observer.*` device identifier the pipeline populates.
+   Real evidence about a real dimension, and it outranks anything a dashboard hints
+   at;
+3. **the tier-3 dashboard hint** — last, and only as a hint (see below).
 
 ## Proposing an explicit sort
 
@@ -121,10 +167,19 @@ field rarely pays for the extra sort cost at index time.
 
 ### Candidate selection, in order of preference
 
-**Tier 1 — a well-known ECS grouping field.** `cloud.account.id`, `organization.id`,
-`cloud.project.id`, `cloud.instance.id`, `orchestrator.namespace`, `observer.name`,
-`observer.serial_number`, `service.name`, `agent.id`. This is almost always the right
-answer for SaaS logs, because every dashboard, detection rule and SLO scopes by it.
+**Tier 1 — a well-known ECS grouping field**, in this order: `cloud.account.id`,
+`organization.id`, `cloud.project.id`, `observer.name`, `observer.serial_number`,
+`service.name`, then the two demoted ones, `cloud.instance.id` and
+`orchestrator.namespace`, then `agent.id`. This is almost always the right answer for
+SaaS logs, because every dashboard, detection rule and SLO scopes by it.
+
+`cloud.instance.id` and `orchestrator.namespace` sit at the bottom on purpose. Both
+are frequently *present* without being the dataset's dimension: `cloud.instance.id`
+is the collector VM for a poller, and `orchestrator.namespace` is carried by every
+Kubernetes-adjacent sample event — in `sentinel_one/alert` and
+`sentinel_one/unified_alert` its sample value is the literal placeholder `"string"`.
+Ranked last within tier 1, they lose to a real device or tenant id, which is what
+those two streams now get.
 
 Accepted from **two** sources:
 
@@ -167,16 +222,38 @@ There is still a depth cap — a tenant id buried in a request payload
 dimension — but it is applied to the *effective* depth, with the matched suffix
 collapsed to one segment, so `aws_securityhub.finding.cloud.account.uid` survives it.
 
-**Tier 3 — a field the package's own dashboards actually FILTER on.** Being plotted on
-an axis, used as a group-by or listed as a table column is *not* enough — index
-sorting only pays off for fields that queries **prune** on. The audit counts only
-Kibana filter pills (`filter[].meta.key`) and KQL/Lucene query clauses, and prints
-them under "Dashboard filter fields". The broader "Dashboard fields" list is the
-benchmark workload, not a source of sort candidates.
+**Tier 3 — a field the package's own dashboards actually FILTER on. A hint, not a
+proposal.** Being plotted on an axis, used as a group-by or listed as a table column
+is *not* enough — index sorting only pays off for fields that queries **prune** on.
+The audit counts only Kibana filter pills (`filter[].meta.key`) and KQL/Lucene query
+clauses, and prints them under "Dashboard filter fields". The broader "Dashboard
+fields" list is the benchmark workload, not a source of sort candidates.
 
 Tiers 1 and 2 match curated lists, so their names are known good. Tier 3 takes
 whatever the dashboards happen to filter on, which is where the junk gets in — so
 the leaf vocabulary below applies to tier 3 only.
+
+The vocabulary is not enough. It rejects bad *names*; it cannot tell that a
+perfectly well-named field is not the dataset's grouping dimension. Measured over
+the catalog, tier 3 fires for 24 data streams and two thirds of its picks are wrong:
+`aws.elb.listener`, `digital_guardian.arc.inc_id`, `gigamon.ami.app_name`,
+`jamf_pro.events.webhook.webhook_event`, `process.code_signature.signing_id`,
+`tenable_ot_security.assets.id`, `abusech.url.blacklists.spamhaus_dbl`,
+`domaintools.domain` (six streams), `greynoise.ip...actor`,
+`ticura.indicator...sinkhole.owner`, `zscaler_zia.{firewall,web}.threat.name`.
+
+So tier 3 does **not** produce a sort proposal. It gets its own class,
+`review_candidate`, prints as
+
+```
+sort: no confident candidate — dashboard hint: <field> (filtered N×); needs human choice
+```
+
+and emits **no** `index.sort` YAML — the data stream keeps `@timestamp desc` until a
+human decides. The field and its filter count stay in the JSON
+(`sort.dashboard_sort_hint`, `sort.dashboard_sort_hint_filters`), next to
+`sort.dashboard_top_fields`, so the lead is not lost. Tiers 1 and 2 are unaffected:
+they still propose.
 
 ### Hard constraints on a sort field
 
@@ -273,11 +350,12 @@ confident candidate" that a human then decides, a false accept ships a bad sort 
 ### When nothing survives
 
 Say so. `explicit sort proposed: @timestamp desc only — no confident candidate; needs
-human choice` — and its receiver variant, `receiver input — no confident candidate;
-needs human choice` — are legitimate, useful outcomes: `@timestamp desc` still beats
-sorting on a field that prunes nothing, and it tells the package owner exactly what
-decision is being asked of them. Never promote a weak candidate just to fill the
-slot.
+human choice`, its receiver variant `receiver input — no confident candidate; needs
+human choice`, and the dashboard-hint variant `no confident candidate — dashboard
+hint: <field> (filtered N×); needs human choice` are legitimate, useful outcomes:
+`@timestamp desc` still beats sorting on a field that prunes nothing, and it tells
+the package owner exactly what decision is being asked of them. Never promote a weak
+candidate just to fill the slot.
 
 ### Soft guidance
 
