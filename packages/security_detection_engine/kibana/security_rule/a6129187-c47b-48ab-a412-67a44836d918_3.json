@@ -1,0 +1,446 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects Azure Monitor alert notification emails with financial or billing themed subject lines delivered to organization users. Adversaries abuse Azure Monitor alert rules to deliver callback phishing emails from Microsoft's legitimate azure-noreply@microsoft.com address. Because the emails originate from Microsoft's own infrastructure, they pass SPF, DKIM, and DMARC checks, bypassing email security filters and increasing victim trust. The attacker embeds a fraudulent billing or security lure in the alert rule description, which is rendered in the notification email body. Observed subject patterns include invoice numbers, payment references, and order confirmations.",
+        "false_positives": [
+            "Organizations that use Azure Monitor alert rules with financial or billing related naming conventions for legitimate infrastructure monitoring may trigger this rule. Review the email subject and recipient to determine if the alert originates from a known internal Azure subscription."
+        ],
+        "from": "now-9m",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "M365 Azure Monitor Alert Email with Financial or Billing Theme",
+        "note": "## Triage and analysis\n\n### Investigating M365 Azure Monitor Alert Email with Financial or Billing Theme\n\nAzure Monitor alert rules can be abused by adversaries to deliver callback phishing emails from Microsoft's legitimate `azure-noreply@microsoft.com` address. The attacker creates a metric or activity log alert in their own Azure tenant with a phishing lure embedded in the description field, then adds victim email addresses to an action group. When the alert fires, Microsoft sends the notification email \u2014 complete with the embedded lure \u2014 directly to the victims.\n\n### Possible investigation steps\n\n- Review the `email.subject` field to determine if the alert name matches known phishing patterns (e.g., `INV-`, `Payment Reference`, `order-`, `Funds Received`).\n- Check the `email.to.address` field to identify which users received the email and whether they are high-value targets.\n- Search for additional emails from `azure-noreply@microsoft.com` to the same recipient within a short time window. The attack typically sends both a \"Fired\" and \"Resolved\" notification, doubling phishing impressions.\n- Look for an earlier \"You're now in the X action group\" notification email, which arrives before the phishing alert \u2014 this confirms the user was added to an external Azure Monitor action group.\n- Check email message headers for the originating Azure subscription and resource group, which are embedded in the alert details.\n- Contact the recipient to determine if they interacted with the email or called the phone number in the lure.\n- If the victim called the number, initiate incident response for potential credential theft, payment fraud, or remote access tool installation.\n\n### False positive analysis\n\n- Legitimate Azure Monitor alerts with financial naming (e.g., a cost alert named \"Invoice threshold exceeded\") may match. Verify the alert originates from a known internal Azure subscription by examining the email body or message headers.\n- Internal teams that name alert rules with billing-related terms for cost management should be documented as exceptions.\n\n### Response and remediation\n\n- If the email is confirmed as phishing, block the sender pattern and alert name in your email security gateway.\n- Quarantine or delete the phishing emails from affected mailboxes.\n- If the victim called the phone number, treat as a compromised account: reset credentials, revoke sessions, and audit for unauthorized access.\n- Report the Azure subscription ID from the email headers to Microsoft abuse team for takedown.\n- Consider implementing a mail flow rule to flag or quarantine Azure Monitor notification emails that contain phone numbers or financial language in the body.\n",
+        "query": "from logs-microsoft_exchange_online_message_trace.* metadata _id, _version, _index\n\n// Filter for Azure Monitor notification emails with financial/billing themed subjects\n| where data_stream.dataset == \"microsoft_exchange_online_message_trace.log\"\n    and email.from.address == \"azure-noreply@microsoft.com\"\n    and event.outcome in (\"success\", \"unknown\")\n    and email.subject like \"*Azure Monitor alert*\"\n    and (\n        email.subject like \"*INV-*\"\n        or email.subject like \"*invoice*\"\n        or email.subject like \"*payment*\"\n        or email.subject like \"*order-*\"\n        or email.subject like \"*purchase*\"\n        or email.subject like \"*funds*\"\n        or email.subject like \"*receipt*\"\n        or email.subject like \"*billing*\"\n        or email.subject like \"*transaction*\"\n        or email.subject like \"*refund*\"\n        or email.subject like \"*charge*\"\n        or email.subject like \"*subscription*\"\n        or email.subject like \"*renewal*\"\n        or email.subject like \"*overdue*\"\n        or email.subject like \"*past due*\"\n        or email.subject like \"*amount due*\"\n        or email.subject like \"*wire transfer*\"\n        or email.subject like \"*bank account*\"\n        or email.subject like \"*credit card*\"\n        or email.subject like \"*financial*\"\n        or email.subject like \"*remittance*\"\n    )\n\n| keep *\n",
+        "references": [
+            "https://www.bleepingcomputer.com/news/security/microsoft-azure-monitor-alerts-abused-in-callback-phishing-campaigns/"
+        ],
+        "related_integrations": [
+            {
+                "package": "microsoft_exchange_online_message_trace",
+                "version": "^1.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "@timestamp",
+                "type": "date"
+            },
+            {
+                "ecs": false,
+                "name": "_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "_index",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "_version",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "agent.build.original",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "agent.ephemeral_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "agent.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "agent.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "agent.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "agent.version",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.account.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.account.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.availability_zone",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.instance.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.instance.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.machine.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.project.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.project.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.provider",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.region",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.service.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.namespace",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.type",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "email.from.address",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "email.subject",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.agent_id_status",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.ingested",
+                "type": "date"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.architecture",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.boot.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.cpu.usage",
+                "type": "scaled_float"
+            },
+            {
+                "ecs": true,
+                "name": "host.disk.read.bytes",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "host.disk.write.bytes",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "host.domain",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.hostname",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": true,
+                "name": "host.mac",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.network.egress.bytes",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "host.network.egress.packets",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "host.network.ingress.bytes",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "host.network.ingress.packets",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.family",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.full",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "host.os.full.text",
+                "type": "text"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.kernel",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "host.os.name.text",
+                "type": "text"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.platform",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.version",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.pid_ns_ino",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "host.tags",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.uptime",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "input.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "log.offset",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "microsoft.online_message_trace.EndDate",
+                "type": "date_nanos"
+            },
+            {
+                "ecs": false,
+                "name": "microsoft.online_message_trace.FromIP",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "microsoft.online_message_trace.Index",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "microsoft.online_message_trace.MessageId",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "microsoft.online_message_trace.MessageTraceId",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "microsoft.online_message_trace.Organization",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "microsoft.online_message_trace.Received",
+                "type": "date_nanos"
+            },
+            {
+                "ecs": false,
+                "name": "microsoft.online_message_trace.RecipientAddress",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "microsoft.online_message_trace.SenderAddress",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "microsoft.online_message_trace.Size",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "microsoft.online_message_trace.StartDate",
+                "type": "date_nanos"
+            },
+            {
+                "ecs": false,
+                "name": "microsoft.online_message_trace.Status",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "microsoft.online_message_trace.Subject",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "microsoft.online_message_trace.ToIP",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "a6129187-c47b-48ab-a412-67a44836d918",
+        "severity": "low",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: Email",
+            "Data Source: Microsoft 365",
+            "Data Source: Microsoft Exchange Online Message Trace",
+            "Use Case: Threat Detection",
+            "Tactic: Initial Access",
+            "Resources: Investigation Guide",
+            "Noise: Unknown",
+            "Performance: Normal",
+            "Rule Type: ES|QL",
+            "Platform: Microsoft 365",
+            "Domain: SaaS",
+            "Service: Microsoft Exchange Online",
+            "Data Source: Microsoft Exchange Online Logs"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0001",
+                    "name": "Initial Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0001/"
+                },
+                "technique": [
+                    {
+                        "id": "T1566",
+                        "name": "Phishing",
+                        "reference": "https://attack.mitre.org/techniques/T1566/",
+                        "subtechnique": [
+                            {
+                                "id": "T1566.003",
+                                "name": "Spearphishing via Service",
+                                "reference": "https://attack.mitre.org/techniques/T1566/003/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 3
+    },
+    "id": "a6129187-c47b-48ab-a412-67a44836d918_3",
+    "type": "security-rule"
+}

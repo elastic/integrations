@@ -7,7 +7,6 @@
         "description": "This rule identifies the execution of commands that can be used to enumerate running processes. Adversaries may enumerate processes to identify installed applications and security solutions.",
         "from": "now-9m",
         "index": [
-            "endgame-*",
             "logs-endpoint.events.process-*",
             "logs-system.security*",
             "logs-windows.*",
@@ -16,7 +15,7 @@
         "language": "eql",
         "license": "Elastic License v2",
         "name": "Process Discovery Using Built-in Tools",
-        "query": "process where host.os.type == \"windows\" and event.type == \"start\" and process.args != null and\n  (\n    process.name :(\"PsList.exe\", \"qprocess.exe\") or \n   (process.name : \"powershell.exe\" and process.args : (\"*get-process*\", \"*Win32_Process*\")) or \n   (process.name : \"wmic.exe\" and process.args : (\"process\", \"*Win32_Process*\")) or\n   (process.name : \"tasklist.exe\" and not process.args : (\"pid eq*\")) or\n   (process.name : \"query.exe\" and process.args : \"process\")\n  ) and not user.id : \"S-1-5-18\"\n",
+        "query": "process where host.os.type == \"windows\" and event.type == \"start\" and process.args != null and \n  not user.id in (\"S-1-5-18\", \"S-1-5-19\", \"S-1-5-20\") and process.parent.executable != null and\n  (\n   process.name :(\"PsList.exe\", \"qprocess.exe\") or\n\n   (process.name : \"powershell.exe\" and process.args : (\"*get-process*\", \"*Win32_Process*\") and not process.parent.name in (\"openaev-agent.exe\", \"cmd.exe\", \"Miro.exe\", \"Granola.exe\", \"Wispr Flow.exe\")) or\n\n   (process.name : \"wmic.exe\" and process.args : (\"process\", \"*Win32_Process*\") and not process.parent.name in (\"Code.exe\", \"node.exe\", \"javaw.exe\", \"java.exe\", \"asus_framework.exe\", \"Evernote.exe\", \"RingCentral.exe\", \"Avaya Cloud.exe\", \"Arduino IDE.exe\")) or\n\n   (process.name : \"tasklist.exe\" and process.args_count == 1 and process.parent.args != \"tasklist | findstr consent.exe\") or\n\n   (process.name : \"query.exe\" and process.args : (\"process\", \"imagename*\", \"csv\", \"/fi\"))\n  ) and\n  not process.working_directory like (\"?:\\\\Program Files*\", \"D:\\\\*\", \"E:\\\\*\") and\n  not process.parent.executable like (\"?:\\\\Program Files (x86)\\\\*.exe\", \"?:\\\\Program Files\\\\*.exe\")\n",
         "related_integrations": [
             {
                 "package": "endpoint",
@@ -49,7 +48,32 @@
             },
             {
                 "ecs": true,
+                "name": "process.args_count",
+                "type": "long"
+            },
+            {
+                "ecs": true,
                 "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.working_directory",
                 "type": "keyword"
             },
             {
@@ -68,8 +92,9 @@
             "Tactic: Discovery",
             "Rule Type: BBR",
             "Data Source: Elastic Defend",
-            "Data Source: Elastic Endgame",
-            "Data Source: Windows Security Event Logs"
+            "Data Source: Windows Security Event Logs",
+            "Rule Type: Event Correlation (EQL)",
+            "Platform: Windows"
         ],
         "threat": [
             {

@@ -1,0 +1,874 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects when a GitHub Actions workflow attempts to create or modify workflow files in a protected branch but is blocked due to insufficient permissions. This behavior is indicative of a supply chain attack where a malicious package or compromised CI/CD pipeline attempts to inject persistent backdoor workflows into a repository.",
+        "false_positives": [
+            "Legitimate CI/CD automation that requires workflow file modifications may trigger this alert if not properly configured with the necessary permissions. Review the workflow configuration and ensure the GITHUB_TOKEN or PAT has the required 'workflows' permission if the modification is intentional."
+        ],
+        "from": "now-9m",
+        "interval": "8m",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "GitHub Actions Workflow Modification Blocked",
+        "note": "## Triage and analysis\n\n### Investigating GitHub Actions Workflow Modification Blocked\n\nThis rule detects attempts to push workflow files to a GitHub repository from within a GitHub Actions workflow that are blocked by GitHub's security controls. This is a key indicator of supply chain attacks where malicious code attempts to establish persistence by injecting backdoor workflows.\n\n### Possible investigation steps\n\n- Review the `github.repo` field to identify which repository was targeted.\n- Examine the `github.actor_id` to determine if the action was triggered by a bot (`github-actions[bot]`) or a user account (PAT-based).\n- Check recent workflow runs in the repository for suspicious activity, especially in jobs that run `npm install` or other package manager commands.\n- Review the repository's dependencies for recently added or updated packages that may contain malicious preinstall/postinstall hooks.\n- Examine the `github.reasons.message` field for details on which workflow file was being created or modified.\n- Search for other repositories in the organization that may have the same malicious dependency.\n- Review GitHub audit logs for successful workflow file modifications that may have occurred before protections were enabled.\n\n### False positive analysis\n\n- Legitimate automation tools that manage workflow files may trigger this alert. Verify if the repository uses tools like Dependabot, Renovate, or custom automation that modifies workflows.\n- CI/CD pipelines that intentionally update workflow files should use a PAT with the 'workflows' scope and be documented.\n\n### Response and remediation\n\n- If this is a confirmed attack attempt, immediately audit all dependencies in the affected repository.\n- Remove any suspicious packages and regenerate lock files.\n- Rotate any secrets that may have been exposed during the CI run.\n- Review and revoke any PATs that may have been compromised.\n- Enable branch protection rules requiring pull request reviews for workflow file changes.\n- Consider implementing CODEOWNERS for `.github/workflows/` directory.\n- Search for indicators of compromise such as unexpected workflow files (e.g., `discussion_*.yaml`, `formatter_*.yml`).\n",
+        "query": "from logs-github.audit-* metadata _id, _index, _version\n| where\n    data_stream.dataset == \"github.audit\" and\n    event.action == \"protected_branch.rejected_ref_update\" and\n    github.category == \"protected_branch\" and\n    github.reasons.code == \"workflow_updates\" and\n    match(github.reasons.message::STRING, \"refusing to allow a GitHub App to create or update workflow\")\n| keep *\n",
+        "references": [
+            "https://www.wiz.io/blog/shai-hulud-2-0-ongoing-supply-chain-attack"
+        ],
+        "related_integrations": [
+            {
+                "package": "github",
+                "version": "^2.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "@timestamp",
+                "type": "date"
+            },
+            {
+                "ecs": false,
+                "name": "_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "_index",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "_version",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "agent.build.original",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "agent.ephemeral_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "agent.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "agent.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "agent.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "agent.version",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "aws.s3.bucket.arn",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "aws.s3.bucket.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "aws.s3.object.key",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.storage.blob.content_type",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.storage.blob.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.storage.container.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.account.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.account.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.availability_zone",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.instance.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.instance.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.machine.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.project.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.project.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.provider",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.region",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.service.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.namespace",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.type",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.agent_id_status",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.ingested",
+                "type": "date"
+            },
+            {
+                "ecs": true,
+                "name": "event.module",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "gcs.storage.bucket.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "gcs.storage.object.content_type",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "gcs.storage.object.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "github.active",
+                "type": "boolean"
+            },
+            {
+                "ecs": false,
+                "name": "github.actor_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "github.actor_ip",
+                "type": "ip"
+            },
+            {
+                "ecs": false,
+                "name": "github.actor_is_bot",
+                "type": "boolean"
+            },
+            {
+                "ecs": false,
+                "name": "github.actor_location.country_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "github.actor_location.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": false,
+                "name": "github.audit_log_stream_enabled",
+                "type": "boolean"
+            },
+            {
+                "ecs": false,
+                "name": "github.audit_log_stream_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "github.audit_log_stream_sink",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "github.audit_log_stream_sink_details",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "github.blocked_user",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "github.branch",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "github.business",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "github.business_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "github.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "github.changes.billing_plan",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "github.changes.roles",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "github.commit_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "github.data.event",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "github.data.head_branch",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "github.data.head_sha",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "github.data.started_at",
+                "type": "date"
+            },
+            {
+                "ecs": false,
+                "name": "github.data.trigger_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "github.data.workflow_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "github.data.workflow_run_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "github.device",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "github.events",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "github.forked_repository",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "github.hashed_token",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "github.hook_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "github.integration",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "github.login_method",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "github.logout_reason",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "github.message",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "github.multi_repo",
+                "type": "boolean"
+            },
+            {
+                "ecs": false,
+                "name": "github.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "github.new_role",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "github.number",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "github.old_role",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "github.operation_type",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "github.org",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "github.org_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "github.overridden_codes",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "github.permission",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "github.programmatic_access_type",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "github.public_repo",
+                "type": "boolean"
+            },
+            {
+                "ecs": false,
+                "name": "github.publicly_leaked",
+                "type": "boolean"
+            },
+            {
+                "ecs": false,
+                "name": "github.pull_request_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "github.pull_request_title",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "github.pull_request_url",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "github.reason",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "github.reasons.code",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "github.reasons.message",
+                "type": "text"
+            },
+            {
+                "ecs": false,
+                "name": "github.repo",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "github.repo_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "github.repositories_added",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "github.repositories_added_names",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "github.repositories_removed",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "github.repositories_removed_names",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "github.repository",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "github.repository_public",
+                "type": "boolean"
+            },
+            {
+                "ecs": false,
+                "name": "github.repository_selection",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "github.request_category",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "github.secret_type",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "github.secret_type_display_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "github.secrets_updated",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "github.source_branch",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "github.target_branch",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "github.team",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "github.token_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "github.token_scopes",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "github.topic",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "github.transport_protocol",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "github.transport_protocol_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "github.user_agent",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "github.user_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "github.version",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "github.visibility",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.architecture",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.boot.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "host.containerized",
+                "type": "boolean"
+            },
+            {
+                "ecs": true,
+                "name": "host.cpu.usage",
+                "type": "scaled_float"
+            },
+            {
+                "ecs": true,
+                "name": "host.disk.read.bytes",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "host.disk.write.bytes",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "host.domain",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.hostname",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": true,
+                "name": "host.mac",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.network.egress.bytes",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "host.network.egress.packets",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "host.network.ingress.bytes",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "host.network.ingress.packets",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "host.os.build",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "host.os.codename",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.family",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.full",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "host.os.full.text",
+                "type": "text"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.kernel",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "host.os.name.text",
+                "type": "text"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.platform",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.version",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.pid_ns_ino",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "host.tags",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.uptime",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "input.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "log.offset",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "user.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "e8b37f18-4804-4819-8602-4aba1169c9f4",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Use Case: Threat Detection",
+            "Tactic: Initial Access",
+            "Tactic: Persistence",
+            "Tactic: Execution",
+            "Data Source: Github",
+            "Data Source: GitHub Audit Logs",
+            "Resources: Investigation Guide",
+            "Noise: Low",
+            "Performance: Fast",
+            "Profile: Recommended",
+            "Threat: Supply Chain",
+            "Rule Type: ES|QL",
+            "Platform: GitHub",
+            "Domain: SaaS",
+            "Service: GitHub Actions"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0001",
+                    "name": "Initial Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0001/"
+                },
+                "technique": [
+                    {
+                        "id": "T1195",
+                        "name": "Supply Chain Compromise",
+                        "reference": "https://attack.mitre.org/techniques/T1195/",
+                        "subtechnique": [
+                            {
+                                "id": "T1195.001",
+                                "name": "Compromise Software Dependencies and Development Tools",
+                                "reference": "https://attack.mitre.org/techniques/T1195/001/"
+                            },
+                            {
+                                "id": "T1195.002",
+                                "name": "Compromise Software Supply Chain",
+                                "reference": "https://attack.mitre.org/techniques/T1195/002/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1059",
+                        "name": "Command and Scripting Interpreter",
+                        "reference": "https://attack.mitre.org/techniques/T1059/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1546",
+                        "name": "Event Triggered Execution",
+                        "reference": "https://attack.mitre.org/techniques/T1546/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 7
+    },
+    "id": "e8b37f18-4804-4819-8602-4aba1169c9f4_7",
+    "type": "security-rule"
+}
