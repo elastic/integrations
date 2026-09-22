@@ -19,7 +19,6 @@ processors:
       field: message
       add_to_root: true
       if: ctx.tychon == null && ctx.message != null
-      ignore_failure: true
       on_failure:
         - set:
             tag: initialize_tychon_json_message
@@ -28,7 +27,7 @@ processors:
             override: false
         - append:
             tag: append_error_message_json_message
-            field: error.message
+            field: tychon.error.pipeline
             value: |-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
