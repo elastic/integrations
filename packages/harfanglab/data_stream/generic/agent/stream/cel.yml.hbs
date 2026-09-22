@@ -1,0 +1,35 @@
+config_version: 2
+interval: {{interval}}
+resource.url: {{url}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+state:
+  token: "{{api_token}}"
+redact:
+  fields:
+    - token
+program: |
+  (state.url.endsWith("/") ? state.url.substring(0, size(state.url) - 1) : state.url).as(base_url,
+    string(state.token).as(raw_token,
+      (raw_token.startsWith("Token ") ? raw_token.substring(6, size(raw_token)) : raw_token).as(token,
+        get_request(base_url + "/api/data/connectors/elastic/pull/").with({
+          "Header": {
+            "Authorization": ["Token " + token],
+          },
+        }).do_request().as(resp,
+          (
+            (resp.StatusCode == 200 && size(resp.Body) > 0) ?
+              bytes(resp.Body).decode_json().map(e, {"event": {"original": e.encode_json()}})
+            :
+              []
+          ).as(events, {
+            "url": state.url,
+            "token": state.token,
+            "events": events,
+            "want_more": size(events) > 0,
+          })
+        )
+      )
+    )
+  )
