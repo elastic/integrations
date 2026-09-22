@@ -32,11 +32,33 @@ Once data starts flowing, the **[Temporal OpenTelemetry Assets](https://www.elas
    - Click **Add Temporal(OpenTelemetry) Integration**
    - Fill in:
      - **Temporal Cloud Metrics Endpoint**: `metrics.temporal.io:443` (default)
-     - **Metrics Path**: `/v1/metrics` (optionally append `?namespaces=<namespace>` to filter)
+     - **Metrics Path**: `/v1/metrics` (default — do not append query parameters here)
      - **Temporal Cloud API Key**: paste the Metrics Read-Only API key
 
 3. **Verify data**:
    - Discover filter `data_stream.dataset: "temporal.cloud_metrics.otel"`
+
+## Filtering metrics by namespace or label
+
+Temporal Cloud supports filtering the OpenMetrics endpoint using the `namespaces` and `labels` query parameters. Use the **Query Parameters** field in the Fleet UI to set these — do **not** append them to the Metrics Path field, as the Prometheus receiver places the path verbatim into `url.URL.Path`, which percent-encodes `?` and breaks the request.
+
+**Example — restrict scraping to a single namespace:**
+
+```yaml
+namespaces:
+  - my-namespace.account
+```
+
+**Example — filter by namespace and label:**
+
+```yaml
+namespaces:
+  - my-namespace.account
+labels:
+  - temporal_activity_type
+```
+
+See the [Temporal Cloud metrics endpoint documentation](https://docs.temporal.io/cloud/metrics/openmetrics/) for the full list of supported query parameters.
 
 
 ## Metrics Reference
