@@ -13,13 +13,13 @@ processors:
       field: event.type
       value:
         - denied
-      tag: set_denied_type
+      tag: set_event_type_denied
       if: ctx.crowdstrike?.event?.Success == false
   - set:
       field: event.type
       value:
         - access
-      tag: set_access_type
+      tag: set_event_type_access
       if: ctx.crowdstrike?.event?.Success != false
   - grok:
       tag: grok_crowdstrike_event_UserId
@@ -32,7 +32,7 @@ processors:
   - set:
       field: user.email
       copy_from: crowdstrike.event.UserId
-      tag: copy_user_email
+      tag: set_user_email_from_UserId
       if: ctx.crowdstrike?.event?.UserId != null && ctx.crowdstrike.event.UserId.indexOf("@") > 0
   - append:
       field: event.action
@@ -78,22 +78,22 @@ processors:
   - rename:
       field: crowdstrike.event.Attributes.request_method
       target_field: http.request.method
-      tag: rename_http_request_method
+      tag: rename_request_method
       ignore_missing: true
   - rename:
       field: crowdstrike.event.Attributes.request_path
       target_field: url.path
-      tag: rename_url_path
+      tag: rename_request_path
       ignore_missing: true
   - rename:
       field: crowdstrike.event.Attributes.request_query
       target_field: url.query
-      tag: rename_url_query
+      tag: rename_request_query
       ignore_missing: true
   - rename:
       field: crowdstrike.event.Attributes.request_host
       target_field: url.domain
-      tag: rename_url_domain
+      tag: rename_request_host
       ignore_missing: true
   - convert:
       field: crowdstrike.event.Attributes.status_code
@@ -106,11 +106,19 @@ processors:
             tag: append_error_message_status_code
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - rename:
+  - user_agent:
       field: crowdstrike.event.Attributes.user_agent
-      target_field: user_agent.original
-      tag: rename_user_agent_original
+      tag: user_agent_original
       ignore_missing: true
+      on_failure:
+        - append:
+            tag: append_error_message_user_agent
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - remove:
+      field: crowdstrike.event.Attributes.user_agent
+      ignore_missing: true
+      tag: remove_user_agent
   - rename:
       field: crowdstrike.event.Attributes.trace_id
       target_field: trace.id
