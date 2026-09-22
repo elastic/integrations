@@ -12,7 +12,7 @@
 
 * Intended for environments where TYCHON Quantum Command produces NDJSON or JSON output files on Windows, Linux, or macOS systems.
 * Requires a valid TYCHON Quantum Command license.
-* Requires Elastic Stack / Fleet compatible with package version `0.1.0` and the package manifest constraint `^8.14.0 || ^9.0.0`.
+* Requires an Elastic Stack / Fleet version compatible with the Kibana constraint shown on the integration's package page.
 
 ### How it works
 

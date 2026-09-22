@@ -21,10 +21,11 @@ processors:
       if: ctx.tychon == null && ctx.message != null
       on_failure:
         - set:
-            tag: initialize_tychon_json_message
-            field: tychon
-            value: {}
+            tag: preserve_failed_json_message
+            field: event.original
+            copy_from: message
             override: false
+            ignore_empty_value: true
         - append:
             tag: append_error_message_json_message
             field: tychon.error.pipeline
