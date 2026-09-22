@@ -1,5 +1,15 @@
 source:
-  index: "metrics-elasticsearch.stack_monitoring.index*,.monitoring-es-*,metricbeat-*"
+  # The monitoring data is read from the backing indices of the data stream
+  # rather than from the data stream itself. Backing indices that ILM renamed,
+  # such as the `downsample-<interval>-<index>` indices produced by a
+  # downsample action, are intentionally left out: downsampling rewrites the
+  # gauge fields to `aggregate_metric_double`, which `top_metrics` does not
+  # support, and the resulting UnsupportedAggregationOnDownsampledIndex is
+  # raised when the aggregation is built on the shard, so no query-level filter
+  # or index exclusion pattern can avoid it. Exclusion patterns such as
+  # `-downsample-*` do not help either, as backing indices resolved through a
+  # data stream cannot be removed by a later exclusion expression.
+  index: ".ds-metrics-elasticsearch.stack_monitoring.index-*,.monitoring-es-*,metricbeat-*"
   query:
     bool:
       filter:
@@ -131,5 +141,5 @@ sync:
     delay: 60s
     field: '@timestamp'
 _meta:
-  fleet_transform_version: 0.3.0
+  fleet_transform_version: 0.4.0
   run_as_kibana_system: false
