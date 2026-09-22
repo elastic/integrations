@@ -227,6 +227,124 @@ processors:
       target_field: nozomi_networks.alert.id_src
       ignore_missing: true
   - rename:
+      field: json.uid_src
+      tag: map_uid_src_cmc
+      target_field: nozomi_networks.alert.uid_src
+      ignore_missing: true
+  - rename:
+      field: json.uid_dst
+      tag: map_uid_dst_cmc
+      target_field: nozomi_networks.alert.uid_dst
+      ignore_missing: true
+  - date:
+      field: json.record_updated_at
+      tag: map_record_updated_at_cmc
+      target_field: nozomi_networks.alert.record_updated_at
+      formats:
+        - UNIX_MS
+      if: ctx.json?.record_updated_at != null && ctx.json.record_updated_at != ''
+      on_failure:
+        - append:
+            tag: append_map_record_updated_at_cmc
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: json.counter
+      tag: map_counter_cmc
+      target_field: nozomi_networks.alert.counter
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            tag: append_map_counter_cmc
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.deduplication_key
+      tag: map_deduplication_key_cmc
+      target_field: nozomi_networks.alert.deduplication_key
+      ignore_missing: true
+  - rename:
+      field: json.deduplication_info
+      tag: map_deduplication_info_cmc
+      target_field: nozomi_networks.alert.deduplication_info
+      ignore_missing: true
+  - rename:
+      field: json.timeframe
+      tag: map_timeframe_cmc
+      target_field: nozomi_networks.alert.timeframe
+      ignore_missing: true
+  - rename:
+      field: json.additional_description
+      tag: map_additional_description_cmc
+      target_field: nozomi_networks.alert.additional_description
+      ignore_missing: true
+  - rename:
+      field: json.alert_info
+      tag: map_alert_info_cmc
+      target_field: nozomi_networks.alert.alert_info
+      ignore_missing: true
+  - foreach:
+      field: json.mitre_attack_tactics
+      tag: foreach_mitre_attack_tactics_into_threat_tactic_id
+      if: ctx.json?.mitre_attack_tactics instanceof List
+      processor:
+        append:
+          field: threat.tactic.id
+          tag: append_mitre_attack_tactics_into_threat_tactic_id
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - foreach:
+      field: json.mitre_attack_techniques
+      tag: foreach_mitre_attack_techniques_into_threat_technique_id
+      if: ctx.json?.mitre_attack_techniques instanceof List
+      processor:
+        append:
+          field: threat.technique.id
+          tag: append_mitre_attack_techniques_into_threat_technique_id
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - rename:
+      field: json.mitre_attack_tactics
+      tag: map_mitre_attack_tactics_cmc
+      target_field: nozomi_networks.alert.mitre_attack_tactics
+      ignore_missing: true
+  - rename:
+      field: json.mitre_attack_techniques
+      tag: map_mitre_attack_techniques_cmc
+      target_field: nozomi_networks.alert.mitre_attack_techniques
+      ignore_missing: true
+  - rename:
+      field: json.levels_src
+      tag: map_levels_src_cmc
+      target_field: nozomi_networks.alert.levels_src
+      ignore_missing: true
+  - rename:
+      field: json.levels_dst
+      tag: map_levels_dst_cmc
+      target_field: nozomi_networks.alert.levels_dst
+      ignore_missing: true
+  - rename:
+      field: json.types_src
+      tag: map_types_src_cmc
+      target_field: nozomi_networks.alert.types_src
+      ignore_missing: true
+  - rename:
+      field: json.types_dst
+      tag: map_types_dst_cmc
+      target_field: nozomi_networks.alert.types_dst
+      ignore_missing: true
+  - rename:
+      field: json.physical_links
+      tag: map_physical_links_cmc
+      target_field: nozomi_networks.alert.physical_links
+      ignore_missing: true
+  - rename:
+      field: json.trace
+      tag: map_trace_cmc
+      target_field: nozomi_networks.alert.trace
+      ignore_missing: true
+  - rename:
       field: json.incident_keys
       tag: rename_incident_keys_444dfbec
       target_field: nozomi_networks.alert.incident_keys
@@ -620,11 +738,6 @@ processors:
             tag: append_error_message_57388c58
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - set:
-      field: '@timestamp'
-      tag: set_@timestamp_from_alert_record_created_at_553bb006
-      copy_from: nozomi_networks.alert.record_created_at
-      ignore_empty_value: true
   - convert:
       field: json.replicated
       tag: convert_replicated_to_boolean_d8a076c1
@@ -745,6 +858,11 @@ processors:
             tag: append_error_message_f1ec92ea
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      tag: set_@timestamp_from_alert_time
+      copy_from: nozomi_networks.alert.time
+      ignore_empty_value: true
   - rename:
       field: json.trace_sha1
       tag: rename_trace_sha1_24ca436a

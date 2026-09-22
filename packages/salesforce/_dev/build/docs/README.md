@@ -14,12 +14,13 @@ You can use the Salesforce integration for:
 
 ### How it works
 
-Elastic Agent uses the Salesforce input to query the EventLogFile API and Real-Time Event Monitoring objects via SOQL over the REST API. `Login` and `Logout` data streams can collect from either EventLogFile or the `LoginEvent`/`LogoutEvent` platform events. The `Apex` data stream reads EventLogFile records; `SetupAuditTrail` data stream queries the `SetupAuditTrail` object. OAuth 2.0 authentication is provided through a Salesforce Connected App using either the JWT bearer flow or the Username-Password flow. Collection is interval-based, uses cursors to avoid duplicates, and supports backfilling with an initial time window.
+Elastic Agent uses the Salesforce input to query the EventLogFile API and Real-Time Event Monitoring objects via SOQL over the REST API. `Login`, `Logout`, and `AuraRequest` data streams can collect from either EventLogFile or the corresponding real-time object (`LoginEvent`, `LogoutEvent`, `AuraRequestEventLog`). The `Apex` data stream reads EventLogFile records, and the `SetupAuditTrail` data stream queries the `SetupAuditTrail` object. OAuth 2.0 authentication is provided through a Salesforce Connected App using either the JWT bearer flow or the Username-Password flow. Collection is interval-based, uses cursors to avoid duplicates, and supports backfilling with an initial time window.
 
 - `login`: Collects information related to users who log in to Salesforce.
 - `logout`: Collects information related to users who log out from Salesforce.
 - `apex`: Collects information about various Apex events such as Callout, Execution, REST API, SOAP API, Trigger, and so on.
 - `setupaudittrail`: Collects information related to changes users made in the organization's setup area for the last 180 days.
+- `aura_request`: Collects server-side Aura framework requests made by the Salesforce Lightning Experience UI.
 
 The Salesforce integration collects the following events using the Salesforce REST API:
 
@@ -29,6 +30,8 @@ The Salesforce integration collects the following events using the Salesforce RE
 - [Logout Platform Events](https://developer.salesforce.com/docs/atlas.en-us.platform\_events.meta/platform\_events/sforce\_api\_objects\_logouteventstream.htm)
 - [Apex EventLogFile](https://developer.salesforce.com/docs/atlas.en-us.object\_reference.meta/object\_reference/sforce\_api\_objects\_eventlogfile.htm)
 - [SetupAuditTrail Object](https://developer.salesforce.com/docs/atlas.en-us.object\_reference.meta/object\_reference/sforce\_api\_objects\_setupaudittrail.htm)
+- [Aura Request EventLogFile](https://developer.salesforce.com/docs/atlas.en-us.object\_reference.meta/object\_reference/sforce\_api\_objects\_eventlogfile\_lightning\_component.htm)
+- [AuraRequestEventLog Object](https://developer.salesforce.com/docs/atlas.en-us.object\_reference.meta/object\_reference/sforce\_api\_objects\_aurarequesteventlog.htm)
 
 ## Compatibility
 
@@ -74,6 +77,7 @@ The Salesforce integration collects the following data streams:
 - `logout`: Collects information related to users who log out from Salesforce.
 - `apex`: Collects information about various Apex events such as `ApexCallout`, `ApexExecution`, `ApexRestApi`, `ApexSoap`, `ApexTrigger`, and `ExternalCustomApexCallout`.
 - `setupaudittrail`: Collects information related to changes users made in the organization's setup area for the last 180 days.
+- `aura_request`: Collects server-side Aura framework requests made by the Salesforce Lightning Experience UI, which is effectively the record and component level access log for the modern Salesforce UI.
 
 The Salesforce integration collects the following events using the Salesforce REST API:
 
@@ -81,6 +85,7 @@ The Salesforce integration collects the following events using the Salesforce RE
 - For `logout` — [Logout EventLogFile](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_eventlogfile_logout.htm) and [Logout Platform Events](https://developer.salesforce.com/docs/atlas.en-us.platform_events.meta/platform_events/sforce_api_objects_logouteventstream.htm)
 - For `apex` — [Apex EventLogFile](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_eventlogfile.htm)
 - For `setupaudittrail` — [SetupAuditTrail Object](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_setupaudittrail.htm)
+- For `aura_request` — [Aura Request EventLogFile](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_eventlogfile_lightning_component.htm) and the [AuraRequestEventLog Object](https://developer.salesforce.com/docs/atlas.en-us.object_reference.meta/object_reference/sforce_api_objects_aurarequesteventlog.htm)
 
 ## What do I need to use this integration?
 
@@ -102,6 +107,14 @@ The Salesforce integration collects the following events using the Salesforce RE
 
 NOTE: Real-Time Event Monitoring may require additional licensing. Check your subscription level with your Salesforce account representative.
 
+- For the `aura_request` data stream, additional requirements apply:
+
+  - The data stream is disabled by default because of its volume and licensing requirements. Enable it explicitly in the integration policy.
+  - The `AuraRequest` event type is not part of the EventLogFile subset that Salesforce includes at no extra cost (`Apex Unexpected Exception`, `API Total Usage`, `CORS Violation Record`, `CSP Violation`, `Hostname Redirects`, `Insecure External Assets`, `Login`, and `Logout`), so it requires Salesforce Shield or the Event Monitoring add-on. Developer Edition orgs get all event types with one day of retention, and Developer and Trial orgs must opt in to event log file generation.
+  - Collecting from the `AuraRequestEventLog` object requires API version 61.0 or later, and the `View Event Log Object Data` user permission (or the `Event Monitoring User` permission set) on the integration user. The `View All Data` permission that also grants access to `EventLogFile` does not grant access to event log objects.
+  - Event log objects such as `AuraRequestEventLog` are available in Enterprise, Performance, and Unlimited editions with Salesforce Shield or the Event Monitoring add-on. They are available only on Hyperforce instances and are unavailable in Government Cloud, so `EventLogFile` is the only option in those orgs.
+  - Choose the collection method based on the latency and retention you need. `EventLogFile` runs three to six hours behind on the hourly interval (longer when Salesforce is under load) and arrives the next day on the daily interval, and file retention is one day without the Event Monitoring add-on or up to one year with it, as configured in `Event Monitoring Settings`. The `AuraRequestEventLog` object becomes queryable 25 to 45 minutes after an event, but retains only 30 days of data and limits each query to a 15 day window, so keep the initial interval at or below `360h` when using it.
+
 ## How do I deploy this integration?
 
 For step-by-step instructions on how to set up an integration, see {{ url "getting-started-observability" "Getting started" }}.
@@ -109,14 +122,14 @@ For step-by-step instructions on how to set up an integration, see {{ url "getti
 ### Onboard and configure
 
 1. Install Elastic Agent and enroll it in Fleet.
-2. In Fleet, add the Salesforce integration and enable the `apex`, `login`, `logout`, and/or `setupaudittrail` data streams as needed.
+2. In Fleet, add the Salesforce integration and enable the data streams you need: `apex`, `aura_request`, `login`, `logout`, or `setupaudittrail`.
 3. Enter your Salesforce instance URL and API version.
 4. Choose an authentication method:
    - JWT bearer flow: set Client ID, Username, Private key path (PEM), and JWT audience URL.
    - Username‑Password flow: set Client ID, Client Secret, Username, Password (+ security token if required), and Token URL (base domain).
-5. For `login` and `logout`, choose which sources to collect:
+5. For `login`, `logout`, and `aura_request`, choose which sources to collect:
    - EventLogFile (batch logs)
-   - Platform Events (`LoginEvent`, `LogoutEvent`)
+   - Real-time objects (`LoginEvent`, `LogoutEvent`, `AuraRequestEventLog`)
 6. Optional tuning:
    - Set an initial interval to backfill historical data.
    - Adjust the collection interval per source.
@@ -241,7 +254,7 @@ Alternatively, you can use the Salesforce instance API version as described in t
 Once the Salesforce integration is successfully configured, follow these steps to validate the setup:
 
 1. Navigate to the `Assets` tab in the Salesforce Integration. You will find a list of available dashboards related to your configured data streams.
-2. Select the dashboard relevant to your data stream (for example, login, logout, apex, setupaudittrail).
+2. Select the dashboard relevant to your data stream (for example, login, logout, apex, setupaudittrail, aura_request).
 3. Verify that the dashboard is populated with the expected data.
 
 If the dashboard displays the data correctly, your integration is successfully validated.
@@ -251,6 +264,7 @@ If the dashboard displays the data correctly, your integration is successfully v
 This integration ships curated Kibana dashboards for each data stream. After data starts flowing, open the Salesforce integration and go to the Assets tab to launch:
 
 - Apex dashboard
+- AuraRequest dashboard
 - Login dashboard
 - Logout dashboard
 - SetupAuditTrail dashboard
@@ -280,15 +294,15 @@ This section provides solutions to common issues you might encounter while using
 
 ### Request timeout
 
-If you experience delays in the response from the Salesforce server in the `apex`, `login`, `logout`, or `setupaudittrail` data streams, you might encounter a similar error:
+If you experience delays in the response from the Salesforce server in the `apex`, `aura_request`, `login`, `logout`, or `setupaudittrail` data streams, you might encounter a similar error:
 
 ```
 Error running EventLogFile collection: error reading log file body: context deadline exceeded (Client.Timeout or context cancellation while reading body)
 ```
 
-This is most common in the `apex` data stream, where individual `EventLogFile` downloads can be large.
+This is most common in the `apex` and `aura_request` data streams, where individual `EventLogFile` downloads can be large.
 
-**Solution:** Consider increasing the `Request timeout` setting in the `Advanced options` section for the affected data stream (it defaults to `30s`). For example, set it to `120s`.
+**Solution:** Consider increasing the `Request timeout` setting in the `Advanced options` section for the affected data stream (it defaults to `30s`, or `180s` for `aura_request`). For example, set it to `120s`.
 
 ### Data ingestion error
 
@@ -334,6 +348,7 @@ This command is useful for debugging and troubleshooting OAuth 2.0 authenticatio
 - Collection intervals: Longer intervals reduce API usage and agent load; shorter intervals increase freshness at the cost of API calls and resource usage.
 - Backfill: Use the initial interval to safely ingest historical data. Large backfills may consume significant Salesforce API quotas; consider staging by data stream.
 - Login/Logout sources: EventLogFile is efficient for batched reporting; Platform Events provide lower-latency signals but may have throughput and retention limits in your org.
+- AuraRequest volume: the `aura_request` data stream records every server-side Aura request, so it is by far the highest volume data stream in this integration. A single user loading one Lightning page can generate dozens of events. Size your storage accordingly, and consider enabling only one of the two collection methods rather than both, since they surface the same events.
 - Timeouts: Increase the request timeout in Advanced options if Salesforce responses are slow or large result sets are expected.
 
 ## Reference
@@ -351,6 +366,14 @@ The `apex` data stream captures events related to Apex operations, enabling deve
 {{event "apex"}}
 
 {{fields "apex"}}
+
+#### AuraRequest
+
+The `aura_request` data stream captures the server-side Aura framework requests that Salesforce Lightning Experience makes when users load pages, open records, or when components fetch data. It is the record and component level access log for the modern Salesforce UI, which makes it useful for detecting UI-driven data scraping, guest user misuse, and atypical access patterns.
+
+{{event "aura_request"}}
+
+{{fields "aura_request"}}
 
 #### Login
 

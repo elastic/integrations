@@ -1,0 +1,35 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: system
+      name: test-default-system
+      streams:
+        - condition: ${host.platform} == 'windows'
+          data_stream:
+            dataset: system.system
+          ignore_older: 72h
+          name: System
+          processors:
+            - add_fields:
+                fields:
+                    module: system
+                target: event
+      type: winlog
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-system.system-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references: []
