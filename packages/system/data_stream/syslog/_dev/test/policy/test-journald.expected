@@ -1,0 +1,48 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: system
+      name: test-journald-system
+      streams:
+        - condition: (${host.platform} != "windows") and (${host.os_version} == "12 (bookworm)" or ${host.os_version} == "13 (trixie)" or (${host.os_platform} == "amzn" and ${host.os_version} == "2023") or (${host.os_platform} == "sles" and (${host.os_version} == "15 SP1" or ${host.os_version} == "15-SP1" or ${host.os_version} == "15 SP2" or ${host.os_version} == "15-SP2" or ${host.os_version} == "15 SP3" or ${host.os_version} == "15-SP3" or ${host.os_version} == "15 SP4" or ${host.os_version} == "15-SP4" or ${host.os_version} == "15 SP5" or ${host.os_version} == "15-SP5" or ${host.os_version} == "15 SP6" or ${host.os_version} == "15-SP6" or ${host.os_version} == "15 SP7" or ${host.os_version} == "15-SP7" or ${host.os_version} == "16.0")))
+          data_stream:
+            dataset: system.syslog
+          include_matches:
+            - SYSLOG_FACILITY=0
+            - SYSLOG_FACILITY=1
+            - SYSLOG_FACILITY=2
+            - SYSLOG_FACILITY=3
+            - SYSLOG_FACILITY=5
+            - SYSLOG_FACILITY=6
+            - SYSLOG_FACILITY=7
+            - SYSLOG_FACILITY=8
+            - SYSLOG_FACILITY=9
+            - SYSLOG_FACILITY=11
+            - SYSLOG_FACILITY=12
+            - SYSLOG_FACILITY=15
+          processors:
+            - add_fields:
+                fields:
+                    module: system
+                target: event
+          tags: null
+          type: journald
+      type: journald
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-system.syslog-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references: []
