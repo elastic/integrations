@@ -54,6 +54,49 @@ report_build_failure() {
     fi
 }
 
+report_publish_check_failure() {
+    local package="${1}"
+    echo "[${package}] Skipped. Could not determine if already published after retries"
+
+    if [ -n "${BUILDKITE_BRANCH+x}" ]; then
+        buildkite-agent annotate "Could not determine if ${package} is already published (storage unreachable). Package was skipped to avoid duplicate publish." --context "ctx-check-${package}" --style "error" || true
+    fi
+}
+
+# Check whether a package zip is already published on the package storage.
+# Returns 0 (published), 1 (not published / 404), or 2 (transient error after retries).
+# retry() is not used because it retries on any non-zero exit, making it impossible
+# to distinguish a definitive 404 (exit 1) from a transient failure (exit 2).
+# On retry exhaustion the caller skips publishing rather than proceeding, accepting
+# the risk of a missed publish to avoid the harder-to-fix risk of a duplicate publish.
+is_already_published() {
+    local package_zip="$1"
+    local url="https://package-storage.elastic.co/artifacts/packages/${package_zip}"
+    local retries=3
+    local count=0
+    local http_code
+    local delay
+
+    while true; do
+        http_code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 --head "${url}")
+        if [ "${http_code}" == "200" ]; then
+            echo "- Already published ${package_zip}"
+            return 0
+        elif [ "${http_code}" == "404" ]; then
+            echo "- Not published ${package_zip}"
+            return 1
+        fi
+        count=$((count + 1))
+        if [ "${count}" -ge "${retries}" ]; then
+            echoerr "Failed to check if ${package_zip} is published after ${retries} attempts (last HTTP status: ${http_code})"
+            return 2
+        fi
+        delay=$((2 ** count))
+        echoerr "Unexpected HTTP status ${http_code} checking ${package_zip}, retrying in ${delay}s... (attempt $((count + 1))/${retries})"
+        sleep "${delay}"
+    done
+}
+
 build_packages() {
     local packages=""
     local version=""
@@ -77,8 +120,14 @@ build_packages() {
             continue
         fi
 
-        if is_already_published "${package_zip}" ; then
+        local published_status=0
+        is_already_published "${package_zip}" || published_status=$?
+        if [ "${published_status}" -eq 0 ]; then
             echo "Skipping. ${package_zip} already published"
+            popd > /dev/null
+            continue
+        elif [ "${published_status}" -eq 2 ]; then
+            report_publish_check_failure "${package_zip}"
             popd > /dev/null
             continue
         fi
