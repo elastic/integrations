@@ -1,25 +1,28 @@
 ---
 processors:
-- drop:
-    tag: drop_missing_hash_events
-    if: ctx.ctl?.error == null && ctx.ctl?.hash == null
-    description: >-
-      Skip events without a certificate hash (our dedup key). Events
-      carrying an API error are kept so the failure is visible instead of
-      silently discarded.
 - set:
     tag: set_ecs_version
     field: ecs.version
     value: "9.3.0"
 - rename:
-    tag: rename_ctl_error_to_error
-    field: ctl.error
-    target_field: error
+    tag: rename_message_to_event_original
+    field: message
+    target_field: event.original
     ignore_missing: true
+    description: Fleet's final pipeline strips this unless preserve_original_event is set.
+- json:
+    tag: parse_event_original_to_ctl
+    field: event.original
+    target_field: ctl
+    if: ctx.event?.original != null
+    description: No-op for error events, which have no event.original.
+- drop:
+    tag: drop_missing_hash_events
+    if: ctx.error?.message == null && ctx.ctl?.hash == null
     description: >-
-      Moves the API error to the standard top-level error.* location before
-      the raw ctl.* fields get removed further down, and matches how the
-      host stream surfaces errors.
+      Skip events without a certificate hash (our dedup key). Events
+      carrying an API error are kept so the failure is visible instead of
+      silently discarded.
 - date:
     tag: convert_not_before
     field: ctl.not_before
@@ -93,14 +96,16 @@ processors:
     tag: set_event_kind
     field: event.kind
     value: enrichment
-- set:
-    tag: set_event_category
+- append:
+    tag: append_event_category
     field: event.category
-    value: [threat]
-- set:
-    tag: set_event_type
+    value: threat
+    allow_duplicates: false
+- append:
+    tag: append_event_type
     field: event.type
-    value: [indicator]
+    value: indicator
+    allow_duplicates: false
 - foreach:
     tag: foreach_san_dns_names_to_related_hosts
     field: ctl.san_dns_names
@@ -132,16 +137,15 @@ processors:
     target_field: _id
     ignore_missing: true
     description: Dedup by certificate SHA-256 hash.
-- rename:
-    tag: rename_message_to_event_original
-    field: message
-    target_field: event.original
-    ignore_missing: true
-    if: ctx.tags != null && ctx.tags.contains('preserve_original_event')
+- append:
+    tag: append_preserve_original_event_on_error
+    field: tags
+    value: preserve_original_event
+    allow_duplicates: false
+    if: ctx.error?.message != null
 - remove:
     tag: remove_raw_ctl_fields
     field:
-      - message
       - ctl
     ignore_missing: true
 on_failure:
@@ -156,3 +160,8 @@ on_failure:
     field: event.kind
     tag: set_pipeline_error_to_event_kind
     value: pipeline_error
+- append:
+    field: tags
+    tag: append_preserve_original_event_on_pipeline_failure
+    value: preserve_original_event
+    allow_duplicates: false

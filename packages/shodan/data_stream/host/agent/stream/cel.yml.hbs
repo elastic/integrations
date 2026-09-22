@@ -18,7 +18,7 @@ program: |
         "key": [state.api_key],
         "query": [state.query],
         "minify": ["false"],
-        "page": [string(has(state.?next.page) ? state.next.page : 1)],
+        "page": [string(state.?next.page.orValue(1))],
       }.format_query()
     ).do_request().as(resp, resp.StatusCode == 200 ?
       resp.Body.decode_json().as(body,
@@ -26,8 +26,8 @@ program: |
           (!has(state.max_pages) ||
             (has(state.?next.page) ? int(state.next.page) : 1) < int(state.max_pages))
         ).as(wantMore, {
-          "events": (
-            has(body.matches) && size(body.matches) > 0 ?
+          "events": dyn(
+            has(body.matches) && type(body.matches) == list ?
               body.matches.map(e, {
                 "message": e.encode_json(),
               })
@@ -35,35 +35,36 @@ program: |
               []
           ),
           "want_more": wantMore,
-          "next": wantMore ? {
-            "page": (has(state.?next.page) ? int(state.next.page) : 1) + 1,
-          } : {},
+          "next": wantMore ?
+            {"page": (has(state.?next.page) ? int(state.next.page) : 1) + 1}
+          :
+            {},
         })
       )
     :
       {
-        "events": [{
+        "events": dyn({
           "error": {
             "code": string(resp.StatusCode),
-            "id": string(resp.Status),
+            "id": resp.Status,
             "message": "GET " + state.url.trim_right("/") + "/shodan/host/search: " + (
                 size(resp.Body) != 0 ?
                   string(resp.Body)
                 :
-                  string(resp.Status) + ' (' + string(resp.StatusCode) + ')'
+                  resp.Status + ' (' + string(resp.StatusCode) + ')'
               ),
           },
-        }],
+        }),
         "next": {},
         "want_more": false,
       }
     )
   )
 
+{{#if processors}}
 processors:
-  - decode_json_fields:
-      fields: ["message"]
-      target: shodan
+{{processors}}
+{{/if}}
 
 tags:
 {{#if preserve_original_event}}

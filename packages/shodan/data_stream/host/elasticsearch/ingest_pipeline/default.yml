@@ -1,16 +1,28 @@
 ---
 processors:
-- drop:
-    tag: drop_empty_page_events
-    if: ctx.error == null && ctx.shodan?.ip_str == null
-    description: >-
-      The empty final page of a poll still emits one event since there's
-      nothing to split; drop it. Events carrying an API error are kept so
-      the failure is visible instead of silently discarded.
 - set:
     tag: set_ecs_version
     field: ecs.version
     value: "9.3.0"
+- rename:
+    tag: rename_message_to_event_original
+    field: message
+    target_field: event.original
+    ignore_missing: true
+    description: Fleet's final pipeline strips this unless preserve_original_event is set.
+- json:
+    tag: parse_event_original_to_shodan
+    field: event.original
+    target_field: shodan
+    if: ctx.event?.original != null
+    description: No-op for error events, which have no event.original.
+- drop:
+    tag: drop_empty_page_events
+    if: ctx.error?.message == null && ctx.shodan?.ip_str == null
+    description: >-
+      The empty final page of a poll still emits one event since there's
+      nothing to split; drop it. Events carrying an API error are kept so
+      the failure is visible instead of silently discarded.
 - remove:
     tag: remove_agent_host_metadata
     field: host
@@ -138,14 +150,16 @@ processors:
     tag: set_event_kind
     field: event.kind
     value: enrichment
-- set:
-    tag: set_event_category
+- append:
+    tag: append_event_category
     field: event.category
-    value: [threat]
-- set:
-    tag: set_event_type
+    value: threat
+    allow_duplicates: false
+- append:
+    tag: append_event_type
     field: event.type
-    value: [indicator]
+    value: indicator
+    allow_duplicates: false
 - append:
     tag: append_related_ip
     field: related.ip
@@ -214,16 +228,15 @@ processors:
       own document - data streams reject a duplicate _id outright rather
       than updating it, so without this the latest-state transform would
       never see anything past a host's first-ever observation.
-- rename:
-    tag: rename_message_to_event_original
-    field: message
-    target_field: event.original
-    ignore_missing: true
-    if: ctx.tags != null && ctx.tags.contains('preserve_original_event')
+- append:
+    tag: append_preserve_original_event_on_error
+    field: tags
+    value: preserve_original_event
+    allow_duplicates: false
+    if: ctx.error?.message != null
 - remove:
     tag: remove_raw_shodan_fields
     field:
-      - message
       - shodan
     ignore_missing: true
 on_failure:
@@ -238,3 +251,8 @@ on_failure:
     field: event.kind
     tag: set_pipeline_error_to_event_kind
     value: pipeline_error
+- append:
+    field: tags
+    tag: append_preserve_original_event_on_pipeline_failure
+    value: preserve_original_event
+    allow_duplicates: false
