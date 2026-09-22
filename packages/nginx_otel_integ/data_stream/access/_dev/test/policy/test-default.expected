@@ -30,7 +30,7 @@ processors:
         error_mode: ignore
         log_statements:
             - conditions:
-                - IsMatch(body, "^[\\d.]+ - .+ \\[.+\\] \".+\" \\d+ \\d+ \".+\" \".+\"")
+                - IsMatch(body, "^\\S+ - .+ \\[.+\\] \".+\" \\d+ \\d+ \".+\" \".+\"")
               context: log
               statements:
                 - set(body, ExtractGrokPatterns(body, "%{IPORHOST:source.address} - (-|%{DATA:user.name}) \\[%{HTTPDATE:nginx.access.time}\\] \"%{WORD:http.request.method} %{DATA:url.original} HTTP/%{NUMBER:http.version}\" %{NUMBER:http.response.status_code:long} %{NUMBER:http.response.body.size:long} \"(-|%{DATA:http.request.referrer})\" \"(-|%{DATA:user_agent.original})\"", true))

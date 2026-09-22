@@ -4,7 +4,7 @@ processors:
     log_statements:
       - context: log
         conditions:
-          - IsMatch(body, "^[\\d.]+ - .+ \\[.+\\] \".+\" \\d+ \\d+ \".+\" \".+\"")
+          - IsMatch(body, "^\\S+ - .+ \\[.+\\] \".+\" \\d+ \\d+ \".+\" \".+\"")
         statements:
           - set(body, ExtractGrokPatterns(body, "%{IPORHOST:source.address} - (-|%{DATA:user.name}) \\[%{HTTPDATE:nginx.access.time}\\] \"%{WORD:http.request.method} %{DATA:url.original} HTTP/%{NUMBER:http.version}\" %{NUMBER:http.response.status_code:long} %{NUMBER:http.response.body.size:long} \"(-|%{DATA:http.request.referrer})\" \"(-|%{DATA:user_agent.original})\"", true))
           - set(event_name, "nginx.access")
