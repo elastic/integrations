@@ -65,9 +65,11 @@ collect_linked_packages_from_roots() {
   local root
   for root in "$@"; do seen["${root}"]=1; done
   local -a queue=("$@")
+  local queue_idx=0
 
-  while [[ ${#queue[@]} -gt 0 ]]; do
-    local current="${queue[0]}"; queue=("${queue[@]:1}")
+  while [[ ${queue_idx} -lt ${#queue[@]} ]]; do
+    local current="${queue[${queue_idx}]}"
+    queue_idx=$(( queue_idx + 1 ))
     local current_abs
     if ! current_abs=$(realpath "${current}" 2>/dev/null); then
       echo "Warning: cannot resolve path '${current}', skipping" >&2
@@ -152,8 +154,10 @@ collect_packages_to_keep() {
     done
 
     # Expand via .link files for all current packages.
-    # collect_linked_packages_from_roots deduplicates against its inputs so
-    # only packages not already in packages_to_keep are returned.
+    # collect_linked_packages_from_roots rebuilds the package list from
+    # list_all_directories on each call. The outer loop runs at most a handful
+    # of iterations in practice (typically 1, rarely more than 3), so the
+    # extra find traversal per iteration is negligible.
     local linked_path
     while IFS= read -r linked_path; do
       echo "Keeping linked source package: ${linked_path} (linked transitively)" >&2
