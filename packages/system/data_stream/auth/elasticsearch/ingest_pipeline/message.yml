@@ -404,7 +404,7 @@ processors:
       target_field: user.name
       ignore_missing: true
       ignore_failure: true
-      if: ctx.user?.name == null || ctx.user?.name == ""
+      if: ctx._temp?.category != 'chauthtok' && (ctx.user?.name == null || ctx.user?.name == "")
   - rename:
       tag: rename_foruser
       field: _temp.foruser
@@ -436,7 +436,7 @@ processors:
       target_field: user.name
       ignore_missing: true
       ignore_failure: true
-      if: ctx._temp?.pam_user != null && ctx._temp.pam_user != '' && (ctx.user?.name == null || ctx.user?.name == '')
+      if: ctx._temp?.category != 'chauthtok' && ctx._temp?.pam_user != null && ctx._temp.pam_user != '' && (ctx.user?.name == null || ctx.user?.name == '')
   - rename:
       tag: rename_pam_target
       field: _temp.pam_target
