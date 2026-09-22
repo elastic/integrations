@@ -8,45 +8,45 @@ processors:
         - team
       ignore_missing: true
       if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
-      tag: remove_agentless_tags
+      tag: remove_agentless_tags_e6856012
       description: >-
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
   - terminate:
-      tag: data_collection_error
+      tag: data_collection_error_4bdbb3d0
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
       description: error message set and no data to process.
   - set:
       field: ecs.version
-      tag: set_ecs_version
+      tag: set_ecs_version_dbf680ba
       value: 8.17.0
   - rename:
       field: message
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_1d854002
       target_field: event.original
       ignore_missing: true
       description: Renames the original `message` field to `event.original` to store a copy of the original message.
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_9ecc8509
       ignore_missing: true
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - json:
       field: event.original
-      tag: json_event_original
+      tag: json_event_original_e6c50991
       target_field: crowdstrike.idp.timeline
   - fingerprint:
       fields:
         - event.original
-      tag: fingerprint_identity_protection_timeline
+      tag: fingerprint_identity_protection_timeline_5df148ab
       target_field: _id
       ignore_missing: true
 
   # Rename camelCase keys to snake_case under crowdstrike.idp.
   - script:
-      tag: script_convert_camelcase_to_snake_case
+      tag: script_convert_camelcase_to_snake_case_abeb5795
       lang: painless
       description: Convert camelCase to snake_case.
       if: ctx.crowdstrike?.idp?.timeline != null
@@ -92,18 +92,18 @@ processors:
         ctx.crowdstrike.idp.timeline = convertToSnakeCase(ctx.crowdstrike.idp.timeline);
       on_failure:
         - append:
-            tag: append_error_message_timeline_script
+            tag: append_error_message_timeline_script_742930ca
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   # Event categorization
   - set:
       field: event.kind
-      tag: set_event_kind_to_event
+      tag: set_event_kind_to_event_17df4631
       value: event
       if: ctx.crowdstrike?.idp != null
   - script:
-      tag: set_event_category_and_type_from_timeline_event_type
+      tag: set_event_category_and_type_from_timeline_event_type_2d39993d
       if: ctx.crowdstrike?.idp?.timeline?.event_type != null
       params:
         SUCCESSFUL_AUTHENTICATION:
@@ -183,7 +183,7 @@ processors:
   # Map event_severity to ECS event.severity.
   - script:
       lang: painless
-      tag: map_timeline_event_severity
+      tag: map_timeline_event_severity_a3efb655
       description: Map CrowdStrike timeline event_severity to ECS event.severity.
       if: ctx.crowdstrike?.idp?.timeline?.event_severity instanceof String && ctx.crowdstrike.idp.timeline.event_severity != ''
       params:
@@ -219,7 +219,7 @@ processors:
       ignore_empty_value: true
   - script:
       lang: painless
-      tag: map_entity_identity_fields_by_type
+      tag: map_entity_identity_fields_by_type_1f025c17
       description: >-
         Map entity fields to ECS based on entity.type. USER entities populate user.*;
         ENDPOINT entities populate host.*.
@@ -254,7 +254,7 @@ processors:
         }
       on_failure:
         - append:
-            tag: append_error_message_map_entity_identity_fields_by_type
+            tag: append_error_message_map_entity_identity_fields_by_type_ee143f1e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -299,7 +299,7 @@ processors:
       ignore_empty_value: true
   - set:
       field: service.id
-      tag: set_service_id_from_target_service_identifier
+      tag: set_service_id_from_target_service_identifier_7034bf69
       copy_from: crowdstrike.idp.timeline.target_service_identifier
       ignore_empty_value: true
   - set:
@@ -313,7 +313,7 @@ processors:
       copy_from: crowdstrike.idp.timeline.operating_system_info.name
       ignore_empty_value: true
   - script:
-      tag: script_set_host_os_type_from_operating_system_info_family
+      tag: script_set_host_os_type_from_operating_system_info_family_7e3e5ddd
       description: Set host.os.type from operating_system_info.family.
       lang: painless
       if: ctx.crowdstrike?.idp?.timeline?.operating_system_info?.family != null
@@ -333,7 +333,7 @@ processors:
         }
       on_failure:
         - append:
-            tag: append_error_message_set_host_os_type_script
+            tag: append_error_message_set_host_os_type_script_81b4238c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
@@ -355,7 +355,7 @@ processors:
   # user_entity.email_addresses[] → user.email (first value)
   - script:
       lang: painless
-      tag: set_user_email_from_email_addresses
+      tag: set_user_email_from_email_addresses_621d7bb0
       description: Take the first email from user_entity.email_addresses when present.
       if: ctx.crowdstrike?.idp?.timeline?.user_entity?.email_addresses instanceof List
       source: |
@@ -368,7 +368,7 @@ processors:
   # entity.accounts[] → host.* (ENDPOINT) or user.* (USER) from first account descriptor
   - script:
       lang: painless
-      tag: map_entity_accounts_by_type
+      tag: map_entity_accounts_by_type_8ec46dac
       description: >-
         Map the first Active Directory account descriptor to ECS fields based on
         entity.type.
@@ -417,7 +417,7 @@ processors:
         }
       on_failure:
         - append:
-            tag: append_error_message_map_entity_accounts_by_type
+            tag: append_error_message_map_entity_accounts_by_type_5760a323
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
@@ -426,7 +426,7 @@ processors:
       field: crowdstrike.idp.timeline.ip_address
       type: ip
       target_field: source.ip
-      tag: convert_timeline_ip_address_to_source_ip
+      tag: convert_timeline_ip_address_to_source_ip_266e97e7
       ignore_missing: true
       if: ctx.crowdstrike?.idp?.timeline?.ip_address != null && ctx.crowdstrike.idp.timeline.ip_address != ''
       on_failure:
@@ -435,7 +435,7 @@ processors:
             field: crowdstrike.idp.timeline.ip_address
             ignore_missing: true
         - append:
-            tag: append_error_message_convert_timeline_ip_address_to_source_ip
+            tag: append_error_message_convert_timeline_ip_address_to_source_ip_3b6f91ca
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - geoip:
@@ -469,7 +469,7 @@ processors:
 
   - date:
       field: crowdstrike.idp.timeline.timestamp
-      tag: date_crowdstrike_idp_timestamp
+      tag: date_crowdstrike_idp_timestamp_0c6d5b74
       target_field: crowdstrike.idp.timeline.timestamp
       formats:
         - ISO8601
@@ -480,12 +480,12 @@ processors:
             field: crowdstrike.idp.timeline.timestamp
             ignore_missing: true
         - append:
-            tag: append_error_message_date_crowdstrike_idp_timestamp
+            tag: append_error_message_date_crowdstrike_idp_timestamp_0131130c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: crowdstrike.idp.timeline.start_time
-      tag: date_crowdstrike_idp_start_time
+      tag: date_crowdstrike_idp_start_time_bad9b878
       target_field: crowdstrike.idp.timeline.start_time
       formats:
         - ISO8601
@@ -496,12 +496,12 @@ processors:
             field: crowdstrike.idp.timeline.start_time
             ignore_missing: true
         - append:
-            tag: append_error_message_date_crowdstrike_idp_start_time
+            tag: append_error_message_date_crowdstrike_idp_start_time_cb211674
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: crowdstrike.idp.timeline.end_time
-      tag: date_crowdstrike_idp_end_time
+      tag: date_crowdstrike_idp_end_time_c6378d47
       target_field: crowdstrike.idp.timeline.end_time
       formats:
         - ISO8601
@@ -512,7 +512,7 @@ processors:
             field: crowdstrike.idp.timeline.end_time
             ignore_missing: true
         - append:
-            tag: append_error_message_date_crowdstrike_idp_end_time
+            tag: append_error_message_date_crowdstrike_idp_end_time_e7f9c35d
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
@@ -534,49 +534,49 @@ processors:
   - append:
       field: related.user
       value: '{{{user.name}}}'
-      tag: append_user_name_to_related
+      tag: append_user_name_to_related_325195a6
       allow_duplicates: false
       if: ctx.user?.name != null
   - append:
       field: related.user
       value: '{{{user.target.name}}}'
-      tag: append_user_target_name_to_related
+      tag: append_user_target_name_to_related_9e603805
       allow_duplicates: false
       if: ctx.user?.target?.name != null
   - append:
       field: related.user
       value: '{{{user.full_name}}}'
-      tag: append_user_full_name_to_related
+      tag: append_user_full_name_to_related_40705751
       allow_duplicates: false
       if: ctx.user?.full_name != null
   - append:
       field: related.user
       value: '{{{user.email}}}'
-      tag: append_user_email_to_related
+      tag: append_user_email_to_related_b9ac313b
       allow_duplicates: false
       if: ctx.user?.email != null
   - append:
       field: related.hosts
       value: '{{{host.name}}}'
-      tag: append_host_name_to_related
+      tag: append_host_name_to_related_82ac1e98
       allow_duplicates: false
       if: ctx.host?.name != null
   - append:
       field: related.hosts
       value: '{{{host.hostname}}}'
-      tag: append_host_hostname_to_related
+      tag: append_host_hostname_to_related_6f8fa3bb
       allow_duplicates: false
       if: ctx.host?.hostname != null
   - append:
       field: related.hosts
       value: '{{{destination.domain}}}'
-      tag: append_destination_domain_to_related_hosts
+      tag: append_destination_domain_to_related_hosts_6a8d1772
       allow_duplicates: false
       if: ctx.destination?.domain != null
   - append:
       field: related.ip
       value: '{{{source.ip}}}'
-      tag: append_source_ip_to_related
+      tag: append_source_ip_to_related_723473d3
       allow_duplicates: false
       if: ctx.source?.ip != null
 
@@ -598,12 +598,12 @@ processors:
         - crowdstrike.idp.timeline.entity.primary_display_name
         - crowdstrike.idp.timeline.operating_system_info
         - crowdstrike.idp.timeline.geo_location
-      tag: remove_custom_duplicate_fields
+      tag: remove_custom_duplicate_fields_84064dce
       ignore_missing: true
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
   - script:
       description: This script processor iterates over the whole document to remove fields with null values.
-      tag: script_to_drop_null_values
+      tag: script_to_drop_null_values_47584e1d
       lang: painless
       source: |
         void handleMap(Map map) {
@@ -629,24 +629,26 @@ processors:
         handleMap(ctx);
   - set:
       field: event.kind
-      tag: set_pipeline_error_into_event_kind
+      tag: set_pipeline_error_into_event_kind_4fd8ffa8
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
-      tag: append_tags_preserve_original_on_error
+      tag: append_tags_preserve_original_on_error_b6c08950
       field: tags
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message_6906b116
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

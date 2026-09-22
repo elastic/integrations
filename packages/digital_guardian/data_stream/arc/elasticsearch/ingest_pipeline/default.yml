@@ -3,40 +3,42 @@ description: Pipeline for processing Digital Guardian Analytics & Reporting Clou
 processors:
   - set:
       field: ecs.version
-      tag: set_ecs_version
+      tag: set_ecs_version_6b2cef5e
       value: 8.11.0
   - terminate:
-      tag: data_collection_error
+      tag: data_collection_error_4bdbb3d0
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
       description: error message set and no data to process.
   - rename:
       field: message
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_176375fd
       target_field: event.original
       ignore_missing: true
       description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_9ecc8509
       ignore_missing: true
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - json:
       field: event.original
-      tag: json_event_original
+      tag: json_event_original_25855253
       target_field: digital_guardian.arc
       if: ctx.event?.original != null
       on_failure:
         - append:
+            tag: append_error_message_faafcc6e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - dot_expander:
+      tag: dot_expander_de55df6f
       field: "*"
       path: digital_guardian.arc
   - script:
       description: Drops null/empty/na values recursively.
-      tag: script_to_remove_na_values
+      tag: script_to_remove_na_values_e283b971
       lang: painless
       source: |-
         boolean dropEmptyFields(Object object) {
@@ -54,7 +56,7 @@ processors:
         dropEmptyFields(ctx);
   - script:
       description: Convert data sizes to bytes
-      tag: convert_data_sizes_to_bytes
+      tag: convert_data_sizes_to_bytes_f600bc79
       lang: painless
       source: |-
         long bytesFromStr(String str) {
@@ -89,18 +91,18 @@ processors:
           ctx.digital_guardian.arc.uad_bw_bytes = bytesFromStr(ctx.digital_guardian.arc.uad_bw);
         }
 
-# ECS Event Fields
-  - set: 
+  # ECS Event Fields
+  - set:
       field: event.kind
-      tag: set_event_kind
+      tag: set_event_kind_ab1166ce
       value: alert
-  - set: 
+  - set:
       field: event.id
-      tag: set_event_id
+      tag: set_event_id_26f8e436
       copy_from: digital_guardian.arc.dg_guid
       ignore_empty_value: true
   - script:
-      tag: script_set_event_action
+      tag: script_set_event_action_63b88b1a
       description: Set event.action from dg_utype and inc_state
       if: ctx.digital_guardian?.arc?.dg_utype != null && ctx.digital_guardian.arc.inc_state != null
       lang: painless
@@ -110,7 +112,7 @@ processors:
         }
         ctx.event.action = (ctx.digital_guardian.arc.dg_utype + "-" + ctx.digital_guardian.arc.inc_state).toLowerCase();
   - script:
-      tag: script_set_event_severity
+      tag: script_set_event_severity_0eea246d
       description: Set event.severity from inc_sev
       if: ctx.digital_guardian?.arc?.inc_sev != null
       lang: painless
@@ -129,10 +131,10 @@ processors:
         def sev = ctx.digital_guardian.arc.inc_sev;
         ctx.event.severity = params.getOrDefault(sev, params['Unknown']);
 
-# Convert date fields
+  # Convert date fields
   - date:
       field: digital_guardian.arc.dg_time
-      tag: date_dg_time
+      tag: date_dg_time_fe28959a
       target_field: digital_guardian.arc.dg_time
       formats:
         - "yyyy-MM-dd hh:mm:ss a"
@@ -141,14 +143,14 @@ processors:
       if: ctx.digital_guardian?.arc?.dg_time != null
   - date:
       field: digital_guardian.arc.dg_processed_time
-      tag: date_dg_processed_time
+      tag: date_dg_processed_time_4b5b3472
       target_field: digital_guardian.arc.dg_processed_time
       formats:
         - epoch_millis
       if: ctx.digital_guardian?.arc?.dg_processed_time != null
   - date:
       field: digital_guardian.arc.dg_local_timestamp
-      tag: date_dg_time
+      tag: date_dg_time_c272c03b
       target_field: digital_guardian.arc.dg_local_timestamp
       formats:
         - "yyyy-MM-dd hh:mm:ss a"
@@ -157,7 +159,7 @@ processors:
       if: ctx.digital_guardian?.arc?.dg_local_timestamp != null
   - date:
       field: digital_guardian.arc.pi_fal
-      tag: date_inc_mtime
+      tag: date_inc_mtime_9847d46c
       target_field: digital_guardian.arc.pi_fal
       formats:
         - "yyyy-MM-dd hh:mm:ss a"
@@ -166,7 +168,7 @@ processors:
       if: ctx.digital_guardian?.arc?.pi_fal != null
   - date:
       field: digital_guardian.arc.pi_fcl
-      tag: date_inc_mtime
+      tag: date_inc_mtime_97fb9e7b
       target_field: digital_guardian.arc.pi_fcl
       formats:
         - "yyyy-MM-dd hh:mm:ss a"
@@ -175,7 +177,7 @@ processors:
       if: ctx.digital_guardian?.arc?.pi_fcl != null
   - date:
       field: digital_guardian.arc.pi_fml
-      tag: date_inc_mtime
+      tag: date_inc_mtime_d9be424e
       target_field: digital_guardian.arc.pi_fml
       formats:
         - "yyyy-MM-dd hh:mm:ss a"
@@ -184,7 +186,7 @@ processors:
       if: ctx.digital_guardian?.arc?.pi_fml != null
   - date:
       field: digital_guardian.arc.inc_mtime
-      tag: date_inc_mtime
+      tag: date_inc_mtime_5e206a99
       target_field: digital_guardian.arc.inc_mtime
       formats:
         - "yyyy-MM-dd hh:mm:ss a"
@@ -193,7 +195,7 @@ processors:
       if: ctx.digital_guardian?.arc?.inc_mtime != null
   - date:
       field: digital_guardian.arc.dg_alert.alert_etl
-      tag: date_dg_alert_alert_etl
+      tag: date_dg_alert_alert_etl_7bf11bdb
       target_field: digital_guardian.arc.dg_alert.alert_etl
       formats:
         - "yyyy-MM-dd hh:mm:ss a"
@@ -202,7 +204,7 @@ processors:
       if: ctx.digital_guardian?.arc?.dg_alert?.alert_etl != null
   - date:
       field: digital_guardian.arc.dg_alert.alert_etu
-      tag: date_dg_alert_alert_etu
+      tag: date_dg_alert_alert_etu_03e44798
       target_field: digital_guardian.arc.dg_alert.alert_etu
       formats:
         - "yyyy-MM-dd hh:mm:ss a"
@@ -210,52 +212,54 @@ processors:
         - "ISO8601"
       if: ctx.digital_guardian?.arc?.dg_alert?.alert_etu != null
 
-# Choose a @timestamp value for the event
+  # Choose a @timestamp value for the event
   - set:
       field: '@timestamp'
-      tag: set_timestamp_dg_time
+      tag: set_timestamp_dg_time_57c2db2f
       copy_from: digital_guardian.arc.dg_time
       ignore_empty_value: true
   - set:
       field: '@timestamp'
-      tag: set_timestamp_dg_processed_time
+      tag: set_timestamp_dg_processed_time_3f0539c7
       copy_from: digital_guardian.arc.dg_processed_time
       override: false
       ignore_empty_value: true
   - set:
       field: '@timestamp'
-      tag: set_timestamp_inc_mtime
+      tag: set_timestamp_inc_mtime_d33a3294
       copy_from: digital_guardian.arc.inc_mtime
       override: false
       ignore_empty_value: true
 
-# ECS Rule Fields
-  - set: 
+  # ECS Rule Fields
+  - set:
       field: rule.name
-      tag: set_rule_name
+      tag: set_rule_name_ea81e16e
       copy_from: digital_guardian.arc.dg_name
       ignore_empty_value: true
 
-# ECS User Fields
-  - set: 
+  # ECS User Fields
+  - set:
       field: user.name
-      tag: set_user_name
+      tag: set_user_name_e659c85b
       copy_from: digital_guardian.arc.inc_creator
       ignore_empty_value: true
 
-# ECS Related Fields
+  # ECS Related Fields
   - append:
+      tag: append_related_user_1ea4ed5c
       field: related.user
       value: '{{{digital_guardian.arc.inc_creator}}}'
       allow_duplicates: false
       if: ctx.digital_guardian?.arc?.inc_creator != null
   - append:
+      tag: append_related_user_c3ed125a
       field: related.user
       value: '{{{digital_guardian.arc.inc_assign}}}'
       allow_duplicates: false
       if: ctx.digital_guardian?.arc?.inc_assign != null
 
-# Cleanup
+  # Cleanup
   - remove:
       field:
         - digital_guardian.arc.dg_name
@@ -263,17 +267,17 @@ processors:
         - digital_guardian.arc.inc_mtime
         - digital_guardian.arc.inc_sev
         - digital_guardian.arc.inc_creator
-      tag: remove_custom_duplicate_fields
+      tag: remove_custom_duplicate_fields_416371e8
       ignore_missing: true
       if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
   - remove:
       field: json
-      tag: remove_json
+      tag: remove_json_94dc55cd
       ignore_missing: true
   - script:
       lang: painless
       description: Drops null/empty values recursively.
-      tag: painless_remove_null
+      tag: painless_remove_null_f6a89620
       source: |-
         boolean drop(Object object) {
           if (object == null || object == '') {
@@ -291,22 +295,25 @@ processors:
   - set:
       field: event.kind
       value: pipeline_error
-      tag: set_pipeline_error_into_event_kind
+      tag: set_pipeline_error_into_event_kind_4fd8ffa8
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message_6906b116
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

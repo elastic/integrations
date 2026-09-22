@@ -24,6 +24,7 @@ processors:
       if: ctx.cisco_ise?.log?.segment?.number != null && ctx.cisco_ise.log.segment.number > 0
       patterns:
         - "^%{GREEDYDATA:cisco_ise.log.log_details_raw},"
+        - "^$"
   - date:
       tag: date__tmp_timestamp_to_@timestamp_247df7be
       field: _tmp.timestamp
@@ -258,7 +259,7 @@ processors:
       tag: date_cisco_ise_log_log_details_Event-Timestamp_to_cisco_ise_log_event_timestamp_1b4cee3a
       field: cisco_ise.log.log_details.Event-Timestamp
       target_field: cisco_ise.log.event.timestamp
-      if: ctx.cisco_ise?.log?.log_details['Event-Timestamp'] != null
+      if: ctx.cisco_ise?.log?.log_details != null && ctx.cisco_ise.log.log_details['Event-Timestamp'] != null
       formats:
         - UNIX
       on_failure:

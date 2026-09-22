@@ -7,73 +7,90 @@ processors:
   ###############################################
 
   - terminate:
-      tag: data_collection_error
+      tag: data_collection_error_59f7570c
       if: ctx.error?.message != null
       description: error message set and no data to process.
+
 
   ####################
   # Event ECS fields #
   ####################
-
   - set:
+      tag: set_ecs_version_6b2cef5e
       field: ecs.version
       value: '8.11.0'
   - set:
+      tag: set_event_kind_3410a97a
       field: event.kind
       value: enrichment
   - set:
+      tag: set_event_category_4675e36d
       field: event.category
       value: ['threat']
   - set:
+      tag: set_event_type_acbc82af
       field: event.type
       value: ['indicator']
   - rename:
+      tag: rename_created_to_event_created_34b41862
       field: created
       target_field: event.created
   - rename:
+      tag: rename_id_to_event_id_1fdc0260
       field: id
       target_field: event.id
+
 
   ######################
   # Threat feed fields #
   ######################
-
   - set:
+      tag: set_threat_feed_dashboard_id_6230ef72
       field: threat.feed.dashboard_id
       value: ti_opencti-83b2bef0-591c-11ee-ba5f-49a63bb985cd
   - set:
+      tag: set_threat_feed_description_88a0d5b4
       field: threat.feed.description
       value: Indicator data from OpenCTI
   - set:
+      tag: set_threat_feed_name_76261292
       field: threat.feed.name
       value: OpenCTI
   - set:
+      tag: set_threat_feed_reference_4c4ced2a
       field: threat.feed.reference
       value: https://docs.opencti.io/latest/usage/overview/
+
 
   ############################
   # Generic indicator fields #
   ############################
-
   - set:
+      tag: set_threat_indicator_reference_cb03a675
       field: threat.indicator.reference
       value: "{{{_conf.url}}}/dashboard/observations/indicators/{{{event.id}}}"
   - remove:
+      tag: remove__conf_f834c49b
       field: _conf
       ignore_missing: true
   - rename:
+      tag: rename_standard_id_to_opencti_indicator_standard_id_b3441d15
       field: standard_id
       target_field: opencti.indicator.standard_id
   - rename:
+      tag: rename_is_inferred_to_opencti_indicator_is_inferred_9f8d2f43
       field: is_inferred
       target_field: opencti.indicator.is_inferred
   - rename:
+      tag: rename_revoked_to_opencti_indicator_revoked_7344e674
       field: revoked
       target_field: opencti.indicator.revoked
   - set:
+      tag: set_threat_indicator_confidence_0a8259d0
       field: threat.indicator.confidence
       value: 'Not Specified'
   - script:
+      tag: script_2ce1155c
       # based on https://stix2.readthedocs.io/en/latest/api/confidence/stix2.confidence.scales.html#stix2.confidence.scales.value_to_none_low_medium_high
       lang: painless
       source: |
@@ -91,47 +108,61 @@ processors:
           ctx.threat.indicator.confidence = 'Not Specified';
         }
   - remove:
+      tag: remove_confidence_8b7dc250
       field: confidence
   - rename:
+      tag: rename_lang_to_opencti_indicator_lang_5d8ee86b
       field: lang
       target_field: opencti.indicator.lang
   - rename:
+      tag: rename_modified_to_threat_indicator_modified_at_836603b6
       field: modified
       target_field: threat.indicator.modified_at
   - rename:
+      tag: rename_updated_at_to_opencti_indicator_updated_at_63e1bda8
       field: updated_at
       target_field: opencti.indicator.updated_at
       ignore_missing: true
   - rename:
+      tag: rename_pattern_type_to_opencti_indicator_pattern_type_fd8a1b29
       field: pattern_type
       target_field: opencti.indicator.pattern_type
   - rename:
+      tag: rename_pattern_version_to_opencti_indicator_pattern_version_5eba13bd
       field: pattern_version
       target_field: opencti.indicator.pattern_version
       if: ctx.pattern_version != null
       ignore_missing: true
   - remove:
+      tag: remove_pattern_version_7d87c3b9
       field: pattern_version
       ignore_missing: true
   - rename:
+      tag: rename_pattern_to_opencti_indicator_pattern_c5960a1b
       field: pattern
       target_field: opencti.indicator.pattern
   - rename:
+      tag: rename_name_to_threat_indicator_name_57e0299e
       field: name
       target_field: threat.indicator.name
   - rename:
+      tag: rename_description_to_threat_indicator_description_b162d616
       field: description
       target_field: threat.indicator.description
   - remove:
+      tag: remove_threat_indicator_description_f0ba1001
       field: threat.indicator.description
       if: ctx.threat.indicator.description == null || ctx.threat.indicator.description.isEmpty()
   - rename:
+      tag: rename_valid_from_to_opencti_indicator_valid_from_2e7d84dd
       field: valid_from
       target_field: opencti.indicator.valid_from
   - rename:
+      tag: rename_valid_until_to_opencti_indicator_valid_until_0b920173
       field: valid_until
       target_field: opencti.indicator.valid_until
   - script:
+      tag: script_a0463e84
       lang: painless
       source: |
         if (ctx.opencti.indicator.revoked == true &&
@@ -142,15 +173,19 @@ processors:
             ctx.opencti.indicator.invalid_or_revoked_from = ctx.opencti.indicator.valid_until;
         }
   - rename:
+      tag: rename_x_opencti_score_to_opencti_indicator_score_c284b3fa
       field: x_opencti_score
       target_field: opencti.indicator.score
   - rename:
+      tag: rename_x_opencti_detection_to_opencti_indicator_detection_eb0f7f83
       field: x_opencti_detection
       target_field: opencti.indicator.detection
   - rename:
+      tag: rename_x_opencti_main_observable_type_to_threat_indicator_type_85bf90dd
       field: x_opencti_main_observable_type
       target_field: threat.indicator.type
   - script:
+      tag: script_reformat_indicator_type_cdfd1365
       description: Reformat indicator type
       lang: painless
       source: |
@@ -159,18 +194,22 @@ processors:
         type = type.replace('stixfile', 'file');
         ctx.threat.indicator.type = type;
   - rename:
+      tag: rename_createdBy_name_to_threat_indicator_provider_9507f57f
       field: createdBy.name
       target_field: threat.indicator.provider
       ignore_missing: true
   - rename:
+      tag: rename_createdBy_identity_class_to_opencti_indicator_creator_identity_class_5a574531
       field: createdBy.identity_class
       target_field: opencti.indicator.creator_identity_class
       ignore_missing: true
   - remove:
+      tag: remove_createdBy_1fee60e6
       field: createdBy
       ignore_missing: true
 
   - gsub:
+      tag: gsub_objectMarking_0_definition_to_threat_indicator_marking_tlp_2a55db77
       if: |
         ctx.objectMarking != null &&
         !ctx.objectMarking.isEmpty() &&
@@ -180,30 +219,38 @@ processors:
       replacement: ''
       target_field: threat.indicator.marking.tlp
   - remove:
+      tag: remove_objectMarking_cddd59b4
       field: objectMarking
 
   - foreach:
+      tag: foreach_objectLabel_985b3ac8
       field: objectLabel
       ignore_missing: true
       processor:
         append:
+          tag: append_tags_52877fe7
           field: tags
           value: "{{{_ingest._value.value}}}"
           allow_duplicates: false
   - remove:
+      tag: remove_objectLabel_c1dfce98
       field: objectLabel
 
   - foreach:
+      tag: foreach_killChainPhases_8ea84992
       field: killChainPhases
       ignore_missing: true
       processor:
         append:
+          tag: append_opencti_indicator_kill_chain_phase_1927ca62
           field: opencti.indicator.kill_chain_phase
           value: "[{{{_ingest._value.kill_chain_name}}}] {{{_ingest._value.phase_name}}}"
   - remove:
+      tag: remove_killChainPhases_6f675df7
       field: killChainPhases
 
   - script:
+      tag: script_move_external_reference_nodes_30ac542b
       description: Move external reference nodes to their target location, without nulls
       lang: painless
       source: |
@@ -232,105 +279,129 @@ processors:
           ctx.opencti.indicator.external_reference.add(newNode);
         }
   - remove:
+      tag: remove_externalReferences_7bdea68d
       field: externalReferences
+
 
   #####################
   # Observable fields #
   #####################
-
   - rename:
+      tag: rename_observables_pageInfo_globalCount_to_opencti_indicator_observables_count_29b35f7e
       field: observables.pageInfo.globalCount
       target_field: opencti.indicator.observables_count
       ignore_missing: true
 
   - foreach:
+      tag: foreach_observables_edges_6f567b8a
       field: observables.edges
       ignore_missing: true
       processor:
         remove:
+          tag: remove_ingest_value_node_value_4d29d612
           field: _ingest._value.node.value
           ignore_missing: true
   - foreach:
+      tag: foreach_observables_edges_ecb8b8ee
       field: observables.edges
       ignore_missing: true
       processor:
         rename:
+          tag: rename_ingest_value_node_observable_value_to_ingest_value_node_value_4f296e3b
           field: _ingest._value.node.observable_value
           target_field: _ingest._value.node.value
 
   - foreach:
+      tag: foreach_observables_edges_ff144548
       field: observables.edges
       ignore_missing: true
       processor:
         rename:
+          tag: rename_ingest_value_node_x_opencti_description_to_ingest_value_node_description_c68cada7
           field: _ingest._value.node.x_opencti_description
           target_field: _ingest._value.node.description
           ignore_missing: true
 
   - foreach:
+      tag: foreach_observables_edges_9813d112
       field: observables.edges
       ignore_missing: true
       processor:
         rename:
+          tag: rename_ingest_value_node_x_opencti_additional_names_to_ingest_value_node_additional_names_4c1a54b4
           field: _ingest._value.node.x_opencti_additional_names
           target_field: _ingest._value.node.additional_names
           ignore_missing: true
 
   - foreach:
+      tag: foreach_observables_edges_a12ba101
       field: observables.edges
       ignore_missing: true
       processor:
         rename:
+          tag: rename_ingest_value_node_obsContent_to_ingest_value_node_content_ce315e7c
           field: _ingest._value.node.obsContent
           target_field: _ingest._value.node.content
           ignore_missing: true
 
   - foreach:
+      tag: foreach_observables_edges_e20cfc2c
       field: observables.edges
       ignore_missing: true
       processor:
         foreach:
+          tag: foreach_ingest_value_node_serviceDlls_edges_f8d8c3d3
           field: _ingest._value.node.serviceDlls.edges
           ignore_missing: true
           processor:
             rename:
+              tag: rename_ingest_value_node_x_opencti_additional_names_to_ingest_node_value_additional_names_85977e75
               field: _ingest._value.node.x_opencti_additional_names
               target_field: _ingest.node._value.additional_names
 
   - foreach:
+      tag: foreach_observables_edges_e25a62ee
       field: observables.edges
       ignore_missing: true
       processor:
         foreach:
+          tag: foreach_ingest_value_node_serviceDlls_edges_7d68f7f5
           field: _ingest._value.node.serviceDlls.edges
           ignore_missing: true
           processor:
             rename:
+              tag: rename_ingest_value_node_obsContent_to_ingest_value_node_content_aaebcfa8
               field: _ingest._value.node.obsContent
               target_field: _ingest._value.node.content
 
   - foreach:
+      tag: foreach_observables_edges_82c91975
       field: observables.edges
       ignore_missing: true
       processor:
         foreach:
+          tag: foreach_ingest_value_node_serviceDlls_edges_53dea9be
           field: _ingest._value.node.serviceDlls.edges
           ignore_missing: true
           processor:
             rename:
+              tag: rename_ingest_value_node_to_ingest_value_7486e387
               field: _ingest._value.node
               target_field: _ingest._value
 
   - foreach:
+      tag: foreach_observables_edges_a24a8005
       field: observables.edges
       ignore_missing: true
       processor:
         rename:
+          tag: rename_ingest_value_node_serviceDlls_edges_to_ingest_value_node_service_dlls_f39c7252
           field: _ingest._value.node.serviceDlls.edges
           target_field: _ingest._value.node.service_dlls
           ignore_missing: true
 
   - script:
+      tag: script_merge_array_objects_into_single_6d25bc48
       description: Merge array of objects into a single object for startup_info
       lang: painless
       source: |
@@ -347,6 +418,7 @@ processors:
         }
 
   - script:
+      tag: script_restructure_hashes_to_ecs_format_649bcac6
       description: Restructure hashes to ECS format
       lang: painless
       source: |
@@ -386,6 +458,7 @@ processors:
         }
 
   - script:
+      tag: script_move_observable_nodes_to_their_fdb0ff1d
       description: Move observable nodes to their target location
       lang: painless
       source: |
@@ -407,10 +480,12 @@ processors:
           ctx.opencti.observable[entity].add(observables[i]['node']);
         }
   - remove:
+      tag: remove_observables_910ab1f5
       field: observables
       ignore_missing: true
 
   - script:
+      tag: script_remove_null_values_empty_fieldsets_3317e906
       description: Remove null values and empty fieldsets from observables
       lang: painless
       source: |
@@ -453,137 +528,169 @@ processors:
           }
         }
 
+
   #########################################
   # ECS indicator fields from observables #
   #########################################
-
   - foreach:
+      tag: foreach_opencti_observable_email_addr_678988dc
       field: opencti.observable.email_addr
       ignore_missing: true
       processor:
         append:
+          tag: append_threat_indicator_email_address_cd2fc7be
           field: threat.indicator.email.address
           value: "{{{_ingest._value.value}}}"
           allow_duplicates: false
 
   - foreach:
+      tag: foreach_opencti_observable_ipv4_addr_909a29e6
       field: opencti.observable.ipv4_addr
       ignore_missing: true
       processor:
         append:
+          tag: append_threat_indicator_ip_b4abc51b
           field: threat.indicator.ip
           value: "{{{_ingest._value.value}}}"
           allow_duplicates: false
 
   - foreach:
+      tag: foreach_opencti_observable_ipv6_addr_73e69531
       field: opencti.observable.ipv6_addr
       ignore_missing: true
       processor:
         append:
+          tag: append_threat_indicator_ip_9ebe899c
           field: threat.indicator.ip
           value: "{{{_ingest._value.value}}}"
           allow_duplicates: false
 
   # For ECS, remove any subnet mask from IP values arriving in CIDR notation
   - foreach:
+      tag: foreach_threat_indicator_ip_fcd46be6
       field: threat.indicator.ip
       ignore_missing: true
       processor:
         gsub:
+          tag: gsub_ingest_value_610a8005
           field: _ingest._value
           pattern: '/\d+$'
           replacement: ""
 
   - foreach:
+      tag: foreach_opencti_observable_network_traffic_003c36a2
       field: opencti.observable.network_traffic
       ignore_missing: true
       processor:
         append:
+          tag: append_threat_indicator_port_31d05ab0
           field: threat.indicator.port
           value: "{{{_ingest._value.src_port}}}"
           allow_duplicates: false
   - foreach:
+      tag: foreach_opencti_observable_network_traffic_5bce0e01
       field: opencti.observable.network_traffic
       ignore_missing: true
       processor:
         append:
+          tag: append_threat_indicator_port_a7219f0a
           field: threat.indicator.port
           value: "{{{_ingest._value.dst_port}}}"
           allow_duplicates: false
 
   - foreach:
+      tag: foreach_opencti_observable_autonomous_system_bee69c76
       field: opencti.observable.autonomous_system
       ignore_missing: true
       processor:
         pipeline:
+          tag: pipeline_ecs_from_autonomous_system_eb321284
           name: '{{ IngestPipeline "ecs_from_autonomous_system" }}'
 
   - foreach:
+      tag: foreach_opencti_observable_windows_registry_key_07426fa2
       field: opencti.observable.windows_registry_key
       ignore_missing: true
       processor:
         pipeline:
+          tag: pipeline_ecs_from_windows_registry_key_788fe762
           name: '{{ IngestPipeline "ecs_from_windows_registry_key" }}'
 
   - foreach:
+      tag: foreach_opencti_observable_windows_registry_value_type_48f4e3c2
       field: opencti.observable.windows_registry_value_type
       ignore_missing: true
       processor:
         pipeline:
+          tag: pipeline_ecs_from_windows_registry_value_94f8de89
           name: '{{ IngestPipeline "ecs_from_windows_registry_value_type" }}'
 
   - foreach:
+      tag: foreach_opencti_observable_x509_certificate_0a55313c
       field: opencti.observable.x509_certificate
       ignore_missing: true
       processor:
         pipeline:
+          tag: pipeline_ecs_from_x509_certificate_05b1192c
           name: '{{ IngestPipeline "ecs_from_x509_certificate" }}'
 
   - foreach:
+      tag: foreach_opencti_observable_url_fe430d6e
       field: opencti.observable.url
       ignore_missing: true
       processor:
         append:
+          tag: append_tmp_found_urls_dfc828be
           field: _tmp_found_urls
           value: "{{{_ingest._value.value}}}"
           allow_duplicates: false
   - foreach:
+      tag: foreach_opencti_observable_artifact_6ae53244
       field: opencti.observable.artifact
       ignore_missing: true
       processor:
         append:
+          tag: append_tmp_found_urls_80d0a88c
           field: _tmp_found_urls
           value: "{{{_ingest._value.url}}}"
           allow_duplicates: false
   - foreach:
+      tag: foreach_opencti_observable_file_520643b0
       field: opencti.observable.file
       ignore_missing: true
       processor:
         append:
+          tag: append_tmp_found_urls_686d13d8
           field: _tmp_found_urls
           value: "{{{_ingest._value.content?.url}}}"
           allow_duplicates: false
   - foreach:
+      tag: foreach_opencti_observable_media_content_7a32003d
       field: opencti.observable.media_content
       ignore_missing: true
       processor:
         append:
+          tag: append_tmp_found_urls_0003d4a4
           field: _tmp_found_urls
           value: "{{{_ingest._value.url}}}"
           allow_duplicates: false
   - foreach:
+      tag: foreach_opencti_observable_process_c121a505
       field: opencti.observable.process
       ignore_missing: true
       processor:
         foreach:
+          tag: foreach_ingest_value_service_dll_b04046e0
           field: _ingest._value.service_dll
           ignore_missing: true
           processor:
             append:
+              tag: append_tmp_found_urls_99210a2c
               field: _tmp_found_urls
               value: "{{{_ingest._value.content?.url}}}"
               allow_duplicates: false
   - script:
+      tag: script_remove_null_empty_items_05dc073b
       description: Remove null or empty items
       lang: painless
       source: |
@@ -597,71 +704,90 @@ processors:
           ctx._tmp_found_urls = result;
         }
   - foreach:
+      tag: foreach__tmp_found_urls_9244aee9
       field: _tmp_found_urls
       ignore_missing: true
       processor:
         pipeline:
+          tag: pipeline_ecs_from_url_field_2cb47f14
           name: '{{ IngestPipeline "ecs_from_url_field" }}'
   - remove:
+      tag: remove__tmp_found_urls_98d1a370
       field: _tmp_found_urls
       ignore_missing: true
 
   - foreach:
+      tag: foreach_opencti_observable_domain_name_b0827927
       field: opencti.observable.domain_name
       ignore_missing: true
       processor:
         append:
+          tag: append_tmp_found_domain_names_and_hostnames_e2f33670
           field: _tmp_found_domain_names_and_hostnames
           value: "{{{_ingest._value.value}}}"
           allow_duplicates: false
   - foreach:
+      tag: foreach_opencti_observable_hostname_04bd709a
       field: opencti.observable.hostname
       ignore_missing: true
       processor:
         append:
+          tag: append_tmp_found_domain_names_and_hostnames_2e2d5b41
           field: _tmp_found_domain_names_and_hostnames
           value: "{{{_ingest._value.value}}}"
           allow_duplicates: false
   - foreach:
+      tag: foreach__tmp_found_domain_names_and_hostnames_7648bfe7
       field: _tmp_found_domain_names_and_hostnames
       ignore_missing: true
       processor:
         pipeline:
+          tag: pipeline_ecs_from_domain_name_hostname_f5019ea3
           name: '{{ IngestPipeline "ecs_from_domain_name_or_hostname" }}'
   - remove:
+      tag: remove__tmp_found_domain_names_and_hostnames_a8969324
       field: _tmp_found_domain_names_and_hostnames
       ignore_missing: true
 
   - foreach:
+      tag: foreach_opencti_observable_file_9a8ba206
       field: opencti.observable.file
       ignore_missing: true
       processor:
         pipeline:
+          tag: pipeline_ecs_from_file_5cb21a31
           name: '{{ IngestPipeline "ecs_from_file" }}'
 
   - foreach:
+      tag: foreach_opencti_observable_process_8ea6f9f1
       field: opencti.observable.process
       ignore_missing: true
       processor:
         foreach:
+          tag: foreach_ingest_value_service_dll_84598e02
           field: _ingest._value.service_dll
           ignore_missing: true
           processor:
             pipeline:
+              tag: pipeline_ecs_from_file_b4bcd3fd
               name: '{{ IngestPipeline "ecs_from_file" }}'
 
   - foreach:
+      tag: foreach_opencti_observable_directory_f5c4a2b3
       field: opencti.observable.directory
       ignore_missing: true
       processor:
         pipeline:
+          tag: pipeline_ecs_from_directory_ef2a3811
           name: '{{ IngestPipeline "ecs_from_directory" }}'
 
   - foreach:
+      tag: foreach_opencti_observable_artifact_7313e34a
       field: opencti.observable.artifact
       ignore_missing: true
       processor:
         pipeline:
+          tag: pipeline_ecs_from_artifact_d9b9c371
           name: '{{ IngestPipeline "ecs_from_artifact" }}'
 
   #####################################
@@ -670,7 +796,7 @@ processors:
 
   # If there are no observables, get the indicator from the pattern
   - split:
-      tag: split_pattern_if_no_observables
+      tag: split_pattern_if_no_observables_2f1b3d82
       if: ctx.opencti?.indicator?.observables_count == 0 && ctx.opencti?.indicator?.pattern != null
       field: opencti.indicator.pattern
       separator: '\s+AND\s+|\s+OR\s+'
@@ -678,33 +804,40 @@ processors:
       ignore_missing: true
 
   - foreach:
+      tag: foreach_opencti_indicator__patterns_24510d76
       field: opencti.indicator._patterns
       ignore_missing: true
       processor:
         pipeline:
+          tag: pipeline_ecs_from_pattern_f1b39259
           name: '{{ IngestPipeline "ecs_from_pattern" }}'
 
   - remove:
+      tag: remove_opencti_indicator__patterns_e459314a
       field: opencti.indicator._patterns
       ignore_missing: true
+
 
   ######################
   # ECS related fields #
   ######################
-
   - foreach:
+      tag: foreach_opencti_observable_x509_certificate_06b4c560
       field: opencti.observable.x509_certificate
       ignore_missing: true
       processor:
         foreach:
+          tag: foreach_ingest_value_hash_3ef31264
           field: _ingest._value.hash
           ignore_missing: true
           processor:
             append:
+              tag: append_related_hash_7bec2a9f
               field: related.hash
               value: "{{{_ingest._value}}}"
               allow_duplicates: false
   - script:
+      tag: script_extract_file_hashes_to_related_2bc26de1
       description: Extract file hashes to related.hash, handling both array and single object cases
       lang: painless
       source: |
@@ -733,90 +866,111 @@ processors:
           }
         }
   - foreach:
+      tag: foreach_opencti_observable_artifact_f2521847
       field: opencti.observable.artifact
       ignore_missing: true
       processor:
         foreach:
+          tag: foreach_ingest_value_hash_b8662ff3
           field: _ingest._value.hash
           ignore_missing: true
           processor:
             append:
+              tag: append_related_hash_64ef5516
               field: related.hash
               value: "{{{_ingest._value}}}"
               allow_duplicates: false
   - foreach:
+      tag: foreach_opencti_observable_process_f1a38920
       field: opencti.observable.process
       ignore_missing: true
       processor:
         foreach:
+          tag: foreach_ingest_value_service_dll_67eacb29
           field: _ingest._value.service_dll
           ignore_missing: true
           processor:
             foreach:
+              tag: foreach_ingest_value_hash_7d823f6b
               field: _ingest._value.hash
               ignore_missing: true
               processor:
                 append:
+                  tag: append_related_hash_e743a0d5
                   field: related.hash
                   value: "{{{_ingest._value}}}"
                   allow_duplicates: false
 
   - foreach:
+      tag: foreach_opencti_observable_hostname_96c3b00b
       field: opencti.observable.hostname
       ignore_missing: true
       processor:
         append:
+          tag: append_related_hosts_c2015158
           field: related.hosts
           value: "{{{_ingest._value.value}}}"
           allow_duplicates: false
   - foreach:
+      tag: foreach_threat_indicator_url_61e7dfa2
       field: threat.indicator.url
       ignore_missing: true
       processor:
         append:
+          tag: append_related_hosts_f3492c98
           field: related.hosts
           value: "{{{_ingest._value.domain}}}"
           allow_duplicates: false
 
   - set:
+      tag: set_related_ip_574cb817
       field: related.ip
       copy_from: threat.indicator.ip
       if: ctx.threat.indicator.ip instanceof List
 
   - foreach:
+      tag: foreach_threat_indicator_email_address_2bf2c541
       field: threat.indicator.email.address
       ignore_missing: true
       processor:
         append:
+          tag: append_related_user_5efb7c48
           field: related.user
           value: "{{{_ingest._value}}}"
           allow_duplicates: false
   - foreach:
+      tag: foreach_threat_indicator_url_7ec4c987
       field: threat.indicator.url
       ignore_missing: true
       processor:
         append:
+          tag: append_related_user_51d68c0f
           field: related.user
           value: "{{{_ingest._value.username}}}"
           allow_duplicates: false
   - foreach:
+      tag: foreach_opencti_observable_user_account_90ec166a
       field: opencti.observable.user_account
       ignore_missing: true
       processor:
         append:
+          tag: append_related_user_5a1ab49d
           field: related.user
           value: "{{{_ingest._value.user_id}}}"
           allow_duplicates: false
   - foreach:
+      tag: foreach_opencti_observable_user_account_1fc4e7ed
       field: opencti.observable.user_account
       ignore_missing: true
       processor:
         append:
+          tag: append_related_user_061211d0
           field: related.user
           value: "{{{_ingest._value.account_login}}}"
           allow_duplicates: false
 
   - script:
+      tag: script_remove_null_empty_items_remove_e3b28cb0
       description: Remove null or empty items, remove list if empty
       lang: painless
       source: |
@@ -843,6 +997,7 @@ processors:
           cleanUp(ctx.related, 'user');
         }
 
+
   ##############################################
   # Restructure to avoid non-leaf lists, under #
   # - opencti.observable.*                     #
@@ -853,10 +1008,9 @@ processors:
   # - threat.indicator.url                     #
   # - threat.indicator.x509                    #
   ##############################################
-
   - script:
       description: Restructure some lists of maps to avoid non-leaf lists
-      tag: merge_maps
+      tag: merge_maps_87fcdc4f
       lang: painless
       source: |
         def mergeMaps(Map map1, Map map2) {
@@ -923,19 +1077,20 @@ processors:
   # This prevents duplicates when multiple agents fetch the same data
   - fingerprint:
       fields:
-        - opencti.indicator.standard_id  # STIX ID is globally unique and consistent
+        - opencti.indicator.standard_id # STIX ID is globally unique and consistent
         - threat.indicator.modified_at
         - opencti.indicator.updated_at
       target_field: _id
       ignore_missing: true
       description: Generate consistent document ID for deduplication
-      tag: fingerprint_id
+      tag: fingerprint_id_f6296a07
+
 
   ###########################################################
   # Tag indicators suitable for Security rule creation     #
   ###########################################################
-
   - set:
+      tag: set_opencti_indicator_rule_compatible_dd26d097
       field: opencti.indicator.rule_compatible
       value: true
       if: >-
@@ -948,36 +1103,42 @@ processors:
       description: Mark indicators that can be converted to detection rules
 
   - append:
+      tag: append_tags_0b87b926
       field: tags
       value: detection-rule-candidate
       if: ctx.opencti?.indicator?.rule_compatible == true
       allow_duplicates: false
 
   - set:
+      tag: set_opencti_indicator_detection_rule_type_9ca22bd7
       field: opencti.indicator.detection_rule.type
       value: query
       if: ctx.opencti?.indicator?.pattern_type == 'kql' || ctx.opencti?.indicator?.pattern_type == 'lucene'
 
   - set:
+      tag: set_opencti_indicator_detection_rule_type_a6a86652
       field: opencti.indicator.detection_rule.type
       value: eql
       if: ctx.opencti?.indicator?.pattern_type == 'eql'
 
   - set:
+      tag: set_opencti_indicator_detection_rule_type_d02c756a
       field: opencti.indicator.detection_rule.type
       value: esql
       if: ctx.opencti?.indicator?.pattern_type == 'esql'
 
   - set:
+      tag: set_opencti_indicator_detection_rule_query_d75d914c
       field: opencti.indicator.detection_rule.query
       copy_from: opencti.indicator.pattern
       if: ctx.opencti?.indicator?.rule_compatible == true
 
+
   #######################################################
   # Tag to show if ECS indicator details were populated #
   #######################################################
-
   - append:
+      tag: append_tags_363d5872
       field: tags
       value: ecs-indicator-detail
       if: >
@@ -993,7 +1154,7 @@ processors:
       allow_duplicates: false
 
   - script:
-      tag: remove-nulls
+      tag: remove-nulls_411582a9
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
       source: |
@@ -1025,6 +1186,7 @@ processors:
 
 on_failure:
   - append:
+      tag: append_error_message_8ac65503
       field: error.message
       value: >
         Processor "{{{ _ingest.on_failure_processor_type }}}"
@@ -1032,9 +1194,11 @@ on_failure:
         in pipeline "{{{ _ingest.on_failure_pipeline }}}"
         failed with message "{{{ _ingest.on_failure_message }}}"
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

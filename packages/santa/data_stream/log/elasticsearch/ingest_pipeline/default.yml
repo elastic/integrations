@@ -2,14 +2,17 @@
 description: Pipeline for parsing Google Santa logs.
 processors:
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
   - grok:
+      tag: grok_event_original_f6f5a506
       field: event.original
       patterns:
         - '\[%{TIMESTAMP_ISO8601:_tmp.timestamp}\] %{NOT_SEPARATOR:log.level} santad: %{GREEDYDATA:_tmp.message}'
@@ -19,159 +22,196 @@ processors:
   - kv:
       field: _tmp.message
       target_field: santa
-      tag: kv_santa_fields
+      tag: kv_santa_fields_9375c831
       field_split: '\|'
       value_split: "="
       ignore_missing: true
       on_failure:
         - fail:
+            tag: fail_processor_ingest_failure_processor_type_52c71a6a
             message: "Processor {{{ _ingest.on_failure_processor_type }}} with tag {{{ _ingest.on_failure_processor_tag }}} in pipeline {{{ _ingest.on_failure_pipeline }}} failed with message: {{{ _ingest.on_failure_message }}}"
   - remove:
+      tag: remove__tmp_message_4276d2ef
       field: _tmp.message
       ignore_missing: true
 
   ## ECS fields
   - rename:
+      tag: rename_santa_gid_to_group_id_98c7d37d
       field: santa.gid
       target_field: group.id
       ignore_missing: true
   - rename:
+      tag: rename_santa_group_to_group_name_e8e7d8e2
       field: santa.group
       target_field: group.name
       ignore_missing: true
   - rename:
+      tag: rename_santa_newpath_to_file_target_path_c1b6f553
       field: santa.newpath
       target_field: file.target_path
       ignore_missing: true
   - rename:
+      tag: rename_santa_path_to_file_path_b7335bd7
       field: santa.path
       target_field: file.path
       ignore_missing: true
   - rename:
+      tag: rename_santa_pid_to_process_pid_58e09f22
       field: santa.pid
       target_field: process.pid
       ignore_missing: true
   - convert:
+      tag: convert_process_pid_df04a3d5
       field: process.pid
       type: long
       ignore_missing: true
   - rename:
+      tag: rename_santa_ppid_to_process_parent_pid_c6a2b8de
       field: santa.ppid
       target_field: process.parent.pid
       ignore_missing: true
   - convert:
+      tag: convert_process_parent_pid_1315c9e1
       field: process.parent.pid
       type: long
       ignore_missing: true
   - rename:
+      tag: rename_santa_process_to_process_name_7ec19b4e
       field: santa.process
       target_field: process.name
       ignore_missing: true
   - rename:
+      tag: rename_santa_processpath_to_process_executable_de83c85e
       field: santa.processpath
       target_field: process.executable
       ignore_missing: true
   - rename:
+      tag: rename_santa_sha256_to_process_hash_sha256_65933fdc
       field: santa.sha256
       target_field: process.hash.sha256
       ignore_missing: true
   - rename:
+      tag: rename_santa_uid_to_user_id_f2ceb8bd
       field: santa.uid
       target_field: user.id
       ignore_missing: true
   - rename:
+      tag: rename_santa_user_to_user_name_c9102812
       field: santa.user
       target_field: user.name
       ignore_missing: true
 
   ## Santa custom fields
   - rename:
+      tag: rename_santa_cert_sha256_to_santa_certificate_sha256_95973d50
       field: santa.cert_sha256
       target_field: santa.certificate.sha256
       ignore_missing: true
   - rename:
+      tag: rename_santa_cert_cn_to_santa_certificate_common_name_3cdd4252
       field: santa.cert_cn
       target_field: santa.certificate.common_name
       ignore_missing: true
   - rename:
+      tag: rename_santa_event_uid_to_santa_event_uid_29dbfbf9
       field: santa.event_uid
       target_field: santa.event.uid
       ignore_missing: true
   - rename:
+      tag: rename_santa_event_user_to_santa_event_user_432785d9
       field: santa.event_user
       target_field: santa.event.user
       ignore_missing: true
   - rename:
+      tag: rename_santa_appearance_to_santa_disk_appearance_b42b0347
       field: santa.appearance
       target_field: santa.disk.appearance
       ignore_missing: true
   - rename:
+      tag: rename_santa_bsdname_to_santa_disk_bsdname_65e1cd2d
       field: santa.bsdname
       target_field: santa.disk.bsdname
       ignore_missing: true
   - rename:
+      tag: rename_santa_bus_to_santa_disk_bus_9981fc3d
       field: santa.bus
       target_field: santa.disk.bus
       ignore_missing: true
   - rename:
+      tag: rename_santa_dmgpath_to_santa_disk_dmgpath_7f48fe15
       field: santa.dmgpath
       target_field: santa.disk.dmgpath
       ignore_missing: true
   - rename:
+      tag: rename_santa_fs_to_santa_disk_fs_e02acb15
       field: santa.fs
       target_field: santa.disk.fs
       ignore_missing: true
   - convert:
+      tag: convert_santa_graphical_session_id_8a6776ee
       field: santa.graphical_session_id
       type: long
       ignore_missing: true
   - rename:
+      tag: rename_santa_model_to_santa_disk_model_cb225475
       field: santa.model
       target_field: santa.disk.model
       ignore_missing: true
   - rename:
+      tag: rename_santa_mount_to_santa_disk_mount_9c811b61
       field: santa.mount
       target_field: santa.disk.mount
       ignore_missing: true
   - convert:
+      tag: convert_santa_pidversion_2117ab6d
       field: santa.pidversion
       type: long
       ignore_missing: true
   - rename:
+      tag: rename_santa_serial_to_santa_disk_serial_61bd4313
       field: santa.serial
       target_field: santa.disk.serial
       ignore_missing: true
   - rename:
+      tag: rename_santa_volume_to_santa_disk_volume_9e32ad4b
       field: santa.volume
       target_field: santa.disk.volume
       ignore_missing: true
   - rename:
+      tag: rename_santa_teamid_to_santa_team_id_ecb29e75
       field: santa.teamid
       target_field: santa.team_id
       ignore_missing: true
 
   - set:
+      tag: set_process_entity_id_1d9ac266
       field: process.entity_id
       value: "{{{process.pid}}}-{{{santa.pidversion}}}"
       if: "ctx.process?.pid != null && ctx.santa?.pidversion != null"
   - set:
+      tag: set_process_entity_id_67f36b6e
       field: process.entity_id
       value: "{{{agent.id}}}-{{{process.entity_id}}}"
       if: "ctx.agent?.id != null && ctx.process?.entity_id != null"
   - date:
+      tag: date__tmp_timestamp_54909160
       field: _tmp.timestamp
       formats:
         - ISO8601
       ignore_failure: true
   - remove:
+      tag: remove__tmp_timestamp_7a88ba46
       field: _tmp.timestamp
       ignore_missing: true
   - set:
+      tag: set_process_start_4dee873c
       field: process.start
       copy_from: "@timestamp"
       if: ctx.process?.pid != null
       ignore_empty_value: true
   - date:
+      tag: date_santa_disk_appearance_to_santa_disk_appearance_046340cf
       field: santa.disk.appearance
       target_field: santa.disk.appearance
       formats:
@@ -179,72 +219,90 @@ processors:
       ignore_failure: true
       if: ctx.santa?.disk?.appearance != null
   - split:
+      tag: split_santa_args_fc2dcd07
       field: santa.args
       separator: ' '
       ignore_failure: true
   - rename:
+      tag: rename_file_path_to_process_executable_ac6ee5c0
       field: file.path
       target_field: process.executable
       if: ctx.process?.pid != null && ctx.process?.executable == null
       ignore_missing: true
   - append:
+      tag: append_process_args_13223491
       field: process.args
       value: "{{{process.executable}}}"
       if: "ctx?.process?.executable != null"
   - foreach:
+      tag: foreach_santa_args_72fd5234
       field: santa.args
       processor:
         append:
+          tag: append_process_args_51a72ff2
           field: process.args
           value: "{{{_ingest._value}}}"
       ignore_missing: true
   - remove:
+      tag: remove_santa_args_ff075e8a
       field: santa.args
       ignore_missing: true
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - append:
+      tag: append_event_category_a8732667
       field: event.category
       value: process
       if: "ctx?.santa?.action == 'EXEC'"
   - append:
+      tag: append_event_type_8789cd44
       field: event.type
       value: start
       if: "ctx?.santa?.action == 'EXEC'"
   - set:
+      tag: set_event_outcome_757077c5
       field: event.outcome
       value: success
       if: "ctx?.santa?.decision == 'ALLOW'"
   - set:
+      tag: set_event_outcome_397d48e3
       field: event.outcome
       value: failure
       if: "ctx?.santa?.decision == 'DENY'"
   - set:
+      tag: set_event_action_8aa9c9f3
       field: event.action
       value: "{{{santa.action}}}"
       ignore_empty_value: true
   - lowercase:
+      tag: lowercase_event_action_9334b869
       field: event.action
       ignore_missing: true
   - append:
+      tag: append_related_user_6ab25889
       field: related.user
       value: "{{{user.name}}}"
       if: "ctx?.user?.name != null"
   - append:
+      tag: append_related_hash_8bc614a5
       field: related.hash
       value: "{{{santa.certificate.sha256}}}"
       if: "ctx?.santa?.certificate?.sha256 != null"
   - append:
+      tag: append_related_hash_b93d0a35
       field: related.hash
       value: "{{{process.hash.sha256}}}"
       if: "ctx?.process?.hash != null"
   - append:
+      tag: append_file_x509_issuer_common_name_06d3ce2f
       field: file.x509.issuer.common_name
       value: "{{{santa.certificate.common_name}}}"
       if: ctx.santa?.certificate?.common_name != null
 
   - script:
+      tag: script_drops_null_empty_values_recursively_9d6fa8ba
       description: Drops null/empty values recursively
       lang: painless
       ignore_failure: true
@@ -264,12 +322,18 @@ processors:
         drop(ctx);
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message_206bb8ac
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'

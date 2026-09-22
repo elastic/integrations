@@ -2,6 +2,7 @@
 description: Pipeline for extracting IOC fields from alert signal.
 processors:
   - script:
+      tag: script_extracts_relatedmalware_relatedcampaigns_relatedthreatactors_tags_f0724490
       lang: painless
       if: ctx.threat?.enrichments != null;
       description: Extracts relatedMalware,relatedCampaigns,relatedThreatActors and tags fields from the threat.enrichments.indicator.description field.
@@ -30,50 +31,63 @@ processors:
         }
       ignore_failure: true
   - split:
+      tag: split_relatedMalware_3d4b4ced
       field: relatedMalware
       separator: ","
       ignore_missing: true
   - split:
+      tag: split_relatedThreatActors_e1fc4aa7
       field: relatedThreatActors
       separator: ","
       ignore_missing: true
   - split:
+      tag: split_relatedCampaigns_e2722a43
       field: relatedCampaigns
       separator: ","
       ignore_missing: true
   - split:
+      tag: split_tags_0f29624f
       field: tags
       separator: ","
       ignore_missing: true
   - trim:
+      tag: trim_relatedMalware_9e69a26a
       field: relatedMalware
       ignore_missing: true
   - trim:
+      tag: trim_relatedThreatActors_1ae38a33
       field: relatedThreatActors
       ignore_missing: true
   - trim:
+      tag: trim_tags_4d94e274
       field: tags
       ignore_missing: true
   - trim:
+      tag: trim_relatedCampaigns_ce932462
       field: relatedCampaigns
       ignore_missing: true
   - rename:
+      tag: rename_relatedMalware_to_rapid7_tc_ioc_related_malware_b0005442
       field: relatedMalware
       target_field: rapid7.tc.ioc.related.malware
       ignore_missing: true
   - rename:
+      tag: rename_relatedThreatActors_to_rapid7_tc_ioc_related_threat_actors_cfa2e8f5
       field: relatedThreatActors
       target_field: rapid7.tc.ioc.related.threat_actors
       ignore_missing: true
   - rename:
+      tag: rename_relatedCampaigns_to_rapid7_tc_ioc_related_campaigns_d8d015db
       field: relatedCampaigns
       target_field: rapid7.tc.ioc.related.campaigns
       ignore_missing: true
   - rename:
+      tag: rename_tags_to_rapid7_tc_ioc_tags_cfd3c88f
       field: tags
       target_field: rapid7.tc.ioc.tags
       ignore_missing: true
   - script:
+      tag: script_add_threat_indicator_field_0525f0bd
       lang: painless
       if: ctx.threat?.enrichments != null;
       description: Add threat.indicator.* field to context from matched IOCs list.
@@ -84,6 +98,7 @@ processors:
         }
       ignore_failure: true
   - script:
+      tag: script_create_rapid7_tc_ioc_value_7123a55b
       lang: painless
       if: ctx.threat?.indicator != null;
       description: Create rapid7.tc.ioc.value field based on "threat.indicator.*".
@@ -118,8 +133,15 @@ processors:
       ignore_failure: true
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_error_message_206bb8ac
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'
+  - append:
+      tag: append_tags_279d5a5c
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

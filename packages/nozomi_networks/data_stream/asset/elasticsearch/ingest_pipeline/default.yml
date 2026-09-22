@@ -118,11 +118,6 @@ processors:
             tag: append_error_message_5404f063
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - set:
-      field: '@timestamp'
-      tag: set_@timestamp_from_asset_created_at_69081e54
-      copy_from: nozomi_networks.asset.created_at
-      ignore_empty_value: true
   - rename:
       field: json.custom_fields
       tag: rename_custom_fields_e6bbc0c2
@@ -302,18 +297,31 @@ processors:
             tag: append_error_message_cd38197b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      tag: set_@timestamp_from_asset_last_activity_time
+      copy_from: nozomi_networks.asset.last_activity_time
+      ignore_empty_value: true
   - script:
       description: Calculate host uptime in seconds.
       tag: calculate_host_uptime_e3210bfe
       lang: painless
       if: ctx.json?.last_activity_time != null && ctx.json.created_at != null
       source: |-
-        long lastActivity = ctx.json.last_activity_time;
-        long createdAt = ctx.json.created_at;
-        long uptimeMillis = lastActivity - createdAt;
-        long uptimeSeconds = uptimeMillis / 1000;
+        long lastActivity = (ctx.json.last_activity_time instanceof Number) ?
+          ((Number)ctx.json.last_activity_time).longValue() :
+          Long.parseLong(ctx.json.last_activity_time.toString());
+        long createdAt = (ctx.json.created_at instanceof Number) ?
+          ((Number)ctx.json.created_at).longValue() :
+          Long.parseLong(ctx.json.created_at.toString());
+        long uptimeSeconds = (lastActivity - createdAt) / 1000;
         ctx.host = ctx.host ?: [:];
         ctx.host.uptime = uptimeSeconds;
+      on_failure:
+        - append:
+            tag: append_error_message_calculate_host_uptime_asset
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.level
       tag: rename_level_66c1e856
@@ -980,6 +988,48 @@ processors:
       tag: remove_custom_duplicate_fields_804efd08
       ignore_missing: true
       if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
+  - rename:
+      field: json.appliance_ids
+      tag: map_appliance_ids_cmc
+      target_field: nozomi_networks.asset.appliance_ids
+      ignore_missing: true
+  - rename:
+      field: json.appliance_sites
+      tag: map_appliance_sites_cmc
+      target_field: nozomi_networks.asset.appliance_sites
+      ignore_missing: true
+  - rename:
+      field: json.capture_devices
+      tag: map_capture_devices_cmc
+      target_field: nozomi_networks.asset.capture_devices
+      ignore_missing: true
+  - rename:
+      field: json.nodes_uids
+      tag: map_nodes_uids_cmc
+      target_field: nozomi_networks.asset.nodes_uids
+      ignore_missing: true
+  - rename:
+      field: json.levels
+      tag: map_levels_cmc
+      target_field: nozomi_networks.asset.levels
+      ignore_missing: true
+  - date:
+      field: json.deleted_at
+      tag: map_deleted_at_cmc
+      target_field: nozomi_networks.asset.deleted_at
+      formats:
+        - UNIX_MS
+      if: ctx.json?.deleted_at != null && ctx.json.deleted_at != ''
+      on_failure:
+        - append:
+            tag: append_map_deleted_at_cmc
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      field: json.fields
+      tag: map_fields_cmc
+      target_field: nozomi_networks.asset.protocol_fields
+      ignore_missing: true
   - remove:
       field: json
       tag: remove_json_94dc55cd
