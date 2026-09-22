@@ -42,8 +42,9 @@ get_required_package_names() {
 # and returns (one per line) all packages reachable via .link files from any
 # of those roots, transitively. The roots themselves are excluded. Output is
 # deduplicated across all roots so each package appears at most once.
-# list_all_directories is called exactly once regardless of the number of
-# roots or BFS hops.
+# list_all_directories is called exactly once per invocation of this function,
+# regardless of the number of roots or BFS hops. collect_packages_to_keep calls
+# this function once per outer iteration (see its known-limitation comment).
 collect_linked_packages_from_roots() {
   # Build the package cache once upfront.
   local -a pkg_paths=() pkg_abss=()
@@ -160,11 +161,13 @@ collect_packages_to_keep() {
     # extra find traversal per iteration is negligible.
     local linked_path
     while IFS= read -r linked_path; do
-      echo "Keeping linked source package: ${linked_path} (linked transitively)" >&2
-      echo "${linked_path}"
-      packages_to_keep+=("${linked_path}")
-      seen_pkgs["${linked_path}"]=1
-      expanded=true
+      if [[ -z "${seen_pkgs[${linked_path}]+x}" ]]; then
+        echo "Keeping linked source package: ${linked_path} (linked transitively)" >&2
+        echo "${linked_path}"
+        packages_to_keep+=("${linked_path}")
+        seen_pkgs["${linked_path}"]=1
+        expanded=true
+      fi
     done < <(collect_linked_packages_from_roots "${packages_to_keep[@]}")
   done
 }
