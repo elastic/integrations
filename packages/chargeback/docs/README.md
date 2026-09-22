@@ -260,6 +260,12 @@ For more information, refer to the [Elastic documentation](https://www.elastic.c
 
 ## Upgrade Notes
 
+### Upgrading to 0.4.5
+
+1. Upgrade the Fleet package to **0.4.5**. Kibana requirement remains `^9.2.0`.
+2. This release bumps the affected transform asset versions so package upgrade deletes, reinstalls, and restarts the lookup transforms whose `composite_key` mapping changed from `text` to `keyword`.
+3. No manual lookup-index deletion or transform reset is required for that mapping fix on upgrade to 0.4.5.
+
 ### Upgrading to 0.4.4
 
 1. Upgrade the Fleet package to **0.4.4**. Kibana requirement remains `^9.2.0`.
