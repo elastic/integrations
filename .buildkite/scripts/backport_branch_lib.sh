@@ -157,9 +157,9 @@ collect_packages_to_keep() {
     done
 
     # Expand via .link files for all current packages.
-    # collect_linked_packages_from_roots rebuilds the package list from
-    # list_all_directories on each call. The outer loop runs at most a handful
-    # of iterations in practice (typically 1, rarely more than 3), so the
+    # Known limitation: collect_linked_packages_from_roots rebuilds the package
+    # list from list_all_directories on each call. The outer loop runs at most a
+    # handful of iterations in practice (typically 1, rarely more than 3), so the
     # extra find traversal per iteration is negligible.
     local linked_path
     while IFS= read -r linked_path; do
