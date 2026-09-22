@@ -1,0 +1,18 @@
+service: hiperai-http
+service_notify_signal: SIGHUP
+input: http_endpoint
+policy_template: hiperai
+vars:
+  listen_address: 0.0.0.0
+  listen_port: 8089
+  url: /hiperai/events
+  secret_header: Authorization
+  secret_value: abc123
+data_stream:
+  vars:
+    preserve_original_event: true
+    tags:
+      - forwarded
+      - hiperai-secureai
+assert:
+  hit_count: 3

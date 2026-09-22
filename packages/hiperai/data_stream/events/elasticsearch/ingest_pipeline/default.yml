@@ -37,8 +37,14 @@ processors:
         - "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
         - "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
       target_field: "@timestamp"
-      ignore_failure: true
       if: ctx.json?.timestamp != null
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_error_message_parse_timestamp
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}' {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
 
   ##
   ## 3. Map to ECS event.* fields
@@ -65,32 +71,31 @@ processors:
       tag: set_event_provider
       value: secureai
 
-  # Map severity to ECS event.severity (numeric)
-  - set:
-      field: event.severity
-      tag: set_severity_info
-      value: 1
-      if: ctx.json?.severity == 'info'
-  - set:
-      field: event.severity
-      tag: set_severity_low
-      value: 2
-      if: ctx.json?.severity == 'low'
-  - set:
-      field: event.severity
-      tag: set_severity_medium
-      value: 3
-      if: ctx.json?.severity == 'medium'
-  - set:
-      field: event.severity
-      tag: set_severity_high
-      value: 4
-      if: ctx.json?.severity == 'high'
-  - set:
-      field: event.severity
-      tag: set_severity_critical
-      value: 5
-      if: ctx.json?.severity == 'critical'
+  # Map the SecureAI severity label to the numeric ECS event.severity, using the
+  # Elastic Security severity/risk-score scale shared with other integrations so
+  # the values are comparable across data sources.
+  - script:
+      lang: painless
+      description: Script to set event.severity.
+      tag: set_event_severity_from_severity_name
+      if: ctx.json?.severity instanceof String
+      source: |-
+        ctx.event = ctx.event ?: [:];
+        String risk_score_value = ctx.json.severity;
+        if (risk_score_value.equalsIgnoreCase("low") || risk_score_value.equalsIgnoreCase("info") || risk_score_value.equalsIgnoreCase("informational")) {
+          ctx.event.severity = 21;
+        } else if (risk_score_value.equalsIgnoreCase("medium")) {
+          ctx.event.severity = 47;
+        } else if (risk_score_value.equalsIgnoreCase("high")) {
+          ctx.event.severity = 73;
+        } else if (risk_score_value.equalsIgnoreCase("critical")) {
+          ctx.event.severity = 99;
+        }
+      on_failure:
+        - append:
+            tag: append_error_message_set_event_severity
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   # ECS categorization: map the SecureAI event action (event.action, sourced from
   # json.event_type above) and, as a fallback, the SecureAI event category
@@ -142,6 +147,8 @@ processors:
           audit_log:
             category: [configuration]
             type: [info]
+        # The fallback covers every category declared in fields/fields.yml, so an
+        # event with an unrecognised event_type is still categorized.
         by_category:
           authentication:
             category: [authentication]
@@ -149,8 +156,8 @@ processors:
           security:
             category: [intrusion_detection]
             type: [info]
-          configuration:
-            category: [configuration]
+          smltp:
+            category: [intrusion_detection]
             type: [info]
           api:
             category: [api]
@@ -158,7 +165,16 @@ processors:
           data_access:
             category: [api]
             type: [info]
+          system:
+            category: [host]
+            type: [info]
+          configuration:
+            category: [configuration]
+            type: [info]
           billing:
+            category: [api]
+            type: [info]
+          analytics:
             category: [api]
             type: [info]
       source: |-
@@ -373,16 +389,6 @@ processors:
         - json
       tag: cleanup_temp_fields
       ignore_missing: true
-
-  ##
-  ## 13. Ensure tags field is properly set
-  ##
-  - append:
-      field: tags
-      tag: append_forwarded_tag
-      value: forwarded
-      allow_duplicates: false
-      if: ctx.tags != null
 
 on_failure:
   - append:
