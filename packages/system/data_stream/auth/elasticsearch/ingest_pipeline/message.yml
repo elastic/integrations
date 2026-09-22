@@ -415,11 +415,16 @@ processors:
       ignore_missing: true
       ignore_failure: true
       if: ctx._temp?.pam_user != null && ctx._temp.pam_user != '' && (ctx.user?.name == null || ctx.user?.name == '')
-  - set:
-      tag: set_user_target_name_chauthtok
-      field: user.target.name
-      copy_from: user.name
-      ignore_empty_value: true
+  - rename:
+      description: >-
+        The account named in a chauthtok message (for example the user= field
+        of an authentication failure) is the account whose password is being
+        changed, not the actor, so it belongs in user.target.name only.
+      tag: rename_user_target_name_chauthtok
+      field: user.name
+      target_field: user.target.name
+      ignore_missing: true
+      ignore_failure: true
       if: ctx._temp?.category == 'chauthtok' && ctx.user?.name != null && ctx.user?.name != ''
   - rename:
       tag: rename_pam_target
