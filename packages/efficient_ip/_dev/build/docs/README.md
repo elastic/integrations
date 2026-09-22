@@ -48,6 +48,16 @@ Elastic Agent is required to stream data from the syslog or log file receiver an
 ### Inputs used
 {{ inputDocs }}
 
+## Logs reference
+
+### log
+
+The `log` data stream collects EfficientIP DNS and DHCP syslog events.
+
+{{event "log"}}
+
+{{fields "log"}}
+
 ### Future updates
 
 Working on future updates:
