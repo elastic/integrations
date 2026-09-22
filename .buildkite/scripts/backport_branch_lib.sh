@@ -79,12 +79,14 @@ collect_linked_packages_from_roots() {
 
     local link_file relative_src resolved_src matched i pkg_abs
     while IFS= read -r link_file; do
+      # package-spec parses .link files the same way (strings.Fields → fields[0]),
+      # so paths with spaces are structurally unsupported by the spec.
       relative_src=$(awk '{print $1; exit}' "${link_file}")
       [[ -z "${relative_src}" ]] && continue
       resolved_src=$(realpath -m "$(dirname "${link_file}")/${relative_src}")
 
       # Self-link: source is within the current package — skip silently.
-      if [[ "${resolved_src}" == "${current_abs}"/* || \
+      if [[ "${resolved_src#"${current_abs}/"}" != "${resolved_src}" || \
             "${resolved_src}" == "${current_abs}" ]]; then
         continue
       fi
@@ -93,7 +95,7 @@ collect_linked_packages_from_roots() {
       for (( i=0; i<${#pkg_paths[@]}; i++ )); do
         pkg_abs="${pkg_abss[$i]}"
         [[ "${pkg_abs}" == "${current_abs}" ]] && continue
-        if [[ "${resolved_src}" == "${pkg_abs}"/* || \
+        if [[ "${resolved_src#"${pkg_abs}/"}" != "${resolved_src}" || \
               "${resolved_src}" == "${pkg_abs}" ]]; then
           matched=true
           pkg_path="${pkg_paths[$i]}"

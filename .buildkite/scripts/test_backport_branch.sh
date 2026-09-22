@@ -15,6 +15,7 @@ TMPDIR_TRANS=""  # unit tests for collect_linked_packages_from_roots (transitive
 TMPDIR_REPO4=""
 TMPDIR_REPO5=""
 TMPDIR_REPO6=""
+WARN_FILE=""
 
 cleanup() {
     [[ -n "${TMPDIR_PKGS}" ]] && rm -rf "${TMPDIR_PKGS}"
@@ -26,6 +27,7 @@ cleanup() {
     [[ -n "${TMPDIR_REPO4}" ]] && rm -rf "${TMPDIR_REPO4}"
     [[ -n "${TMPDIR_REPO5}" ]] && rm -rf "${TMPDIR_REPO5}"
     [[ -n "${TMPDIR_REPO6}" ]] && rm -rf "${TMPDIR_REPO6}"
+    [[ -n "${WARN_FILE}" ]] && rm -f "${WARN_FILE}"
 }
 trap cleanup EXIT
 
@@ -312,9 +314,10 @@ assert_file_contains ".link pointing to repo-root _dev/shared → warning on std
     "${WARN_FILE}"
 rm -f "${WARN_FILE}"
 
-# 5. Packages nested under a technology sub-folder (packages/technology/pkg1 etc.)
-# The updated mock finds manifest.yml at depth 2 and depth 3, so these packages
-# are discovered automatically via MOCK_REPO_DIR without any subshell override.
+# Group 5 shared setup: packages nested under a technology sub-folder.
+# Tests 5a–5c share this directory structure. The mock finds manifest.yml at
+# depth 2 and depth 3, so these packages are discovered automatically via
+# MOCK_REPO_DIR without any subshell override.
 mkdir -p "${TMPDIR_LINK}/packages/technology/pkg1/data_stream/ds1/fields"
 mkdir -p "${TMPDIR_LINK}/packages/technology/pkg1/_dev/shared/fields"
 mkdir -p "${TMPDIR_LINK}/packages/technology/pkg2/_dev/shared/fields"
@@ -334,8 +337,9 @@ assert_equals "link from depth-3 pkg to sibling depth-3 pkg → sibling path ret
     "$(cd "${TMPDIR_LINK}" && collect_linked_packages_from_roots "packages/technology/pkg1")"
 
 # 5b. Link from depth-2 package (pkg3) → depth-3 package (technology/pkg1),
-# which itself links to technology/pkg2 (set up explicitly here so this test
-# does not implicitly depend on the .link file written in 5a).
+# which itself links to technology/pkg2. The .link content for pkg1 is written
+# explicitly here (overwriting 5a's value) so the assertion is independent of
+# 5a's outcome.
 # ../../../../ from data_stream/ds1/fields/ reaches packages/technology/
 printf '../../../../pkg2/_dev/shared/fields/ecs.yml abc123\n' \
     > "${TMPDIR_LINK}/packages/technology/pkg1/data_stream/ds1/fields/ecs.yml.link"
@@ -344,7 +348,7 @@ printf '../../../../technology/pkg1/_dev/shared/fields/beats.yml abc123\n' \
     > "${TMPDIR_LINK}/packages/pkg3/data_stream/ds1/fields/beats.yml.link"
 assert_equals "link from depth-2 pkg to depth-3 pkg → depth-3 pkg and its transitive links returned" \
     $'packages/technology/pkg1\npackages/technology/pkg2' \
-    "$(cd "${TMPDIR_LINK}" && collect_linked_packages_from_roots "packages/pkg3")"
+    "$(cd "${TMPDIR_LINK}" && collect_linked_packages_from_roots "packages/pkg3" | sort)"
 
 # 5c. .link inside a depth-3 package points to the same depth-3 package → empty (filtered)
 mkdir -p "${TMPDIR_LINK}/packages/technology/pkg_self/data_stream/ds1/fields"
