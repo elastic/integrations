@@ -187,8 +187,6 @@ The `tychon_pqc` data stream receives TYCHON Quantum Command output files collec
 
 This stream can contain multiple TYCHON record families in one place, including inventory, certificates, ciphers, applications, crypto libraries, readiness, keystores, VPN client findings, IPsec tunnel findings, MACsec findings, installed application data, browser extension data, archives, and other supporting scan artifacts.
 
-**Exported fields**
-
 {{ fields "tychon_pqc" }}
 
 **Example event**
