@@ -284,6 +284,22 @@ processors:
       tag: rename_installed_on_3c0c7dd3
       target_field: nozomi_networks.node_cve.installed_on
       ignore_missing: true
+  - set:
+      field: json.is_kev
+      tag: set_is_kev_from_cve_is_kev
+      copy_from: json.cve_is_kev
+      ignore_empty_value: true
+      override: false
+  - rename:
+      field: json.node_uid
+      tag: map_node_uid_cmc
+      target_field: nozomi_networks.node_cve.node_uid
+      ignore_missing: true
+  - rename:
+      field: json.resolution_status
+      tag: map_resolution_status_cmc
+      target_field: nozomi_networks.node_cve.resolution_status
+      ignore_missing: true
   - convert:
       field: json.is_kev
       tag: convert_is_kev_to_boolean_5bc419d1
@@ -434,11 +450,6 @@ processors:
             tag: append_error_message_41a64567
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - set:
-      field: '@timestamp'
-      tag: set_@timestamp_from_record_created_at_0b2d56d2
-      copy_from: nozomi_networks.node_cve.record_created_at
-      ignore_empty_value: true
   - foreach:
       field: json.references
       tag: foreach_references_source_fc0bfb60
@@ -497,6 +508,11 @@ processors:
             tag: append_error_message_dd4a3c12
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      tag: set_@timestamp_from_node_cve_time
+      copy_from: nozomi_networks.node_cve.time
+      ignore_empty_value: true
   - rename:
       field: json.type
       tag: rename_type_26a12ea9

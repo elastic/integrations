@@ -33,6 +33,7 @@
                 "aws.cloudtrail.user_identity.arn",
                 "aws.cloudtrail.user_identity.type",
                 "aws.cloudtrail.user_identity.access_key_id",
+                "aws.cloudtrail.flattened.request_parameters.key",
                 "event.action",
                 "event.provider",
                 "event.outcome",
@@ -45,7 +46,7 @@
         "license": "Elastic License v2",
         "name": "AWS S3 Credential File Retrieved from Bucket",
         "note": "## Triage and analysis\n\n### Investigating AWS S3 Credential File Retrieved from Bucket\n\nS3 is frequently used to store configuration files, scripts, and secrets. When files with credential-like\nnames are accessed, it warrants investigation to ensure that the retrieval was authorized.\n\n### Possible investigation steps\n\n- **Identify the accessed file**: Review `aws.cloudtrail.request_parameters` for the bucket name and key.\n  Determine whether the bucket is intended to store secrets.\n- **Verify the caller**: Inspect `aws.cloudtrail.user_identity.arn` and `source.ip`. If the caller is not\n  an approved automation role, escalate immediately.\n- **Check bucket permissions**: Determine if the bucket is publicly accessible or if the key naming\n  pattern was intentionally exposed.\n- **Look for downstream actions**: Search for subsequent IAM, STS, or console actions from the same\n  identity shortly after the object retrieval, which may indicate successful credential use.\n\n### False positive analysis\n\n- Legitimate backup or restore processes may access credential files stored in S3 as part of their\n  workflow. Validate the calling identity and user agent against known automation accounts.\n- CI/CD pipelines that retrieve secrets from S3 during deployment may trigger this rule. Verify the\n  source IP and ARN match expected automation infrastructure.\n\n### Response and remediation\n\n- Immediately disable the access key identified in `aws.cloudtrail.user_identity.access_key_id` if\n  the retrieval is determined to be unauthorized.\n- Audit the S3 bucket for overly permissive policies or public access configurations.\n- Rotate any credentials stored in the accessed object \u2014 treat them as compromised.\n- Review all CloudTrail events from the same identity in the preceding 30 minutes for signs of\n  lateral movement, IAM changes, or resource creation.\n- Implement S3 bucket policies or IAM conditions restricting access to credential files to only\n  authorized identities and source IPs.\n",
-        "query": "data_stream.dataset: \"aws.cloudtrail\" and\n    event.provider: \"s3.amazonaws.com\" and\n    event.action: \"GetObject\" and\n    event.outcome: \"success\" and\n    aws.cloudtrail.flattened.request_parameters.key: (\n        */.aws/credentials or\n        */.aws/config or\n        */id_rsa or\n        */id_ed25519 or\n        */id_ecdsa or\n        */id_dsa or\n        */.env or\n        */.env.* or\n        *.ppk or\n        *.pem or\n        *.key or\n        *private_key* or\n        */.ssh/authorized_keys\n    ) and\n    not aws.cloudtrail.user_identity.type: \"AWSService\"\n",
+        "query": "data_stream.dataset: \"aws.cloudtrail\" and\n    event.provider: \"s3.amazonaws.com\" and\n    event.action: \"GetObject\" and\n    event.outcome: \"success\" and\n    aws.cloudtrail.flattened.request_parameters.key: (\n        */.aws/credentials or\n        */.aws/config or\n        */id_rsa or\n        */id_ed25519 or\n        */id_ecdsa or\n        */id_dsa or\n        */.env or\n        */.env.* or\n        *.ppk or\n        *.pem or\n        *.key or\n        *private_key* or\n        */.ssh/authorized_keys\n    ) and\n    not aws.cloudtrail.user_identity.type: \"AWSService\" and\n    not user.name: (AWSAccelerator-*) and\n    not aws.cloudtrail.additional_eventdata: *bytesTransferredOut=0*\n",
         "references": [
             "https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetObject.html"
         ],
@@ -57,6 +58,11 @@
             }
         ],
         "required_fields": [
+            {
+                "ecs": false,
+                "name": "aws.cloudtrail.additional_eventdata",
+                "type": "keyword"
+            },
             {
                 "ecs": false,
                 "name": "aws.cloudtrail.flattened.request_parameters.key",
@@ -86,6 +92,11 @@
                 "ecs": true,
                 "name": "event.provider",
                 "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.name",
+                "type": "keyword"
             }
         ],
         "risk_score": 47,
@@ -96,11 +107,16 @@
             "Domain: Cloud",
             "Data Source: AWS",
             "Data Source: Amazon Web Services",
-            "Data Source: AWS S3",
-            "Use Case: Identity and Access Audit",
+            "Platform: AWS",
+            "Data Source: AWS CloudTrail",
+            "Service: AWS S3",
             "Tactic: Credential Access",
+            "Tactic: Collection",
+            "Rule Type: Custom Query (KQL)",
             "Resources: Investigation Guide",
-            "Tactic: Collection"
+            "Noise: Medium",
+            "Performance: Slow",
+            "Profile: Aggressive"
         ],
         "threat": [
             {
