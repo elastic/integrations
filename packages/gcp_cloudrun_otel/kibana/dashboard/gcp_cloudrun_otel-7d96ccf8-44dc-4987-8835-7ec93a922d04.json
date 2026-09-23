@@ -3145,21 +3145,7 @@
                                                 },
                                                 {
                                                     "columnId": "line_0_y_0",
-                                                    "fieldName": "Billable s",
-                                                    "meta": {
-                                                        "type": "number"
-                                                    }
-                                                },
-                                                {
-                                                    "columnId": "line_0_y_1",
-                                                    "fieldName": "CPU alloc (vCPU-s)",
-                                                    "meta": {
-                                                        "type": "number"
-                                                    }
-                                                },
-                                                {
-                                                    "columnId": "line_0_y_2",
-                                                    "fieldName": "Mem alloc (GiB-s)",
+                                                    "fieldName": "Billable (s)",
                                                     "meta": {
                                                         "type": "number"
                                                     }
@@ -3168,7 +3154,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-gcp.cloudrun.otel-default-@timestamp",
                                             "query": {
-                                                "esql": "TS metrics-gcp.cloudrun.otel-default | WHERE `metrics.run.googleapis.com/container/billable_instance_time` IS NOT NULL | STATS `Billable s` = SUM(SUM_OVER_TIME(`metrics.run.googleapis.com/container/billable_instance_time`)), `CPU alloc (vCPU-s)` = SUM(SUM_OVER_TIME(`metrics.run.googleapis.com/container/cpu/allocation_time`)), `Mem alloc (GiB-s)` = SUM(SUM_OVER_TIME(`metrics.run.googleapis.com/container/memory/allocation_time`)) BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend) | SORT time_bucket ASC"
+                                                "esql": "TS metrics-gcp.cloudrun.otel-default\n| WHERE `metrics.run.googleapis.com/container/billable_instance_time` IS NOT NULL\n| STATS `Billable (s)` = SUM(SUM_OVER_TIME(`metrics.run.googleapis.com/container/billable_instance_time`))\n  BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -3184,7 +3170,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-gcp.cloudrun.otel-default | WHERE `metrics.run.googleapis.com/container/billable_instance_time` IS NOT NULL | STATS `Billable s` = SUM(SUM_OVER_TIME(`metrics.run.googleapis.com/container/billable_instance_time`)), `CPU alloc (vCPU-s)` = SUM(SUM_OVER_TIME(`metrics.run.googleapis.com/container/cpu/allocation_time`)), `Mem alloc (GiB-s)` = SUM(SUM_OVER_TIME(`metrics.run.googleapis.com/container/memory/allocation_time`)) BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend) | SORT time_bucket ASC"
+                                "esql": "TS metrics-gcp.cloudrun.otel-default\n| WHERE `metrics.run.googleapis.com/container/billable_instance_time` IS NOT NULL\n| STATS `Billable (s)` = SUM(SUM_OVER_TIME(`metrics.run.googleapis.com/container/billable_instance_time`))\n  BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -3207,9 +3193,7 @@
                                 "layers": [
                                     {
                                         "accessors": [
-                                            "line_0_y_0",
-                                            "line_0_y_1",
-                                            "line_0_y_2"
+                                            "line_0_y_0"
                                         ],
                                         "layerId": "line_0",
                                         "layerType": "data",
@@ -3219,14 +3203,6 @@
                                             {
                                                 "axisMode": "left",
                                                 "forAccessor": "line_0_y_0"
-                                            },
-                                            {
-                                                "axisMode": "left",
-                                                "forAccessor": "line_0_y_1"
-                                            },
-                                            {
-                                                "axisMode": "left",
-                                                "forAccessor": "line_0_y_2"
                                             }
                                         ]
                                     }
@@ -3260,9 +3236,9 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "description": "Billable instance time, CPU allocation and memory allocation over time. Key cost signals.",
+                    "description": "Billable instance time in seconds — the container-seconds Cloud Run charges for, including container startup and shutdown. Kept on its own axis because it is a duration, unlike the resource-seconds shown alongside it.",
                     "drilldowns": [],
-                    "title": "Billable time, CPU (vCPU-s) \u0026 memory (GiB-s) over time"
+                    "title": "Billable instance time (s) over time"
                 },
                 "gridData": {
                     "h": 11,
@@ -3273,6 +3249,154 @@
                     "y": 0
                 },
                 "panelIndex": "1d2c8b2d-1d0a-4ec4-b46f-ab5d931bbb6c",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "metrics-gcp.cloudrun.otel-default-@timestamp": {
+                                    "allowNoIndex": false,
+                                    "id": "metrics-gcp.cloudrun.otel-default-@timestamp",
+                                    "name": "metrics-gcp.cloudrun.otel-default",
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "metrics-gcp.cloudrun.otel-default",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "line_0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "line_0_x",
+                                                    "fieldName": "time_bucket",
+                                                    "meta": {
+                                                        "type": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "line_0_y_0",
+                                                    "fieldName": "CPU alloc (vCPU-s)",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "line_0_y_1",
+                                                    "fieldName": "Mem alloc (GiB-s)",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "ignoreGlobalFilters": false,
+                                            "index": "metrics-gcp.cloudrun.otel-default-@timestamp",
+                                            "query": {
+                                                "esql": "TS metrics-gcp.cloudrun.otel-default\n| WHERE `metrics.run.googleapis.com/container/cpu/allocation_time` IS NOT NULL\n   OR `metrics.run.googleapis.com/container/memory/allocation_time` IS NOT NULL\n| STATS `CPU alloc (vCPU-s)` = SUM(SUM_OVER_TIME(`metrics.run.googleapis.com/container/cpu/allocation_time`)),\n        `Mem alloc (GiB-s)` = SUM(SUM_OVER_TIME(`metrics.run.googleapis.com/container/memory/allocation_time`))\n  BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "metrics-gcp.cloudrun.otel-default-@timestamp",
+                                    "name": "indexpattern-datasource-layer-line_0",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "TS metrics-gcp.cloudrun.otel-default\n| WHERE `metrics.run.googleapis.com/container/cpu/allocation_time` IS NOT NULL\n   OR `metrics.run.googleapis.com/container/memory/allocation_time` IS NOT NULL\n| STATS `CPU alloc (vCPU-s)` = SUM(SUM_OVER_TIME(`metrics.run.googleapis.com/container/cpu/allocation_time`)),\n        `Mem alloc (GiB-s)` = SUM(SUM_OVER_TIME(`metrics.run.googleapis.com/container/memory/allocation_time`))\n  BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "curveType": "LINEAR",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "hideEndzones": true,
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "line_0_y_0",
+                                            "line_0_y_1"
+                                        ],
+                                        "layerId": "line_0",
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "line_0_x",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "forAccessor": "line_0_y_0"
+                                            },
+                                            {
+                                                "axisMode": "left",
+                                                "forAccessor": "line_0_y_1"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "layout": "list",
+                                    "position": "bottom",
+                                    "showSingleSeries": true
+                                },
+                                "pointVisibility": "auto",
+                                "preferredSeriesType": "line",
+                                "showCurrentTimeMarker": false,
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "xExtent": {
+                                    "mode": "dataBounds",
+                                    "niceValues": false
+                                },
+                                "yLeftExtent": {
+                                    "mode": "full",
+                                    "niceValues": true
+                                },
+                                "yLeftScale": "linear"
+                            }
+                        },
+                        "title": "",
+                        "version": 2,
+                        "visualizationType": "lnsXY"
+                    },
+                    "description": "CPU and memory allocation time over the selected range. Both are resource × time, so they share a scale: compare them to see whether the service is reserving memory it never uses, or vice versa.",
+                    "drilldowns": [],
+                    "title": "CPU (vCPU-s) \u0026 memory (GiB-s) allocation over time"
+                },
+                "gridData": {
+                    "h": 11,
+                    "i": "3c9b7a41-6f5e-4a2d-9b18-7e4c0d5a6b32",
+                    "sectionId": "ef817e42-aec6-4ef3-af10-0eac9963c6a1",
+                    "w": 24,
+                    "x": 24,
+                    "y": 0
+                },
+                "panelIndex": "3c9b7a41-6f5e-4a2d-9b18-7e4c0d5a6b32",
                 "type": "vis"
             },
             {
@@ -3434,9 +3558,9 @@
                     "h": 11,
                     "i": "d7c24e0c-2010-4599-ba39-2050ae5f040b",
                     "sectionId": "ef817e42-aec6-4ef3-af10-0eac9963c6a1",
-                    "w": 24,
-                    "x": 24,
-                    "y": 0
+                    "w": 48,
+                    "x": 0,
+                    "y": 11
                 },
                 "panelIndex": "d7c24e0c-2010-4599-ba39-2050ae5f040b",
                 "type": "vis"

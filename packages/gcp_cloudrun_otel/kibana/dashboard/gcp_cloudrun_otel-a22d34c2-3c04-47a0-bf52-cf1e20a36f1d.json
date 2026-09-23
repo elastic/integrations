@@ -1049,7 +1049,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-gcp.cloudrun.otel-default-@timestamp",
                                             "query": {
-                                                "esql": "TS metrics-gcp.cloudrun.otel-default | WHERE `metrics.run.googleapis.com/request_count` IS NOT NULL | STATS `Requests/sec` = SUM(SUM_OVER_TIME(`metrics.run.googleapis.com/request_count`))/60.0 BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend), `Service` = resource.attributes.service_name | SORT time_bucket ASC"
+                                                "esql": "TS metrics-gcp.cloudrun.otel-default | WHERE `metrics.run.googleapis.com/request_count` IS NOT NULL | STATS `Requests/sec` = SUM(SUM_OVER_TIME(`metrics.run.googleapis.com/request_count`))/60.0 BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend), `Service` = resource.attributes.service_name | SORT time_bucket ASC, `Requests/sec` DESC, `Service` ASC | LIMIT 10 BY time_bucket"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1065,7 +1065,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-gcp.cloudrun.otel-default | WHERE `metrics.run.googleapis.com/request_count` IS NOT NULL | STATS `Requests/sec` = SUM(SUM_OVER_TIME(`metrics.run.googleapis.com/request_count`))/60.0 BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend), `Service` = resource.attributes.service_name | SORT time_bucket ASC"
+                                "esql": "TS metrics-gcp.cloudrun.otel-default | WHERE `metrics.run.googleapis.com/request_count` IS NOT NULL | STATS `Requests/sec` = SUM(SUM_OVER_TIME(`metrics.run.googleapis.com/request_count`))/60.0 BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend), `Service` = resource.attributes.service_name | SORT time_bucket ASC, `Requests/sec` DESC, `Service` ASC | LIMIT 10 BY time_bucket"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -1156,9 +1156,9 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "description": "Requests per second per service over time, from 1-minute delta counts divided by 60. Watch for step changes: a sudden flat line can mean the max-instances ceiling is dropping requests before they reach an instance, which this metric cannot see.",
+                    "description": "Requests per second per service over time, from 1-minute delta counts divided by 60. Watch for step changes: a sudden flat line can mean the max-instances ceiling is dropping requests before they reach an instance, which this metric cannot see. Limited to the top 10 services in each time bucket.",
                     "drilldowns": [],
-                    "title": "Request rate (req/s) over time by service"
+                    "title": "Top 10 services by request rate (req/s) over time"
                 },
                 "gridData": {
                     "h": 12,
@@ -1676,7 +1676,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-gcp.cloudrun.otel-default-@timestamp",
                                             "query": {
-                                                "esql": "TS metrics-gcp.cloudrun.otel-default | WHERE `metrics.run.googleapis.com/request_latencies` IS NOT NULL | STATS `Latency p95 (ms)` = PERCENTILE(`metrics.run.googleapis.com/request_latencies`::exponential_histogram, 95) BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend), `Service` = resource.attributes.service_name | SORT time_bucket ASC"
+                                                "esql": "TS metrics-gcp.cloudrun.otel-default | WHERE `metrics.run.googleapis.com/request_latencies` IS NOT NULL | STATS `Latency p95 (ms)` = PERCENTILE(`metrics.run.googleapis.com/request_latencies`::exponential_histogram, 95) BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend), `Service` = resource.attributes.service_name | SORT time_bucket ASC, `Latency p95 (ms)` DESC, `Service` ASC | LIMIT 10 BY time_bucket"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1692,7 +1692,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-gcp.cloudrun.otel-default | WHERE `metrics.run.googleapis.com/request_latencies` IS NOT NULL | STATS `Latency p95 (ms)` = PERCENTILE(`metrics.run.googleapis.com/request_latencies`::exponential_histogram, 95) BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend), `Service` = resource.attributes.service_name | SORT time_bucket ASC"
+                                "esql": "TS metrics-gcp.cloudrun.otel-default | WHERE `metrics.run.googleapis.com/request_latencies` IS NOT NULL | STATS `Latency p95 (ms)` = PERCENTILE(`metrics.run.googleapis.com/request_latencies`::exponential_histogram, 95) BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend), `Service` = resource.attributes.service_name | SORT time_bucket ASC, `Latency p95 (ms)` DESC, `Service` ASC | LIMIT 10 BY time_bucket"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -1783,9 +1783,9 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "description": "95th percentile in-container latency per service over time, merged from the latency histograms in each bucket. Excludes startup time — if users report slowness while this stays flat, check cold start latency instead.",
+                    "description": "95th percentile in-container latency per service over time, merged from the latency histograms in each bucket. Excludes startup time — if users report slowness while this stays flat, check cold start latency instead. Limited to the top 10 services in each time bucket.",
                     "drilldowns": [],
-                    "title": "Request latency p95 (ms) over time by service"
+                    "title": "Top 10 services by request latency p95 (ms) over time"
                 },
                 "gridData": {
                     "h": 11,
@@ -2006,7 +2006,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-gcp.cloudrun.otel-default-@timestamp",
                                             "query": {
-                                                "esql": "TS metrics-gcp.cloudrun.otel-default | WHERE `metrics.run.googleapis.com/container/cpu/utilizations` IS NOT NULL | STATS `CPU p95 %` = PERCENTILE(`metrics.run.googleapis.com/container/cpu/utilizations`::exponential_histogram, 95) * 100 BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend), `Service` = resource.attributes.service_name | SORT time_bucket ASC"
+                                                "esql": "TS metrics-gcp.cloudrun.otel-default | WHERE `metrics.run.googleapis.com/container/cpu/utilizations` IS NOT NULL | STATS `CPU p95 %` = PERCENTILE(`metrics.run.googleapis.com/container/cpu/utilizations`::exponential_histogram, 95) * 100 BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend), `Service` = resource.attributes.service_name | SORT time_bucket ASC, `CPU p95 %` DESC, `Service` ASC | LIMIT 10 BY time_bucket"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -2022,7 +2022,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-gcp.cloudrun.otel-default | WHERE `metrics.run.googleapis.com/container/cpu/utilizations` IS NOT NULL | STATS `CPU p95 %` = PERCENTILE(`metrics.run.googleapis.com/container/cpu/utilizations`::exponential_histogram, 95) * 100 BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend), `Service` = resource.attributes.service_name | SORT time_bucket ASC"
+                                "esql": "TS metrics-gcp.cloudrun.otel-default | WHERE `metrics.run.googleapis.com/container/cpu/utilizations` IS NOT NULL | STATS `CPU p95 %` = PERCENTILE(`metrics.run.googleapis.com/container/cpu/utilizations`::exponential_histogram, 95) * 100 BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend), `Service` = resource.attributes.service_name | SORT time_bucket ASC, `CPU p95 %` DESC, `Service` ASC | LIMIT 10 BY time_bucket"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -2113,9 +2113,9 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "description": "95th percentile per-instance CPU utilisation per service over time, as a percentage of allocated vCPU. Sustained values above 80% risk throttling and rising latency. Under request-based billing CPU is throttled between requests, so readings can look deceptively low.",
+                    "description": "95th percentile per-instance CPU utilisation per service over time, as a percentage of allocated vCPU. Sustained values above 80% risk throttling and rising latency. Under request-based billing CPU is throttled between requests, so readings can look deceptively low. Limited to the top 10 services in each time bucket.",
                     "drilldowns": [],
-                    "title": "CPU utilization p95 (%) over time by service"
+                    "title": "Top 10 services by CPU utilization p95 (%) over time"
                 },
                 "gridData": {
                     "h": 11,
@@ -2184,7 +2184,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-gcp.cloudrun.otel-default-@timestamp",
                                             "query": {
-                                                "esql": "TS metrics-gcp.cloudrun.otel-default | WHERE `metrics.run.googleapis.com/container/memory/utilizations` IS NOT NULL | STATS `Memory p95 %` = PERCENTILE(`metrics.run.googleapis.com/container/memory/utilizations`::exponential_histogram, 95) * 100 BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend), `Service` = resource.attributes.service_name | SORT time_bucket ASC"
+                                                "esql": "TS metrics-gcp.cloudrun.otel-default | WHERE `metrics.run.googleapis.com/container/memory/utilizations` IS NOT NULL | STATS `Memory p95 %` = PERCENTILE(`metrics.run.googleapis.com/container/memory/utilizations`::exponential_histogram, 95) * 100 BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend), `Service` = resource.attributes.service_name | SORT time_bucket ASC, `Memory p95 %` DESC, `Service` ASC | LIMIT 10 BY time_bucket"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -2200,7 +2200,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-gcp.cloudrun.otel-default | WHERE `metrics.run.googleapis.com/container/memory/utilizations` IS NOT NULL | STATS `Memory p95 %` = PERCENTILE(`metrics.run.googleapis.com/container/memory/utilizations`::exponential_histogram, 95) * 100 BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend), `Service` = resource.attributes.service_name | SORT time_bucket ASC"
+                                "esql": "TS metrics-gcp.cloudrun.otel-default | WHERE `metrics.run.googleapis.com/container/memory/utilizations` IS NOT NULL | STATS `Memory p95 %` = PERCENTILE(`metrics.run.googleapis.com/container/memory/utilizations`::exponential_histogram, 95) * 100 BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend), `Service` = resource.attributes.service_name | SORT time_bucket ASC, `Memory p95 %` DESC, `Service` ASC | LIMIT 10 BY time_bucket"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -2291,9 +2291,9 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "description": "95th percentile per-instance memory utilisation per service over time, as a percentage of the configured limit. Sustained values above 70% risk OOM kills, which surface as 500s. In-memory filesystem writes count against this limit.",
+                    "description": "95th percentile per-instance memory utilisation per service over time, as a percentage of the configured limit. Sustained values above 70% risk OOM kills, which surface as 500s. In-memory filesystem writes count against this limit. Limited to the top 10 services in each time bucket.",
                     "drilldowns": [],
-                    "title": "Memory utilization p95 (%) over time by service"
+                    "title": "Top 10 services by memory utilization p95 (%) over time"
                 },
                 "gridData": {
                     "h": 11,
@@ -2352,7 +2352,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-gcp.cloudrun.otel-default-@timestamp",
                                             "query": {
-                                                "esql": "TS metrics-gcp.cloudrun.otel-default | WHERE `metrics.run.googleapis.com/container/max_request_concurrencies` IS NOT NULL AND attributes.state == \"active\" | STATS `Concurrency p95` = PERCENTILE(`metrics.run.googleapis.com/container/max_request_concurrencies`::exponential_histogram, 95) BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend), `Service` = resource.attributes.service_name | SORT time_bucket ASC"
+                                                "esql": "TS metrics-gcp.cloudrun.otel-default | WHERE `metrics.run.googleapis.com/container/max_request_concurrencies` IS NOT NULL AND attributes.state == \"active\" | STATS `Concurrency p95` = PERCENTILE(`metrics.run.googleapis.com/container/max_request_concurrencies`::exponential_histogram, 95) BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend), `Service` = resource.attributes.service_name | SORT time_bucket ASC, `Concurrency p95` DESC, `Service` ASC | LIMIT 10 BY time_bucket"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -2368,7 +2368,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-gcp.cloudrun.otel-default | WHERE `metrics.run.googleapis.com/container/max_request_concurrencies` IS NOT NULL AND attributes.state == \"active\" | STATS `Concurrency p95` = PERCENTILE(`metrics.run.googleapis.com/container/max_request_concurrencies`::exponential_histogram, 95) BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend), `Service` = resource.attributes.service_name | SORT time_bucket ASC"
+                                "esql": "TS metrics-gcp.cloudrun.otel-default | WHERE `metrics.run.googleapis.com/container/max_request_concurrencies` IS NOT NULL AND attributes.state == \"active\" | STATS `Concurrency p95` = PERCENTILE(`metrics.run.googleapis.com/container/max_request_concurrencies`::exponential_histogram, 95) BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend), `Service` = resource.attributes.service_name | SORT time_bucket ASC, `Concurrency p95` DESC, `Service` ASC | LIMIT 10 BY time_bucket"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -2459,9 +2459,9 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "description": "95th percentile of peak concurrent requests per active instance, by service. The default ceiling is 80 per instance. Values approaching the ceiling should trigger scale-out; staying high while instance count is flat suggests the max-instances limit is binding.",
+                    "description": "95th percentile of peak concurrent requests per active instance, by service. The default ceiling is 80 per instance. Values approaching the ceiling should trigger scale-out; staying high while instance count is flat suggests the max-instances limit is binding. Limited to the top 10 services in each time bucket.",
                     "drilldowns": [],
-                    "title": "Max request concurrencies p95 over time by service"
+                    "title": "Top 10 services by max request concurrencies p95 over time"
                 },
                 "gridData": {
                     "h": 11,
@@ -2520,7 +2520,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "9f80face99248197f57a1352b7bb8db6d231f0a518204dbf1cba6fba19b265dc",
                                             "query": {
-                                                "esql": "FROM metrics-gcp.cloudrun.otel-default\n| WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c= ?_tend\n  AND attributes.state == \"active\"\n  AND `metrics.run.googleapis.com/container/instance_count` IS NOT NULL\n| STATS `Instances` = AVG(`metrics.run.googleapis.com/container/instance_count`)\n  BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend),\n     `Service` = resource.attributes.service_name,\n     revision = resource.attributes.revision_name\n| STATS `Instances` = SUM(`Instances`) BY time_bucket, `Service`\n| SORT time_bucket ASC"
+                                                "esql": "TS metrics-gcp.cloudrun.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND attributes.state == \"active\"\n| STATS `Instances` = AVG(AVG_OVER_TIME(`metrics.run.googleapis.com/container/instance_count`))\n  BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend),\n     `Service` = resource.attributes.service_name\n| SORT time_bucket ASC, `Instances` DESC, `Service` ASC\n| LIMIT 10 BY time_bucket"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -2536,7 +2536,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-gcp.cloudrun.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND attributes.state == \"active\"\n| STATS `Instances` = AVG(AVG_OVER_TIME(`metrics.run.googleapis.com/container/instance_count`))\n  BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend),\n     `Service` = resource.attributes.service_name\n| SORT time_bucket ASC"
+                                "esql": "TS metrics-gcp.cloudrun.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND attributes.state == \"active\"\n| STATS `Instances` = AVG(AVG_OVER_TIME(`metrics.run.googleapis.com/container/instance_count`))\n  BY time_bucket = BUCKET(@timestamp, 50, ?_tstart, ?_tend),\n     `Service` = resource.attributes.service_name\n| SORT time_bucket ASC, `Instances` DESC, `Service` ASC\n| LIMIT 10 BY time_bucket"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -2627,9 +2627,9 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "description": "Average number of active container instances per service over time. This should track traffic. A plateau while concurrency and request rate keep climbing indicates the max-instances ceiling is constraining scale-out.",
+                    "description": "Average number of active container instances per service over time. This should track traffic. A plateau while concurrency and request rate keep climbing indicates the max-instances ceiling is constraining scale-out. Limited to the top 10 services in each time bucket.",
                     "drilldowns": [],
-                    "title": "Instance count avg over time by service"
+                    "title": "Top 10 services by instance count avg over time"
                 },
                 "gridData": {
                     "h": 11,
