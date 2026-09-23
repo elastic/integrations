@@ -1287,15 +1287,15 @@ An example event for `vulnerability_instance` looks as following:
 {
     "@timestamp": "2026-09-07T01:32:06.000Z",
     "agent": {
-        "ephemeral_id": "ea72f1f6-f36d-4483-b406-187036bd7015",
-        "id": "d3f24c79-536d-4d0a-9c22-81af46a1f1ad",
-        "name": "elastic-agent-62327",
+        "ephemeral_id": "38b1b08a-48a4-47d4-b9e1-36051fca8ca2",
+        "id": "75e93feb-2d94-42db-a402-5093a963d384",
+        "name": "elastic-agent-35137",
         "type": "filebeat",
-        "version": "8.19.0"
+        "version": "8.18.0"
     },
     "data_stream": {
         "dataset": "xm_cyber.vulnerability_instance",
-        "namespace": "59436",
+        "namespace": "95894",
         "type": "logs"
     },
     "device": {
@@ -1305,9 +1305,9 @@ An example event for `vulnerability_instance` looks as following:
         "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "d3f24c79-536d-4d0a-9c22-81af46a1f1ad",
+        "id": "75e93feb-2d94-42db-a402-5093a963d384",
         "snapshot": false,
-        "version": "8.19.0"
+        "version": "8.18.0"
     },
     "event": {
         "agent_id_status": "verified",
@@ -1316,7 +1316,7 @@ An example event for `vulnerability_instance` looks as following:
             "host"
         ],
         "dataset": "xm_cyber.vulnerability_instance",
-        "ingested": "2026-09-22T11:36:30Z",
+        "ingested": "2026-09-23T07:17:56Z",
         "kind": "event",
         "original": "{\"deviceId\":\"9000000000000000001\",\"lastDataUpdate\":\"2026-09-07T01:32:06.000Z\",\"productVersions\":[{\"activeCves\":[{\"cve\":\"CVE-2021-34527\",\"safeVersion\":null}],\"closedCveIds\":[],\"filePaths\":[\"C:/Windows/System32/ntoskrnl.exe\"],\"productName\":\"windows print spooler\",\"productVendor\":\"\",\"version\":\"Not Available\"},{\"activeCves\":[{\"cve\":\"CVE-2021-24111\",\"safeVersion\":null},{\"cve\":\"CVE-2022-21911\",\"safeVersion\":null},{\"cve\":\"CVE-2022-26832\",\"safeVersion\":null}],\"closedCveIds\":[],\"filePaths\":[],\"productName\":\".net framework\",\"productVendor\":\"microsoft\",\"version\":\"4.8\"}]}",
         "type": [
@@ -1345,7 +1345,6 @@ An example event for `vulnerability_instance` looks as following:
     },
     "xm_cyber": {
         "vulnerability_instance": {
-            "device_id": "9000000000000000001",
             "product_versions": [
                 {
                     "active_cves": [
