@@ -1,0 +1,124 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies OpenSSL generating a CN=LinuxTransport certificate or decrypting CMS/PKCS7 payloads with a key that is not the Azure Linux Agent certificate under /var/lib/waagent. Adversaries can scrape WireServer certificates, mint a LinuxTransport identity, and decrypt extension protectedSettings with openssl cms -decrypt or smime -decrypt.",
+        "false_positives": [
+            "Custom configuration-management that decrypts CMS blobs with an organization key outside /var/lib/waagent. Confirm the key path and exclude the specific command line after review."
+        ],
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.process-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Azure WireServer OpenSSL Certificate Decrypt or LinuxTransport Generation",
+        "note": "## Triage and analysis\n\n### Investigating Azure WireServer OpenSSL Certificate Decrypt or LinuxTransport Generation\n\nCyberCX-style WireServer abuse on Linux generates `openssl req -x509 -subj /CN=LinuxTransport`, posts the public\ncertificate to WireServer `comp=certificates`, then runs `openssl cms -decrypt` or `openssl smime -decrypt` with\n`temp.key`, `wireserver.key`, or another non-waagent key to unwrap protectedSettings.\n\nBenign Azure Linux Agent activity looks like:\n\n`openssl cms -inform DER -decrypt -recip /var/lib/waagent/<thumbprint>.crt -inkey /var/lib/waagent/<thumbprint>.prv`\n\nThe Azure Linux Agent is excluded by certificate path in process arguments (`/var/lib/waagent/*`) and by\nparent executables `/usr/sbin/waagent` and `/usr/bin/waagent`. This does not exclude Python or\n`run-command-extension` as parents because attacker scripts invoked via Run Command use those parents\nwith a non-waagent key. The agent itself also runs `openssl req ... /CN=LinuxTransport` with output\nunder `/var/lib/waagent/`; that argument path exclusion covers it.\n\n### Possible investigation steps\n\n- Review `process.command_line` and `process.args` for `LinuxTransport`, `wireserver.key`, `temp.key`, `payload.p7m`,\n  or `payload.pfx`.\n- Inspect parent and grandparent: Run Command (`/var/lib/waagent/run-command/`) or an interactive shell is higher\n  risk than a one-off admin session with a ticket.\n- Correlate with network events from curl to `168.63.129.16` ports 80 and 32526 on the same host.\n- Search StorageRead logs for anonymous or SAS GetBlob of the same storage account after the decrypt.\n- Hunt for the generated key files (`temp.key`, `wireserver.key`) on disk and in `/tmp`.\n\n### False positive analysis\n\n- The Azure Linux Agent decrypt path under `/var/lib/waagent/` and waagent parent executables\n  (`/usr/sbin/waagent`, `/usr/bin/waagent`) are excluded.\n- Legitimate certificate tooling that uses `-subj /CN=LinuxTransport` is unexpected; treat as suspicious until proven\n  otherwise.\n\n### Response and remediation\n\n- Isolate the VM, delete attacker-generated keys and decrypted payloads, and rotate secrets that were in\n  protectedSettings (SAS, connection strings, CSE script contents).\n- Rotate the VM managed identity and review extension configuration.\n- Revoke any SAS that was replayed from the decrypted settings.\n",
+        "query": "process where host.os.type == \"linux\" and event.type == \"start\" and\nevent.action in (\"exec\", \"exec_event\", \"start\") and process.name == \"openssl\" and\n(\n  (\n    process.args in (\"cms\", \"smime\") and process.args == \"-decrypt\"\n  ) or\n  (\n    process.args == \"req\" and process.args : \"*LinuxTransport*\"\n  )\n) and\nnot process.args like \"/var/lib/waagent/*\" and\nnot process.parent.executable like (\n  \"/usr/sbin/waagent\",\n  \"/usr/bin/waagent\"\n)\n",
+        "references": [
+            "https://cybercx.com.au/blog/azure-ssrf-metadata/",
+            "https://www.netspi.com/blog/technical-blog/cloud-pentesting/decrypting-vm-extension-settings-with-azure-wireserver/",
+            "https://cloud.google.com/blog/topics/threat-intelligence/escalating-privileges-azure-kubernetes-services",
+            "https://gtfobins.github.io/gtfobins/openssl/"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": ">=9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.executable",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "5bb27863-2da6-4d0d-879a-1efb10479c39",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "Domain: Cloud",
+            "OS: Linux",
+            "Use Case: Threat Detection",
+            "Platform: Azure",
+            "Platform: Linux",
+            "Tactic: Credential Access",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide",
+            "Rule Type: Event Correlation (EQL)",
+            "Tactic: Stealth"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1552",
+                        "name": "Unsecured Credentials",
+                        "reference": "https://attack.mitre.org/techniques/T1552/",
+                        "subtechnique": [
+                            {
+                                "id": "T1552.005",
+                                "name": "Cloud Instance Metadata API",
+                                "reference": "https://attack.mitre.org/techniques/T1552/005/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Stealth",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1140",
+                        "name": "Deobfuscate/Decode Files or Information",
+                        "reference": "https://attack.mitre.org/techniques/T1140/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 3
+    },
+    "id": "5bb27863-2da6-4d0d-879a-1efb10479c39_3",
+    "type": "security-rule"
+}

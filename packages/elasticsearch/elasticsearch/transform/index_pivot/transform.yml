@@ -1,5 +1,10 @@
 source:
-  index: "metrics-elasticsearch.stack_monitoring.index*,.monitoring-es-*,metricbeat-*"
+  # Read from the data stream backing indices, so that indices renamed by ILM
+  # (downsample, shrink, searchable snapshot mounts) are left out. Downsampled
+  # indices break the top_metrics aggregations below, and excluding them with
+  # `-downsample-*` does not work: a backing index resolved through a data
+  # stream cannot be removed by an exclusion expression.
+  index: ".ds-metrics-elasticsearch.stack_monitoring.index-*,.monitoring-es-*,metricbeat-*"
   query:
     bool:
       filter:
@@ -131,5 +136,5 @@ sync:
     delay: 60s
     field: '@timestamp'
 _meta:
-  fleet_transform_version: 0.3.0
+  fleet_transform_version: 0.4.0
   run_as_kibana_system: false
