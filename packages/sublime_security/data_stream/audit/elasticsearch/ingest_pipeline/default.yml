@@ -123,7 +123,7 @@ processors:
       tag: dissect_created_by_email_address_222eaae9
       description: Extract username and domain from email address.
       pattern: '%{user.name}@%{user.domain}'
-      if: ctx.sublime_security?.audit?.created_by?.email_address != null && ctx.sublime_security.audit.created_by.email_address.contains('@')
+      if: ctx.sublime_security?.audit?.created_by?.email_address instanceof String && ctx.sublime_security.audit.created_by.email_address.contains('@')
       on_failure:
       - append:
           tag: append_error_message_611dca89
@@ -133,14 +133,14 @@ processors:
       field: user.email
       tag: set_user_email_from_audit_created_by_email_address_adbbf775
       copy_from: sublime_security.audit.created_by.email_address
-      if: ctx.sublime_security?.audit?.created_by?.email_address != null && ctx.sublime_security.audit.created_by.email_address.contains('@')
+      if: ctx.sublime_security?.audit?.created_by?.email_address instanceof String && ctx.sublime_security.audit.created_by.email_address.contains('@')
       ignore_empty_value: true
   - append:
       field: related.user
       tag: append_audit_created_by_email_address_into_related_user_33fcf375
       value: '{{{sublime_security.audit.created_by.email_address}}}'
       allow_duplicates: false
-      if: ctx.sublime_security?.audit?.created_by?.email_address != null && ctx.sublime_security.audit.created_by.email_address != ''
+      if: ctx.sublime_security?.audit?.created_by?.email_address instanceof String && ctx.sublime_security.audit.created_by.email_address != ''
   - rename:
       field: json.created_by.first_name
       tag: rename_created_by_first_name_1c212911

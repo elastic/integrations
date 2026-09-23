@@ -1,0 +1,48 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: system
+      name: test-custom-processors-system
+      streams:
+        - allow_deprecated_use: true
+          condition: (${host.platform} != "windows") and (${host.os_version} != "12 (bookworm)" and ${host.os_version} != "13 (trixie)" and (${host.os_platform} != "amzn" or ${host.os_version} != "2023") and (${host.os_platform} != "sles" or (${host.os_version} != "15 SP1" and ${host.os_version} != "15-SP1" and ${host.os_version} != "15 SP2" and ${host.os_version} != "15-SP2" and ${host.os_version} != "15 SP3" and ${host.os_version} != "15-SP3" and ${host.os_version} != "15 SP4" and ${host.os_version} != "15-SP4" and ${host.os_version} != "15 SP5" and ${host.os_version} != "15-SP5" and ${host.os_version} != "15 SP6" and ${host.os_version} != "15-SP6" and ${host.os_version} != "15 SP7" and ${host.os_version} != "15-SP7" and ${host.os_version} != "16.0")))
+          data_stream:
+            dataset: system.syslog
+          exclude_files:
+            - \.gz$
+          ignore_older: 72h
+          multiline:
+            match: after
+            pattern: ^\s
+          paths:
+            - /var/log/syslog*
+          processors:
+            - add_fields:
+                fields:
+                    module: system
+                target: event
+            - add_locale: null
+            - add_fields:
+                fields:
+                    policy_test: preserved
+                target: event
+          tags: null
+      type: logfile
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-system.syslog-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references: []
