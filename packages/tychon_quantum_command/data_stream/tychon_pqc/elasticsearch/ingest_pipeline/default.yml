@@ -19,29 +19,6 @@ processors:
       field: message
       add_to_root: true
       if: ctx.tychon == null && ctx.message != null
-      on_failure:
-        - set:
-            tag: preserve_failed_json_message
-            field: event.original
-            copy_from: message
-            override: false
-            ignore_empty_value: true
-        - append:
-            tag: append_error_message_json_message
-            field: tychon.error.pipeline
-            value: |-
-              Processor '{{{ _ingest.on_failure_processor_type }}}'
-              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
-              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
-        - set:
-            tag: set_pipeline_error_to_event_kind_json_message
-            field: event.kind
-            value: pipeline_error
-        - append:
-            tag: append_preserve_original_event_tag_json_message
-            field: tags
-            value: preserve_original_event
-            allow_duplicates: false
 
   - script:
       tag: script_lift_raw_tqc_ndjson_fields_parsed_under_tychon_raw_be
