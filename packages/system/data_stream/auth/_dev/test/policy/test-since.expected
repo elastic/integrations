@@ -4,9 +4,9 @@ inputs:
       meta:
         package:
             name: system
-      name: test-journald-system
+      name: test-since-system
       streams:
-        - condition: (${host.platform} != "windows") and (${host.os_version} == "12 (bookworm)" or ${host.os_version} == "13 (trixie)" or (${host.os_platform} == "amzn" and ${host.os_version} == "2023") or (${host.os_platform} == "sles" and (${host.os_version} == "15 SP1" or ${host.os_version} == "15-SP1" or ${host.os_version} == "15 SP2" or ${host.os_version} == "15-SP2" or ${host.os_version} == "15 SP3" or ${host.os_version} == "15-SP3" or ${host.os_version} == "15 SP4" or ${host.os_version} == "15-SP4" or ${host.os_version} == "15 SP5" or ${host.os_version} == "15-SP5" or ${host.os_version} == "15 SP6" or ${host.os_version} == "15-SP6" or ${host.os_version} == "15 SP7" or ${host.os_version} == "15-SP7" or ${host.os_version} == "16.0")))
+        - condition: true
           data_stream:
             dataset: system.auth
           include_matches:
@@ -17,7 +17,8 @@ inputs:
                 fields:
                     module: system
                 target: event
-          seek: head
+          seek: since
+          since: -24h
           tags: null
           type: journald
       type: journald
