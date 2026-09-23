@@ -28,7 +28,7 @@ Special comments that can be added in the Pull Request (by Elastic employees):
         - `/test stack 8.18.0-SNAPSHOT`
         - `/test stack 9.0.0-SNAPSHOT`
 
-**Changelog link check (`check-changelog-pr-links`):** on pull requests that modify a `changelog.yml` file, a step validates that every changelog entry's linked PR number matches the PR being merged (`soft_fail: true` — a failure posts an annotation but does not block merge). To skip this check on a PR, add the label `changelog-link-check:skip`. This label is added automatically by the `sync-backport-changelog` workflow on changelog sync PRs, because their entries intentionally link to the original backport PR rather than the sync PR itself.
+**Changelog link check (`check-changelog-pr-links`):** on pull requests that modify a `changelog.yml` file, a step validates that new or modified changelog entries link to the current PR rather than a different one (`soft_fail: true` — a failure posts an annotation but does not block merge). To skip this check on a PR, add the label `changelog-link-check:skip`. This label is added automatically by the `sync-backport-changelog` workflow on changelog sync PRs, because their entries intentionally link to the original backport PR rather than the sync PR itself.
 
 There are some environment variables that can be added into this pipeline to enable customizations:
 - **FORCE_CHECK_ALL**: If `true`, this forces the CI to check all packages even if those packages have no file updated/added/deleted. Default: `false`.
@@ -239,12 +239,21 @@ As part of the PR that modifies `.backports.yml`, CI automatically:
 - Validates the new inventory schema (`check-backports-inventory` step). In the public `integrations` pipeline this step runs on PRs targeting `main` only — it is skipped on PRs targeting `backport-*` branches, which carry only a subset of packages and would fail the validation unnecessarily. On pushes to `main`, the `integrations-backport-dispatch` pipeline runs its own validation before triggering branch creation.
 - Runs a **dry run** of the branch creation (`trigger-backport-dryrun` step), verifying the commit exists and the branch does not already exist, without pushing anything.
 
-By default, the created branch only contains the target package — all other packages in `packages/` are removed to keep the branch lean.
+When `remove_other_packages: true` is set in `.backports.yml`, the created branch contains only the target package — all other packages in `packages/` are removed to keep the branch lean.
 
 On pull requests targeting a `backport-*` branch, the `check-changelog-versions-in-main` step verifies that no changelog version introduced by the PR already exists on `main`, catching sync collisions before merge.
 
-The pipeline can also be triggered manually from the UI (restricted to members of the `ecosystem` team). The following parameters can be configured when triggering manually:
-- **REMOVE_OTHER_PACKAGES**: If `true`, only the target package is kept in the `packages/` directory; all others are removed. Default: `true`.
+The following parameters can be configured when triggering manually from the UI:
+
+| Parameter | Required | Default | Description |
+|-----------|----------|---------|-------------|
+| `DRY_RUN` | | `true` | Validate and commit locally but skip push and branch creation. |
+| `BASE_COMMIT` | ✅ | | Commit SHA to branch from (the output of step 1 in the backport guide). |
+| `PACKAGE_NAME` | ✅ | | Package name as defined in `manifest.yml`. |
+| `PACKAGE_VERSION` | ✅ | | Package version to branch from (e.g. `1.5.7`, `1.0.0-beta1`). |
+| `REMOVE_OTHER_PACKAGES` | | `true` | If `true`, all packages other than the target are removed from `packages/` to keep the branch lean. |
+| `BACKPORT_BRANCH_NAME` | | auto | Override the generated branch name (default: `backport-<package>-<major>.<minor>`). |
+| `PR_NUMBER` | | | PR number to notify on completion (posts a comment with success or failure). |
 
 More information about this pipeline and how to create these hotfixes in:
 https://www.elastic.co/guide/en/integrations-developer/current/developer-workflow-support-old-package.html

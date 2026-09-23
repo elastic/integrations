@@ -180,7 +180,7 @@ When a bug fix needs to be released for an older package version, the backport w
 
     | Argument | Description |
     |----------|-------------|
-    | `--sha` | Merge commit SHA on `main` to cherry-pick (minimum 8 characters; from step 1). |
+    | `--sha` | Merge commit SHA of the bug fix PR on `main` to cherry-pick (minimum 8 characters). |
     | `--package` | Package name as it appears in `manifest.yml`. |
     | `--target` | Version series (e.g. `6.14`) or full branch name (e.g. `backport-aws-6.14`); the branch name is derived automatically from the version series. |
 
@@ -198,8 +198,9 @@ When a bug fix needs to be released for an older package version, the backport w
     2. Cherry-picks `<sha>`, auto-resolving version-only conflicts in `manifest.yml`; restores `changelog.yml` to HEAD (it is regenerated in the next step).
     3. Bumps the patch version in `manifest.yml` and inserts a new `changelog.yml` entry (with a placeholder link that is fixed after the PR is opened).
     4. Syncs package owners from `main` as a separate commit — see [Package owner synchronization](#package-owner-synchronization).
-    5. Pushes the working branch and opens a PR against the backport branch (with `--open-pr`).
-    6. Replaces the placeholder link in `changelog.yml` with the real backport PR URL and pushes a second `Fix changelog link to backport PR` commit.
+    5. With `--open-pr`:
+       1. Pushes the working branch and opens a PR against the backport branch.
+       2. Replaces the placeholder link in `changelog.yml` with the real backport PR URL and pushes a second `Fix changelog link to backport PR` commit.
 
     If the cherry-pick conflicts on files beyond a version-line difference in `manifest.yml`, the script reports the conflicting files and cleans up. In this case, apply the fix manually using the alternative path below.
 
