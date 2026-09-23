@@ -4,12 +4,13 @@ inputs:
       meta:
         package:
             name: system
-      name: test-default-system
+      name: test-preserve-original-event-system
       streams:
         - condition: ${host.platform} == 'windows'
           data_stream:
             dataset: system.security
           ignore_older: 72h
+          include_xml: true
           name: Security
           processors:
             - add_fields:
@@ -40,7 +41,8 @@ inputs:
                             - winlog.event_data.TaskContentNew
                         - equals:
                             winlog.provider_name: Microsoft-Windows-Security-Auditing
-          tags: null
+          tags:
+            - preserve_original_event
       type: winlog
       use_output: default
 output_permissions:
