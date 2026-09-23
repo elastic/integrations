@@ -5,6 +5,16 @@ processors:
       field: ecs.version
       tag: set_ecs_version_dbf680ba
       value: 8.17.0
+  - set:
+      field: observer.product
+      tag: set_observer_product_vantage_from_url_5e1b0c9a
+      value: Vantage
+      if: ctx._conf?.url != null && ctx._conf.url.toLowerCase().contains('vantage')
+  - set:
+      field: observer.product
+      tag: set_observer_product_cmc_from_url_4d0a9b8c
+      value: CMC
+      if: ctx._conf?.url != null && !ctx._conf.url.toLowerCase().contains('vantage')
   - rename:
       field: message
       tag: rename_message_to_event_original_176375fd
@@ -1031,7 +1041,9 @@ processors:
       target_field: nozomi_networks.asset.protocol_fields
       ignore_missing: true
   - remove:
-      field: json
+      field:
+        - json
+        - _conf
       tag: remove_json_94dc55cd
       ignore_missing: true
   - script:
