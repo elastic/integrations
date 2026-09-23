@@ -26,8 +26,9 @@ source:
       type: keyword
       script:
         source: |
-          if (!doc['elasticsearch.cluster.name'].empty) {
-            emit(doc['elasticsearch.cluster.name'].value);
+          def src = params._source;
+          if (src.containsKey('elasticsearch') && src.elasticsearch.containsKey('cluster') && src.elasticsearch.cluster.containsKey('name')) {
+            emit(src.elasticsearch.cluster.name);
           }
     node_disk_used_pct:
       type: double
