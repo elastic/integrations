@@ -1,4 +1,21 @@
 # BeyondInsight API - Workgroups Assets API Mock Configuration
+#
+# Test Scenario: Simulates asset retrieval across multiple workgroups with session
+# persistence across polls, verifying correct Cookie header handling:
+# 1. Authentication: Sets two Set-Cookie headers with attributes
+# 2. GET /Workgroups with cookie_value1: returns two workgroups (wg1, wg2)
+# 3. GET /Workgroups/1/Assets offset=0 with cookie_value1: returns 1 of 2 assets
+# 4. GET /Workgroups/1/Assets offset=1 with cookie_value1: returns second asset;
+#    workgroup 2 queued
+# 5. GET /Workgroups/2/Assets offset=0 with cookie_value1: returns 0 assets;
+#    all workgroups done — session kept in cursor for next poll
+#
+# Second periodic execution behavior (session still fresh, cookie reused):
+# 6. GET /Workgroups with cookie_value1: returns workgroup 3
+# 7. GET /Workgroups/3/Assets offset=0 with cookie_value1: returns 1 asset;
+#    no more workgroups — session kept in cursor for next poll
+#
+# The /Workgroups rule uses req_num to return different workgroup lists per execution.
 
 rules:
   # Auth
@@ -11,7 +28,9 @@ rules:
       - status_code: 200
         headers:
           Content-Type: ['application/json']
-          Set-Cookie: ['ASP.NET_SessionId={{ if eq .req_num 1 }}cookie_value1{{ else }}cookie_value2{{ end }}']
+          Set-Cookie:
+            - 'ASP.NET_SessionId=cookie_value1; path=/; secure; HttpOnly; SameSite=None'
+            - '__RequestVerificationToken=rvt_token; path=/; secure; HttpOnly'
         body: |
           {{ minify_json `
           {
@@ -33,7 +52,9 @@ rules:
       - status_code: 200
         headers:
           Content-Type: ['application/json']
-          Set-Cookie: ['ASP.NET_SessionId={{ if eq .req_num 1 }}cookie_value1{{ else }}cookie_value2{{ end }}']
+          Set-Cookie:
+            - 'ASP.NET_SessionId=cookie_value1; path=/; secure; HttpOnly; SameSite=None'
+            - '__RequestVerificationToken=rvt_token; path=/; secure; HttpOnly'
         body: |
           {{ minify_json `
           {
@@ -45,19 +66,19 @@ rules:
           }
           `}}
 
-  # Get Workgroups
+  # Get Workgroups — req_num distinguishes first (wg1+wg2) from second (wg3) execution.
   - path: "/BeyondTrust/api/public/v3/Workgroups"
     methods: ["GET"]
     request_headers:
       Authorization: ['PS-Auth key=test_api_key;.*']
       Content-Type: ['application/json']
-      Cookie: ['ASP.NET_SessionId=cookie_value1']
+      Cookie: ['ASP.NET_SessionId=cookie_value1; __RequestVerificationToken=rvt_token']
     responses:
       - status_code: 200
         headers:
           Content-Type: ['application/json']
         body: |-
-          {{ minify_json `
+          {{ if eq .req_num 1 }}{{ minify_json `
           [
               {
                   "ID": 1,
@@ -70,7 +91,15 @@ rules:
                   "Description": "Secondary workgroup for testing"
               }
           ]
-          `}}
+          ` }}{{ else if eq .req_num 2 }}{{ minify_json `
+          [
+              {
+                  "ID": 3,
+                  "Name": "Eng Workgroup",
+                  "Description": "Default workgroup for engineering"
+              }
+          ]
+          ` }}{{ else }}[]{{ end }}
 
   # Get Assets for Workgroup 1 - page 1
   - path: "/BeyondTrust/api/public/v3/Workgroups/1/Assets"
@@ -81,7 +110,7 @@ rules:
     request_headers:
       Authorization: ['PS-Auth key=test_api_key;.*']
       Content-Type: ['application/json']
-      Cookie: ['ASP.NET_SessionId=cookie_value1']
+      Cookie: ['ASP.NET_SessionId=cookie_value1; __RequestVerificationToken=rvt_token']
     responses:
       - status_code: 200
         headers:
@@ -108,7 +137,7 @@ rules:
           }
           `}}
 
-  # Get Assets for Workgroup 1 - page 2 (auth failure)
+  # Get Assets for Workgroup 1 - page 2
   - path: "/BeyondTrust/api/public/v3/Workgroups/1/Assets"
     methods: ["GET"]
     query_params:
@@ -117,24 +146,7 @@ rules:
     request_headers:
       Authorization: ['PS-Auth key=test_api_key;.*']
       Content-Type: ['application/json']
-      Cookie: ['ASP.NET_SessionId=cookie_value1']
-    responses:
-      - status_code: 401
-        headers:
-          Content-Type: ['application/json']
-        body: >-
-          "User not authenticated"
-
-  # Get Assets for Workgroup 1 - page 2 (with cookie_value2)
-  - path: "/BeyondTrust/api/public/v3/Workgroups/1/Assets"
-    methods: ["GET"]
-    query_params:
-      limit: '1'
-      offset: '1'
-    request_headers:
-      Authorization: ['PS-Auth key=test_api_key;.*']
-      Content-Type: ['application/json']
-      Cookie: ['ASP.NET_SessionId=cookie_value2']
+      Cookie: ['ASP.NET_SessionId=cookie_value1; __RequestVerificationToken=rvt_token']
     responses:
       - status_code: 200
         headers:
@@ -165,13 +177,13 @@ rules:
           Content-Type: ['text/plain']
         body: Program should never request this. {{.request.vars}}
 
-  # Get Assets for Workgroup 2 - no assets
+  # Get Assets for Workgroup 2 - no assets; workgroup 2 done, all workgroups done.
   - path: "/BeyondTrust/api/public/v3/Workgroups/2/Assets"
     methods: ["GET"]
     request_headers:
       Authorization: ['PS-Auth key=test_api_key;.*']
       Content-Type: ['application/json']
-      Cookie: ['ASP.NET_SessionId=cookie_value2']
+      Cookie: ['ASP.NET_SessionId=cookie_value1; __RequestVerificationToken=rvt_token']
     query_params:
       limit: '1'
       offset: '0'
@@ -187,35 +199,13 @@ rules:
           }
           `}}
 
-  # Get Workgroups (second periodic execution)
-  - path: "/BeyondTrust/api/public/v3/Workgroups"
-    methods: ["GET"]
-    request_headers:
-      Authorization: ['PS-Auth key=test_api_key;.*']
-      Content-Type: ['application/json']
-      Cookie: ['ASP.NET_SessionId=cookie_value2']
-    responses:
-      - status_code: 200
-        headers:
-          Content-Type: ['application/json']
-        body: |-
-          {{ minify_json `
-          [
-              {
-                  "ID": 3,
-                  "Name": "Eng Workgroup",
-                  "Description": "Default workgroup for engineering"
-              }
-          ]
-          `}}
-
-  # Get Assets for Workgroup 3 (second periodic execution)
+  # Get Assets for Workgroup 3 (second periodic execution).
   - path: "/BeyondTrust/api/public/v3/Workgroups/3/Assets"
     methods: ["GET"]
     request_headers:
       Authorization: ['PS-Auth key=test_api_key;.*']
       Content-Type: ['application/json']
-      Cookie: ['ASP.NET_SessionId=cookie_value2']
+      Cookie: ['ASP.NET_SessionId=cookie_value1; __RequestVerificationToken=rvt_token']
     query_params:
       limit: '1'
       offset: '0'
