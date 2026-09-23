@@ -26,19 +26,21 @@ source:
       type: keyword
       script:
         source: |
-          def src = params._source;
-          if (src.containsKey('elasticsearch') && src.elasticsearch.containsKey('cluster') && src.elasticsearch.cluster.containsKey('name')) {
-            emit(src.elasticsearch.cluster.name);
-          }
+          try {
+            String name = params._source.elasticsearch.cluster.name;
+            if (name != null && !name.isEmpty()) emit(name);
+          } catch (Exception e) {}
     node_disk_used_pct:
       type: double
       script:
         source: |
-          def total = doc['elasticsearch.node.stats.fs.total.total_in_bytes'];
-          def avail = doc['elasticsearch.node.stats.fs.total.available_in_bytes'];
-          if (!total.empty && !avail.empty && total.value > 0) {
-            emit((total.value - avail.value) * 100.0 / total.value);
-          }
+          try {
+            def total = params._source.elasticsearch.node.stats.fs.total.total_in_bytes;
+            def avail = params._source.elasticsearch.node.stats.fs.total.available_in_bytes;
+            if (total != null && avail != null && total > 0) {
+              emit((total - avail) * 100.0 / total);
+            }
+          } catch (Exception e) {}
 dest:
   index: cluster_capacity_utilization_lookup
   pipeline: logs-chargeback.lookup-0.4.7-capacity_utilization
