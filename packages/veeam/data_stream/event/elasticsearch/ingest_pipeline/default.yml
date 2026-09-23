@@ -64,7 +64,7 @@ processors:
       description: Strip wrapping brackets from the Veeam structured-data payload before kv parsing.
       patterns:
         - '^\[%{GREEDYDATA:_temp.kv_src}\]$'
-        - '%{DATA}\[%{GREEDYDATA:_temp.kv_src}\]$'
+        - '^%{DATA}\[%{GREEDYDATA:_temp.kv_src}\]$'
       ignore_failure: true
       if: ctx._temp?.payload != null && ctx._temp.payload.contains('[categoryId=')
   - kv:
@@ -118,8 +118,12 @@ processors:
         def kv = ctx._temp.kv;
         for (def key : params.user_info_keys) {
           def raw = kv.get(key);
-          if (raw instanceof String && raw != '') {
-            kv.put(key, parseUserInfo(raw));
+          if (raw instanceof String) {
+            if (raw.trim() == '') {
+              kv.remove(key);
+            } else {
+              kv.put(key, parseUserInfo(raw.trim()));
+            }
           }
         }
   - script:
@@ -154,6 +158,9 @@ processors:
         def skip = params.skip;
         for (def e : ctx._temp.kv.entrySet()) {
           if (skip.contains(e.getKey())) {
+            continue;
+          }
+          if (e.getValue() instanceof String && e.getValue().trim() == '') {
             continue;
           }
           ctx.veeam.event.put(toSnake(e.getKey()), e.getValue());
@@ -689,6 +696,21 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
+      field: veeam.event.password_matched
+      type: boolean
+      tag: convert_password_matched
+      ignore_missing: true
+      if: ctx.veeam?.event?.password_matched != ''
+      on_failure:
+        - remove:
+            field: veeam.event.password_matched
+            ignore_missing: true
+            tag: remove_invalid_password_matched
+        - append:
+            tag: append_convert_password_matched_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
       field: veeam.event.storage_size
       type: long
       tag: convert_storage_size
@@ -868,6 +890,51 @@ processors:
             tag: append_convert_source_port_error
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: veeam.event.days_left
+      type: long
+      tag: convert_days_left
+      ignore_missing: true
+      if: ctx.veeam?.event?.days_left != ''
+      on_failure:
+        - remove:
+            field: veeam.event.days_left
+            ignore_missing: true
+            tag: remove_invalid_days_left
+        - append:
+            tag: append_convert_days_left_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: veeam.event.support_left
+      type: long
+      tag: convert_support_left
+      ignore_missing: true
+      if: ctx.veeam?.event?.support_left != ''
+      on_failure:
+        - remove:
+            field: veeam.event.support_left
+            ignore_missing: true
+            tag: remove_invalid_support_left
+        - append:
+            tag: append_convert_support_left_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: veeam.event.port
+      type: long
+      tag: convert_port
+      ignore_missing: true
+      if: ctx.veeam?.event?.port != ''
+      on_failure:
+        - remove:
+            field: veeam.event.port
+            ignore_missing: true
+            tag: remove_invalid_port
+        - append:
+            tag: append_convert_port_error
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: veeam.event.detection_time_utc
       tag: parse_detection_time_utc
@@ -1038,11 +1105,6 @@ processors:
             tag: append_parse_tape_storage_creation_time_error
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - set:
-      field: '@timestamp'
-      tag: set_event_created_from_detection_time
-      copy_from: veeam.event.detection_time_utc
-      if: ctx.veeam?.event?.detection_time_utc != null
   - geoip:
       field: source.ip
       target_field: source.geo
@@ -1075,176 +1137,109 @@ processors:
       value: '{{{source.ip}}}'
       allow_duplicates: false
       if: ctx.source?.ip != null
-  - set:
-      field: event.kind
-      tag: set_event_kind_malware
-      value: alert
-      if: 'ctx.event?.code != null && ["41600", "41610", "41615", "42200", "42205", "42210", "42220", "42230", "42260", "42270", "42280", "42290", "44200", "44201", "44202"].contains(ctx.event.code)'
-  - append:
-      field: event.category
-      tag: append_event_category_malware
-      value: malware
-      if: 'ctx.event?.code != null && ["41600", "41610", "41615", "42200", "42205", "42210", "42220", "42230", "42260", "42270", "42280", "42290", "44200", "44201", "44202"].contains(ctx.event.code)'
-  - append:
-      field: event.type
-      tag: append_event_type_info_malware
-      value: info
-      if: 'ctx.event?.code != null && ["41600", "41610", "41615", "42200", "42205", "42210", "42220", "42230", "42260", "42270", "42280", "42290", "44200", "44201", "44202"].contains(ctx.event.code)'
-  - set:
-      field: event.kind
-      tag: set_event_kind_users
-      value: event
-      if: 'ctx.event?.code != null && ["31200", "31210", "31300", "31310", "31320", "31400", "40200", "40201", "40202", "40203", "40204", "40205", "40206", "40207", "42400", "42401", "42402", "42403", "42404", "42405", "42800", "44000", "44001", "44002", "44003", "44004", "44005", "44006"].contains(ctx.event.code)'
-  - append:
-      field: event.category
-      tag: append_event_category_iam_users
-      value: iam
-      if: 'ctx.event?.code != null && ["31200", "31210", "31300", "31310", "31320", "31400", "40200", "40201", "40202", "40203", "40204", "40205", "40206", "40207", "42400", "42401", "42402", "42403", "42404", "42405", "42800", "44000", "44001", "44002", "44003", "44004", "44005", "44006"].contains(ctx.event.code)'
-  - append:
-      field: event.type
-      tag: append_event_type_info_users
-      value: info
-      if: 'ctx.event?.code != null && ["31200", "31210", "31300", "31310", "31320", "31400", "40200", "40201", "40202", "40203", "40204", "40205", "40206", "40207", "42400", "42401", "42402", "42403", "42404", "42405", "42800", "44000", "44001", "44002", "44003", "44004", "44005", "44006"].contains(ctx.event.code)'
-  - set:
-      field: event.kind
-      tag: set_event_kind_configuration
-      value: event
-      if: 'ctx.event?.code != null && ["31000", "31100", "31500", "32300", "32400", "32500", "32600", "32700", "32800", "40001", "40300", "40400", "40500", "40600", "40700", "40800"].contains(ctx.event.code)'
-  - append:
-      field: event.category
-      tag: append_event_category_configuration
-      value: configuration
-      if: 'ctx.event?.code != null && ["31000", "31100", "31500", "32300", "32400", "32500", "32600", "32700", "32800", "40001", "40300", "40400", "40500", "40600", "40700", "40800"].contains(ctx.event.code)'
-  - append:
-      field: event.type
-      tag: append_event_type_info_configuration
-      value: info
-      if: 'ctx.event?.code != null && ["31000", "31100", "31500", "32300", "32400", "32500", "32600", "32700", "32800", "40001", "40300", "40400", "40500", "40600", "40700", "40800"].contains(ctx.event.code)'
-  - set:
-      field: event.kind
-      tag: set_event_kind_credential_records
-      value: event
-      if: 'ctx.event?.code != null && ["25300", "25400", "25500", "31600", "31700", "31800", "31850", "31855", "31900", "41810", "42300", "42301", "42302", "42500"].contains(ctx.event.code)'
-  - append:
-      field: event.category
-      tag: append_event_category_iam_credential_records
-      value: iam
-      if: 'ctx.event?.code != null && ["25300", "25400", "25500", "31600", "31700", "31800", "31850", "31855", "31900", "41810", "42300", "42301", "42302", "42500"].contains(ctx.event.code)'
-  - append:
-      field: event.type
-      tag: append_event_type_info_credential_records
-      value: info
-      if: 'ctx.event?.code != null && ["25300", "25400", "25500", "31600", "31700", "31800", "31850", "31855", "31900", "41810", "42300", "42301", "42302", "42500"].contains(ctx.event.code)'
-  - set:
-      field: event.kind
-      tag: set_event_kind_security_compliance
-      value: event
-      if: 'ctx.event?.code != null && ["42900", "42901", "42902", "42903"].contains(ctx.event.code)'
-  - append:
-      field: event.category
-      tag: append_event_category_configuration_security_compliance
-      value: configuration
-      if: 'ctx.event?.code != null && ["42900", "42901", "42902", "42903"].contains(ctx.event.code)'
-  - append:
-      field: event.type
-      tag: append_event_type_info_security_compliance
-      value: info
-      if: 'ctx.event?.code != null && ["42900", "42901", "42902", "42903"].contains(ctx.event.code)'
-  - set:
-      field: event.kind
-      tag: set_event_kind_backup
-      value: event
-      if: 'ctx.event?.code != null && ["110", "114", "115", "116", "117", "118", "119", "120", "121", "122", "123", "124", "125", "126", "150", "151", "190", "194", "195", "196", "197", "198", "199", "200", "203", "204", "205", "206", "207", "208", "310", "350", "351", "360", "361", "390", "410", "450", "451", "490", "510", "512", "590", "592", "601", "10010", "10014", "10050", "10090", "20114", "23010", "23050", "23090", "23110", "23130", "23210", "23220", "23230", "23310", "23320", "23410", "23420", "23440", "23450", "23490", "23610", "23611", "23620", "23621", "23622", "23623", "23630", "23631", "23632", "23633", "28600", "28650", "28700", "28750", "28800", "28850", "28900", "28910", "28920", "28930", "28940", "28950", "30300", "30400", "30500", "30600", "30700", "30800", "32120", "41000", "41001", "41200", "41201", "41202", "41700", "41710", "41800", "42000", "42001"].contains(ctx.event.code)'
-  - set:
-      field: event.kind
-      tag: set_event_kind_restore
-      value: event
-      if: 'ctx.event?.code != null && ["210", "250", "251", "290", "40210", "40290", "41500", "41510"].contains(ctx.event.code)'
-  - append:
-      field: event.category
-      tag: append_event_category_file_restore
-      value: file
-      if: 'ctx.event?.code != null && ["210", "250", "251", "290", "40210", "40290", "41500", "41510"].contains(ctx.event.code)'
-  - append:
-      field: event.type
-      tag: append_event_type_info_restore
-      value: info
-      if: 'ctx.event?.code != null && ["210", "250", "251", "290", "40210", "40290", "41500", "41510"].contains(ctx.event.code)'
-  - set:
-      field: event.kind
-      tag: set_event_kind_infrastructure
-      value: event
-      if: 'ctx.event?.code != null && ["600", "610", "810", "890", "21210", "21214", "21220", "21224", "21230", "21234", "25600", "25700", "25800", "25900", "26000", "26010", "26100", "26110", "26500", "26600", "26700", "27100", "27200", "27300", "27700", "27800", "27900", "28000", "28100", "28200", "28300", "28400", "28500", "28960", "28970", "28980", "29700", "29800", "29900", "30000", "30100", "30200", "32000", "32100", "32200", "32900", "33000", "33001", "36100", "36200", "36300", "36400", "36500", "36600", "36700", "36800", "36900", "40002", "40100", "40101", "40900", "40901", "40902", "40903", "41400", "41401", "41402", "41403", "41404", "41405", "43000", "43001", "43002", "43003", "43004", "43006"].contains(ctx.event.code)'
-  - append:
-      field: event.category
-      tag: append_event_category_host_infrastructure
-      value: host
-      if: 'ctx.event?.code != null && ["600", "610", "810", "890", "21210", "21214", "21220", "21224", "21230", "21234", "25600", "25700", "25800", "25900", "26000", "26010", "26100", "26110", "26500", "26600", "26700", "27100", "27200", "27300", "27700", "27800", "27900", "28000", "28100", "28200", "28300", "28400", "28500", "28960", "28970", "28980", "29700", "29800", "29900", "30000", "30100", "30200", "32000", "32100", "32200", "32900", "33000", "33001", "36100", "36200", "36300", "36400", "36500", "36600", "36700", "36800", "36900", "40002", "40100", "40101", "40900", "40901", "40902", "40903", "41400", "41401", "41402", "41403", "41404", "41405", "43000", "43001", "43002", "43003", "43004", "43006"].contains(ctx.event.code)'
-  - append:
-      field: event.type
-      tag: append_event_type_info_infrastructure
-      value: info
-      if: 'ctx.event?.code != null && ["600", "610", "810", "890", "21210", "21214", "21220", "21224", "21230", "21234", "25600", "25700", "25800", "25900", "26000", "26010", "26100", "26110", "26500", "26600", "26700", "27100", "27200", "27300", "27700", "27800", "27900", "28000", "28100", "28200", "28300", "28400", "28500", "28960", "28970", "28980", "29700", "29800", "29900", "30000", "30100", "30200", "32000", "32100", "32200", "32900", "33000", "33001", "36100", "36200", "36300", "36400", "36500", "36600", "36700", "36800", "36900", "40002", "40100", "40101", "40900", "40901", "40902", "40903", "41400", "41401", "41402", "41403", "41404", "41405", "43000", "43001", "43002", "43003", "43004", "43006"].contains(ctx.event.code)'
-  - set:
-      field: event.kind
-      tag: set_event_kind_agent_management
-      value: event
-      if: 'ctx.event?.code != null && ["650", "652", "710", "790", "29100", "29110", "29120", "29130", "29140", "29150", "41302", "41303", "41304", "41305", "44100", "44101", "44102"].contains(ctx.event.code)'
-  - append:
-      field: event.category
-      tag: append_event_category_host_agent_management
-      value: host
-      if: 'ctx.event?.code != null && ["650", "652", "710", "790", "29100", "29110", "29120", "29130", "29140", "29150", "41302", "41303", "41304", "41305", "44100", "44101", "44102"].contains(ctx.event.code)'
-  - append:
-      field: event.type
-      tag: append_event_type_info_agent_management
-      value: info
-      if: 'ctx.event?.code != null && ["650", "652", "710", "790", "29100", "29110", "29120", "29130", "29140", "29150", "41302", "41303", "41304", "41305", "44100", "44101", "44102"].contains(ctx.event.code)'
-  - set:
-      field: event.kind
-      tag: set_event_kind_licenses
-      value: event
-      if: 'ctx.event?.code != null && ["24010", "24020", "24030", "24040", "24050", "24060", "24070", "24080", "41300", "41301", "41306"].contains(ctx.event.code)'
-  - append:
-      field: event.category
-      tag: append_event_category_configuration_licenses
-      value: configuration
-      if: 'ctx.event?.code != null && ["24010", "24020", "24030", "24040", "24050", "24060", "24070", "24080", "41300", "41301", "41306"].contains(ctx.event.code)'
-  - append:
-      field: event.type
-      tag: append_event_type_info_licenses
-      value: info
-      if: 'ctx.event?.code != null && ["24010", "24020", "24030", "24040", "24050", "24060", "24070", "24080", "41300", "41301", "41306"].contains(ctx.event.code)'
-  - set:
-      field: event.kind
-      tag: set_event_kind_plugins
-      value: event
-      if: 'ctx.event?.code != null && ["36011", "36012", "36013", "36014", "36021", "36022", "36023", "36024", "36025", "36026"].contains(ctx.event.code)'
-  - append:
-      field: event.category
-      tag: append_event_category_configuration_plugins
-      value: configuration
-      if: 'ctx.event?.code != null && ["36011", "36012", "36013", "36014", "36021", "36022", "36023", "36024", "36025", "36026"].contains(ctx.event.code)'
-  - append:
-      field: event.type
-      tag: append_event_type_info_plugins
-      value: info
-      if: 'ctx.event?.code != null && ["36011", "36012", "36013", "36014", "36021", "36022", "36023", "36024", "36025", "36026"].contains(ctx.event.code)'
-  - set:
-      field: event.kind
-      tag: set_event_kind_cloud_connect
-      value: event
-      if: 'ctx.event?.code != null && ["24110", "24114", "24120", "24130", "24131", "24140", "24141", "24142", "24143", "24150", "24160", "24170", "24180", "25000", "25100", "25200", "25210", "25220", "25230", "26200", "26300", "26400", "26510", "26800", "26900", "27000", "27400", "27500", "27600"].contains(ctx.event.code)'
-  - append:
-      field: event.category
-      tag: append_event_category_configuration_cloud_connect
-      value: configuration
-      if: 'ctx.event?.code != null && ["24110", "24114", "24120", "24130", "24131", "24140", "24141", "24142", "24143", "24150", "24160", "24170", "24180", "25000", "25100", "25200", "25210", "25220", "25230", "26200", "26300", "26400", "26510", "26800", "26900", "27000", "27400", "27500", "27600"].contains(ctx.event.code)'
-  - append:
-      field: event.type
-      tag: append_event_type_info_cloud_connect
-      value: info
-      if: 'ctx.event?.code != null && ["24110", "24114", "24120", "24130", "24131", "24140", "24141", "24142", "24143", "24150", "24160", "24170", "24180", "25000", "25100", "25200", "25210", "25220", "25230", "26200", "26300", "26400", "26510", "26800", "26900", "27000", "27400", "27500", "27600"].contains(ctx.event.code)'
+  - script:
+      lang: painless
+      tag: set_ecs_categorization
+      description: Map Veeam instanceId to ECS kind/category/type using a params lookup table.
+      if: ctx.event?.code != null
+      params:
+        groups:
+          malware_alert:
+            codes: ["41600", "42220"]
+            kind: alert
+            category: [malware]
+            type: [info]
+          malware_event:
+            codes: ["41610", "41615", "42230", "44200", "44201", "44202"]
+            kind: event
+            category: [malware]
+            type: [info]
+          malware_settings:
+            codes: ["42260", "42270", "42280", "42290"]
+            kind: event
+            category: [configuration]
+            type: [change]
+          authentication_success:
+            codes: ["44000", "44003"]
+            kind: event
+            category: [authentication]
+            type: [info]
+            outcome: success
+          authentication_failure:
+            codes: ["40205", "40206", "40207", "44001", "44002", "44006"]
+            kind: event
+            category: [authentication]
+            type: [info]
+            outcome: failure
+          iam:
+            codes: ["31200", "31210", "31300", "31310", "31320", "31400", "40200", "40201", "40202", "40203", "40204", "42400", "42401", "42402", "42403", "42404", "42405", "42800", "44004", "44005"]
+            kind: event
+            category: [iam]
+            type: [info]
+          configuration:
+            codes: ["31000", "31100", "31500", "32300", "32400", "32500", "32600", "32700", "32800", "40001", "40300", "40400", "40500", "40600", "40700", "40800"]
+            kind: event
+            category: [configuration]
+            type: [info]
+          credential_records:
+            codes: ["25300", "25400", "25500", "31600", "31700", "31800", "31850", "31855", "31900", "41810", "42300", "42301", "42302", "42500"]
+            kind: event
+            category: [iam]
+            type: [info]
+          security_compliance:
+            codes: ["42900", "42901", "42902", "42903"]
+            kind: event
+            category: [configuration]
+            type: [info]
+          backup:
+            codes: ["110", "114", "115", "116", "117", "118", "119", "120", "121", "122", "123", "124", "125", "126", "150", "151", "190", "194", "195", "196", "197", "198", "199", "200", "203", "204", "205", "206", "207", "208", "310", "350", "351", "360", "361", "390", "410", "450", "451", "490", "510", "512", "590", "592", "601", "10010", "10014", "10050", "10090", "20114", "23010", "23050", "23090", "23110", "23130", "23210", "23220", "23230", "23310", "23320", "23410", "23420", "23440", "23450", "23490", "23610", "23611", "23620", "23621", "23622", "23623", "23630", "23631", "23632", "23633", "28600", "28650", "28700", "28750", "28800", "28850", "28900", "28910", "28920", "28930", "28940", "28950", "30300", "30400", "30500", "30600", "30700", "30800", "32120", "41000", "41001", "41200", "41201", "41202", "41700", "41710", "41800", "42000", "42001"]
+            kind: event
+          restore:
+            codes: ["210", "250", "251", "290", "40210", "40290", "41500", "41510"]
+            kind: event
+            category: [file]
+            type: [info]
+          infrastructure:
+            codes: ["600", "610", "810", "890", "21210", "21214", "21220", "21224", "21230", "21234", "25600", "25700", "25800", "25900", "26000", "26010", "26100", "26110", "26500", "26600", "26700", "27100", "27200", "27300", "27700", "27800", "27900", "28000", "28100", "28200", "28300", "28400", "28500", "28960", "28970", "28980", "29700", "29800", "29900", "30000", "30100", "30200", "32000", "32100", "32200", "32900", "33000", "33001", "36100", "36200", "36300", "36400", "36500", "36600", "36700", "36800", "36900", "40002", "40100", "40101", "40900", "40901", "40902", "40903", "41400", "41401", "41402", "41403", "41404", "41405", "43000", "43001", "43002", "43003", "43004", "43006"]
+            kind: event
+            category: [host]
+            type: [info]
+          agent_management:
+            codes: ["650", "652", "710", "790", "29100", "29110", "29120", "29130", "29140", "29150", "41302", "41303", "41304", "41305", "44100", "44101", "44102"]
+            kind: event
+            category: [host]
+            type: [info]
+          licenses:
+            codes: ["24010", "24020", "24030", "24040", "24050", "24060", "24070", "24080", "41300", "41301", "41306"]
+            kind: event
+            category: [configuration]
+            type: [info]
+          plugins:
+            codes: ["36011", "36012", "36013", "36014", "36021", "36022", "36023", "36024", "36025", "36026"]
+            kind: event
+            category: [configuration]
+            type: [info]
+          cloud_connect:
+            codes: ["24110", "24114", "24120", "24130", "24131", "24140", "24141", "24142", "24143", "24150", "24160", "24170", "24180", "25000", "25100", "25200", "25210", "25220", "25230", "26200", "26300", "26400", "26510", "26800", "26900", "27000", "27400", "27500", "27600"]
+            kind: event
+            category: [configuration]
+            type: [info]
+      source: |-
+        for (def g : params.groups.values()) {
+          if (g.codes.contains(ctx.event.code)) {
+            ctx.event.kind = g.kind;
+            if (g.containsKey('category')) {
+              ctx.event.category = g.category;
+            }
+            if (g.containsKey('type')) {
+              ctx.event.type = g.type;
+            }
+            if (g.containsKey('outcome')) {
+              ctx.event.outcome = g.outcome;
+            }
+            return;
+          }
+        }
   - set:
       field: event.kind
       tag: set_event_kind_default

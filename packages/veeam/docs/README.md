@@ -139,22 +139,22 @@ An example event for `event` looks as following:
 {
     "@timestamp": "2026-07-25T12:21:33.216Z",
     "agent": {
-        "ephemeral_id": "59a35a57-df3f-42b6-bb0a-179b2d9ee1ee",
-        "id": "84b06000-f90f-47be-8e53-47b626dc2832",
-        "name": "elastic-agent-31850",
+        "ephemeral_id": "3ddd43e3-70a9-40b9-9648-c0c1812d00f3",
+        "id": "e2306d90-1d10-48e8-b108-24852156d458",
+        "name": "elastic-agent-94177",
         "type": "filebeat",
         "version": "8.19.0"
     },
     "data_stream": {
         "dataset": "veeam.event",
-        "namespace": "39618",
+        "namespace": "84264",
         "type": "logs"
     },
     "ecs": {
         "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "84b06000-f90f-47be-8e53-47b626dc2832",
+        "id": "e2306d90-1d10-48e8-b108-24852156d458",
         "snapshot": false,
         "version": "8.19.0"
     },
@@ -165,7 +165,7 @@ An example event for `event` looks as following:
         ],
         "code": "42400",
         "dataset": "veeam.event",
-        "ingested": "2026-09-18T09:50:52Z",
+        "ingested": "2026-09-23T09:46:08Z",
         "kind": "event",
         "original": "<14>1 2026-07-25T05:21:33.216714-07:00 vbr-01 Veeam_MP - - [origin enterpriseId=\"31023\"] [INF] [categoryId=0 instanceId=42400 Operation=\"Four-eyes authorization has been enabled\" OperationId=\"0\" InitiatorFullInfo=\"<ModifiedUserInfo fullName=\"EXAMPLE\\alice.johnson\" loginType=\"0\" />\" VbrHostName=\"vbr-01.example.local\" VbrVersion=\"13.1.0.411\" Version=\"1\" Description=\"Four-eyes authorization has been enabled by EXAMPLE\\alice.johnson.\"]",
         "provider": "Veeam_MP",
@@ -182,7 +182,7 @@ An example event for `event` looks as following:
     "log": {
         "level": "info",
         "source": {
-            "address": "172.19.0.3:36561"
+            "address": "172.19.0.3:45010"
         },
         "syslog": {
             "appname": "Veeam_MP",
@@ -289,7 +289,7 @@ An example event for `event` looks as following:
 | veeam.event.database_name | Veeam `DatabaseName` structured-data parameter. | keyword |  |  |
 | veeam.event.datastore_name | Veeam `DatastoreName` structured-data parameter. | keyword |  |  |
 | veeam.event.date_time | Restore-point timestamp as MM/DD/YYYY HH:MM:SS without offset. | date |  |  |
-| veeam.event.days_left | Veeam `DaysLeft` structured-data parameter. | keyword |  |  |
+| veeam.event.days_left | Days remaining before the licence expires. | long |  |  |
 | veeam.event.destination | Restore destination details, often XML. | wildcard |  |  |
 | veeam.event.details | Additional event details. | wildcard |  |  |
 | veeam.event.detection_time_utc | When malware activity was detected, as MM/DD/YYYY HH:MM:SS without offset. | date |  |  |
@@ -379,11 +379,11 @@ An example event for `event` looks as following:
 | veeam.event.original_password_id | Veeam `OriginalPasswordId` structured-data parameter. | keyword |  |  |
 | veeam.event.param3 | Additional vendor parameter. | keyword |  |  |
 | veeam.event.parameters | Veeam `Parameters` structured-data parameter. | keyword |  |  |
-| veeam.event.password_matched | Veeam `PasswordMatched` structured-data parameter. | keyword |  |  |
+| veeam.event.password_matched | Whether the supplied password matched the stored credential record. | boolean |  |  |
 | veeam.event.platform | Numeric platform type. Official integer tables are not published. | keyword |  |  |
 | veeam.event.point_id | Restore point GUID. | keyword |  |  |
 | veeam.event.policy_name | Veeam `PolicyName` structured-data parameter. | keyword |  |  |
-| veeam.event.port | Veeam `Port` structured-data parameter. | keyword |  |  |
+| veeam.event.port | Veeam `Port` structured-data parameter. | long |  |  |
 | veeam.event.protection_group_id | Veeam `ProtectionGroupID` structured-data parameter. | keyword |  |  |
 | veeam.event.protection_group_name | Veeam `ProtectionGroupName` structured-data parameter. | keyword |  |  |
 | veeam.event.provider_id | Veeam `ProviderID` structured-data parameter. | keyword |  |  |
@@ -434,7 +434,7 @@ An example event for `event` looks as following:
 | veeam.event.supervisor_full_info.full_name | User full name parsed from ModifiedUserInfo XML, or the plain-text value when the field is not XML. | keyword |  |  |
 | veeam.event.supervisor_full_info.login_type | Numeric loginType from ModifiedUserInfo XML. | keyword |  |  |
 | veeam.event.supervisor_full_info.original | Original SupervisorFullInfo value, XML or plain text. | wildcard |  |  |
-| veeam.event.support_left | Veeam `SupportLeft` structured-data parameter. | keyword |  |  |
+| veeam.event.support_left | Days of support remaining; -1 when not applicable. | long |  |  |
 | veeam.event.suppressed | Count of analyzer checks excluded from the checklist. | long |  | gauge |
 | veeam.event.suppressed_count | Number of configuration parameters excluded from the checklist. | long |  | gauge |
 | veeam.event.tape_id | Veeam `TapeID` structured-data parameter. | keyword |  |  |
