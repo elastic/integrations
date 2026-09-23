@@ -285,6 +285,11 @@ updateBackportBranchContents() {
 
     # Build the list of packages to keep: target + requires.* deps + .link
     # source packages, expanded transitively until stable.
+    # Note: .link files may reference paths outside packages/ (e.g. _dev/shared/
+    # at the repo root). Those sources are not tracked here but are also not
+    # removed by remove_other_packages, which only operates on paths returned by
+    # list_all_directories (i.e. packages under packages/).
+    # See https://github.com/elastic/integrations/issues/21594.
     local -a packages_to_keep=()
     while IFS= read -r pkg; do
       packages_to_keep+=("${pkg}")
