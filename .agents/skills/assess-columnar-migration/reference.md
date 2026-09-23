@@ -95,17 +95,43 @@ Cannot be changed after index creation.
 The assess script prints **Kibana field seeds** from dashboard JSON; use them as
 hints, then apply domain judgment.
 
+## Package spec version
+
+Fleet installs a package only when its `format_version` **major.minor** is within `xpack.fleet.internal.registry.spec.max` (`REGISTRY_SPEC_MAX_VERSION` in Kibana). The patch is ignored: `3.4.0` and `3.4.2` are the same gate.
+
+| `format_version` | Stacks that install it |
+| --- | --- |
+| 2.3.x – 2.11.x | Any stateful stack (not serverless) |
+| 3.0.x | 8.11+ and 9.x |
+| 3.1.x – 3.3.x | 8.16+ |
+| 3.4.x | 8.19 and 9.1+ (not 9.0; 9.0 max is 3.3) |
+| 3.5.x | 9.2+ |
+| 3.6.x | 9.4+ |
+
+9.5's max is still **3.6**.
+
+`elasticsearch.index_mode` allows only `time_series`. Index sort (`index.sort.field` / `order`) is already in the spec. Nothing can declare `logsdb_columnar` or `columnar`. That is a new feature that needs stack support, so package-spec versioning makes it a **minor** bump, not a patch on 3.4 or 3.6.
+
+Order:
+
+1. Add the columnar-ready concept to package-spec (mode, required index sort, mapping rules that match this skill's blockers).
+2. Raise `REGISTRY_SPEC_MAX_VERSION` on the Kibana line that has columnar (9.5+).
+3. Bump the integration's `format_version` to that spec and set the stack constraint to 9.5+.
+
+Step 3 is what drops older stacks. A package left on 3.4.x stays installable on 8.19 and cannot express columnar. Many integrations stay on 3.4 for that reason. `conditions.kibana.version: ^9.5.0` is still required, and it does not make a new `index_mode` valid on an older spec.
+
 ## What eventual migration would touch (TODO/TBC)
 
 Not performed by this skill; list in “Proposed changes” only:
 
-1. Stack constraint in `manifest.yml` (9.5+)
-2. Fix blockers or exclude data streams (others can proceed)
-3. Index sort per data stream
-4. Set `logsdb_columnar` or `columnar`
-5. Update tests under columnar mode
-6. End-to-end tests + dashboard/rule checks
-7. Changelog noting opt-in and behavioral differences
+1. New package-spec minor for columnar-ready streams, shipped in Kibana 9.5 (`spec.max`)
+2. Bump `format_version`. State the current spec minimum first (3.4 → 8.19, 3.5 → 9.2, 3.6 → 9.4); the bump raises it to 9.5+
+3. Fix blockers or exclude data streams (others can proceed)
+4. Index sort per data stream
+5. Set `logsdb_columnar` or `columnar`
+6. Update tests under columnar mode
+7. End-to-end tests + dashboard/rule checks
+8. Changelog noting opt-in and behavioral differences
 
 Ingest comparisons later should check array ordering, missing fields under
 `dynamic: false`, and synthetic / columnar `_source` shape.

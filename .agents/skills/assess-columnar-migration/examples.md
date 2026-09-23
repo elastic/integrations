@@ -2,6 +2,10 @@
 
 Illustrative triage shapes. Re-run the script for current line numbers.
 
+Every in-scope proposal states the minimum stack implied by `format_version`
+and that columnar bumps it. Spec 3.0 means 8.11, spec 3.4 means 8.19, spec 3.6
+means 9.4. The bump raises that floor to 9.5+.
+
 ## `checkpoint` — migrate candidate
 
 ```bash
@@ -76,10 +80,11 @@ These packages previously looked like `store: true` blockers; with correct
 
 `type: content` → no data-stream mappings; stack OTel template owns mode/sort.
 
-## `nginx` — clean logs + undecided metrics
+## `nginx` — clean logs, TSDB metrics
 
-- `access` / `error`: often `migrate_candidate` → `logsdb_columnar`, sort `host.name`
-- `stubstatus`: `metrics_undecided` if not TSDB
+- `access` / `error`: `migrate_candidate` → `logsdb_columnar`. Dashboards use
+  `host.hostname`, which is not declared under those streams' `fields/`.
+- `stubstatus`: `index_mode: time_series` → skipped (TSDB)
 
 ## Repo-wide scoreboard
 
@@ -87,5 +92,6 @@ These packages previously looked like `store: true` blockers; with correct
 python3 .agents/skills/assess-columnar-migration/scripts/assess_package.py packages/ --summary-only
 ```
 
-Table includes **Blocked streams** column so mega-packages with one bad stream
-do not look globally blocked.
+The table includes a **Blocked streams** column so mega-packages with one bad
+stream do not look globally blocked. A line after the table counts in-scope
+packages columnar would move from 8.x to 9.x.

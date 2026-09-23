@@ -35,6 +35,11 @@ See [examples.md](examples.md) for filled triage samples.
 5. Use `logsdb_columnar` for log data streams. For metrics without
    `index_mode: time_series`, report **`metrics_undecided`** (TSDB vs bare
    `columnar`) — do not assume columnar. Skip TSDB streams and `type: content`.
+6. **Report the stack floor implied by `format_version`.** Patch is ignored.
+   State that minimum (spec 3.0 → 8.11, 3.4 → 8.19, 3.6 → 9.4) and that columnar
+   requires a `format_version` bump, which raises it to 9.5+. A
+   `conditions.kibana.version` already at 9.5 does not remove that bump. See
+   [reference.md](reference.md#package-spec-version).
 
 ## Scope
 
@@ -93,14 +98,19 @@ python3 .agents/skills/assess-columnar-migration/scripts/assess_package.py packa
 python3 .agents/skills/assess-columnar-migration/scripts/assess_package.py packages/ --summary-only
 ```
 
+After the table, the summary notes how many in-scope packages are still
+installable on 8.x. Columnar would move those to 9.5+.
+
 ### Phase 2 — Index-sort proposal
 
 1. Start from script **Kibana field seeds** (top dashboard/control fields).
+   Seeds are package-wide; ignore fields that belong to another stream.
 2. Prefer a **low-cardinality dimension** those assets filter on + `@timestamp` desc.
-3. Use `host.name` + `@timestamp` **only** when host-centric and mapped.
-4. Override for firewall (`observer.name`), cloud (`cloud.account.id` /
-   tenant/org), IdP (`user.name` / actor id). Do not paste script boilerplate
-   when seeds clearly disagree.
+3. Use `host.name` + `@timestamp` **only** when host-centric and declared in
+   that stream's `fields/`. A dashboard field that is not declared can still be
+   the sort; say the mapping has to be added.
+4. These overrides win over seeds: firewall (`observer.name`), cloud
+   (`cloud.account.id` / tenant/org), IdP (`user.name` / actor id).
 
 ### Phase 3 — Triage report
 
@@ -113,6 +123,8 @@ Use the template below. Ask which streams to prioritize later — **do not migra
 
 ## Scope
 - Package type: …
+- `format_version`: …
+- Minimum stack from spec: … (columnar requires a `format_version` bump, which raises this to 9.5+)
 - Stream verdicts: migrate_candidate=N, migrate_with_changes=N, defer_or_exclude=N, …
 - Skipped: TSDB / content / transforms
 
@@ -132,7 +144,7 @@ Use the template below. Ask which streams to prioritize later — **do not migra
 | … | logsdb_columnar | … | kibana seeds + domain |
 
 ## Proposed changes (not applied)
-1. Stack constraint → 9.5+
+1. Minimum stack from spec is … (`format_version` …). Bump `format_version` for columnar; that raises the minimum to 9.5+
 2. Fix or exclude blocker streams (others can proceed)
 3. Data-loss / metrics_undecided decisions
 4. Per-stream `mode` + index sort
@@ -144,6 +156,7 @@ Use the template below. Ask which streams to prioritize later — **do not migra
 
 ## Open items (platform / follow-up)
 
+- **Package spec for columnar-ready integrations.** New minor (a stack-gated feature, so not a patch on 3.4 or 3.6). Define mode (`logsdb_columnar` / `columnar`) and a required index sort. Kibana 9.5 `REGISTRY_SPEC_MAX_VERSION` is still `3.6` and must include the new minor before any package bump. See [reference.md](reference.md#package-spec-version).
 - ECS dynamic templates: skip text subfields under columnar (~10.0 breaking change)
 - Repo-wide nested-in-nested + compatibility CI (like LogsDB pass)
 - Transform destination indices — separate columnar rules

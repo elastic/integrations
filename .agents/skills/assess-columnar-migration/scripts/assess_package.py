@@ -45,6 +45,10 @@ TYPE_LINE_RE = re.compile(r"^type:\s*(\S+)", re.MULTILINE)
 # Match top-level or under elasticsearch: (indented).
 INDEX_MODE_RE = re.compile(r"^\s*index_mode:\s*[\"']?(\S+?)[\"']?\s*$", re.MULTILINE)
 PACKAGE_TYPE_RE = re.compile(r"^type:\s*(\S+)\s*$", re.MULTILINE)
+FORMAT_VERSION_RE = re.compile(
+    r"^format_version:\s*[\"']?(\d+\.\d+(?:\.\d+)?)[\"']?\s*$",
+    re.MULTILINE,
+)
 
 # Kibana saved-object field hints for index-sort seeds.
 KIBANA_FIELD_RE = re.compile(
@@ -98,6 +102,7 @@ class PackageAssessment:
     name: str
     package_type: str | None
     in_scope: bool
+    format_version: str | None = None
     skip_reason: str | None = None
     streams: list[StreamAssessment] = field(default_factory=list)
     kibana_sort_seeds: list[tuple[str, int]] = field(default_factory=list)
@@ -353,10 +358,19 @@ def package_verdict_summary(pkg: PackageAssessment) -> str:
                 f"{len(candidates)} clean{extra})"
             )
         return f"migrate_with_changes{extra and ' (' + extra.lstrip(', ') + ')' or ''}"
+    loss_undecided = [
+        s.name
+        for s in scoped
+        if s.name in undecided and stream_counts(s).get("data_loss", 0)
+    ]
+    loss_note = f", {len(loss_undecided)} with data-loss" if loss_undecided else ""
     if undecided and not candidates:
-        return f"metrics_undecided ({len(undecided)} streams)"
+        return f"metrics_undecided ({len(undecided)} streams{loss_note})"
     if undecided:
-        return f"migrate_candidate ({len(candidates)} clean, {len(undecided)} metrics_undecided)"
+        return (
+            f"migrate_candidate ({len(candidates)} clean, "
+            f"{len(undecided)} metrics_undecided{loss_note})"
+        )
     return "migrate_candidate"
 
 
@@ -427,22 +441,79 @@ def assess_stream(stream_dir: Path, package_sort_seeds: list[tuple[str, int]]) -
     return stream
 
 
+def spec_minor(version: str | None) -> tuple[int, int] | None:
+    if not version:
+        return None
+    parts = version.split(".")
+    try:
+        major = int(parts[0])
+        minor = int(parts[1]) if len(parts) > 1 else 0
+    except ValueError:
+        return None
+    return major, minor
+
+
+def spec_min_stack(version: str | None) -> str:
+    """Minimum stack that can install this format_version. Patch is ignored."""
+    parsed = spec_minor(version)
+    if parsed is None:
+        return "unknown"
+    major, minor = parsed
+    if (major, minor) < (2, 3):
+        return "stacks before 9.0"
+    if (major, minor) < (3, 0):
+        return "any stateful stack"
+    if (major, minor) == (3, 0):
+        return "8.11"
+    if (3, 1) <= (major, minor) <= (3, 3):
+        return "8.16"
+    if (major, minor) == (3, 4):
+        return "8.19"
+    if (major, minor) == (3, 5):
+        return "9.2"
+    if (major, minor) == (3, 6):
+        return "9.4"
+    return "above 9.4"
+
+
+def installs_on_8x(version: str | None) -> bool:
+    """True when this spec still installs on 8.x. Spec 3.5+ is 9.2+."""
+    parsed = spec_minor(version)
+    return parsed is not None and parsed < (3, 5)
+
+
+def format_version_migration_note(version: str | None) -> str:
+    """State the spec-implied stack floor and that columnar raises it."""
+    shown = f"`{version}`" if version else "unset"
+    floor = spec_min_stack(version)
+    note = (
+        f"- Minimum stack from spec is **{floor}** (`format_version` {shown}). "
+        "Columnar requires a `format_version` bump, which raises this to **9.5+**."
+    )
+    if spec_minor(version) == (3, 4):
+        note += " Spec 3.4 also installs on 9.1+; 9.0 stops at spec 3.3."
+    if installs_on_8x(version):
+        note += " This package would move from 8.x to 9.x."
+    return note
+
+
 def assess_package(package_root: Path) -> PackageAssessment:
     package_root = package_root.resolve()
     name = package_root.name
     manifest_path = package_root / "manifest.yml"
     package_type = None
+    format_version = None
     if manifest_path.is_file():
-        package_type = read_simple_yaml_key(
-            manifest_path.read_text(errors="replace"),
-            PACKAGE_TYPE_RE,
-        )
+        manifest_text = manifest_path.read_text(errors="replace")
+        package_type = read_simple_yaml_key(manifest_text, PACKAGE_TYPE_RE)
+        format_version = read_simple_yaml_key(manifest_text, FORMAT_VERSION_RE)
 
     if package_type == "content":
         return PackageAssessment(
             path=package_root,
             name=name,
             package_type=package_type,
+            format_version=format_version,
             in_scope=False,
             skip_reason="content package — no data-stream mappings here",
         )
@@ -452,6 +523,7 @@ def assess_package(package_root: Path) -> PackageAssessment:
             path=package_root,
             name=name,
             package_type=package_type,
+            format_version=format_version,
             in_scope=False,
             skip_reason=f"package type {package_type!r} out of scope",
         )
@@ -496,6 +568,7 @@ def assess_package(package_root: Path) -> PackageAssessment:
         path=package_root,
         name=name,
         package_type=package_type,
+        format_version=format_version,
         in_scope=in_scope,
         skip_reason=skip_reason,
         streams=streams,
@@ -545,6 +618,8 @@ def format_package_report(pkg: PackageAssessment) -> str:
     lines.append("")
     lines.append(f"- Package path: `{pkg.path}`")
     lines.append(f"- Package type: `{pkg.package_type or 'unknown'}`")
+    lines.append(f"- format_version: `{pkg.format_version or 'unset'}`")
+    lines.append(f"- Minimum stack from spec: {spec_min_stack(pkg.format_version)}")
     lines.append(f"- Verdict: `{summary}`")
     if pkg.skip_reason:
         lines.append(f"- Skip reason: {pkg.skip_reason}")
@@ -636,10 +711,7 @@ def propose_changes(pkg: PackageAssessment) -> str:
 
     bullets: list[str] = []
     scoped = [s for s in pkg.streams if s.in_scope]
-    bullets.append(
-        "- Raise package stack constraint to Elasticsearch / Kibana **9.5+** "
-        "(columnar preview) when migration is attempted.",
-    )
+    bullets.append(format_version_migration_note(pkg.format_version))
 
     blocked = [s for s in scoped if s.stream_verdict == "defer_or_exclude"]
     migratable = [
@@ -729,12 +801,21 @@ def propose_changes(pkg: PackageAssessment) -> str:
     return "\n".join(bullets)
 
 
+def stack_bump_note(packages: list[PackageAssessment]) -> str:
+    """In-scope packages whose spec still installs on 8.x."""
+    count = sum(1 for p in packages if p.in_scope and installs_on_8x(p.format_version))
+    return (
+        f"{count} in-scope packages are still installable on 8.x. "
+        "Columnar would move them to 9.5+."
+    )
+
+
 def format_repo_summary(packages: list[PackageAssessment]) -> str:
     lines = [
         "# Columnar assessment summary",
         "",
-        "| Package | Verdict | In-scope | Blocked streams | Data-loss | Degraded |",
-        "| --- | --- | ---: | --- | ---: | ---: |",
+        "| Package | Verdict | In-scope | Blocked streams | Data-loss |",
+        "| --- | --- | ---: | --- | ---: |",
     ]
     for pkg in sorted(packages, key=lambda p: (verdict_sort_key(package_verdict_summary(p)), p.name)):
         summary = package_verdict_summary(pkg)
@@ -746,13 +827,14 @@ def format_repo_summary(packages: list[PackageAssessment]) -> str:
         if not blocked_s:
             blocked_s = "—"
         data_loss = sum(stream_counts(s).get("data_loss", 0) for s in scoped)
-        degraded = sum(stream_counts(s).get("degraded", 0) for s in scoped)
         # Truncate long verdicts for table readability
         verdict_cell = summary if len(summary) <= 80 else summary[:77] + "…"
         lines.append(
             f"| `{pkg.name}` | `{verdict_cell}` | {len(scoped)} | "
-            f"{blocked_s} | {data_loss} | {degraded} |",
+            f"{blocked_s} | {data_loss} |",
         )
+    lines.append("")
+    lines.append(stack_bump_note(packages))
     lines.append("")
     return "\n".join(lines)
 
@@ -807,6 +889,8 @@ def main() -> int:
                 {
                     "name": pkg.name,
                     "verdict": package_verdict_summary(pkg),
+                    "format_version": pkg.format_version,
+                    "spec_min_stack": spec_min_stack(pkg.format_version),
                     "in_scope": pkg.in_scope,
                     "kibana_sort_seeds": pkg.kibana_sort_seeds,
                     "streams": [
