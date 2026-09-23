@@ -8,8 +8,8 @@ The following pipelines are available in this repository:
 - https://buildkite.com/elastic/integrations-publish: pipeline to publish the new versions of packages. More info at [section](#publish-packages).
 - https://buildkite.com/elastic/integrations-schedule-daily: pipeline running every night to test packages in different scenarios. More info at [section](#daily-job).
 - https://buildkite.com/elastic/integrations-schedule-weekly: pipeline running once per week to test packages in different scenarios. More info at [section](#weekly-job).
-- https://buildkite.com/elastic/integrations-backport: pipeline to create backport branches. Triggered automatically by the dispatch pipeline when a new entry is merged into `.backports.yml`, or manually from the UI by members of the `ecosystem` team. More info at [section](#backport-branches-pipeline).
-- https://buildkite.com/elastic/integrations-backport-dispatch: pipeline that triggers `integrations-backport` on merges to `main` where `.backports.yml` changed. More info at [section](#backport-branches-pipeline).
+- https://buildkite.com/elastic/integrations-backport: pipeline to create backport branches. Triggered automatically by the dispatch pipeline when a new entry is merged into `.backports.yml`, or manually from the UI by members of the `ecosystem` team. More info at [section](#backport-branch-creation-pipelines).
+- https://buildkite.com/elastic/integrations-backport-dispatch: pipeline that triggers `integrations-backport` on merges to `main` where `.backports.yml` changed. More info at [section](#backport-branch-creation-pipelines).
 
 ## Pull Requests and pushes to specific branches
 
@@ -223,7 +223,7 @@ The scenarios that are tested in this weekly job are:
 Each step triggering a new pipeline can be customized through environment variables. Environment variables that can
 be used in each pipeline are detailed in the corresponding sections of each pipeline.
 
-## Backport branches pipeline
+## Backport branch creation pipelines
 
 **Note**: Available only to Elastic employees.
 

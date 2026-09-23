@@ -89,6 +89,7 @@ When a bug fix needs to be released for an older package version, the backport w
     This command resolves the base commit automatically (combining steps 1 and 2) and inserts the entry in the correct position in the file. Build the tool from the repository root first:
 
     ```bash
+    # Requires Go 1.26+ (see cmd/backport/go.mod)
     go build -C cmd/backport -o backport .
     ```
 
@@ -147,7 +148,7 @@ When a bug fix needs to be released for an older package version, the backport w
 
     The PR requires review from the `elastic/ecosystem` team (they are the CODEOWNERS of `.backports.yml`). Once merged to `main`, the branch `backport-<package_name>-<major>.<minor>` is created and pushed automatically. A comment is posted on the merged PR confirming success or failure of the branch creation.
 
-    By default, the backport branch is created with only the target package in the `packages/` directory — all other packages are removed. This keeps the branch lean and avoids running tests for unrelated packages on every PR opened against it.
+    When `remove_other_packages: true` is set in `.backports.yml` (the standard case), the backport branch is created with only the target package in the `packages/` directory — all other packages are removed. This keeps the branch lean and avoids running tests for unrelated packages on every PR opened against it.
 
 3. **Create a PR for the bug fix**
 
@@ -233,7 +234,7 @@ Two mechanisms keep owners in sync.
 
 ### Automatic sync during apply
 
-When `backport_apply.sh` (or `backport apply`) creates a backport PR, it automatically syncs the package's owners from `main` as a separate commit on top of the cherry-pick:
+When `backport_apply.sh` (a wrapper around `backport apply`) creates a backport PR, it automatically syncs the package's owners from `main` as a separate commit on top of the cherry-pick:
 
 - **What is synced:** the `owner.github` field in `manifest.yml`, the package's own `.github/CODEOWNERS` line, and any sub-path entries nested under the package (data streams, `kibana/` directory, and other subdirectory overrides).
 - **Commit message:** `Sync <package> package owners from main`
@@ -277,7 +278,7 @@ Backport a change when it fixes behavior a branch already has; leave new behavio
 
 > [!TIP]
 > If a branch above is no longer required, set `archived: true` in its entry in `.backports.yml` to stop it appearing here.
-> If the branch has a known end-of-life date, prefer `maintained_until: "YYYY-MM-DD"` — it will be excluded automatically once that date passes.
+> If the branch has a known end-of-life date, prefer `maintained_until: "YYYY-MM-DD"` — it will be excluded automatically once that date passes (strictly before today in UTC).
 ```
 
 Tick a checkbox for each branch you want to backport to. When the PR merges into `main`, the `auto-backport.yml` workflow reads the comment and automatically creates a backport PR for every checked branch, updating the comment in real time (✅ = success, ⚠️ = conflict or error). Each backport PR is automatically assigned to the original PR's author (if they are not a bot and have write/maintain/admin access on the repository) or to the merger (if they are not a bot). Checking a previously-unchecked branch after the PR has already merged also triggers the workflow to create the missing backport PR. If you do not intend to backport, leave all checkboxes unticked.
@@ -287,7 +288,7 @@ Tick a checkbox for each branch you want to backport to. When the PR merges into
 To stop a branch appearing in the checklist, update its entry in `.backports.yml`:
 
 - **`archived: true`** — excludes the branch immediately, with no fixed end-of-life date.
-- **`maintained_until: "YYYY-MM-DD"`** — excludes the branch automatically once that date passes; preferred when the end-of-life date is known.
+- **`maintained_until: "YYYY-MM-DD"`** — excludes the branch automatically once that date passes (strictly before today in UTC); preferred when the end-of-life date is known.
 
 Archiving a branch does not delete it. Packages can still be published from an archived branch; archiving only removes the branch from the checklist and branch creation.
 
