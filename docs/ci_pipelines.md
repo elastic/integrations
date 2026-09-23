@@ -28,7 +28,7 @@ Special comments that can be added in the Pull Request (by Elastic employees):
         - `/test stack 8.18.0-SNAPSHOT`
         - `/test stack 9.0.0-SNAPSHOT`
 
-**Changelog link check (`check-changelog-pr-links`):** on pull requests that modify a `changelog.yml` file, a step validates that new or modified changelog entries link to the current PR rather than a different one (`soft_fail: true` — a failure posts an annotation but does not block merge). To skip this check on a PR, add the label `changelog-link-check:skip`. This label is added automatically by the `sync-backport-changelog` workflow on changelog sync PRs, because their entries intentionally link to the original backport PR rather than the sync PR itself.
+**Changelog link check (`check-changelog-pr-links`):** on pull requests that modify a `changelog.yml` file, a step validates that new or modified changelog entries link to the current PR rather than a different one (`soft_fail: true` on link mismatches — a failure posts an annotation but does not block merge, unless the entry still contains a `REPLACE_ME` placeholder). To skip this check on a PR, add the label `changelog-link-check:skip`. This label is added automatically by the `sync-backport-changelog` workflow on changelog sync PRs, because their entries intentionally link to the original backport PR rather than the sync PR itself.
 
 There are some environment variables that can be added into this pipeline to enable customizations:
 - **FORCE_CHECK_ALL**: If `true`, this forces the CI to check all packages even if those packages have no file updated/added/deleted. Default: `false`.
