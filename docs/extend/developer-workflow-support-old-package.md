@@ -253,7 +253,7 @@ The step is currently `soft_fail: true` — a mismatch posts a warning comment b
 
 ## Backport checklist comment
 
-This section describes the backport checklist that appears on every pull request targeting `main` — not just hotfix flows. If you landed here looking for "what is this comment on my PR?", this is the right place.
+This section describes the backport checklist that appears on eligible pull requests targeting `main` (those that touch at least one package with active backport branches) — not just hotfix flows. If you landed here looking for "what is this comment on my PR?", this is the right place.
 
 When you open or update a pull request targeting `main`, the `post-backport-checklist.yml` workflow automatically posts a comment listing the active backport branches for every package touched by that PR. The comment is recreated (deleted and re-posted) on every push — any manual edits are overwritten, and the PR author receives a fresh notification. It only appears when at least one package in the PR's diff has active backport branches in `.backports.yml`.
 
