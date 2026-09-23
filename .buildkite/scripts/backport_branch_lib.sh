@@ -42,6 +42,9 @@ get_required_package_names() {
 # (one per line) all packages reachable via .link files from any of those
 # packages, transitively. The input packages themselves are excluded. Output is
 # deduplicated so each package appears at most once.
+# Only packages under the packages/ directory (as returned by list_all_directories)
+# are considered as potential link sources. Sources that resolve outside that set
+# (e.g. _dev/shared/ at the repo root) emit a warning and are skipped.
 # list_all_directories is called exactly once per invocation of this function,
 # regardless of the number of input packages or BFS hops. collect_packages_to_keep
 # calls this function once per outer iteration (see its known-limitation comment).
