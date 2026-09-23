@@ -2,171 +2,204 @@
 description: Pipeline for parsing Carbon Black Cloud watchlist hit.
 processors:
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
   - remove:
+      tag: remove_message_2ee3a7d4
       field: message
       ignore_missing: true
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
+      tag: json_event_original_to_json_cac66847
       field: event.original
       target_field: json
       ignore_failure: true
   - date:
+      tag: date_json_create_time_e63ef2e9
       field: json.create_time
       if: ctx.json?.create_time != null && ctx.json.create_time != ''
       formats:
         - ISO8601
       on_failure:
         - remove:
+            tag: remove_json_create_time_b0a3c099
             field: json.create_time
         - append:
+            tag: append_error_message_d5f2f8ce
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_severity_to_event_severity_4f27090f
       field: json.severity
       target_field: event.severity
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_severity_e6961f0c
             field: json.severity
         - append:
+            tag: append_error_message_218a012c
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_device_id_to_host_id_0442f346
       field: json.device_id
       target_field: host.id
       type: string
       ignore_missing: true
       ignore_failure: true
   - convert:
+      tag: convert_json_schema_to_carbon_black_cloud_watchlist_hit_schema_b839fe57
       field: json.schema
       target_field: carbon_black_cloud.watchlist_hit.schema
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_schema_617d6da2
             field: json.schema
         - append:
+            tag: append_error_message_a8c74ffe
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_host_os_type_b1a2b9f6
       field: host.os.type
       value: windows
       if: ctx.json?.device_os == 'WINDOWS'
   - set:
+      tag: set_host_os_type_72cb5d5c
       field: host.os.type
       value: linux
       if: ctx.json?.device_os == 'LINUX'
   - set:
+      tag: set_host_os_type_d13aee80
       field: host.os.type
       value: macos
       if: ctx.json?.device_os == 'MAC'
   - rename:
+      tag: rename_json_device_os_version_to_host_os_version_814cc1b2
       field: json.device_os_version
       target_field: host.os.version
       ignore_missing: true
   - rename:
+      tag: rename_json_device_name_to_host_hostname_b3415577
       field: json.device_name
       target_field: host.hostname
       ignore_missing: true
   - grok:
+      tag: grok_host_hostname_d32c58c6
       field: host.hostname
       patterns:
         - '^(%{DATA:user.domain})\\(%{GREEDYDATA:host.hostname})$'
       ignore_missing: true
       ignore_failure: true
   - set:
+      tag: set_host_name_9e5d6d7d
       field: host.name
       value: '{{{host.hostname}}}'
       ignore_failure: true
   - rename:
+      tag: rename_json_process_cmdline_to_process_command_line_47a0bf33
       field: json.process_cmdline
       target_field: process.command_line
       ignore_missing: true
   - rename:
+      tag: rename_json_process_guid_to_process_entity_id_c06dde67
       field: json.process_guid
       target_field: process.entity_id
       ignore_missing: true
   - rename:
+      tag: rename_json_process_path_to_process_executable_6cde795a
       field: json.process_path
       target_field: process.executable
       ignore_missing: true
   - convert:
+      tag: convert_json_process_pid_to_process_pid_2f4bc294
       field: json.process_pid
       target_field: process.pid
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_process_pid_074864bf
             field: json.process_pid
         - append:
+            tag: append_error_message_fa50d815
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_parent_cmdline_to_process_parent_command_line_0943c774
       field: json.parent_cmdline
       target_field: process.parent.command_line
       ignore_missing: true
   - rename:
+      tag: rename_json_parent_guid_to_process_parent_entity_id_b5de5c9e
       field: json.parent_guid
       target_field: process.parent.entity_id
       ignore_missing: true
   - rename:
+      tag: rename_json_parent_path_to_process_parent_executable_b9f66721
       field: json.parent_path
       target_field: process.parent.executable
       ignore_missing: true
   - convert:
+      tag: convert_json_parent_pid_to_process_parent_pid_3ddc99b0
       field: json.parent_pid
       target_field: process.parent.pid
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_parent_pid_d8554a18
             field: json.parent_pid
         - append:
+            tag: append_error_message_127cbb5b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
+      tag: append_related_user_50020ef8
       field: related.user
       value: '{{{json.parent_username}}}'
       if: ctx.json?.parent_username != null
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_related_user_08055988
       field: related.user
       value: '{{{json.process_username}}}'
       if: ctx.json?.process_username != null
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_related_hosts_e6462550
       field: related.hosts
       value: '{{{host.hostname}}}'
       if: ctx.host?.hostname != null
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_related_hosts_6d9a788e
       field: related.hosts
       value: '{{{user.domain}}}'
-      if: ctx.host?.hostname != null
-      allow_duplicates: false
-      ignore_failure: true
-  - append:
-      field: related.hosts
-      value: '{{{host.hostname}}}'
-      if: ctx.host?.hostname != null
+      if: ctx.user?.domain != null
       allow_duplicates: false
       ignore_failure: true
   - script:
+      tag: script_dynamically_map_md5_sha256_hash_582d405f
       description: Dynamically map MD5 and SHA256 hash.
       lang: painless
       source: |
@@ -183,162 +216,198 @@ processors:
             mapHashField(ctx, ctx.json?.parent_hash, 'parent_hash');
         }
   - rename:
+      tag: rename_json_process_hash_md5_to_process_hash_md5_60ec57c0
       field: json.process_hash_md5
       target_field: process.hash.md5
       ignore_missing: true
   - append:
+      tag: append_related_hash_9e7f2cde
       field: related.hash
       value: '{{{process.hash.md5}}}'
       if: ctx.process?.hash?.md5 != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
+      tag: rename_json_process_hash_sha256_to_process_hash_sha256_c84f47de
       field: json.process_hash_sha256
       target_field: process.hash.sha256
       ignore_missing: true
   - append:
+      tag: append_related_hash_e166b0da
       field: related.hash
       value: '{{{process.hash.sha256}}}'
       if: ctx.process?.hash?.sha256 != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
+      tag: rename_json_parent_hash_md5_to_process_parent_hash_md5_e031ded3
       field: json.parent_hash_md5
       target_field: process.parent.hash.md5
       ignore_missing: true
   - append:
+      tag: append_related_hash_e2cba043
       field: related.hash
       value: '{{{process.parent.hash.md5}}}'
       if: ctx.process?.parent?.hash?.md5 != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
+      tag: rename_json_parent_hash_sha256_to_process_parent_hash_sha256_d331bb8f
       field: json.parent_hash_sha256
       target_field: process.parent.hash.sha256
       ignore_missing: true
   - append:
+      tag: append_related_hash_a4d8af2d
       field: related.hash
       value: '{{{process.parent.hash.sha256}}}'
       if: ctx.process?.parent?.hash?.sha256 != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
+      tag: rename_json_device_os_to_carbon_black_cloud_watchlist_hit_device_os_c1693ec3
       field: json.device_os
       target_field: carbon_black_cloud.watchlist_hit.device.os
       ignore_missing: true
   - convert:
+      tag: convert_json_device_internal_ip_to_carbon_black_cloud_watchlist_hit_device_internal_ip_3d88cc24
       field: json.device_internal_ip
       target_field: carbon_black_cloud.watchlist_hit.device.internal_ip
       type: ip
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_device_internal_ip_804259d4
             field: json.device_internal_ip
         - append:
+            tag: append_error_message_79d7b061
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_device_external_ip_to_carbon_black_cloud_watchlist_hit_device_external_ip_9cc60d8a
       field: json.device_external_ip
       target_field: carbon_black_cloud.watchlist_hit.device.external_ip
       type: ip
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_device_external_ip_aeb85ca0
             field: json.device_external_ip
         - append:
+            tag: append_error_message_5009ecc7
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
+      tag: append_host_ip_2d9adbeb
       field: host.ip
       value: '{{{carbon_black_cloud.watchlist_hit.device.internal_ip}}}'
       if: ctx.carbon_black_cloud?.watchlist_hit?.device?.internal_ip != null
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_host_ip_1529d11b
       field: host.ip
       value: '{{{carbon_black_cloud.watchlist_hit.device.external_ip}}}'
       if: ctx.carbon_black_cloud?.watchlist_hit?.device?.external_ip != null
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_related_ip_744fea6e
       field: related.ip
       value: '{{{carbon_black_cloud.watchlist_hit.device.internal_ip}}}'
       if: ctx.carbon_black_cloud?.watchlist_hit?.device?.internal_ip != null
       allow_duplicates: false
       ignore_failure: true
   - append:
+      tag: append_related_ip_c7bef482
       field: related.ip
       value: '{{{carbon_black_cloud.watchlist_hit.device.external_ip}}}'
       if: ctx.carbon_black_cloud?.watchlist_hit?.device?.external_ip != null
       allow_duplicates: false
       ignore_failure: true
   - rename:
+      tag: rename_json_ioc_hit_to_carbon_black_cloud_watchlist_hit_ioc_hit_491435d9
       field: json.ioc_hit
       target_field: carbon_black_cloud.watchlist_hit.ioc.hit
       ignore_missing: true
   - rename:
+      tag: rename_json_ioc_id_to_carbon_black_cloud_watchlist_hit_ioc_id_28cf3f4b
       field: json.ioc_id
       target_field: carbon_black_cloud.watchlist_hit.ioc.id
       ignore_missing: true
   - rename:
+      tag: rename_json_org_key_to_carbon_black_cloud_watchlist_hit_organization_key_81821a69
       field: json.org_key
       target_field: carbon_black_cloud.watchlist_hit.organization_key
       ignore_missing: true
   - foreach:
+      tag: foreach_json_parent_publisher_0e71ba5c
       field: json.parent_publisher
       processor:
         split:
+          tag: split_ingest_value_state_dbed191c
           field: _ingest._value.state
           separator: " \\| "
           ignore_missing: true
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_parent_publisher_to_carbon_black_cloud_watchlist_hit_process_parent_publisher_3e14884a
       field: json.parent_publisher
       target_field: carbon_black_cloud.watchlist_hit.process.parent.publisher
       ignore_missing: true
   - rename:
+      tag: rename_json_parent_reputation_to_carbon_black_cloud_watchlist_hit_process_parent_reputation_e61cf12e
       field: json.parent_reputation
       target_field: carbon_black_cloud.watchlist_hit.process.parent.reputation
       ignore_missing: true
   - rename:
+      tag: rename_json_parent_username_to_carbon_black_cloud_watchlist_hit_process_parent_username_04c7b056
       field: json.parent_username
       target_field: carbon_black_cloud.watchlist_hit.process.parent.username
       ignore_missing: true
   - foreach:
+      tag: foreach_json_process_publisher_4b5be1a3
       field: json.process_publisher
       processor:
         split:
+          tag: split_ingest_value_state_c4b73818
           field: _ingest._value.state
           separator: " \\| "
           ignore_missing: true
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_process_publisher_to_carbon_black_cloud_watchlist_hit_process_publisher_efaa5715
       field: json.process_publisher
       target_field: carbon_black_cloud.watchlist_hit.process.publisher
       ignore_missing: true
   - rename:
+      tag: rename_json_process_reputation_to_carbon_black_cloud_watchlist_hit_process_reputation_ccfc70ef
       field: json.process_reputation
       target_field: carbon_black_cloud.watchlist_hit.process.reputation
       ignore_missing: true
   - rename:
+      tag: rename_json_process_username_to_carbon_black_cloud_watchlist_hit_process_username_1ac5ee51
       field: json.process_username
       target_field: carbon_black_cloud.watchlist_hit.process.username
       ignore_missing: true
   - rename:
+      tag: rename_json_report_id_to_carbon_black_cloud_watchlist_hit_report_id_d0e72ae7
       field: json.report_id
       target_field: carbon_black_cloud.watchlist_hit.report.id
       ignore_missing: true
   - rename:
+      tag: rename_json_report_name_to_carbon_black_cloud_watchlist_hit_report_name_189326cb
       field: json.report_name
       target_field: carbon_black_cloud.watchlist_hit.report.name
       ignore_missing: true
   - rename:
+      tag: rename_json_report_tags_to_carbon_black_cloud_watchlist_hit_report_tags_fd44b46f
       field: json.report_tags
       target_field: carbon_black_cloud.watchlist_hit.report.tags
       ignore_missing: true
   - script:
+      tag: script_drops_null_empty_values_recursively_e2ccbdd7
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -356,6 +425,7 @@ processors:
         }
         dropEmptyFields(ctx);
   - remove:
+      tag: remove_e6c2a952
       field:
         - json.process_pid
         - json.parent_pid
@@ -369,6 +439,7 @@ processors:
         - json.device_internal_ip
       ignore_missing: true
   - script:
+      tag: script_adds_remaining_fields_fields_under_c2322fc6
       description: Adds all the remaining fields in fields under carbon_black_cloud.watchlist_hit.
       lang: painless
       if: ctx.json != null
@@ -377,9 +448,11 @@ processors:
           ctx.carbon_black_cloud.watchlist_hit[m.getKey()] = m.getValue();
         }
   - remove:
+      tag: remove_json_29cdffdc
       field: json
       ignore_missing: true
   - script:
+      tag: script_remove_duplicate_values_64844e7a
       description: Remove duplicate values.
       lang: painless
       source: |
@@ -397,12 +470,15 @@ processors:
         }
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message_1dc99c45
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'

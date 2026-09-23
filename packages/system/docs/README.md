@@ -106,6 +106,74 @@ the events from Windows. The filter shown below is equivalent to
       winlog.event_id.lte: 2004
 ```
 
+### New users panels are empty after upgrading
+
+Starting with version 2.24.0, the New users panels in the **[Logs System] New users and groups**
+dashboard read the created account from the ECS fields `user.target.name` and `user.target.id`.
+The integration populates these fields for `useradd` events starting with version 2.22.0. Events
+ingested by earlier versions only store the created account in `user.name` and `user.id`, so the
+New users panels don't show them. If the selected time range contains only events from before the
+upgrade, the panels are empty.
+
+To include the older events, copy the account from `user.name` and `user.id` into
+`user.target.name` and `user.target.id`. Backing indices created before the upgrade might not map
+the `user.target.*` fields. To make sure the backfilled values are mapped as `keyword` and the
+panels can aggregate on them, first add the mapping to all backing indices of the `system.auth`
+data stream:
+
+```json
+PUT logs-system.auth-*/_mapping
+{
+  "properties": {
+    "user": {
+      "properties": {
+        "target": {
+          "properties": {
+            "id": { "type": "keyword", "ignore_above": 1024 },
+            "name": {
+              "type": "keyword",
+              "ignore_above": 1024,
+              "fields": { "text": { "type": "match_only_text" } }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+Then run an update by query request. The request targets the `system.auth` data stream in every
+namespace and only changes `useradd` events that don't have `user.target.name` set:
+
+```json
+POST logs-system.auth-*/_update_by_query?conflicts=proceed
+{
+  "query": {
+    "bool": {
+      "filter": [
+        { "exists": { "field": "system.auth.useradd.home" } },
+        { "exists": { "field": "user.name" } }
+      ],
+      "must_not": [
+        { "exists": { "field": "user.target.name" } }
+      ]
+    }
+  },
+  "script": {
+    "source": "if (ctx._source.user.target == null) { ctx._source.user.target = new HashMap(); } ctx._source.user.target.name = ctx._source.user.name; if (ctx._source.user.id != null) { ctx._source.user.target.id = ctx._source.user.id; }"
+  }
+}
+```
+
+The update rewrites every matching document. Read-only backing indices, such as searchable
+snapshot indices in the cold or frozen tier, can't be updated, and the mapping request fails if a
+backing index already maps `user.target.name` with a different type. In both cases, replace
+`logs-system.auth-*` in the two requests with an explicit list of the writable backing indices
+that need the backfill. Use `GET _data_stream/logs-system.auth-*` to list the backing indices of
+each data stream. As an alternative, narrow the dashboard time range to events ingested after the
+upgrade to version 2.22.0.
+
 ## Logs reference
 
 ### Application
@@ -927,7 +995,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | winlog.scheduled_task.principals.logon.type | Method Task Scheduler uses to establish the principal's security context, such as `Password`, `S4U`, `InteractiveToken`, or `ServiceAccount`. This field is populated only when `Principal/LogonType` exists in the XML. | keyword |
 | winlog.scheduled_task.principals.run_level | Requested privilege level for task execution, such as `LeastPrivilege` or `HighestAvailable`. This setting does not prove that an execution was elevated. | keyword |
 | winlog.scheduled_task.principals.user.identifier | User identifier from `Principal/UserId` required to run task actions associated with this principal. | keyword |
-| winlog.scheduled_task.settings.enabled | Whether the task definition is enabled. This field is populated only when the XML contains `Settings/Enabled`; otherwise Task Scheduler defaults the setting to `true`. It is separate from `event.action`, which identifies the audited lifecycle operation. | boolean |
+| winlog.scheduled_task.settings.enabled | Whether the task definition is effectively enabled. When a `Settings` block omits `Enabled`, this field is populated with Task Scheduler's default of `true`. The field remains absent when `Settings` is absent or `Enabled` is invalid. It is separate from `event.action`, which identifies the audited lifecycle operation. | boolean |
 | winlog.scheduled_task.settings.hidden | Whether the task is hidden from default Task Scheduler views. This field is populated only when the XML contains `Settings/Hidden`; otherwise Task Scheduler defaults the setting to `false`. Hidden tasks remain registered and can still run. | boolean |
 | winlog.scheduled_task.triggers.definition | Versioned canonical representation of one configured trigger as a pipe-separated sequence with fixed key order: `v=1`, `type=\<value\>`, `enabled=\<value\>`, `interval=\<value\>`, `duration=\<value\>`, and `stop_at_duration_end=\<value\>`. An empty value means the source element was omitted or empty after normalization. An empty `stop_at_duration_end=` means the element was omitted; when repetition applies, Task Scheduler defaults the omitted value to `false`. This remains distinct from explicit `stop_at_duration_end=false`. Percent signs, pipe separators, equals signs, C0 controls, and DEL are escaped as uppercase `%HH`; printable Unicode, backslashes, `\*`, and `?` remain literal and may need query-language escaping. Put every same-trigger condition in one predicate. For example, one KQL predicate can require a `time` type, an `enabled` value of `false`, and a `PT30M` interval so they must occur in the same trigger. Separate predicates may match different triggers. Use the component fields for single-attribute searches; use this field when multiple attributes must belong to the same trigger. | wildcard |
 | winlog.scheduled_task.triggers.enabled | Whether the trigger is effectively enabled. If the trigger XML has no `Enabled` element, Task Scheduler treats the trigger as enabled. | boolean |
@@ -989,6 +1057,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.os.codename | OS codename, if any. | keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
+| service.name | Name of the service data is collected from. The name of the service is normally user given. This allows for distributed services that run on multiple hosts to correlate the related instances based on the name. In the case of Elasticsearch the `service.name` could contain the cluster name. For Beats the `service.name` is by default a copy of the `service.type` field if no name is specified. | keyword |
 | system.auth.ssh.dropped_ip | The client IP from SSH connections that are open and immediately dropped. | ip |
 | system.auth.ssh.event | The SSH event as found in the logs (Accepted, Invalid, Failed, etc.) | keyword |
 | system.auth.ssh.method | The SSH authentication method. Can be one of "password" or "publickey". | keyword |

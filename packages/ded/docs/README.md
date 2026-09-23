@@ -45,7 +45,7 @@ To inspect the installed assets, you can navigate to **Stack Management > Data >
 
 **Source index patterns**: `logs-endpoint.events.network-*` holds network events collected by the [Elastic Defend](https://www.elastic.co/docs/reference/integrations/endpoint) integration, and `logs-network_traffic.*` holds network packet traffic collected by the [Network Packet Capture](https://www.elastic.co/docs/reference/integrations/network_traffic) integration.
 
-**Note**: The transform applies only to network data and does not currently support macOS network logs.
+**Note**: The transform applies only to network data and does not currently support macOS network logs. If you use Network Packet Capture as a data source, enable **`monitor_processes`** in the integration policy so network events are enriched with process fields used by the transform and ML jobs. This setting is disabled by default. See [monitor_processes](https://www.elastic.co/docs/reference/integrations/network_traffic#monitor_processes) in the Network Packet Capture documentation.
 
 When querying the destination index (`ml_network_ded_ea-<VERSION>`) for network logs, we advise using the alias for the destination index (`ml_network_ded_ea.all`). In the event that the underlying package is upgraded, the alias will aid in maintaining the previous findings. 
 

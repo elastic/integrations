@@ -64,12 +64,14 @@ resource.tracer:
 
 state:
   want_more: false
+  transport_error_streak: 0
   base:
     tenant_id: "{{azure_tenant_id}}"
     list_contents_start_time: "{{initial_interval}}"
     batch_interval: "{{batch_interval}}"
     maximum_age: "{{maximum_age}}"
     content_types: "{{content_types}}"
+    transport_failure_threshold: {{transport_failure_threshold}}
 
 redact:
   fields:
@@ -85,6 +87,15 @@ redact:
 # state.cursor.todo_content: A list of content items to fetch.
 # state.cursor.todo_links:   A list of listing links, either generated or received.
 # state.cursor.last_for:     A map tracking latest time considered in listings for each content type.
+# state.transport_error_streak: Count of consecutive evaluations that ended in a
+#                               transport-level request failure. Initialized to zero in the
+#                               state block above and reset to zero on any successful
+#                               subscription, listing or content fetch. When it reaches
+#                               state.base.transport_failure_threshold the failure is treated
+#                               as persistent (for example an expired client secret failing
+#                               token acquisition) and reported as a single-object error so
+#                               the input is marked degraded. Held outside the cursor so it
+#                               survives the cursor reset that a single-object error triggers.
 #
 # LOGIC OVERVIEW
 #
@@ -221,26 +232,64 @@ program: |-
       // Not subscribed to the current type - Subscribe
       // ------------------------------------------------------------------------
   
-      request(
-        "POST",
-        sprintf(
-          "%s/api/v1.0/%s/activity/feed/subscriptions/start?%s",
-          [
-            state.url.trim_right("/"),
-            state.base.tenant_id,
-            {
-              "contentType": [state.todo_types[0]],
-              "PublisherIdentifier": [state.base.tenant_id],
-            }.format_query(),
-          ]
+      try(
+        request(
+          "POST",
+          sprintf(
+            "%s/api/v1.0/%s/activity/feed/subscriptions/start?%s",
+            [
+              state.url.trim_right("/"),
+              state.base.tenant_id,
+              {
+                "contentType": [state.todo_types[0]],
+                "PublisherIdentifier": [state.base.tenant_id],
+              }.format_query(),
+            ]
+          )
+        ).do_request(),
+        "_transport_error"
+      ).as(sub_resp, sub_resp.?_transport_error.hasValue() ?
+        // A transport-level failure such as a dropped connection or a truncated
+        // response body makes do_request return an error rather than a response
+        // with a status code, which would otherwise crash the evaluation. Count
+        // consecutive transport failures: below the threshold, emit a dropped
+        // cursor-persistence event and stop this cycle (want_more:false) so the
+        // subscription is retried on the next polling interval (the failure is
+        // not indexed; it stays visible through the input's HTTP metrics and
+        // request tracer). Once the streak reaches the threshold the failure is
+        // persistent (for example an expired client secret failing token
+        // acquisition), so return a single-object error to mark the input
+        // degraded until collection recovers.
+        (
+          (int(state.transport_error_streak) + 1 >= int(state.base.transport_failure_threshold)) ?
+            state.with(
+              {
+                "want_more": false,
+                "transport_error_streak": int(state.transport_error_streak) + 1,
+                "events": {
+                  "error": {
+                    "message": "persistent transport failure starting subscription for '" + state.todo_types[0] + "': " + string(sub_resp.?_transport_error.orValue("")),
+                  },
+                },
+              }
+            )
+          :
+            state.with(
+              {
+                "want_more": false,
+                "transport_error_streak": int(state.transport_error_streak) + 1,
+                "events": [{"publish_cursor": true}],
+              }
+            )
         )
-      ).do_request().as(sub_resp, (sub_resp.StatusCode == 200 || sub_resp.StatusCode == 400) ?
+      : (sub_resp.StatusCode == 200 || sub_resp.StatusCode == 400) ?
         // Subscription successful - Record subscription, requeue type and continue
         state.with(
           {
             "todo_types": tail(state.todo_types) + [state.todo_types[0]],
             "subscribed": state.?subscribed.orValue({}).with({state.todo_types[0]: true}),
             "want_more": true,
+            "transport_error_streak": 0,
             "events": [{"retry": true}],
           }
         )
@@ -281,10 +330,52 @@ program: |-
             }
           )
         :
-          request(
-            "GET",
-            state.cursor.todo_content[0].contentUri
-          ).do_request().as(content_resp, (content_resp.StatusCode == 200) ?
+          try(
+            request(
+              "GET",
+              state.cursor.todo_content[0].contentUri
+            ).do_request(),
+            "_transport_error"
+          ).as(content_resp, content_resp.?_transport_error.hasValue() ?
+            // A transport-level failure such as a dropped connection or a
+            // truncated response body makes do_request return an error rather
+            // than a response with a status code. Below the threshold, move the
+            // item to the back of the queue so the remaining items can still be
+            // fetched, emit a dropped cursor-persistence event so the cursor
+            // change persists, and stop this cycle (want_more:false) to back off
+            // until the next interval (the failure is not indexed; it stays
+            // visible through the input's HTTP metrics and request tracer). Once
+            // consecutive failures reach the threshold the failure is
+            // persistent, so return a single-object error to mark the input
+            // degraded until collection recovers.
+            (
+              (int(state.transport_error_streak) + 1 >= int(state.base.transport_failure_threshold)) ?
+                state.with(
+                  {
+                    "want_more": false,
+                    "transport_error_streak": int(state.transport_error_streak) + 1,
+                    "events": {
+                      "error": {
+                        "message": "persistent transport failure fetching " + state.cursor.todo_content[0].contentUri + ": " + string(content_resp.?_transport_error.orValue("")),
+                      },
+                    },
+                  }
+                )
+              :
+                state.with(
+                  {
+                    "cursor": state.cursor.with(
+                      {
+                        "todo_content": tail(state.cursor.todo_content) + [state.cursor.todo_content[0]],
+                      }
+                    ),
+                    "want_more": false,
+                    "transport_error_streak": int(state.transport_error_streak) + 1,
+                    "events": [{"publish_cursor": true}],
+                  }
+                )
+            )
+          : (content_resp.StatusCode == 200) ?
             // Fetch successful - Return events, continue with remaining content
             state.with(
               {
@@ -295,6 +386,7 @@ program: |-
                 ),
                 "cursor": state.cursor.with({"todo_content": tail(state.cursor.todo_content)}),
                 "want_more": true,
+                "transport_error_streak": 0,
               }
             )
           :
@@ -324,10 +416,52 @@ program: |-
       // Listing link generated or received - Request it
       // ------------------------------------------------------------------------
   
-      request(
-        "GET",
-        state.cursor.todo_links[0]
-      ).do_request().as(list_resp, (list_resp.StatusCode == 200) ?
+      try(
+        request(
+          "GET",
+          state.cursor.todo_links[0]
+        ).do_request(),
+        "_transport_error"
+      ).as(list_resp, list_resp.?_transport_error.hasValue() ?
+        // A transport-level failure such as a dropped connection or a
+        // truncated response body makes do_request return an error rather than
+        // a response with a status code. Below the threshold, move the link to
+        // the back of the queue so the remaining links can still be requested,
+        // emit a dropped cursor-persistence event so the cursor change persists,
+        // and stop this cycle (want_more:false) to back off until the next
+        // interval (the failure is not indexed; it stays visible through the
+        // input's HTTP metrics and request tracer). Once consecutive failures
+        // reach the threshold the failure is persistent, so return a
+        // single-object error to mark the input degraded until collection
+        // recovers.
+        (
+          (int(state.transport_error_streak) + 1 >= int(state.base.transport_failure_threshold)) ?
+            state.with(
+              {
+                "want_more": false,
+                "transport_error_streak": int(state.transport_error_streak) + 1,
+                "events": {
+                  "error": {
+                    "message": "persistent transport failure listing " + state.cursor.todo_links[0] + ": " + string(list_resp.?_transport_error.orValue("")),
+                  },
+                },
+              }
+            )
+          :
+            state.with(
+              {
+                "cursor": state.cursor.with(
+                  {
+                    "todo_links": tail(state.cursor.todo_links) + [state.cursor.todo_links[0]],
+                  }
+                ),
+                "want_more": false,
+                "transport_error_streak": int(state.transport_error_streak) + 1,
+                "events": [{"publish_cursor": true}],
+              }
+            )
+        )
+      : (list_resp.StatusCode == 200) ?
         // Listing successful - Enqueue any additional link, enqueue content to fetch
         list_resp.Body.decode_json().as(content_list,
           state.with(
@@ -340,6 +474,7 @@ program: |-
                 }
               ),
               "want_more": true,
+              "transport_error_streak": 0,
               "events": [{"retry": true}],
             }
           )
@@ -454,7 +589,13 @@ tags:
 publisher_pipeline.disable_host: true
 {{/contains}}
 processors:
-- drop_event.when.equals.retry: true
+- drop_event:
+    when:
+      or:
+        - equals:
+            retry: true
+        - equals:
+            publish_cursor: true
 {{#if processors}}
 {{processors}}
 {{/if}}

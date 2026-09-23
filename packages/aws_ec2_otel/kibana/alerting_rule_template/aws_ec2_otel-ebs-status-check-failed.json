@@ -1,0 +1,44 @@
+{
+  "id": "aws_ec2_otel-ebs-status-check-failed",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when an EBS volume attached to an EC2 instance fails its status check, indicating the volume is unreachable or unable to complete I/O operations. Distinct from the instance and system status checks.",
+    "name": "[AWS EC2 OTel] EBS attached volume status check failed",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "aws_ec2",
+      "otel"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 1
+    },
+    "artifacts": {
+      "investigation_guide": {
+        "blob": "## EC2 EBS Attached Volume Status Check Failed\n\n### Meaning\nThe **EBS attached status check** monitors whether EBS volumes attached to an EC2 instance are reachable and able to complete I/O operations. A failure indicates the volume has become unreachable — distinct from the OS-level instance check (`StatusCheckFailed_Instance`) and the AWS host-level system check (`StatusCheckFailed_System`).\n\n### Remediation\n1. Check the [AWS Health Dashboard](https://health.aws.amazon.com/) for ongoing EBS or availability zone events.\n2. **Stop and start** the instance — this moves it to new host hardware and can restore EBS connectivity. A reboot alone is insufficient.\n3. If the volume remains impaired, create a snapshot and restore from it to a new volume.\n4. Open an AWS support case if the issue persists after stop/start.\n\n### Common causes\n- Hardware failure on the storage subsystem underlying the EBS volume\n- Physical host connectivity issues between the instance and the EBS volume\n- Underlying infrastructure impairment in the availability zone"
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "TS metrics-aws.ec2.otel-*\n| WHERE Namespace == \"AWS/EC2\"\n    AND MetricName == \"StatusCheckFailed_AttachedEBS\"\n    AND stat == \"Maximum\"\n| EVAL ec2_instance = CONCAT(InstanceId, \" (\", cloud.region, \")\")\n| STATS max_failed = MAX(MAX_OVER_TIME(`metrics.amazonaws.com/AWS/EC2/StatusCheckFailed_AttachedEBS`)) BY ec2_instance\n// 1 = failed — Maximum stat catches any failure within the period\n| WHERE max_failed >= 1\n| SORT max_failed DESC\n| LIMIT 100"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 10,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "ec2_instance",
+      "termSize": 100,
+      "excludeHitsFromPreviousRun": true
+    }
+  }
+}

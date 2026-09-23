@@ -159,9 +159,9 @@ rules:
           Content-Type:
             - "application/json"
           NextPageUri:
-            - 'http://{{ hostname }}:{{ env "PORT" }}/api/v1.0/test-cel-tenant-id/activity/feed/subscriptions/content?contenttype=Audit.SharePoint&starttime={{ .request.vars.startTime }}&endtime={{ .request.vars.endTime }}&nextpage=2023071100R022885001761'
+            - 'http://{{ .request.host }}/api/v1.0/test-cel-tenant-id/activity/feed/subscriptions/content?contenttype=Audit.SharePoint&starttime={{ .request.vars.startTime }}&endtime={{ .request.vars.endTime }}&nextpage=2023071100R022885001761'
         body: |-
-          [{"contentType": "Audit.Sharepoint","contentId": "celid1","contentUri": "http://{{ hostname }}:{{ env "PORT" }}/api/v1.0/celsp1/activity/feed/audit/celid1","contentCreated": "{{ .request.vars.endTime }}","contentExpiration": "2199-05-30T17:35:00.000Z"}]
+          [{"contentType": "Audit.Sharepoint","contentId": "celid1","contentUri": "http://{{ .request.host }}/api/v1.0/celsp1/activity/feed/audit/celid1","contentCreated": "{{ .request.vars.endTime }}","contentExpiration": "2199-05-30T17:35:00.000Z"}]
   - path: /api/v1.0/test-cel-tenant-id/activity/feed/subscriptions/content
     methods: [GET]
     query_params:
@@ -179,7 +179,7 @@ rules:
           Content-Type:
             - "application/json"
         body: |-
-          [{"contentType": "Audit.Sharepoint","contentId": "celid2","contentUri": "http://{{ hostname }}:{{ env "PORT" }}/api/v1.0/celsp1/activity/feed/audit/celid2","contentCreated": "{{ .request.vars.endTime }}","contentExpiration": "2199-05-30T17:35:00.000Z"},{"contentType": "Audit.Sharepoint","contentId": "celid2a","contentUri": "http://{{ hostname }}:{{ env "PORT" }}/api/v1.0/celsp1/activity/feed/audit/celid2a","contentCreated": "{{ .request.vars.endTime }}","contentExpiration": "2023-03-30T17:35:00.000Z"},{"contentType": "Audit.Sharepoint","contentId": "celid2b","contentUri": "http://{{ hostname }}:{{ env "PORT" }}/api/v1.0/celsp1/activity/feed/audit/celid2b","contentCreated": "{{ .request.vars.endTime }}","contentExpiration": "2055-04-30T17:35:00.000Z"}]
+          [{"contentType": "Audit.Sharepoint","contentId": "celid2","contentUri": "http://{{ .request.host }}/api/v1.0/celsp1/activity/feed/audit/celid2","contentCreated": "{{ .request.vars.endTime }}","contentExpiration": "2199-05-30T17:35:00.000Z"},{"contentType": "Audit.Sharepoint","contentId": "celid2a","contentUri": "http://{{ .request.host }}/api/v1.0/celsp1/activity/feed/audit/celid2a","contentCreated": "{{ .request.vars.endTime }}","contentExpiration": "2023-03-30T17:35:00.000Z"},{"contentType": "Audit.Sharepoint","contentId": "celid2b","contentUri": "http://{{ .request.host }}/api/v1.0/celsp1/activity/feed/audit/celid2b","contentCreated": "{{ .request.vars.endTime }}","contentExpiration": "2055-04-30T17:35:00.000Z"}]
   - path: /api/v1.0/celsp1/activity/feed/audit/celid1
     methods: [GET]
     request_headers:
@@ -477,7 +477,7 @@ rules:
           Content-Type:
             - "application/json"
         body: |-
-          [{"contentType": "Audit.General","contentId": "celid3","contentUri": "http://{{ hostname }}:{{ env "PORT" }}/api/v1.0/celgen1/activity/feed/audit/celid3","contentCreated": "{{ .request.vars.endTime }}","contentExpiration": "2199-05-30T17:35:00.000Z"}]
+          [{"contentType": "Audit.General","contentId": "celid3","contentUri": "http://{{ .request.host }}/api/v1.0/celgen1/activity/feed/audit/celid3","contentCreated": "{{ .request.vars.endTime }}","contentExpiration": "2199-05-30T17:35:00.000Z"}]
   - path: /api/v1.0/celgen1/activity/feed/audit/celid3
     methods: [GET]
     request_headers:
@@ -576,9 +576,9 @@ rules:
           Content-Type:
             - "application/json"
           NextPageUri:
-            - 'http://{{ hostname }}:{{ env "PORT" }}/api/v1.0/test-cel-tenant-id/activity/feed/subscriptions/content?contenttype=Audit.Exchange&starttime=2019-01-01T00:00:00Z&endtime=2019-01-01T01:00:00Z&nextpage=aged-page-that-should-be-dropped'
+            - 'http://{{ .request.host }}/api/v1.0/test-cel-tenant-id/activity/feed/subscriptions/content?contenttype=Audit.Exchange&starttime=2019-01-01T00:00:00Z&endtime=2019-01-01T01:00:00Z&nextpage=aged-page-that-should-be-dropped'
         body: |-
-          [{"contentType": "Audit.Exchange","contentId": "celexchfresh","contentUri": "http://{{ hostname }}:{{ env "PORT" }}/api/v1.0/celexch/activity/feed/audit/celexchfresh","contentCreated": "{{ .request.vars.endTime }}","contentExpiration": "2199-05-30T17:35:00.000Z"}]
+          [{"contentType": "Audit.Exchange","contentId": "celexchfresh","contentUri": "http://{{ .request.host }}/api/v1.0/celexch/activity/feed/audit/celexchfresh","contentCreated": "{{ .request.vars.endTime }}","contentExpiration": "2199-05-30T17:35:00.000Z"}]
   # This path MUST NOT be called when the pre-flight filter is working:
   # its startTime is from 2019 and falls outside any sensible maximum_age.
   # If it is called, the aged-content responder below will serve an event
@@ -599,7 +599,7 @@ rules:
           Content-Type:
             - "application/json"
         body: |-
-          [{"contentType": "Audit.Exchange","contentId": "celexchstale","contentUri": "http://{{ hostname }}:{{ env "PORT" }}/api/v1.0/celexch/activity/feed/audit/celexchstale","contentCreated": "2019-01-01T00:30:00Z","contentExpiration": "2199-05-30T17:35:00.000Z"}]
+          [{"contentType": "Audit.Exchange","contentId": "celexchstale","contentUri": "http://{{ .request.host }}/api/v1.0/celexch/activity/feed/audit/celexchstale","contentCreated": "2019-01-01T00:30:00Z","contentExpiration": "2199-05-30T17:35:00.000Z"}]
   - path: /api/v1.0/celexch/activity/feed/audit/celexchfresh
     methods: [GET]
     request_headers:

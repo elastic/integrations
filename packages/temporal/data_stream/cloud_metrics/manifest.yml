@@ -1,0 +1,73 @@
+title: "Temporal Cloud Metrics"
+type: metrics
+dataset: temporal.cloud_metrics
+streams:
+  - package: prometheus_input_otel
+    title: Temporal Cloud Metrics
+    description: >
+      Operational metrics from Temporal Cloud OpenMetrics: workflow lifecycle,
+      task queues, service latency and errors, namespace limits, schedules,
+      and replication lag.
+    vars:
+      - name: targets
+        type: text
+        title: Temporal Cloud Metrics Endpoint
+        required: true
+        multi: true
+        description: >
+          Temporal Cloud OpenMetrics endpoint in host:port format.
+          The global endpoint is metrics.temporal.io:443.
+        default:
+          - "metrics.temporal.io:443"
+        show_user: true
+      - name: scrape_interval
+        type: duration
+        title: Scrape Interval
+        required: false
+        description: >
+          How frequently to scrape Temporal Cloud metrics. Temporal exposes
+          one-minute aggregation windows; 30s–60s is recommended. Account rate
+          limit is 180 requests per hour.
+        default: 60s
+        show_user: true
+      - name: scrape_timeout
+        type: duration
+        title: Scrape Timeout
+        required: false
+        description: Timeout for scraping (must be less than scrape_interval).
+        default: 30s
+        show_user: false
+      - name: metrics_path
+        type: text
+        title: Metrics Path
+        required: false
+        description: >
+          The HTTP resource path to fetch metrics. Optionally append query
+          parameters to filter namespaces, for example
+          /v1/metrics?namespaces=my-namespace.account.
+        default: /v1/metrics
+        show_user: true
+      - name: scheme
+        type: select
+        title: Scheme
+        required: false
+        description: Protocol scheme. Temporal Cloud OpenMetrics requires HTTPS.
+        default: https
+        show_user: false
+        options:
+          - text: HTTPS
+            value: https
+          - text: HTTP
+            value: http
+      - name: bearer_token
+        type: password
+        title: Temporal Cloud API Key
+        required: true
+        # TODO: Change to secret: true once Fleet Server resolves the secret
+        # handling issue for OTel input packages.
+        # See: https://github.com/elastic/fleet-server/issues/6277
+        secret: false
+        description: >
+          API key for a Temporal Cloud Service Account with the
+          Metrics Read-Only account-level role.
+        show_user: true

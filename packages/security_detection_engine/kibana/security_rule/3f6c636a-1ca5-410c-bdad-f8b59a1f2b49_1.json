@@ -1,0 +1,146 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects an identity creating a client-authentication CertificateSigningRequest (signer kubernetes.io/kube-apiserver-client) or approving a CSR on AKS (Azure Kubernetes Service), excluding node bootstrap and platform controllers. Adversaries submit and self-approve a CSR against the kube-apiserver-client signer to mint a long-lived client certificate for an arbitrary subject (for example a Common Name in system:masters), giving durable authenticated access that survives token revocation. Coverage includes workload service accounts (system:serviceaccount:*), so a compromised in-cluster token forging a certificate is not excluded.",
+        "false_positives": [
+            "Node bootstrap, cert-manager, and platform controllers legitimately create and approve CSRs. Validate the requesting identity and the certificate subject, and add exclusions for verified automation."
+        ],
+        "from": "now-9m",
+        "index": [
+            "logs-azure.platformlogs-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "event.action",
+                "azure.platformlogs.category",
+                "azure.platformlogs.properties.log.verb",
+                "azure.platformlogs.properties.log.user.username",
+                "azure.platformlogs.properties.log.user.groups",
+                "azure.platformlogs.properties.log.userAgent",
+                "azure.platformlogs.properties.log.sourceIPs",
+                "azure.platformlogs.properties.log.objectRef.resource",
+                "azure.platformlogs.properties.log.objectRef.name",
+                "azure.platformlogs.properties.log.objectRef.subresource",
+                "azure.platformlogs.properties.log.requestObject.spec.signerName",
+                "azure.platformlogs.properties.log.requestObject.spec.request",
+                "azure.platformlogs.properties.log.responseStatus.code"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "Azure AKS Certificate Signing Request Created or Approved",
+        "note": "## Triage and analysis\n\n### Investigating Azure AKS Certificate Signing Request Created or Approved\n\nAKS kube-audit events are carried under the flattened `azure.platformlogs.properties.log.*` subtree and share the ARM\noperation `event.action: Microsoft.ContainerService/managedClusters/diagnosticLogs/Read`. A CSR created against the\n`kubernetes.io/kube-apiserver-client` signer lets the requester choose the certificate's subject (Common Name and\norganization/groups); once approved it mints a client certificate for an arbitrary identity that yields access not tied\nto a token. The default `CertificateSubjectRestriction` admission controller blocks requests for the `system:masters`\ngroup, so attackers commonly request a Common Name matching an existing privileged user (or another privileged group)\ninstead, making the requested subject the key thing to decode. Node and kubelet certificates use the\n`kube-apiserver-client-kubelet` and `kubelet-serving` signers (whose subject is constrained to the node) and are out of\nscope; cert-manager and application CSRs use their own signers.\n\n### Possible investigation steps\n\n- Identify the requesting identity in `azure.platformlogs.properties.log.user.username` (and its groups in\n  `azure.platformlogs.properties.log.user.groups`) and whether it should submit or approve CSRs. A workload service\n  account (`system:serviceaccount:<ns>:<sa>`) or `masterclient` (the local cluster-admin cert) is the higher-concern\n  case.\n- Confirm the signer in `azure.platformlogs.properties.log.requestObject.spec.signerName` and decode the base64 CSR in\n  `azure.platformlogs.properties.log.requestObject.spec.request` to read the requested Common Name and organization\n  (groups); a subject in `system:masters` or another privileged group is the escalation.\n- Determine whether the same or a related identity approved the CSR (`verb:update`/`patch` on the `approval`\n  subresource), which indicates self-approval, and inspect `azure.platformlogs.properties.log.userAgent`.\n- Evaluate the source in `azure.platformlogs.properties.log.sourceIPs` and pivot on it for follow-on privileged API\n  activity using the newly issued certificate.\n\n### False positive analysis\n\n- Node bootstrap (`kube-apiserver-client-kubelet` signer), kubelet-serving CSRs, and cert-manager/application CSRs\n  (custom signers) are out of scope by design; the kube-controller-manager `certificate-controller` and the AKS\n  `aksService` approver are excluded by identity.\n- Manual CSR approval by an administrator, or an operator that legitimately mints client certificates, may surface;\n  baseline those identities and exclude the specific validated account rather than re-broadening to all `system:*`,\n  which would blind the rule to compromised workload service accounts.\n\n### Response and remediation\n\n- If unauthorized, deny or delete the CSR, revoke the issued certificate, and rotate the cluster CA if a privileged\n  certificate was minted.\n- Review the RBAC that allowed CSR creation and approval, and audit actions taken with the certificate.\n- Collect kube-audit and identity artifacts per incident response procedures.\n",
+        "query": "data_stream.dataset:azure.platformlogs and\n  event.action:\"Microsoft.ContainerService/managedClusters/diagnosticLogs/Read\" and\n  azure.platformlogs.category:(\"kube-audit\" or \"kube-audit-admin\") and\n  azure.platformlogs.properties.log.stage:\"ResponseComplete\" and\n  azure.platformlogs.properties.log.objectRef.resource:\"certificatesigningrequests\" and\n  azure.platformlogs.properties.log.responseStatus.code: \"200\" and\n  azure.platformlogs.properties.log.requestObject.status.conditions.type: \"Approved\" and\n  (\n    (\n      azure.platformlogs.properties.log.verb:\"create\" and\n      azure.platformlogs.properties.log.requestObject.spec.signerName:\"kubernetes.io/kube-apiserver-client\"\n    ) or (\n      azure.platformlogs.properties.log.verb:(\"update\" or \"patch\") and\n      azure.platformlogs.properties.log.objectRef.subresource:\"approval\"\n    )\n  ) and\n  not azure.platformlogs.properties.log.user.username:(\n    system\\:node\\:* or system\\:bootstrap\\:* or \"aksService\" or \"hcpService\" or\n    \"readinessChecker\" or system\\:serviceaccount\\:kube-system\\:*\n  )\n",
+        "references": [
+            "https://kubernetes.io/docs/reference/access-authn-authz/certificate-signing-requests/",
+            "https://microsoft.github.io/Threat-Matrix-for-Kubernetes/",
+            "https://github.com/inguardians/peirates",
+            "https://raesene.github.io/blog/2022/12/21/Kubernetes-persistence-with-Tocan-and-Teisteanas/",
+            "https://cloud.google.com/blog/topics/threat-intelligence/escalating-privileges-azure-kubernetes-services",
+            "https://www.aquasec.com/blog/kubernetes-rbac-privilige-escalation/"
+        ],
+        "related_integrations": [
+            {
+                "integration": "platformlogs",
+                "package": "azure",
+                "version": ">=1.22.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "azure.platformlogs.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.platformlogs.properties.log.objectRef.resource",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "azure.platformlogs.properties.log.objectRef.subresource",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "azure.platformlogs.properties.log.requestObject.spec.signerName",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "azure.platformlogs.properties.log.requestObject.status.conditions.type",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "azure.platformlogs.properties.log.responseStatus.code",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "azure.platformlogs.properties.log.stage",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "azure.platformlogs.properties.log.user.username",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "azure.platformlogs.properties.log.verb",
+                "type": "unknown"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "3f6c636a-1ca5-410c-bdad-f8b59a1f2b49",
+        "setup": "The Azure Fleet integration collecting AKS diagnostic logs forwarded through Event Hub into the `azure.platformlogs`\ndata stream is required for this rule. Enable either the `kube-audit` or the `kube-audit-admin` log category (Microsoft\nrecommends `kube-audit-admin` alone to reduce volume, as it only drops read-only get/list events). CSR create and\napproval are mutating operations recorded in both categories with the same `auditID`, so clusters that enable both\ncategories may generate two alerts per event.\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: Kubernetes",
+            "Data Source: Azure",
+            "Data Source: Azure Platform Logs",
+            "Data Source: Kubernetes",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1649",
+                        "name": "Steal or Forge Authentication Certificates",
+                        "reference": "https://attack.mitre.org/techniques/T1649/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 1
+    },
+    "id": "3f6c636a-1ca5-410c-bdad-f8b59a1f2b49_1",
+    "type": "security-rule"
+}

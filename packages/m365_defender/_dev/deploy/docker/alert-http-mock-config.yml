@@ -38,9 +38,11 @@ rules:
             "id_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJub25lIn0.eyJhdWQiOiIyZDRkMTFhMi1mODE0LTQ2YTctOD..."
           }
           `}}
+  # Page 1: initial request uses the 'ge' cursor filter (dynamic timestamp).
   - path: /v1.0/security/alerts_v2
     methods: [GET]
     query_params:
+      $filter: "{initial:lastUpdateDateTime ge .*}"
       $skip: 0
       $top: 2
     request_headers:
@@ -190,10 +192,14 @@ rules:
             ]
           }
           `}}
+  # Page 2: pagination advances the filter to 'gt <max lastUpdateDateTime of page 1>'
+  # while keeping $skip at 0. If the input still used $skip offsets it would send
+  # $skip=2 here, which no rule matches, and --exit-on-unmatched-rule would fail.
   - path: /v1.0/security/alerts_v2
     methods: [GET]
     query_params:
-      $skip: 2
+      $filter: "lastUpdateDateTime gt 2023-10-20T09:54:10.4666667Z"
+      $skip: 0
       $top: 2
     request_headers:
       Authorization:
@@ -354,10 +360,13 @@ rules:
             ]
           }
           `}}
+  # Page 3: filter advances to 'gt <max lastUpdateDateTime of page 2>'. The empty
+  # page (len < batch_size) stops pagination.
   - path: /v1.0/security/alerts_v2
     methods: [GET]
     query_params:
-      $skip: 4
+      $filter: "lastUpdateDateTime gt 2023-10-20T09:54:11.4966667Z"
+      $skip: 0
       $top: 2
     request_headers:
       Authorization:

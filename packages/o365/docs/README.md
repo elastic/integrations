@@ -504,7 +504,9 @@ An example event for `audit` looks as following:
 | o365.audit.MailboxOwnerSid |  | keyword |
 | o365.audit.MailboxOwnerUPN |  | keyword |
 | o365.audit.Members |  | flattened |
+| o365.audit.Message |  | keyword |
 | o365.audit.MessageDate |  | keyword |
+| o365.audit.MessageObject |  | flattened |
 | o365.audit.MessageTime |  | keyword |
 | o365.audit.ModifiedProperties |  | object |
 | o365.audit.ModifiedProperties.\*.\* |  | object |

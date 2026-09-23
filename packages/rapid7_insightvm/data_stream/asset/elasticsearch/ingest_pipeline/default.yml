@@ -2,15 +2,19 @@
 description: Pipeline for processing Rapid7 InsightVM Asset logs.
 processors:
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - set:
+      tag: set_event_kind_871e09cf
       field: event.kind
       value: state
   - set:
+      tag: set_event_category_ba9b1d84
       field: event.category
       value: [host]
   - set:
+      tag: set_event_type_ec95f7f2
       field: event.type
       value: [info]
   - remove:
@@ -20,134 +24,153 @@ processors:
         - team
       ignore_missing: true
       if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
-      tag: remove_agentless_tags
+      tag: remove_agentless_tags_e6856012
       description: >-
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
   - rename:
       field: message
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_176375fd
       target_field: event.original
       ignore_missing: true
       description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_9ecc8509
       ignore_missing: true
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - json:
       field: event.original
-      tag: 'json_decoding'
+      tag: json_decoding_c3a1053e
       target_field: json
       on_failure:
         - append:
+            tag: append_error_message_8075efaa
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - drop:
+      tag: drop_eb865603
       if: ctx.json?.data != null && ctx.json.data.isEmpty()
   - convert:
       field: json.assessed_for_policies
-      tag: 'convert_assessed_for_policies_to_boolean'
+      tag: convert_assessed_for_policies_to_boolean_bdfdffa9
       target_field: rapid7.insightvm.asset.assessed_for_policies
       if: ctx.json?.assessed_for_policies != ''
       type: boolean
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_f701e2fd
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.assessed_for_vulnerabilities
-      tag: 'convert_assessed_for_vulnerabilities_to_boolean'
+      tag: convert_assessed_for_vulnerabilities_to_boolean_2ac59519
       target_field: rapid7.insightvm.asset.assessed_for_vulnerabilities
       if: ctx.json?.assessed_for_vulnerabilities != ''
       type: boolean
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_76f140e9
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_json_credential_assessments_cd0df090
       field: json.credential_assessments
       if: ctx.json?.credential_assessments instanceof List
       processor:
         convert:
           field: _ingest._value.port
-          tag: 'convert_credential_assessments_port_to_long'
+          tag: convert_credential_assessments_port_to_long_33f265bf
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_port_0f07b02f
                 field: _ingest._value.port
                 ignore_missing: true
             - append:
+                tag: append_error_message_7ccb6e23
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_credential_assessments_to_rapid7_insightvm_asset_credential_assessments_e258c4c4
       field: json.credential_assessments
       target_field: rapid7.insightvm.asset.credential_assessments
       ignore_missing: true
   - set:
       field: rapid7.insightvm.asset.credential_assessments_nested
-      tag: set_asset_credential_assessments_nested_from_asset_credential_assessments
+      tag: set_asset_credential_assessments_nested_from_asset_credential_assessments_0502cb66
       copy_from: rapid7.insightvm.asset.credential_assessments
       ignore_empty_value: true
   - foreach:
+      tag: foreach_rapid7_insightvm_asset_credential_assessments_ea15f572
       field: rapid7.insightvm.asset.credential_assessments
       if: ctx.rapid7?.insightvm?.asset?.credential_assessments instanceof List
       processor:
         append:
+          tag: append_network_transport_f24a4087
           field: network.transport
           value: '{{{_ingest._value.protocol}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_network_transport_3bbf5841
       field: network.transport
       if: ctx.network?.transport instanceof List
       processor:
         lowercase:
+          tag: lowercase_ingest_value_495c03a2
           field: _ingest._value
           ignore_missing: true
   - convert:
       field: json.critical_vulnerabilities
-      tag: 'convert_critical_vulnerabilities_to_long'
+      tag: convert_critical_vulnerabilities_to_long_63e9648a
       target_field: rapid7.insightvm.asset.critical_vulnerabilities
       if: ctx.json?.critical_vulnerabilities != ''
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_80c9d3ad
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.exploits
-      tag: 'convert_exploits_to_long'
+      tag: convert_exploits_to_long_4eaa5393
       target_field: rapid7.insightvm.asset.exploits
       if: ctx.json?.exploits != ''
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_1cc4d685
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_host_name_to_rapid7_insightvm_asset_host_name_db97d98c
       field: json.host_name
       target_field: rapid7.insightvm.asset.host_name
       ignore_missing: true
   - set:
+      tag: set_host_name_725c4d2c
       field: host.name
       copy_from: rapid7.insightvm.asset.host_name
       ignore_empty_value: true
   - lowercase:
+      tag: lowercase_host_name_91ef3e1c
       field: host.name
       ignore_missing: true
   - append:
+      tag: append_related_hosts_452ef445
       field: related.hosts
       value: '{{{host.name}}}'
       if: ctx.host?.name != null
       allow_duplicates: false
   - script:
+      tag: script_d8314f3a
       lang: painless
       if: ctx.host?.name != null
       source: |
@@ -158,540 +181,668 @@ processors:
           ctx.host.hostname = ctx.host.name.substring(0, idx);
         }
   - append:
+      tag: append_related_hosts_ca923905
       field: related.hosts
       value: '{{{host.hostname}}}'
       if: ctx.host?.hostname != null
       allow_duplicates: false
   - rename:
+      tag: rename_json_id_to_rapid7_insightvm_asset_id_e3c23c24
       field: json.id
       target_field: rapid7.insightvm.asset.id
       ignore_missing: true
   - set:
+      tag: set_host_id_f2edcb27
       field: host.id
       copy_from: rapid7.insightvm.asset.id
       ignore_empty_value: true
   - convert:
       field: json.ip
-      tag: 'convert_ip'
+      tag: convert_ip_c8c29574
       target_field: rapid7.insightvm.asset.ip
       if: ctx.json?.ip != ''
       type: ip
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_420c2701
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
+      tag: append_host_ip_9f5f74e8
       field: host.ip
       value: '{{{rapid7.insightvm.asset.ip}}}'
       if: ctx.rapid7?.insightvm?.asset?.ip != null
       allow_duplicates: false
   - append:
+      tag: append_related_ip_8d1b03a9
       field: related.ip
       value: '{{{rapid7.insightvm.asset.ip}}}'
       if: ctx.rapid7?.insightvm?.asset?.ip != null
       allow_duplicates: false
   - date:
       field: json.last_assessed_for_vulnerabilities
-      tag: 'date_last_assessed_for_vulnerabilities'
+      tag: date_last_assessed_for_vulnerabilities_1165adb7
       target_field: rapid7.insightvm.asset.last_assessed_for_vulnerabilities
       formats:
         - ISO8601
       if: ctx.json?.last_assessed_for_vulnerabilities != null && ctx.json?.last_assessed_for_vulnerabilities != ''
       on_failure:
         - append:
+            tag: append_error_message_4e35aa73
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: json.last_scan_end
-      tag: 'date_last_scan_end'
+      tag: date_last_scan_end_af9a61bb
       target_field: rapid7.insightvm.asset.last_scan_end
       formats:
         - ISO8601
       if: ctx.json?.last_scan_end != null && ctx.json?.last_scan_end != ''
       on_failure:
         - append:
+            tag: append_error_message_4cdbb842
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: json.last_scan_start
-      tag: 'date_last_scan_start'
+      tag: date_last_scan_start_e08eb618
       target_field: rapid7.insightvm.asset.last_scan_start
       formats:
         - ISO8601
       if: ctx.json?.last_scan_start != null && ctx.json?.last_scan_start != ''
       on_failure:
         - append:
+            tag: append_error_message_afcf7087
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - gsub:
+      tag: gsub_json_mac_cff51717
       field: json.mac
       pattern: '[:.]'
       replacement: '-'
       ignore_missing: true
   - uppercase:
+      tag: uppercase_json_mac_to_rapid7_insightvm_asset_mac_3442e1e2
       field: json.mac
       target_field: rapid7.insightvm.asset.mac
       ignore_missing: true
-  - set:
+  - append:
       field: host.mac
-      copy_from: rapid7.insightvm.asset.mac
-      ignore_empty_value: true
+      tag: append_rapid7_insightvm_asset_mac_into_host_mac_b3405a9b
+      value: '{{{rapid7.insightvm.asset.mac}}}'
+      allow_duplicates: false
+      if: ctx.rapid7?.insightvm?.asset?.mac instanceof String && ctx.rapid7.insightvm.asset.mac != ''
   - convert:
       field: json.malware_kits
-      tag: 'convert_malware_kits_to_long'
+      tag: convert_malware_kits_to_long_8dfbc423
       target_field: rapid7.insightvm.asset.malware_kits
       if: ctx.json?.malware_kits != ''
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_f2ccd42f
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.moderate_vulnerabilities
-      tag: 'convert_moderate_vulnerabilities_to_long'
+      tag: convert_moderate_vulnerabilities_to_long_542be77d
       target_field: rapid7.insightvm.asset.moderate_vulnerabilities
       if: ctx.json?.moderate_vulnerabilities != ''
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_2dad55d5
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_json_new_3123a6a1
       field: json.new
       if: ctx.json?.new instanceof List
       processor:
         date:
+          tag: date_ingest_value_first_found_to_ingest_value_first_found_85ee127d
           field: _ingest._value.first_found
           target_field: _ingest._value.first_found
           formats:
             - ISO8601
           on_failure:
             - remove:
+                tag: remove_ingest_value_first_found_8f979091
                 field: _ingest._value.first_found
                 ignore_missing: true
   - foreach:
+      tag: foreach_json_new_b0879ee1
       field: json.new
       if: ctx.json?.new instanceof List
       processor:
         date:
+          tag: date_ingest_value_last_found_to_ingest_value_last_found_45b56b1c
           field: _ingest._value.last_found
           target_field: _ingest._value.last_found
           formats:
             - ISO8601
           on_failure:
             - remove:
+                tag: remove_ingest_value_last_found_03726d80
                 field: _ingest._value.last_found
                 ignore_missing: true
   - foreach:
+      tag: foreach_json_new_06afb2e5
       field: json.new
       if: ctx.json?.new instanceof List
       processor:
         convert:
           field: _ingest._value.port
-          tag: 'convert_new_port_to_long'
+          tag: convert_new_port_to_long_85af3913
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_port_7bda5905
                 field: _ingest._value.port
                 ignore_missing: true
             - append:
+                tag: append_error_message_c2b89e87
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_json_new_d2753b74
       field: json.new
       if: ctx.json?.new instanceof List
       processor:
         append:
+          tag: append_vulnerability_id_fb47a022
           field: vulnerability.id
           value: '{{{_ingest._value.vulnerability_id}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_json_new_edf3ec50
       field: json.new
       if: ctx.json?.new instanceof List
       processor:
         html_strip:
+          tag: html_strip_ingest_value_solution_fix_to_ingest_value_solution_fix_f40e5569
           field: _ingest._value.solution_fix
           target_field: _ingest._value.solution.fix
           ignore_missing: true
           on_failure:
             - rename:
+                tag: rename_ingest_value_solution_fix_to_ingest_value_solution_fix_be88bbe3
                 field: _ingest._value.solution_fix
                 target_field: _ingest._value.solution.fix
                 ignore_missing: true
   - foreach:
+      tag: foreach_json_new_3a138bb1
       field: json.new
       if: ctx.json?.new instanceof List
       processor:
         html_strip:
+          tag: html_strip_ingest_value_proof_fc70b2ec
           field: _ingest._value.proof
           ignore_missing: true
           ignore_failure: true
   - foreach:
+      tag: foreach_json_new_357be2fa
       field: json.new
       if: ctx.json?.new instanceof List
       processor:
         rename:
+          tag: rename_ingest_value_solution_id_to_ingest_value_solution_id_1306512a
           field: _ingest._value.solution_id
           target_field: _ingest._value.solution.id
           ignore_missing: true
   - foreach:
+      tag: foreach_json_new_729b7cf0
       field: json.new
       if: ctx.json?.new instanceof List
       processor:
         rename:
+          tag: rename_ingest_value_solution_summary_to_ingest_value_solution_summary_6e9be13d
           field: _ingest._value.solution_summary
           target_field: _ingest._value.solution.summary
           ignore_missing: true
   - foreach:
+      tag: foreach_json_new_a690db06
       field: json.new
       if: ctx.json?.new instanceof List
       processor:
         rename:
+          tag: rename_ingest_value_solution_type_to_ingest_value_solution_type_326eb3d5
           field: _ingest._value.solution_type
           target_field: _ingest._value.solution.type
           ignore_missing: true
   - foreach:
+      tag: foreach_json_new_6bd0a671
       field: json.new
       if: ctx.json?.new instanceof List
       processor:
         remove:
+          tag: remove_ingest_value_solution_fix_35f37c3a
           field: _ingest._value.solution_fix
           ignore_missing: true
   - rename:
+      tag: rename_json_new_to_rapid7_insightvm_asset_new_e61676f8
       field: json.new
       target_field: rapid7.insightvm.asset.new
       ignore_missing: true
   - rename:
+      tag: rename_json_os_architecture_to_rapid7_insightvm_asset_os_architecture_965eedf9
       field: json.os_architecture
       target_field: rapid7.insightvm.asset.os.architecture
       ignore_missing: true
   - set:
+      tag: set_host_architecture_87156b11
       field: host.architecture
       copy_from: rapid7.insightvm.asset.os.architecture
       ignore_empty_value: true
   - rename:
+      tag: rename_json_os_description_to_rapid7_insightvm_asset_os_description_fdbdb05b
       field: json.os_description
       target_field: rapid7.insightvm.asset.os.description
       ignore_missing: true
   - set:
+      tag: set_host_os_full_6927a11c
       field: host.os.full
       copy_from: rapid7.insightvm.asset.os.description
       ignore_empty_value: true
   - rename:
+      tag: rename_json_os_family_to_rapid7_insightvm_asset_os_family_69d872a9
       field: json.os_family
       target_field: rapid7.insightvm.asset.os.family
       ignore_missing: true
   - set:
+      tag: set_host_os_family_485bd887
       field: host.os.family
       copy_from: rapid7.insightvm.asset.os.family
       ignore_empty_value: true
   - rename:
+      tag: rename_json_os_name_to_rapid7_insightvm_asset_os_name_bfbc674d
       field: json.os_name
       target_field: rapid7.insightvm.asset.os.name
       ignore_missing: true
   - set:
+      tag: set_host_os_name_be99a7c9
       field: host.os.name
       copy_from: rapid7.insightvm.asset.os.name
       ignore_empty_value: true
   - rename:
+      tag: rename_json_os_system_name_to_rapid7_insightvm_asset_os_system_name_e7d4cefd
       field: json.os_system_name
       target_field: rapid7.insightvm.asset.os.system_name
       ignore_missing: true
   - rename:
+      tag: rename_json_os_type_to_rapid7_insightvm_asset_os_type_0c866a95
       field: json.os_type
       target_field: rapid7.insightvm.asset.os.type
       ignore_missing: true
   - rename:
+      tag: rename_json_os_vendor_to_rapid7_insightvm_asset_os_vendor_f7f6e261
       field: json.os_vendor
       target_field: rapid7.insightvm.asset.os.vendor
       ignore_missing: true
   - rename:
+      tag: rename_json_os_version_to_rapid7_insightvm_asset_os_version_9f28d223
       field: json.os_version
       target_field: rapid7.insightvm.asset.os.version
       ignore_missing: true
   - set:
+      tag: set_host_os_version_05e82ae7
       field: host.os.version
       ignore_empty_value: true
       copy_from: rapid7.insightvm.asset.os.version
   - foreach:
+      tag: foreach_json_remediated_6d6318fb
       field: json.remediated
       if: ctx.json?.remediated instanceof List
       processor:
         date:
+          tag: date_ingest_value_first_found_to_ingest_value_first_found_dafb1ed4
           field: _ingest._value.first_found
           target_field: _ingest._value.first_found
           formats:
             - ISO8601
           on_failure:
             - remove:
+                tag: remove_ingest_value_first_found_48ff5424
                 field: _ingest._value.first_found
                 ignore_missing: true
   - foreach:
+      tag: foreach_json_remediated_7dff561f
       field: json.remediated
       if: ctx.json?.remediated instanceof List
       processor:
         date:
+          tag: date_ingest_value_last_found_to_ingest_value_last_found_fbdc09ed
           field: _ingest._value.last_found
           target_field: _ingest._value.last_found
           formats:
             - ISO8601
           on_failure:
             - remove:
+                tag: remove_ingest_value_last_found_590aecc6
                 field: _ingest._value.last_found
                 ignore_missing: true
   - foreach:
+      tag: foreach_json_remediated_1793a251
       field: json.remediated
       if: ctx.json?.remediated instanceof List
       processor:
         convert:
           field: _ingest._value.port
-          tag: 'convert_remediated_port_to_long'
+          tag: convert_remediated_port_to_long_fa2a5f9b
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_port_166e5e5d
                 field: _ingest._value.port
                 ignore_missing: true
             - append:
+                tag: append_error_message_cb7bab2a
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_json_remediated_c9d3e892
       field: json.remediated
       if: ctx.json?.remediated instanceof List
       processor:
         append:
+          tag: append_vulnerability_id_288ade51
           field: vulnerability.id
           value: '{{{_ingest._value.vulnerability_id}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_json_remediated_5317e16a
       field: json.remediated
       if: ctx.json?.remediated instanceof List
       processor:
         html_strip:
+          tag: html_strip_ingest_value_solution_fix_to_ingest_value_solution_fix_bf408b59
           field: _ingest._value.solution_fix
           target_field: _ingest._value.solution.fix
           ignore_missing: true
           on_failure:
             - rename:
+                tag: rename_ingest_value_solution_fix_to_ingest_value_solution_fix_cfdb5109
                 field: _ingest._value.solution_fix
                 target_field: _ingest._value.solution.fix
                 ignore_missing: true
   - foreach:
+      tag: foreach_json_remediated_a53a5ba7
       field: json.remediated
       if: ctx.json?.remediated instanceof List
       processor:
         html_strip:
+          tag: html_strip_ingest_value_proof_fd41be19
           field: _ingest._value.proof
           ignore_missing: true
           ignore_failure: true
   - foreach:
+      tag: foreach_json_remediated_d271cfe4
       field: json.remediated
       if: ctx.json?.remediated instanceof List
       processor:
         rename:
+          tag: rename_ingest_value_solution_id_to_ingest_value_solution_id_1ada019d
           field: _ingest._value.solution_id
           target_field: _ingest._value.solution.id
           ignore_missing: true
   - foreach:
+      tag: foreach_json_remediated_d9199ae2
       field: json.remediated
       if: ctx.json?.remediated instanceof List
       processor:
         rename:
+          tag: rename_ingest_value_solution_summary_to_ingest_value_solution_summary_83705efa
           field: _ingest._value.solution_summary
           target_field: _ingest._value.solution.summary
           ignore_missing: true
   - foreach:
+      tag: foreach_json_remediated_d65b26d0
       field: json.remediated
       if: ctx.json?.remediated instanceof List
       processor:
         rename:
+          tag: rename_ingest_value_solution_type_to_ingest_value_solution_type_c295cb5e
           field: _ingest._value.solution_type
           target_field: _ingest._value.solution.type
           ignore_missing: true
   - foreach:
+      tag: foreach_json_remediated_57359827
       field: json.remediated
       if: ctx.json?.remediated instanceof List
       processor:
         remove:
+          tag: remove_ingest_value_solution_fix_6901761d
           field: _ingest._value.solution_fix
           ignore_missing: true
   - rename:
+      tag: rename_json_remediated_to_rapid7_insightvm_asset_remediated_30174952
       field: json.remediated
       target_field: rapid7.insightvm.asset.remediated
       ignore_missing: true
   - convert:
       field: json.risk_score
-      tag: 'convert_risk_score_to_double'
+      tag: convert_risk_score_to_double_5fc31530
       target_field: rapid7.insightvm.asset.risk_score
       if: ctx.json?.risk_score != ''
       type: double
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_1d267327
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_host_risk_static_score_48eaad0f
       field: host.risk.static_score
       copy_from: rapid7.insightvm.asset.risk_score
       ignore_empty_value: true
   - foreach:
+      tag: foreach_json_same_e1b27f17
       field: json.same
       if: ctx.json?.same instanceof List
       processor:
         date:
+          tag: date_ingest_value_first_found_to_ingest_value_first_found_d61ddfd3
           field: _ingest._value.first_found
           target_field: _ingest._value.first_found
           formats:
             - ISO8601
           on_failure:
             - remove:
+                tag: remove_ingest_value_first_found_8a15c8b5
                 field: _ingest._value.first_found
                 ignore_missing: true
   - foreach:
+      tag: foreach_json_same_193b26f3
       field: json.same
       if: ctx.json?.same instanceof List
       processor:
         date:
+          tag: date_ingest_value_last_found_to_ingest_value_last_found_f94ed98c
           field: _ingest._value.last_found
           target_field: _ingest._value.last_found
           formats:
             - ISO8601
           on_failure:
             - remove:
+                tag: remove_ingest_value_last_found_a2ce27a9
                 field: _ingest._value.last_found
                 ignore_missing: true
   - foreach:
+      tag: foreach_json_same_1549ab1e
+      field: json.same
+      if: ctx.json?.same instanceof List
+      processor:
+        date:
+          tag: date_ingest_value_reintroduced_to_ingest_value_reintroduced_d1a8d1a0
+          field: _ingest._value.reintroduced
+          target_field: _ingest._value.reintroduced
+          formats:
+            - ISO8601
+          on_failure:
+            - remove:
+                tag: remove_ingest_value_reintroduced_d4453016
+                field: _ingest._value.reintroduced
+                ignore_missing: true
+  - foreach:
+      tag: foreach_json_same_b3e4f21b
       field: json.same
       if: ctx.json?.same instanceof List
       processor:
         convert:
           field: _ingest._value.port
-          tag: 'convert_same_port_to_long'
+          tag: convert_same_port_to_long_b7a956c0
           type: long
           ignore_missing: true
           on_failure:
             - remove:
+                tag: remove_ingest_value_port_a48cea2c
                 field: _ingest._value.port
                 ignore_missing: true
             - append:
+                tag: append_error_message_a06a4655
                 field: error.message
                 value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
+      tag: foreach_json_same_8686806e
       field: json.same
       if: ctx.json?.same instanceof List
       processor:
         append:
+          tag: append_vulnerability_id_de612f79
           field: vulnerability.id
           value: '{{{_ingest._value.vulnerability_id}}}'
           allow_duplicates: false
   - foreach:
+      tag: foreach_json_same_21dfd2ae
       field: json.same
       if: ctx.json?.same instanceof List
       processor:
         html_strip:
+          tag: html_strip_ingest_value_solution_fix_to_ingest_value_solution_fix_d14bba9a
           field: _ingest._value.solution_fix
           target_field: _ingest._value.solution.fix
           ignore_missing: true
           on_failure:
             - rename:
+                tag: rename_ingest_value_solution_fix_to_ingest_value_solution_fix_93ac0ccd
                 field: _ingest._value.solution_fix
                 target_field: _ingest._value.solution.fix
                 ignore_missing: true
   - foreach:
+      tag: foreach_json_same_a163360b
       field: json.same
       if: ctx.json?.same instanceof List
       processor:
         html_strip:
+          tag: html_strip_ingest_value_proof_b8b60bbd
           field: _ingest._value.proof
           ignore_missing: true
           ignore_failure: true
   - foreach:
+      tag: foreach_json_same_8876f220
       field: json.same
       if: ctx.json?.same instanceof List
       processor:
         rename:
+          tag: rename_ingest_value_solution_id_to_ingest_value_solution_id_c0460113
           field: _ingest._value.solution_id
           target_field: _ingest._value.solution.id
           ignore_missing: true
   - foreach:
+      tag: foreach_json_same_c8dfd11e
       field: json.same
       if: ctx.json?.same instanceof List
       processor:
         rename:
+          tag: rename_ingest_value_solution_summary_to_ingest_value_solution_summary_4665684a
           field: _ingest._value.solution_summary
           target_field: _ingest._value.solution.summary
           ignore_missing: true
   - foreach:
+      tag: foreach_json_same_eaf89e7c
       field: json.same
       if: ctx.json?.same instanceof List
       processor:
         rename:
+          tag: rename_ingest_value_solution_type_to_ingest_value_solution_type_524b6bb4
           field: _ingest._value.solution_type
           target_field: _ingest._value.solution.type
           ignore_missing: true
   - foreach:
+      tag: foreach_json_same_e619aa73
       field: json.same
       if: ctx.json?.same instanceof List
       processor:
         remove:
+          tag: remove_ingest_value_solution_fix_f37e637d
           field: _ingest._value.solution_fix
           ignore_missing: true
   - rename:
+      tag: rename_json_same_to_rapid7_insightvm_asset_same_327679ce
       field: json.same
       target_field: rapid7.insightvm.asset.same
       ignore_missing: true
   - convert:
       field: json.severe_vulnerabilities
-      tag: 'convert_severe_vulnerabilities_to_long'
+      tag: convert_severe_vulnerabilities_to_long_59ae0226
       target_field: rapid7.insightvm.asset.severe_vulnerabilities
       if: ctx.json?.severe_vulnerabilities != ''
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_2875b6e7
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_tags_to_rapid7_insightvm_asset_tags_6c36824c
       field: json.tags
       target_field: rapid7.insightvm.asset.tags
       ignore_missing: true
   - set:
       field: rapid7.insightvm.asset.tags_nested
-      tag: set_asset_tags_nested_from_asset_tags
+      tag: set_asset_tags_nested_from_asset_tags_79478a74
       copy_from: rapid7.insightvm.asset.tags
       ignore_empty_value: true
   - convert:
       field: json.total_vulnerabilities
-      tag: 'convert_total_vulnerabilities_to_long'
+      tag: convert_total_vulnerabilities_to_long_d57fdcc4
       target_field: rapid7.insightvm.asset.total_vulnerabilities
       if: ctx.json?.total_vulnerabilities != ''
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_e319e88b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_type_to_rapid7_insightvm_asset_type_874c7736
       field: json.type
       target_field: rapid7.insightvm.asset.type
       ignore_missing: true
   - rename:
+      tag: rename_json_unique_identifiers_to_rapid7_insightvm_asset_unique_identifiers_5c5e48b2
       field: json.unique_identifiers
       target_field: rapid7.insightvm.asset.unique_identifiers
       ignore_missing: true
   - set:
       field: rapid7.insightvm.asset.unique_identifiers
-      tag: set_asset_unique_identifiers_nested_from_asset_unique_identifiers
+      tag: set_asset_unique_identifiers_nested_from_asset_unique_identifiers_34d26f90
       copy_from: rapid7.insightvm.asset.unique_identifiers
       ignore_empty_value: true
   - remove:
+      tag: remove_json_29cdffdc
       field: json
       ignore_missing: true
   - remove:
+      tag: remove_de46ffcb
       if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
       field:
         - rapid7.insightvm.asset.risk_score
@@ -706,33 +857,40 @@ processors:
         - rapid7.insightvm.asset.os.version
       ignore_missing: true
   - foreach:
+      tag: foreach_rapid7_insightvm_asset_new_fec3635f
       field: rapid7.insightvm.asset.new
       if: ctx.rapid7?.insightvm?.asset?.new instanceof List && (ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields')))
       ignore_failure: true
       processor:
         remove:
+          tag: remove_ingest_value_vulnerability_id_80582689
           field:
             - _ingest._value.vulnerability_id
           ignore_missing: true
   - foreach:
+      tag: foreach_rapid7_insightvm_asset_remediated_15c97c49
       field: rapid7.insightvm.asset.remediated
       if: ctx.rapid7?.insightvm?.asset?.remediated instanceof List && (ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields')))
       ignore_failure: true
       processor:
         remove:
+          tag: remove_ingest_value_vulnerability_id_d91be96c
           field:
             - _ingest._value.vulnerability_id
           ignore_missing: true
   - foreach:
+      tag: foreach_rapid7_insightvm_asset_same_e54396a5
       field: rapid7.insightvm.asset.same
       if: ctx.rapid7?.insightvm?.asset?.same instanceof List && (ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields')))
       ignore_failure: true
       processor:
         remove:
+          tag: remove_ingest_value_vulnerability_id_948a5631
           field:
             - _ingest._value.vulnerability_id
           ignore_missing: true
   - script:
+      tag: script_drops_null_empty_values_recursively_06971239
       lang: painless
       description: Drops null/empty values recursively.
       source: |-
@@ -750,22 +908,27 @@ processors:
         }
         drop(ctx);
   - set:
+      tag: set_event_kind_92954dfa
       field: event.kind
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message_784f9d3f
       field: error.message
       value: '{{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

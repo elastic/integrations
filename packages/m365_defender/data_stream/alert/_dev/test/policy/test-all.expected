@@ -136,12 +136,12 @@ inputs:
                 do_not_log_failure: true
                 fail_on_template_error: true
                 target: url.params.$filter
-                value: '[[.last_response.url.params.Get "$filter"]]'
+                value: '[[if (eq (len .last_response.body.value) 2000)]]lastUpdateDateTime gt [[(index .last_response.body.value (add (toInt (len .last_response.body.value)) -1)).lastUpdateDateTime]][[end]]'
             - set:
                 do_not_log_failure: true
                 fail_on_template_error: true
                 target: url.params.$skip
-                value: '[[if (eq (len .last_response.body.value) 2000)]][[add (toInt (.last_response.url.params.Get "$skip")) 2000]][[end]]'
+                value: "0"
           response.split:
             ignore_empty_value: true
             target: body.value

@@ -2,33 +2,41 @@
 description: Pipeline for parsing azure activity logs.
 processors:
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - rename:
+      tag: rename_azure_to_azure-eventhub_e7f48148
       field: azure
       target_field: azure-eventhub
       ignore_missing: true
   - remove:
+      tag: remove_routing_category_681b150d
       field: routing.category
       ignore_missing: true
       description: Remove the routing.category field if it exists.
   - rename:
+      tag: rename_message_to_event_original_c74b1d7e
       field: message
       target_field: event.original
       ignore_missing: true
       if: 'ctx.event?.original == null'
       description: 'Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.'
   - remove:
+      tag: remove_message_2ee3a7d4
       field: message
       ignore_missing: true
       if: 'ctx.event?.original != null'
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
+      tag: json_event_original_to_azure_auditlogs_184483db
       field: event.original
       target_field: azure.auditlogs
   - drop:
+      tag: drop_6a6a310d
       if: ctx.azure.auditlogs.category != 'AuditLogs'
   - date:
+      tag: date_azure_auditlogs_time_to_timestamp_8d9959c0
       field: azure.auditlogs.time
       target_field: '@timestamp'
       ignore_failure: true
@@ -37,17 +45,19 @@ processors:
       # We expect the first format to be used in 99% of cases.
       # However, we include the other formats seen in other
       # categories as a necessary fallback.
-      formats: 
+      formats:
         - ISO8601
         - "M/d/yyyy h:mm:ss a XXX"
         - "M/d/yyyy h:mm:ss a"
         - "M/d/yyyy H:mm:ss"
         - yyyy-MM-dd'T'H:mm:ss.SSS'Z'
   - rename:
+      tag: rename_azure_auditlogs_resourceId_to_azure_resource_id_c2be188b
       field: azure.auditlogs.resourceId
       target_field: azure.resource_id
       ignore_missing: true
   - convert:
+      tag: convert_azure_auditlogs_durationMs_to_event_duration_69f59f41
       field: azure.auditlogs.durationMs
       target_field: event.duration
       type: long
@@ -56,147 +66,179 @@ processors:
       if: "ctx.azure?.auditlogs?.durationMs != null && ctx.azure.auditlogs.durationMs instanceof String"
       description: 'Convert durationMs to event.duration as long (if it is a string).'
   - rename:
+      tag: rename_azure_auditlogs_durationMs_to_event_duration_bf0133b9
       field: azure.auditlogs.durationMs
       target_field: event.duration
       ignore_missing: true
       if: "ctx.azure?.auditlogs?.durationMs != null && !(ctx.azure.auditlogs.durationMs instanceof String)"
       description: 'Rename durationMs to event.duration (if it is not a string).'
   - remove:
+      tag: remove_azure_auditlogs_durationMs_5ae676a0
       field: azure.auditlogs.durationMs
       ignore_missing: true
       description: 'Clean up durationMs field, if it is still there after the conversion.'
   - script:
+      tag: script_c48851e6
       if: ctx.event?.duration != null
       lang: painless
       source: ctx.event.duration = ctx.event.duration * params.param_nano
       params:
         param_nano: 1000000
   - rename:
+      tag: rename_azure_auditlogs_properties_result_to_event_outcome_4c491c6b
       field: azure.auditlogs.properties.result
       target_field: event.outcome
       if: "ctx?.azure?.auditlogs?.properties?.result != null && ctx.azure.auditlogs.properties.result instanceof String && (ctx.azure.auditlogs.properties.result.toLowerCase() == 'success' || ctx.azure.auditlogs.properties.result.toLowerCase() == 'failure')"
   - rename:
+      tag: rename_azure_auditlogs_level_to_log_level_addcc801
       field: azure.auditlogs.level
       target_field: log.level
       ignore_missing: true
   - remove:
+      tag: remove_azure_auditlogs_time_759788da
       field: azure.auditlogs.time
       ignore_missing: true
   - convert:
+      tag: convert_azure_auditlogs_operationName_to_event_action_63a0e48c
       field: azure.auditlogs.operationName
       target_field: event.action
       type: string
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_azure_auditlogs_operationName_to_azure_auditlogs_operation_name_e82644e9
       field: azure.auditlogs.operationName
       target_field: azure.auditlogs.operation_name
       ignore_missing: true
   - rename:
+      tag: rename_azure_auditlogs_resultSignature_to_azure_auditlogs_result_signature_240cba5f
       field: azure.auditlogs.resultSignature
       target_field: azure.auditlogs.result_signature
       ignore_missing: true
   - rename:
+      tag: rename_azure_auditlogs_resultDescription_to_azure_auditlogs_result_description_922d9d17
       field: azure.auditlogs.resultDescription
       target_field: azure.auditlogs.result_description
       ignore_missing: true
   - rename:
+      tag: rename_azure_auditlogs_operationVersion_to_azure_auditlogs_operation_version_a58690d5
       field: azure.auditlogs.operationVersion
       target_field: azure.auditlogs.operation_version
       ignore_missing: true
   - rename:
+      tag: rename_azure_auditlogs_tenantId_to_azure_tenant_id_5d969ee3
       field: azure.auditlogs.tenantId
       target_field: azure.tenant_id
       ignore_missing: true
   - rename:
+      tag: rename_azure_auditlogs_correlationId_to_azure_correlation_id_b086e56d
       field: azure.auditlogs.correlationId
       target_field: azure.correlation_id
       ignore_missing: true
   - rename:
+      tag: rename_azure_auditlogs_properties_activityDisplayName_to_azure_auditlogs_properties_activity_display_name_7447adcd
       field: azure.auditlogs.properties.activityDisplayName
       target_field: azure.auditlogs.properties.activity_display_name
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_azure_auditlogs_properties_activityDateTime_to_azure_auditlogs_properties_activity_datetime_9120e03b
       field: azure.auditlogs.properties.activityDateTime
       target_field: azure.auditlogs.properties.activity_datetime
       ignore_missing: true
   - rename:
+      tag: rename_azure_auditlogs_properties_additionalDetails_to_azure_auditlogs_properties_additional_details_2aab6971
       field: azure.auditlogs.properties.additionalDetails
       target_field: azure.auditlogs.properties.additional_details
       ignore_missing: true
   - convert:
+      tag: convert_azure_auditlogs_callerIpAddress_to_source_ip_6648880f
       field: azure.auditlogs.callerIpAddress
       target_field: source.ip
       type: ip
       ignore_missing: true
       on_failure:
-        - rename: 
+        - rename:
+            tag: rename_azure_auditlogs_callerIpAddress_to_source_address_d5c4084f
             field: azure.auditlogs.callerIpAddress
             target_field: source.address
-            ignore_missing: true 
+            ignore_missing: true
             ignore_failure: true
   - remove:
+      tag: remove_azure_auditlogs_callerIpAddress_ecddbfbf
       field: azure.auditlogs.callerIpAddress
       if: 'ctx.source?.ip != null'
       ignore_missing: true
   - remove:
+      tag: remove_azure_auditlogs_properties_initiatedBy_app_appId_606b36a5
       description: Drop appId field if value is null.
       if: ctx?.azure?.auditlogs?.properties?.initiatedBy?.app?.appId == null
       field: azure.auditlogs.properties.initiatedBy.app.appId
       ignore_missing: true
   - remove:
+      tag: remove_azure_auditlogs_properties_initiatedBy_app_servicePrincipalName_a8effdd5
       description: Drop servicePrincipalName field if value is null.
       if: ctx?.azure?.auditlogs?.properties?.initiatedBy?.app?.servicePrincipalName == null
       field: azure.auditlogs.properties.initiatedBy.app.servicePrincipalName
       ignore_missing: true
   - remove:
+      tag: remove_azure_auditlogs_properties_userAgent_8ae2899b
       description: Drop userAgent field if value is null.
       if: ctx?.azure?.auditlogs?.properties?.userAgent == null
       field: azure.auditlogs.properties.userAgent
       ignore_missing: true
   - set:
+      tag: set_client_ip_b6d15cbc
       field: client.ip
       value: '{{source.ip}}'
       ignore_empty_value: true
   - append:
+      tag: append_related_ip_d7aecc5f
       field: related.ip
       value: '{{source.ip}}'
       allow_duplicates: false
       if: 'ctx.source?.ip != null'
   - rename:
+      tag: rename_azure_auditlogs_properties_resultReason_to_azure_auditlogs_properties_result_reason_2dcad4bf
       field: azure.auditlogs.properties.resultReason
       target_field: azure.auditlogs.properties.result_reason
       ignore_missing: true
   - rename:
+      tag: rename_azure_auditlogs_properties_resultDescription_to_azure_auditlogs_properties_result_description_bf4e10d9
       field: azure.auditlogs.properties.resultDescription
       target_field: azure.auditlogs.properties.result_description
       ignore_missing: true
   - rename:
+      tag: rename_azure_auditlogs_properties_correlationId_to_azure_auditlogs_properties_correlation_id_3ccd0009
       field: azure.auditlogs.properties.correlationId
       target_field: azure.auditlogs.properties.correlation_id
       ignore_missing: true
   - rename:
+      tag: rename_azure_auditlogs_properties_loggedByService_to_azure_auditlogs_properties_logged_by_service_418b8198
       field: azure.auditlogs.properties.loggedByService
       target_field: azure.auditlogs.properties.logged_by_service
       ignore_missing: true
   - rename:
+      tag: rename_azure_auditlogs_properties_operationType_to_azure_auditlogs_properties_operation_type_1462a34b
       field: azure.auditlogs.properties.operationType
       target_field: azure.auditlogs.properties.operation_type
       ignore_missing: true
   - rename:
+      tag: rename_azure_auditlogs_Level_to_azure_auditlogs_level_3f32879c
       field: azure.auditlogs.Level
       target_field: azure.auditlogs.level
       ignore_missing: true
   - rename:
+      tag: rename_azure_auditlogs_properties_additional_details_userAgent_to_azure_auditlogs_properties_additional_details_user_agent_4d0302e9
       field: azure.auditlogs.properties.additional_details.userAgent
       target_field: azure.auditlogs.properties.additional_details.user_agent
       ignore_missing: true
   - remove:
+      tag: remove_azure_auditlogs_properties_initiatedBy_user_displayName_7f4d05b0
       description: Drop displayName field if value is null.
       if: ctx?.azure?.auditlogs?.properties?.initiatedBy?.user?.displayName == null
       field: azure.auditlogs.properties.initiatedBy.user.displayName
-      ignore_missing: true   
+      ignore_missing: true
   - script:
       lang: painless
       source: >-
@@ -234,16 +276,35 @@ processors:
           ctx.azure.auditlogs.properties.remove('targetResources');
         }
       ignore_failure: true
-      tag: whatever 
+      tag: whatever_e7168594
   - rename:
+      tag: rename_azure_auditlogs_properties_initiatedBy_to_azure_auditlogs_properties_initiated_by_01a8e84d
       field: azure.auditlogs.properties.initiatedBy
       target_field: azure.auditlogs.properties.initiated_by
       ignore_missing: true
+  - set:
+      field: user.name
+      tag: set_user_name_be6ed7e9
+      copy_from: azure.auditlogs.properties.initiated_by.user.userPrincipalName
+      ignore_empty_value: true
+  - convert:
+      field: azure.auditlogs.properties.initiated_by.user.id
+      tag: convert_user_id_2eecf067
+      target_field: user.id
+      type: string
+      ignore_missing: true
+  - set:
+      field: user.full_name
+      tag: set_user_full_name_4d40aed2
+      copy_from: azure.auditlogs.properties.initiated_by.user.displayName
+      ignore_empty_value: true
   - geoip:
+      tag: geoip_source_ip_to_source_geo_da2e41b2
       field: source.ip
       target_field: source.geo
       ignore_missing: true
   - geoip:
+      tag: geoip_source_ip_to_source_as_28d69883
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
       target_field: source.as
@@ -252,27 +313,33 @@ processors:
         - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_source_as_asn_to_source_as_number_a917047d
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
   - rename:
+      tag: rename_source_as_organization_name_to_source_as_organization_name_f1362d0b
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - append:
+      tag: append_related_entity_6a4d3f71
       field: related.entity
       value: '{{{ azure.auditlogs.properties.initiated_by.user.id }}}'
       allow_duplicates: false
       if: ctx.azure?.auditlogs?.properties?.initiated_by?.user?.id != null && ctx.azure.auditlogs.properties.initiated_by.user.id != ''
   - append:
+      tag: append_related_entity_5cb64734
       field: related.entity
       value: '{{{ azure.auditlogs.properties.initiated_by.app.servicePrincipalId }}}'
       allow_duplicates: false
       if: ctx.azure?.auditlogs?.properties?.initiated_by?.app?.servicePrincipalId != null && ctx.azure.auditlogs.properties.initiated_by.app.servicePrincipalId != ''
   - script:
+      tag: script_appends_target_resources_identifiers_53ba6dd6
       description: Appends target resources identifiers to `related.entity`
       lang: painless
       source: |
@@ -286,31 +353,56 @@ processors:
                 }
             }
         }
-      on_failure: 
+      on_failure:
         - set:
+            tag: set_error_message_fe908438
             description: Add error reason
             field: error.message
             value: "{{{ _ingest.on_failure_message }}}"
+  - append:
+      field: related.user
+      tag: append_user_id_to_related_user_23cff8dc
+      value: '{{{user.id}}}'
+      allow_duplicates: false
+      if: ctx.user?.id != null
+  - append:
+      field: related.user
+      tag: append_user_name_to_related_user_325195a6
+      value: '{{{user.name}}}'
+      allow_duplicates: false
+      if: ctx.user?.name != null
+  - append:
+      field: related.user
+      tag: append_user_full_name_to_related_user_40705751
+      value: '{{{user.full_name}}}'
+      allow_duplicates: false
+      if: ctx.user?.full_name != null
   - pipeline:
+      tag: pipeline_azure_shared_pipeline_7877e1a4
       name: '{{ IngestPipeline "azure-shared-pipeline" }}'
   - set:
+      tag: set_event_kind_92954dfa
       field: event.kind
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message_fb774d38
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'

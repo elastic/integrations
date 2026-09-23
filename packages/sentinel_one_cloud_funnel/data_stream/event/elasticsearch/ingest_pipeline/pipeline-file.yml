@@ -2,17 +2,21 @@
 description: Pipeline for processing File Event logs.
 processors:
   - set:
+      tag: set_event_category_3db32290
       field: event.category
       value: [file]
   - set:
+      tag: set_event_type_90d42dbd
       field: event.type
       value: [creation]
       if: ctx.sentinel_one_cloud_funnel?.event?.type != null && ctx.sentinel_one_cloud_funnel.event.type.toLowerCase().contains('creat')
   - set:
+      tag: set_event_type_12d45eeb
       field: event.type
       value: [deletion]
       if: ctx.sentinel_one_cloud_funnel?.event?.type != null && ctx.sentinel_one_cloud_funnel.event.type.toLowerCase().contains('delet')
   - set:
+      tag: set_event_type_472bb559
       field: event.type
       value: [change]
       if: >-
@@ -23,18 +27,22 @@ processors:
           ctx.sentinel_one_cloud_funnel.event.type.toLowerCase().contains('rename')
         )
   - set:
+      tag: set_event_type_f96f1f47
       field: event.type
       value: [info]
       override: false
   - set:
+      tag: set_event_action_a46f2017
       field: event.action
       value: [creation]
       if: ctx.sentinel_one_cloud_funnel?.event?.type != null && ctx.sentinel_one_cloud_funnel.event.type.toLowerCase().contains('creat')
   - set:
+      tag: set_event_action_2ff9593d
       field: event.action
       value: [deletion]
       if: ctx.sentinel_one_cloud_funnel?.event?.type != null && ctx.sentinel_one_cloud_funnel.event.type.toLowerCase().contains('delet')
   - set:
+      tag: set_event_action_9257a809
       field: event.action
       value: [change]
       if: >-
@@ -44,59 +52,71 @@ processors:
           ctx.sentinel_one_cloud_funnel.event.type.toLowerCase().contains('modif')
         )
   - set:
+      tag: set_event_action_3db9cf47
       field: event.action
       value: [rename]
       if: >-
         ctx.sentinel_one_cloud_funnel?.event?.type != null && ctx.sentinel_one_cloud_funnel.event.type.toLowerCase().contains('rename')
   - rename:
+      tag: rename_json_k8sCluster_containerId_to_sentinel_one_cloud_funnel_event_k8s_cluster_container_id_174e75ab
       field: json.k8sCluster.containerId
       target_field: sentinel_one_cloud_funnel.event.k8s_cluster.container.id
       ignore_missing: true
   - set:
+      tag: set_container_id_a11673c8
       field: container.id
       copy_from: sentinel_one_cloud_funnel.event.k8s_cluster.container.id
       ignore_empty_value: true
   - rename:
+      tag: rename_json_k8sCluster_containerImage_sha256_to_sentinel_one_cloud_funnel_event_k8s_cluster_container_image_sha256_997132df
       field: json.k8sCluster.containerImage.sha256
       target_field: sentinel_one_cloud_funnel.event.k8s_cluster.container.image.sha256
       ignore_missing: true
   - append:
+      tag: append_container_image_hash_all_7085001c
       field: container.image.hash.all
       value: '{{{sentinel_one_cloud_funnel.event.k8s_cluster.container.image.sha256}}}'
       allow_duplicates: false
       if: ctx.sentinel_one_cloud_funnel?.event?.k8s_cluster?.container?.image?.sha256 != null
   - append:
+      tag: append_related_hash_ca9c6fa4
       field: related.hash
       value: '{{{sentinel_one_cloud_funnel.event.k8s_cluster.container.image.sha256}}}'
       allow_duplicates: false
       if: ctx.sentinel_one_cloud_funnel?.event?.k8s_cluster?.container?.image?.sha256!= null
   - rename:
+      tag: rename_json_k8sCluster_containerImage_value_to_sentinel_one_cloud_funnel_event_k8s_cluster_container_image_value_4e464a3d
       field: json.k8sCluster.containerImage.value
       target_field: sentinel_one_cloud_funnel.event.k8s_cluster.container.image.value
       ignore_missing: true
   - set:
+      tag: set_container_image_name_6b959730
       field: container.image.name
       copy_from: sentinel_one_cloud_funnel.event.k8s_cluster.container.image.value
       ignore_empty_value: true
   - rename:
+      tag: rename_json_k8sCluster_containerLabels_to_sentinel_one_cloud_funnel_event_k8s_cluster_container_labels_3938f7d7
       field: json.k8sCluster.containerLabels
       target_field: sentinel_one_cloud_funnel.event.k8s_cluster.container.labels
       ignore_missing: true
   - set:
+      tag: set_container_labels_9d053fd0
       field: container.labels
       copy_from: sentinel_one_cloud_funnel.event.k8s_cluster.container.labels
       ignore_empty_value: true
   - rename:
+      tag: rename_json_k8sCluster_containerName_to_sentinel_one_cloud_funnel_event_k8s_cluster_container_name_ee0d5ad3
       field: json.k8sCluster.containerName
       target_field: sentinel_one_cloud_funnel.event.k8s_cluster.container.name
       ignore_missing: true
   - set:
+      tag: set_container_name_979f1054
       field: container.name
       copy_from: sentinel_one_cloud_funnel.event.k8s_cluster.container.name
       ignore_empty_value: true
   - date:
       field: json.tgt.file.creationTime
-      tag: 'date_json_tgt_file_creationTime'
+      tag: date_json_tgt_file_creationTime_ea2c3c15
       target_field: sentinel_one_cloud_funnel.event.tgt.file.creation_time
       formats:
         - ISO8601
@@ -104,62 +124,75 @@ processors:
       if: ctx.json?.tgt?.file?.creationTime != null && ctx.json.tgt.file.creationTime != ''
       on_failure:
         - append:
+            tag: append_error_message_3a00d0dc
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_file_created_d1ec61e1
       field: file.created
       copy_from: sentinel_one_cloud_funnel.event.tgt.file.creation_time
       ignore_empty_value: true
   - rename:
+      tag: rename_json_tgt_file_extension_to_sentinel_one_cloud_funnel_event_tgt_file_extension_0c7969fc
       field: json.tgt.file.extension
       target_field: sentinel_one_cloud_funnel.event.tgt.file.extension
       ignore_missing: true
   - set:
+      tag: set_file_extension_e5c5c6d4
       field: file.extension
       copy_from: sentinel_one_cloud_funnel.event.tgt.file.extension
       ignore_empty_value: true
   - rename:
+      tag: rename_json_tgt_file_md5_to_sentinel_one_cloud_funnel_event_tgt_file_md5_f59548a0
       field: json.tgt.file.md5
       target_field: sentinel_one_cloud_funnel.event.tgt.file.md5
       ignore_missing: true
   - set:
+      tag: set_file_hash_md5_b5abcf60
       field: file.hash.md5
       copy_from: sentinel_one_cloud_funnel.event.tgt.file.md5
       ignore_empty_value: true
   - append:
+      tag: append_related_hash_6af42da3
       field: related.hash
       value: '{{{file.hash.md5}}}'
       allow_duplicates: false
       if: ctx.file?.hash?.md5 != null
   - rename:
+      tag: rename_json_tgt_file_sha1_to_sentinel_one_cloud_funnel_event_tgt_file_sha1_4685387e
       field: json.tgt.file.sha1
       target_field: sentinel_one_cloud_funnel.event.tgt.file.sha1
       ignore_missing: true
   - set:
+      tag: set_file_hash_sha1_5c6ba116
       field: file.hash.sha1
       copy_from: sentinel_one_cloud_funnel.event.tgt.file.sha1
       ignore_empty_value: true
   - append:
+      tag: append_related_hash_b56c7961
       field: related.hash
       value: '{{{file.hash.sha1}}}'
       allow_duplicates: false
       if: ctx.file?.hash?.sha1 != null
   - rename:
+      tag: rename_json_tgt_file_sha256_to_sentinel_one_cloud_funnel_event_tgt_file_sha256_94584cca
       field: json.tgt.file.sha256
       target_field: sentinel_one_cloud_funnel.event.tgt.file.sha256
       ignore_missing: true
   - set:
+      tag: set_file_hash_sha256_df14789e
       field: file.hash.sha256
       copy_from: sentinel_one_cloud_funnel.event.tgt.file.sha256
       ignore_empty_value: true
   - append:
+      tag: append_related_hash_017aef51
       field: related.hash
       value: '{{{file.hash.sha256}}}'
       allow_duplicates: false
       if: ctx.file?.hash?.sha256 != null
   - date:
       field: json.tgt.file.modificationTime
-      tag: 'date_json_tgt_file_modificationTime'
+      tag: date_json_tgt_file_modificationTime_35bc68bc
       target_field: sentinel_one_cloud_funnel.event.tgt.file.modification_time
       formats:
         - ISO8601
@@ -167,29 +200,36 @@ processors:
       if: ctx.json?.tgt?.file?.modificationTime != null && ctx.json.tgt.file.modificationTime != ''
       on_failure:
         - append:
+            tag: append_error_message_d1a23c4b
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_file_mtime_88ff3fe4
       field: file.mtime
       copy_from: sentinel_one_cloud_funnel.event.tgt.file.modification_time
       ignore_empty_value: true
   - rename:
+      tag: rename_json_tgt_file_path_to_sentinel_one_cloud_funnel_event_tgt_file_path_39609c16
       field: json.tgt.file.path
       target_field: sentinel_one_cloud_funnel.event.tgt.file.path
       ignore_missing: true
   - set:
+      tag: set_file_path_527bee9a
       field: file.path
       copy_from: sentinel_one_cloud_funnel.event.tgt.file.path
       ignore_empty_value: true
   - rename:
+      tag: rename_json_tgt_file_type_to_sentinel_one_cloud_funnel_event_tgt_file_type_d8855d28
       field: json.tgt.file.type
       target_field: sentinel_one_cloud_funnel.event.tgt.file.type
       ignore_missing: true
   - set:
+      tag: set_file_type_6b11f406
       field: file.type
       copy_from: sentinel_one_cloud_funnel.event.tgt.file.type
       ignore_empty_value: true
   - script:
+      tag: script_81415464
       lang: painless
       if: ctx.sentinel_one_cloud_funnel?.event?.tgt?.file?.path instanceof String && ctx.sentinel_one_cloud_funnel.event.tgt.file.path.length() > 1
       source: |-
@@ -215,106 +255,128 @@ processors:
         }
   - convert:
       field: json.tgt.file.size
-      tag: 'convert_json_tgt_file_size'
+      tag: convert_json_tgt_file_size_df731c76
       target_field: sentinel_one_cloud_funnel.event.tgt.file.size
       type: long
       ignore_missing: true
       if: ctx.json?.tgt?.file?.size != ''
       on_failure:
         - append:
+            tag: append_error_message_96037225
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_file_size_53ce742a
       field: file.size
       copy_from: sentinel_one_cloud_funnel.event.tgt.file.size
       ignore_empty_value: true
   - convert:
       field: json.src.process.tid
-      tag: 'convert_json_src_process_tid'
+      tag: convert_json_src_process_tid_b4ad4615
       target_field: sentinel_one_cloud_funnel.event.src.process.tid
       type: long
       ignore_missing: true
       if: ctx.json?.src?.process?.tid != ''
       on_failure:
         - append:
+            tag: append_error_message_114b3353
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: set_process_thread_id_95a0158f
       field: process.thread.id
       copy_from: sentinel_one_cloud_funnel.event.src.process.tid
       ignore_empty_value: true
   - rename:
+      tag: rename_json_tgt_file_oldMd5_to_sentinel_one_cloud_funnel_event_tgt_file_old_md5_790f5fe0
       field: json.tgt.file.oldMd5
       target_field: sentinel_one_cloud_funnel.event.tgt.file.old.md5
       ignore_missing: true
   - append:
+      tag: append_related_hash_2eec9328
       field: related.hash
       value: '{{{sentinel_one_cloud_funnel.event.tgt.file.old.md5}}}'
       allow_duplicates: false
       if: ctx.sentinel_one_cloud_funnel?.event?.tgt?.file?.old?.md5 != null
   - rename:
+      tag: rename_json_tgt_file_oldPath_to_sentinel_one_cloud_funnel_event_tgt_file_old_path_24dce2f0
       field: json.tgt.file.oldPath
       target_field: sentinel_one_cloud_funnel.event.tgt.file.old.path
       ignore_missing: true
   - rename:
+      tag: rename_json_tgt_file_oldSha1_to_sentinel_one_cloud_funnel_event_tgt_file_old_sha1_13e16564
       field: json.tgt.file.oldSha1
       target_field: sentinel_one_cloud_funnel.event.tgt.file.old.sha1
       ignore_missing: true
   - append:
+      tag: append_related_hash_92bf0db6
       field: related.hash
       value: '{{{sentinel_one_cloud_funnel.event.tgt.file.old.sha1}}}'
       allow_duplicates: false
       if: ctx.sentinel_one_cloud_funnel?.event?.tgt?.file?.old?.sha1!= null
   - rename:
+      tag: rename_json_tgt_file_oldSha256_to_sentinel_one_cloud_funnel_event_tgt_file_old_sha256_3bbb7b0c
       field: json.tgt.file.oldSha256
       target_field: sentinel_one_cloud_funnel.event.tgt.file.old.sha256
       ignore_missing: true
   - append:
+      tag: append_related_hash_82eebe90
       field: related.hash
       value: '{{{sentinel_one_cloud_funnel.event.tgt.file.old.sha256}}}'
       allow_duplicates: false
       if: ctx.sentinel_one_cloud_funnel?.event?.tgt?.file?.old?.sha256 != null
   - rename:
+      tag: rename_json_k8sCluster_controllerLabels_to_sentinel_one_cloud_funnel_event_k8s_cluster_controller_labels_10e1beab
       field: json.k8sCluster.controllerLabels
       target_field: sentinel_one_cloud_funnel.event.k8s_cluster.controller.labels
       ignore_missing: true
   - rename:
+      tag: rename_json_k8sCluster_controllerName_to_sentinel_one_cloud_funnel_event_k8s_cluster_controller_name_f2dcde6f
       field: json.k8sCluster.controllerName
       target_field: sentinel_one_cloud_funnel.event.k8s_cluster.controller.name
       ignore_missing: true
   - rename:
+      tag: rename_json_k8sCluster_controllerType_to_sentinel_one_cloud_funnel_event_k8s_cluster_controller_type_985eff4d
       field: json.k8sCluster.controllerType
       target_field: sentinel_one_cloud_funnel.event.k8s_cluster.controller.type
       ignore_missing: true
   - rename:
+      tag: rename_json_k8sCluster_name_to_sentinel_one_cloud_funnel_event_k8s_cluster_name_e94cd745
       field: json.k8sCluster.name
       target_field: sentinel_one_cloud_funnel.event.k8s_cluster.name
       ignore_missing: true
   - rename:
+      tag: rename_json_k8sCluster_namespace_to_sentinel_one_cloud_funnel_event_k8s_cluster_namespace_value_cb9b4996
       field: json.k8sCluster.namespace
       target_field: sentinel_one_cloud_funnel.event.k8s_cluster.namespace.value
       ignore_missing: true
   - rename:
+      tag: rename_json_k8sCluster_namespaceLabels_to_sentinel_one_cloud_funnel_event_k8s_cluster_namespace_labels_77ed3adf
       field: json.k8sCluster.namespaceLabels
       target_field: sentinel_one_cloud_funnel.event.k8s_cluster.namespace.labels
       ignore_missing: true
   - rename:
+      tag: rename_json_k8sCluster_nodeName_to_sentinel_one_cloud_funnel_event_k8s_cluster_node_name_494c1d46
       field: json.k8sCluster.nodeName
       target_field: sentinel_one_cloud_funnel.event.k8s_cluster.node_name
       ignore_missing: true
   - rename:
+      tag: rename_json_k8sCluster_podLabels_to_sentinel_one_cloud_funnel_event_k8s_cluster_pod_labels_d3757fbf
       field: json.k8sCluster.podLabels
       target_field: sentinel_one_cloud_funnel.event.k8s_cluster.pod.labels
       ignore_missing: true
   - rename:
+      tag: rename_json_k8sCluster_podName_to_sentinel_one_cloud_funnel_event_k8s_cluster_pod_name_5bdc55a3
       field: json.k8sCluster.podName
       target_field: sentinel_one_cloud_funnel.event.k8s_cluster.pod.name
       ignore_missing: true
   - rename:
+      tag: rename_json_src_process_reasonSignatureInvalid_to_sentinel_one_cloud_funnel_event_src_process_reason_signature_invalid_8220e978
       field: json.src.process.reasonSignatureInvalid
       target_field: sentinel_one_cloud_funnel.event.src.process.reason_signature_invalid
       ignore_missing: true
   - convert:
+      tag: convert_json_src_process_rpid_to_sentinel_one_cloud_funnel_event_src_process_rpid_422ec69e
       field: json.src.process.rpid
       target_field: sentinel_one_cloud_funnel.event.src.process.rpid
       type: string
@@ -322,47 +384,65 @@ processors:
       if: ctx.json?.src?.process?.rpid != ''
       on_failure:
         - append:
+            tag: append_error_message_1afff369
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_task_path_to_sentinel_one_cloud_funnel_event_task_path_a1b7920a
       field: json.task.path
       target_field: sentinel_one_cloud_funnel.event.task.path
       ignore_missing: true
   - rename:
+      tag: rename_json_tgt_file_convictedBy_to_sentinel_one_cloud_funnel_event_tgt_file_convicted_by_9dae0cc9
       field: json.tgt.file.convictedBy
       target_field: sentinel_one_cloud_funnel.event.tgt.file.convicted_by
       ignore_missing: true
   - rename:
+      tag: rename_json_tgt_file_description_to_sentinel_one_cloud_funnel_event_tgt_file_description_54771acc
       field: json.tgt.file.description
       target_field: sentinel_one_cloud_funnel.event.tgt.file.description
       ignore_missing: true
   - rename:
+      tag: rename_json_tgt_file_id_to_sentinel_one_cloud_funnel_event_tgt_file_id_76a97c5e
       field: json.tgt.file.id
       target_field: sentinel_one_cloud_funnel.event.tgt.file.id
       ignore_missing: true
   - rename:
+      tag: rename_json_tgt_file_internalName_to_sentinel_one_cloud_funnel_event_tgt_file_internal_name_84e0ac81
       field: json.tgt.file.internalName
       target_field: sentinel_one_cloud_funnel.event.tgt.file.internal_name
       ignore_missing: true
   - convert:
       field: json.tgt.file.isExecutable
-      tag: 'convert_json_tgt_file_isExecutable'
+      tag: convert_json_tgt_file_isExecutable_d260132b
       target_field: sentinel_one_cloud_funnel.event.tgt.file.is_executable
       type: boolean
       ignore_missing: true
       if: ctx.json?.tgt?.file?.isExecutable != ''
       on_failure:
         - append:
+            tag: append_error_message_7406da9a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_tgt_file_location_to_sentinel_one_cloud_funnel_event_tgt_file_location_90526cb6
       field: json.tgt.file.location
       target_field: sentinel_one_cloud_funnel.event.tgt.file.location
       ignore_missing: true
 on_failure:
   - append:
+      tag: append_error_message_d916120d
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'
         {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
         {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
+      value: pipeline_error
+  - append:
+      tag: append_tags_279d5a5c
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

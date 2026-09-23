@@ -8,18 +8,20 @@ env:
   GH_CLI_VERSION: "2.29.0"
   # Agent images used in pipeline steps
   LINUX_AGENT_IMAGE: "golang:${GO_VERSION}"
+  NOTIFY_TO: "ecosystem-team@elastic.co"
 
 steps:
 
   - label: "Check that it runs from UI"
     key: "check-ui"
     command:
-      - "buildkite-agent annotate \"The $${BUILDKITE_PIPELINE_SLUG} pipeline can only be triggered from the UI by members of the 'ecosystem' team, or via a trigger step from the 'integrations' pipeline. For the recommended workflow see the [documentation](https://www.elastic.co/guide/en/integrations-developer/current/developer-workflow-support-old-package.html).\" --style 'warning'"
+      - "buildkite-agent annotate \"The $${BUILDKITE_PIPELINE_SLUG} pipeline can only be triggered from the UI by members of the 'ecosystem' team, or via a trigger step from the 'integrations' or 'integrations-backport-dispatch' pipeline. For the recommended workflow see the [documentation](https://www.elastic.co/guide/en/integrations-developer/current/developer-workflow-support-old-package.html).\" --style 'warning'"
       - "exit 1"
     if: |
       !(
         (build.source == 'ui' && build.creator.teams includes "ecosystem") ||
-        (build.source == 'trigger_job' && build.env('BUILDKITE_TRIGGERED_FROM_BUILD_PIPELINE_SLUG') == 'integrations')
+        (build.source == 'trigger_job' && build.env('BUILDKITE_TRIGGERED_FROM_BUILD_PIPELINE_SLUG') == 'integrations') ||
+        (build.source == 'trigger_job' && build.env('BUILDKITE_TRIGGERED_FROM_BUILD_PIPELINE_SLUG') == 'integrations-backport-dispatch')
       )
 
   # Ensure that the check-ui step runs before any other step
@@ -99,3 +101,10 @@ steps:
     depends_on:
       - step: "create-backport-branch"
         allow_failure: true
+
+notify:
+  # Only notify for automated backport creation failures (triggered by integrations-backport-dispatch).
+  # Dry-run failures from PR builds (triggered by integrations) are already surfaced as a failing
+  # CI status on the PR itself and do not warrant a team email.
+  - email: "$NOTIFY_TO"
+    if: "build.state == 'failed' && build.source == 'trigger_job' && build.env('BUILDKITE_TRIGGERED_FROM_BUILD_PIPELINE_SLUG') == 'integrations-backport-dispatch'"

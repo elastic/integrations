@@ -451,7 +451,10 @@ The following table lists the exported fields for this data stream:
 | cisco_ise.log.client.latency |  | long |
 | cisco_ise.log.cmdset |  | keyword |
 | cisco_ise.log.component |  | keyword |
-| cisco_ise.log.config_change.data |  | keyword |
+| cisco_ise.log.config_change.attributes | Endpoint attributes carried in the configuration change, when it renders them. Absent for changes that do not. Stored as a list of name/value pairs because attribute names are unbounded. | nested |
+| cisco_ise.log.config_change.attributes.name | Attribute name. | keyword |
+| cisco_ise.log.config_change.attributes.value | Attribute value. | keyword |
+| cisco_ise.log.config_change.data | Free-form description of the configuration change, as rendered by Cisco ISE. | keyword |
 | cisco_ise.log.config_version.id |  | long |
 | cisco_ise.log.connectivity |  | keyword |
 | cisco_ise.log.cpm.session.id |  | keyword |
@@ -669,6 +672,7 @@ The following table lists the exported fields for this data stream:
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Event module. | constant_keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
+| event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
 | event.sequence | Sequence number of the event. The sequence number is a value published by some event sources, to make the exact ordering of events unambiguous, regardless of the timestamp precision. | long |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | host.architecture | Operating system architecture. | keyword |

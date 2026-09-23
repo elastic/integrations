@@ -94,9 +94,9 @@ All filters work together using AND logic at the top level. Within each multi-va
 
 The OpenCTI integration supports running on multiple Elastic Agents for high availability. When multiple agents fetch the same indicators:
 
-- **Automatic Deduplication**: The integration uses a fingerprint-based document ID to prevent duplicates. Each indicator gets a consistent ID based on its `standard_id` and `modified` timestamp.
+- **Automatic Deduplication**: The integration uses a fingerprint-based document ID to prevent duplicates. Each indicator version gets a consistent ID based on its `standard_id`, `modified` and `updated_at` timestamps.
 - **No Manual Configuration Needed**: Deduplication works automatically - just deploy the integration to multiple agents.
-- **Update Handling**: When an indicator is updated in OpenCTI, the new version replaces the old one in Elasticsearch.
+- **Update Handling**: When an indicator is updated in OpenCTI, a new document is indexed alongside the previous version in `logs-ti_opencti.indicator-*`. The `latest_ioc` transform keeps only the most recent version per indicator in `logs-ti_opencti_latest.indicator`, which is the index detection rules and dashboards should query.
 
 #### Best Practices for HA Setup
 
@@ -164,6 +164,7 @@ Timestamps are mapped as follows:
 | -           | event.ingested                | Time the event arrived in the central data store |
 | created     | event.created                 | Time of the indicator's creation |
 | modified    | threat.indicator.modified_at  | Time of the indicator's last modification |
+| updated_at  | opencti.indicator.updated_at  | Time the indicator record was last updated in the OpenCTI platform, including UI edits, enrichment and scoring changes |
 | valid_from  | opencti.indicator.valid_from  | Time from which this indicator is considered a valid indicator of the behaviors it is related to or represents |
 | valid_until | opencti.indicator.valid_until | Time at which this indicator should no longer be considered a valid indicator of the behaviors it is related to or represents |
 | -           | opencti.indicator.invalid_or_revoked_from | The earliest time at which an indicator reaches its `valid_until` time or is marked as revoked |

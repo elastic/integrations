@@ -1,6 +1,6 @@
 # Mimecast Integration
 
-The Mimecast integration collects events from the [Mimecast API](https://integrations.mimecast.com/documentation/).
+The Mimecast integration collects events from the [Mimecast API](https://developer.services.mimecast.com/apis).
 
 ## Agentless Enabled Integration
 
@@ -9,22 +9,28 @@ Agentless deployments are only supported in Elastic Serverless and Elastic Cloud
 
 ## Configuration
 
-### v1 API Endpoints
+### v2 API Endpoints
 
-Authorization parameters for the Mimecast API (`Application Key`, `Application
-ID`, `Access Key`, and `Secret Key`) should be provided by a Mimecast
-representative for this integration. Under `Advanced options` you can set the
-time interval between two API requests as well as the API URL. A Mimecast
+Authorization parameters for the Mimecast API (`Client ID` and `Client Secret`) should
+be provided by a Mimecast representative for this integration. Under `Advanced options`
+you can set the time interval between two API requests as well as the API URL. A Mimecast
 representative should also be able to give you this information in case you need
 to change the defaults.
 
 > Note: Rate limit quotas may require you to set up different credentials for the different available log types.
 
-### v2 API Endpoints
+### v1 API Endpoints (deprecated)
 
-Authorization parameters for the Mimecast API (`Client ID` and `Client Key`) should
-be provided by a Mimecast representative for this integration. Under `Advanced options`
-you can set the time interval between two API requests as well as the API URL. A Mimecast
+> **Deprecated:** Mimecast API 1.0 is [end-of-life](https://mimecastsupport.zendesk.com/hc/en-us/articles/43572890309651-API-Integrations-API-1-0-End-of-Life-Project-Extension-Aug-2025).
+> New installations should use the v2 API. Existing v1 configurations continue
+> to work but will stop functioning when Mimecast retires API 1.0 application
+> credentials. See the [API 1.0 to 2.0 Migration Guide](https://developer.services.mimecast.com/api-1-0-to-2-0-migration-guide)
+> for details on provisioning v2 API credentials.
+
+Authorization parameters for the Mimecast API (`Application Key`, `Application
+ID`, `Access Key`, and `Secret Key`) should be provided by a Mimecast
+representative for this integration. Under `Advanced options` you can set the
+time interval between two API requests as well as the API URL. A Mimecast
 representative should also be able to give you this information in case you need
 to change the defaults.
 
@@ -37,30 +43,30 @@ to change the defaults.
 This is the `mimecast.archive_search_logs` dataset. These logs contain Mimecast archive
 search logs with the following details: search source, description and detailed
 information about the search performed. More information about these logs is available [here](
-https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-statistics/get-archive-search-logs/).
+https://developer.services.mimecast.com/docs/auditevents/1/routes/api/archive/get-archive-search-logs/post).
 
 An example event for `archive_search` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-03-18T18:35:49.000Z",
+    "@timestamp": "2024-11-12T16:21:27.000Z",
     "agent": {
-        "ephemeral_id": "7a63b865-3dc4-403b-8cd4-54e99b744e0e",
-        "id": "79e1ec7c-5d51-4db4-a363-df2e810d3411",
-        "name": "elastic-agent-28365",
+        "ephemeral_id": "c28fe82d-b778-437e-8bca-cd19f65ce426",
+        "id": "774a7e89-0464-43ea-870d-42c8a6304863",
+        "name": "elastic-agent-68546",
         "type": "filebeat",
         "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "mimecast.archive_search_logs",
-        "namespace": "34707",
+        "namespace": "78572",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "79e1ec7c-5d51-4db4-a363-df2e810d3411",
+        "id": "774a7e89-0464-43ea-870d-42c8a6304863",
         "snapshot": false,
         "version": "8.19.4"
     },
@@ -69,40 +75,30 @@ An example event for `archive_search` looks as following:
         "category": [
             "api"
         ],
-        "created": "2021-03-18T18:35:49.000Z",
+        "created": "2024-11-12T16:21:27.000Z",
         "dataset": "mimecast.archive_search_logs",
-        "ingested": "2025-12-16T10:32:04Z",
+        "ingested": "2026-07-27T21:30:21Z",
         "kind": "event",
-        "original": "{\"createTime\":\"2021-03-18T18:35:49+0000\",\"description\":\"Message Tracking Search\",\"emailAddr\":\"admin_dhamilton@hapi1.hamilton321.net\",\"searchReason\":\"\",\"searchText\":\"\",\"source\":\"archive\"}",
+        "original": "{\"createTime\":\"2024-11-12T16:21:27+0000\",\"description\":\"Message Tracking Search\",\"emailAddr\":\"\\u003c\\u003e\",\"searchReason\":\"\",\"searchText\":\"[User : user1@example.net]\",\"source\":\"archive\"}",
         "type": [
             "admin"
         ]
     },
     "input": {
-        "type": "httpjson"
+        "type": "cel"
     },
     "mimecast": {
         "search_details": {
             "description": "Message Tracking Search",
-            "source": "archive"
+            "source": "archive",
+            "text": "[User : user1@example.net]"
         }
-    },
-    "related": {
-        "user": [
-            "admin_dhamilton",
-            "admin_dhamilton@hapi1.hamilton321.net"
-        ]
     },
     "tags": [
         "preserve_original_event",
         "forwarded",
         "mimecast-archive-search-logs"
-    ],
-    "user": {
-        "domain": "hapi1.hamilton321.net",
-        "email": "admin_dhamilton@hapi1.hamilton321.net",
-        "name": "admin_dhamilton"
-    }
+    ]
 }
 ```
 
@@ -135,7 +131,7 @@ An example event for `archive_search` looks as following:
 This is the `mimecast.audit_events` dataset. These logs contain Mimecast audit
 events with the following details: audit type, event category and detailed
 information about the event. More information about [these logs](
-https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-statistics/get-audit-events/).
+https://developer.services.mimecast.com/docs/auditevents/1/routes/api/audit/get-audit-events/post).
 
 An example event for `audit_events` looks as following:
 
@@ -143,25 +139,43 @@ An example event for `audit_events` looks as following:
 {
     "@timestamp": "2024-10-17T02:06:50.000Z",
     "agent": {
-        "ephemeral_id": "ee552a9c-e676-4cef-9a3a-f97a235f7c65",
-        "id": "1933b9c1-c985-4d21-9296-179670233826",
-        "name": "elastic-agent-38243",
+        "ephemeral_id": "7b2346a4-f48b-4dd0-8526-1c95c9bec91c",
+        "id": "b8edebe1-b5f6-43b8-9eae-992861cc32e6",
+        "name": "elastic-agent-26155",
         "type": "filebeat",
         "version": "8.19.4"
     },
     "client": {
-        "ip": "203.59.201.168"
+        "as": {
+            "number": 64501,
+            "organization": {
+                "name": "Documentation ASN"
+            }
+        },
+        "geo": {
+            "city_name": "Amsterdam",
+            "continent_name": "Europe",
+            "country_iso_code": "NL",
+            "country_name": "Netherlands",
+            "location": {
+                "lat": 52.37404,
+                "lon": 4.88969
+            },
+            "region_iso_code": "NL-NH",
+            "region_name": "North Holland"
+        },
+        "ip": "198.51.100.44"
     },
     "data_stream": {
         "dataset": "mimecast.audit_events",
-        "namespace": "23909",
+        "namespace": "47381",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "1933b9c1-c985-4d21-9296-179670233826",
+        "id": "b8edebe1-b5f6-43b8-9eae-992861cc32e6",
         "snapshot": false,
         "version": "8.19.4"
     },
@@ -174,8 +188,8 @@ An example event for `audit_events` looks as following:
         "created": "2024-10-17T02:06:50.000Z",
         "dataset": "mimecast.audit_events",
         "id": "eNoVzk0PgiAAgOH_wrUO4SizrYOasxUzs6jWLYURfqEg6Wr99-z-bs_7AZplRjFBwQp4E3y5t3G7w1SVz9KxwxtJj7mVNripeP7WV3N2-3AohNUFGw0DmMY2aqOeq7MZfCKqyME1jeUMv_qAdVub6MJdnprZIYz2PS3u-bNuB54kfA2m4GGo6ErJ_zZCi4UD51OQGd3JiqlMUjYu-eTkIdey0di_mNJC1mAFvz-isz1f",
-        "ingested": "2026-05-03T12:56:55Z",
-        "original": "{\"auditType\":\"API Application Updated\",\"category\":\"account_logs\",\"eventInfo\":\"API Gateway Application testing Updated. Application Program Interface Addendum (22 September 2022) acknowledged, Date: 2024-10-17, Time: 02:06:50+0000, IP: 203.59.201.168, Application: Administration Console\",\"eventTime\":\"2024-10-17T02:06:50+0000\",\"id\":\"eNoVzk0PgiAAgOH_wrUO4SizrYOasxUzs6jWLYURfqEg6Wr99-z-bs_7AZplRjFBwQp4E3y5t3G7w1SVz9KxwxtJj7mVNripeP7WV3N2-3AohNUFGw0DmMY2aqOeq7MZfCKqyME1jeUMv_qAdVub6MJdnprZIYz2PS3u-bNuB54kfA2m4GGo6ErJ_zZCi4UD51OQGd3JiqlMUjYu-eTkIdey0di_mNJC1mAFvz-isz1f\",\"user\":\"user.name@company.mime-api.com\"}"
+        "ingested": "2026-07-27T21:32:10Z",
+        "original": "{\"auditType\":\"API Application Updated\",\"category\":\"account_logs\",\"eventInfo\":\"API Gateway Application testing Updated. Application Program Interface Addendum (22 September 2022) acknowledged, Date: 2024-10-17, Time: 02:06:50+0000, IP: 198.51.100.44, Application: Administration Console\",\"eventTime\":\"2024-10-17T02:06:50+0000\",\"id\":\"eNoVzk0PgiAAgOH_wrUO4SizrYOasxUzs6jWLYURfqEg6Wr99-z-bs_7AZplRjFBwQp4E3y5t3G7w1SVz9KxwxtJj7mVNripeP7WV3N2-3AohNUFGw0DmMY2aqOeq7MZfCKqyME1jeUMv_qAdVub6MJdnprZIYz2PS3u-bNuB54kfA2m4GGo6ErJ_zZCi4UD51OQGd3JiqlMUjYu-eTkIdey0di_mNJC1mAFvz-isz1f\",\"user\":\"user.name@example.com\"}"
     },
     "input": {
         "type": "cel"
@@ -183,15 +197,15 @@ An example event for `audit_events` looks as following:
     "mimecast": {
         "application": "Administration Console",
         "category": "account_logs",
-        "eventInfo": "API Gateway Application testing Updated. Application Program Interface Addendum (22 September 2022) acknowledged, Date: 2024-10-17, Time: 02:06:50+0000, IP: 203.59.201.168, Application: Administration Console"
+        "eventInfo": "API Gateway Application testing Updated. Application Program Interface Addendum (22 September 2022) acknowledged, Date: 2024-10-17, Time: 02:06:50+0000, IP: 198.51.100.44, Application: Administration Console"
     },
     "related": {
         "ip": [
-            "203.59.201.168"
+            "198.51.100.44"
         ],
         "user": [
             "user.name",
-            "user.name@company.mime-api.com"
+            "user.name@example.com"
         ]
     },
     "tags": [
@@ -200,8 +214,8 @@ An example event for `audit_events` looks as following:
         "mimecast-audit-events"
     ],
     "user": {
-        "domain": "company.mime-api.com",
-        "email": "user.name@company.mime-api.com",
+        "domain": "example.com",
+        "email": "user.name@example.com",
         "name": "user.name"
     }
 }
@@ -248,27 +262,27 @@ An example event for `cloud_integrated` looks as following:
 {
     "@timestamp": "2024-11-21T18:03:26.960Z",
     "agent": {
-        "ephemeral_id": "7ea63455-2f5b-420f-87e2-7a33d3f86299",
-        "id": "2934863c-8548-4f64-b43e-d42a5265e942",
-        "name": "elastic-agent-43281",
+        "ephemeral_id": "f4436d4b-4588-4855-b8d0-a1b40d365790",
+        "id": "5ae7b2ce-717c-4d4a-b112-6739f55dc239",
+        "name": "elastic-agent-36980",
         "type": "filebeat",
-        "version": "8.16.0"
+        "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "mimecast.cloud_integrated_logs",
-        "namespace": "25198",
+        "namespace": "26086",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "2934863c-8548-4f64-b43e-d42a5265e942",
+        "id": "5ae7b2ce-717c-4d4a-b112-6739f55dc239",
         "snapshot": false,
-        "version": "8.16.0"
+        "version": "8.19.4"
     },
     "email": {
-        "message_id": "<2ae37333-38e7-89ff-dc36-c8d48c6e3df3@demovation-ci.b41.one>"
+        "message_id": "<2ae37333-38e7-89ff-dc36-c8d48c6e3df3@mail.example.org>"
     },
     "event": {
         "agent_id_status": "verified",
@@ -277,9 +291,8 @@ An example event for `cloud_integrated` looks as following:
         ],
         "created": "2024-11-21T18:03:26.960Z",
         "dataset": "mimecast.cloud_integrated_logs",
-        "ingested": "2025-07-08T12:53:17Z",
-        "module": "mimecast",
-        "original": "{\"_offset\":1803841,\"_partition\":53,\"accountId\":\"AUS2474\",\"aggregateId\":\"4XvR1B4m7BzFB8L-qk59b4szrgayciaagczc977rzb_1732212206\",\"authResults\":[{\"aligned\":true,\"result\":\"pass\",\"type\":\"SPF\"},{\"aligned\":false,\"result\":\"none\",\"type\":\"DKIM\"},{\"aligned\":null,\"result\":\"pass\",\"type\":\"DMARC\"}],\"messageId\":\"\\u003c2ae37333-38e7-89ff-dc36-c8d48c6e3df3@demovation-ci.b41.one\\u003e\",\"processingId\":\"c40337e6860db0301575d8d09362bff214c0b010d6c4d41da9d770759ff54d10_1732212206\",\"subtype\":null,\"timestamp\":1732212206960,\"type\":\"mailflow\"}"
+        "ingested": "2026-07-27T21:33:04Z",
+        "original": "{\"_offset\":1803841,\"_partition\":53,\"accountId\":\"AUS2474\",\"aggregateId\":\"4XvR1B4m7BzFB8L-qk59b4szrgayciaagczc977rzb_1732212206\",\"authResults\":[{\"aligned\":true,\"result\":\"pass\",\"type\":\"SPF\"},{\"aligned\":false,\"result\":\"none\",\"type\":\"DKIM\"},{\"aligned\":null,\"result\":\"pass\",\"type\":\"DMARC\"}],\"messageId\":\"\\u003c2ae37333-38e7-89ff-dc36-c8d48c6e3df3@mail.example.org\\u003e\",\"processingId\":\"c40337e6860db0301575d8d09362bff214c0b010d6c4d41da9d770759ff54d10_1732212206\",\"subtype\":null,\"timestamp\":1732212206960,\"type\":\"mailflow\"}"
     },
     "input": {
         "type": "cel"
@@ -287,22 +300,22 @@ An example event for `cloud_integrated` looks as following:
     "mimecast": {
         "accountId": "AUS2474",
         "aggregateId": "4XvR1B4m7BzFB8L-qk59b4szrgayciaagczc977rzb_1732212206",
-        "authResults": {
-            "aligned": [
-                true,
-                false
-            ],
-            "result": [
-                "pass",
-                "none",
-                "pass"
-            ],
-            "type": [
-                "SPF",
-                "DKIM",
-                "DMARC"
-            ]
-        },
+        "authResults": [
+            {
+                "aligned": true,
+                "result": "pass",
+                "type": "SPF"
+            },
+            {
+                "aligned": false,
+                "result": "none",
+                "type": "DKIM"
+            },
+            {
+                "result": "pass",
+                "type": "DMARC"
+            }
+        ],
         "log_type": "mailflow",
         "processingId": "c40337e6860db0301575d8d09362bff214c0b010d6c4d41da9d770759ff54d10_1732212206"
     },
@@ -368,59 +381,64 @@ An example event for `cloud_integrated` looks as following:
 This is the `mimecast.dlp_logs` dataset. These logs contain information about
 messages that triggered a DLP or Content Examination policy. More information
 about [these logs](
-https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-statistics/get-dlp-logs/). 
+https://developer.services.mimecast.com/docs/securityevents/1/routes/api/dlp/get-logs/post). 
 
 An example event for `dlp` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-11-18T21:41:18.000Z",
+    "@timestamp": "2024-11-17T19:47:39.000Z",
     "agent": {
-        "ephemeral_id": "b24eb4af-c762-48f8-8330-820a19c3ff92",
-        "id": "4d775e70-07f7-47c6-824a-405828fce806",
-        "name": "elastic-agent-36544",
+        "ephemeral_id": "7a20afc6-bf6d-4a71-83e9-69e8c0a251c6",
+        "id": "d6ee16c4-81eb-43f0-8b84-47854a597170",
+        "name": "elastic-agent-84675",
         "type": "filebeat",
         "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "mimecast.dlp_logs",
-        "namespace": "10826",
+        "namespace": "85443",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "4d775e70-07f7-47c6-824a-405828fce806",
+        "id": "d6ee16c4-81eb-43f0-8b84-47854a597170",
         "snapshot": false,
         "version": "8.19.4"
     },
     "email": {
         "direction": "inbound",
-        "message_id": "<20211118214115.B346F10021D-2@mail.emailsec.ninja>",
-        "subject": "Undelivered Mail Returned to Sender",
+        "from": {
+            "address": [
+                "webmaster@example.org"
+            ]
+        },
+        "message_id": "<ae9f2f0678ed116f-152138@mail.example.net>",
+        "subject": "New CERA.com Coming Soon! - CERA Alert",
         "to": {
             "address": [
-                "johndoe@example.com"
+                "vkamins@example.com"
             ]
         }
     },
     "event": {
-        "action": "notification",
+        "action": "hold",
         "agent_id_status": "verified",
         "category": [
             "email"
         ],
-        "created": "2021-11-18T21:41:18+0000",
+        "created": "2024-11-17T19:47:39+0000",
         "dataset": "mimecast.dlp_logs",
-        "ingested": "2025-12-16T10:36:16Z",
-        "original": "{\"action\":\"notification\",\"eventTime\":\"2021-11-18T21:41:18+0000\",\"messageId\":\"\\u003c20211118214115.B346F10021D-2@mail.emailsec.ninja\\u003e\",\"policy\":\"Content Inspection - Watermark\",\"recipientAddress\":\"johndoe@example.com\",\"route\":\"inbound\",\"senderAddress\":\"\\u003c\\u003e\",\"subject\":\"Undelivered Mail Returned to Sender\"}"
+        "ingested": "2026-07-27T21:34:50Z",
+        "original": "{\"action\":\"hold\",\"eventTime\":\"2024-11-17T19:47:39+0000\",\"messageId\":\"\\u003cae9f2f0678ed116f-152138@mail.example.net\\u003e\",\"policy\":\"Confidential\",\"recipientAddress\":\"vkamins@example.com\",\"route\":\"inbound\",\"senderAddress\":\"webmaster@example.org\",\"subject\":\"New CERA.com Coming Soon! - CERA Alert\"}"
     },
     "input": {
-        "type": "httpjson"
+        "type": "cel"
     },
     "rule": {
-        "name": "Content Inspection - Watermark"
+        "name": "Confidential"
     },
     "tags": [
         "preserve_original_event",
@@ -453,7 +471,7 @@ An example event for `dlp` looks as following:
 This is the `mimecast.message_release_logs` dataset. These logs contain information about
 messages that were either released to the recipient, with details about the user that
 processed the release. More information about [these logs](
-https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-statistics/get-message-release-logs/). 
+https://developer.services.mimecast.com/docs/auditevents/1/routes/api/gateway/get-held-release-logs/post). 
 
 An example event for `message_release` looks as following:
 
@@ -461,37 +479,37 @@ An example event for `message_release` looks as following:
 {
     "@timestamp": "2024-10-28T14:16:51.000Z",
     "agent": {
-        "ephemeral_id": "6f44afc9-d958-4ef8-80d9-1fa4488ee06c",
-        "id": "93f79b0f-4dfe-430e-a155-e3bc5ea1f4c6",
-        "name": "elastic-agent-66267",
+        "ephemeral_id": "2d1b712e-504c-4cd7-b474-9181085c82b6",
+        "id": "fbdcd635-f38b-43ec-b3c2-df54c9c6c41d",
+        "name": "elastic-agent-69652",
         "type": "filebeat",
-        "version": "8.16.0"
+        "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "mimecast.message_release_logs",
-        "namespace": "80489",
+        "namespace": "95418",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "93f79b0f-4dfe-430e-a155-e3bc5ea1f4c6",
+        "id": "fbdcd635-f38b-43ec-b3c2-df54c9c6c41d",
         "snapshot": false,
-        "version": "8.16.0"
+        "version": "8.19.4"
     },
     "email": {
         "direction": "inbound",
         "from": {
             "address": [
-                "yahoo-delivers@evaluation-fuzz.b41.one"
+                "yahoo-delivers@example.org"
             ]
         },
         "local_id": "eNoNjt0KgjAYQN9ltwlNMVZBF...",
         "subject": "Yahoo! Newsletter, November 2001",
         "to": {
             "address": [
-                "monika.causholli@demo-int.elastic.mime-api.com"
+                "monika.causholli@example.com"
             ]
         }
     },
@@ -503,10 +521,9 @@ An example event for `message_release` looks as following:
         ],
         "dataset": "mimecast.message_release_logs",
         "id": "eNoNjt0KgjAYQN9ltwlNMVZBF...",
-        "ingested": "2025-07-08T12:55:56Z",
+        "ingested": "2026-07-27T21:35:40Z",
         "kind": "alert",
-        "module": "mimecast",
-        "original": "{\"attachments\":true,\"detectionLevel\":\"relaxed\",\"fromEnv\":{\"emailAddress\":\"yahoo-delivers@evaluation-fuzz.b41.one\"},\"fromHdr\":{\"emailAddress\":\"yahoo-delivers@evaluation-fuzz.b41.one\"},\"heldReason\":\"Default Spam Scanning Definition\",\"id\":\"eNoNjt0KgjAYQN9ltwlNMVZBF...\",\"messageInfo\":\"Graymail\",\"operator\":{\"emailAddress\":\"monika.causholli@demo-int.elastic.mime-api.com\"},\"policy\":\"Default Spam Scanning Definition\",\"rejectReason\":\"Message goes against email policies\",\"released\":\"2024-10-28T14:16:51+0000\",\"route\":\"inbound\",\"size\":3670056,\"spamProcessingDetail\":{\"dkim\":{\"allow\":true,\"info\":\"unknown\"},\"dmarc\":{\"allow\":true,\"info\":\"allow\"},\"greyEmail\":false,\"managedSender\":{\"allow\":true,\"info\":\"unknown\"},\"permittedSender\":{\"allow\":true,\"info\":\"none\"},\"rbl\":{\"allow\":true,\"info\":\"\"},\"spf\":{\"allow\":true,\"info\":\"allow\"},\"verdict\":{\"categories\":[{\"name\":\"spam\",\"risk\":\"high\",\"subcategories\":[{\"augmentations\":[],\"name\":\"technology_feed\",\"risk\":\"high\"},{\"augmentations\":[{\"name\":\"body\",\"risk\":\"negligible\"}],\"name\":\"content\",\"risk\":\"negligible\"}]},{\"name\":\"graymail\",\"risk\":\"negligible\",\"subcategories\":[]}],\"decision\":\"spam\",\"description\":\"\",\"risk\":\"high\"}},\"spamScore\":20,\"status\":\"rejected\",\"subject\":\"Yahoo! Newsletter, November 2001\",\"to\":[{\"emailAddress\":\"monika.causholli@demo-int.elastic.mime-api.com\"}]}",
+        "original": "{\"attachments\":true,\"detectionLevel\":\"relaxed\",\"fromEnv\":{\"emailAddress\":\"yahoo-delivers@example.org\"},\"fromHdr\":{\"emailAddress\":\"yahoo-delivers@example.org\"},\"heldReason\":\"Default Spam Scanning Definition\",\"id\":\"eNoNjt0KgjAYQN9ltwlNMVZBF...\",\"messageInfo\":\"Graymail\",\"operator\":{\"emailAddress\":\"monika.causholli@example.com\"},\"policy\":\"Default Spam Scanning Definition\",\"rejectReason\":\"Message goes against email policies\",\"released\":\"2024-10-28T14:16:51+0000\",\"route\":\"inbound\",\"size\":3670056,\"spamProcessingDetail\":{\"dkim\":{\"allow\":true,\"info\":\"unknown\"},\"dmarc\":{\"allow\":true,\"info\":\"allow\"},\"greyEmail\":false,\"managedSender\":{\"allow\":true,\"info\":\"unknown\"},\"permittedSender\":{\"allow\":true,\"info\":\"none\"},\"rbl\":{\"allow\":true,\"info\":\"\"},\"spf\":{\"allow\":true,\"info\":\"allow\"},\"verdict\":{\"categories\":[{\"name\":\"spam\",\"risk\":\"high\",\"subcategories\":[{\"augmentations\":[],\"name\":\"technology_feed\",\"risk\":\"high\"},{\"augmentations\":[{\"name\":\"body\",\"risk\":\"negligible\"}],\"name\":\"content\",\"risk\":\"negligible\"}]},{\"name\":\"graymail\",\"risk\":\"negligible\",\"subcategories\":[]}],\"decision\":\"spam\",\"description\":\"\",\"risk\":\"high\"}},\"spamScore\":20,\"status\":\"rejected\",\"subject\":\"Yahoo! Newsletter, November 2001\",\"to\":[{\"emailAddress\":\"monika.causholli@example.com\"}]}",
         "reason": "Message goes against email policies",
         "risk_score": 20,
         "type": [
@@ -521,15 +538,15 @@ An example event for `message_release` looks as following:
             "attachments": true,
             "detectionLevel": "relaxed",
             "fromEnv": {
-                "emailAddress": "yahoo-delivers@evaluation-fuzz.b41.one"
+                "emailAddress": "yahoo-delivers@example.org"
             },
             "fromHdr": {
-                "emailAddress": "yahoo-delivers@evaluation-fuzz.b41.one"
+                "emailAddress": "yahoo-delivers@example.org"
             },
             "heldReason": "Default Spam Scanning Definition",
             "id": "eNoNjt0KgjAYQN9ltwlNMVZBF...",
             "messageInfo": "Graymail",
-            "operator": "monika.causholli@demo-int.elastic.mime-api.com",
+            "operator": "monika.causholli@example.com",
             "policy": "Default Spam Scanning Definition",
             "rejectReason": "Message goes against email policies",
             "released": "2024-10-28T14:16:51+0000",
@@ -594,21 +611,23 @@ An example event for `message_release` looks as following:
             "spamScore": 20,
             "status": "rejected",
             "subject": "Yahoo! Newsletter, November 2001",
-            "to": {
-                "emailAddress": "monika.causholli@demo-int.elastic.mime-api.com"
-            }
+            "to": [
+                {
+                    "emailAddress": "monika.causholli@example.com"
+                }
+            ]
         }
     },
     "related": {
         "hosts": [
-            "demo-int.elastic.mime-api.com",
-            "evaluation-fuzz.b41.one"
+            "example.com",
+            "example.org"
         ],
         "user": [
             "monika.causholli",
-            "monika.causholli@demo-int.elastic.mime-api.com",
+            "monika.causholli@example.com",
             "yahoo-delivers",
-            "yahoo-delivers@evaluation-fuzz.b41.one"
+            "yahoo-delivers@example.org"
         ]
     },
     "tags": [
@@ -617,7 +636,9 @@ An example event for `message_release` looks as following:
         "mimecast-message-release-logs"
     ],
     "user": {
-        "email": "monika.causholli@demo-int.elastic.mime-api.com"
+        "email": [
+            "monika.causholli@example.com"
+        ]
     }
 }
 ```
@@ -684,72 +705,111 @@ An example event for `message_release` looks as following:
 This is the `mimecast.siem_logs` dataset. These logs contain information about
 messages that contains MTA (message transfer agent) log – all inbound,
 outbound, and internal messages. More about [these logs](
-https://integrations.mimecast.com/documentation/tutorials/understanding-siem-logs/).
+https://developer.services.mimecast.com/docs/threatssecurityeventsanddataforcg/1/routes/siem/v1/batch/events/cg/get).
 
 An example event for `siem` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-11-12T12:15:46.000Z",
+    "@timestamp": "2024-11-12T18:52:07.130Z",
     "agent": {
-        "ephemeral_id": "b9b503e9-092b-4ff9-82d7-5fe035b87cab",
-        "id": "949dd69d-1c58-45d5-8401-dd1500236b54",
-        "name": "elastic-agent-24961",
+        "ephemeral_id": "0b763c82-ffca-4953-af86-7bf79ab57bd0",
+        "id": "3d392d70-5a2b-4c45-97a7-e5b156050a28",
+        "name": "elastic-agent-30190",
         "type": "filebeat",
         "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "mimecast.siem_logs",
-        "namespace": "59193",
+        "namespace": "91723",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "949dd69d-1c58-45d5-8401-dd1500236b54",
+        "id": "3d392d70-5a2b-4c45-97a7-e5b156050a28",
         "snapshot": false,
         "version": "8.19.4"
     },
     "email": {
-        "direction": "internal",
+        "direction": "outbound",
         "from": {
             "address": [
-                "johndoe@example.com"
+                "sender@example.com"
             ]
         },
-        "local_id": "fjihpfEgM_iRwemxhe3t_w",
+        "message_id": "<23b9843f48f8d349-99325@mail.example.net>",
+        "subject": "Out of office",
         "to": {
             "address": [
-                "o365_service_account@example.com"
+                "recipient@example.net"
             ]
         }
     },
     "event": {
+        "action": "Acc",
         "agent_id_status": "verified",
         "category": [
             "email"
         ],
-        "created": "2021-11-12T12:15:46+0000",
+        "created": "2024-11-12T18:52:07.130Z",
         "dataset": "mimecast.siem_logs",
-        "ingested": "2026-06-08T14:14:21Z",
-        "original": "{\"Content-Disposition\":\"attachment; filename=\\\"jrnl_20211018093329655.json\\\"\",\"Dir\":\"Internal\",\"Rcpt\":\"o365_service_account@example.com\",\"RcptActType\":\"Jnl\",\"RcptHdrType\":\"Unknown\",\"Sender\":\"johndoe@example.com\",\"aCode\":\"fjihpfEgM_iRwemxhe3t_w\",\"acc\":\"ABC123\",\"datetime\":\"2021-11-12T12:15:46+0000\"}",
+        "ingested": "2026-07-27T21:37:21Z",
+        "original": "{\"_offset\":70595,\"_partition\":60,\"accountId\":\"CUSB4A274\",\"action\":\"Acc\",\"aggregateId\":\"q1h3LjgrN46b12GlX0By9Q_1731437523\",\"direction\":\"Outbound\",\"messageId\":\"\\u003c23b9843f48f8d349-99325@mail.example.net\\u003e\",\"numberAttachments\":\"0\",\"processingId\":\"X7OQopo8177ryv7KXWXxytbksk3qv0Ct8NSYWcQkhJM_1731437523\",\"receiptErrors\":null,\"recipients\":\"recipient@example.net\",\"rejectionCode\":null,\"rejectionInfo\":null,\"rejectionType\":null,\"senderEnvelope\":\"sender@example.com\",\"senderHeader\":\"sender@example.com\",\"senderIp\":\"198.51.100.18\",\"spamDetectionLevel\":\"28\",\"spamInfo\":\"[]\",\"spamProcessingDetail\":null,\"spamScore\":\"0\",\"subject\":\"Out of office\",\"subtype\":\"Acc\",\"timestamp\":1731437527130,\"tlsCipher\":\"TLS_AES_256_GCM_SHA384\",\"tlsVersion\":\"TLSv1.3\",\"type\":\"receipt\",\"virusFound\":null}",
         "outcome": "unknown"
     },
     "input": {
-        "type": "httpjson"
+        "type": "cel"
     },
     "mimecast": {
-        "RcptActType": "Jnl",
-        "RcptHdrType": "Unknown",
-        "acc": "ABC123",
-        "log_type": "jrnl"
+        "accountId": "CUSB4A274",
+        "aggregateId": "q1h3LjgrN46b12GlX0By9Q_1731437523",
+        "log_type": "receipt",
+        "numberAttachments": "0",
+        "processingId": "X7OQopo8177ryv7KXWXxytbksk3qv0Ct8NSYWcQkhJM_1731437523",
+        "senderHeader": "sender@example.com",
+        "spamDetectionLevel": "28",
+        "spamInfo": "[]",
+        "spamScore": "0",
+        "subtype": "Acc",
+        "tlsVersion": "TLSv1.3"
+    },
+    "related": {
+        "user": [
+            "sender@example.com",
+            "recipient@example.net"
+        ]
+    },
+    "source": {
+        "as": {
+            "number": 64501,
+            "organization": {
+                "name": "Documentation ASN"
+            }
+        },
+        "geo": {
+            "city_name": "Amsterdam",
+            "continent_name": "Europe",
+            "country_iso_code": "NL",
+            "country_name": "Netherlands",
+            "location": {
+                "lat": 52.37404,
+                "lon": 4.88969
+            },
+            "region_iso_code": "NL-NH",
+            "region_name": "North Holland"
+        },
+        "ip": "198.51.100.18"
     },
     "tags": [
         "preserve_original_event",
         "forwarded",
         "mimecast-siem-logs"
-    ]
+    ],
+    "tls": {
+        "cipher": "TLS_AES_256_GCM_SHA384"
+    }
 }
 ```
 
@@ -901,7 +961,7 @@ An example event for `siem` looks as following:
 This is the `mimecast.threat_intel_malware_customer` dataset. These logs contain
 information about messages that return identified malware threats at a customer
 level.  Learn more about [these logs](
-https://integrations.mimecast.com/documentation/endpoint-reference/threat-intel/get-feed/).
+https://developer.services.mimecast.com/docs/threatmanagement/1/routes/api/ttp/threat-intel/get-feed/post).
 
 An example event for `threat_intel_malware_customer` looks as following:
 
@@ -909,24 +969,24 @@ An example event for `threat_intel_malware_customer` looks as following:
 {
     "@timestamp": "2024-11-18T16:08:00.000Z",
     "agent": {
-        "ephemeral_id": "1ecad07f-284c-4ee4-8186-330abb2d63c3",
-        "id": "9dc76eb3-dc6c-41c1-896e-86b2bf2be049",
-        "name": "elastic-agent-54045",
+        "ephemeral_id": "1fe461ea-1dbc-4674-bff8-4c9ac095f607",
+        "id": "40a830ad-e58f-4e72-a8ca-9fd4c517e038",
+        "name": "elastic-agent-71745",
         "type": "filebeat",
-        "version": "9.2.3"
+        "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "mimecast.threat_intel_malware_customer",
-        "namespace": "36057",
+        "namespace": "45715",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "9dc76eb3-dc6c-41c1-896e-86b2bf2be049",
+        "id": "40a830ad-e58f-4e72-a8ca-9fd4c517e038",
         "snapshot": false,
-        "version": "9.2.3"
+        "version": "8.19.4"
     },
     "event": {
         "agent_id_status": "verified",
@@ -936,9 +996,8 @@ An example event for `threat_intel_malware_customer` looks as following:
             "malware"
         ],
         "dataset": "mimecast.threat_intel_malware_customer",
-        "ingested": "2026-01-13T14:23:04Z",
+        "ingested": "2026-07-27T21:39:01Z",
         "kind": "enrichment",
-        "module": "mimecast",
         "original": "{\"created\":\"2024-11-18T16:08Z\",\"id\":\"indicator--366fad17-1142-4f18-a488-802b2127b30c\",\"labels\":[\"malicious-activity\"],\"modified\":\"2024-11-18T16:08Z\",\"pattern\":\"[file:hashes.'SHA-256' = '275a021bbfb6489e54d471899f7db9d1663fc695ec2fe2a2c4538aabf651fd0f']\",\"type\":\"indicator\",\"valid_from\":\"2024-11-18T16:08Z\"}",
         "type": [
             "indicator"
@@ -949,7 +1008,9 @@ An example event for `threat_intel_malware_customer` looks as following:
     },
     "mimecast": {
         "id": "indicator--366fad17-1142-4f18-a488-802b2127b30c",
-        "labels": "malicious-activity",
+        "labels": [
+            "malicious-activity"
+        ],
         "pattern": "[file:hashes.'SHA-256' = '275a021bbfb6489e54d471899f7db9d1663fc695ec2fe2a2c4538aabf651fd0f']",
         "type": "indicator"
     },
@@ -1021,7 +1082,7 @@ An example event for `threat_intel_malware_customer` looks as following:
 This is the `mimecast.threat_intel_malware_grid` dataset. These logs contain
 information about messages that return identified malware threats at a regional 
 grid level. More about [these logs](
-https://integrations.mimecast.com/documentation/endpoint-reference/threat-intel/get-feed/).
+https://developer.services.mimecast.com/docs/threatmanagement/1/routes/api/ttp/threat-intel/get-feed/post).
 
 An example event for `threat_intel_malware_grid` looks as following:
 
@@ -1029,24 +1090,24 @@ An example event for `threat_intel_malware_grid` looks as following:
 {
     "@timestamp": "2024-11-18T23:45:00.000Z",
     "agent": {
-        "ephemeral_id": "d7003063-6ec7-4c71-8a70-25aaab828f63",
-        "id": "4d6fa746-7af3-4e44-8d6f-72cae18cc0ff",
-        "name": "elastic-agent-97618",
+        "ephemeral_id": "1ce8a3d0-6a85-4038-8b63-a70b76ae4f4e",
+        "id": "97ebdfa3-58b7-4cdc-8892-e3faf047717a",
+        "name": "elastic-agent-10317",
         "type": "filebeat",
-        "version": "9.2.3"
+        "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "mimecast.threat_intel_malware_grid",
-        "namespace": "35643",
+        "namespace": "14663",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "4d6fa746-7af3-4e44-8d6f-72cae18cc0ff",
+        "id": "97ebdfa3-58b7-4cdc-8892-e3faf047717a",
         "snapshot": false,
-        "version": "9.2.3"
+        "version": "8.19.4"
     },
     "event": {
         "agent_id_status": "verified",
@@ -1056,9 +1117,8 @@ An example event for `threat_intel_malware_grid` looks as following:
             "malware"
         ],
         "dataset": "mimecast.threat_intel_malware_grid",
-        "ingested": "2026-01-13T14:24:43Z",
+        "ingested": "2026-07-27T21:40:41Z",
         "kind": "enrichment",
-        "module": "mimecast",
         "original": "{\"created\":\"2024-11-18T23:45Z\",\"id\":\"indicator--46e1c0cf-a90c-413d-94b2-7fa889e79fe7\",\"labels\":[\"malicious-activity\"],\"modified\":\"2024-11-18T23:45Z\",\"pattern\":\"[file:hashes.'SHA-256' = 'f4cbcb0b434a2376bf50ba8949dd83bc866dab481fe49595983bba1f76044670']\",\"type\":\"indicator\",\"valid_from\":\"2024-11-18T23:45Z\"}",
         "type": [
             "indicator"
@@ -1069,7 +1129,9 @@ An example event for `threat_intel_malware_grid` looks as following:
     },
     "mimecast": {
         "id": "indicator--46e1c0cf-a90c-413d-94b2-7fa889e79fe7",
-        "labels": "malicious-activity",
+        "labels": [
+            "malicious-activity"
+        ],
         "pattern": "[file:hashes.'SHA-256' = 'f4cbcb0b434a2376bf50ba8949dd83bc866dab481fe49595983bba1f76044670']",
         "type": "indicator"
     },
@@ -1144,78 +1206,84 @@ analysis (if it is malicious or not etc.), date when file is released, sender
 and recipient address, filename and type, action triggered for the attachment, 
 the route of the original email containing the attachment and details. 
 Learn more about [these logs](
-https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-statistics/get-ttp-attachment-protection-logs/).
+https://developer.services.mimecast.com/docs/securityevents/1/routes/api/ttp/attachment/get-logs/post).
 
 An example event for `ttp_ap` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-11-24T11:54:27.000Z",
+    "@timestamp": "2024-11-17T00:52:30.000Z",
     "agent": {
-        "ephemeral_id": "b02029a2-8693-492f-b399-70a52affb601",
-        "id": "4d94529c-4879-4740-8c99-9661e034dff9",
-        "name": "elastic-agent-34716",
+        "ephemeral_id": "6c35dc2e-0998-4c38-ab0f-4c724b471421",
+        "id": "6d90727b-56a3-4d70-852c-4c594dd67e21",
+        "name": "elastic-agent-84142",
         "type": "filebeat",
         "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "mimecast.ttp_ap_logs",
-        "namespace": "29066",
+        "namespace": "77305",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "4d94529c-4879-4740-8c99-9661e034dff9",
+        "id": "6d90727b-56a3-4d70-852c-4c594dd67e21",
         "snapshot": false,
         "version": "8.19.4"
     },
     "email": {
         "attachments": {
             "file": {
-                "extension": "pdf",
+                "extension": "xlsx",
                 "hash": {
-                    "sha256": "cabd7cb6e1822fd9e1fc9bcf144ee26ee6bfc855c4574ca967dd53dcc36a1254"
+                    "sha256": "168dde02cf41aed3bf31ad831b75d8ee0b738304baa6957c40e29b2487f15116"
                 },
-                "mime_type": "application/pdf",
-                "name": "Datasheet_Mimecast Targeted Threat Protection + Internal Email Protect (2).pdf"
+                "mime_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                "name": "Sandbox Test.xlsx"
             }
         },
-        "direction": "inbound",
-        "message_id": "<1-CAKUQxhimsCd1bvWQVs14Amuh1+Hnw_bmSuA7ot8hy4eDa9_ziQ@mail.gmail.com>",
-        "subject": "Test Files",
+        "direction": "internal",
+        "from": {
+            "address": [
+                "eric.boyt@example.com"
+            ]
+        },
+        "message_id": "<675ddc8ccedda6a7-363046@mail.example.net>",
+        "subject": "RE",
         "to": {
             "address": [
-                "johndoe@emample.com"
+                "charles.weldon@example.com"
             ]
         }
     },
     "event": {
-        "action": "user_release_none",
+        "action": "none",
         "agent_id_status": "verified",
         "category": [
             "email"
         ],
-        "created": "2021-11-24T11:54:27+0000",
+        "created": "2024-11-17T00:52:30+0000",
         "dataset": "mimecast.ttp_ap_logs",
-        "ingested": "2025-12-16T10:38:25Z",
-        "original": "{\"actionTriggered\":\"user release, none\",\"date\":\"2021-11-24T11:54:27+0000\",\"definition\":\"Inbound - Safe file with On-Demand Sandbox\",\"details\":\"Safe\\r\\nTime taken: 0 hrs, 0 min, 7 sec\",\"fileHash\":\"cabd7cb6e1822fd9e1fc9bcf144ee26ee6bfc855c4574ca967dd53dcc36a1254\",\"fileName\":\"Datasheet_Mimecast Targeted Threat Protection + Internal Email Protect (2).pdf\",\"fileType\":\"application/pdf\",\"messageId\":\"\\u003c1-CAKUQxhimsCd1bvWQVs14Amuh1+Hnw_bmSuA7ot8hy4eDa9_ziQ@mail.gmail.com\\u003e\",\"recipientAddress\":\"johndoe@emample.com\",\"result\":\"safe\",\"route\":\"inbound\",\"senderAddress\":\"\\u003c\\u003e\",\"subject\":\"Test Files\"}"
+        "ingested": "2026-07-27T21:42:31Z",
+        "kind": "alert",
+        "original": "{\"actionTriggered\":\"none\",\"date\":\"2024-11-17T00:52:30+0000\",\"definition\":\"Default Internal Attachment Protect Definition\",\"details\":\"Malicious                                         \\r\\nTime taken: 0 hrs, 0 min, 1 sec\",\"fileHash\":\"168dde02cf41aed3bf31ad831b75d8ee0b738304baa6957c40e29b2487f15116\",\"fileName\":\"Sandbox Test.xlsx\",\"fileType\":\"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet\",\"messageId\":\"\\u003c675ddc8ccedda6a7-363046@mail.example.net\\u003e\",\"recipientAddress\":\"charles.weldon@example.com\",\"result\":\"malicious\",\"route\":\"internal\",\"senderAddress\":\"eric.boyt@example.com\",\"subject\":\"RE\"}"
     },
     "input": {
-        "type": "httpjson"
+        "type": "cel"
     },
     "mimecast": {
-        "details": "Safe\r\nTime taken: 0 hrs, 0 min, 7 sec",
-        "result": "safe"
+        "details": "Malicious                                         \r\nTime taken: 0 hrs, 0 min, 1 sec",
+        "result": "malicious"
     },
     "related": {
         "hash": [
-            "cabd7cb6e1822fd9e1fc9bcf144ee26ee6bfc855c4574ca967dd53dcc36a1254"
+            "168dde02cf41aed3bf31ad831b75d8ee0b738304baa6957c40e29b2487f15116"
         ]
     },
     "rule": {
-        "name": "Inbound - Safe file with On-Demand Sandbox"
+        "name": "Default Internal Attachment Protect Definition"
     },
     "tags": [
         "preserve_original_event",
@@ -1265,30 +1333,30 @@ An example event for `ttp_ap` looks as following:
 This is the `mimecast.ttp_ip_logs` dataset. These logs contain information about
 messages containing information flagged by an Impersonation Protection
 configuration. Learn more about [these logs]
-(https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-statistics/get-ttp-impersonation-protect-logs/).
+(https://developer.services.mimecast.com/docs/securityevents/1/routes/api/ttp/impersonation/get-logs/post).
 
 An example event for `ttp_ip` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-11-12T15:27:04.000Z",
+    "@timestamp": "2021-11-12T15:27:14.000Z",
     "agent": {
-        "ephemeral_id": "33a85920-cac6-40c1-8eb1-f10d7fe336e8",
-        "id": "9ae2237c-6df6-4642-8866-f4baeb8378ef",
-        "name": "elastic-agent-30931",
+        "ephemeral_id": "7836d37b-77c8-46f3-a57f-b71673ea32de",
+        "id": "50458d13-e7ba-49fa-9205-baae2462b578",
+        "name": "elastic-agent-22398",
         "type": "filebeat",
         "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "mimecast.ttp_ip_logs",
-        "namespace": "24821",
+        "namespace": "24544",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "9ae2237c-6df6-4642-8866-f4baeb8378ef",
+        "id": "50458d13-e7ba-49fa-9205-baae2462b578",
         "snapshot": false,
         "version": "8.19.4"
     },
@@ -1298,11 +1366,11 @@ An example event for `ttp_ip` looks as following:
                 "johndoe@example.com"
             ]
         },
-        "message_id": "<20-MN2PR16MB2719879CA4DB60C265F7FD8FB0959@MN2PR16MB2719.namprd16.prod.outlook.com>",
+        "message_id": "<2-MN2PR16MB2719879CA4DB60C265F7FD8FB0959@MN2PR16MB2719.namprd16.example.outlook.com>",
         "subject": "Don't read, just fill out!",
         "to": {
             "address": [
-                "johndoe@example.com"
+                "johndoejr@exampple.com"
             ]
         }
     },
@@ -1312,15 +1380,15 @@ An example event for `ttp_ip` looks as following:
         "category": [
             "email"
         ],
-        "created": "2021-11-12T15:27:04+0000",
+        "created": "2021-11-12T15:27:14+0000",
         "dataset": "mimecast.ttp_ip_logs",
-        "id": "MTOKEN:eNqrVkouLS7Jz00tSs5PSVWyUnI2MXM0N1XSUcpMUbIyMjM3MzAw0FEqSy0qzszPU7Iy1FEqyQMrNDAwV6oFAGMiEg8",
-        "ingested": "2025-12-16T10:23:35Z",
+        "id": "MTOKEN:eNqrVkouLS7Jz00tSs5PSVWyUnI2MXM0N1XSUcpMUbIyMjM3MzCw0FEqSy0qzszPU7Iy1FEqyQMrNDAwV6oFAGP7Ehc",
+        "ingested": "2026-07-27T21:45:16Z",
         "kind": "alert",
-        "original": "{\"action\":\"none\",\"definition\":\"IP - 1 hit (Tag email)\",\"eventTime\":\"2021-11-12T15:27:04+0000\",\"hits\":1,\"id\":\"MTOKEN:eNqrVkouLS7Jz00tSs5PSVWyUnI2MXM0N1XSUcpMUbIyMjM3MzAw0FEqSy0qzszPU7Iy1FEqyQMrNDAwV6oFAGMiEg8\",\"identifiers\":[\"internal_user_name\"],\"impersonationResults\":[{\"checkerResult\":\"hit\",\"impersonationDomainSource\":\"internal_user_name\",\"similarDomain\":\"John Doe \\u003cjohndoe_cdw@example.com\\u003e\",\"stringSimilarToDomain\":\"John Doe\"}],\"messageId\":\"\\u003c20-MN2PR16MB2719879CA4DB60C265F7FD8FB0959@MN2PR16MB2719.namprd16.prod.outlook.com\\u003e\",\"recipientAddress\":\"johndoe@example.com\",\"senderAddress\":\"johndoe@example.com\",\"senderIpAddress\":\"8.8.8.8\",\"subject\":\"Don't read, just fill out!\",\"taggedExternal\":false,\"taggedMalicious\":true}"
+        "original": "{\"action\":\"none\",\"definition\":\"IP - 1 hit (Tag email)\",\"eventTime\":\"2021-11-12T15:27:14+0000\",\"hits\":1,\"id\":\"MTOKEN:eNqrVkouLS7Jz00tSs5PSVWyUnI2MXM0N1XSUcpMUbIyMjM3MzCw0FEqSy0qzszPU7Iy1FEqyQMrNDAwV6oFAGP7Ehc\",\"identifiers\":[\"internal_user_name\"],\"impersonationResults\":[{\"checkerResult\":\"hit\",\"impersonationDomainSource\":\"internal_user_name\",\"similarDomain\":\"John Doe \\u003cjohndoe_nu@example.com\\u003e\",\"stringSimilarToDomain\":\"John Doe\"}],\"messageId\":\"\\u003c2-MN2PR16MB2719879CA4DB60C265F7FD8FB0959@MN2PR16MB2719.namprd16.example.outlook.com\\u003e\",\"recipientAddress\":\"johndoejr@exampple.com\",\"senderAddress\":\"johndoe@example.com\",\"senderIpAddress\":\"8.8.8.8\",\"subject\":\"Don't read, just fill out!\",\"taggedExternal\":false,\"taggedMalicious\":true}"
     },
     "input": {
-        "type": "httpjson"
+        "type": "cel"
     },
     "mimecast": {
         "hits": 1,
@@ -1331,7 +1399,7 @@ An example event for `ttp_ip` looks as following:
             {
                 "checkerResult": "hit",
                 "impersonationDomainSource": "internal_user_name",
-                "similarDomain": "John Doe <johndoe_cdw@example.com>",
+                "similarDomain": "John Doe <johndoe_nu@example.com>",
                 "stringSimilarToDomain": "John Doe"
             }
         ],
@@ -1402,30 +1470,30 @@ URL, the date that the URL was clicked, url scan result, the action that was
 taken for the click, the description of the definition that triggered the URL to
 be rewritten by Mimecast, the action requested by the user, an array of
 components of the message where the URL was found. More about [these logs](
-https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-statistics/get-ttp-url-logs/).
+https://developer.services.mimecast.com/docs/securityevents/1/routes/api/ttp/url/get-logs/post).
 
 An example event for `ttp_url` looks as following:
 
 ```json
 {
-    "@timestamp": "2021-11-10T03:49:53.000Z",
+    "@timestamp": "2024-11-13T13:03:11.000Z",
     "agent": {
-        "ephemeral_id": "e16fc88d-c17b-446c-91bf-ab2f69c24a3a",
-        "id": "739d0562-8a1e-4e77-97d0-08327ffab55b",
-        "name": "elastic-agent-24838",
+        "ephemeral_id": "b7d9f19d-7919-43ed-86fa-31ac220ebd1d",
+        "id": "073b3ca7-4566-4379-8ddb-1024cb115517",
+        "name": "elastic-agent-93533",
         "type": "filebeat",
         "version": "8.19.4"
     },
     "data_stream": {
         "dataset": "mimecast.ttp_url_logs",
-        "namespace": "81022",
+        "namespace": "89520",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "739d0562-8a1e-4e77-97d0-08327ffab55b",
+        "id": "073b3ca7-4566-4379-8ddb-1024cb115517",
         "snapshot": false,
         "version": "8.19.4"
     },
@@ -1433,57 +1501,81 @@ An example event for `ttp_url` looks as following:
         "direction": "inbound",
         "from": {
             "address": [
-                "googlealerts-noreply@google.com"
+                "gregoryhunt@example.org"
             ]
         },
-        "message_id": "<20-000000000000a02a0a05d0671c06@google.com>",
-        "subject": "Google Alert - china",
+        "message_id": "<cc11f61d32d018de-152846@mail.example.net>",
+        "subject": "Re",
         "to": {
             "address": [
-                "johndoe@example.com"
+                "mike.a.roberts@example.com"
             ]
         }
     },
     "event": {
-        "action": "Continue",
+        "action": "N/A",
         "agent_id_status": "verified",
         "category": [
             "email"
         ],
-        "created": "2021-11-10T03:49:53+0000",
+        "created": "2024-11-13T13:03:11+0000",
         "dataset": "mimecast.ttp_url_logs",
-        "ingested": "2025-12-16T10:27:15Z",
-        "original": "{\"action\":\"allow\",\"actions\":\"Allow\",\"adminOverride\":\"N/A\",\"category\":\"Search Engines \\u0026 Portals\",\"creationMethod\":\"User Click\",\"date\":\"2021-11-10T03:49:53+0000\",\"emailPartsDescription\":[\"Body\"],\"fromUserEmailAddress\":\"googlealerts-noreply@google.com\",\"messageId\":\"\\u003c20-000000000000a02a0a05d0671c06@google.com\\u003e\",\"route\":\"inbound\",\"scanResult\":\"clean\",\"sendingIp\":\"8.8.8.8\",\"subject\":\"Google Alert - china\",\"ttpDefinition\":\"Inbound URL 'Aggressive'\",\"url\":\"https://www.google.co.za/alerts/share?hl=en\\u0026gl=US\\u0026ru=https://www.wsj.com/articles/u-s-tests-israels-iron-dome-in-guam-as-defense-against-chinese-cruise-missiles-11636455224\\u0026ss=tw\\u0026rt=U.S.+Tests+Israel%27s+Iron+Dome+in+Guam+as+Defense+Against+Chinese+Cruise+Missiles+-+WSJ\\u0026cd=KhQxNzg2NTc5NDQ3ODIzODUyNjI5NzIcZmQ4N2VjYzkxMGIxMWE4Yzpjby56YTplbjpVUw\\u0026ssp=AMJHsmW3CCK1S4TNPifSXszcyaNMwd6TDg\",\"userAwarenessAction\":\"Continue\",\"userEmailAddress\":\"johndoe@example.com\",\"userOverride\":\"None\"}"
+        "ingested": "2026-07-27T21:46:51Z",
+        "kind": "alert",
+        "original": "{\"action\":\"warn\",\"actions\":\"Block\",\"adminOverride\":\"N/A\",\"category\":\"Dangerous file extension\",\"creationMethod\":\"Entry Scan\",\"date\":\"2024-11-13T13:03:11+0000\",\"emailPartsDescription\":[\"Attachment\"],\"fromUserEmailAddress\":\"gregoryhunt@example.org\",\"messageId\":\"\\u003ccc11f61d32d018de-152846@mail.example.net\\u003e\",\"route\":\"inbound\",\"scanResult\":\"malicious\",\"sendingIp\":\"203.0.113.42\",\"subject\":\"Re\",\"tagMap\":{\"DangerousFileExt\":{\"ContentCheck:ContentScannersBlocked\":[\".exe\"],\"ContentCheck:DangerousExtsUrlFileDownload\":[\"dll\"],\"ContentCheck:DangerousMimetypesUrlFileDownload\":[\"application/x-msdownload\"],\"Inspect:FileExts\":[\"[exe]\"],\"Inspect:MimeTypes\":[\"[]\"],\"Status\":[\"CustomerSpecific\",\"VerdictBlock\"]}},\"ttpDefinition\":\"Default Inbound URL Protect Definition\",\"url\":\"https://oneclient.sfx.ms/Win/Preview/OneDriveSetup.exe\",\"userAwarenessAction\":\"N/A\",\"userEmailAddress\":\"mike.a.roberts@example.com\",\"userOverride\":\"None\"}"
     },
     "input": {
-        "type": "httpjson"
+        "type": "cel"
     },
     "mimecast": {
-        "action": "allow",
-        "actions": "Allow",
+        "action": "warn",
+        "actions": "Block",
         "adminOverride": "N/A",
-        "category": "Search Engines & Portals",
-        "creationMethod": "User Click",
+        "category": "Dangerous file extension",
+        "creationMethod": "Entry Scan",
         "emailPartsDescription": [
-            "Body"
+            "Attachment"
         ],
-        "scanResult": "clean",
+        "scanResult": "malicious",
+        "tagMap": {
+            "DangerousFileExt": {
+                "ContentCheck_ContentScannersBlocked": [
+                    ".exe"
+                ],
+                "ContentCheck_DangerousExtsUrlFileDownload": [
+                    "dll"
+                ],
+                "ContentCheck_DangerousMimetypesUrlFileDownload": [
+                    "application/x-msdownload"
+                ],
+                "Inspect_FileExts": [
+                    "[exe]"
+                ],
+                "Inspect_MimeTypes": [
+                    "[]"
+                ],
+                "Status": [
+                    "CustomerSpecific",
+                    "VerdictBlock"
+                ]
+            }
+        },
         "userOverride": "None"
     },
     "related": {
         "ip": [
-            "8.8.8.8"
+            "203.0.113.42"
         ],
         "user": [
-            "googlealerts-noreply@google.com",
-            "johndoe@example.com"
+            "gregoryhunt@example.org",
+            "mike.a.roberts@example.com"
         ]
     },
     "rule": {
-        "name": "Inbound URL 'Aggressive'"
+        "name": "Default Inbound URL Protect Definition"
     },
     "source": {
-        "ip": "8.8.8.8"
+        "ip": "203.0.113.42"
     },
     "tags": [
         "preserve_original_event",
@@ -1491,15 +1583,15 @@ An example event for `ttp_url` looks as following:
         "mimecast-ttp-url"
     ],
     "url": {
-        "domain": "www.google.co.za",
-        "original": "https://www.google.co.za/alerts/share?hl=en&gl=US&ru=https://www.wsj.com/articles/u-s-tests-israels-iron-dome-in-guam-as-defense-against-chinese-cruise-missiles-11636455224&ss=tw&rt=U.S.+Tests+Israel%27s+Iron+Dome+in+Guam+as+Defense+Against+Chinese+Cruise+Missiles+-+WSJ&cd=KhQxNzg2NTc5NDQ3ODIzODUyNjI5NzIcZmQ4N2VjYzkxMGIxMWE4Yzpjby56YTplbjpVUw&ssp=AMJHsmW3CCK1S4TNPifSXszcyaNMwd6TDg",
-        "path": "/alerts/share",
-        "query": "hl=en&gl=US&ru=https://www.wsj.com/articles/u-s-tests-israels-iron-dome-in-guam-as-defense-against-chinese-cruise-missiles-11636455224&ss=tw&rt=U.S.+Tests+Israel's+Iron+Dome+in+Guam+as+Defense+Against+Chinese+Cruise+Missiles+-+WSJ&cd=KhQxNzg2NTc5NDQ3ODIzODUyNjI5NzIcZmQ4N2VjYzkxMGIxMWE4Yzpjby56YTplbjpVUw&ssp=AMJHsmW3CCK1S4TNPifSXszcyaNMwd6TDg",
+        "domain": "oneclient.sfx.ms",
+        "extension": "exe",
+        "original": "https://oneclient.sfx.ms/Win/Preview/OneDriveSetup.exe",
+        "path": "/Win/Preview/OneDriveSetup.exe",
         "scheme": "https"
     },
     "user": {
         "email": [
-            "johndoe@example.com"
+            "mike.a.roberts@example.com"
         ]
     }
 }
