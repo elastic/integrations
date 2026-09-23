@@ -43,6 +43,7 @@ data_stream:
   vars:
     interval: 30s
     initial_interval: 1h
+    lookback: 5m
     batch_size: 2
     preserve_original_event: true
     enable_request_tracer: false
@@ -64,12 +65,12 @@ services:
       - --config=/config.yml
 -- nozomi-mock/config.yml --
 rules:
-  # Second poll: the query embeds the first record's cursor timestamp.
+  # Second poll: the query embeds the first record's cursor timestamp minus lookback (5m).
   # Respond with "error" as an empty string plus a second record.
   - path: /api/open/query/do
     methods: [GET]
     query_params:
-      query: '{query:sessions \| where last_activity_time > 1745957044875 \| sort last_activity_time asc}'
+      query: '{query:sessions \| where first_activity_time > 1745956744874 \| sort first_activity_time asc}'
     request_headers:
       Authorization:
         - "Basic dXNlcm5hbWU6cGFzc3dvcmQ="

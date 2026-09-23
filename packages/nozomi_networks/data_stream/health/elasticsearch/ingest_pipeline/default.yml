@@ -153,11 +153,6 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
-      field: '@timestamp'
-      tag: set_@timestamp_from_health_record_created_at_514a2e6d
-      copy_from: nozomi_networks.health.record_created_at
-      ignore_empty_value: true
-  - set:
       field: event.created
       tag: set_event_created_from_health_record_created_at_9ecbe575
       copy_from: nozomi_networks.health.record_created_at
@@ -233,6 +228,17 @@ processors:
             tag: append_error_message_9e271141
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: '@timestamp'
+      tag: set_@timestamp_from_health_time
+      copy_from: nozomi_networks.health.time
+      ignore_empty_value: true
+  - set:
+      field: event.created
+      tag: set_event_created_from_health_time_fallback
+      copy_from: nozomi_networks.health.time
+      override: false
+      ignore_empty_value: true
   - remove:
       field:
         - nozomi_networks.health.appliance_host
