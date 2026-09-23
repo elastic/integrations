@@ -173,11 +173,10 @@ processors:
           san: san
         microsoft_sid_uri_prefix: 'tag:microsoft.com,2022-09-14:sid:'
       source: |
-        // Trim space/tab padding at attribute and SAN boundaries.
-        // LF separates lines upstream; parseAttributes removes a terminal CR.
-        // Other whitespace is preserved.
+        // Trim ASCII whitespace (space, tab, LF, VT, FF, CR) at attribute and SAN boundaries.
+        // LF still separates attribute lines upstream; non-ASCII whitespace is preserved.
         boolean edgeWhitespace(int character) {
-          return character == 32 || character == 9;
+          return character == 32 || (character >= 9 && character <= 13);
         }
 
         int trimmedStart(String text, int start, int end) {
