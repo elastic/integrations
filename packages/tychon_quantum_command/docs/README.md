@@ -8,6 +8,8 @@
 
 [TYCHON Quantum Command](https://tychon.io/products/tychon/pqc-management-module/) helps organizations inventory cryptographic implementations, assess post-quantum exposure, and prioritize remediation across endpoints, applications, certificates, network services, key stores, and platform readiness. This integration ingests TYCHON Quantum Command output files into Elastic, normalizes the source stream, and publishes entity-focused transform destinations for dashboards, search, and reporting.
 
+The `tychon_pqc` data stream captures TYCHON Quantum Command’s cryptographic discovery, inventory, and readiness data, with a focus on post-quantum cryptography (PQC).
+
 ### Compatibility
 
 * Intended for environments where TYCHON Quantum Command produces NDJSON or JSON output files on Windows, Linux, or macOS systems.
@@ -992,22 +994,22 @@ An example event for `tychon_pqc` looks as following:
 {
     "@timestamp": "2026-07-06T17:03:00.055Z",
     "agent": {
-        "ephemeral_id": "d388f15e-e95c-4cb0-b6cc-6198b770997b",
-        "id": "432ea99b-3470-4e39-82f1-75ef824cb5b4",
-        "name": "elastic-agent-44984",
+        "ephemeral_id": "dad4ba4e-58df-48a9-b4bd-a39bb9558cf3",
+        "id": "ad725662-dd67-42f6-9170-11ab457e5186",
+        "name": "elastic-agent-12520",
         "type": "filebeat",
         "version": "9.4.4"
     },
     "data_stream": {
         "dataset": "tychon_quantum_command.tychon_pqc",
-        "namespace": "99844",
+        "namespace": "50030",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "432ea99b-3470-4e39-82f1-75ef824cb5b4",
+        "id": "ad725662-dd67-42f6-9170-11ab457e5186",
         "snapshot": false,
         "version": "9.4.4"
     },
@@ -1017,7 +1019,7 @@ An example event for `tychon_pqc` looks as following:
             "process"
         ],
         "dataset": "tychon_quantum_command.tychon_pqc",
-        "ingested": "2026-09-21T19:26:22Z",
+        "ingested": "2026-09-22T18:50:48Z",
         "kind": "event",
         "module": "tychon_quantum_command",
         "timezone": "+00:00",
@@ -1030,19 +1032,19 @@ An example event for `tychon_pqc` looks as following:
         "containerized": true,
         "domain": "example.test",
         "hostname": [
-            "elastic-agent-44984",
+            "elastic-agent-12520",
             "test-host-01"
         ],
         "id": "00000000-0000-4000-8000-000000000002",
         "ip": [
-            "172.18.0.2",
+            "172.20.0.2",
             "172.19.0.5"
         ],
         "mac": [
-            "9A-A7-1C-80-53-DA",
-            "BE-48-E0-45-67-16"
+            "46-CA-E3-02-81-00",
+            "DE-2F-40-B4-E9-F4"
         ],
-        "name": "elastic-agent-44984",
+        "name": "elastic-agent-12520",
         "os": {
             "kernel": "5.15.167.4-microsoft-standard-WSL2",
             "name": "Wolfi",
@@ -1058,7 +1060,7 @@ An example event for `tychon_pqc` looks as following:
         "file": {
             "device_id": "2080",
             "fingerprint": "c3bcc1408b1e5f41d97bb84c34c14a5ee739ac01cae8689818b4bd470b280280",
-            "inode": "17030",
+            "inode": "467280",
             "path": "/tmp/service_logs/tqc.ndjson"
         },
         "offset": 0
@@ -1069,7 +1071,7 @@ An example event for `tychon_pqc` looks as following:
     },
     "related": {
         "ip": [
-            "172.18.0.2",
+            "172.20.0.2",
             "172.19.0.5"
         ]
     },

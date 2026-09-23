@@ -7,6 +7,8 @@
 
 [TYCHON Quantum Command](https://tychon.io/products/tychon/pqc-management-module/) helps organizations inventory cryptographic implementations, assess post-quantum exposure, and prioritize remediation across endpoints, applications, certificates, network services, key stores, and platform readiness. This integration ingests TYCHON Quantum Command output files into Elastic, normalizes the source stream, and publishes entity-focused transform destinations for dashboards, search, and reporting.
 
+The `tychon_pqc` data stream captures TYCHON Quantum Command’s cryptographic discovery, inventory, and readiness data, with a focus on post-quantum cryptography (PQC).
+
 ### Compatibility
 
 * Intended for environments where TYCHON Quantum Command produces NDJSON or JSON output files on Windows, Linux, or macOS systems.
