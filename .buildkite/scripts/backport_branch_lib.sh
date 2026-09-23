@@ -38,14 +38,14 @@ get_required_package_names() {
 }
 
 
-# collect_linked_packages_from_roots accepts any number of root package paths
-# and returns (one per line) all packages reachable via .link files from any
-# of those roots, transitively. The roots themselves are excluded. Output is
-# deduplicated across all roots so each package appears at most once.
+# collect_link_source_packages accepts any number of package paths and returns
+# (one per line) all packages reachable via .link files from any of those
+# packages, transitively. The input packages themselves are excluded. Output is
+# deduplicated so each package appears at most once.
 # list_all_directories is called exactly once per invocation of this function,
-# regardless of the number of roots or BFS hops. collect_packages_to_keep calls
-# this function once per outer iteration (see its known-limitation comment).
-collect_linked_packages_from_roots() {
+# regardless of the number of input packages or BFS hops. collect_packages_to_keep
+# calls this function once per outer iteration (see its known-limitation comment).
+collect_link_source_packages() {
   # Build the package cache once upfront.
   local -a pkg_paths=() pkg_abss=()
   local pkg_path pkg_abs_tmp
@@ -157,7 +157,7 @@ collect_packages_to_keep() {
     done
 
     # Expand via .link files for all current packages.
-    # Known limitation: collect_linked_packages_from_roots rebuilds the package
+    # Known limitation: collect_link_source_packages rebuilds the package
     # list from list_all_directories on each call. The outer loop runs at most a
     # handful of iterations in practice (typically 1, rarely more than 3), so the
     # extra find traversal per iteration is negligible.
@@ -170,7 +170,7 @@ collect_packages_to_keep() {
         seen_pkgs["${linked_path}"]=1
         expanded=true
       fi
-    done < <(collect_linked_packages_from_roots "${packages_to_keep[@]}")
+    done < <(collect_link_source_packages "${packages_to_keep[@]}")
   done
 }
 
