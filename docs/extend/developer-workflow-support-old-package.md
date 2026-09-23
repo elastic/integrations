@@ -90,18 +90,18 @@ When a bug fix needs to be released for an older package version, the backport w
 
     ```bash
     # Requires Go 1.26+ (see cmd/backport/go.mod)
-    go build -C cmd/backport -o backport .
+    go build -o build/backport ./cmd/backport
     ```
 
     Then run:
 
     ```bash
-    ./backport add-entry <package_name> <base_version>
+    ./build/backport add-entry <package_name> <base_version>
     ```
 
     Example:
     ```bash
-    $ ./backport add-entry aws 1.19.5
+    $ ./build/backport add-entry aws 1.19.5
     Added: branch=backport-aws-1.19 base_commit=8cb321075afb9b77ea965e1373a03a603d9c9796
     ```
 
