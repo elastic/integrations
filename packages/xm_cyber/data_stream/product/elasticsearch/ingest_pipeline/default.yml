@@ -95,8 +95,30 @@ processors:
       description: Stable document id from the canonical raw payload (product rows lack a unique id field).
       fields:
         - xm_cyber.product.product_name
+        - xm_cyber.product.last_data_update
       target_field: _id
       ignore_missing: true
+  - date:
+      tag: date_last_data_update_b57e0c93
+      field: xm_cyber.product.last_data_update
+      target_field: xm_cyber.product.last_data_update
+      formats:
+        - ISO8601
+      if: ctx.xm_cyber?.product?.last_data_update != null && ctx.xm_cyber.product.last_data_update != ''
+      on_failure:
+        - remove:
+            tag: remove_last_data_update_on_failure_b57e0c93
+            field: xm_cyber.product.last_data_update
+            ignore_missing: true
+        - append:
+            tag: append_error_message_date_last_data_update_b57e0c93
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      tag: set_at_timestamp_from_last_data_update_1d9f6a25
+      field: '@timestamp'
+      copy_from: xm_cyber.product.last_data_update
+      ignore_empty_value: true
   - convert:
       tag: convert_affected_critical_assets_long_48746169
       field: xm_cyber.product.affected_critical_assets
@@ -172,6 +194,13 @@ processors:
             tag: append_error_message_f7223dc1
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  # ----- Remove duplicate vendor fields that have been mapped to ECS -----
+  - remove:
+      description: Remove vendor-specific fields that are duplicated to ECS.
+      tag: remove_fields_mapped_to_ecs_d7f17a29
+      ignore_missing: true
+      field:
+        - xm_cyber.product.last_data_update
   - script:
       tag: script_to_drop_null_values_7559f019
       lang: painless

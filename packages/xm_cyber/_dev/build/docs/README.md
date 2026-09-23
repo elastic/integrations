@@ -223,4 +223,6 @@ These XM Cyber REST API endpoints are used by this integration:
 
 ### ILM Policy
 
-To facilitate vulnerability data stream-backed indices `.ds-logs-xm_cyber.vulnerability-*` is allowed to contain duplicates from each polling interval. ILM policies `logs-xm_cyber.vulnerability-default_policy` is added to these source indices, so it doesn't lead to unbounded growth. This means that in these source indices data will be deleted after `30 days` from ingested date.
+The `device`, `product`, `vulnerability` and `vulnerability_instance` data streams collect a full snapshot of the XM Cyber VRM report on every polling interval. Each new report (identified by its `lastDataUpdate` timestamp) is indexed as a new set of documents, so the backing indices `.ds-logs-xm_cyber.device-*`, `.ds-logs-xm_cyber.product-*`, `.ds-logs-xm_cyber.vulnerability-*` and `.ds-logs-xm_cyber.vulnerability_instance-*` accumulate one copy of each record per report.
+
+To prevent unbounded growth, each of these data streams ships with its own ILM policy (`logs-xm_cyber.device-default_policy`, `logs-xm_cyber.product-default_policy`, `logs-xm_cyber.vulnerability-default_policy` and `logs-xm_cyber.vulnerability_instance-default_policy`) and a matching data stream lifecycle. Documents in these source indices are deleted `30 days` after they are ingested. The `latest_vulnerability` transform maintains the current view of each CVE in its own destination index, which is not affected by this retention.

@@ -108,11 +108,13 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
-  # ----- _id fingerprint from device_id (after snake_case normalization) -----
+  # ----- _id fingerprint from device_id + report timestamp (after snake_case normalization) -----
   - fingerprint:
       tag: fingerprint_with_device_id_b54ffce2
+      description: Deduplicate identical re-polls of the same report. A new lastDataUpdate produces a new document.
       fields:
         - xm_cyber.device.device_id
+        - xm_cyber.device.last_data_update
       target_field: _id
       ignore_missing: true
 
@@ -516,11 +518,28 @@ processors:
       copy_from: xm_cyber.device.device_type
       ignore_empty_value: true
 
-  # ----- @timestamp from last_scan -----
+  - date:
+      tag: date_last_data_update_2c9e4f71
+      description: Report timestamp from the API envelope; the only indication of when XM Cyber computed this data.
+      field: xm_cyber.device.last_data_update
+      target_field: xm_cyber.device.last_data_update
+      formats:
+        - ISO8601
+      if: ctx.xm_cyber?.device?.last_data_update != null && ctx.xm_cyber.device.last_data_update != ''
+      on_failure:
+        - remove:
+            tag: remove_last_data_update_on_failure_2c9e4f71
+            field: xm_cyber.device.last_data_update
+            ignore_missing: true
+        - append:
+            tag: append_error_message_date_last_data_update_2c9e4f71
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
   - set:
-      tag: set_at_timestamp_from_last_scan_0a47eadd
+      tag: set_at_timestamp_from_last_data_update
       field: '@timestamp'
-      copy_from: xm_cyber.device.last_scan
+      copy_from: xm_cyber.device.last_data_update
       ignore_empty_value: true
 
   # ----- Remove duplicate vendor fields that have been mapped to ECS -----
@@ -536,7 +555,7 @@ processors:
         - xm_cyber.device.os
         - xm_cyber.device.device_type
         - xm_cyber.device.ip_address
-        - xm_cyber.device.last_scan
+        - xm_cyber.device.last_data_update
 
   # ----- Drop null/empty leaf values from the document -----
   - script:
