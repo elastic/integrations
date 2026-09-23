@@ -1,6 +1,14 @@
 ---
 description: Pipeline for parsing Salesforce Logout (Object) logs.
 processors:
+  # LogoutEvent.Id is not unique across rows. EventIdentifier is, so use it as
+  # the document id to overwrite retried pages instead of inserting duplicates.
+  - fingerprint:
+      fields:
+        - json.EventIdentifier
+      target_field: _id
+      ignore_failure: true
+      ignore_missing: true
   - date:
       field: json.EventDate
       target_field: "@timestamp"
@@ -28,6 +36,11 @@ processors:
   - rename:
       field: json.SessionKey
       target_field: salesforce.logout.session.key
+      ignore_missing: true
+      ignore_failure: true
+  - rename:
+      field: json.EventIdentifier
+      target_field: event.id
       ignore_missing: true
       ignore_failure: true
   - date:

@@ -344,6 +344,7 @@ Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ec
 | aws.lambda.tracing.xray_trace_id | The X-Ray trace ID for the Lambda function invocation. | keyword |
 | aws.lambda.users |  | flattened |
 | aws.lambda.version | The version of the Lambda function. | keyword |
+| aws.lambda.xray_trace_id | The X-Ray trace ID for the Lambda function invocation, extracted from Powertools-style logs. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |

@@ -4,7 +4,7 @@
 
 [Nozomi Networks](https://www.nozominetworks.com/) is a global leader in OT and IoT cybersecurity, delivering unmatched visibility, real-time threat detection, and AI-powered analysis to safeguard critical infrastructure. Trusted across industries, Nozomi helps organizations protect mission-critical environments by combining deep network and endpoint visibility with rapid, intelligent incident response—ensuring security, compliance, and operational resilience.
 
-For this integration, data should be collected from Nozomi’s Vantage platform via REST APIs.
+For this integration, data can be collected from Nozomi **Vantage** or **CMC (Central Management Console)** via REST APIs.
 
 ## Data streams
 
@@ -39,7 +39,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 
 ## Compatibility
 
-For Rest API, this module has been tested against the **N2OS 25.1.0** version.
+For the REST API, this module has been tested against Nozomi Vantage and against CMC running **N2OS 26.5.0**.
 
 ## Setup
 
@@ -74,6 +74,14 @@ For more details, see [Nozomi Vantage API Key](https://technicaldocs.nozominetwo
 3. Select the **Nozomi Networks** integration and add it.
 4. Add all the required integration configuration parameters: URL, Username and Password.
 5. Save the integration.
+
+### CMC (Central Management Console)
+
+When collecting from a CMC endpoint, use the CMC URL and credentials that support **HTTP Basic** authentication (N2OS local user or equivalent). Use a CMC **All-in-One** deployment for Node collection; Multicontext CMC does not expose merged nodes.
+
+CMC and Vantage replicate Guardian events after they occur. Each data stream applies a configurable **Lookback** (default `5m`) to the previous cursor so late-replicated records are still collected. Re-fetched unchanged records are deduplicated by document fingerprint.
+
+Vantage API keys (Key Name and Key Token) continue to work for Vantage deployments as described above.
 
 ## Logs reference
 
@@ -307,6 +315,8 @@ An example event for `alert` looks as following:
 | input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
 | nozomi_networks.alert.ack | True if the Alert has been acknowledged. | boolean |
+| nozomi_networks.alert.additional_description | The additional description containing key-value pairs of fields from an asserted table | flattened |
+| nozomi_networks.alert.alert_info | Additional information for alerts created starting from N2OS Version 22.5 | flattened |
 | nozomi_networks.alert.appliance_host | The hostname of the sensor where this entity has been observed. | keyword |
 | nozomi_networks.alert.appliance_id | The id of the sensor where this entity has been observed. | keyword |
 | nozomi_networks.alert.appliance_ip | The IP address of the sensor where this entity has been observed. | ip |
@@ -315,9 +325,12 @@ An example event for `alert` looks as following:
 | nozomi_networks.alert.capture_device | Name of the interface from which this entity has been detected. | keyword |
 | nozomi_networks.alert.close_option |  | keyword |
 | nozomi_networks.alert.closed_time | Time in epoch milliseconds when the alert has been closed. 0 if still open. | date |
+| nozomi_networks.alert.counter | Number of times that the alert has been raised | long |
 | nozomi_networks.alert.created_time | Time when the alert record was created. | date |
 | nozomi_networks.alert.custom_fields_dst |  | flattened |
 | nozomi_networks.alert.custom_fields_src |  | flattened |
+| nozomi_networks.alert.deduplication_info | Information on sensors and alerts that contributed to a deduplicated alert | flattened |
+| nozomi_networks.alert.deduplication_key | Unique key used for alerts deduplication | keyword |
 | nozomi_networks.alert.description | More details about the alert. | match_only_text |
 | nozomi_networks.alert.destination_ip |  | ip |
 | nozomi_networks.alert.dst_roles | Roles of the target node. | keyword |
@@ -332,11 +345,16 @@ An example event for `alert` looks as following:
 | nozomi_networks.alert.is_security | True if the alert is a Cybersecurity alert. | boolean |
 | nozomi_networks.alert.label_dst | Label of the destination node. | keyword |
 | nozomi_networks.alert.label_src | Label of the source node. | keyword |
+| nozomi_networks.alert.levels_dst | The levels of destination nodes | keyword |
+| nozomi_networks.alert.levels_src | The levels of source nodes | keyword |
 | nozomi_networks.alert.mac_dst | Destination MAC address. | keyword |
 | nozomi_networks.alert.mac_src | Source media access control (MAC) addres. | keyword |
+| nozomi_networks.alert.mitre_attack_tactics | The Mitre Att&ck tactics related to this alert | keyword |
+| nozomi_networks.alert.mitre_attack_techniques | The Mitre Att&ck techniques related to this alert | keyword |
 | nozomi_networks.alert.name | Name of the type ID. It can be updated dynamically by the correlation engine. | keyword |
 | nozomi_networks.alert.note | User-defined note about the Alert. | keyword |
 | nozomi_networks.alert.parents | ID of parent incidents. | keyword |
+| nozomi_networks.alert.physical_links | List of physical connections linking the source node to the destination | flattened |
 | nozomi_networks.alert.playbook_contents |  | keyword |
 | nozomi_networks.alert.port_dst | Destination port. | long |
 | nozomi_networks.alert.port_src | Source port. | long |
@@ -357,6 +375,7 @@ An example event for `alert` looks as following:
 | nozomi_networks.alert.properties.to_id |  | keyword |
 | nozomi_networks.alert.protocol | The protocol in which this entity has been observed. | keyword |
 | nozomi_networks.alert.record_created_at |  | date |
+| nozomi_networks.alert.record_updated_at | Time in epoch milliseconds when the alert has been updated | date |
 | nozomi_networks.alert.replicated | This is true if the record has been replicated on the replica machine. | boolean |
 | nozomi_networks.alert.risk | Risk, between 0 and 10. | double |
 | nozomi_networks.alert.sec_profile_visible | True if the alert is visible according to the Security Profile. For alerts that are part of incidents, the field value is set to True when at least one child alert has the field value equal to True. | boolean |
@@ -370,6 +389,8 @@ An example event for `alert` looks as following:
 | nozomi_networks.alert.threat_name | In case of known threat, this holds the threat name. | keyword |
 | nozomi_networks.alert.ti_source |  | keyword |
 | nozomi_networks.alert.time | Time when the first packet triggers the alert; for incidents, it is the time of the last correlated alert, which updates over time. . | date |
+| nozomi_networks.alert.timeframe | Collected times of deduplicated alerts | flattened |
+| nozomi_networks.alert.trace | Reference to generated trace | keyword |
 | nozomi_networks.alert.trace_sha1 |  | keyword |
 | nozomi_networks.alert.trace_status |  | keyword |
 | nozomi_networks.alert.transport_protocol | Name of the transport protocol. | keyword |
@@ -377,10 +398,16 @@ An example event for `alert` looks as following:
 | nozomi_networks.alert.trigger_type | Name of the trigger/engine. | keyword |
 | nozomi_networks.alert.type_id | The Type identifier (ID) represents a unique "class" of the Alert, that characterizes what the Alert is about in a unique way. | keyword |
 | nozomi_networks.alert.type_name | Name of the type ID. It is immutable. | keyword |
+| nozomi_networks.alert.types_dst | The types of destination nodes | keyword |
+| nozomi_networks.alert.types_src | The types of source nodes | keyword |
+| nozomi_networks.alert.uid_dst | The uid of the destination node | keyword |
+| nozomi_networks.alert.uid_src | The uid of the source node | keyword |
 | nozomi_networks.alert.zone_dst | Destination zone. | keyword |
 | nozomi_networks.alert.zone_src | Source zone. | keyword |
 | observer.product |  | constant_keyword |
 | observer.vendor |  | constant_keyword |
+| threat.tactic.id | The id of tactic used by this threat. You can use a MITRE ATT&CK® tactic, for example. (ex. https://attack.mitre.org/tactics/TA0002/ ) | keyword |
+| threat.technique.id | The id of technique used by this threat. You can use a MITRE ATT&CK® technique, for example. (ex. https://attack.mitre.org/techniques/T1059/) | keyword |
 
 
 ### Asset
@@ -682,10 +709,14 @@ An example event for `asset` looks as following:
 | log.offset | Log offset. | long |
 | nozomi_networks.asset.activity_times |  | flattened |
 | nozomi_networks.asset.appliance_hosts | The hostname(s) of the sensor(s) where this entity has been observed. | keyword |
+| nozomi_networks.asset.appliance_ids | IDs of the Nozomi Guardians monitoring the asset | keyword |
+| nozomi_networks.asset.appliance_sites | The site(s) of the appliance(s) where this entity has been observed | keyword |
 | nozomi_networks.asset.asset_kb_id |  | keyword |
 | nozomi_networks.asset.capture_device | Name of the interface from which this entity has been detected. | keyword |
+| nozomi_networks.asset.capture_devices | Names of the interfaces from which this entity has been detected | keyword |
 | nozomi_networks.asset.created_at |  | date |
 | nozomi_networks.asset.custom_fields | Any additional custom field defined in the Custom fields. | flattened |
+| nozomi_networks.asset.deleted_at | Time the entity was cancelled | date |
 | nozomi_networks.asset.device_id |  | keyword |
 | nozomi_networks.asset.end_of_sale_date |  | date |
 | nozomi_networks.asset.end_of_sale_date_info |  | flattened |
@@ -703,6 +734,7 @@ An example event for `asset` looks as following:
 | nozomi_networks.asset.last_activity_time |  | date |
 | nozomi_networks.asset.latitude |  | double |
 | nozomi_networks.asset.level | The purdue-model level of the asset. | keyword |
+| nozomi_networks.asset.levels | The set of all distinct non-empty level values of associated nodes | keyword |
 | nozomi_networks.asset.lifecycle |  | keyword |
 | nozomi_networks.asset.lifecycle_info |  | flattened |
 | nozomi_networks.asset.location_info |  | flattened |
@@ -715,6 +747,7 @@ An example event for `asset` looks as following:
 | nozomi_networks.asset.mobility_votes.asset-kb |  | keyword |
 | nozomi_networks.asset.name | Name of the node. | keyword |
 | nozomi_networks.asset.nodes | The set of node id(s) that compose this asset. | keyword |
+| nozomi_networks.asset.nodes_uids | The set of node uid(s) that compose this node | keyword |
 | nozomi_networks.asset.nozomi_risk |  | double |
 | nozomi_networks.asset.os | Operating System of the asset, if available. This field is not present when the firmware_version is available. | keyword |
 | nozomi_networks.asset.os_info |  | flattened |
@@ -723,6 +756,7 @@ An example event for `asset` looks as following:
 | nozomi_networks.asset.product_name | The product name of the asset. | keyword |
 | nozomi_networks.asset.product_name_info | This is a metadata field about the product_name field. | flattened |
 | nozomi_networks.asset.properties |  | flattened |
+| nozomi_networks.asset.protocol_fields | Additional fields found by several protocols attached to the node | flattened |
 | nozomi_networks.asset.protocols | The unique protocols used from and to this asset. | keyword |
 | nozomi_networks.asset.record_created_at |  | date |
 | nozomi_networks.asset.remediations_signatures |  | keyword |
@@ -893,6 +927,9 @@ An example event for `audit` looks as following:
 | input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
 | nozomi_networks.audit.action |  | keyword |
+| nozomi_networks.audit.appliance_host | The hostname of the appliance where this entity has been observed | keyword |
+| nozomi_networks.audit.appliance_id | The id of the appliance where this entity has been observed | keyword |
+| nozomi_networks.audit.appliance_ip | The ip of the appliance that triggered the event | ip |
 | nozomi_networks.audit.browser |  | keyword |
 | nozomi_networks.audit.controller |  | keyword |
 | nozomi_networks.audit.details |  | keyword |
@@ -901,6 +938,8 @@ An example event for `audit` looks as following:
 | nozomi_networks.audit.ip_address |  | ip |
 | nozomi_networks.audit.name |  | keyword |
 | nozomi_networks.audit.record_created_at |  | date |
+| nozomi_networks.audit.replicated | This is true if the record has been replicated on the replica machine | boolean |
+| nozomi_networks.audit.synchronized | True if this entity has been synchronized with the upper CMC or Vantage | boolean |
 | nozomi_networks.audit.time |  | date |
 | nozomi_networks.audit.username |  | keyword |
 | observer.product |  | constant_keyword |
@@ -1440,11 +1479,17 @@ An example event for `node` looks as following:
 | input.type | Type of Filebeat input. | keyword |
 | log.offset | Log offset. | long |
 | nozomi_networks.node.appliance_host | The hostname of the sensor where this entity has been observed. | keyword |
+| nozomi_networks.node.appliance_hosts | The hostname(s) of the appliance(s) where this entity has been observed | keyword |
+| nozomi_networks.node.appliance_id | Id of the Nozomi Guardian monitoring the node | keyword |
+| nozomi_networks.node.appliance_site | Site monitoring the node | keyword |
+| nozomi_networks.node.asset_id | The id of the asset the node belongs to | keyword |
 | nozomi_networks.node.asset_kb_id |  | keyword |
 | nozomi_networks.node.bpf_filter | Berkeley Packet Filter (BPF) filter for the node, used when performing traces for this node and as building block for link traces too. | keyword |
 | nozomi_networks.node.capture_device | Name of the interface from which this entity has been detected. | keyword |
+| nozomi_networks.node.capture_devices | Names of the interfaces from which this entity has been detected | keyword |
 | nozomi_networks.node.created_at | Timestamp in epoch milliseconds when this node was first observed. | date |
 | nozomi_networks.node.custom_fields | Any additional custom field defined in the Custom fields. | flattened |
+| nozomi_networks.node.deleted_at | Time the entity was cancelled | date |
 | nozomi_networks.node.device_id | Internal use. | keyword |
 | nozomi_networks.node.device_modules.children.cip.attributes.name |  | keyword |
 | nozomi_networks.node.device_modules.children.cip.attributes.type |  | keyword |
@@ -1517,6 +1562,7 @@ An example event for `node` looks as following:
 | nozomi_networks.node.properties.product_name.passive |  | keyword |
 | nozomi_networks.node.properties.type.passive |  | keyword |
 | nozomi_networks.node.properties.vendor.passive |  | keyword |
+| nozomi_networks.node.protocol_fields | Additional fields found by several protocols attached to the node | flattened |
 | nozomi_networks.node.protocols | The unique protocols used from and to this node. | keyword |
 | nozomi_networks.node.received.bytes | Total number of bytes received. | long |
 | nozomi_networks.node.received.last_15m_bytes | Number of bytes received in the last 15 minutes. | long |
@@ -1548,6 +1594,7 @@ An example event for `node` looks as following:
 | nozomi_networks.node.tcp_retransmission.percent | Percentage of transmission control protocol (TCP) packets that have been retransmitted. | double |
 | nozomi_networks.node.type | The type of the node. | keyword |
 | nozomi_networks.node.type_info | This is a metadata field about the type field. | flattened |
+| nozomi_networks.node.uid | UUID of the node | keyword |
 | nozomi_networks.node.variables_count | Amount of variables attached to the node. | long |
 | nozomi_networks.node.vendor | Vendor of the node. | keyword |
 | nozomi_networks.node.vendor_info | This is a metadata field about the vendor field. | flattened |
@@ -1729,6 +1776,7 @@ An example event for `node_cve` looks as following:
 | nozomi_networks.node_cve.node_os | Operating system of the vulnerable node. | keyword |
 | nozomi_networks.node_cve.node_product_name | Product name of the vulnerable node. | keyword |
 | nozomi_networks.node_cve.node_type | Type of the vulnerable node. | keyword |
+| nozomi_networks.node_cve.node_uid | The uid of the node the CPE refers to | keyword |
 | nozomi_networks.node_cve.node_vendor | Vendor of the vulnerable node. | keyword |
 | nozomi_networks.node_cve.nodes_hosts |  | keyword |
 | nozomi_networks.node_cve.nodes_ip |  | ip |
@@ -1741,6 +1789,7 @@ An example event for `node_cve` looks as following:
 | nozomi_networks.node_cve.references.source |  | keyword |
 | nozomi_networks.node_cve.references.url |  | keyword |
 | nozomi_networks.node_cve.resolution_reason | Specifies the possible resolution reason for a vulnerability. | keyword |
+| nozomi_networks.node_cve.resolution_status | It is either "MITIGATED" or "ACCEPTED" if the vulnerability has been resolved | keyword |
 | nozomi_networks.node_cve.resolved | Whether or not the vulnerability has been resolved by an installed patch (only relevant for Microsoft Windows assets). | boolean |
 | nozomi_networks.node_cve.resolved_source | Specifies the data source from which the resolution status’ related information could be retrieved (only relevant for Microsoft Windows assets). | keyword |
 | nozomi_networks.node_cve.time | Timestamp (in epoch milliseconds) at which the vulnerability has been found on the network node in the user's environment. | date |
@@ -1904,6 +1953,7 @@ An example event for `session` looks as following:
 | nozomi_networks.session.from | Client node id. | keyword |
 | nozomi_networks.session.from_ip | Client node id. | ip |
 | nozomi_networks.session.from_port | Port on the client side. | long |
+| nozomi_networks.session.from_uid | Client node uid | keyword |
 | nozomi_networks.session.from_zone | Client zone. | keyword |
 | nozomi_networks.session.id | Primary key of this query source. | keyword |
 | nozomi_networks.session.is_broadcast |  | boolean |
@@ -1917,6 +1967,7 @@ An example event for `session` looks as following:
 | nozomi_networks.session.to | Server node id. | keyword |
 | nozomi_networks.session.to_ip | Server node id. | ip |
 | nozomi_networks.session.to_port | Port on the server side. | long |
+| nozomi_networks.session.to_uid | Server node uid | keyword |
 | nozomi_networks.session.to_zone | Server zone. | keyword |
 | nozomi_networks.session.transferred.avg_packet_bytes | Average packet size in bytes observed. | double |
 | nozomi_networks.session.transferred.biggest_packet_bytes | Biggest packet size in bytes observed. | long |
@@ -2101,6 +2152,7 @@ An example event for `variable` looks as following:
 | nozomi_networks.variable.host |  | keyword |
 | nozomi_networks.variable.host_ip | The node to which this variable belongs to. | ip |
 | nozomi_networks.variable.host_label | The label of the node to which this variable belongs to. | keyword |
+| nozomi_networks.variable.host_uid | The unique identifier of the node to which this variable belongs to | keyword |
 | nozomi_networks.variable.id |  | keyword |
 | nozomi_networks.variable.is_numeric | True if it represents a number. | boolean |
 | nozomi_networks.variable.label | The human-readable name of the variable. | keyword |
