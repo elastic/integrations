@@ -247,7 +247,7 @@ The following parameters can be configured when triggering manually from the UI:
 
 | Parameter | Required | Default | Description |
 |-----------|----------|---------|-------------|
-| `DRY_RUN` | | `true` | Validate and commit locally but skip push and branch creation. |
+| `DRY_RUN` | | `true` | Commit the backport branch locally but skip push to the remote; prints a diff of the changes instead. |
 | `BASE_COMMIT` | ✅ | | Commit SHA to branch from (the output of step 1 in the backport guide). |
 | `PACKAGE_NAME` | ✅ | | Package name as defined in `manifest.yml`. |
 | `PACKAGE_VERSION` | ✅ | | Package version to branch from (e.g. `1.5.7`, `1.0.0-beta1`). |
