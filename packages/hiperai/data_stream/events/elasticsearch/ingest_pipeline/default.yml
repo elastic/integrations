@@ -390,6 +390,18 @@ processors:
       tag: cleanup_temp_fields
       ignore_missing: true
 
+  ##
+  ## 13. Retain the original event whenever a processor recorded an error.
+  ## Processor-level on_failure handlers keep the pipeline running, so the
+  ## handler in the global on_failure below never sees these failures.
+  ##
+  - append:
+      field: tags
+      tag: append_preserve_original_event_tag_on_error
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+
 on_failure:
   - append:
       field: error.message
