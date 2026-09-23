@@ -654,3 +654,108 @@ rules:
               }
           ]
           `}}
+
+  # --- Audit.AzureActiveDirectory: contentUri on a miscomputed base URL ------
+  # Used only by the bad-content-uri system test. The other configs do not
+  # enable this content type, so these rules are inert for them.
+  - path: /api/v1.0/test-cel-tenant-id/activity/feed/subscriptions/start
+    methods: [POST]
+    query_params:
+      contentType: "Audit.AzureActiveDirectory"
+      PublisherIdentifier: test-cel-tenant-id
+    request_headers:
+      Authorization:
+        - "Bearer CELtoken"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+              "contentType": "Audit.AzureActiveDirectory",
+              "status": "enabled",
+              "webhook": null
+          }
+          `}}
+  # Two blobs. The first reproduces the contentUri the API returned in
+  # elastic/sdh-beats#7627: an http scheme, a localhost host, no /api/v1.0
+  # segment and a tenant that is not the configured one. It can never be
+  # fetched as given, and is listed first so it sits at the head of the queue.
+  # The second is addressed correctly but answers 404, covering the case a
+  # repair cannot help with.
+  - path: /api/v1.0/test-cel-tenant-id/activity/feed/subscriptions/content
+    methods: [GET]
+    query_params:
+      contentType: "Audit.AzureActiveDirectory"
+      startTime: "{startTime:.*}"
+      endTime: "{endTime:.*}"
+      PublisherIdentifier: test-cel-tenant-id
+    request_headers:
+      Authorization:
+        - "Bearer CELtoken"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          [{"contentType": "Audit.AzureActiveDirectory","contentId": "celid$aad$1","contentUri": "http://localhost/celbroken1/activity/feed/audit/celid$aad$1","contentCreated": "{{ .request.vars.endTime }}","contentExpiration": "2199-05-30T17:35:00.000Z"},{"contentType": "Audit.AzureActiveDirectory","contentId": "celid$aad$2","contentUri": "http://{{ .request.host }}/api/v1.0/test-cel-tenant-id/activity/feed/audit/celid$aad$2","contentCreated": "{{ .request.vars.endTime }}","contentExpiration": "2199-05-30T17:35:00.000Z"}]
+  # Served only on the canonical path, under the configured tenant and with the
+  # '$' separators unescaped, so the test passes only if the program rebuilt the
+  # URL from the configured resource URL and tenant rather than reusing what the
+  # API supplied.
+  - path: /api/v1.0/test-cel-tenant-id/activity/feed/audit/celid$aad$1
+    methods: [GET]
+    request_headers:
+      Authorization:
+        - "Bearer CELtoken"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        # 1 document
+        body: |-
+          {{ minify_json `
+          [
+              {
+                  "Id": "b7c4a1f0-3e2d-4c5b-9a8e-1d2f3a4b5c6d",
+                  "CreationTime": "2020-02-28T09:42:45",
+                  "Operation": "UserLoggedIn",
+                  "RecordType": 15,
+                  "Workload": "AzureActiveDirectory",
+                  "OrganizationId": "b86ab9d4-fcf1-4b11-8a06-7a8f91b47fbd",
+                  "UserId": "aad@testsiem.onmicrosoft.com",
+                  "UserKey": "100320009d6edf95",
+                  "UserType": 0,
+                  "ClientIP": "81.2.69.144",
+                  "ResultStatus": "Success",
+                  "Version": 1
+              }
+          ]
+          `}}
+  # A blob the API will never serve. No repair can help here, so the program
+  # must report the error, drop the item and carry on with the queue. Returning
+  # the error as a single object instead discarded the cursor advance and
+  # retried this same request every evaluation.
+  - path: /api/v1.0/test-cel-tenant-id/activity/feed/audit/celid$aad$2
+    methods: [GET]
+    request_headers:
+      Authorization:
+        - "Bearer CELtoken"
+    responses:
+      - status_code: 404
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {{ minify_json `
+          {
+              "error": {
+                  "code": "AF20024",
+                  "message": "The requested content blob does not exist."
+              }
+          }
+          `}}

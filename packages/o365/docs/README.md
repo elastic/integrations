@@ -125,6 +125,10 @@ If the integration is healthy but no data appears: confirm that at least one con
 
 On restart, the integration resumes from its saved position and backfills the missed window. Overlapping events are de-duplicated during ingest, so a resume does not create duplicates. The API retains data for a maximum of 7 days: outages shorter than that backfill automatically, but any window older than 7 days is purged by Microsoft and cannot be recovered.
 
+#### One tenant stops collecting and reports degraded
+
+If one integration policy reports a degraded status and stops collecting while others on the same agent stay healthy, check the logs for a `persistent transport failure fetching` error naming a URL whose host is not the configured **Base URL of Office Management API** — for example `http://localhost/...`. The API has occasionally returned a content URL built on a miscomputed base URL, which can never be fetched, and because it is saved in the integration's cursor, restarting the agent, re-enabling the integration and editing the policy all leave it in place. Version 3.11.1 rebuilds such URLs before use and repairs an affected cursor on the next poll, so upgrading is enough.
+
 #### Rate limiting
 
 Repeated `429` responses indicate that the API's per-tenant rate limit has been reached. This is handled automatically by the built-in retry with exponential backoff. Persistent rate limiting across many tenants that share one Azure application may mean the application is over-subscribed; consider using separate application registrations.
@@ -311,6 +315,9 @@ An example event for `audit` looks as following:
 | email.attachments.file.extension | Attachment file extension, excluding the leading dot. | keyword |
 | email.attachments.file.name | Name of the attachment file including the file extension. | keyword |
 | email.attachments.file.size | Attachment file size in bytes. | long |
+| error.code | Error code describing the error. | keyword |
+| error.id | Unique identifier for the error. | keyword |
+| error.message | Error message. | match_only_text |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
 | host.containerized | If the host is a container. | boolean |

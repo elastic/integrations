@@ -1,0 +1,45 @@
+input: cel
+service: o365-cel
+vars: ~
+policy_template: o365
+data_stream:
+  vars:
+    url: http://{{Hostname}}:{{Port}}
+    token_url: http://{{Hostname}}:{{Port}}
+    preserve_original_event: true
+    client_id: test-cel-client-id
+    client_secret: test-cel-client-secret
+    azure_tenant_id: test-cel-tenant-id
+    content_types: "Audit.AzureActiveDirectory"
+    interval: 30s
+    initial_interval: 1h
+    enable_request_tracer: true
+# Exercises the two ways a content item can be unfetchable. The mock lists two
+# blobs, both of which stalled the data stream before this fix.
+#
+# The first has the contentUri the API returned in elastic/sdh-beats#7627:
+#
+#   http://localhost/celbroken1/activity/feed/audit/celid$aad$1
+#
+# an http scheme, a localhost host, no /api/v1.0 segment and the wrong tenant.
+# As given it can never be fetched, and because it is persisted in the cursor it
+# stalled collection until the content expired up to two weeks later, surviving
+# agent restarts and policy changes. The program now rebuilds the URL from the
+# configured resource URL, tenant and content ID. The mock serves the blob only
+# on the canonical path, so it is collected only if the repair produced exactly
+# that URL with the '$' separators unescaped.
+#
+# The second is addressed correctly but answers 404, which no repair can help
+# with. That branch returned its error as a single object, which the runtime
+# treats as an error condition, discarding the cursor advance meant to skip the
+# item; since the branch also sets want_more the same request was then retried
+# on every evaluation. Returning a list keeps the advance.
+#
+# Expected documents (hit_count 2):
+#   - 1 audit event from the repaired blob
+#   - 1 pipeline_error document recording the 404
+#
+# Without the fix neither arrives: the first blob is never fetched and the
+# second is retried indefinitely without its error being recorded.
+assert:
+  hit_count: 2
