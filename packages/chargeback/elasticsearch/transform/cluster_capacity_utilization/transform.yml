@@ -22,18 +22,28 @@ source:
               - data_content
               - data
   runtime_mappings:
+    cluster_name_kw:
+      type: keyword
+      script:
+        source: |
+          try {
+            String name = params._source.elasticsearch.cluster.name;
+            if (name != null && !name.isEmpty()) emit(name);
+          } catch (Exception e) {}
     node_disk_used_pct:
       type: double
       script:
         source: |
-          def total = doc['elasticsearch.node.stats.fs.total.total_in_bytes'];
-          def avail = doc['elasticsearch.node.stats.fs.total.available_in_bytes'];
-          if (!total.empty && !avail.empty && total.value > 0) {
-            emit((total.value - avail.value) * 100.0 / total.value);
-          }
+          try {
+            def total = params._source.elasticsearch.node.stats.fs.total.total_in_bytes;
+            def avail = params._source.elasticsearch.node.stats.fs.total.available_in_bytes;
+            if (total != null && avail != null && total > 0) {
+              emit((total - avail) * 100.0 / total);
+            }
+          } catch (Exception e) {}
 dest:
   index: cluster_capacity_utilization_lookup
-  pipeline: 0.4.6-capacity_utilization
+  pipeline: logs-chargeback.lookup-0.4.7-capacity_utilization
 frequency: 60m
 sync:
   time:
@@ -47,7 +57,7 @@ pivot:
         calendar_interval: 1d
     cluster_name:
       terms:
-        field: elasticsearch.cluster.name
+        field: cluster_name_kw
   aggregations:
     heap_used_pct_p95:
       percentiles:
@@ -65,4 +75,4 @@ settings:
 _meta:
   managed: true
   run_as_kibana_system: false
-  fleet_transform_version: 0.4.6
+  fleet_transform_version: 0.4.7
