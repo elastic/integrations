@@ -21,7 +21,7 @@ This package has been tested with EDOT Android 1.5.0, EDOT Collector 9.2.0, and 
   - `exception.stacktrace`, `exception.type`, and `exception.message` (for crash analysis)
   - `app.build_id` (for matching an obfuscated stack trace to its R8 mapping data)
   - `os.version` and `device.manufacturer` (for device breakdown charts)
-  - `span.name` and `span.status.code` (for span analysis)
+  - `span.name` and `status.code` (for span analysis)
 
 EDOT Android populates all of these fields automatically. If you are using a different OpenTelemetry SDK, ensure they are configured in your instrumentation.
 
