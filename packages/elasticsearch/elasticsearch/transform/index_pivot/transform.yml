@@ -1,5 +1,10 @@
 source:
-  index: "metrics-elasticsearch.stack_monitoring.index*,.monitoring-es-*,metricbeat-*"
+  # Read from the data stream backing indices, so that indices renamed by ILM
+  # (downsample, shrink, searchable snapshot mounts) are left out. Downsampled
+  # indices break the top_metrics aggregations below, and excluding them with
+  # `-downsample-*` does not work: a backing index resolved through a data
+  # stream cannot be removed by an exclusion expression.
+  index: ".ds-metrics-elasticsearch.stack_monitoring.index-*,.monitoring-es-*,metricbeat-*"
   query:
     bool:
       filter:
@@ -32,11 +37,14 @@ source:
                     - prefix:
                         elasticsearch.index.name: ".ds-ilm-history"
       # Exclude monitoring documents that have aged into the cold or frozen
-      # tiers. Those indices are backed by searchable snapshots, which the
-      # transform cannot page through fast enough: the checkpoint stalls and
-      # never advances for deployments with a long monitoring retention.
-      # This transform only ever needs recent data (10m buckets, 60s sync
-      # delay), so anything that has aged out of hot/warm was already
+      # tiers. Reading them makes the checkpoint stall and never advance on
+      # deployments with a long monitoring retention. Indices that ILM
+      # renames on the way down (searchable snapshot mounts) already fall
+      # out of the `.ds-` source pattern above, but the legacy
+      # `.monitoring-es-*` and `metricbeat-*` indices, and any index moved
+      # down a tier by an `allocate` action, keep their name and still
+      # match. This transform only ever needs recent data (10m buckets, 60s
+      # sync delay), so anything that has aged out of hot/warm was already
       # processed. Backfilling older data is still possible with a manual
       # copy of this transform that drops this clause.
       must_not:
@@ -142,5 +150,5 @@ sync:
     delay: 60s
     field: '@timestamp'
 _meta:
-  fleet_transform_version: 0.4.0
+  fleet_transform_version: 0.5.0
   run_as_kibana_system: false
