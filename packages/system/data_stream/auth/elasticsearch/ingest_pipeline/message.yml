@@ -23,24 +23,6 @@ processors:
         - '^new user: name=%{DATA:user.target.name}, UID=%{NUMBER:user.target.id}, GID=%{NUMBER:group.id}, home=%{DATA:system.auth.useradd.home}, shell=%{DATA:system.auth.useradd.shell}$'
         - '^group added to /etc/(?:group|gshadow): name=%{DATA:group.name}(?:, GID=%{NUMBER:group.id})?$'
         - "^group '%{DATA:group.name}' removed(?: from /etc/(?:group|gshadow))?$"
-  - set:
-      description: >-
-        Deprecated duplication of user.target.name for backward compatibility;
-        will be removed for useradd events in a future major version.
-      tag: set_user_name_useradd_compat
-      field: user.name
-      copy_from: user.target.name
-      ignore_empty_value: true
-      if: ctx.user?.target?.name != null
-  - set:
-      description: >-
-        Deprecated duplication of user.target.id for backward compatibility;
-        will be removed for useradd events in a future major version.
-      tag: set_user_id_useradd_compat
-      field: user.id
-      copy_from: user.target.id
-      ignore_empty_value: true
-      if: ctx.user?.target?.id != null
   - append:
       tag: append_category_process
       field: event.category
@@ -195,15 +177,6 @@ processors:
       ignore_empty_value: true
       if: ctx._temp?.usermod_user != null
   - set:
-      description: >-
-        Deprecated duplication of user.target.name for backward compatibility;
-        will be removed for usermod events in a future major version.
-      tag: set_user_name_usermod_compat
-      field: user.name
-      copy_from: _temp.usermod_user
-      ignore_empty_value: true
-      if: ctx._temp?.usermod_user != null
-  - set:
       tag: set_group_name_usermod_group
       field: group.name
       copy_from: _temp.usermod_group
@@ -220,17 +193,6 @@ processors:
       copy_from: _temp.userdel_user
       ignore_empty_value: true
       if: ctx._temp?.userdel_user != null
-  - set:
-      description: >-
-        Deprecated duplication of user.target.name for backward compatibility;
-        will be removed for userdel events in a future major version. Limited
-        to "delete user" messages, matching the events that populated
-        user.name before user.target.name was introduced.
-      tag: set_user_name_userdel_compat
-      field: user.name
-      copy_from: _temp.userdel_user
-      ignore_empty_value: true
-      if: ctx._temp?.userdel_user != null && ctx.message != null && ctx.message.startsWith("delete user '")
   - set:
       tag: set_group_name_userdel
       field: group.name
@@ -426,12 +388,23 @@ processors:
       ignore_failure: true
       if: ctx.user?.name == null || ctx.user?.name == ""
   - rename:
+      description: >-
+        The account named in a chauthtok message is the account whose password
+        is being changed, not the actor, so route it to user.target.name and
+        leave user.name for the actor.
+      tag: rename_user_chauthtok
+      field: _temp.user
+      target_field: user.target.name
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx._temp?.category == 'chauthtok' && ctx._temp?.user != null && ctx._temp.user != '' && (ctx.user?.target?.name == null || ctx.user?.target?.name == '')
+  - rename:
       tag: rename_user
       field: _temp.user
       target_field: user.name
       ignore_missing: true
       ignore_failure: true
-      if: ctx.user?.name == null || ctx.user?.name == ""
+      if: ctx._temp?.category != 'chauthtok' && (ctx.user?.name == null || ctx.user?.name == "")
   - rename:
       tag: rename_foruser
       field: _temp.foruser
@@ -447,27 +420,23 @@ processors:
       ignore_failure: true
       if: ctx._temp?.pam_rhost != null && ctx.source?.address == null
   - rename:
+      description: >-
+        The user= field of a chauthtok authentication failure is the account
+        whose password is being changed, not the actor, so route it to
+        user.target.name and leave user.name for the actor.
+      tag: rename_pam_user_chauthtok
+      field: _temp.pam_user
+      target_field: user.target.name
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx._temp?.category == 'chauthtok' && ctx._temp?.pam_user != null && ctx._temp.pam_user != '' && (ctx.user?.target?.name == null || ctx.user?.target?.name == '')
+  - rename:
       tag: rename_pam_user
       field: _temp.pam_user
       target_field: user.name
       ignore_missing: true
       ignore_failure: true
-      if: ctx._temp?.pam_user != null && ctx._temp.pam_user != '' && (ctx.user?.name == null || ctx.user?.name == '')
-  - set:
-      description: >-
-        Deprecated duplication of user.target.name for backward compatibility;
-        will be removed for password change events in a future major version.
-      tag: set_user_name_pam_target_compat
-      field: user.name
-      copy_from: _temp.pam_target
-      ignore_empty_value: true
-      if: ctx._temp?.pam_target != null && ctx._temp.pam_target != '' && (ctx.user?.name == null || ctx.user?.name == '')
-  - set:
-      tag: set_user_target_name_chauthtok
-      field: user.target.name
-      copy_from: user.name
-      ignore_empty_value: true
-      if: ctx._temp?.category == 'chauthtok' && ctx.user?.name != null && ctx.user?.name != ''
+      if: ctx._temp?.category != 'chauthtok' && ctx._temp?.pam_user != null && ctx._temp.pam_user != '' && (ctx.user?.name == null || ctx.user?.name == '')
   - rename:
       tag: rename_pam_target
       field: _temp.pam_target
