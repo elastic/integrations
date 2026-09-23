@@ -508,7 +508,7 @@
                                 "metricAccessor": "count"
                             }
                         },
-                        "title": "count",
+                        "title": "",
                         "visualizationType": "lnsMetric"
                     },
                     "description": "Number of device installations. This is tracked by an installation ID that's stored in each device's cache. If the app's cache gets cleared, the device will get a new installation ID",
@@ -600,7 +600,7 @@
                                 "metricAccessor": "count"
                             }
                         },
-                        "title": "count",
+                        "title": "",
                         "visualizationType": "lnsMetric"
                     },
                     "description": "Number of unique sessions. A session is a period of time during which a user interacts with the application to accomplish a single task or goal. Ideally, a session should represent an isolated user interaction with the application",
@@ -740,7 +740,7 @@
                                                     "dataType": "number",
                                                     "filter": {
                                                         "language": "kuery",
-                                                        "query": "event_name: (\"device.crash\" or \"app.crash\")"
+                                                        "query": "event_name: (\"device.crash\" or \"app.crash\") and session.id: *"
                                                     },
                                                     "isBucketed": false,
                                                     "label": "Crashes",
@@ -950,7 +950,7 @@
                                                     "dataType": "number",
                                                     "filter": {
                                                         "language": "kuery",
-                                                        "query": "event_name: (\"device.crash\" or \"app.crash\")"
+                                                        "query": "event_name: (\"device.crash\" or \"app.crash\") and session.id: *"
                                                     },
                                                     "isBucketed": false,
                                                     "label": "Crashes",
@@ -1242,7 +1242,7 @@
                                 "metricAccessor": "count"
                             }
                         },
-                        "title": "count",
+                        "title": "",
                         "visualizationType": "lnsMetric"
                     },
                     "description": "Number of total recorded spans. To see them in detail, click on \"Explore in Discover\" at the top-right corner of the \"All spans\" panel",
@@ -1334,7 +1334,7 @@
                                 "metricAccessor": "count"
                             }
                         },
-                        "title": "count",
+                        "title": "",
                         "visualizationType": "lnsMetric"
                     },
                     "description": "Number of total recorded spans that have their status set to \"Error\". To see them in detail, click on \"Explore in Discover\" at the top-right corner of the \"Failed spans\" panel",
@@ -1819,7 +1819,7 @@
                                             ],
                                             "index": "6d0eb26280f6ba62ead8f8de8860b5810a72137b41ac459024d8a79531cae8ff",
                                             "query": {
-                                                "esql": "FROM traces-generic.otel*\n| WHERE os.name == \"Android\" AND span.name IS NOT NULL\n| EVAL is_error = CASE(status.code == \"Error\", 1.0, 0.0)\n| STATS `Failed span rate` = AVG(is_error) * 100, `p95 duration` = PERCENTILE(duration, 95) BY `Time` = BUCKET(@timestamp, 75, ?_tstart, ?_tend)"
+                                                "esql": "FROM traces-generic.otel*\n| WHERE os.name == \"Android\" AND span.name IS NOT NULL\n| STATS failed = COUNT(*) WHERE status.code == \"Error\", total = COUNT(*), `p95 duration` = PERCENTILE(duration, 95) BY `Time` = BUCKET(@timestamp, 75, ?_tstart, ?_tend)\n| EVAL `Failed span rate` = 100.0 * failed / total\n| KEEP `Time`, `Failed span rate`, `p95 duration`"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1828,7 +1828,7 @@
                             },
                             "filters": [],
                             "query": {
-                                "esql": "FROM traces-generic.otel*\n| WHERE os.name == \"Android\" AND span.name IS NOT NULL\n| EVAL is_error = CASE(status.code == \"Error\", 1.0, 0.0)\n| STATS `Failed span rate` = AVG(is_error) * 100, `p95 duration` = PERCENTILE(duration, 95) BY `Time` = BUCKET(@timestamp, 75, ?_tstart, ?_tend)"
+                                "esql": "FROM traces-generic.otel*\n| WHERE os.name == \"Android\" AND span.name IS NOT NULL\n| STATS failed = COUNT(*) WHERE status.code == \"Error\", total = COUNT(*), `p95 duration` = PERCENTILE(duration, 95) BY `Time` = BUCKET(@timestamp, 75, ?_tstart, ?_tend)\n| EVAL `Failed span rate` = 100.0 * failed / total\n| KEEP `Time`, `Failed span rate`, `p95 duration`"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -1987,7 +1987,7 @@
                                 "metricAccessor": "count"
                             }
                         },
-                        "title": "count",
+                        "title": "",
                         "visualizationType": "lnsMetric"
                     },
                     "description": "Total recorded crash events",
@@ -2052,7 +2052,7 @@
                                                     "customLabel": true,
                                                     "fieldName": "sessionAvg",
                                                     "inMetricDimension": true,
-                                                    "label": "Crashes per session",
+                                                    "label": "Crashes per affected session",
                                                     "meta": {
                                                         "esType": "double",
                                                         "type": "number"
@@ -2088,10 +2088,10 @@
                                 "subtitle": "On average"
                             }
                         },
-                        "title": "sessionAvg",
+                        "title": "",
                         "visualizationType": "lnsMetric"
                     },
-                    "description": "Number of crash events per session on average",
+                    "description": "Average number of crash events per session that recorded at least one crash. Sessions without a crash are not included; see \"Crash rate over time\" for the share of sessions that crashed.",
                     "enhancements": {
                         "dynamicActions": {
                             "events": []
@@ -2326,16 +2326,16 @@
                         "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "2bf6c579d4c4cba3a8bafdcba1f34a0b84db423ec8133082a178141fd612ccc2": {
+                                "d0cba3c10285422fb7222ad49ba7ebc9ae2f2a9d9241c7db23d0cfe7d419395f": {
                                     "allowHidden": false,
                                     "allowNoIndex": false,
                                     "fieldFormats": {},
-                                    "id": "2bf6c579d4c4cba3a8bafdcba1f34a0b84db423ec8133082a178141fd612ccc2",
-                                    "name": "logs-generic.otel*",
+                                    "id": "d0cba3c10285422fb7222ad49ba7ebc9ae2f2a9d9241c7db23d0cfe7d419395f",
+                                    "name": "logs-generic.otel*,traces-generic.otel*",
                                     "runtimeFieldMap": {},
                                     "sourceFilters": [],
                                     "timeFieldName": "@timestamp",
-                                    "title": "logs-generic.otel*",
+                                    "title": "logs-generic.otel*,traces-generic.otel*",
                                     "type": "esql"
                                 }
                             },
@@ -2343,9 +2343,9 @@
                                 "textBased": {
                                     "indexPatternRefs": [
                                         {
-                                            "id": "2bf6c579d4c4cba3a8bafdcba1f34a0b84db423ec8133082a178141fd612ccc2",
+                                            "id": "d0cba3c10285422fb7222ad49ba7ebc9ae2f2a9d9241c7db23d0cfe7d419395f",
                                             "timeField": "@timestamp",
-                                            "title": "logs-generic.otel*"
+                                            "title": "logs-generic.otel*,traces-generic.otel*"
                                         }
                                     ],
                                     "layers": {
@@ -2376,9 +2376,9 @@
                                                     }
                                                 }
                                             ],
-                                            "index": "2bf6c579d4c4cba3a8bafdcba1f34a0b84db423ec8133082a178141fd612ccc2",
+                                            "index": "d0cba3c10285422fb7222ad49ba7ebc9ae2f2a9d9241c7db23d0cfe7d419395f",
                                             "query": {
-                                                "esql": "FROM logs-generic.otel*\n| WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c ?_tend\n    AND os.name == \"Android\"\n    AND session.id IS NOT NULL\n| STATS `Crash Sessions` = COUNT_DISTINCT(session.id) WHERE event_name IN (\"device.crash\", \"app.crash\"), `All Sessions` = COUNT_DISTINCT(session.id) BY `Time` = BUCKET(@timestamp, 75, ?_tstart, ?_tend)\n| EVAL `Crash rate (%)` = 100.0 * `Crash Sessions` / `All Sessions`\n| KEEP `Time`, `Crash rate (%)`"
+                                                "esql": "FROM logs-generic.otel*,traces-generic.otel*\n| WHERE os.name == \"Android\" AND session.id IS NOT NULL\n| STATS `Crash Sessions` = COUNT_DISTINCT(session.id) WHERE event_name IN (\"device.crash\", \"app.crash\"), `All Sessions` = COUNT_DISTINCT(session.id) BY `Time` = BUCKET(@timestamp, 75, ?_tstart, ?_tend)\n| EVAL `Crash rate (%)` = 100.0 * `Crash Sessions` / `All Sessions`\n| KEEP `Time`, `Crash rate (%)`"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -2387,7 +2387,7 @@
                             },
                             "filters": [],
                             "query": {
-                                "esql": "FROM logs-generic.otel*\n| WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c ?_tend\n    AND os.name == \"Android\"\n    AND session.id IS NOT NULL\n| STATS `Crash Sessions` = COUNT_DISTINCT(session.id) WHERE event_name IN (\"device.crash\", \"app.crash\"), `All Sessions` = COUNT_DISTINCT(session.id) BY `Time` = BUCKET(@timestamp, 75, ?_tstart, ?_tend)\n| EVAL `Crash rate (%)` = 100.0 * `Crash Sessions` / `All Sessions`\n| KEEP `Time`, `Crash rate (%)`"
+                                "esql": "FROM logs-generic.otel*,traces-generic.otel*\n| WHERE os.name == \"Android\" AND session.id IS NOT NULL\n| STATS `Crash Sessions` = COUNT_DISTINCT(session.id) WHERE event_name IN (\"device.crash\", \"app.crash\"), `All Sessions` = COUNT_DISTINCT(session.id) BY `Time` = BUCKET(@timestamp, 75, ?_tstart, ?_tend)\n| EVAL `Crash rate (%)` = 100.0 * `Crash Sessions` / `All Sessions`\n| KEEP `Time`, `Crash rate (%)`"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -2763,7 +2763,7 @@
         "version": 3
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2026-09-18T13:23:44.245Z",
+    "created_at": "2026-09-23T09:48:26.866Z",
     "id": "otel_android_dashboards-4cff90ff-0bd6-48eb-9ea6-57f91391ebce",
     "references": [
         {

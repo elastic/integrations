@@ -22,6 +22,9 @@ This package has been tested with EDOT Android 1.5.0, EDOT Collector 9.2.0, and 
   - `app.build_id` (for matching an obfuscated stack trace to its R8 mapping data)
   - `os.version` and `device.manufacturer` (for device breakdown charts)
   - `span.name` and `status.code` (for span analysis)
+  - `event_name` (to identify `device.crash` and `app.crash` events)
+  - `app.installation.id` (for installation counts)
+  - `duration` (for span duration averages and percentiles)
 
 EDOT Android populates all of these fields automatically. If you are using a different OpenTelemetry SDK, ensure they are configured in your instrumentation.
 
@@ -55,8 +58,8 @@ The main dashboard provides a high-level view of your Android application's heal
 
 **Crashes**
 
-- **Total recorded crashes / Crashes per session** — Metric counters for the total crash count and the crashes-per-session average.
-- **Crashes table** — List of crashes grouped by a group ID computed from their stack trace, with a message sample and occurrence count. Clicking a group ID drills down into the Exception Details dashboard.
+- **Total recorded crashes / Crashes per affected session** — Metric counters for the total crash count and the average number of crashes among sessions that recorded at least one crash.
+- **Crashes table** — List of crashes grouped by a group ID computed from their stack trace, with a message sample and occurrence count. Clicking a group ID drills down into the Exception Details dashboard. Use that drilldown rather than filtering the dashboard on a group ID: the group ID is computed by Kibana, so a filter on it shows the metric counters and trend charts as empty.
 - **Crash rate over time** — Line chart with the percentage of sessions active in each time bucket that recorded at least one crash.
 
 **Event timeline**
@@ -140,6 +143,7 @@ If you do not see data in the dashboards, make sure that:
 - Your Android application is sending telemetry to the Elastic Stack. You can verify this in Kibana's Discover by searching for `os.name: "Android"` in the `logs-generic.otel*` or `traces-generic.otel*` index patterns.
 - The `session.id` field is present in the telemetry data. If you are not using EDOT Android, you may need to configure session tracking manually.
 - The `service.name` field is set correctly so the application name filter works as expected.
+- No filter on a crash group ID is active. The group ID is computed by Kibana, and the metric counters and trend charts cannot evaluate it, so such a filter shows them as empty while the tables keep their data. Open crash details through the "View crash details" drilldown instead.
 - The time range selected in Kibana covers the period when your application was sending telemetry. If the default time range doesn't show any data, try expanding it (for example, to "Last 7 days" or "Last 30 days") to confirm data has been ingested.
 
 If a stack trace cannot be retraced, make sure that its crash event contains `app.build_id` and that the matching R8 mapping data has been uploaded to the Elastic Stack. See the [EDOT Android documentation](https://www.elastic.co/docs/reference/opentelemetry/edot-sdks/android) for mapping upload and troubleshooting guidance.
