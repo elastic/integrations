@@ -241,7 +241,7 @@ As part of the PR that modifies `.backports.yml`, CI automatically:
 
 When `remove_other_packages: true` is set in `.backports.yml`, the created branch contains the target package along with any `requires.*` dependencies and packages that own `.link` file sources referenced by the target — all unrelated packages in `packages/` are removed to keep the branch lean.
 
-On pull requests targeting a `backport-*` branch, the `check-changelog-versions-in-main` step verifies that no changelog version introduced by the PR already exists on `main`, catching sync collisions before merge.
+On pull requests targeting a `backport-*` branch that modify a `changelog.yml` file, the `check-changelog-versions-in-main` step verifies that no changelog version introduced by the PR already exists on `main`, catching sync collisions before merge.
 
 The following parameters can be configured when triggering manually from the UI:
 

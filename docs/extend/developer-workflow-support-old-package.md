@@ -224,7 +224,7 @@ When a bug fix needs to be released for an older package version, the backport w
 
     After the workflow runs, a comment is posted on the merged backport PR linking to the sync PR or reporting a failure. No manual action is needed.
 
-    **Retrying a failed sync:** if the workflow fails for any reason, the failure comment includes a `/sync-changelog` retry hint. Any repository member with write, maintain, or admin access can re-trigger the sync by commenting `/sync-changelog` on the original merged backport PR — no dummy commit required. The workflow will overwrite any stale working branch left by the previous attempt and open the sync PR. Commenting on an unmerged PR exits silently with no side effects.
+    **Retrying a failed sync:** if the workflow posts a failure comment, it includes a `/sync-changelog` retry hint. Any repository member with write, maintain, or admin access can re-trigger the sync by commenting `/sync-changelog` on the original merged backport PR — no dummy commit required. The workflow will overwrite any stale working branch left by the previous attempt and open the sync PR. Commenting on an unmerged PR exits silently with no side effects.
 
 ## Package owner synchronization
 
@@ -255,7 +255,7 @@ The step is currently `soft_fail: true` — a mismatch posts a warning comment b
 
 This section describes the backport checklist that appears on eligible pull requests targeting `main` (those that touch at least one package with active backport branches) — not just hotfix flows. If you landed here looking for "what is this comment on my PR?", this is the right place.
 
-When you open or update a pull request targeting `main`, the `post-backport-checklist.yml` workflow automatically posts a comment listing the active backport branches for every package touched by that PR. The comment is recreated (deleted and re-posted) on every push — any manual edits are overwritten, and the PR author receives a fresh notification. It only appears when at least one package in the PR's diff has active backport branches in `.backports.yml`.
+When you open or update a pull request targeting `main`, the `post-backport-checklist.yml` workflow automatically posts a comment listing the active backport branches for every package touched by that PR. The comment is recreated (deleted and re-posted) on each push — any manual edits are overwritten, and the PR author receives a fresh notification. It only appears when at least one package in the PR's diff has active backport branches in `.backports.yml`.
 
 Example comment:
 
