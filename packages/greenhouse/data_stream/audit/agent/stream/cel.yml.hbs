@@ -195,26 +195,32 @@ program: |-
                   :
                     prev_max
                 ),
-                // For each event: n=-1 (not a rejection), n=0 (no match), n=1 (matched), n>1 (ambiguous).
-                "correlations": body.?results.orValue([]).map(e,
-                  !(
-                    state.enrich_rejections && e.?event.type.orValue("") == "action" &&
-                    e.?event.target_type.orValue("") == "Candidate or Prospect rejected"
-                  ) ?
-                    {"n": -1, "app_id": "", "ambiguous_ids": []}
-                  :
-                    body.?results.orValue([]).filter(rd,
-                      rd.?event.target_type.orValue("") == "RejectionDetails" &&
-                      rd.?event.type.orValue("") == "data_change_create" &&
-                      has(rd.?event.meta.application_id) &&
-                      rd.?request.id.orValue("") == e.?request.id.orValue("")
-                    ).as(matches,
-                      {
-                        "n": matches.size(),
-                        "app_id": (matches.size() == 1) ? string(int(matches[0].event.meta.application_id)) : "",
-                        "ambiguous_ids": (matches.size() > 1) ? matches.map(m, string(int(m.event.meta.application_id))) : [],
-                      }
-                    )
+                // Pre-filter RejectionDetails events once (O(n)) to avoid an O(n²) scan per rejection event.
+                "correlations": body.?results.orValue([]).filter(rd_e,
+                  rd_e.?event.target_type.orValue("") == "RejectionDetails" &&
+                  rd_e.?event.type.orValue("") == "data_change_create" &&
+                  has(rd_e.?event.meta.application_id)
+                ).as(rd_events,
+                  // For each event: n=-1 (not a rejection), n=0 (no match), n=1 (matched), n>1 (ambiguous).
+                  body.?results.orValue([]).map(e,
+                    !(
+                      state.enrich_rejections && e.?event.type.orValue("") == "action" &&
+                      e.?event.target_type.orValue("") == "Candidate or Prospect rejected"
+                    ) ?
+                      {"n": -1, "app_id": "", "ambiguous_ids": []}
+                    :
+                      // Guard: require a non-empty request.id to avoid spurious matches when both events lack one.
+                      rd_events.filter(rd,
+                        e.?request.id.orValue("") != "" &&
+                        rd.?request.id.orValue("") == e.?request.id.orValue("")
+                      ).as(matches,
+                        {
+                          "n": matches.size(),
+                          "app_id": (matches.size() == 1) ? string(int(matches[0].event.meta.application_id)) : "",
+                          "ambiguous_ids": (matches.size() > 1) ? matches.map(m, string(int(m.event.meta.application_id))) : [],
+                        }
+                      )
+                  )
                 ),
               }.as(pg,
                 // 4. Fetch: batch-retrieve rejection_details for all unambiguous matches.
@@ -315,12 +321,14 @@ program: |-
                                     }
                                   )
                                 : !(app_id in lookups.rd_map) ?
+                                  // API returned 200 but no record for this application — flag as a diagnosable failure.
                                   e.with(
                                     {
                                       "event": e.event.with(
                                         {
                                           "rejection": {
                                             "application_id": app_id,
+                                            "error": "rejection_details returned 200 but contained no record for application_id " + app_id,
                                           },
                                         }
                                       ),

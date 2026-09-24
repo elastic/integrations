@@ -110,7 +110,13 @@ If no events are being collected:
 
 ### Rejection Enrichment Errors
 
-If rejection events are tagged with `greenhouse-rejection-enrichment-failed` and `greenhouse.audit.event.rejection.error` is populated:
+If rejection events are tagged with `greenhouse-rejection-enrichment-failed`, check one or more of the following fields for details on what failed:
+
+- `greenhouse.audit.event.rejection.error` — full enrichment failure (e.g. correlation could not be established, or the rejection_details API call failed)
+- `greenhouse.audit.event.rejection.reason.error` — the rejection reason lookup (`/v3/rejection_reasons/{id}`) returned a non-200 response
+- `greenhouse.audit.event.rejection.notes_error` — the rejection notes batch fetch (`/v3/notes`) returned a non-200 response
+
+Common causes and remedies:
 1. Verify the OAuth credential has been granted all three required read permissions: **Rejection details** (*List rejection details*), **Rejection reasons** (*Show rejection reason*), and **Notes** (*List notes*)
 2. Check that the authorizing user has permission to view the affected application
 3. If the error mentions no matching `RejectionDetails` event was found, try increasing **Batch Size** so the two related audit events are less likely to land on different pages
@@ -136,6 +142,8 @@ If rejection events are tagged with `greenhouse-rejection-enrichment-failed` and
 | greenhouse.audit.event.rejection.candidate_id | The ID of the candidate whose application was rejected. | keyword |
 | greenhouse.audit.event.rejection.error | Error message if the rejection enrichment lookup against the Harvest API failed. | keyword |
 | greenhouse.audit.event.rejection.notes | The rejection notes/comments entered when the application was rejected, sourced from the Harvest v3 Notes API via the rejection_note_id on the rejection detail record. | match_only_text |
+| greenhouse.audit.event.rejection.notes_error | Error message when the Harvest API /v3/notes batch call returned a non-200 response and rejection notes could not be retrieved. | keyword |
+| greenhouse.audit.event.rejection.reason.error | Error message when the Harvest API /v3/rejection_reasons/{id} call returned a non-200 response for this rejection reason ID. | keyword |
 | greenhouse.audit.event.rejection.reason.id | The ID of the rejection reason. | keyword |
 | greenhouse.audit.event.rejection.reason.name | The name of the rejection reason. | keyword |
 | greenhouse.audit.event.rejection.reason.type | The category of the rejection reason, for example "We rejected them" or "They rejected us." | keyword |
