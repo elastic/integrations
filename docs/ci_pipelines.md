@@ -239,7 +239,7 @@ As part of the PR that modifies `.backports.yml`, CI automatically:
 - Validates the new inventory schema (`check-backports-inventory` step). In the public `integrations` pipeline this step runs on PRs targeting `main` only — it is skipped on PRs targeting `backport-*` branches, which carry only a subset of packages and would fail the validation unnecessarily. On pushes to `main`, the `integrations-backport-dispatch` pipeline runs its own validation before triggering branch creation.
 - Runs a **dry run** of the branch creation (`trigger-backport-dryrun` step), verifying the commit exists and the branch does not already exist, without pushing anything.
 
-When `remove_other_packages: true` is set in `.backports.yml`, the created branch contains only the target package — all other packages in `packages/` are removed to keep the branch lean.
+When `remove_other_packages: true` is set in `.backports.yml`, the created branch contains the target package along with any `requires.*` dependencies and packages that own `.link` file sources referenced by the target — all unrelated packages in `packages/` are removed to keep the branch lean.
 
 On pull requests targeting a `backport-*` branch, the `check-changelog-versions-in-main` step verifies that no changelog version introduced by the PR already exists on `main`, catching sync collisions before merge.
 
@@ -251,7 +251,7 @@ The following parameters can be configured when triggering manually from the UI:
 | `BASE_COMMIT` | ✅ | | Commit SHA to branch from (the output of step 1 in the backport guide). |
 | `PACKAGE_NAME` | ✅ | | Package name as defined in `manifest.yml`. |
 | `PACKAGE_VERSION` | ✅ | | Package version to branch from (e.g. `1.5.7`, `1.0.0-beta1`). |
-| `REMOVE_OTHER_PACKAGES` | | `true` | If `true`, all packages other than the target are removed from `packages/` to keep the branch lean. |
+| `REMOVE_OTHER_PACKAGES` | | `true` | If `true`, the target package and its required dependencies are kept; all unrelated packages are removed from `packages/`. |
 | `BACKPORT_BRANCH_NAME` | | auto | Override the generated branch name (default: `backport-<package>-<major>.<minor>`). |
 | `PR_NUMBER` | | | PR number to notify on completion (posts a comment with success or failure). |
 
