@@ -151,12 +151,20 @@ updateBackportBranchContents() {
   # it with sed, which rewrites only that line and leaves blank lines intact — yq -i
   # rewrites the whole file and strips empty lines as a side effect.
   local pipeline_yml="${BUILDKITE_FOLDER_PATH}/pipeline.yml"
+  local pipeline_serverless_yml="${BUILDKITE_FOLDER_PATH}/pipeline.serverless.yml"
   local k8s_version_line=""
   local kind_version_line=""
+  local serverless_k8s_version_line=""
+  local serverless_kind_version_line=""
   if [ -f "${pipeline_yml}" ]; then
     k8s_version_line=$(grep -E '^\s*K8S_VERSION:' "${pipeline_yml}" || true)
     kind_version_line=$(grep -E '^\s*KIND_VERSION:' "${pipeline_yml}" || true)
-    echo "Preserving from backport branch: ${k8s_version_line}, ${kind_version_line}"
+    echo "Preserving from backport branch (pipeline.yml): ${k8s_version_line}, ${kind_version_line}"
+  fi
+  if [ -f "${pipeline_serverless_yml}" ]; then
+    serverless_k8s_version_line=$(grep -E '^\s*K8S_VERSION:' "${pipeline_serverless_yml}" || true)
+    serverless_kind_version_line=$(grep -E '^\s*KIND_VERSION:' "${pipeline_serverless_yml}" || true)
+    echo "Preserving from backport branch (pipeline.serverless.yml): ${serverless_k8s_version_line}, ${serverless_kind_version_line}"
   fi
 
   echo "--- Copying $BUILDKITE_FOLDER_PATH from $SOURCE_BRANCH..."
@@ -171,6 +179,14 @@ updateBackportBranchContents() {
   if [ -n "${kind_version_line}" ]; then
     echo "--- Restoring KIND_VERSION in ${pipeline_yml}..."
     sed -i "s|^\s*KIND_VERSION:.*|${kind_version_line}|" "${pipeline_yml}"
+  fi
+  if [ -n "${serverless_k8s_version_line}" ]; then
+    echo "--- Restoring K8S_VERSION in ${pipeline_serverless_yml}..."
+    sed -i "s|^\s*K8S_VERSION:.*|${serverless_k8s_version_line}|" "${pipeline_serverless_yml}"
+  fi
+  if [ -n "${serverless_kind_version_line}" ]; then
+    echo "--- Restoring KIND_VERSION in ${pipeline_serverless_yml}..."
+    sed -i "s|^\s*KIND_VERSION:.*|${serverless_kind_version_line}|" "${pipeline_serverless_yml}"
   fi
 
   git add $BUILDKITE_FOLDER_PATH
@@ -267,20 +283,17 @@ updateBackportBranchContents() {
   if [ "${REMOVE_OTHER_PACKAGES}" == "true" ]; then
     echo "--- Removing all packages from $PACKAGES_FOLDER_PATH folder"
 
-    # Build the list of packages to keep: the target package plus any packages
-    # it requires (composable packages declare dependencies under requires.input
-    # and requires.content in their manifest.yml).
-    local -a packages_to_keep=("${PACKAGE_PATH}")
-    while IFS= read -r req_name; do
-      local req_path
-      req_path=$(get_package_path "${req_name}" || true)
-      if [[ -n "${req_path}" ]]; then
-        echo "Keeping required package: ${req_path} (required by ${PACKAGE_NAME})"
-        packages_to_keep+=("${req_path}")
-      else
-        echo "Warning: required package '${req_name}' not found in packages folder"
-      fi
-    done < <(get_required_package_names "${PACKAGE_PATH}")
+    # Build the list of packages to keep: target + requires.* deps + .link
+    # source packages, expanded transitively until stable.
+    # Note: .link files may reference paths outside packages/ (e.g. _dev/shared/
+    # at the repo root). Those sources are not tracked here but are also not
+    # removed by remove_other_packages, which only operates on paths returned by
+    # list_all_directories (i.e. packages under packages/).
+    # See https://github.com/elastic/integrations/issues/21594.
+    local -a packages_to_keep=()
+    while IFS= read -r pkg; do
+      packages_to_keep+=("${pkg}")
+    done < <(collect_packages_to_keep "${PACKAGE_PATH}")
 
     remove_other_packages "${packages_to_keep[@]}"
     ls -la "${PACKAGES_FOLDER_PATH}"

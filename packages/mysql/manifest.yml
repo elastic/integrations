@@ -1,7 +1,7 @@
 format_version: "3.4.0"
 name: mysql
 title: MySQL
-version: "1.30.3"
+version: "1.31.0"
 description: Collect error logs, slow logs, and performance metrics from MySQL via Elastic Agent.
 type: integration
 group: mysql
@@ -68,7 +68,6 @@ policy_templates:
             type: password
             title: Password
             secret: true
-            default: test
           - name: ssl
             type: yaml
             title: SSL Configuration
@@ -112,11 +111,27 @@ policy_templates:
           - name: hosts
             type: text
             title: MySQL DSN
+            description: MySQL DSN without credentials, for example `tcp(127.0.0.1:3306)/`. Use the Username and Password fields for authentication so the password is stored as a Fleet secret. Existing DSNs that still include `username:password@` continue to work if Username and Password are left empty. Do not set Username or Password when the DSN already includes credentials.
             multi: true
             required: true
             show_user: true
             default:
-              - username:password@tcp(localhost:3306)/
+              - tcp(127.0.0.1:3306)/
+          - name: username
+            type: text
+            title: Username
+            description: Leave empty if the DSN already includes credentials. Do not include a colon (`:`) or a single quote (`'`); the MySQL DSN parser treats the first colon as the start of the password, and a single quote is not supported in the generated configuration.
+            multi: false
+            required: false
+            show_user: true
+          - name: password
+            type: password
+            title: Password
+            description: Stored as a Fleet secret. Special characters are supported. Do not percent-encode the value; the MySQL driver treats `%xx` as literal characters. Leave empty if the DSN already includes credentials. Set Username as well; a password on its own is applied with an empty MySQL username.
+            multi: false
+            required: false
+            show_user: true
+            secret: true
           - name: replication_status_query
             type: text
             title: Replica status query

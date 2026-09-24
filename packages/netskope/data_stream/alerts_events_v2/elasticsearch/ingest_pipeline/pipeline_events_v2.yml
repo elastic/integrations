@@ -337,6 +337,27 @@ processors:
             tag: append_error_message_6a49b14a
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - rename:
+      tag: rename_dlp_match_info_to_object
+      description: >-
+        dlp_match_info is polymorphic: the Netskope API sends it as either a
+        plain string or a JSON array of objects. A single field cannot be mapped
+        as both keyword and object, so structured values are moved to
+        dlp_match_info_object, keeping dlp_match_info consistently a keyword.
+      field: netskope.events_v2.dlp_match_info
+      target_field: netskope.events_v2.dlp_match_info_object
+      if: ctx.netskope?.events_v2?.dlp_match_info instanceof Map || ctx.netskope?.events_v2?.dlp_match_info instanceof List
+      ignore_missing: true
+  - rename:
+      tag: rename_inline_dlp_match_info_to_object
+      description: >-
+        inline_dlp_match_info is polymorphic: the Netskope API sends it as
+        either a plain string or a JSON array of objects. Structured values are
+        moved to inline_dlp_match_info_object.
+      field: netskope.events_v2.inline_dlp_match_info
+      target_field: netskope.events_v2.inline_dlp_match_info_object
+      if: ctx.netskope?.events_v2?.inline_dlp_match_info instanceof Map || ctx.netskope?.events_v2?.inline_dlp_match_info instanceof List
+      ignore_missing: true
   - convert:
       field: netskope.events_v2.domain_ip
       tag: convert_domain_ip_to_ip_86d89a81
