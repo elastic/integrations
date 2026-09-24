@@ -358,14 +358,17 @@ program: |-
                                                   optional.of(string(int(rd.candidate_id))),
                                                 ?"reason": (enrich.reason == null) ?
                                                   // No rejection_reason_id on the record; try the legacy notes fallback.
-                                                  enrich.notes_text.startsWith("Reason: ") ?
-                                                    optional.of(
-                                                      {
-                                                        "name": enrich.notes_text.split("\n")[0].substring(8),
-                                                        "type": "",
-                                                      }
-                                                    )
-                                                  : optional.none()
+                                                  // Parenthesised: CEL only allows a nested ternary in the true branch when wrapped.
+                                                  (
+                                                    enrich.notes_text.startsWith("Reason: ") ?
+                                                      optional.of(
+                                                        {
+                                                          "name": enrich.notes_text.split("\n")[0].trim_prefix("Reason: "),
+                                                          "type": "",
+                                                        }
+                                                      )
+                                                    : optional.none()
+                                                  )
                                                 : ("_error" in enrich.reason) ?
                                                   // Reason lookup failed; surface the error so it's diagnosable.
                                                   optional.of({"error": enrich.reason["_error"]})

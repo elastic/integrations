@@ -17,8 +17,14 @@ data_stream:
     enrich_rejections: true
     enable_request_tracer: true
 assert:
-  # TODO: add field-level assertions once the mock server fixture returns predictable rejection
-  # enrichment data, so we can verify greenhouse.audit.event.rejection.application_id,
-  # reason.id/name/type, notes, and rejected_at are actually populated — not just that
-  # 4 events were emitted (which passes even if every Harvest lookup silently fails).
   hit_count: 4
+  # Verify the Harvest lookups actually populated the rejection fields; hit_count alone passes
+  # even if every lookup silently fails.
+  fields_present:
+    - greenhouse.audit.event.rejection.application_id
+    - greenhouse.audit.event.rejection.candidate_id
+    - greenhouse.audit.event.rejection.reason.id
+    - greenhouse.audit.event.rejection.reason.name
+    - greenhouse.audit.event.rejection.reason.type
+    - greenhouse.audit.event.rejection.notes
+    - greenhouse.audit.event.rejection.rejected_at
