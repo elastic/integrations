@@ -29,10 +29,6 @@ processors:
       tag: parse_json
       description: Decode the alert from `event.original`. Skipped when the http_endpoint input already supplied a decoded `json` object.
       if: ctx.json == null && ctx.event?.original != null
-      on_failure:
-        - append:
-            field: error.message
-            value: 'failed to json-decode event.original: {{{_ingest.on_failure_message}}}'
   - fail:
       tag: fail_missing_json
       description: Neither input supplied a decodable alert object.
@@ -73,7 +69,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: 'failed to parse start_at: {{{_ingest.on_failure_message}}}'
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - date:
       field: json.start_at
       target_field: event.start
@@ -84,7 +83,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: 'failed to parse event.start: {{{_ingest.on_failure_message}}}'
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - date:
       field: json.stop_at
       target_field: event.end
@@ -95,7 +97,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: 'failed to parse event.end: {{{_ingest.on_failure_message}}}'
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
 
   # ---- identifiers and scenario ----
   - set:
@@ -142,7 +147,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: 'failed to split scenario name: {{{_ingest.on_failure_message}}}'
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: rule.version
       copy_from: json.scenario_version
@@ -169,7 +177,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: 'failed to convert events_count: {{{_ingest.on_failure_message}}}'
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - convert:
       field: json.capacity
       target_field: crowdsec.capacity
@@ -179,7 +190,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: 'failed to convert capacity: {{{_ingest.on_failure_message}}}'
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: crowdsec.leakspeed
       copy_from: json.leakspeed
@@ -253,7 +267,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: 'failed to convert as_number: {{{_ingest.on_failure_message}}}'
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: source.as.organization.name
       copy_from: json.source.as_name
@@ -388,7 +405,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: 'failed to decode target_uri: {{{_ingest.on_failure_message}}}'
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - json:
       field: crowdsec.alert.meta.method
       target_field: http.request.method
@@ -397,7 +417,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: 'failed to decode method: {{{_ingest.on_failure_message}}}'
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - json:
       field: crowdsec.alert.meta.user_agent
       target_field: user_agent.original
@@ -406,7 +429,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: 'failed to decode user_agent: {{{_ingest.on_failure_message}}}'
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - json:
       field: crowdsec.alert.meta.status
       target_field: http.response.status_code
@@ -415,7 +441,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: 'failed to decode status: {{{_ingest.on_failure_message}}}'
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   # CrowdSec encodes the status codes as an array of strings; ECS types the field
   # as long.
   - convert:
@@ -426,22 +455,23 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: 'failed to convert status code: {{{_ingest.on_failure_message}}}'
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
 
   # ---- events: keep count only; the per-event detail is aggregated above ----
   - script:
       lang: painless
       tag: script_events_paths
-      description: Collect distinct request paths and status codes from the alert's events.
+      description: Collect the distinct request paths from the alert's events.
       if: ctx.json?.events instanceof List
       source: |
         List paths = new ArrayList();
-        List statuses = new ArrayList();
         for (def ev : ctx.json.events) {
           if (ev?.meta instanceof List) {
             for (def kv : ev.meta) {
               if (kv?.key == 'http_path' && kv.value != null && !paths.contains(kv.value)) { paths.add(kv.value); }
-              if (kv?.key == 'http_status' && kv.value != null && !statuses.contains(kv.value)) { statuses.add(kv.value); }
             }
           }
         }

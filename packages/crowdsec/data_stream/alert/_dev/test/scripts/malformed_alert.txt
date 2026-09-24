@@ -30,11 +30,12 @@ exec jq -s -r '.[].event.original' got.json
 stdout '^this is not json$'
 stdout '^\["not","an","alert"\]$'
 
-# The undecodable body reports the decode failure; both report the missing alert object.
+# The body that is not JSON fails in the decode step; the one that decodes to a
+# list reaches the guard that requires an alert object.
 exec jq -s -r '.[0].error.message | tostring' got.json
-stdout 'failed to json-decode event.original'
-exec jq -s 'all(.error.message | tostring | contains("fail_missing_json"))' got.json
-stdout '^true$'
+stdout 'with tag .parse_json. failed with message'
+exec jq -s -r '.[1].error.message | tostring' got.json
+stdout 'with tag .fail_missing_json. failed with message'
 
 uninstall_pipelines -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_ROOT}
 ! stderr .
