@@ -146,10 +146,11 @@
                                 "valueFontMode": "default"
                             }
                         },
-                        "title": "",
+                        "title": "Workflow Success Rate",
                         "version": 2,
                         "visualizationType": "lnsMetric"
-                    }
+                    },
+                    "description": "Rate of workflow executions completing successfully per second across all namespaces (filtered by the Namespace control). The primary throughput signal for Temporal workflows."
                 },
                 "gridData": {
                     "h": 5,
@@ -233,10 +234,11 @@
                                 "valueFontMode": "default"
                             }
                         },
-                        "title": "",
+                        "title": "Activity Success Rate",
                         "version": 2,
                         "visualizationType": "lnsMetric"
-                    }
+                    },
+                    "description": "Rate of activity task completions per second. The primary throughput signal for activity execution. A sustained drop while workflow success rate holds suggests a specific activity type or worker pool is struggling."
                 },
                 "gridData": {
                     "h": 5,
@@ -319,10 +321,11 @@
                                 "valueFontMode": "default"
                             }
                         },
-                        "title": "",
+                        "title": "Peak Open Workflows",
                         "version": 2,
                         "visualizationType": "lnsMetric"
-                    }
+                    },
+                    "description": "Maximum number of in-flight workflow executions across all namespaces during the selected time range. Sustained growth without proportional throughput growth suggests workflows are accumulating \u2014 blocked on tasks, stuck in retry loops, or running indefinitely."
                 },
                 "gridData": {
                     "h": 5,
@@ -406,10 +409,11 @@
                                 "valueFontMode": "default"
                             }
                         },
-                        "title": "",
+                        "title": "Workflow Timeout Rate",
                         "version": 2,
                         "visualizationType": "lnsMetric"
-                    }
+                    },
+                    "description": "Rate of workflow executions timing out per second \u2014 exceeding their workflowExecutionTimeout without completing. A non-zero rate indicates backlogged task queues, overloaded workers, or timeout values set too aggressively."
                 },
                 "gridData": {
                     "h": 5,
@@ -493,10 +497,11 @@
                                 "valueFontMode": "default"
                             }
                         },
-                        "title": "",
+                        "title": "Workflow Failure Rate",
                         "version": 2,
                         "visualizationType": "lnsMetric"
-                    }
+                    },
+                    "description": "Rate of workflow executions failing per second \u2014 exhausting retries or encountering non-retryable errors. Distinct from timeouts: the workflow ran out of retry budget, not wall-clock time."
                 },
                 "gridData": {
                     "h": 5,
@@ -580,10 +585,11 @@
                                 "valueFontMode": "default"
                             }
                         },
-                        "title": "",
+                        "title": "Activity Task Failure Rate",
                         "version": 2,
                         "visualizationType": "lnsMetric"
-                    }
+                    },
+                    "description": "Rate of individual activity task attempt failures per second. Activity failures may be retried; sustained high rates exhaust retry budgets and lead to workflow failures."
                 },
                 "gridData": {
                     "h": 5,
@@ -665,10 +671,11 @@
                                 "valueFontMode": "default"
                             }
                         },
-                        "title": "",
+                        "title": "Est. Unserved Tasks",
                         "version": 2,
                         "visualizationType": "lnsMetric"
                     },
+                    "description": "Estimated rate of tasks dispatched to task queues with zero active pollers (no_poller_tasks_count \u00d7 60 s). A non-zero value means workers for at least one task queue are absent \u2014 every new task for that queue is immediately stuck.",
                     "hide_title": true
                 },
                 "gridData": {
@@ -753,10 +760,11 @@
                                 "valueFontMode": "default"
                             }
                         },
-                        "title": "",
+                        "title": "Service Request Rate",
                         "version": 2,
                         "visualizationType": "lnsMetric"
-                    }
+                    },
+                    "description": "Total rate of gRPC frontend service requests per second, across all operation types. The baseline traffic signal for Temporal Cloud service load."
                 },
                 "gridData": {
                     "h": 5,
@@ -839,10 +847,11 @@
                                 "valueFontMode": "default"
                             }
                         },
-                        "title": "",
+                        "title": "Peak Task Backlog",
                         "version": 2,
                         "visualizationType": "lnsMetric"
-                    }
+                    },
+                    "description": "Maximum number of pending tasks across all task queues during the selected time range. A growing backlog indicates tasks are arriving faster than workers can process them \u2014 the primary capacity saturation signal."
                 },
                 "gridData": {
                     "h": 5,
@@ -1014,6 +1023,7 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
+                    "description": "99th-percentile workflow end-to-end latency (schedule to close), broken down by workflow type, sampled at the Temporal Cloud 1-minute aggregation window. Rising p99 indicates backlogged task queues, overloaded workers, or increasingly complex workflow logic.",
                     "title": "Workflow Schedule-to-Close 1-min p99"
                 },
                 "gridData": {
@@ -1185,6 +1195,7 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
+                    "description": "99th-percentile gRPC frontend latency per API operation, sampled at the Temporal Cloud 1-minute aggregation window. Latency spikes here propagate directly to all client operations (StartWorkflow, PollActivityTask, etc.).",
                     "title": "Frontend Service 1-min p99 Latency by Operation"
                 },
                 "gridData": {
@@ -1348,6 +1359,7 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
+                    "description": "Total gRPC frontend request rate broken down by operation type. Identifies which API methods are responsible for traffic growth or unusual patterns across the service.",
                     "title": "Service Request Rate by Operation"
                 },
                 "gridData": {
@@ -1521,6 +1533,7 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
+                    "description": "Rate of workflow executions completing successfully per second, stacked by namespace. Stacking shows total throughput and each namespace's contribution to it. Use the Namespace control to isolate individual namespaces when cardinality is high.",
                     "title": "Workflow Successes/sec by Namespace"
                 },
                 "gridData": {
@@ -1694,6 +1707,7 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
+                    "description": "Rate of activity task completions per second, stacked by namespace. Stacking shows total activity throughput and each namespace's contribution. A namespace dropping out of the stack indicates a worker or connectivity issue for that tenant.",
                     "title": "Activity Successes/sec by Namespace"
                 },
                 "gridData": {
@@ -1729,7 +1743,7 @@
                                             "columns": [
                                                 {
                                                     "columnId": "line_0_x",
-                                                    "fieldName": "Time Bucket",
+                                                    "fieldName": "time_bucket",
                                                     "meta": {
                                                         "type": "date"
                                                     }
@@ -1754,7 +1768,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-temporal.cloud_metrics.otel-*-7284f9d84b8a36ada720e5fdbafe4ba803cc07335df61c342e0ddaceebfdb638",
                                             "query": {
-                                                "esql": "TS metrics-temporal.cloud_metrics.otel-*\n| STATS `No-Poller Tasks/sec` = SUM(AVG_OVER_TIME(metrics.temporal_cloud_v1_no_poller_tasks_count)) BY task_queue = attributes.temporal_task_queue, `Time Bucket` = TBUCKET(50, ?_tstart, ?_tend)"
+                                                "esql": "TS metrics-temporal.cloud_metrics.otel-*\n| STATS `No-Poller Tasks/sec` = SUM(AVG_OVER_TIME(metrics.temporal_cloud_v1_no_poller_tasks_count)) BY task_queue = attributes.temporal_task_queue, time_bucket = TBUCKET(50, ?_tstart, ?_tend)"
                                             }
                                         }
                                     }
@@ -1769,7 +1783,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-temporal.cloud_metrics.otel-*\n| STATS `No-Poller Tasks/sec` = SUM(AVG_OVER_TIME(metrics.temporal_cloud_v1_no_poller_tasks_count)) BY task_queue = attributes.temporal_task_queue, `Time Bucket` = TBUCKET(50, ?_tstart, ?_tend)"
+                                "esql": "TS metrics-temporal.cloud_metrics.otel-*\n| STATS `No-Poller Tasks/sec` = SUM(AVG_OVER_TIME(metrics.temporal_cloud_v1_no_poller_tasks_count)) BY task_queue = attributes.temporal_task_queue, time_bucket = TBUCKET(50, ?_tstart, ?_tend)"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -1857,6 +1871,7 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
+                    "description": "Rate of tasks dispatched to task queues that have zero active pollers, broken down by task queue. A non-zero value means work is arriving for a queue with no worker listening \u2014 every new task for that queue is immediately stuck. The most critical worker-health signal.",
                     "title": "No-Poller Tasks/sec by Task Queue"
                 },
                 "gridData": {
@@ -1908,7 +1923,7 @@
                                                 },
                                                 {
                                                     "columnId": "area_0_breakdown",
-                                                    "fieldName": "temporal_namespace",
+                                                    "fieldName": "namespace",
                                                     "meta": {
                                                         "type": "string"
                                                     }
@@ -1917,7 +1932,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-temporal.cloud_metrics.otel-*-812a87f3377ff84e23f2e93687bea31a9620229f46c37079158bb582e75bf94f",
                                             "query": {
-                                                "esql": "TS metrics-temporal.cloud_metrics.otel-*\n| STATS `Workflow Timeout Rate` = SUM(AVG_OVER_TIME(temporal_cloud_v1_workflow_timeout_count)) BY `temporal_namespace` = attributes.temporal_namespace, `time_bucket` = TBUCKET(50, ?_tstart, ?_tend)\n| SORT `time_bucket` ASC"
+                                                "esql": "TS metrics-temporal.cloud_metrics.otel-*\n| STATS `Workflow Timeout Rate` = SUM(AVG_OVER_TIME(metrics.temporal_cloud_v1_workflow_timeout_count)) BY namespace = attributes.temporal_namespace, `time_bucket` = TBUCKET(50, ?_tstart, ?_tend)\n| SORT `time_bucket` ASC"
                                             }
                                         }
                                     }
@@ -1932,7 +1947,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-temporal.cloud_metrics.otel-*\n| STATS `Workflow Timeout Rate` = SUM(AVG_OVER_TIME(temporal_cloud_v1_workflow_timeout_count)) BY `temporal_namespace` = attributes.temporal_namespace, `time_bucket` = TBUCKET(50, ?_tstart, ?_tend)\n| SORT `time_bucket` ASC"
+                                "esql": "TS metrics-temporal.cloud_metrics.otel-*\n| STATS `Workflow Timeout Rate` = SUM(AVG_OVER_TIME(metrics.temporal_cloud_v1_workflow_timeout_count)) BY namespace = attributes.temporal_namespace, `time_bucket` = TBUCKET(50, ?_tstart, ?_tend)\n| SORT `time_bucket` ASC"
                             },
                             "visualization": {
                                 "areaFill": "gradient",
@@ -1981,7 +1996,7 @@
                                         },
                                         "layerId": "area_0",
                                         "layerType": "data",
-                                        "seriesType": "area",
+                                        "seriesType": "area_stacked",
                                         "splitAccessors": [
                                             "area_0_breakdown"
                                         ],
@@ -2022,6 +2037,7 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
+                    "description": "Rate of workflow executions timing out (exceeding their workflowExecutionTimeout), stacked by namespace. Workflow timeouts are distinct from failures: the workflow ran out of wall-clock time, not retry budget. Sustained timeouts indicate blocked workers or backlogged task queues.",
                     "title": "Workflow Timeout Rate by Namespace"
                 },
                 "gridData": {
@@ -2073,7 +2089,7 @@
                                                 },
                                                 {
                                                     "columnId": "area_0_breakdown",
-                                                    "fieldName": "temporal_namespace",
+                                                    "fieldName": "namespace",
                                                     "meta": {
                                                         "type": "string"
                                                     }
@@ -2082,7 +2098,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-temporal.cloud_metrics.otel-*-bc4ef50001a5a29405119da8acd9df94be136a26e4af13e225b1dfa7b5770c08",
                                             "query": {
-                                                "esql": "TS metrics-temporal.cloud_metrics.otel-*\n| STATS `Workflow Failures/sec` = SUM(AVG_OVER_TIME(metrics.temporal_cloud_v1_workflow_failed_count)) BY `temporal_namespace` = attributes.temporal_namespace, `time_bucket` = TBUCKET(50, ?_tstart, ?_tend)"
+                                                "esql": "TS metrics-temporal.cloud_metrics.otel-*\n| STATS `Workflow Failures/sec` = SUM(AVG_OVER_TIME(metrics.temporal_cloud_v1_workflow_failed_count)) BY namespace = attributes.temporal_namespace, `time_bucket` = TBUCKET(50, ?_tstart, ?_tend)"
                                             }
                                         }
                                     }
@@ -2097,7 +2113,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-temporal.cloud_metrics.otel-*\n| STATS `Workflow Failures/sec` = SUM(AVG_OVER_TIME(metrics.temporal_cloud_v1_workflow_failed_count)) BY `temporal_namespace` = attributes.temporal_namespace, `time_bucket` = TBUCKET(50, ?_tstart, ?_tend)"
+                                "esql": "TS metrics-temporal.cloud_metrics.otel-*\n| STATS `Workflow Failures/sec` = SUM(AVG_OVER_TIME(metrics.temporal_cloud_v1_workflow_failed_count)) BY namespace = attributes.temporal_namespace, `time_bucket` = TBUCKET(50, ?_tstart, ?_tend)"
                             },
                             "visualization": {
                                 "areaFill": "gradient",
@@ -2146,7 +2162,7 @@
                                         },
                                         "layerId": "area_0",
                                         "layerType": "data",
-                                        "seriesType": "area",
+                                        "seriesType": "area_stacked",
                                         "splitAccessors": [
                                             "area_0_breakdown"
                                         ],
@@ -2187,6 +2203,7 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
+                    "description": "Rate of workflow executions failing (exhausting retries or encountering non-retryable errors), stacked by namespace. Stacking shows total failure rate and which namespace is the primary source of failures.",
                     "title": "Workflow Failures/sec by Namespace"
                 },
                 "gridData": {
@@ -2224,10 +2241,10 @@
                                                     "columnId": "datatable_accessor_metric_0",
                                                     "customLabel": true,
                                                     "fieldName": "namespace",
-                                                    "inMetricDimension": true,
+                                                    "inMetricDimension": false,
                                                     "label": "Namespace",
                                                     "meta": {
-                                                        "type": "number"
+                                                        "type": "string"
                                                     }
                                                 },
                                                 {
@@ -2326,27 +2343,81 @@
                             "visualization": {
                                 "columns": [
                                     {
+                                        "alignment": "left",
                                         "columnId": "datatable_accessor_metric_0",
-                                        "isMetric": true,
+                                        "hidden": false,
+                                        "isMetric": false,
                                         "isTransposed": false
                                     },
                                     {
+                                        "alignment": "right",
+                                        "colorMode": "badge",
                                         "columnId": "datatable_accessor_metric_1",
+                                        "hidden": false,
                                         "isMetric": true,
-                                        "isTransposed": false
+                                        "isTransposed": false,
+                                        "palette": {
+                                            "name": "custom",
+                                            "params": {
+                                                "colorStops": [
+                                                    {
+                                                        "color": "#aee8d2",
+                                                        "stop": null
+                                                    },
+                                                    {
+                                                        "color": "#fff3c2",
+                                                        "stop": 33
+                                                    },
+                                                    {
+                                                        "color": "#ffc9c2",
+                                                        "stop": 67
+                                                    }
+                                                ],
+                                                "continuity": "all",
+                                                "maxSteps": 5,
+                                                "name": "custom",
+                                                "progression": "fixed",
+                                                "rangeMax": null,
+                                                "rangeMin": 0,
+                                                "rangeType": "percent",
+                                                "reverse": false,
+                                                "steps": 3,
+                                                "stops": [
+                                                    {
+                                                        "color": "#aee8d2",
+                                                        "stop": 33
+                                                    },
+                                                    {
+                                                        "color": "#fff3c2",
+                                                        "stop": 67
+                                                    },
+                                                    {
+                                                        "color": "#ffc9c2",
+                                                        "stop": null
+                                                    }
+                                                ]
+                                            },
+                                            "type": "palette"
+                                        }
                                     },
                                     {
+                                        "alignment": "right",
                                         "columnId": "datatable_accessor_metric_2",
+                                        "hidden": false,
                                         "isMetric": true,
                                         "isTransposed": false
                                     },
                                     {
+                                        "alignment": "right",
                                         "columnId": "datatable_accessor_metric_3",
+                                        "hidden": false,
                                         "isMetric": true,
                                         "isTransposed": false
                                     },
                                     {
+                                        "alignment": "right",
                                         "columnId": "datatable_accessor_metric_4",
+                                        "hidden": false,
                                         "isMetric": true,
                                         "isTransposed": false
                                     }
@@ -2356,6 +2427,10 @@
                                 "paging": {
                                     "enabled": true,
                                     "size": 10
+                                },
+                                "sorting": {
+                                    "columnId": "datatable_accessor_metric_1",
+                                    "direction": "desc"
                                 }
                             }
                         },
@@ -2363,6 +2438,7 @@
                         "version": 2,
                         "visualizationType": "lnsDatatable"
                     },
+                    "description": "Estimated total error counts per namespace for the selected time range. Counts are derived by multiplying per-second rates by 60 \u00d7 number of minutes in the range. Sorted by estimated workflow timeouts descending \u2014 the highest-impact error type.",
                     "title": "Estimated Error Counts by Namespace"
                 },
                 "gridData": {
@@ -2501,6 +2577,10 @@
                                         "truncateLegend": true
                                     }
                                 ],
+                                "palette": {
+                                    "name": "warm",
+                                    "type": "palette"
+                                },
                                 "shape": "donut"
                             }
                         },
@@ -2508,6 +2588,7 @@
                         "version": 2,
                         "visualizationType": "lnsPie"
                     },
+                    "description": "Estimated error count distribution across four error categories for the selected time range: workflow timeouts, workflow failures, activity task failures, and activity task timeouts. Counts are estimated as per-second rates \u00d7 60 \u00d7 duration in minutes.",
                     "title": "Error Type Breakdown"
                 },
                 "gridData": {
@@ -2640,7 +2721,7 @@
                                         },
                                         "layerId": "area_0",
                                         "layerType": "data",
-                                        "seriesType": "area",
+                                        "seriesType": "area_stacked",
                                         "splitAccessors": [
                                             "area_0_breakdown"
                                         ],
@@ -2681,6 +2762,7 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
+                    "description": "Rate of individual activity task attempt failures, stacked by namespace. Activity failures may be retried; sustained high rates exhaust retry budgets and lead to workflow failures. Stacking shows which namespace is the dominant failure source.",
                     "title": "Activity Task Failures/sec by Namespace"
                 },
                 "gridData": {
@@ -2854,6 +2936,7 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
+                    "description": "Rate of activity task timeouts broken down by timeout type (StartToClose, Heartbeat). StartToClose timeouts indicate workers are exceeding their per-attempt time limit. Heartbeat timeouts indicate workers stopped reporting progress mid-execution \u2014 the worker process likely crashed or hung. Both types may be retried but persistent rates signal systemic problems.",
                     "title": "Activity Task Timeouts/sec by Timeout Type"
                 },
                 "gridData": {
@@ -2986,7 +3069,7 @@
                                         },
                                         "layerId": "area_0",
                                         "layerType": "data",
-                                        "seriesType": "area",
+                                        "seriesType": "area_stacked",
                                         "splitAccessors": [
                                             "area_0_breakdown"
                                         ],
@@ -3027,6 +3110,7 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
+                    "description": "Rate of throttled gRPC frontend requests, stacked by namespace. Throttling occurs when a namespace exceeds its rate limits. Sustained throttling causes task queue backlogs and workflow latency.",
                     "title": "Throttled Requests/sec by Namespace"
                 },
                 "gridData": {
@@ -3159,7 +3243,7 @@
                                         },
                                         "layerId": "area_0",
                                         "layerType": "data",
-                                        "seriesType": "area",
+                                        "seriesType": "area_stacked",
                                         "splitAccessors": [
                                             "area_0_breakdown"
                                         ],
@@ -3200,6 +3284,7 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
+                    "description": "Rate of resource-exhausted gRPC errors, stacked by namespace. These occur when Temporal Cloud throttles requests due to rate limit or quota exhaustion \u2014 the leading indicator before action-rate-limit alerts fire.",
                     "title": "Resource Exhausted Errors/sec by Namespace"
                 },
                 "gridData": {
@@ -3260,7 +3345,7 @@
                                                 },
                                                 {
                                                     "columnId": "line_0_breakdown",
-                                                    "fieldName": "attributes.temporal_task_queue",
+                                                    "fieldName": "task_queue",
                                                     "meta": {
                                                         "type": "string"
                                                     }
@@ -3269,7 +3354,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-temporal.cloud_metrics.otel-*-04d41646a1d422a7e722aab80c63d5750da1f20662349844c3fb04d7a392ee95",
                                             "query": {
-                                                "esql": "TS metrics-temporal.cloud_metrics.otel-*\n| STATS `Task Queue Backlog` = MAX(AVG_OVER_TIME(metrics.temporal_cloud_v1_approximate_backlog_count)) BY attributes.temporal_task_queue, time_bucket = TBUCKET(50, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                                                "esql": "TS metrics-temporal.cloud_metrics.otel-*\n| STATS `Task Queue Backlog` = MAX(AVG_OVER_TIME(metrics.temporal_cloud_v1_approximate_backlog_count)) BY task_queue = attributes.temporal_task_queue, time_bucket = TBUCKET(50, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
                                             }
                                         }
                                     }
@@ -3284,7 +3369,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-temporal.cloud_metrics.otel-*\n| STATS `Task Queue Backlog` = MAX(AVG_OVER_TIME(metrics.temporal_cloud_v1_approximate_backlog_count)) BY attributes.temporal_task_queue, time_bucket = TBUCKET(50, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                                "esql": "TS metrics-temporal.cloud_metrics.otel-*\n| STATS `Task Queue Backlog` = MAX(AVG_OVER_TIME(metrics.temporal_cloud_v1_approximate_backlog_count)) BY task_queue = attributes.temporal_task_queue, time_bucket = TBUCKET(50, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -3372,6 +3457,7 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
+                    "description": "Approximate number of pending tasks broken down by task queue over time. A growing backlog indicates tasks are arriving faster than workers can process them. The primary capacity saturation signal for individual worker pools.",
                     "title": "Task Queue Backlog"
                 },
                 "gridData": {
@@ -3409,10 +3495,29 @@
                                                     "columnId": "datatable_accessor_metric_0",
                                                     "customLabel": true,
                                                     "fieldName": "namespace",
-                                                    "inMetricDimension": true,
+                                                    "inMetricDimension": false,
                                                     "label": "Namespace",
                                                     "meta": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "datatable_accessor_metric_5",
+                                                    "customLabel": true,
+                                                    "fieldName": "ops_util_pct",
+                                                    "inMetricDimension": true,
+                                                    "label": "Ops Limit Util %",
+                                                    "meta": {
                                                         "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 3,
+                                                                "suffix": "%"
+                                                            }
+                                                        }
                                                     }
                                                 },
                                                 {
@@ -3486,31 +3591,12 @@
                                                             }
                                                         }
                                                     }
-                                                },
-                                                {
-                                                    "columnId": "datatable_accessor_metric_5",
-                                                    "customLabel": true,
-                                                    "fieldName": "ops_util_pct",
-                                                    "inMetricDimension": true,
-                                                    "label": "Ops Limit Util %",
-                                                    "meta": {
-                                                        "type": "number"
-                                                    },
-                                                    "params": {
-                                                        "format": {
-                                                            "id": "number",
-                                                            "params": {
-                                                                "decimals": 3,
-                                                                "suffix": "%"
-                                                            }
-                                                        }
-                                                    }
                                                 }
                                             ],
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-temporal.cloud_metrics.otel-*-b6fb0d0a280452f4c83d2cf6d57374018b7e7fc102da668fbc83a4d0591b1000",
                                             "query": {
-                                                "esql": "TS metrics-temporal.cloud_metrics.otel-*\n| WHERE attributes.temporal_namespace IS NOT NULL\n| STATS open_workflows = MAX(avg_over_time(metrics.temporal_cloud_v1_namespace_open_workflows)), avg_action_rate = SUM(avg_over_time(metrics.temporal_cloud_v1_total_action_count)) WHERE attributes.is_background == \"false\", avg_action_limit = AVG(metrics.temporal_cloud_v1_action_limit), max_backlog = MAX(avg_over_time(metrics.temporal_cloud_v1_approximate_backlog_count)), ops_rate = SUM(avg_over_time(metrics.temporal_cloud_v1_operations_count)), ops_limit = MAX(max_over_time(metrics.temporal_cloud_v1_operations_limit)) BY namespace = attributes.temporal_namespace\n| EVAL ops_util_pct = ROUND(CASE(ops_limit > 0, 100 * ops_rate / ops_limit, null), 3)\n| SORT open_workflows DESC NULLS LAST\n| LIMIT 50"
+                                                "esql": "TS metrics-temporal.cloud_metrics.otel-*\n| WHERE attributes.temporal_namespace IS NOT NULL\n| STATS open_workflows = MAX(avg_over_time(metrics.temporal_cloud_v1_namespace_open_workflows)), avg_action_rate = SUM(avg_over_time(metrics.temporal_cloud_v1_total_action_count)) WHERE attributes.is_background == \"false\", avg_action_limit = AVG(metrics.temporal_cloud_v1_action_limit), max_backlog = MAX(avg_over_time(metrics.temporal_cloud_v1_approximate_backlog_count)), ops_rate = SUM(avg_over_time(metrics.temporal_cloud_v1_operations_count)), ops_limit = MAX(max_over_time(metrics.temporal_cloud_v1_operations_limit)) BY namespace = attributes.temporal_namespace\n| EVAL ops_util_pct = ROUND(CASE(ops_limit > 0, 100 * ops_rate / ops_limit, null), 3)\n| SORT ops_util_pct DESC NULLS LAST\n| LIMIT 50"
                                             }
                                         }
                                     }
@@ -3525,37 +3611,93 @@
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-temporal.cloud_metrics.otel-*\n| WHERE attributes.temporal_namespace IS NOT NULL\n| STATS open_workflows = MAX(avg_over_time(metrics.temporal_cloud_v1_namespace_open_workflows)), avg_action_rate = SUM(avg_over_time(metrics.temporal_cloud_v1_total_action_count)) WHERE attributes.is_background == \"false\", avg_action_limit = AVG(metrics.temporal_cloud_v1_action_limit), max_backlog = MAX(avg_over_time(metrics.temporal_cloud_v1_approximate_backlog_count)), ops_rate = SUM(avg_over_time(metrics.temporal_cloud_v1_operations_count)), ops_limit = MAX(max_over_time(metrics.temporal_cloud_v1_operations_limit)) BY namespace = attributes.temporal_namespace\n| EVAL ops_util_pct = ROUND(CASE(ops_limit > 0, 100 * ops_rate / ops_limit, null), 3)\n| SORT open_workflows DESC NULLS LAST\n| LIMIT 50"
+                                "esql": "TS metrics-temporal.cloud_metrics.otel-*\n| WHERE attributes.temporal_namespace IS NOT NULL\n| STATS open_workflows = MAX(avg_over_time(metrics.temporal_cloud_v1_namespace_open_workflows)), avg_action_rate = SUM(avg_over_time(metrics.temporal_cloud_v1_total_action_count)) WHERE attributes.is_background == \"false\", avg_action_limit = AVG(metrics.temporal_cloud_v1_action_limit), max_backlog = MAX(avg_over_time(metrics.temporal_cloud_v1_approximate_backlog_count)), ops_rate = SUM(avg_over_time(metrics.temporal_cloud_v1_operations_count)), ops_limit = MAX(max_over_time(metrics.temporal_cloud_v1_operations_limit)) BY namespace = attributes.temporal_namespace\n| EVAL ops_util_pct = ROUND(CASE(ops_limit > 0, 100 * ops_rate / ops_limit, null), 3)\n| SORT ops_util_pct DESC NULLS LAST\n| LIMIT 50"
                             },
                             "visualization": {
                                 "columns": [
                                     {
+                                        "alignment": "left",
                                         "columnId": "datatable_accessor_metric_0",
-                                        "isMetric": true,
+                                        "hidden": false,
+                                        "isMetric": false,
                                         "isTransposed": false
                                     },
                                     {
-                                        "columnId": "datatable_accessor_metric_1",
-                                        "isMetric": true,
-                                        "isTransposed": false
-                                    },
-                                    {
-                                        "columnId": "datatable_accessor_metric_2",
-                                        "isMetric": true,
-                                        "isTransposed": false
-                                    },
-                                    {
-                                        "columnId": "datatable_accessor_metric_3",
-                                        "isMetric": true,
-                                        "isTransposed": false
-                                    },
-                                    {
-                                        "columnId": "datatable_accessor_metric_4",
-                                        "isMetric": true,
-                                        "isTransposed": false
-                                    },
-                                    {
+                                        "alignment": "right",
+                                        "colorMode": "badge",
                                         "columnId": "datatable_accessor_metric_5",
+                                        "hidden": false,
+                                        "isMetric": true,
+                                        "isTransposed": false,
+                                        "palette": {
+                                            "name": "custom",
+                                            "params": {
+                                                "colorStops": [
+                                                    {
+                                                        "color": "#aee8d2",
+                                                        "stop": null
+                                                    },
+                                                    {
+                                                        "color": "#fff3c2",
+                                                        "stop": 60
+                                                    },
+                                                    {
+                                                        "color": "#ffc9c2",
+                                                        "stop": 80
+                                                    }
+                                                ],
+                                                "continuity": "all",
+                                                "maxSteps": 5,
+                                                "name": "custom",
+                                                "progression": "fixed",
+                                                "rangeMax": null,
+                                                "rangeMin": 0,
+                                                "rangeType": "number",
+                                                "reverse": false,
+                                                "steps": 3,
+                                                "stops": [
+                                                    {
+                                                        "color": "#aee8d2",
+                                                        "stop": 60
+                                                    },
+                                                    {
+                                                        "color": "#fff3c2",
+                                                        "stop": 80
+                                                    },
+                                                    {
+                                                        "color": "#ffc9c2",
+                                                        "stop": null
+                                                    }
+                                                ]
+                                            },
+                                            "type": "palette"
+                                        }
+                                    },
+                                    {
+                                        "alignment": "right",
+                                        "columnId": "datatable_accessor_metric_1",
+                                        "hidden": false,
+                                        "isMetric": true,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "alignment": "right",
+                                        "columnId": "datatable_accessor_metric_2",
+                                        "hidden": false,
+                                        "isMetric": true,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "alignment": "right",
+                                        "columnId": "datatable_accessor_metric_3",
+                                        "hidden": false,
+                                        "isMetric": true,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "alignment": "right",
+                                        "columnId": "datatable_accessor_metric_4",
+                                        "hidden": false,
                                         "isMetric": true,
                                         "isTransposed": false
                                     }
@@ -3565,6 +3707,10 @@
                                 "paging": {
                                     "enabled": true,
                                     "size": 10
+                                },
+                                "sorting": {
+                                    "columnId": "datatable_accessor_metric_5",
+                                    "direction": "desc"
                                 }
                             }
                         },
@@ -3572,6 +3718,7 @@
                         "version": 2,
                         "visualizationType": "lnsDatatable"
                     },
+                    "description": "Snapshot of saturation metrics per namespace: open workflows, average action rate vs provisioned limit, peak task backlog, and operations quota utilization. Sorted by operations utilization descending \u2014 the quota signal that triggers throttling at 80%. The shipped alert rule fires at 80% utilization.",
                     "title": "Capacity Summary by Namespace"
                 },
                 "gridData": {
@@ -3705,7 +3852,7 @@
                                         },
                                         "layerId": "area_0",
                                         "layerType": "data",
-                                        "seriesType": "area",
+                                        "seriesType": "line",
                                         "splitAccessors": [
                                             "area_0_breakdown"
                                         ],
@@ -3746,6 +3893,7 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
+                    "description": "Number of in-flight workflow executions per namespace over time. Sustained growth without proportional throughput growth suggests workflows are not completing \u2014 blocked on tasks, stuck in retry loops, or running indefinitely.",
                     "title": "Open Workflows by Namespace"
                 },
                 "gridData": {
@@ -3943,6 +4091,7 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
+                    "description": "Action and operations quota utilization percentage per namespace over time. At 80% utilization there is insufficient headroom to absorb traffic spikes \u2014 the shipped alert rule fires at this threshold. Separately tracks action-rate and operations-rate utilization because they have independent limits.",
                     "title": "Action & Operations Quota Utilization by Namespace"
                 },
                 "gridData": {
@@ -4076,7 +4225,7 @@
                                         },
                                         "layerId": "area_0",
                                         "layerType": "data",
-                                        "seriesType": "area",
+                                        "seriesType": "line",
                                         "splitAccessors": [
                                             "area_0_breakdown"
                                         ],
@@ -4117,6 +4266,7 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
+                    "description": "Number of gRPC frontend requests waiting to be processed (in-flight but not yet responded to) per namespace. A leading indicator of service saturation \u2014 rising pending requests precede latency increases.",
                     "title": "Service Pending Requests by Namespace"
                 },
                 "gridData": {
@@ -4249,7 +4399,7 @@
                                         },
                                         "layerId": "area_0",
                                         "layerType": "data",
-                                        "seriesType": "area",
+                                        "seriesType": "area_stacked",
                                         "splitAccessors": [
                                             "area_0_breakdown"
                                         ],
@@ -4290,6 +4440,7 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
+                    "description": "Rate of billable actions per second per namespace, stacked. Each workflow event (task dispatch, signal, timer fire, etc.) consumes one action against the namespace's provisioned action limit. Stacking shows total billing load and per-namespace contribution.",
                     "title": "Billable Actions by Namespace"
                 },
                 "gridData": {
@@ -4304,15 +4455,6 @@
                 "type": "vis"
             },
             {
-                "type": "vis",
-                "gridData": {
-                    "h": 5,
-                    "i": "fa7daf7f-9c5c-460e-b797-67d699312a60",
-                    "sectionId": "306c782e-005f-45f6-a8aa-158aab93183e",
-                    "w": 16,
-                    "x": 0,
-                    "y": 0
-                },
                 "embeddableConfig": {
                     "attributes": {
                         "references": [],
@@ -4382,22 +4524,24 @@
                                 "valueFontMode": "default"
                             }
                         },
-                        "title": "",
+                        "title": "Sync Match Rate",
                         "version": 2,
                         "visualizationType": "lnsMetric"
-                    }
-                }
-            },
-            {
-                "type": "vis",
+                    },
+                    "description": "Fraction of successful polls that were synchronous \u2014 the task was immediately available when the poller arrived \u2014 broken down by task type. A low sync match rate means pollers are waiting idle most of the time: either demand is low or there are too many pollers relative to task volume."
+                },
                 "gridData": {
                     "h": 5,
-                    "i": "5fb2cec5-48be-4001-80de-e4b59b5335d1",
+                    "i": "fa7daf7f-9c5c-460e-b797-67d699312a60",
                     "sectionId": "306c782e-005f-45f6-a8aa-158aab93183e",
                     "w": 16,
-                    "x": 16,
+                    "x": 0,
                     "y": 0
                 },
+                "panelIndex": "fa7daf7f-9c5c-460e-b797-67d699312a60",
+                "type": "vis"
+            },
+            {
                 "embeddableConfig": {
                     "attributes": {
                         "references": [],
@@ -4467,22 +4611,24 @@
                                 "valueFontMode": "default"
                             }
                         },
-                        "title": "",
+                        "title": "Poll Success Rate",
                         "version": 2,
                         "visualizationType": "lnsMetric"
-                    }
-                }
-            },
-            {
-                "type": "vis",
+                    },
+                    "description": "Fraction of polls that found a task (vs timing out without work), broken down by task type. A declining poll success rate while task backlogs grow indicates workers are not keeping up. A very high rate with growing backlogs warrants investigation."
+                },
                 "gridData": {
                     "h": 5,
-                    "i": "c4c48eaa-f6fe-41fb-ae77-1311dce6ec5b",
+                    "i": "5fb2cec5-48be-4001-80de-e4b59b5335d1",
                     "sectionId": "306c782e-005f-45f6-a8aa-158aab93183e",
                     "w": 16,
-                    "x": 32,
+                    "x": 16,
                     "y": 0
                 },
+                "panelIndex": "5fb2cec5-48be-4001-80de-e4b59b5335d1",
+                "type": "vis"
+            },
+            {
                 "embeddableConfig": {
                     "attributes": {
                         "references": [],
@@ -4552,23 +4698,24 @@
                                 "valueFontMode": "default"
                             }
                         },
-                        "title": "",
+                        "title": "Frontend Service Error Rate",
                         "version": 2,
                         "visualizationType": "lnsMetric"
-                    }
-                }
+                    },
+                    "description": "Fraction of gRPC frontend requests returning an error, across all operation types. A non-zero baseline is expected for authentication failures and not-found responses; a rising rate indicates service degradation or systematic client issues."
+                },
+                "gridData": {
+                    "h": 5,
+                    "i": "c4c48eaa-f6fe-41fb-ae77-1311dce6ec5b",
+                    "sectionId": "306c782e-005f-45f6-a8aa-158aab93183e",
+                    "w": 16,
+                    "x": 32,
+                    "y": 0
+                },
+                "panelIndex": "c4c48eaa-f6fe-41fb-ae77-1311dce6ec5b",
+                "type": "vis"
             },
             {
-                "type": "vis",
-                "title": "Poll Health Ratios by Task Type",
-                "gridData": {
-                    "h": 12,
-                    "i": "cb0640fa-f7b3-44cc-b19c-4393aa7f748c",
-                    "sectionId": "306c782e-005f-45f6-a8aa-158aab93183e",
-                    "w": 24,
-                    "x": 0,
-                    "y": 5
-                },
                 "embeddableConfig": {
                     "attributes": {
                         "references": [],
@@ -4704,6 +4851,9 @@
                                         "layerId": "line_0",
                                         "layerType": "data",
                                         "seriesType": "line",
+                                        "splitAccessors": [
+                                            "line_0_breakdown"
+                                        ],
                                         "xAccessor": "line_0_x",
                                         "yConfig": [
                                             {
@@ -4714,9 +4864,6 @@
                                                 "axisMode": "left",
                                                 "forAccessor": "line_0_y_1"
                                             }
-                                        ],
-                                        "splitAccessors": [
-                                            "line_0_breakdown"
                                         ]
                                     }
                                 ],
@@ -4747,20 +4894,22 @@
                         "title": "Poll Health Ratios by Task Type",
                         "version": 2,
                         "visualizationType": "lnsXY"
-                    }
-                }
-            },
-            {
-                "type": "vis",
-                "title": "Frontend Service Error Rate by Operation",
+                    },
+                    "description": "Sync match rate and poll success rate over time, broken down by task type (Activity, Workflow). Tracks whether pollers are efficiently finding tasks (sync match) and keeping up with supply (poll success). Declining trends typically precede backlog growth.",
+                    "title": "Poll Health Ratios by Task Type"
+                },
                 "gridData": {
                     "h": 12,
-                    "i": "623aba69-173e-4be9-b375-e9d1697e645e",
+                    "i": "cb0640fa-f7b3-44cc-b19c-4393aa7f748c",
                     "sectionId": "306c782e-005f-45f6-a8aa-158aab93183e",
                     "w": 24,
-                    "x": 24,
+                    "x": 0,
                     "y": 5
                 },
+                "panelIndex": "cb0640fa-f7b3-44cc-b19c-4393aa7f748c",
+                "type": "vis"
+            },
+            {
                 "embeddableConfig": {
                     "attributes": {
                         "references": [],
@@ -4878,15 +5027,15 @@
                                         "layerId": "line_0",
                                         "layerType": "data",
                                         "seriesType": "line",
+                                        "splitAccessors": [
+                                            "line_0_breakdown"
+                                        ],
                                         "xAccessor": "line_0_x",
                                         "yConfig": [
                                             {
                                                 "axisMode": "left",
                                                 "forAccessor": "line_0_y_0"
                                             }
-                                        ],
-                                        "splitAccessors": [
-                                            "line_0_breakdown"
                                         ]
                                     }
                                 ],
@@ -4917,20 +5066,22 @@
                         "title": "Frontend Service Error Rate by Operation",
                         "version": 2,
                         "visualizationType": "lnsXY"
-                    }
-                }
+                    },
+                    "description": "gRPC frontend error rate per API operation over time. Distinguishes which methods are failing, separating client errors (authentication, not-found) from service-side issues. Filters to operations with both non-zero errors and non-zero requests.",
+                    "title": "Frontend Service Error Rate by Operation"
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "623aba69-173e-4be9-b375-e9d1697e645e",
+                    "sectionId": "306c782e-005f-45f6-a8aa-158aab93183e",
+                    "w": 24,
+                    "x": 24,
+                    "y": 5
+                },
+                "panelIndex": "623aba69-173e-4be9-b375-e9d1697e645e",
+                "type": "vis"
             },
             {
-                "type": "vis",
-                "title": "Workflow Outcomes by Type",
-                "gridData": {
-                    "h": 15,
-                    "i": "82545690-c151-43aa-a904-32fea0a29a5e",
-                    "sectionId": "306c782e-005f-45f6-a8aa-158aab93183e",
-                    "w": 48,
-                    "x": 0,
-                    "y": 80
-                },
                 "embeddableConfig": {
                     "attributes": {
                         "references": [],
@@ -4954,20 +5105,20 @@
                                                     "columnId": "datatable_accessor_metric_0",
                                                     "customLabel": true,
                                                     "fieldName": "Namespace",
-                                                    "inMetricDimension": true,
+                                                    "inMetricDimension": false,
                                                     "label": "Namespace",
                                                     "meta": {
-                                                        "type": "number"
+                                                        "type": "string"
                                                     }
                                                 },
                                                 {
                                                     "columnId": "datatable_accessor_metric_1",
                                                     "customLabel": true,
                                                     "fieldName": "Workflow Type",
-                                                    "inMetricDimension": true,
+                                                    "inMetricDimension": false,
                                                     "label": "Workflow Type",
                                                     "meta": {
-                                                        "type": "number"
+                                                        "type": "string"
                                                     }
                                                 },
                                                 {
@@ -5070,32 +5221,88 @@
                             "visualization": {
                                 "columns": [
                                     {
+                                        "alignment": "left",
                                         "columnId": "datatable_accessor_metric_0",
-                                        "isMetric": true,
+                                        "hidden": false,
+                                        "isMetric": false,
                                         "isTransposed": false
                                     },
                                     {
+                                        "alignment": "left",
                                         "columnId": "datatable_accessor_metric_1",
-                                        "isMetric": true,
+                                        "hidden": false,
+                                        "isMetric": false,
                                         "isTransposed": false
                                     },
                                     {
+                                        "alignment": "right",
+                                        "colorMode": "badge",
                                         "columnId": "datatable_accessor_metric_2",
+                                        "hidden": false,
                                         "isMetric": true,
-                                        "isTransposed": false
+                                        "isTransposed": false,
+                                        "palette": {
+                                            "name": "custom",
+                                            "params": {
+                                                "colorStops": [
+                                                    {
+                                                        "color": "#ffc9c2",
+                                                        "stop": null
+                                                    },
+                                                    {
+                                                        "color": "#fff3c2",
+                                                        "stop": 95
+                                                    },
+                                                    {
+                                                        "color": "#aee8d2",
+                                                        "stop": 99.5
+                                                    }
+                                                ],
+                                                "continuity": "all",
+                                                "maxSteps": 5,
+                                                "name": "custom",
+                                                "progression": "fixed",
+                                                "rangeMax": null,
+                                                "rangeMin": 0,
+                                                "rangeType": "number",
+                                                "reverse": false,
+                                                "steps": 3,
+                                                "stops": [
+                                                    {
+                                                        "color": "#ffc9c2",
+                                                        "stop": 95
+                                                    },
+                                                    {
+                                                        "color": "#fff3c2",
+                                                        "stop": 99.5
+                                                    },
+                                                    {
+                                                        "color": "#aee8d2",
+                                                        "stop": null
+                                                    }
+                                                ]
+                                            },
+                                            "type": "palette"
+                                        }
                                     },
                                     {
+                                        "alignment": "right",
                                         "columnId": "datatable_accessor_metric_3",
+                                        "hidden": false,
                                         "isMetric": true,
                                         "isTransposed": false
                                     },
                                     {
+                                        "alignment": "right",
                                         "columnId": "datatable_accessor_metric_4",
+                                        "hidden": false,
                                         "isMetric": true,
                                         "isTransposed": false
                                     },
                                     {
+                                        "alignment": "right",
                                         "columnId": "datatable_accessor_metric_5",
+                                        "hidden": false,
                                         "isMetric": true,
                                         "isTransposed": false
                                     }
@@ -5105,26 +5312,32 @@
                                 "paging": {
                                     "enabled": true,
                                     "size": 10
+                                },
+                                "sorting": {
+                                    "columnId": "datatable_accessor_metric_2",
+                                    "direction": "asc"
                                 }
                             }
                         },
                         "title": "Workflow Outcomes by Type",
                         "version": 2,
                         "visualizationType": "lnsDatatable"
-                    }
-                }
-            },
-            {
-                "type": "vis",
-                "title": "Task Queue Poll Health",
+                    },
+                    "description": "Breakdown of workflow execution outcomes (success, failure, timeout, termination) as percentages, grouped by namespace and workflow type. Sorted ascending by success rate so the most troubled workflow types surface first. Rows with equal success rate are then sorted by failure rate descending.",
+                    "title": "Workflow Outcomes by Type"
+                },
                 "gridData": {
                     "h": 15,
-                    "i": "ec4e5149-a9a6-43f3-8fae-6a18bebee1b3",
-                    "sectionId": "498b2903-424a-4dae-a3fb-8b61d384eb54",
+                    "i": "82545690-c151-43aa-a904-32fea0a29a5e",
+                    "sectionId": "306c782e-005f-45f6-a8aa-158aab93183e",
                     "w": 48,
                     "x": 0,
-                    "y": 51
+                    "y": 80
                 },
+                "panelIndex": "82545690-c151-43aa-a904-32fea0a29a5e",
+                "type": "vis"
+            },
+            {
                 "embeddableConfig": {
                     "attributes": {
                         "references": [],
@@ -5148,38 +5361,20 @@
                                                     "columnId": "datatable_accessor_metric_0",
                                                     "customLabel": true,
                                                     "fieldName": "Task Queue",
-                                                    "inMetricDimension": true,
+                                                    "inMetricDimension": false,
                                                     "label": "Task Queue",
                                                     "meta": {
-                                                        "type": "number"
+                                                        "type": "string"
                                                     }
                                                 },
                                                 {
                                                     "columnId": "datatable_accessor_metric_1",
                                                     "customLabel": true,
                                                     "fieldName": "Task Type",
-                                                    "inMetricDimension": true,
+                                                    "inMetricDimension": false,
                                                     "label": "Task Type",
                                                     "meta": {
-                                                        "type": "number"
-                                                    }
-                                                },
-                                                {
-                                                    "columnId": "datatable_accessor_metric_2",
-                                                    "customLabel": true,
-                                                    "fieldName": "Tasks/sec",
-                                                    "inMetricDimension": true,
-                                                    "label": "Tasks/sec",
-                                                    "meta": {
-                                                        "type": "number"
-                                                    },
-                                                    "params": {
-                                                        "format": {
-                                                            "id": "number",
-                                                            "params": {
-                                                                "decimals": 2
-                                                            }
-                                                        }
+                                                        "type": "string"
                                                     }
                                                 },
                                                 {
@@ -5197,6 +5392,24 @@
                                                             "params": {
                                                                 "decimals": 1,
                                                                 "suffix": "%"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "datatable_accessor_metric_2",
+                                                    "customLabel": true,
+                                                    "fieldName": "Tasks/sec",
+                                                    "inMetricDimension": true,
+                                                    "label": "Tasks/sec",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
                                                             }
                                                         }
                                                     }
@@ -5260,7 +5473,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-temporal.cloud_metrics.otel-*-dcb52e27e84010de1d4a020e74aca9e91e8c83ec7757b18a47176b15c8f1c74d",
                                             "query": {
-                                                "esql": "TS metrics-temporal.cloud_metrics.otel-*\n| STATS ps = SUM(AVG_OVER_TIME(metrics.temporal_cloud_v1_poll_success_count)), pss = SUM(AVG_OVER_TIME(metrics.temporal_cloud_v1_poll_success_sync_count)), pt = SUM(AVG_OVER_TIME(metrics.temporal_cloud_v1_poll_timeout_count)), backlog = MAX(MAX_OVER_TIME(metrics.temporal_cloud_v1_approximate_backlog_count)), npt = SUM(AVG_OVER_TIME(metrics.temporal_cloud_v1_no_poller_tasks_count)) BY `Task Queue` = attributes.temporal_task_queue, `Task Type` = attributes.task_type\n| WHERE ps >= 0.1\n| EVAL `Sync Match %` = ROUND(100 * CASE(pss IS NOT NULL, pss, 0.0) / ps, 1), `Poll Success %` = ROUND(100 * ps / (ps + CASE(pt IS NOT NULL, pt, 0.0)), 1), `Tasks/sec` = ROUND(ps, 2), `Max Backlog` = backlog, `No-Poller Tasks/sec` = ROUND(CASE(npt IS NOT NULL, npt, 0.0), 3)\n| KEEP `Task Queue`, `Task Type`, `Tasks/sec`, `Sync Match %`, `Poll Success %`, `Max Backlog`, `No-Poller Tasks/sec`\n| SORT `Sync Match %` ASC NULLS LAST\n| LIMIT 50"
+                                                "esql": "TS metrics-temporal.cloud_metrics.otel-*\n| STATS ps = SUM(AVG_OVER_TIME(metrics.temporal_cloud_v1_poll_success_count)), pss = SUM(AVG_OVER_TIME(metrics.temporal_cloud_v1_poll_success_sync_count)), pt = SUM(AVG_OVER_TIME(metrics.temporal_cloud_v1_poll_timeout_count)), backlog = MAX(MAX_OVER_TIME(metrics.temporal_cloud_v1_approximate_backlog_count)), npt = SUM(AVG_OVER_TIME(metrics.temporal_cloud_v1_no_poller_tasks_count)) BY `Task Queue` = attributes.temporal_task_queue, `Task Type` = attributes.task_type\n| WHERE ps >= 0.1\n| EVAL `Sync Match %` = ROUND(100 * CASE(pss IS NOT NULL, pss, 0.0) / ps, 1), `Poll Success %` = ROUND(100 * ps / (ps + CASE(pt IS NOT NULL, pt, 0.0)), 1), `Tasks/sec` = ROUND(ps, 2), `Max Backlog` = backlog, `No-Poller Tasks/sec` = ROUND(CASE(npt IS NOT NULL, npt, 0.0), 3)\n| KEEP `Task Queue`, `Task Type`, `Sync Match %`, `Tasks/sec`, `Poll Success %`, `Max Backlog`, `No-Poller Tasks/sec`\n| SORT `Sync Match %` ASC NULLS LAST\n| LIMIT 50"
                                             }
                                         }
                                     }
@@ -5275,42 +5488,100 @@
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-temporal.cloud_metrics.otel-*\n| STATS ps = SUM(AVG_OVER_TIME(metrics.temporal_cloud_v1_poll_success_count)), pss = SUM(AVG_OVER_TIME(metrics.temporal_cloud_v1_poll_success_sync_count)), pt = SUM(AVG_OVER_TIME(metrics.temporal_cloud_v1_poll_timeout_count)), backlog = MAX(MAX_OVER_TIME(metrics.temporal_cloud_v1_approximate_backlog_count)), npt = SUM(AVG_OVER_TIME(metrics.temporal_cloud_v1_no_poller_tasks_count)) BY `Task Queue` = attributes.temporal_task_queue, `Task Type` = attributes.task_type\n| WHERE ps >= 0.1\n| EVAL `Sync Match %` = ROUND(100 * CASE(pss IS NOT NULL, pss, 0.0) / ps, 1), `Poll Success %` = ROUND(100 * ps / (ps + CASE(pt IS NOT NULL, pt, 0.0)), 1), `Tasks/sec` = ROUND(ps, 2), `Max Backlog` = backlog, `No-Poller Tasks/sec` = ROUND(CASE(npt IS NOT NULL, npt, 0.0), 3)\n| KEEP `Task Queue`, `Task Type`, `Tasks/sec`, `Sync Match %`, `Poll Success %`, `Max Backlog`, `No-Poller Tasks/sec`\n| SORT `Sync Match %` ASC NULLS LAST\n| LIMIT 50"
+                                "esql": "TS metrics-temporal.cloud_metrics.otel-*\n| STATS ps = SUM(AVG_OVER_TIME(metrics.temporal_cloud_v1_poll_success_count)), pss = SUM(AVG_OVER_TIME(metrics.temporal_cloud_v1_poll_success_sync_count)), pt = SUM(AVG_OVER_TIME(metrics.temporal_cloud_v1_poll_timeout_count)), backlog = MAX(MAX_OVER_TIME(metrics.temporal_cloud_v1_approximate_backlog_count)), npt = SUM(AVG_OVER_TIME(metrics.temporal_cloud_v1_no_poller_tasks_count)) BY `Task Queue` = attributes.temporal_task_queue, `Task Type` = attributes.task_type\n| WHERE ps >= 0.1\n| EVAL `Sync Match %` = ROUND(100 * CASE(pss IS NOT NULL, pss, 0.0) / ps, 1), `Poll Success %` = ROUND(100 * ps / (ps + CASE(pt IS NOT NULL, pt, 0.0)), 1), `Tasks/sec` = ROUND(ps, 2), `Max Backlog` = backlog, `No-Poller Tasks/sec` = ROUND(CASE(npt IS NOT NULL, npt, 0.0), 3)\n| KEEP `Task Queue`, `Task Type`, `Sync Match %`, `Tasks/sec`, `Poll Success %`, `Max Backlog`, `No-Poller Tasks/sec`\n| SORT `Sync Match %` ASC NULLS LAST\n| LIMIT 50"
                             },
                             "visualization": {
                                 "columns": [
                                     {
+                                        "alignment": "left",
                                         "columnId": "datatable_accessor_metric_0",
-                                        "isMetric": true,
+                                        "hidden": false,
+                                        "isMetric": false,
                                         "isTransposed": false
                                     },
                                     {
+                                        "alignment": "left",
                                         "columnId": "datatable_accessor_metric_1",
-                                        "isMetric": true,
+                                        "hidden": false,
+                                        "isMetric": false,
                                         "isTransposed": false
                                     },
                                     {
-                                        "columnId": "datatable_accessor_metric_2",
-                                        "isMetric": true,
-                                        "isTransposed": false
-                                    },
-                                    {
+                                        "alignment": "right",
+                                        "colorMode": "badge",
                                         "columnId": "datatable_accessor_metric_3",
+                                        "hidden": false,
+                                        "isMetric": true,
+                                        "isTransposed": false,
+                                        "palette": {
+                                            "name": "custom",
+                                            "params": {
+                                                "colorStops": [
+                                                    {
+                                                        "color": "#ffc9c2",
+                                                        "stop": null
+                                                    },
+                                                    {
+                                                        "color": "#fff3c2",
+                                                        "stop": 50
+                                                    },
+                                                    {
+                                                        "color": "#aee8d2",
+                                                        "stop": 90
+                                                    }
+                                                ],
+                                                "continuity": "all",
+                                                "maxSteps": 5,
+                                                "name": "custom",
+                                                "progression": "fixed",
+                                                "rangeMax": null,
+                                                "rangeMin": 0,
+                                                "rangeType": "number",
+                                                "reverse": false,
+                                                "steps": 3,
+                                                "stops": [
+                                                    {
+                                                        "color": "#ffc9c2",
+                                                        "stop": 50
+                                                    },
+                                                    {
+                                                        "color": "#fff3c2",
+                                                        "stop": 90
+                                                    },
+                                                    {
+                                                        "color": "#aee8d2",
+                                                        "stop": null
+                                                    }
+                                                ]
+                                            },
+                                            "type": "palette"
+                                        }
+                                    },
+                                    {
+                                        "alignment": "right",
+                                        "columnId": "datatable_accessor_metric_2",
+                                        "hidden": false,
                                         "isMetric": true,
                                         "isTransposed": false
                                     },
                                     {
+                                        "alignment": "right",
                                         "columnId": "datatable_accessor_metric_4",
+                                        "hidden": false,
                                         "isMetric": true,
                                         "isTransposed": false
                                     },
                                     {
+                                        "alignment": "right",
                                         "columnId": "datatable_accessor_metric_5",
+                                        "hidden": false,
                                         "isMetric": true,
                                         "isTransposed": false
                                     },
                                     {
+                                        "alignment": "right",
                                         "columnId": "datatable_accessor_metric_6",
+                                        "hidden": false,
                                         "isMetric": true,
                                         "isTransposed": false
                                     }
@@ -5320,14 +5591,30 @@
                                 "paging": {
                                     "enabled": true,
                                     "size": 10
+                                },
+                                "sorting": {
+                                    "columnId": "datatable_accessor_metric_3",
+                                    "direction": "asc"
                                 }
                             }
                         },
                         "title": "Task Queue Poll Health",
                         "version": 2,
                         "visualizationType": "lnsDatatable"
-                    }
-                }
+                    },
+                    "description": "Per-task-queue polling health: task throughput, sync match rate, poll success rate, max backlog, and no-poller task rate. Sorted ascending by sync match rate \u2014 lowest-efficiency queues surface first. A low sync match rate combined with a high backlog is the primary indicator of worker-capacity problems.",
+                    "title": "Task Queue Poll Health"
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "ec4e5149-a9a6-43f3-8fae-6a18bebee1b3",
+                    "sectionId": "498b2903-424a-4dae-a3fb-8b61d384eb54",
+                    "w": 48,
+                    "x": 0,
+                    "y": 51
+                },
+                "panelIndex": "ec4e5149-a9a6-43f3-8fae-6a18bebee1b3",
+                "type": "vis"
             }
         ],
         "pinned_panels": {
