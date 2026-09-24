@@ -47,14 +47,14 @@
                 "98edca53-e9bf-403a-8fb3-4f32b107b4dd": {
                     "explicitInput": {
                         "dataViewId": "logs-*",
-                        "fieldName": "xm_cyber.vulnerability.status",
+                        "fieldName": "xm_cyber.vulnerability.in_cisa_kev",
                         "searchTechnique": "prefix",
                         "selectedOptions": [],
                         "sort": {
                             "by": "_count",
                             "direction": "desc"
                         },
-                        "title": "Status"
+                        "title": "CISA KEV"
                     },
                     "grow": true,
                     "order": 1,
@@ -203,6 +203,18 @@
                                 },
                                 "order": 5,
                                 "type": "dashboardLink"
+                            },
+                            {
+                                "destinationRefName": "link_c9f1a2b3-4d5e-6789-0abc-def123456789_dashboard",
+                                "id": "c9f1a2b3-4d5e-6789-0abc-def123456789",
+                                "label": "Vulnerability Instances",
+                                "options": {
+                                    "openInNewTab": false,
+                                    "useCurrentDateRange": true,
+                                    "useCurrentFilters": false
+                                },
+                                "order": 6,
+                                "type": "dashboardLink"
                             }
                         ]
                     },
@@ -244,7 +256,7 @@
                                                     "dataType": "number",
                                                     "filter": {
                                                         "language": "kuery",
-                                                        "query": "xm_cyber.vulnerability.is_exploited_in_the_wild : true"
+                                                        "query": "xm_cyber.vulnerability.in_cisa_kev : true or xm_cyber.vulnerability.in_exploit_db : true"
                                                     },
                                                     "isBucketed": false,
                                                     "label": "Actively Exploited CVEs",
@@ -471,7 +483,7 @@
                         "id": "",
                         "params": {
                             "fontSize": 12,
-                            "markdown": "**Overview**\n\nThe XM Cyber Vulnerability dashboard surfaces a single-pane view of CVEs detected across your environment over time, with breakdowns by severity, status, and CVSS scoring version to highlight where the most impactful exposures sit and how the scoring landscape splits across legacy and current standards.\n \nKPI tiles of total CVEs detected, total active CVEs, and actively exploited CVEs, alongside a monthly trend of new CVE discoveries, help analysts quickly gauge the size of the backlog, surface in-the-wild exploitation hotspots, and spot surges of newly-identified exposures. Filters for severity, status, CVSS version, and exploitation flags let teams pivot the dashboard to investigate specific cohorts, prioritize critical findings, and maintain ongoing vulnerability visibility across their XM Cyber environment.\n\n**[Integration Page](/app/integrations/detail/xm_cyber)**",
+                            "markdown": "**Overview**\n\nThe XM Cyber Vulnerability dashboard surfaces a single-pane view of open CVEs detected across your environment over time, with breakdowns by severity, CISA KEV status, and CVSS scoring version to highlight where the most impactful exposures sit and how the scoring landscape splits across legacy and current standards.\n \nKPI tiles of total CVEs detected, CISA KEV CVEs, and CVEs with public exploit evidence (CISA KEV or Exploit-DB), alongside a monthly trend of new CVE discoveries, help analysts quickly gauge the size of the backlog, surface exploitation hotspots, and spot surges of newly-identified exposures. Filters for severity, CISA KEV, CVSS version, and exploitation flags let teams pivot the dashboard to investigate specific cohorts, prioritize critical findings, and maintain ongoing vulnerability visibility across their XM Cyber environment.\n\n**[Integration Page](/app/integrations/detail/xm_cyber)**",
                             "openLinksInNewTab": false
                         },
                         "title": "",
@@ -1361,7 +1373,7 @@
                                                     "customLabel": true,
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Status",
+                                                    "label": "CISA KEV",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -1382,7 +1394,7 @@
                                                         "size": 5
                                                     },
                                                     "scale": "ordinal",
-                                                    "sourceField": "xm_cyber.vulnerability.status"
+                                                    "sourceField": "xm_cyber.vulnerability.in_cisa_kev"
                                                 },
                                                 "ce5064de-3c0d-410e-a73e-cfda389fc975": {
                                                     "customLabel": true,
@@ -1618,7 +1630,7 @@
                     "y": 24
                 },
                 "panelIndex": "5734aadb-9d34-4c3c-99a8-42fec6b121a3",
-                "title": "CVEs by Status",
+                "title": "CVEs by CISA KEV",
                 "type": "lens"
             },
             {
@@ -1874,10 +1886,10 @@
                                                     "dataType": "number",
                                                     "filter": {
                                                         "language": "kuery",
-                                                        "query": "xm_cyber.vulnerability.status : \"Active\""
+                                                        "query": "xm_cyber.vulnerability.in_cisa_kev : true"
                                                     },
                                                     "isBucketed": false,
-                                                    "label": "Total Active CVEs",
+                                                    "label": "CISA KEV CVEs",
                                                     "operationType": "count",
                                                     "params": {
                                                         "emptyAsNull": false
@@ -2085,7 +2097,7 @@
         "version": 3
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2026-08-04T10:47:44.293Z",
+    "created_at": "2026-09-09T10:31:15.376Z",
     "id": "xm_cyber-96451398-d474-49d3-b76a-f328996127dd",
     "references": [
         {
@@ -2187,6 +2199,11 @@
             "id": "logs-*",
             "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
             "type": "index-pattern"
+        },
+        {
+            "id": "xm_cyber-b7e4c1a2-9d83-4f5e-a6b1-2c8d0e4f7a91",
+            "name": "2121abe5-9793-463a-ad89-70e5184cd9e8:link_c9f1a2b3-4d5e-6789-0abc-def123456789_dashboard",
+            "type": "dashboard"
         }
     ],
     "type": "dashboard",
