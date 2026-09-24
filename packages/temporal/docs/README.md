@@ -32,34 +32,32 @@ Once data starts flowing, the **[Temporal OpenTelemetry Assets](https://www.elas
    - Click **Add Temporal(OpenTelemetry) Integration**
    - Fill in:
      - **Temporal Cloud Metrics Endpoint**: `metrics.temporal.io:443` (default)
-     - **Metrics Path**: `/v1/metrics` (default — do not append query parameters here)
+     - **Metrics Path**: `/v1/metrics` (default — set query parameters in **Query Parameters**, not here)
      - **Temporal Cloud API Key**: paste the Metrics Read-Only API key
 
 3. **Verify data**:
    - Discover filter `data_stream.dataset: "temporal.cloud_metrics.otel"`
 
-## Filtering metrics by namespace or label
+## Filtering metrics with query parameters
 
-Temporal Cloud supports filtering the OpenMetrics endpoint using the `namespaces` and `labels` query parameters. Use the **Query Parameters** field in the Fleet UI to set these — do **not** append them to the Metrics Path field, as the Prometheus receiver places the path verbatim into `url.URL.Path`, which percent-encodes `?` and breaks the request.
+Temporal Cloud's OpenMetrics endpoint accepts query parameters that scope the response —
+useful for reducing scrape size and staying within Temporal's per-scrape limits.
 
-**Example — restrict scraping to a single namespace:**
-
-```yaml
-namespaces:
-  - my-namespace.account
-```
-
-**Example — filter by namespace and label:**
+Set them in the **Query Parameters** field in the Fleet UI, as a YAML map of parameter
+name to a list of values:
 
 ```yaml
-namespaces:
-  - my-namespace.account
-labels:
-  - temporal_activity_type
+<parameter-name>:
+  - <value>
+  - <value>
 ```
 
-See the [Temporal Cloud metrics endpoint documentation](https://docs.temporal.io/cloud/metrics/openmetrics/) for the full list of supported query parameters.
+Do **not** append query parameters to the **Metrics Path** field. The Prometheus receiver
+places that path verbatim into `url.URL.Path`, which percent-encodes `?` and breaks the
+request.
 
+For the parameters Temporal Cloud supports and their accepted values, see the
+[Temporal Cloud OpenMetrics API reference](https://docs.temporal.io/cloud/metrics/openmetrics/api-reference).
 
 ## Metrics Reference
 
