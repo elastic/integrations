@@ -110,7 +110,13 @@ If no events are being collected:
 
 ### Rejection Enrichment Errors
 
-If rejection events are tagged with `greenhouse-rejection-enrichment-failed` and `greenhouse.audit.event.rejection.error` is populated:
+If rejection events are tagged with `greenhouse-rejection-enrichment-failed`, check one or more of the following fields for details on what failed:
+
+- `greenhouse.audit.event.rejection.error` — full enrichment failure (e.g. correlation could not be established, or the rejection_details API call failed)
+- `greenhouse.audit.event.rejection.reason.error` — the rejection reason lookup (`/v3/rejection_reasons/{id}`) returned a non-200 response
+- `greenhouse.audit.event.rejection.notes_error` — the rejection notes batch fetch (`/v3/notes`) returned a non-200 response
+
+Common causes and remedies:
 1. Verify the OAuth credential has been granted all three required read permissions: **Rejection details** (*List rejection details*), **Rejection reasons** (*Show rejection reason*), and **Notes** (*List notes*)
 2. Check that the authorizing user has permission to view the affected application
 3. If the error mentions no matching `RejectionDetails` event was found, try increasing **Batch Size** so the two related audit events are less likely to land on different pages

@@ -143,7 +143,7 @@ Common causes and remedies:
 | greenhouse.audit.event.rejection.error | Error message if the rejection enrichment lookup against the Harvest API failed. | keyword |
 | greenhouse.audit.event.rejection.notes | The rejection notes/comments entered when the application was rejected, sourced from the Harvest v3 Notes API via the rejection_note_id on the rejection detail record. | match_only_text |
 | greenhouse.audit.event.rejection.notes_error | Error message when the Harvest API /v3/notes batch call returned a non-200 response and rejection notes could not be retrieved. | keyword |
-| greenhouse.audit.event.rejection.reason.error | Error message when the Harvest API /v3/rejection_reasons/{id} call returned a non-200 response for this rejection reason ID. | keyword |
+| greenhouse.audit.event.rejection.reason.error | Error message when the Harvest API /v3/rejection_reasons/\{id\} call returned a non-200 response for this rejection reason ID. | keyword |
 | greenhouse.audit.event.rejection.reason.id | The ID of the rejection reason. | keyword |
 | greenhouse.audit.event.rejection.reason.name | The name of the rejection reason. | keyword |
 | greenhouse.audit.event.rejection.reason.type | The category of the rejection reason, for example "We rejected them" or "They rejected us." | keyword |
