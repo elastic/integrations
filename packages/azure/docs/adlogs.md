@@ -90,11 +90,6 @@ An example event for `signinlogs` looks as following:
 {
     "@timestamp": "2019-10-18T09:45:48.072Z",
     "azure": {
-        "correlation_id": "8a4de8b5-095c-47d0-a96f-a75130c61d53",
-        "resource": {
-            "id": "/tenants/8a4de8b5-095c-47d0-a96f-a75130c61d53/providers/Microsoft.aadiam",
-            "provider": "Microsoft.aadiam"
-        },
         "signinlogs": {
             "caller_ip_address": "81.2.69.144",
             "category": "SignInLogs",
@@ -132,13 +127,22 @@ An example event for `signinlogs` looks as following:
             "result_signature": "None",
             "result_type": "50140"
         },
-        "tenant_id": "8a4de8b5-095c-47d0-a96f-a75130c61d53"
+        "resource_provider": {
+            "namespace": "Microsoft.aadiam"
+        },
+        "tenant": {
+            "id": "8a4de8b5-095c-47d0-a96f-a75130c61d53"
+        },
+        "correlation": {
+            "id": "8a4de8b5-095c-47d0-a96f-a75130c61d53"
+        }
     },
     "client": {
         "ip": "81.2.69.144"
     },
     "cloud": {
-        "provider": "azure"
+        "provider": "azure",
+        "resource_id": "/tenants/8a4de8b5-095c-47d0-a96f-a75130c61d53/providers/Microsoft.aadiam"
     },
     "ecs": {
         "version": "8.11.0"
@@ -220,13 +224,17 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| azure.correlation_id | Correlation ID | keyword |
-| azure.resource.authorization_rule | Authorization rule | keyword |
-| azure.resource.group | Resource group | keyword |
-| azure.resource.id | Resource ID | keyword |
-| azure.resource.name | Name | keyword |
-| azure.resource.namespace | Resource type/namespace | keyword |
-| azure.resource.provider | Resource type/namespace | keyword |
+| azure.correlation.id | Correlation ID for grouping related operations. | keyword |
+| azure.correlation_id | Deprecated: use `azure.correlation.id`. | alias |
+| azure.resource.authorization_rule | Authorization rule. | keyword |
+| azure.resource.group | Deprecated: use `azure.resource_group.name`. | alias |
+| azure.resource.id | Deprecated: use `cloud.resource_id`. | alias |
+| azure.resource.name | Resource name. | keyword |
+| azure.resource.namespace | Event Hub namespace parsed from the ARM resource ID. | keyword |
+| azure.resource.provider | Deprecated: use `azure.resource_provider.namespace`. | alias |
+| azure.resource_group.name | Azure resource group name. | keyword |
+| azure.resource_id | Deprecated: use `cloud.resource_id`. | alias |
+| azure.resource_provider.namespace | Azure resource provider namespace (e.g., Microsoft.EventHub). | keyword |
 | azure.signinlogs.caller_ip_address | The IP address of the client that made the request. | ip |
 | azure.signinlogs.category | Category | keyword |
 | azure.signinlogs.identity | Identity | keyword |
@@ -286,10 +294,12 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | azure.signinlogs.result_description | Result description | keyword |
 | azure.signinlogs.result_signature | Result signature | keyword |
 | azure.signinlogs.result_type | Result type | keyword |
-| azure.signinlogs.tenant_id | Tenant ID | keyword |
-| azure.subscription_id | Azure subscription ID | keyword |
-| azure.tenant_id | tenant ID | keyword |
+| azure.signinlogs.tenant_id | Deprecated: use `azure.tenant.id`. | alias |
+| azure.subscription_id | Azure subscription ID. | keyword |
+| azure.tenant.id | Azure tenant ID. | keyword |
+| azure.tenant_id | Deprecated: use `azure.tenant.id`. | alias |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
+| cloud.resource_id | Fully-qualified Azure Resource Manager (ARM) resource ID. | keyword |
 | data_stream.dataset | Data stream dataset name. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
@@ -317,7 +327,6 @@ An example event for `identity_protection` looks as following:
 {
     "@timestamp": "2022-08-22T18:07:16.000Z",
     "azure": {
-        "correlation_id": "ce0ed07f9ccf5be15e4b97d2979af6569b1f67db87ddc9b88b5bb743ea091e47",
         "identityprotection": {
             "category": "UserRiskEvents",
             "operation_name": "User Risk Detection",
@@ -362,14 +371,19 @@ An example event for `identity_protection` looks as following:
             },
             "result_signature": "None"
         },
-        "resource": {
-            "id": "/tenants/5611623b-9128-461e-9d7f-a0d9c270ead2/providers/microsoft.aadiam",
-            "provider": "microsoft.aadiam"
+        "resource_provider": {
+            "namespace": "microsoft.aadiam"
         },
-        "tenant_id": "5611623b-9128-461e-9d7f-a0d9c270ead2"
+        "tenant": {
+            "id": "5611623b-9128-461e-9d7f-a0d9c270ead2"
+        },
+        "correlation": {
+            "id": "ce0ed07f9ccf5be15e4b97d2979af6569b1f67db87ddc9b88b5bb743ea091e47"
+        }
     },
     "cloud": {
-        "provider": "azure"
+        "provider": "azure",
+        "resource_id": "/tenants/5611623b-9128-461e-9d7f-a0d9c270ead2/providers/microsoft.aadiam"
     },
     "ecs": {
         "version": "8.11.0"
@@ -420,7 +434,8 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| azure.correlation_id | Correlation ID | keyword |
+| azure.correlation.id | Correlation ID for grouping related operations. | keyword |
+| azure.correlation_id | Deprecated: use `azure.correlation.id`. | alias |
 | azure.identityprotection.category | Category | keyword |
 | azure.identityprotection.operation_name | Operation name | keyword |
 | azure.identityprotection.operation_version | Operation version | keyword |
@@ -454,14 +469,20 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | azure.identityprotection.properties.user_principal_name | The user principal name (UPN) of the user. | keyword |
 | azure.identityprotection.properties.user_type | The type of the user (for example, "member"). | keyword |
 | azure.identityprotection.result_signature | Result signature | keyword |
-| azure.resource.group | Resource group | keyword |
-| azure.resource.id | Resource ID | keyword |
-| azure.resource.name | Name | keyword |
-| azure.resource.namespace | Resource type/namespace | keyword |
-| azure.resource.provider | Resource type/namespace | keyword |
-| azure.subscription_id | Azure subscription ID | keyword |
-| azure.tenant_id | tenant ID | keyword |
+| azure.resource.authorization_rule | Authorization rule. | keyword |
+| azure.resource.group | Deprecated: use `azure.resource_group.name`. | alias |
+| azure.resource.id | Deprecated: use `cloud.resource_id`. | alias |
+| azure.resource.name | Resource name. | keyword |
+| azure.resource.namespace | Event Hub namespace parsed from the ARM resource ID. | keyword |
+| azure.resource.provider | Deprecated: use `azure.resource_provider.namespace`. | alias |
+| azure.resource_group.name | Azure resource group name. | keyword |
+| azure.resource_id | Deprecated: use `cloud.resource_id`. | alias |
+| azure.resource_provider.namespace | Azure resource provider namespace (e.g., Microsoft.EventHub). | keyword |
+| azure.subscription_id | Azure subscription ID. | keyword |
+| azure.tenant.id | Azure tenant ID. | keyword |
+| azure.tenant_id | Deprecated: use `azure.tenant.id`. | alias |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
+| cloud.resource_id | Fully-qualified Azure Resource Manager (ARM) resource ID. | keyword |
 | data_stream.dataset | Data stream dataset name. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
@@ -497,7 +518,6 @@ An example event for `provisioning` looks as following:
 {
     "@timestamp": "2022-08-23T13:36:50.353Z",
     "azure": {
-        "correlation_id": "54416401-eef2-461c-8de7-385dde2b3cba",
         "provisioning": {
             "category": "ProvisioningLogs",
             "identity": "d6cbb0bd-c3ec-6455-bd3e-4282141ce369",
@@ -610,14 +630,19 @@ An example event for `provisioning` looks as following:
             },
             "result_type": "Skipped"
         },
-        "resource": {
-            "id": "/tenants/5611623b-9128-461e-9d7f-a0d9c270ead2/providers/Microsoft.aadiam",
-            "provider": "Microsoft.aadiam"
+        "resource_provider": {
+            "namespace": "Microsoft.aadiam"
         },
-        "tenant_id": "5611623b-9128-461e-9d7f-a0d9c270ead2"
+        "tenant": {
+            "id": "5611623b-9128-461e-9d7f-a0d9c270ead2"
+        },
+        "correlation": {
+            "id": "54416401-eef2-461c-8de7-385dde2b3cba"
+        }
     },
     "cloud": {
-        "provider": "azure"
+        "provider": "azure",
+        "resource_id": "/tenants/5611623b-9128-461e-9d7f-a0d9c270ead2/providers/Microsoft.aadiam"
     },
     "ecs": {
         "version": "8.11.0"
@@ -639,7 +664,8 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| azure.correlation_id | Correlation ID | keyword |
+| azure.correlation.id | Correlation ID for grouping related operations. | keyword |
+| azure.correlation_id | Deprecated: use `azure.correlation.id`. | alias |
 | azure.provisioning.category | Category | keyword |
 | azure.provisioning.identity | Describes the identity of the user or application that performed the operation | keyword |
 | azure.provisioning.level | The severity level of the event | long |
@@ -691,15 +717,21 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | azure.provisioning.properties.tenant_id | Unique Microsoft Entra ID tenant ID | keyword |
 | azure.provisioning.result_signature | Result signature | keyword |
 | azure.provisioning.result_type | Result type | keyword |
-| azure.provisioning.tenant_id | Unique Microsoft Entra ID tenant ID | keyword |
-| azure.resource.group | Resource group | keyword |
-| azure.resource.id | Resource ID | keyword |
-| azure.resource.name | Name | keyword |
-| azure.resource.namespace | Resource type/namespace | keyword |
-| azure.resource.provider | Resource type/namespace | keyword |
-| azure.subscription_id | Azure subscription ID | keyword |
-| azure.tenant_id | tenant ID | keyword |
+| azure.provisioning.tenant_id | Deprecated: use `azure.tenant.id`. | alias |
+| azure.resource.authorization_rule | Authorization rule. | keyword |
+| azure.resource.group | Deprecated: use `azure.resource_group.name`. | alias |
+| azure.resource.id | Deprecated: use `cloud.resource_id`. | alias |
+| azure.resource.name | Resource name. | keyword |
+| azure.resource.namespace | Event Hub namespace parsed from the ARM resource ID. | keyword |
+| azure.resource.provider | Deprecated: use `azure.resource_provider.namespace`. | alias |
+| azure.resource_group.name | Azure resource group name. | keyword |
+| azure.resource_id | Deprecated: use `cloud.resource_id`. | alias |
+| azure.resource_provider.namespace | Azure resource provider namespace (e.g., Microsoft.EventHub). | keyword |
+| azure.subscription_id | Azure subscription ID. | keyword |
+| azure.tenant.id | Azure tenant ID. | keyword |
+| azure.tenant_id | Deprecated: use `azure.tenant.id`. | alias |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
+| cloud.resource_id | Fully-qualified Azure Resource Manager (ARM) resource ID. | keyword |
 | data_stream.dataset | Data stream dataset name. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
@@ -746,10 +778,10 @@ An example event for `auditlogs` looks as following:
     "azure.auditlogs.properties.target_resources.0.modified_properties.0.new_value": "\"\"",
     "azure.auditlogs.properties.target_resources.0.type": "Device",
     "azure.auditlogs.result_signature": "None",
-    "azure.correlation_id": "8a4de8b5-095c-47d0-a96f-a75130c61d53",
-    "azure.resource.id": "/tenants/8a4de8b5-095c-47d0-a96f-a75130c61d53/providers/Microsoft.aadiam",
-    "azure.resource.provider": "Microsoft.aadiam",
-    "azure.tenant_id": "8a4de8b5-095c-47d0-a96f-a75130c61d53",
+    "azure.correlation.id": "8a4de8b5-095c-47d0-a96f-a75130c61d53",
+    "cloud.resource_id": "/tenants/8a4de8b5-095c-47d0-a96f-a75130c61d53/providers/Microsoft.aadiam",
+    "azure.resource_provider.namespace": "Microsoft.aadiam",
+    "azure.tenant.id": "8a4de8b5-095c-47d0-a96f-a75130c61d53",
     "cloud": {
         "provider": "azure"
     },
@@ -820,17 +852,23 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | azure.auditlogs.properties.target_resources.\*.user_principal_name | User principal name | keyword |
 | azure.auditlogs.result_description | Result description | keyword |
 | azure.auditlogs.result_signature | Result signature | keyword |
-| azure.auditlogs.tenant_id | Tenant ID | keyword |
-| azure.correlation_id | Correlation ID | keyword |
-| azure.resource.authorization_rule | Authorization rule | keyword |
-| azure.resource.group | Resource group | keyword |
-| azure.resource.id | Resource ID | keyword |
-| azure.resource.name | Name | keyword |
-| azure.resource.namespace | Resource type/namespace | keyword |
-| azure.resource.provider | Resource type/namespace | keyword |
-| azure.subscription_id | Azure subscription ID | keyword |
-| azure.tenant_id | tenant ID | keyword |
+| azure.auditlogs.tenant_id | Deprecated: use `azure.tenant.id`. | alias |
+| azure.correlation.id | Correlation ID for grouping related operations. | keyword |
+| azure.correlation_id | Deprecated: use `azure.correlation.id`. | alias |
+| azure.resource.authorization_rule | Authorization rule. | keyword |
+| azure.resource.group | Deprecated: use `azure.resource_group.name`. | alias |
+| azure.resource.id | Deprecated: use `cloud.resource_id`. | alias |
+| azure.resource.name | Resource name. | keyword |
+| azure.resource.namespace | Event Hub namespace parsed from the ARM resource ID. | keyword |
+| azure.resource.provider | Deprecated: use `azure.resource_provider.namespace`. | alias |
+| azure.resource_group.name | Azure resource group name. | keyword |
+| azure.resource_id | Deprecated: use `cloud.resource_id`. | alias |
+| azure.resource_provider.namespace | Azure resource provider namespace (e.g., Microsoft.EventHub). | keyword |
+| azure.subscription_id | Azure subscription ID. | keyword |
+| azure.tenant.id | Azure tenant ID. | keyword |
+| azure.tenant_id | Deprecated: use `azure.tenant.id`. | alias |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
+| cloud.resource_id | Fully-qualified Azure Resource Manager (ARM) resource ID. | keyword |
 | data_stream.dataset | Data stream dataset name. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |

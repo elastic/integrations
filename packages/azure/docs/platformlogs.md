@@ -92,16 +92,23 @@ An example event for `platformlogs` looks as following:
             }
         },
         "resource": {
-            "group": "OBS-TEST",
-            "id": "/SUBSCRIPTIONS/7657426D-C4C3-44AC-88A2-3B2CD59E6DBA/RESOURCEGROUPS/OBS-TEST/PROVIDERS/MICROSOFT.EVENTHUB/NAMESPACES/OBSTESTEVENTHUBS",
-            "name": "OBSTESTEVENTHUBS",
-            "provider": "MICROSOFT.EVENTHUB/NAMESPACES"
+            "name": "OBSTESTEVENTHUBS"
         },
-        "subscription_id": "7657426D-C4C3-44AC-88A2-3B2CD59E6DBA"
+        "subscription_id": "7657426D-C4C3-44AC-88A2-3B2CD59E6DBA",
+        "resource_group": {
+            "name": "OBS-TEST"
+        },
+        "resource_provider": {
+            "namespace": "MICROSOFT.EVENTHUB/NAMESPACES"
+        }
     },
     "cloud": {
         "provider": "azure",
-        "region": "West Europe"
+        "region": "West Europe",
+        "resource_id": "/SUBSCRIPTIONS/7657426D-C4C3-44AC-88A2-3B2CD59E6DBA/RESOURCEGROUPS/OBS-TEST/PROVIDERS/MICROSOFT.EVENTHUB/NAMESPACES/OBSTESTEVENTHUBS",
+        "account": {
+            "id": "7657426D-C4C3-44AC-88A2-3B2CD59E6DBA"
+        }
     },
     "data_stream": {
         "dataset": "azure.platformlogs",
@@ -138,7 +145,8 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| azure.correlation_id | Correlation ID | keyword |
+| azure.correlation.id | Correlation ID for grouping related operations. | keyword |
+| azure.correlation_id | Deprecated: use `azure.correlation.id`. | alias |
 | azure.platformlogs.ActivityId | ActivityId | keyword |
 | azure.platformlogs.Caller | Caller | keyword |
 | azure.platformlogs.Cloud | Cloud | keyword |
@@ -158,18 +166,23 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | azure.platformlogs.result_signature | Result signature | keyword |
 | azure.platformlogs.result_type | Result type | keyword |
 | azure.platformlogs.status | Status | keyword |
-| azure.resource.authorization_rule | Authorization rule | keyword |
-| azure.resource.group | Resource group | keyword |
-| azure.resource.id | Resource ID | keyword |
-| azure.resource.name | Name | keyword |
-| azure.resource.namespace | Resource type/namespace | keyword |
-| azure.resource.provider | Resource type/namespace | keyword |
-| azure.subscription_id | Azure subscription ID | keyword |
-| azure.tenant_id | tenant ID | keyword |
+| azure.resource.authorization_rule | Authorization rule. | keyword |
+| azure.resource.group | Deprecated: use `azure.resource_group.name`. | alias |
+| azure.resource.id | Deprecated: use `cloud.resource_id`. | alias |
+| azure.resource.name | Resource name. | keyword |
+| azure.resource.namespace | Event Hub namespace parsed from the ARM resource ID. | keyword |
+| azure.resource.provider | Deprecated: use `azure.resource_provider.namespace`. | alias |
+| azure.resource_group.name | Azure resource group name. | keyword |
+| azure.resource_id | Deprecated: use `cloud.resource_id`. | alias |
+| azure.resource_provider.namespace | Azure resource provider namespace (e.g., Microsoft.EventHub). | keyword |
+| azure.subscription_id | Azure subscription ID. | keyword |
+| azure.tenant.id | Azure tenant ID. | keyword |
+| azure.tenant_id | Deprecated: use `azure.tenant.id`. | alias |
 | azure_log_forwarder.category | Azure log category | keyword |
 | azure_log_forwarder.resource_type | Azure resource type | keyword |
 | azure_log_forwarder.service_provider | Azure service provider | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
+| cloud.resource_id | Fully-qualified Azure Resource Manager (ARM) resource ID. | keyword |
 | data_stream.dataset | Data stream dataset name. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |

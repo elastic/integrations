@@ -120,17 +120,26 @@ An example event for `activitylogs` looks as following:
             "result_signature": "Succeeded.",
             "result_type": "Success"
         },
-        "correlation_id": "876190b4-5b99-4a39-b725-4f5644911cf0",
         "resource": {
-            "group": "OBS-TEST",
-            "id": "/SUBSCRIPTIONS/3f041b6d-fc31-41d8-8ff6-e5f16e6747ff/RESOURCEGROUPS/OBS-TEST/PROVIDERS/MICROSOFT.RESOURCES/DEPLOYMENTS/NOMARKETPLACE",
-            "name": "NOMARKETPLACE",
-            "provider": "MICROSOFT.RESOURCES/DEPLOYMENTS"
+            "name": "NOMARKETPLACE"
         },
-        "subscription_id": "3f041b6d-fc31-41d8-8ff6-e5f16e6747ff"
+        "subscription_id": "3f041b6d-fc31-41d8-8ff6-e5f16e6747ff",
+        "resource_group": {
+            "name": "OBS-TEST"
+        },
+        "resource_provider": {
+            "namespace": "MICROSOFT.RESOURCES/DEPLOYMENTS"
+        },
+        "correlation": {
+            "id": "876190b4-5b99-4a39-b725-4f5644911cf0"
+        }
     },
     "cloud": {
-        "provider": "azure"
+        "provider": "azure",
+        "resource_id": "/SUBSCRIPTIONS/3f041b6d-fc31-41d8-8ff6-e5f16e6747ff/RESOURCEGROUPS/OBS-TEST/PROVIDERS/MICROSOFT.RESOURCES/DEPLOYMENTS/NOMARKETPLACE",
+        "account": {
+            "id": "3f041b6d-fc31-41d8-8ff6-e5f16e6747ff"
+        }
     },
     "data_stream": {
         "dataset": "azure.activitylogs",
@@ -186,17 +195,23 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | azure.activitylogs.properties | Event properties | flattened |
 | azure.activitylogs.result_signature | Result signature | keyword |
 | azure.activitylogs.result_type | Result type | keyword |
-| azure.activitylogs.tenant_id | Tenant ID | keyword |
-| azure.correlation_id | Correlation ID | keyword |
-| azure.resource.authorization_rule | Authorization rule | keyword |
-| azure.resource.group | Resource group | keyword |
-| azure.resource.id | Resource ID | keyword |
-| azure.resource.name | Name | keyword |
-| azure.resource.namespace | Resource type/namespace | keyword |
-| azure.resource.provider | Resource type/namespace | keyword |
-| azure.subscription_id | Azure subscription ID | keyword |
-| azure.tenant_id | tenant ID | keyword |
+| azure.activitylogs.tenant_id | Deprecated: use `azure.tenant.id`. | alias |
+| azure.correlation.id | Correlation ID for grouping related operations. | keyword |
+| azure.correlation_id | Deprecated: use `azure.correlation.id`. | alias |
+| azure.resource.authorization_rule | Authorization rule. | keyword |
+| azure.resource.group | Deprecated: use `azure.resource_group.name`. | alias |
+| azure.resource.id | Deprecated: use `cloud.resource_id`. | alias |
+| azure.resource.name | Resource name. | keyword |
+| azure.resource.namespace | Event Hub namespace parsed from the ARM resource ID. | keyword |
+| azure.resource.provider | Deprecated: use `azure.resource_provider.namespace`. | alias |
+| azure.resource_group.name | Azure resource group name. | keyword |
+| azure.resource_id | Deprecated: use `cloud.resource_id`. | alias |
+| azure.resource_provider.namespace | Azure resource provider namespace (e.g., Microsoft.EventHub). | keyword |
+| azure.subscription_id | Azure subscription ID. | keyword |
+| azure.tenant.id | Azure tenant ID. | keyword |
+| azure.tenant_id | Deprecated: use `azure.tenant.id`. | alias |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
+| cloud.resource_id | Fully-qualified Azure Resource Manager (ARM) resource ID. | keyword |
 | data_stream.dataset | Data stream dataset name. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
