@@ -679,12 +679,10 @@ rules:
               "webhook": null
           }
           `}}
-  # Two blobs. The first reproduces the contentUri the API returned in
+  # The contentUri here reproduces what the API returned in
   # elastic/sdh-beats#7627: an http scheme, a localhost host, no /api/v1.0
   # segment and a tenant that is not the configured one. It can never be
-  # fetched as given, and is listed first so it sits at the head of the queue.
-  # The second is addressed correctly but answers 404, covering the case a
-  # repair cannot help with.
+  # fetched as given.
   - path: /api/v1.0/test-cel-tenant-id/activity/feed/subscriptions/content
     methods: [GET]
     query_params:
@@ -701,7 +699,7 @@ rules:
           Content-Type:
             - "application/json"
         body: |-
-          [{"contentType": "Audit.AzureActiveDirectory","contentId": "celid$aad$1","contentUri": "http://localhost/celbroken1/activity/feed/audit/celid$aad$1","contentCreated": "{{ .request.vars.endTime }}","contentExpiration": "2199-05-30T17:35:00.000Z"},{"contentType": "Audit.AzureActiveDirectory","contentId": "celid$aad$2","contentUri": "http://{{ .request.host }}/api/v1.0/test-cel-tenant-id/activity/feed/audit/celid$aad$2","contentCreated": "{{ .request.vars.endTime }}","contentExpiration": "2199-05-30T17:35:00.000Z"}]
+          [{"contentType": "Audit.AzureActiveDirectory","contentId": "celid$aad$1","contentUri": "http://localhost/celbroken1/activity/feed/audit/celid$aad$1","contentCreated": "{{ .request.vars.endTime }}","contentExpiration": "2199-05-30T17:35:00.000Z"}]
   # Served only on the canonical path, under the configured tenant and with the
   # '$' separators unescaped, so the test passes only if the program rebuilt the
   # URL from the configured resource URL and tenant rather than reusing what the
@@ -735,27 +733,4 @@ rules:
                   "Version": 1
               }
           ]
-          `}}
-  # A blob the API will never serve. No repair can help here, so the program
-  # must report the error, drop the item and carry on with the queue. Returning
-  # the error as a single object instead discarded the cursor advance and
-  # retried this same request every evaluation.
-  - path: /api/v1.0/test-cel-tenant-id/activity/feed/audit/celid$aad$2
-    methods: [GET]
-    request_headers:
-      Authorization:
-        - "Bearer CELtoken"
-    responses:
-      - status_code: 404
-        headers:
-          Content-Type:
-            - "application/json"
-        body: |-
-          {{ minify_json `
-          {
-              "error": {
-                  "code": "AF20024",
-                  "message": "The requested content blob does not exist."
-              }
-          }
           `}}

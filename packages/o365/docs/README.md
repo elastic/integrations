@@ -315,9 +315,6 @@ An example event for `audit` looks as following:
 | email.attachments.file.extension | Attachment file extension, excluding the leading dot. | keyword |
 | email.attachments.file.name | Name of the attachment file including the file extension. | keyword |
 | email.attachments.file.size | Attachment file size in bytes. | long |
-| error.code | Error code describing the error. | keyword |
-| error.id | Unique identifier for the error. | keyword |
-| error.message | Error message. | match_only_text |
 | event.dataset | Event dataset | constant_keyword |
 | event.module | Event module | constant_keyword |
 | host.containerized | If the host is a container. | boolean |
