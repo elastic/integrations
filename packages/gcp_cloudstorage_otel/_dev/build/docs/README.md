@@ -33,10 +33,10 @@ The dashboards visualize the following Cloud Monitoring metric types:
 
 | Dashboard | Description |
 |-----------|-------------|
-| **GCP Cloud Storage Overview** | Estate-wide health for Cloud Storage: request volume and error rate, whether failures are client-side or Google-side, a bucket hex map for spotting the worst offenders, and stored bytes, object counts, and storage consumption broken down by storage class and object type. |
-| **GCP Cloud Storage Bucket Detail** | Per-bucket deep-dive into request volume by fault class, method, and response code, availability, stored bytes and object counts by storage class, storage consumption, and ACL-based access that indicates buckets not yet using uniform bucket-level access. |
+| **[GCP OTel] Cloud Storage Overview** | Estate-wide health for Cloud Storage: request volume and error rate, whether failures are client-side or Google-side, a bucket hex map for spotting the worst offenders, and stored bytes, object counts, and storage consumption broken down by storage class and object type. |
+| **[GCP OTel] Cloud Storage Bucket Detail** | Per-bucket deep-dive into request volume by fault class, method, and response code, availability, stored bytes and object counts by storage class, storage consumption, and ACL-based access that indicates buckets not yet using uniform bucket-level access. |
 
-Open **GCP Cloud Storage Overview** and click a bucket in the bucket hex map or the bucket ranking table to drill into **GCP Cloud Storage Bucket Detail** for that bucket.
+Open **[GCP OTel] Cloud Storage Overview** and click a bucket in the bucket hex map or the bucket ranking table to drill into **[GCP OTel] Cloud Storage Bucket Detail** for that bucket.
 
 ## Alerting Rule Templates
 {{alertRuleTemplates}}
