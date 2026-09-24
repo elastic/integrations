@@ -15,6 +15,11 @@ processors:
       tag: set_observer_product_cmc_from_url_4d0a9b8c
       value: CMC
       if: ctx._conf?.url != null && !ctx._conf.url.toLowerCase().contains('vantage')
+  - remove:
+      field: _conf
+      tag: remove__conf_b6839377
+      ignore_missing: true
+      description: Drop the policy-derived helper field once observer.product has been set, so it is not indexed on terminate or failure paths.
   - rename:
       field: message
       tag: rename_message_to_event_original_176375fd
@@ -961,9 +966,7 @@ processors:
       ignore_missing: true
       if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
   - remove:
-      field:
-        - json
-        - _conf
+      field: json
       tag: remove_json_94dc55cd
       ignore_missing: true
   - script:
