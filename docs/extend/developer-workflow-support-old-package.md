@@ -90,7 +90,7 @@ When a bug fix needs to be released for an older package version, the backport w
 
     ```bash
     # Requires Go 1.26+ (see cmd/backport/go.mod)
-    go build -o build/backport ./cmd/backport
+    go build -C cmd/backport -o "$PWD/build/backport" .
     ```
 
     Then run:
