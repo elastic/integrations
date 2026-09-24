@@ -871,7 +871,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-gcp.compute.otel-default-de281e70cb1d4b803a4e08dfca6c25cf64ad9ff226430b53dfebfa8f725a2129",
                                             "query": {
-                                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `CPU Utilization` = AVG(AVG_OVER_TIME(`compute.googleapis.com/instance/cpu/utilization`)) BY bucket = TBUCKET(50, ?_tstart, ?_tend), `Zone` = resource.attributes.zone"
+                                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `CPU Utilization` = AVG(AVG_OVER_TIME(`compute.googleapis.com/instance/cpu/utilization`)) BY bucket = TBUCKET(50, ?_tstart, ?_tend), `Zone` = resource.attributes.zone\n| SORT bucket ASC, `CPU Utilization` DESC, `Zone` ASC\n| LIMIT 10 BY bucket"
                                             }
                                         }
                                     }
@@ -886,7 +886,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `CPU Utilization` = AVG(AVG_OVER_TIME(`compute.googleapis.com/instance/cpu/utilization`)) BY bucket = TBUCKET(50, ?_tstart, ?_tend), `Zone` = resource.attributes.zone"
+                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `CPU Utilization` = AVG(AVG_OVER_TIME(`compute.googleapis.com/instance/cpu/utilization`)) BY bucket = TBUCKET(50, ?_tstart, ?_tend), `Zone` = resource.attributes.zone\n| SORT bucket ASC, `CPU Utilization` DESC, `Zone` ASC\n| LIMIT 10 BY bucket"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -972,13 +972,13 @@
                                 "yLeftScale": "linear"
                             }
                         },
-                        "title": "CPU utilization by zone",
+                        "title": "Top 10 zones by CPU utilization",
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
                     "description": "Average CPU utilization per zone over time, as a fraction of reserved cores. Zones should track each other closely. One zone diverging upward suggests uneven workload placement or a zone-local hot spot rather than a fleet-wide trend.",
                     "drilldowns": [],
-                    "title": "CPU utilization by zone"
+                    "title": "Top 10 zones by CPU utilization"
                 },
                 "gridData": {
                     "h": 10,
@@ -1049,7 +1049,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-gcp.compute.otel-default-84cc6ecade927256d52ea7df13c738364e78d5c13f78e6eb1f3d366f81cd25b8",
                                             "query": {
-                                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `CPU Scheduler Wait Time` = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/cpu/scheduler_wait_time`)) / 60 BY `Time Bucket` = TBUCKET(50, ?_tstart, ?_tend), `Zone` = resource.attributes.zone"
+                                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `CPU Scheduler Wait Time` = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/cpu/scheduler_wait_time`)) / 60 BY `Time Bucket` = TBUCKET(50, ?_tstart, ?_tend), `Zone` = resource.attributes.zone\n| SORT `Time Bucket` ASC, `CPU Scheduler Wait Time` DESC, `Zone` ASC\n| LIMIT 10 BY `Time Bucket`"
                                             }
                                         }
                                     }
@@ -1064,7 +1064,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `CPU Scheduler Wait Time` = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/cpu/scheduler_wait_time`)) / 60 BY `Time Bucket` = TBUCKET(50, ?_tstart, ?_tend), `Zone` = resource.attributes.zone"
+                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `CPU Scheduler Wait Time` = SUM(AVG_OVER_TIME(`compute.googleapis.com/instance/cpu/scheduler_wait_time`)) / 60 BY `Time Bucket` = TBUCKET(50, ?_tstart, ?_tend), `Zone` = resource.attributes.zone\n| SORT `Time Bucket` ASC, `CPU Scheduler Wait Time` DESC, `Zone` ASC\n| LIMIT 10 BY `Time Bucket`"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -1150,13 +1150,13 @@
                                 "yLeftScale": "linear"
                             }
                         },
-                        "title": "CPU scheduler wait by zone",
+                        "title": "Top 10 zones by CPU scheduler wait",
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
                     "description": "Seconds per second that vCPUs were ready but not scheduled, equivalent to steal time, aggregated per zone. Near zero is healthy. Non-zero values while CPU utilization is low indicate GCE host-level overcommit rather than a workload problem, and typically correlate across VMs in the same zone.",
                     "drilldowns": [],
-                    "title": "CPU scheduler wait by zone"
+                    "title": "Top 10 zones by CPU scheduler wait"
                 },
                 "gridData": {
                     "h": 10,
@@ -1358,7 +1358,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-gcp.compute.otel-default-8d2799c994a893fad26b9723eb5cb580b247aef7845e085a5f63b53d2dd77237",
                                             "query": {
-                                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Peak CPU Utilization` = MAX(MAX_OVER_TIME(`compute.googleapis.com/instance/cpu/utilization`)) BY bucket = TBUCKET(50, ?_tstart, ?_tend), `Zone` = resource.attributes.zone"
+                                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Peak CPU Utilization` = MAX(MAX_OVER_TIME(`compute.googleapis.com/instance/cpu/utilization`)) BY bucket = TBUCKET(50, ?_tstart, ?_tend), `Zone` = resource.attributes.zone\n| SORT bucket ASC, `Peak CPU Utilization` DESC, `Zone` ASC\n| LIMIT 10 BY bucket"
                                             }
                                         }
                                     }
@@ -1373,7 +1373,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Peak CPU Utilization` = MAX(MAX_OVER_TIME(`compute.googleapis.com/instance/cpu/utilization`)) BY bucket = TBUCKET(50, ?_tstart, ?_tend), `Zone` = resource.attributes.zone"
+                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Peak CPU Utilization` = MAX(MAX_OVER_TIME(`compute.googleapis.com/instance/cpu/utilization`)) BY bucket = TBUCKET(50, ?_tstart, ?_tend), `Zone` = resource.attributes.zone\n| SORT bucket ASC, `Peak CPU Utilization` DESC, `Zone` ASC\n| LIMIT 10 BY bucket"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -1459,13 +1459,13 @@
                                 "yLeftScale": "linear"
                             }
                         },
-                        "title": "Peak CPU utilization by zone",
+                        "title": "Top 10 zones by peak CPU utilization",
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
                     "description": "Maximum single-instance CPU utilization observed in each zone per bucket, using MAX_OVER_TIME rather than an average. This surfaces individual hot VMs that a zone average would hide. Peaks above 1.0 are expected on shared-core and burst types; sustained peaks above 0.9 warrant per-instance drill-down in the table below.",
                     "drilldowns": [],
-                    "title": "Peak CPU utilization by zone"
+                    "title": "Top 10 zones by peak CPU utilization"
                 },
                 "gridData": {
                     "h": 10,
@@ -5264,7 +5264,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-gcp.compute.otel-default-3e57f3d7accdcdc2d0e7bebcff93147a54c9c191e9b2a0b4267976ef48a973e0",
                                             "query": {
-                                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Live Instances` = COUNT_DISTINCT(resource.attributes.instance_id) BY bucket = TBUCKET(50, ?_tstart, ?_tend), `Zone` = resource.attributes.zone"
+                                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Live Instances` = COUNT_DISTINCT(resource.attributes.instance_id) BY bucket = TBUCKET(50, ?_tstart, ?_tend), `Zone` = resource.attributes.zone\n| SORT bucket ASC, `Live Instances` DESC, `Zone` ASC\n| LIMIT 10 BY bucket"
                                             }
                                         }
                                     }
@@ -5279,7 +5279,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Live Instances` = COUNT_DISTINCT(resource.attributes.instance_id) BY bucket = TBUCKET(50, ?_tstart, ?_tend), `Zone` = resource.attributes.zone"
+                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Live Instances` = COUNT_DISTINCT(resource.attributes.instance_id) BY bucket = TBUCKET(50, ?_tstart, ?_tend), `Zone` = resource.attributes.zone\n| SORT bucket ASC, `Live Instances` DESC, `Zone` ASC\n| LIMIT 10 BY bucket"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -5365,13 +5365,13 @@
                                 "yLeftScale": "linear"
                             }
                         },
-                        "title": "Instance count over time by zone",
+                        "title": "Top 10 zones by instance count",
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
                     "description": "Distinct GCE instances reporting metrics in each bucket, drawn as one line per zone. A flat line is healthy. A step down means instances stopped, crashed or were deleted; a step up means autoscale-out. A drop confined to a single zone line points to a zone-local event rather than a fleet-wide one.",
                     "drilldowns": [],
-                    "title": "Instance count over time by zone"
+                    "title": "Top 10 zones by instance count"
                 },
                 "gridData": {
                     "h": 10,
@@ -5441,7 +5441,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-gcp.compute.otel-default-6a41675c8da76d00fc1def4c02b85163ae9fb03e466a9771b374a1d493a2dc49",
                                             "query": {
-                                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Average Uptime` = AVG(AVG_OVER_TIME(`compute.googleapis.com/instance/uptime_total`)) BY `Time Bucket` = TBUCKET(50, ?_tstart, ?_tend), `Zone` = resource.attributes.zone"
+                                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Average Uptime` = AVG(AVG_OVER_TIME(`compute.googleapis.com/instance/uptime_total`)) BY `Time Bucket` = TBUCKET(50, ?_tstart, ?_tend), `Zone` = resource.attributes.zone\n| SORT `Time Bucket` ASC, `Average Uptime` DESC, `Zone` ASC\n| LIMIT 10 BY `Time Bucket`"
                                             }
                                         }
                                     }
@@ -5456,7 +5456,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Average Uptime` = AVG(AVG_OVER_TIME(`compute.googleapis.com/instance/uptime_total`)) BY `Time Bucket` = TBUCKET(50, ?_tstart, ?_tend), `Zone` = resource.attributes.zone"
+                                "esql": "TS metrics-gcp.compute.otel-default\n| WHERE TRANGE(?_tstart, ?_tend) AND resource.attributes.gcp.resource_type == \"gce_instance\"\n| STATS `Average Uptime` = AVG(AVG_OVER_TIME(`compute.googleapis.com/instance/uptime_total`)) BY `Time Bucket` = TBUCKET(50, ?_tstart, ?_tend), `Zone` = resource.attributes.zone\n| SORT `Time Bucket` ASC, `Average Uptime` DESC, `Zone` ASC\n| LIMIT 10 BY `Time Bucket`"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -5542,13 +5542,13 @@
                                 "yLeftScale": "linear"
                             }
                         },
-                        "title": "Average uptime per interval by zone",
+                        "title": "Top 10 zones by average uptime per interval",
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
                     "description": "Average seconds of runtime reported per 60-second collection interval, per zone. This is not cumulative uptime. A flat line at roughly 60 seconds means every instance ran for the whole interval and is the healthy state. Dips below 60 mean instances started or stopped part-way through an interval, which is expected during autoscaling and suspicious otherwise.",
                     "drilldowns": [],
-                    "title": "Average uptime per interval by zone"
+                    "title": "Top 10 zones by average uptime per interval"
                 },
                 "gridData": {
                     "h": 10,
