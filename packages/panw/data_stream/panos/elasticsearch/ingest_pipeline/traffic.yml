@@ -2,6 +2,42 @@
 description: Pipeline for PanOS Traffic Logs.
 # API Docs: https://docs.paloaltonetworks.com/pan-os/10-2/pan-os-admin/monitoring/use-syslog-for-monitoring/syslog-field-descriptions/traffic-log-fields
 processors:
+  # PAN-OS emits Link Switches as a brace wrapped list whose elements are themselves
+  # separated by commas, for example {link name, link tag, link type, ...}. Those commas
+  # are not field separators, so the csv processor below reads that one column as several
+  # and every later column lands in the wrong field. Swap them for a unit separator here
+  # and restore them once the row has been split.
+  - script:
+      tag: script_protect_braced_commas_4b71e0d5
+      description: >-
+        Protect the commas inside a brace wrapped Link Switches value from the csv split
+        below, which would otherwise shift every subsequent field out of position and
+        abort the pipeline when a numeric value reaches an ip field. A row whose braces
+        do not balance is left untouched, so it fails visibly in the split rather than
+        losing its whole tail to a single column.
+      lang: painless
+      if: ctx.message instanceof String && ctx.message.contains('{')
+      source: |
+        String row = ctx.message;
+        StringBuilder out = new StringBuilder();
+        boolean quoted = false;
+        int depth = 0;
+        for (int i = 0; i < row.length(); i++) {
+          char c = row.charAt(i);
+          if (c == (char)34) {                                  // "
+            quoted = !quoted;
+          } else if (!quoted && c == (char)123) {               // {
+            depth++;
+          } else if (!quoted && c == (char)125 && depth > 0) {  // }
+            depth--;
+          } else if (!quoted && depth > 0 && c == (char)44) {   // , within braces
+            out.append((char)31);                               // unit separator
+            continue;
+          }
+          out.append(c);
+        }
+        if (depth != 0) { return; }  // unbalanced: leave the row for the csv processor to fail on
+        ctx.message = out.toString();
   - csv:
       tag: csv_message_226d246d
       field: message
@@ -114,6 +150,17 @@ processors:
         - panw.panos.application.is_saas
         - panw.panos.application.is_sanctioned
         - panw.panos.is_offloaded
+
+  - gsub:
+      tag: gsub_panw_panos_link_switches_c58f2a10
+      description: >-
+        Restore the commas protected before the csv split. Link Switches is the only
+        column PAN-OS brace wraps, so any other braced value keeps a unit separator in
+        place of its commas rather than shifting the row.
+      field: panw.panos.link.switches
+      pattern: '\x1F'
+      replacement: ','
+      ignore_missing: true
 
   - set:
       tag: set_http_version_15060fdd
