@@ -109,6 +109,12 @@ processors:
       params:
         param_nano: 1000000
       ignore_failure: true
+  - set:
+      tag: set_cloud_region_from_location_b2c3d4e5
+      field: cloud.region
+      copy_from: azure.activitylogs.location
+      if: "ctx.azure?.activitylogs?.location != null && ctx.azure.activitylogs.location.length() > 2"
+      ignore_empty_value: true
   - rename:
       tag: rename_azure_activitylogs_location_to_geo_name_328edfb6
       field: azure.activitylogs.location

@@ -51,6 +51,40 @@ processors:
       target_field: azure.resource_id
       ignore_missing: true
   - rename:
+      tag: rename_azure_eventhub_ResourceId_to_azure_resource_id_f1234567
+      field: azure.eventhub.ResourceId
+      target_field: azure.resource_id
+      if: ctx.azure?.resource_id == null
+      ignore_missing: true
+  - rename:
+      tag: rename_azure_eventhub_tenantId_to_azure_tenant_id_b2c3d4e5
+      field: azure.eventhub.tenantId
+      target_field: azure.tenant.id
+      ignore_missing: true
+  - rename:
+      tag: rename_azure_eventhub_TenantId_to_azure_tenant_id_f6a7b8c9
+      field: azure.eventhub.TenantId
+      target_field: azure.tenant.id
+      if: ctx.azure?.tenant?.id == null
+      ignore_missing: true
+  - rename:
+      tag: rename_azure_eventhub_correlationId_to_azure_correlation_id_d0e1f2a3
+      field: azure.eventhub.correlationId
+      target_field: azure.correlation.id
+      ignore_missing: true
+  - set:
+      tag: set_cloud_region_from_eventhub_location_g4h5i6j7
+      field: cloud.region
+      copy_from: azure.eventhub.location
+      if: "ctx.azure?.eventhub?.location != null && ctx.azure.eventhub.location.length() > 2"
+      ignore_empty_value: true
+  - rename:
+      tag: rename_azure_eventhub_Region_to_cloud_region_k8l9m0n1
+      field: azure.eventhub.Region
+      target_field: cloud.region
+      if: "ctx.cloud?.region == null"
+      ignore_missing: true
+  - rename:
       tag: rename_azure_eventhub_durationMs_to_event_duration_f7de1882
       field: azure.eventhub.durationMs
       target_field: event.duration
