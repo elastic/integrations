@@ -52,9 +52,7 @@ name to a list of values:
   - <value>
 ```
 
-Do **not** append query parameters to the **Metrics Path** field. The Prometheus receiver
-places that path verbatim into `url.URL.Path`, which percent-encodes `?` and breaks the
-request.
+Do **not** append query parameters to the **Metrics Path** field.
 
 For the parameters Temporal Cloud supports and their accepted values, see the
 [Temporal Cloud OpenMetrics API reference](https://docs.temporal.io/cloud/metrics/openmetrics/api-reference).
