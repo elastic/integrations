@@ -23,8 +23,3 @@ When configuring the input package, set the dataset name to `gcp.cloudrun.otel` 
 | **[GCP OTel] Cloud Run Overview** | Overview of all Cloud Run services. Golden signals across the fleet: traffic, errors, latency, saturation, and cost/allocation efficiency. |
 | **[GCP OTel] Cloud Run Service Detail** | Detail view of a single Cloud Run service. Covers golden signals, capacity and saturation, cold starts, revision rollouts, and cost. |
 
-## Alerting Rule Templates
-{{alertRuleTemplates}}
-
-## SLO Templates
-{{sloTemplates}}
