@@ -38,6 +38,7 @@ inputs:
                 resp.Body.decode_json().as(body,
                   {
                     "events": body.map(e, {"message": e.encode_json()}),
+                    // Omit offset when the last page was partial so the next interval starts from zero.
                     ?"offset": (size(body) > 0 && size(body) >= int(state.batch_size)) ?
                       optional.of(int(state.?offset.orValue(0)) + int(state.batch_size))
                     :

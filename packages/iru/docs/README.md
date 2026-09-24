@@ -203,24 +203,24 @@ An example event for `audit` looks as following:
 {
     "@timestamp": "2025-03-04T16:29:55.253Z",
     "agent": {
-        "ephemeral_id": "47873d42-038b-4735-89be-e6719c522597",
-        "id": "b610d0fe-fc27-4e5e-b3a5-0be922e31573",
-        "name": "elastic-agent-67746",
+        "ephemeral_id": "16869839-aa8a-4301-91a9-c71ab7c640b9",
+        "id": "a281daf9-5083-47d2-b67f-c872804b4bdd",
+        "name": "elastic-agent-71394",
         "type": "filebeat",
-        "version": "8.19.3"
+        "version": "8.19.2"
     },
     "data_stream": {
         "dataset": "iru.audit",
-        "namespace": "85456",
+        "namespace": "87984",
         "type": "logs"
     },
     "ecs": {
         "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "b610d0fe-fc27-4e5e-b3a5-0be922e31573",
+        "id": "a281daf9-5083-47d2-b67f-c872804b4bdd",
         "snapshot": false,
-        "version": "8.19.3"
+        "version": "8.19.2"
     },
     "event": {
         "action": "update",
@@ -230,7 +230,7 @@ An example event for `audit` looks as following:
         ],
         "dataset": "iru.audit",
         "id": "01JNGZW47KZKPXE1JWCFE4PHDW",
-        "ingested": "2026-09-10T09:30:28Z",
+        "ingested": "2026-09-23T11:48:03Z",
         "kind": "event",
         "original": "{\"action\":\"update\",\"actor_id\":\"cf40d6e7-20cb-4da9-84a1-9ad0b7003ca5\",\"actor_type\":\"user\",\"admin\":{\"created_at\":\"2025-01-01T00:00:00.000000Z\",\"email\":\"admin@example.com\",\"first_name\":\"Example\",\"id\":\"cf40d6e7-20cb-4da9-84a1-9ad0b7003ca5\",\"is_active\":true,\"last_name\":\"Admin\",\"locale\":\"en_US\",\"role\":\"admin\",\"updated_at\":\"2025-01-01T00:00:00.000000Z\"},\"id\":\"01JNGZW47KZKPXE1JWCFE4PHDW\",\"metadata\":{},\"new_state\":{\"library_items_added\":[{\"id\":\"c7a5871a-1683-432f-87d4-30bbd404eb85\",\"name\":\"Example App\"}],\"library_items_removed\":[],\"library_items_scoped\":[{\"id\":\"c7a5871a-1683-432f-87d4-30bbd404eb85\",\"name\":\"Example App\"}],\"name\":\"Example Blueprint\"},\"occurred_at\":\"2025-03-04T16:29:55.253454Z\",\"target_component\":\"library_items\",\"target_id\":\"449ec92a-186a-44f2-9421-d5ac6e465eb5\",\"target_type\":\"blueprint\"}",
         "type": [
@@ -256,7 +256,6 @@ An example event for `audit` looks as following:
                 "role": "admin",
                 "updated_at": "2025-01-01T00:00:00.000Z"
             },
-            "metadata": {},
             "new_state": {
                 "library_items_added": [
                     {
@@ -264,7 +263,6 @@ An example event for `audit` looks as following:
                         "name": "Example App"
                     }
                 ],
-                "library_items_removed": [],
                 "library_items_scoped": [
                     {
                         "id": "c7a5871a-1683-432f-87d4-30bbd404eb85",
@@ -383,15 +381,15 @@ An example event for `device` looks as following:
 {
     "@timestamp": "2023-03-24T00:45:18.674Z",
     "agent": {
-        "ephemeral_id": "24df7e78-2e13-483f-8952-6d885c3f3622",
-        "id": "d516b6af-1c82-497c-a444-f27039bc1a97",
-        "name": "elastic-agent-12985",
+        "ephemeral_id": "71dece63-5d28-4de5-a2b2-537d7d323780",
+        "id": "1e5428d3-c86f-4a99-bbd8-7960c0e2f26a",
+        "name": "elastic-agent-51935",
         "type": "filebeat",
-        "version": "8.19.3"
+        "version": "8.19.2"
     },
     "data_stream": {
         "dataset": "iru.device",
-        "namespace": "54458",
+        "namespace": "72450",
         "type": "logs"
     },
     "device": {
@@ -401,9 +399,9 @@ An example event for `device` looks as following:
         "version": "9.5.0"
     },
     "elastic_agent": {
-        "id": "d516b6af-1c82-497c-a444-f27039bc1a97",
+        "id": "1e5428d3-c86f-4a99-bbd8-7960c0e2f26a",
         "snapshot": false,
-        "version": "8.19.3"
+        "version": "8.19.2"
     },
     "entity": {
         "id": "bd4eb679-d679-4071-a395-5855807b6829",
@@ -420,7 +418,7 @@ An example event for `device` looks as following:
             "host"
         ],
         "dataset": "iru.device",
-        "ingested": "2026-09-10T09:31:17Z",
+        "ingested": "2026-09-23T11:50:55Z",
         "kind": "asset",
         "original": "{\"agent_installed\":true,\"agent_version\":\"4.1.3 (3795)\",\"asset_tag\":\"\",\"blueprint_id\":\"97e4e175-1631-43f6-a02b-33fd1c748ab8\",\"blueprint_name\":\"Example Blueprint\",\"device_id\":\"bd4eb679-d679-4071-a395-5855807b6829\",\"device_name\":\"example-ipad\",\"first_enrollment\":\"2022-07-21 15:00:06.470889+00:00\",\"is_missing\":false,\"is_removed\":false,\"last_check_in\":\"2023-03-24T00:45:18.674561Z\",\"last_enrollment\":\"2023-03-13 17:29:41.167646+00:00\",\"lost_mode_status\":\"\",\"mdm_enabled\":true,\"model\":\"iPad Pro (12.9-inch) (5th generation)\",\"os_version\":\"16.5.1\",\"platform\":\"iPad\",\"serial_number\":\"DMPF2L00Q6LC\",\"tags\":[],\"user\":\"\"}",
         "type": [
@@ -459,8 +457,7 @@ An example event for `device` looks as following:
             "mdm_enabled": true,
             "model": "iPad Pro (12.9-inch) (5th generation)",
             "platform": "iPad",
-            "serial_number": "DMPF2L00Q6LC",
-            "tags": []
+            "serial_number": "DMPF2L00Q6LC"
         }
     },
     "observer": {

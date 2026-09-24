@@ -27,6 +27,7 @@ program: |-
     state.?want_more.orValue(false) ?
       state
     :
+      // Clear pagination scratch fields when starting a new collection interval.
       state.drop(
         [
           "next_url",
@@ -61,23 +62,19 @@ program: |-
           resp.Body.decode_json().as(body,
             state.with(
               {
-                "events": [{"message": "retry"}],
+                "events": [{"retry": true}],
                 "want_more": true,
-                "admin_keys": state.?admin_keys.orValue([]) + (
-                  has(body.results) ? body.results.map(a, a.id) : []
-                ),
-                "admin_values": state.?admin_values.orValue([]) + (
-                  has(body.results) ? body.results : []
-                ),
-                "admin_next_url": has(body.next) && body.next != null && body.next != "" ? string(body.next) : "",
-                "admins_fetched": !(has(body.next) && body.next != null && body.next != ""),
+                "admin_keys": state.?admin_keys.orValue([]) + body.?results.optMap(r, r.map(a, a.id)).orValue([]),
+                "admin_values": state.?admin_values.orValue([]) + body.?results.orValue([]),
+                "admin_next_url": has(body.next) && body.next != null ? string(body.next) : "",
+                "admins_fetched": !(has(body.next) && body.next != null),
               }
             )
           )
         : resp.StatusCode == 403 ?
           state.with(
             {
-              "events": [{"message": "retry"}],
+              "events": [{"retry": true}],
               "want_more": true,
               "admins_fetched": true,
             }
@@ -104,29 +101,29 @@ program: |-
           )
       )
     :
-      zip(state.?admin_keys.orValue([]), state.?admin_values.orValue([])).as(admin_map,
-        request(
-          "GET",
-          has(state.next_url) && state.next_url != "" ?
-            state.next_url
-          :
-            state.url.trim_right("/") + "/api/v1/audit/events?" + {
-              "limit": [string(int(state.batch_size))],
-              "sort_by": ["occurred_at"],
-              "start_date": [state.?cursor.occurred_at.orValue(
-                string(now - duration(state.initial_interval))
-              )],
-            }.format_query()
-        ).with(
-          {
-            "Header": {
-              "Authorization": ["Bearer " + state.api_token],
-              "Accept": ["application/json"],
-            },
-          }
-        ).do_request().as(resp,
-          resp.StatusCode == 200 ?
-            resp.Body.decode_json().as(body,
+      request(
+        "GET",
+        has(state.next_url) && state.next_url != "" ?
+          state.next_url
+        :
+          state.url.trim_right("/") + "/api/v1/audit/events?" + {
+            "limit": [string(int(state.batch_size))],
+            "sort_by": ["occurred_at"],
+            "start_date": [state.?cursor.occurred_at.orValue(
+              string(now - duration(state.initial_interval))
+            )],
+          }.format_query()
+      ).with(
+        {
+          "Header": {
+            "Authorization": ["Bearer " + state.api_token],
+            "Accept": ["application/json"],
+          },
+        }
+      ).do_request().as(resp,
+        resp.StatusCode == 200 ?
+          resp.Body.decode_json().as(body,
+            zip(state.?admin_keys.orValue([]), state.?admin_values.orValue([])).as(admin_map,
               state.with(
                 {
                   "events": has(body.results) ?
@@ -145,8 +142,8 @@ program: |-
                     )
                   :
                     [],
-                  "want_more": has(body.next) && body.next != null && body.next != "",
-                  ?"next_url": has(body.next) && body.next != null && body.next != "" ?
+                  "want_more": has(body.next) && body.next != null,
+                  ?"next_url": has(body.next) && body.next != null ?
                     optional.of(string(body.next))
                   :
                     optional.none(),
@@ -158,29 +155,29 @@ program: |-
                         string(now - duration(state.initial_interval))
                       ),
                   },
-                  "admin_keys": has(body.next) && body.next != null && body.next != "" ? state.?admin_keys.orValue([]) : [],
-                  "admin_values": has(body.next) && body.next != null && body.next != "" ? state.?admin_values.orValue([]) : [],
-                  "admins_fetched": has(body.next) && body.next != null && body.next != "",
+                  "admin_keys": has(body.next) && body.next != null ? state.?admin_keys.orValue([]) : [],
+                  "admin_values": has(body.next) && body.next != null ? state.?admin_values.orValue([]) : [],
+                  "admins_fetched": has(body.next) && body.next != null,
                 }
               )
             )
-          :
-            {
-              "events": {
-                "error": {
-                  "code": string(resp.StatusCode),
-                  "id": resp.Status,
-                  "message": "GET " + state.url.trim_right("/") + "/api/v1/audit/events: " + (
-                    size(resp.Body) != 0 ?
-                      string(resp.Body)
-                    :
-                      resp.Status + ' (' + string(resp.StatusCode) + ')'
-                  ),
-                },
+          )
+        :
+          {
+            "events": {
+              "error": {
+                "code": string(resp.StatusCode),
+                "id": resp.Status,
+                "message": "GET " + state.url.trim_right("/") + "/api/v1/audit/events: " + (
+                  size(resp.Body) != 0 ?
+                    string(resp.Body)
+                  :
+                    resp.Status + ' (' + string(resp.StatusCode) + ')'
+                ),
               },
-              "want_more": false,
-            }
-        )
+            },
+            "want_more": false,
+          }
       )
   )
 tags:
@@ -197,7 +194,7 @@ processors:
 - drop_event:
     when:
       equals:
-        message: retry
+        retry: true
 {{#if processors}}
 {{processors}}
 {{/if}}
