@@ -10,7 +10,7 @@ processors:
       field: azure.resource_id
       if: ctx.azure?.resource_id != null
       patterns:
-        - (?i)/subscriptions/%{SUBID:azure.subscription_id}/resourceGroups/%{GROUPID:azure.resource.group}/providers/%{PROVIDERNAME:azure.resource.provider}/namespaces/%{NAMESPACE:azure.resource.namespace}/authorizationRules/%{RULE:azure.resource.authorization_rule}
+        - (?i)/subscriptions/%{SUBID:azure.subscription_id}/resourceGroups/%{GROUPID:azure.resource_group.name}/providers/%{PROVIDERNAME:azure.resource_provider.namespace}/namespaces/%{NAMESPACE:azure.resource.namespace}/authorizationRules/%{RULE:azure.resource.authorization_rule}
       pattern_definitions:
         SUBID: (\{){0,1}[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}(\}){0,1}
         GROUPID: .+
@@ -23,7 +23,7 @@ processors:
       field: azure.resource_id
       if: ctx.azure?.resource_id != null && ctx.azure?.subscription_id == null
       patterns:
-      - (?i)/subscriptions/%{SUBID:azure.subscription_id}/resourceGroups/%{GROUPID:azure.resource.group}/providers/%{PROVIDERNAME:azure.resource.provider}/%{NAME:azure.resource.name}
+      - (?i)/subscriptions/%{SUBID:azure.subscription_id}/resourceGroups/%{GROUPID:azure.resource_group.name}/providers/%{PROVIDERNAME:azure.resource_provider.namespace}/%{NAME:azure.resource.name}
       pattern_definitions:
         SUBID: (\{){0,1}[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}(\}){0,1}
         GROUPID: .+
@@ -35,7 +35,7 @@ processors:
       field: azure.resource_id
       if: ctx.azure?.resource_id != null && ctx.azure?.subscription_id == null
       patterns:
-        - (?i)/subscriptions/%{SUBID:azure.subscription_id}/resourceGroups/%{GROUPID:azure.resource.group}/providers/%{PROVIDERNAME:azure.resource.provider}/%{NAME:azure.resource.name}
+        - (?i)/subscriptions/%{SUBID:azure.subscription_id}/resourceGroups/%{GROUPID:azure.resource_group.name}/providers/%{PROVIDERNAME:azure.resource_provider.namespace}/%{NAME:azure.resource.name}
       pattern_definitions:
         SUBID: (\{){0,1}[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}(\}){0,1}
         GROUPID: .+
@@ -47,7 +47,7 @@ processors:
       field: azure.resource_id
       if: ctx.azure?.resource_id != null && ctx.azure?.subscription_id == null
       patterns:
-      - (?i)/providers/%{PROVIDER:azure.resource.provider}
+      - (?i)/providers/%{PROVIDER:azure.resource_provider.namespace}
       pattern_definitions:
         PROVIDER: .+
       ignore_failure: true
@@ -56,7 +56,7 @@ processors:
       field: azure.resource_id
       if: ctx.azure?.resource_id != null && ctx.azure?.subscription_id == null
       patterns:
-        - (?i)/subscriptions/%{SUBID:azure.subscription_id}/providers/%{PROVIDERNAME:azure.resource.provider}
+        - (?i)/subscriptions/%{SUBID:azure.subscription_id}/providers/%{PROVIDERNAME:azure.resource_provider.namespace}
       pattern_definitions:
         SUBID: (\{){0,1}[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}(\}){0,1}
         PROVIDERNAME: ([A-Za-z])\w+.([A-Za-z])\w+\/([A-Za-z][^\/])\w+
@@ -66,7 +66,7 @@ processors:
       field: azure.resource_id
       if: ctx.azure?.resource_id != null && ctx.azure?.subscription_id == null
       patterns:
-        - (?i)/subscriptions/%{SUBID:azure.subscription_id}/resourceGroups/%{GROUPID:azure.resource.group}
+        - (?i)/subscriptions/%{SUBID:azure.subscription_id}/resourceGroups/%{GROUPID:azure.resource_group.name}
       pattern_definitions:
         SUBID: (\{){0,1}[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}(\}){0,1}
         GROUPID: .+
@@ -83,9 +83,9 @@ processors:
   - grok:
       tag: grok_azure_resource_id_tenant_a9b8c7d6
       field: azure.resource_id
-      if: ctx.azure?.resource_id != null && ctx.azure?.subscription_id == null && ctx.azure?.tenant_id == null
+      if: ctx.azure?.resource_id != null && ctx.azure?.subscription_id == null && ctx.azure?.tenant?.id == null
       patterns:
-        - (?i)/tenants/%{TENANTID:azure.tenant_id}/providers/%{PROVIDERNAME:azure.resource.provider}
+        - (?i)/tenants/%{TENANTID:azure.tenant.id}/providers/%{PROVIDERNAME:azure.resource_provider.namespace}
       pattern_definitions:
         TENANTID: (\{){0,1}[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}(\}){0,1}
         PROVIDERNAME: .+
