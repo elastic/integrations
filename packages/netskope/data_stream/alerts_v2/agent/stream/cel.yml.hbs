@@ -68,7 +68,7 @@ program: |-
             }
           ).do_request().as(resp, (resp.StatusCode == 200) ?
             resp.Body.decode_json().?result.orValue([]).as(result,
-              (size(result) == 10000) ?
+              (size(result) > 0) ?
                 {
                   "events": result.map(e, {"message": e.encode_json()}),
                   "want_more": true,
@@ -82,10 +82,7 @@ program: |-
                 }
               :
                 {
-                  "events": (size(result) == 0) ?
-                    dyn([{"retry": true}])
-                  :
-                    dyn(result.map(e, {"message": e.encode_json()})),
+                  "events": [{"retry": true}],
                   "want_more": size(state.worklist) > 1,
                   "worklist": (size(state.worklist) > 1) ? tail(state.worklist) : [],
                   "cursor": {
@@ -96,16 +93,22 @@ program: |-
                   },
                 }
             )
-          : (resp.StatusCode == 429 || resp.StatusCode >= 500) ?
+          : (resp.StatusCode == 409 || resp.StatusCode == 429 || resp.StatusCode >= 500) ?
             {
-              "events": {
-                "error": {
-                  "code": string(resp.StatusCode),
-                  "id": resp.Status,
-                  "message": "GET /api/v2/events/dataexport/" + state.family + "/" + current_type + ": " + ((size(resp.Body) != 0) ? string(resp.Body) : (resp.Status + " (" + string(resp.StatusCode) + ")")),
+              "events": [
+                {
+                  "error": {
+                    "code": string(resp.StatusCode),
+                    "id": resp.Status,
+                    "message": "GET /api/v2/events/dataexport/" + state.family + "/" + current_type + ": " + ((size(resp.Body) != 0) ? string(resp.Body) : (resp.Status + " (" + string(resp.StatusCode) + ")")),
+                  },
                 },
-              },
+              ],
               "want_more": false,
+              "worklist": state.worklist,
+              "cursor": {
+                "started_types": state.?cursor.started_types.orValue([]),
+              },
             }
           :
             {
@@ -118,7 +121,11 @@ program: |-
                   },
                 },
               ],
-              "want_more": false,
+              "want_more": size(state.worklist) > 1,
+              "worklist": (size(state.worklist) > 1) ? tail(state.worklist) : [],
+              "cursor": {
+                "started_types": state.?cursor.started_types.orValue([]),
+              },
             }
           )
         )

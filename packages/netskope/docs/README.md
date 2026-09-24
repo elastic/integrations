@@ -885,7 +885,7 @@ An example event for `alerts` looks as following:
 | netskope.alert_v2.audit_category | The sub categories in an application such as IAM, EC in AWS, login, token, file, etc. in case of Google. | keyword |
 | netskope.alert_v2.audit_type | The sub category in audit according to SaaS / IaaS apps. | keyword |
 | netskope.alert_v2.bcc | Breach target references for compromised credentials or BCC users information in the case of SMTP DLP incident. | keyword |
-| netskope.alert_v2.bin_timestamp | Applicable to only: Shared Credentials, Data Exfiltration, Bulk Anomaly types( Bulk Upload/ Download/ Delete) and Failed Login Anomaly type. Bin TimeStamp (is a window used that is used for certain types of anomalies - for breaking into several windows per day/hour). | long |
+| netskope.alert_v2.bin_timestamp | Applicable to only: Shared Credentials, Data Exfiltration, Bulk Anomaly types( Bulk Upload/ Download/ Delete) and Failed Login Anomaly type. Bin TimeStamp (is a window used that is used for certain types of anomalies - for breaking into several windows per day/hour). | date |
 | netskope.alert_v2.block_reason | SMTP Block Reason | keyword |
 | netskope.alert_v2.breach_date | Breach Metric date for compromised credentials. | date |
 | netskope.alert_v2.breach_description | Breach description for compromised credentials. | keyword |
@@ -917,7 +917,7 @@ An example event for `alerts` looks as following:
 | netskope.alert_v2.connection_type | EndPoint DLP connection mode. | keyword |
 | netskope.alert_v2.count | Number of raw log lines/events sessionized or suppressed during the suppressed interval. | long |
 | netskope.alert_v2.createdTime | Indicates the time when watchlist model is configured. | keyword |
-| netskope.alert_v2.created_date | Indicates the date in epoch time when watchlist model is configured. | long |
+| netskope.alert_v2.created_date | Indicates the date in epoch time when watchlist model is configured. | date |
 | netskope.alert_v2.custom_attr | A map containing all the custom attributes added by customer using ADImporter returned as key-value pair. | flattened |
 | netskope.alert_v2.custom_connector | Indicates whether a custom connector was used. | keyword |
 | netskope.alert_v2.data_type | The content type of a file or documents scanned. | keyword |
@@ -1022,7 +1022,7 @@ An example event for `alerts` looks as following:
 | netskope.alert_v2.iaas_asset_tags | List of tags associated with the asset for which alert is raised. Each tag is a key/value pair (array in API JSON). | keyword |
 | netskope.alert_v2.iaas_remediated | value representing whether IAAS alerts remediated or not. | boolean |
 | netskope.alert_v2.iaas_remediated_by | IAAS/CSA scan alerts can be remediated by taking remediation steps. This field captures the admin's email address who applied the remediation steps. | keyword |
-| netskope.alert_v2.iaas_remediated_on | IAAS/CSA scan alerts can be remediated by taking remediation steps. This field captures the time in epoch format when remediation steps were taken. | long |
+| netskope.alert_v2.iaas_remediated_on | IAAS/CSA scan alerts can be remediated by taking remediation steps. This field captures the time in epoch format when remediation steps were taken. | date |
 | netskope.alert_v2.iaas_remediation_action | IAAS/CSA scan alerts can be remediated by taking remediation steps. This field captures the action taken. | keyword |
 | netskope.alert_v2.incident_id | Unique Incident ID associated with main container (or non-container) file that was scanned. | keyword |
 | netskope.alert_v2.instance | Instance associated with an organization application instance. | keyword |
@@ -1040,7 +1040,7 @@ An example event for `alerts` looks as following:
 | netskope.alert_v2.last_location | Last location (City) of the user. Applies to only proximity anomaly alert. | keyword |
 | netskope.alert_v2.last_name | Last name of the user retrived from Organization Unit details. | keyword |
 | netskope.alert_v2.last_region | Last region of the user. Applies to only proximity anomaly alert. | keyword |
-| netskope.alert_v2.last_timestamp | Last timestamp (timestamp in the first/older event). Applies to only proximity anomaly alert. | long |
+| netskope.alert_v2.last_timestamp | Last timestamp (timestamp in the first/older event). Applies to only proximity anomaly alert. | date |
 | netskope.alert_v2.legal_hold_profile_name | Legal Hold is a process that an organization uses to preserve all forms of relevant information when litigation is reasonably anticipated. A Legal Hold profile is used for specifying where the files need to be held for legal purposes when action of Legal Hold is taken. This field is the profile name added during configuration by admin. Legalhold fields are set when an entity (file, chat message, etc.) is legally held by CASB API. | keyword |
 | netskope.alert_v2.lh_custodian_email | Email address of the custodian associated with the Legal Hold profile. This value is derived from the customer’s Legal Hold configuration. | keyword |
 | netskope.alert_v2.lh_custodian_name | Name of the custodian associated with the Legal Hold profile, as defined in the customer's Legal Hold configuration. | keyword |
@@ -1070,11 +1070,11 @@ An example event for `alerts` looks as following:
 | netskope.alert_v2.malsite_confidence | Confidence score attched with malsite detection. | long |
 | netskope.alert_v2.malsite_consecutive | How many times that malsite is seen. | keyword |
 | netskope.alert_v2.malsite_country | Malsite country code. | keyword |
-| netskope.alert_v2.malsite_first_seen | Malsite first seen timestamp. Time is epoch seconds format. | long |
+| netskope.alert_v2.malsite_first_seen | Malsite first seen timestamp. Time is epoch seconds format. | date |
 | netskope.alert_v2.malsite_hostility | Malsite hostility score as detected by Threat scans. | keyword |
 | netskope.alert_v2.malsite_id | Malicious Site ID - Hash of threat match value. | keyword |
 | netskope.alert_v2.malsite_ip_host | IP of the hosts where Malsite is detected. | keyword |
-| netskope.alert_v2.malsite_last_seen | Malsite last seen timestamp. Time in epoch format seconds. | long |
+| netskope.alert_v2.malsite_last_seen | Malsite last seen timestamp. Time in epoch format seconds. | date |
 | netskope.alert_v2.malsite_latitude | Latitude plot of the Malsite URL/IP/Domain. | double |
 | netskope.alert_v2.malsite_longitude | Longitude plot of the Malsite URL/IP/Domain. | double |
 | netskope.alert_v2.malsite_region | Region of the malsite URL/IP/Domain. | keyword |
@@ -1110,7 +1110,7 @@ An example event for `alerts` looks as following:
 | netskope.alert_v2.metadata | Metadata fields contains information about policy, service type used and threat severity etc. | flattened |
 | netskope.alert_v2.mime_type | A media type (also known as a Multipurpose Internet Mail Extensions or MIME type) indicates the nature and format of a document, file, or assortment of bytes. | keyword |
 | netskope.alert_v2.ml_detection | Machine Learning engine name when the malware hit, Values could be (PE-ML, Phishing-ML, None) etc. | keyword |
-| netskope.alert_v2.modified | Timestamp corresponding to the modification time of the entity file, object etc. | long |
+| netskope.alert_v2.modified | Timestamp corresponding to the modification time of the entity file, object etc. | date |
 | netskope.alert_v2.modified_date | File modification date found during malware detection. Timestamp in epoch format. | date |
 | netskope.alert_v2.netskope_activity | Determines if the event is part of the known Netskope subnets Source IP to check for Netskope activity. | keyword |
 | netskope.alert_v2.netskope_pop | Netskope Data Plane name. | keyword |
@@ -1203,7 +1203,7 @@ An example event for `alerts` looks as following:
 | netskope.alert_v2.sa_rule_name | IAAS/CSA rule name configured for scans to run on data stored in cloud providers AWS, GCP and Azure data. | keyword |
 | netskope.alert_v2.sa_rule_severity | IAAS/CSA rule severity as captured by backend policy engines. | keyword |
 | netskope.alert_v2.sanctioned_instance | A sanctioned instance is a company owned account in an external application. A value of yes indicates that the company has granted    access for the specific SaaS / IaaS account to Netskope. A value of no    represents a personal user account or an enterprise account not    authorized by the enterprise Administrator. | keyword |
-| netskope.alert_v2.scan_time | Time when the scan is done by TSS Service. Timestamp in epoch format. | long |
+| netskope.alert_v2.scan_time | Time when the scan is done by TSS Service. Timestamp in epoch format. | date |
 | netskope.alert_v2.scan_type | Generated during retroactive scan or new ongoing activity. | keyword |
 | netskope.alert_v2.scanner_result | TSS scan result outcome value. | keyword |
 | netskope.alert_v2.scopes | List of permissions for google apps. (array in API JSON). | keyword |
@@ -1249,9 +1249,9 @@ An example event for `alerts` looks as following:
 | netskope.alert_v2.sub_type | The type of EPDLP events. | keyword |
 | netskope.alert_v2.subject | value present in the email subject captured during DLP email scans. | keyword |
 | netskope.alert_v2.suppression_count | Number of events suppressed. | keyword |
-| netskope.alert_v2.suppression_end_time | When events are suppressed (like collaboration apps), then the suppression end time will be set and only one event will be send with suppression start time and end time and count of occurrence. | long |
+| netskope.alert_v2.suppression_end_time | When events are suppressed (like collaboration apps), then the suppression end time will be set and only one event will be send with suppression start time and end time and count of occurrence. | date |
 | netskope.alert_v2.suppression_key | To limit the number of events. Example: Suppress block event for browse | keyword |
-| netskope.alert_v2.suppression_start_time | When events are suppressed (like collaboration apps), then the suppression end time will be set and only one event will be send with suppression start time and end time and count of occurrence. | long |
+| netskope.alert_v2.suppression_start_time | When events are suppressed (like collaboration apps), then the suppression end time will be set and only one event will be send with suppression start time and end time and count of occurrence. | date |
 | netskope.alert_v2.surhn | shared user hostname used by UEBA anomaly detection engine. | keyword |
 | netskope.alert_v2.telemetry_app | Typically SaaS app web sites use web analytics code within the pages to gather analytic data.When a SaaS app action or page is shown, there is subsequent traffic generated to tracking apps such as doubleclick.net, Optimizely, etc. These tracking apps are listed if applicable in theTelemetry App field. | keyword |
 | netskope.alert_v2.threat_match_field | Threat match field, either from domain or URL or IP. | keyword |
@@ -1259,7 +1259,7 @@ An example event for `alerts` looks as following:
 | netskope.alert_v2.threat_source_id | Threat source id used by TSS threat engines EX: 1 - NetskopeThreatIntel, 2 - OEM DB etc. | long |
 | netskope.alert_v2.threat_type | Type of threat detected. | keyword |
 | netskope.alert_v2.threshold | Threshold (Count at which the anomaly should trigger). Applicable to Bulk Anomaly types( Bulk Upload/ Download/ Delete) and Failed Login Anomaly type. | long |
-| netskope.alert_v2.threshold_time | It captures the time interval in seconds used by UEBA services. Applicable to: Shared Credentials, Data Ex filtration, Bulk Anomaly types( Bulk Upload/ Download/ Delete) and Failed Login Anomaly type. | long |
+| netskope.alert_v2.threshold_time | Duration in seconds (not an epoch timestamp). It captures the time interval in seconds used by UEBA services. Applicable to: Shared Credentials, Data Ex filtration, Bulk Anomaly types( Bulk Upload/ Download/ Delete) and Failed Login Anomaly type. | long |
 | netskope.alert_v2.timestamp | Timestamp when the event/alert happened. Event timestamp in Unix epoch format. | date |
 | netskope.alert_v2.title | Title of the file. | keyword |
 | netskope.alert_v2.to_object | Changed name of an object that has been renamed, copied, or moved. | keyword |
@@ -1333,7 +1333,7 @@ An example event for `alerts` looks as following:
 | netskope.alert_v2.watchlist_name | Name given by admins while creating watchlist by selecting different filters on webUI. | keyword |
 | netskope.alert_v2.web_universal_connector | If The WEB event detection source was present or not. | keyword |
 | netskope.alert_v2.web_url | Endpoint configured by customer to fetch Filemeta scan etc. | keyword |
-| netskope.alert_v2.windowId | UEBA detection engine uses this field to capture the time range for anomaly. Epoch timestamp in milliseconds | long |
+| netskope.alert_v2.windowId | UEBA detection engine uses this field to capture the time range for anomaly. Epoch timestamp in milliseconds | date |
 | netskope.alert_v2.workspace | Workspace name in case of Slack application configured for Enterprise. | keyword |
 | netskope.alert_v2.workspace_id | Workspace id in case of Slack application configured for Enterprise. | keyword |
 | netskope.alert_v2.zip_password | Password used to zip-compress the quarantined file. Required when quarantine is triggered by TSS detection. | keyword |
@@ -1933,6 +1933,7 @@ An example event for `events` looks as following:
 | netskope.events_v2.dlp_is_unique_count | True or false depending upon if rule is unique counted per rule data. | boolean |
 | netskope.events_v2.dlp_mail_parent_id | Parent Incident ID associated with main container (or non-container) file that was scanned. | keyword |
 | netskope.events_v2.dlp_match_info | DLP match info carries the details about DLP profile and rule info along with the violation count information. | keyword |
+| netskope.events_v2.dlp_match_info_object | DLP match info as a structured object. Populated when the Netskope API sends dlp_match_info as a JSON object or array of objects instead of a plain string. | flattened |
 | netskope.events_v2.dlp_parent_id | Incident ID associated with main container (or non-container) file that was scanned. | keyword |
 | netskope.events_v2.dlp_profile | DLP profile name. | keyword |
 | netskope.events_v2.dlp_profile_name | DLP profile name. | keyword |
@@ -1988,8 +1989,10 @@ An example event for `events` looks as following:
 | netskope.events_v2.http_transaction_count | HTTP transaction count. | long |
 | netskope.events_v2.iaas_asset_tags | List of tags associated with the asset for which alert is raised. Each tag is a key/value pair (array in API JSON). | keyword |
 | netskope.events_v2.iaas_remediated | value representing whether IAAS alerts remediated or not. | boolean |
+| netskope.events_v2.iaas_remediated_on | IAAS/CSA scan alerts can be remediated by taking remediation steps. This field captures the time in epoch format when remediation steps were taken. | date |
 | netskope.events_v2.incident_id | Unique Incident ID associated with main container (or non-container) file that was scanned. | keyword |
 | netskope.events_v2.inline_dlp_match_info | Inline DLP match info carries the details about DLP profile and rule info along with the violation count information. | keyword |
+| netskope.events_v2.inline_dlp_match_info_object | Inline DLP match info as a structured object. Populated when the Netskope API sends inline_dlp_match_info as a JSON object or array of objects instead of a plain string. | flattened |
 | netskope.events_v2.instance | Instance associated with an organization application instance. | keyword |
 | netskope.events_v2.instance_id | Unique ID associated with an organization application instance. | keyword |
 | netskope.events_v2.internal_collaborator_count | Count of internal collaborators on a file/folder. Supported for some apps. | long |
@@ -2004,7 +2007,7 @@ An example event for `events` looks as following:
 | netskope.events_v2.last_device | Last device name (Device Name in the first/older event). Applies to only proximity anomaly alert. | keyword |
 | netskope.events_v2.last_location | Last location (City) of the user. Applies to only proximity anomaly alert. | keyword |
 | netskope.events_v2.last_region | Last region of the user. Applies to only proximity anomaly alert. | keyword |
-| netskope.events_v2.last_timestamp | Last timestamp (timestamp in the first/older event). Applies to only proximity anomaly alert. | long |
+| netskope.events_v2.last_timestamp | Last timestamp (timestamp in the first/older event). Applies to only proximity anomaly alert. | date |
 | netskope.events_v2.latest_incident_id | Latest incident ID captured by DLP backend services. | keyword |
 | netskope.events_v2.legal_hold_profile_name | Legal Hold is a process that an organization uses to preserve all forms of relevant information when litigation is reasonably anticipated. A Legal Hold profile is used for specifying where the files need to be held for legal purposes when action of Legal Hold is taken. This field is the profile name added during configuration by admin. Legalhold fields are set when an entity (file, chat message, etc.) is legally held by CASB API. | keyword |
 | netskope.events_v2.lh_custodian_email | Email address of the custodian associated with the Legal Hold profile. This value is derived from the customer’s Legal Hold configuration. | keyword |
@@ -2054,7 +2057,7 @@ An example event for `events` looks as following:
 | netskope.events_v2.metric_type | Type of metric captured in infrastructure event. | keyword |
 | netskope.events_v2.metric_value | Value of metric captured in infrastructure event. | keyword |
 | netskope.events_v2.mime_type | A media type (also known as a Multipurpose Internet Mail Extensions or MIME type) indicates the nature and format of a document, file, or assortment of bytes. | keyword |
-| netskope.events_v2.modified | Timestamp corresponding to the modification time of the entity file, object etc. | long |
+| netskope.events_v2.modified | Timestamp corresponding to the modification time of the entity file, object etc. | date |
 | netskope.events_v2.netskope_activity | Determines if the event is part of the known Netskope subnets Source IP to check for Netskope activity. | keyword |
 | netskope.events_v2.netskope_pop | Netskope Data Plane name. | keyword |
 | netskope.events_v2.network | Network indentifier name as detected by Netskope solutions. | keyword |
@@ -2173,9 +2176,9 @@ An example event for `events` looks as following:
 | netskope.events_v2.status | Specific status name used by the enduser for DLP incidents. | keyword |
 | netskope.events_v2.sub_type | The type of EPDLP events. | keyword |
 | netskope.events_v2.supporting_data | Supporting data attached with audit events exaple IP, user_name etc. | flattened |
-| netskope.events_v2.suppression_end_time | When events are suppressed (like collaboration apps), then the suppression end time will be set and only one event will be send with suppression start time and end time and count of occurrence. | long |
+| netskope.events_v2.suppression_end_time | When events are suppressed (like collaboration apps), then the suppression end time will be set and only one event will be send with suppression start time and end time and count of occurrence. | date |
 | netskope.events_v2.suppression_key | To limit the number of events. Example: Suppress block event for browse | keyword |
-| netskope.events_v2.suppression_start_time | When events are suppressed (like collaboration apps), then the suppression end time will be set and only one event will be send with suppression start time and end time and count of occurrence. | long |
+| netskope.events_v2.suppression_start_time | When events are suppressed (like collaboration apps), then the suppression end time will be set and only one event will be send with suppression start time and end time and count of occurrence. | date |
 | netskope.events_v2.telemetry_app | Typically SaaS app web sites use web analytics code within the pages to gather analytic data.When a SaaS app action or page is shown, there is subsequent traffic generated to tracking apps such as doubleclick.net, Optimizely, etc. These tracking apps are listed if applicable in theTelemetry App field. | keyword |
 | netskope.events_v2.threat_match_field | Threat match field, either from domain or URL or IP. | keyword |
 | netskope.events_v2.threat_match_value | Threat match field value , either from domain or URL or IP. | keyword |

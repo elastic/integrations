@@ -66,6 +66,7 @@ processors:
       on_failure:
         - remove:
             tag: remove_netskope_alert_v2_acked_bf324f30
+            ignore_missing: true
             field: netskope.events_v2.acked
         - append:
             tag: append_error_message_90335acc
@@ -89,6 +90,7 @@ processors:
       on_failure:
         - remove:
             tag: remove_netskope_alert_v2_breach_date_b237f436
+            ignore_missing: true
             field: netskope.events_v2.breach_date
         - append:
             tag: append_error_message_9fc01c58
@@ -103,6 +105,7 @@ processors:
       on_failure:
         - remove:
             tag: remove_netskope_alert_v2_breach_score_3d61e1a4
+            ignore_missing: true
             field: netskope.events_v2.breach_score
         - append:
             tag: append_error_message_388334ae
@@ -117,6 +120,7 @@ processors:
       on_failure:
         - remove:
             tag: remove_netskope_alert_v2_file_cls_encrypted_1c134a7c
+            ignore_missing: true
             field: netskope.events_v2.file_cls_encrypted
         - append:
             tag: append_error_message_9fe65aec
@@ -131,20 +135,25 @@ processors:
       on_failure:
         - remove:
             tag: remove_netskope_alert_v2_iaas_remediated_1c2229e2
+            ignore_missing: true
             field: netskope.events_v2.iaas_remediated
         - append:
             tag: append_error_message_26e6c147
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - convert:
+  - date:
       field: netskope.events_v2.iaas_remediated_on
-      if: ctx.netskope?.events_v2?.alert == "yes"
-      tag: convert_iaas_remediated_on_to_long_912779f0
-      type: long
-      ignore_missing: true
+      if: ctx.netskope?.events_v2?.alert == "yes" && ctx.netskope?.events_v2?.iaas_remediated_on != null && ctx.netskope.events_v2.iaas_remediated_on != ''
+      tag: date_iaas_remediated_on_912779f0
+      target_field: netskope.events_v2.iaas_remediated_on
+      formats:
+        - ISO8601
+        - UNIX
+        - epoch_second
       on_failure:
         - remove:
             tag: remove_netskope_alert_v2_iaas_remediated_on_d16c3786
+            ignore_missing: true
             field: netskope.events_v2.iaas_remediated_on
         - append:
             tag: append_error_message_5c2d8c7d
@@ -165,6 +174,7 @@ processors:
       on_failure:
         - remove:
             tag: remove_netskope_alert_v2_external_collaborator_count_external_collaborator_count_cadd2566
+            ignore_missing: true
             field: netskope.events_v2.external_collaborator_count
         - append:
             tag: append_error_message_err_external_collaborator_count_cadd2566
@@ -179,20 +189,25 @@ processors:
       on_failure:
         - remove:
             tag: remove_netskope_alert_v2_external_email_external_email_1d9c2e88
+            ignore_missing: true
             field: netskope.events_v2.external_email
         - append:
             tag: append_error_message_err_external_email_1d9c2e88
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - convert:
+  - date:
       field: netskope.events_v2.last_timestamp
-      if: ctx.netskope?.events_v2?.alert == "yes"
-      tag: convert_last_timestamp_to_long_last_timestamp_6a9863d5
-      type: long
-      ignore_missing: true
+      if: ctx.netskope?.events_v2?.alert == "yes" && ctx.netskope?.events_v2?.last_timestamp != null && ctx.netskope.events_v2.last_timestamp != ''
+      tag: date_last_timestamp_last_timestamp_6a9863d5
+      target_field: netskope.events_v2.last_timestamp
+      formats:
+        - ISO8601
+        - UNIX
+        - epoch_second
       on_failure:
         - remove:
             tag: remove_netskope_alert_v2_last_timestamp_last_timestamp_6a9863d5
+            ignore_missing: true
             field: netskope.events_v2.last_timestamp
         - append:
             tag: append_error_message_err_last_timestamp_6a9863d5
@@ -207,6 +222,7 @@ processors:
       on_failure:
         - remove:
             tag: remove_netskope_alert_v2_malsite_latitude_malsite_latitude_341887ad
+            ignore_missing: true
             field: netskope.events_v2.malsite_latitude
         - append:
             tag: append_error_message_err_malsite_latitude_341887ad
@@ -221,6 +237,7 @@ processors:
       on_failure:
         - remove:
             tag: remove_netskope_alert_v2_malsite_longitude_malsite_longitude_d5608dba
+            ignore_missing: true
             field: netskope.events_v2.malsite_longitude
         - append:
             tag: append_error_message_err_malsite_longitude_d5608dba
@@ -235,6 +252,7 @@ processors:
       on_failure:
         - remove:
             tag: remove_netskope_alert_v2_sa_profile_id_sa_profile_id_1c66ab68
+            ignore_missing: true
             field: netskope.events_v2.sa_profile_id
         - append:
             tag: append_error_message_err_sa_profile_id_1c66ab68
@@ -249,6 +267,7 @@ processors:
       on_failure:
         - remove:
             tag: remove_netskope_alert_v2_severity_level_id_severity_level_id_88b0268d
+            ignore_missing: true
             field: netskope.events_v2.severity_level_id
         - append:
             tag: append_error_message_err_severity_level_id_88b0268d
@@ -263,6 +282,7 @@ processors:
       on_failure:
         - remove:
             tag: remove_netskope_alert_v2_threat_source_id_threat_source_id_2c1b54c1
+            ignore_missing: true
             field: netskope.events_v2.threat_source_id
         - append:
             tag: append_error_message_err_threat_source_id_2c1b54c1
@@ -277,6 +297,7 @@ processors:
       on_failure:
         - remove:
             tag: remove_netskope_alert_v2_threshold_threshold_fefd5f78
+            ignore_missing: true
             field: netskope.events_v2.threshold
         - append:
             tag: append_error_message_err_threshold_fefd5f78
@@ -291,6 +312,7 @@ processors:
       on_failure:
         - remove:
             tag: remove_netskope_alert_v2_threshold_time_threshold_time_05d5cf61
+            ignore_missing: true
             field: netskope.events_v2.threshold_time
         - append:
             tag: append_error_message_err_threshold_time_05d5cf61
@@ -414,6 +436,7 @@ processors:
       on_failure:
         - remove:
             tag: remove_netskope_events_v2_app_session_id_0318ca71
+            ignore_missing: true
             field: netskope.events_v2.app_session_id
         - append:
             tag: append_error_message_2e9e5494
@@ -427,6 +450,7 @@ processors:
       on_failure:
         - remove:
             tag: remove_netskope_events_v2_browser_session_id_d4cbd11d
+            ignore_missing: true
             field: netskope.events_v2.browser_session_id
         - append:
             tag: append_error_message_9014488d
@@ -440,6 +464,7 @@ processors:
       on_failure:
         - remove:
             tag: remove_netskope_events_v2_cci_c4f8ea03
+            ignore_missing: true
             field: netskope.events_v2.cci
         - append:
             tag: append_error_message_2abd9ac3
@@ -453,6 +478,7 @@ processors:
       on_failure:
         - remove:
             tag: remove_netskope_events_v2_client_bytes_6443f3f9
+            ignore_missing: true
             field: netskope.events_v2.client_bytes
         - append:
             tag: append_error_message_ac71e8db
@@ -476,6 +502,7 @@ processors:
       on_failure:
         - remove:
             tag: remove_netskope_events_v2_client_packets_1e929595
+            ignore_missing: true
             field: netskope.events_v2.client_packets
         - append:
             tag: append_error_message_1fa442d9
@@ -499,6 +526,7 @@ processors:
       on_failure:
         - remove:
             tag: remove_netskope_events_v2_conn_duration_482874c3
+            ignore_missing: true
             field: netskope.events_v2.conn_duration
         - append:
             tag: append_error_message_9a818f81
@@ -514,6 +542,7 @@ processors:
       on_failure:
         - remove:
             tag: remove_netskope_events_v2_conn_endtime_7374b6cb
+            ignore_missing: true
             field: netskope.events_v2.conn_endtime
         - append:
             tag: append_error_message_4ad11be7
@@ -529,6 +558,7 @@ processors:
       on_failure:
         - remove:
             tag: remove_netskope_events_v2_conn_starttime_344b9ab2
+            ignore_missing: true
             field: netskope.events_v2.conn_starttime
         - append:
             tag: append_error_message_9870072b
@@ -542,6 +572,7 @@ processors:
       on_failure:
         - remove:
             tag: remove_netskope_events_v2_connection_id_6835926f
+            ignore_missing: true
             field: netskope.events_v2.connection_id
         - append:
             tag: append_error_message_cd166030
@@ -555,6 +586,7 @@ processors:
       on_failure:
         - remove:
             tag: remove_netskope_events_v2_dlp_incident_id_fd24c953
+            ignore_missing: true
             field: netskope.events_v2.dlp_incident_id
         - append:
             tag: append_error_message_5fcfde6b
@@ -568,6 +600,7 @@ processors:
       on_failure:
         - remove:
             tag: remove_netskope_events_v2_dlp_parent_id_5b9fc457
+            ignore_missing: true
             field: netskope.events_v2.dlp_parent_id
         - append:
             tag: append_error_message_77d2a241
@@ -581,6 +614,7 @@ processors:
       on_failure:
         - remove:
             tag: remove_netskope_events_v2_dlp_rule_count_9ef90fa9
+            ignore_missing: true
             field: netskope.events_v2.dlp_rule_count
         - append:
             tag: append_error_message_11af235f
@@ -594,6 +628,7 @@ processors:
       on_failure:
         - remove:
             tag: remove_netskope_events_v2_dlp_is_unique_count_ba2c3d33
+            ignore_missing: true
             field: netskope.events_v2.dlp_is_unique_count
         - append:
             tag: append_error_message_c56722e7
@@ -607,6 +642,7 @@ processors:
       on_failure:
         - remove:
             tag: remove_netskope_events_v2_dlp_unique_count_93375199
+            ignore_missing: true
             field: netskope.events_v2.dlp_unique_count
         - append:
             tag: append_error_message_6a49b14a
@@ -622,6 +658,7 @@ processors:
       on_failure:
         - remove:
             tag: remove_netskope_events_v2_domain_ip_c03fb4ff
+            ignore_missing: true
             field: netskope.events_v2.domain_ip
         - append:
             tag: append_error_message_e3ad1cec
@@ -646,6 +683,7 @@ processors:
       on_failure:
         - remove:
             tag: remove_netskope_events_v2_dst_geoip_src_b0e19c37
+            ignore_missing: true
             field: netskope.events_v2.dst_geoip_src
         - append:
             tag: append_error_message_84ff404b
@@ -732,6 +770,7 @@ processors:
       on_failure:
         - remove:
             tag: remove_netskope_events_v2_dstip_0223efac
+            ignore_missing: true
             field: netskope.events_v2.dstip
         - append:
             tag: append_error_message_8fc76d05
@@ -756,6 +795,7 @@ processors:
       on_failure:
         - remove:
             tag: remove_netskope_events_v2_dstport_1483ec8b
+            ignore_missing: true
             field: netskope.events_v2.dstport
         - append:
             tag: append_error_message_2af60970
@@ -777,6 +817,7 @@ processors:
       on_failure:
         - remove:
             tag: remove_netskope_events_v2_end_time_6931c773
+            ignore_missing: true
             field: netskope.events_v2.end_time
         - append:
             tag: append_error_message_c4183c91
@@ -800,6 +841,7 @@ processors:
       on_failure:
         - remove:
             tag: remove_netskope_events_v2_file_size_1a6a5d03
+            ignore_missing: true
             field: netskope.events_v2.file_size
         - append:
             tag: append_error_message_148bb786
@@ -857,6 +899,7 @@ processors:
       on_failure:
         - remove:
             tag: remove_netskope_events_v2_latest_incident_id_666949b1
+            ignore_missing: true
             field: netskope.events_v2.latest_incident_id
         - append:
             tag: append_error_message_d2502412
@@ -881,6 +924,7 @@ processors:
       on_failure:
         - remove:
             tag: remove_netskope_events_v2_numbytes_52880fe9
+            ignore_missing: true
             field: netskope.events_v2.numbytes
         - append:
             tag: append_error_message_cfb8a3bb
@@ -926,6 +970,7 @@ processors:
       on_failure:
         - remove:
             tag: remove_netskope_events_v2_pid_b61493e7
+            ignore_missing: true
             field: netskope.events_v2.pid
         - append:
             tag: append_error_message_0fe38bf7
@@ -959,6 +1004,7 @@ processors:
       on_failure:
         - remove:
             tag: remove_netskope_events_v2_req_cnt_e1b3801f
+            ignore_missing: true
             field: netskope.events_v2.req_cnt
         - append:
             tag: append_error_message_551c22e8
@@ -972,6 +1018,7 @@ processors:
       on_failure:
         - remove:
             tag: remove_netskope_events_v2_request_id_98c7b471
+            ignore_missing: true
             field: netskope.events_v2.request_id
         - append:
             tag: append_error_message_699146bf
@@ -985,6 +1032,7 @@ processors:
       on_failure:
         - remove:
             tag: remove_netskope_events_v2_resp_cnt_cf59f4d1
+            ignore_missing: true
             field: netskope.events_v2.resp_cnt
         - append:
             tag: append_error_message_fa00e10e
@@ -998,6 +1046,7 @@ processors:
       on_failure:
         - remove:
             tag: remove_netskope_events_v2_response_time_125bb583
+            ignore_missing: true
             field: netskope.events_v2.response_time
         - append:
             tag: append_error_message_c91299cf
@@ -1011,6 +1060,7 @@ processors:
       on_failure:
         - remove:
             tag: remove_netskope_events_v2_server_bytes_c5c63bc9
+            ignore_missing: true
             field: netskope.events_v2.server_bytes
         - append:
             tag: append_error_message_c5615037
@@ -1034,6 +1084,7 @@ processors:
       on_failure:
         - remove:
             tag: remove_netskope_events_v2_server_packets_4a043b2d
+            ignore_missing: true
             field: netskope.events_v2.server_packets
         - append:
             tag: append_error_message_ee79ff35
@@ -1057,6 +1108,7 @@ processors:
       on_failure:
         - remove:
             tag: remove_netskope_events_v2_session_duration_4a561335
+            ignore_missing: true
             field: netskope.events_v2.session_duration
         - append:
             tag: append_error_message_209421a1
@@ -1097,6 +1149,7 @@ processors:
       on_failure:
         - remove:
             tag: remove_netskope_events_v2_src_geoip_src_8b4d52e7
+            ignore_missing: true
             field: netskope.events_v2.src_geoip_src
         - append:
             tag: append_error_message_e15501cc
@@ -1161,6 +1214,7 @@ processors:
       on_failure:
         - remove:
             tag: remove_netskope_events_v2_srcport_a607c6db
+            ignore_missing: true
             field: netskope.events_v2.srcport
         - append:
             tag: append_error_message_50d080ef
@@ -1185,6 +1239,7 @@ processors:
       on_failure:
         - remove:
             tag: remove_netskope_events_v2_srcip_6ad5e3eb
+            ignore_missing: true
             field: netskope.events_v2.srcip
         - append:
             tag: append_error_message_ba1655a1
@@ -1221,6 +1276,7 @@ processors:
       on_failure:
         - remove:
             tag: remove_netskope_events_v2_start_time_0f28087c
+            ignore_missing: true
             field: netskope.events_v2.start_time
         - append:
             tag: append_error_message_ba11af3b
@@ -1241,6 +1297,7 @@ processors:
       on_failure:
         - remove:
             tag: remove_netskope_events_v2_timestamp_89af60d2
+            ignore_missing: true
             field: netskope.events_v2.timestamp
         - append:
             tag: append_error_message_f51fcea3
@@ -1270,6 +1327,7 @@ processors:
       on_failure:
         - remove:
             tag: remove_netskope_events_v2_total_packets_17b54547
+            ignore_missing: true
             field: netskope.events_v2.total_packets
         - append:
             tag: append_error_message_4ddeee8c
@@ -1288,6 +1346,7 @@ processors:
       on_failure:
         - remove:
             tag: remove_netskope_events_v2_transaction_id_6622f129
+            ignore_missing: true
             field: netskope.events_v2.transaction_id
         - append:
             tag: append_error_message_3695b014
@@ -1298,12 +1357,18 @@ processors:
       tag: set_url_original_from_events_v2_url_a1165c7d
       copy_from: netskope.events_v2.url
       ignore_empty_value: true
+  - uri_parts:
+      field: url.original
+      tag: uri_parts_url_original
+      keep_original: true
+      ignore_failure: true
+      if: ctx.url?.original != null
   - append:
       field: related.hosts
-      tag: append_events_v2_url_into_related_hosts_88fe716f
-      value: '{{{netskope.events_v2.url}}}'
+      tag: append_url_domain_into_related_hosts
+      value: '{{{url.domain}}}'
       allow_duplicates: false
-      if: ctx.netskope?.events_v2?.url != null
+      if: ctx.url?.domain != null
   - set:
       field: user.email
       tag: set_user_email_from_events_v2_user_16c0feee
@@ -1359,6 +1424,7 @@ processors:
       on_failure:
         - remove:
             tag: remove_netskope_events_v2_userip_bd92f588
+            ignore_missing: true
             field: netskope.events_v2.userip
         - append:
             tag: append_error_message_cee1e6b1
@@ -1388,6 +1454,12 @@ processors:
       target_field: netskope.events_v2.connection_id
       type: string
       ignore_missing: true
+  - json:
+      tag: json_netskope_events_v2_custom_attr
+      field: netskope.events_v2.custom_attr
+      target_field: netskope.events_v2.custom_attr
+      ignore_failure: true
+      if: ctx.netskope?.events_v2?.custom_attr instanceof String
   - convert:
       field: netskope.events_v2.latest_incident_id
       tag: convert_latest_incident_id_27fc39b0
@@ -1438,6 +1510,7 @@ processors:
       on_failure:
         - remove:
             tag: remove_netskope_events_v2_alert_generated_alert_generated_f1d297f8
+            ignore_missing: true
             field: netskope.events_v2.alert_generated
         - append:
             tag: append_error_message_err_alert_generated_f1d297f8
@@ -1451,6 +1524,7 @@ processors:
       on_failure:
         - remove:
             tag: remove_netskope_events_v2_count_count_65ffa285
+            ignore_missing: true
             field: netskope.events_v2.count
         - append:
             tag: append_error_message_err_count_65ffa285
@@ -1464,6 +1538,7 @@ processors:
       on_failure:
         - remove:
             tag: remove_netskope_events_v2_count_metric_value_count_metric_value_7ee5faaa
+            ignore_missing: true
             field: netskope.events_v2.count_metric_value
         - append:
             tag: append_error_message_err_count_metric_value_7ee5faaa
@@ -1477,6 +1552,7 @@ processors:
       on_failure:
         - remove:
             tag: remove_netskope_events_v2_event_recovered_event_recovered_5fd59d00
+            ignore_missing: true
             field: netskope.events_v2.event_recovered
         - append:
             tag: append_error_message_err_event_recovered_5fd59d00
@@ -1490,6 +1566,7 @@ processors:
       on_failure:
         - remove:
             tag: remove_netskope_events_v2_executable_signed_executable_signed_65a0bf17
+            ignore_missing: true
             field: netskope.events_v2.executable_signed
         - append:
             tag: append_error_message_err_executable_signed_65a0bf17
@@ -1503,6 +1580,7 @@ processors:
       on_failure:
         - remove:
             tag: remove_netskope_events_v2_http_transaction_count_http_transaction_count_1b8085d9
+            ignore_missing: true
             field: netskope.events_v2.http_transaction_count
         - append:
             tag: append_error_message_err_http_transaction_count_1b8085d9
@@ -1516,19 +1594,25 @@ processors:
       on_failure:
         - remove:
             tag: remove_netskope_events_v2_internal_collaborator_count_internal_collaborator_count_ac929c78
+            ignore_missing: true
             field: netskope.events_v2.internal_collaborator_count
         - append:
             tag: append_error_message_err_internal_collaborator_count_ac929c78
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - convert:
+  - date:
       field: netskope.events_v2.modified
-      tag: convert_modified_to_long_modified_7baa5d00
-      type: long
-      ignore_missing: true
+      tag: date_modified_modified_7baa5d00
+      target_field: netskope.events_v2.modified
+      formats:
+        - ISO8601
+        - UNIX
+        - epoch_second
+      if: ctx.netskope?.events_v2?.modified != null && ctx.netskope.events_v2.modified != ''
       on_failure:
         - remove:
             tag: remove_netskope_events_v2_modified_modified_7baa5d00
+            ignore_missing: true
             field: netskope.events_v2.modified
         - append:
             tag: append_error_message_err_modified_7baa5d00
@@ -1542,6 +1626,7 @@ processors:
       on_failure:
         - remove:
             tag: remove_netskope_events_v2_num_sessions_num_sessions_fc7e6a67
+            ignore_missing: true
             field: netskope.events_v2.num_sessions
         - append:
             tag: append_error_message_err_num_sessions_fc7e6a67
@@ -1555,6 +1640,7 @@ processors:
       on_failure:
         - remove:
             tag: remove_netskope_events_v2_publisher_port_publisher_port_494498d3
+            ignore_missing: true
             field: netskope.events_v2.publisher_port
         - append:
             tag: append_error_message_err_publisher_port_494498d3
@@ -1568,6 +1654,7 @@ processors:
       on_failure:
         - remove:
             tag: remove_netskope_events_v2_resp_content_len_resp_content_len_16cc3ebc
+            ignore_missing: true
             field: netskope.events_v2.resp_content_len
         - append:
             tag: append_error_message_err_resp_content_len_16cc3ebc
@@ -1581,32 +1668,43 @@ processors:
       on_failure:
         - remove:
             tag: remove_netskope_events_v2_sampled_text_size_sampled_text_size_189b54d2
+            ignore_missing: true
             field: netskope.events_v2.sampled_text_size
         - append:
             tag: append_error_message_err_sampled_text_size_189b54d2
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - convert:
+  - date:
       field: netskope.events_v2.suppression_end_time
-      tag: convert_suppression_end_time_to_long_suppression_end_time_9bd44120
-      type: long
-      ignore_missing: true
+      tag: date_suppression_end_time_suppression_end_time_9bd44120
+      target_field: netskope.events_v2.suppression_end_time
+      formats:
+        - ISO8601
+        - UNIX
+        - epoch_second
+      if: ctx.netskope?.events_v2?.suppression_end_time != null && ctx.netskope.events_v2.suppression_end_time != ''
       on_failure:
         - remove:
             tag: remove_netskope_events_v2_suppression_end_time_suppression_end_time_9bd44120
+            ignore_missing: true
             field: netskope.events_v2.suppression_end_time
         - append:
             tag: append_error_message_err_suppression_end_time_9bd44120
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - convert:
+  - date:
       field: netskope.events_v2.suppression_start_time
-      tag: convert_suppression_start_time_to_long_suppression_start_time_08b62373
-      type: long
-      ignore_missing: true
+      tag: date_suppression_start_time_suppression_start_time_08b62373
+      target_field: netskope.events_v2.suppression_start_time
+      formats:
+        - ISO8601
+        - UNIX
+        - epoch_second
+      if: ctx.netskope?.events_v2?.suppression_start_time != null && ctx.netskope.events_v2.suppression_start_time != ''
       on_failure:
         - remove:
             tag: remove_netskope_events_v2_suppression_start_time_suppression_start_time_08b62373
+            ignore_missing: true
             field: netskope.events_v2.suppression_start_time
         - append:
             tag: append_error_message_err_suppression_start_time_08b62373
@@ -1620,6 +1718,7 @@ processors:
       on_failure:
         - remove:
             tag: remove_netskope_events_v2_total_collaborator_count_total_collaborator_count_fb41f612
+            ignore_missing: true
             field: netskope.events_v2.total_collaborator_count
         - append:
             tag: append_error_message_err_total_collaborator_count_fb41f612
@@ -1633,6 +1732,7 @@ processors:
       on_failure:
         - remove:
             tag: remove_netskope_events_v2_tunnel_up_time_tunnel_up_time_b1645a40
+            ignore_missing: true
             field: netskope.events_v2.tunnel_up_time
         - append:
             tag: append_error_message_err_tunnel_up_time_b1645a40
@@ -1646,6 +1746,7 @@ processors:
       on_failure:
         - remove:
             tag: remove_netskope_events_v2_user_confidence_index_user_confidence_index_23911d5e
+            ignore_missing: true
             field: netskope.events_v2.user_confidence_index
         - append:
             tag: append_error_message_err_user_confidence_index_23911d5e
