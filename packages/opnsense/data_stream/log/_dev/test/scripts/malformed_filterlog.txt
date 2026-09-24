@@ -25,13 +25,13 @@ stdout '^true$'
 
 # Corrupt source address: reported, not set, and the valid destination still parsed.
 exec jq -s -r '.[0].error.message | tostring' got.json
-stdout 'source is not an IP'
+stdout 'with tag .convert_source_ip. failed with message'
 exec jq -s -r '.[0] | [(.source.ip // "absent"), .destination.ip] | join(" ")' got.json
 stdout '^absent 192\.0\.2\.10$'
 
 # Corrupt destination address: reported, not set, and the valid source still parsed.
 exec jq -s -r '.[1].error.message | tostring' got.json
-stdout 'destination is not an IP'
+stdout 'with tag .convert_destination_ip. failed with message'
 exec jq -s -r '.[1] | [.source.ip, (.destination.ip // "absent")] | join(" ")' got.json
 stdout '^192\.0\.2\.10 absent$'
 

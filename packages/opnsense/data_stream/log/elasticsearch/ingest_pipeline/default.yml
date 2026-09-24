@@ -38,7 +38,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: 'failed to parse syslog header: {{{_ingest.on_failure_message}}}'
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
 
   - date:
       field: _tmp.timestamp
@@ -52,7 +55,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: 'failed to parse timestamp: {{{_ingest.on_failure_message}}}'
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
 
   # syslog priority = facility * 8 + severity
   - script:
@@ -282,7 +288,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: 'source is not an IP: {{{_ingest.on_failure_message}}}'
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - convert:
       field: opnsense.log.destination_ip
       target_field: destination.ip
@@ -292,7 +301,10 @@ processors:
       on_failure:
         - append:
             field: error.message
-            value: 'destination is not an IP: {{{_ingest.on_failure_message}}}'
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: source.port
       copy_from: opnsense.log.source_port
