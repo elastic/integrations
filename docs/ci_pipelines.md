@@ -201,9 +201,9 @@ be used in each pipeline are detailed in the corresponding sections of each pipe
 
 ## Weekly job
 
-**Note**: Available only to Elastic employees.
-
-**Note**: This pipeline is currently disabled.
+**Note**:
+- Available only to Elastic employees.
+- This pipeline is currently disabled.
 
 Every week it is configured to run a job that will be in charge of testing all packages with non-Wolfi Elastic Agent docker images: https://buildkite.com/elastic/integrations-schedule-weekly
 
