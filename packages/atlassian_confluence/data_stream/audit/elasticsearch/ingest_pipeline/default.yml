@@ -350,11 +350,19 @@ processors:
             if(ctx.confluence?.audit?.affected_objects[j]?.type == 'Group') {
               String group_name = ctx.confluence?.audit?.affected_objects[j]?.name;
               String group_id = ctx.confluence?.audit?.affected_objects[j]?.id;
-              if(ctx._config?.atlassian_cloud != null) {
-                  def m = /(.+):(\b[0-9a-f]{8}\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-\b[0-9a-f]{12}\b)$/.matcher(group_name);
-                  if (m.find()) {
-                    group_name = m.group(1);
-                    group_id = m.group(2);
+              if(ctx._config?.atlassian_cloud != null && group_name != null) {
+                  // Cloud renders groups as '<groupName>:<groupId>'
+                  // (https://community.developer.atlassian.com/t/adding-groupid-to-audit-logs/45177).
+                  // Split on the last ':' only when a 36-char UUID follows; checking length and
+                  // suffix first keeps the regex work bounded (avoids the Painless regex limit
+                  // that unanchored patterns can hit on long names).
+                  int sep = group_name.lastIndexOf(':');
+                  if (sep > 0 && group_name.length() - sep - 1 == 36) {
+                    String suffix = group_name.substring(sep + 1);
+                    if (suffix ==~ /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/) {
+                      group_name = group_name.substring(0, sep);
+                      group_id = suffix;
+                    }
                   }
               }
               if(['audit.logging.summary.group.created', 'audit.logging.summary.group.deleted', 'Group created', 'Group deleted'].contains(ctx.event.action)) {
