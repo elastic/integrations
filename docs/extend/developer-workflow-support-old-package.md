@@ -7,224 +7,222 @@ mapped_pages:
 
 When a bug fix needs to be released for an older package version, the backport workflow handles most of the process automatically: branch creation, cherry-picking, changelog syncing, and PR assignment. The steps below cover how to set up a backport branch and apply a fix. For example: in this [PR](https://github.com/elastic/integrations/pull/3688) (AWS package version 1.23.4), support for Kibana version 7.x was dropped and the AWS package version was bumped from 1.19.5 to 1.20.0. A bug was later found in the EC2 dashboard that needed to be fixed for Kibana version 7.x, so instead of adding a new AWS package version 1.23.5, a fix was needed between 1.19.5 and 1.20.0 — creating a new version (for example, 1.19.6) based on 1.19.5.
 
-**Overview of the process:**
+## Overview of the process
 
-1. Find the git commit that introduced the target package version.
-2. Open a PR adding a new entry to `.backports.yml` *(skip if the branch already exists)* — CI validates and dry-runs the branch creation, and the branch is created automatically on merge.
-3. Create a PR with the bug fix against that backport branch.
-4. Update the changelog in `main` to include the new version.
+1. [Find the git commit for the target package version](#step-1-find-the-git-commit-for-the-target-package-version)
+2. [Add a new entry to `.backports.yml` and open a PR](#step-2-add-a-new-entry-to-backportsyml-and-open-a-pr) *(skip if the branch already exists)*
+3. [Create a PR for the bug fix](#step-3-create-a-pr-for-the-bug-fix)
+4. [Update the changelog in main](#step-4-update-changelog-in-main)
 
 > The [backport checklist comment](#backport-checklist-comment) on PRs targeting `main` drives step 3 automatically for most cases — tick the branches you want and the workflow creates the backport PRs on merge.
 
-**Detailed steps:**
+### Step 1: Find the git commit for the target package version
 
-1. **Find the git commit for the target package version**
+In the example above, the commit to be fixed is the one right before this [PR](https://github.com/elastic/integrations/pull/3688) updating package `aws`:
 
-    In the example above, the commit to be fixed is the one right before this [PR](https://github.com/elastic/integrations/pull/3688) updating package `aws`:
+* Using the web:
 
-    * Using the web:
+    * Look for the merge commit of the PR
 
-        * Look for the merge commit of the PR
+        * [https://github.com/elastic/integrations/commit/aa63e1f6a61d2a017e1f88af2735db129cc68e0c](https://github.com/elastic/integrations/commit/aa63e1f6a61d2a017e1f88af2735db129cc68e0c)
+        * It can be found as one of the last messages in the PR ![merged commit](images/merge_commit_message.png "")
+        * And then show the previous commits for that changeset inside the package folder (e.g. `packages/aws`):
+        * [https://github.com/elastic/integrations/commits/aa63e1f6a61d2a017e1f88af2735db129cc68e0c/packages/aws/](https://github.com/elastic/integrations/commits/aa63e1f6a61d2a017e1f88af2735db129cc68e0c/packages/aws/) ![commits from package](images/browse_package_commits.png "")
 
-            * [https://github.com/elastic/integrations/commit/aa63e1f6a61d2a017e1f88af2735db129cc68e0c](https://github.com/elastic/integrations/commit/aa63e1f6a61d2a017e1f88af2735db129cc68e0c)
-            * It can be found as one of the last messages in the PR ![merged commit](images/merge_commit_message.png "")
-            * And then show the previous commits for that changeset inside the package folder (e.g. `packages/aws`):
-            * [https://github.com/elastic/integrations/commits/aa63e1f6a61d2a017e1f88af2735db129cc68e0c/packages/aws/](https://github.com/elastic/integrations/commits/aa63e1f6a61d2a017e1f88af2735db129cc68e0c/packages/aws/) ![commits from package](images/browse_package_commits.png "")
+* Using the command line:
 
-    * Using the command line:
+    * Using the helper script `dev/scripts/get_release_commit.sh`, which finds the commit directly from the package name and version:
 
-        * Using the helper script `dev/scripts/get_release_commit.sh`, which finds the commit directly from the package name and version:
+        Syntax:
+        ```bash
+        ./dev/scripts/get_release_commit.sh -p <package_name> -v <version>
+        ```
 
-            Syntax:
-            ```bash
-            ./dev/scripts/get_release_commit.sh -p <package_name> -v <version>
-            ```
+        Example:
+        ```bash
+        $ ./dev/scripts/get_release_commit.sh -p aws -v 1.19.5
+        8cb321075afb9b77ea965e1373a03a603d9c9796
+        ```
 
-            Example:
-            ```bash
-            $ ./dev/scripts/get_release_commit.sh -p aws -v 1.19.5
-            8cb321075afb9b77ea965e1373a03a603d9c9796
-            ```
+    * Alternatively, using `git log`:
 
-        * Alternatively, using `git log`:
+        Syntax:
+        ```bash
+        git log --grep "#<pr_id>" -- packages/<package_name>
+        git log -n 1 <merge_commit>^ -- packages/<package_name>
+        ```
 
-            Syntax:
-            ```bash
-            git log --grep "#<pr_id>" -- packages/<package_name>
-            git log -n 1 <merge_commit>^ -- packages/<package_name>
-            ```
+        Example:
+        ```bash
+        $ git log --grep "#3688" -- packages/aws
+        commit aa63e1f6a61d2a017e1f88af2735db129cc68e0c
+        Author: Joe Reuter <xx@email.de>
+        Date:   Mon Aug 8 17:14:55 2022 +0200
 
-            Example:
-            ```bash
-            $ git log --grep "#3688" -- packages/aws
-            commit aa63e1f6a61d2a017e1f88af2735db129cc68e0c
-            Author: Joe Reuter <xx@email.de>
-            Date:   Mon Aug 8 17:14:55 2022 +0200
+            Inline all aws dashboards (#3688)
 
-                Inline all aws dashboards (#3688)
+            * inline all aws dashboards
 
-                * inline all aws dashboards
+            * format
 
-                * format
+            * apply the right format
 
-                * apply the right format
+            * inline again
 
-                * inline again
+            * format
+        $ git log -n 1 aa63e1f6a61d2a017e1f88af2735db129cc68e0c^ -- packages/aws
+        commit 8cb321075afb9b77ea965e1373a03a603d9c9796
+        Author: Mario Castro <xx@gmail.com>
+        Date:   Thu Aug 4 16:52:06 2022 +0200
 
-                * format
-            $ git log -n 1 aa63e1f6a61d2a017e1f88af2735db129cc68e0c^ -- packages/aws
-            commit 8cb321075afb9b77ea965e1373a03a603d9c9796
-            Author: Mario Castro <xx@gmail.com>
-            Date:   Thu Aug 4 16:52:06 2022 +0200
+            Move lightweight manifest to integration for EBS data stream (#3856)
+        ```
 
-                Move lightweight manifest to integration for EBS data stream (#3856)
-            ```
+### Step 2: Add a new entry to `.backports.yml` and open a PR
 
-2. **Add a new entry to `.backports.yml` and open a PR**
+The backport branch is created automatically when a new entry is merged into `.backports.yml`.
 
-    The backport branch is created automatically when a new entry is merged into `.backports.yml`.
+- **Recommended: use the `backport add-entry` subcommand**
 
-    **Recommended: use the `backport add-entry` subcommand**
+  This command resolves the base commit automatically (combining steps 1 and 2) and inserts the entry in the correct position in the file. Build the tool from the repository root first:
 
-    This command resolves the base commit automatically (combining steps 1 and 2) and inserts the entry in the correct position in the file. Build the tool from the repository root first:
+  ```bash
+  # Requires Go 1.26+ (see cmd/backport/go.mod)
+  go build -C cmd/backport -o "$PWD/build/backport" .
+  ```
 
-    ```bash
-    # Requires Go 1.26+ (see cmd/backport/go.mod)
-    go build -C cmd/backport -o "$PWD/build/backport" .
-    ```
+  Then run:
 
-    Then run:
+  ```bash
+  ./build/backport add-entry <package_name> <base_version>
+  ```
 
-    ```bash
-    ./build/backport add-entry <package_name> <base_version>
-    ```
+  Example:
+  ```bash
+  $ ./build/backport add-entry aws 1.19.5
+  Added: branch=backport-aws-1.19 base_commit=8cb321075afb9b77ea965e1373a03a603d9c9796
+  ```
 
-    Example:
-    ```bash
-    $ ./build/backport add-entry aws 1.19.5
-    Added: branch=backport-aws-1.19 base_commit=8cb321075afb9b77ea965e1373a03a603d9c9796
-    ```
+- **Alternatively: add the entry manually**
 
-    **Alternatively: add the entry manually**
+  Open a PR adding the entry for the branch you need:
 
-    Open a PR adding the entry for the branch you need:
+  ```yaml
+  - package: <package_name>
+    branch: backport-<package_name>-<major>.<minor>
+    base_version: "<version>"
+    base_commit: "<commit_from_step_1>"
+    maintained_until: null
+    archived: false
+    remove_other_packages: true
+  ```
 
-    ```yaml
-    - package: <package_name>
-      branch: backport-<package_name>-<major>.<minor>
-      base_version: "<version>"
-      base_commit: "<commit_from_step_1>"
-      maintained_until: null
-      archived: false
-      remove_other_packages: true
-    ```
+  Example for the `aws` package at version `1.19.5`:
 
-    Example for the `aws` package at version `1.19.5`:
+  ```yaml
+  - package: aws
+    branch: backport-aws-1.19
+    base_version: "1.19.5"
+    base_commit: "8cb321075afb9b77ea965e1373a03a603d9c9796"
+    maintained_until: null
+    archived: false
+    remove_other_packages: true
+  ```
 
-    ```yaml
-    - package: aws
-      branch: backport-aws-1.19
-      base_version: "1.19.5"
-      base_commit: "8cb321075afb9b77ea965e1373a03a603d9c9796"
-      maintained_until: null
-      archived: false
-      remove_other_packages: true
-    ```
+  Fields:
 
-    Fields:
+  * **`package`** — required. Package name as defined in the `name` field of `manifest.yml`.
+  * **`branch`** — required. Name of the backport branch to create, following the format `backport-<package_name>-<major>.<minor>`.
+  * **`base_version`** — required. The package version to branch from (e.g. `1.19.5`, `1.0.0-beta1`).
+  * **`base_commit`** — required. The commit SHA found in the previous step.
+  * **`maintained_until`** — optional. `null` for a new active branch. Set to a `YYYY-MM-DD` date when the branch has a known end-of-life: the branch is automatically excluded from the checklist and branch creation once that date passes (strictly before today in UTC). Prefer this over `archived: true` when the end-of-life date is known in advance.
+  * **`archived`** — required. `false` for a new active branch. Set to `true` to immediately exclude the branch from the checklist and branch creation, with no fixed end-of-life date. Archiving does **not** delete the branch — packages can still be published from it; archiving only removes it from automated tooling.
+  * **`remove_other_packages`** — required. `true`: the target package is kept along with any `requires.*` dependencies and packages that own `.link` file sources referenced by the target; all others are removed from `packages/`. `false`: all packages are kept. Set to `true` for the standard case — it keeps the branch lean and avoids running tests for unrelated packages on every PR.
 
-    * **`package`** — required. Package name as defined in the `name` field of `manifest.yml`.
-    * **`branch`** — required. Name of the backport branch to create, following the format `backport-<package_name>-<major>.<minor>`.
-    * **`base_version`** — required. The package version to branch from (e.g. `1.19.5`, `1.0.0-beta1`).
-    * **`base_commit`** — required. The commit SHA found in the previous step.
-    * **`maintained_until`** — optional. `null` for a new active branch. Set to a `YYYY-MM-DD` date when the branch has a known end-of-life: the branch is automatically excluded from the checklist and branch creation once that date passes (strictly before today in UTC). Prefer this over `archived: true` when the end-of-life date is known in advance.
-    * **`archived`** — required. `false` for a new active branch. Set to `true` to immediately exclude the branch from the checklist and branch creation, with no fixed end-of-life date. Archiving does **not** delete the branch — packages can still be published from it; archiving only removes it from automated tooling.
-    * **`remove_other_packages`** — required. `true`: the target package is kept along with any `requires.*` dependencies and packages that own `.link` file sources referenced by the target; all others are removed from `packages/`. `false`: all packages are kept. Set to `true` for the standard case — it keeps the branch lean and avoids running tests for unrelated packages on every PR.
+Once the PR is opened, CI automatically:
 
-    Once the PR is opened, CI automatically:
+* Validates the new entry schema (`check-backports-inventory`)
+* Runs a **dry run** of the branch creation, which verifies that the package is published, the commit exists, the commit publishes the expected version, and the branch does not already exist — without pushing anything
 
-    * Validates the new entry schema (`check-backports-inventory`)
-    * Runs a **dry run** of the branch creation, which verifies that the package is published, the commit exists, the commit publishes the expected version, and the branch does not already exist — without pushing anything
+The PR requires review from the `elastic/ecosystem` team (they are the CODEOWNERS of `.backports.yml`). Once merged to `main`, the branch `backport-<package_name>-<major>.<minor>` is created and pushed automatically. A comment is posted on the merged PR confirming success or failure of the branch creation.
 
-    The PR requires review from the `elastic/ecosystem` team (they are the CODEOWNERS of `.backports.yml`). Once merged to `main`, the branch `backport-<package_name>-<major>.<minor>` is created and pushed automatically. A comment is posted on the merged PR confirming success or failure of the branch creation.
+When `remove_other_packages: true` is set in `.backports.yml` (the standard case), the backport branch is created with the target package and its required dependencies — all unrelated packages are removed. This keeps the branch lean and avoids running tests for unrelated packages on every PR opened against it.
 
-    When `remove_other_packages: true` is set in `.backports.yml` (the standard case), the backport branch is created with the target package and its required dependencies — all unrelated packages are removed. This keeps the branch lean and avoids running tests for unrelated packages on every PR opened against it.
+### Step 3: Create a PR for the bug fix
 
-3. **Create a PR for the bug fix**
+- **Automatic: via the backport checklist**
 
-    **Automatic: via the backport checklist**
+  If the fix was merged to `main` with checklist branches ticked, the `auto-backport.yml` workflow creates the backport PR automatically — see [Backport checklist comment](#backport-checklist-comment). If the workflow encounters a conflict or error it marks the branch with ⚠️ in the checklist; use `backport_apply.sh` below to resolve it manually.
 
-    If the fix was merged to `main` with checklist branches ticked, the `auto-backport.yml` workflow creates the backport PR automatically — see [Backport checklist comment](#backport-checklist-comment). If the workflow encounters a conflict or error it marks the branch with ⚠️ in the checklist; use `backport_apply.sh` below to resolve it manually.
+- **Manual: use `backport_apply.sh`**
 
-    **Manual: use `backport_apply.sh`**
+  For ad-hoc backports, retries, or fixes applied directly to a backport branch, `backport_apply.sh` handles the entire process: cherry-picking the commit, bumping the patch version, writing the changelog entry, syncing package owners, and opening a PR.
 
-    For ad-hoc backports, retries, or fixes applied directly to a backport branch, `backport_apply.sh` handles the entire process: cherry-picking the commit, bumping the patch version, writing the changelog entry, syncing package owners, and opening a PR.
+  ```bash
+  # Basic usage
+  dev/scripts/backport_apply.sh \
+    --sha <merge_commit_sha> \
+    --package <package_name> \
+    --target <branch_or_version> \
+    --open-pr
 
-    ```bash
-    # Basic usage
-    dev/scripts/backport_apply.sh \
-      --sha <merge_commit_sha> \
-      --package <package_name> \
-      --target <branch_or_version> \
-      --open-pr
+  # With assignee resolution (pass the original PR number on main)
+  dev/scripts/backport_apply.sh \
+    --sha <merge_commit_sha> \
+    --package <package_name> \
+    --target <branch_or_version> \
+    --open-pr \
+    --origin-pr-number <pr_number>
+  ```
 
-    # With assignee resolution (pass the original PR number on main)
-    dev/scripts/backport_apply.sh \
-      --sha <merge_commit_sha> \
-      --package <package_name> \
-      --target <branch_or_version> \
-      --open-pr \
-      --origin-pr-number <pr_number>
-    ```
+  Required arguments:
 
-    Required arguments:
+  | Argument | Description |
+  |----------|-------------|
+  | `--sha` | Merge commit SHA of the bug fix PR on `main` to cherry-pick (minimum 8 characters). |
+  | `--package` | Package name as it appears in `manifest.yml`. |
+  | `--target` | Version series (e.g. `6.14`) or full branch name (e.g. `backport-aws-6.14`); the branch name is derived automatically from the version series. |
 
-    | Argument | Description |
-    |----------|-------------|
-    | `--sha` | Merge commit SHA of the bug fix PR on `main` to cherry-pick (minimum 8 characters). |
-    | `--package` | Package name as it appears in `manifest.yml`. |
-    | `--target` | Version series (e.g. `6.14`) or full branch name (e.g. `backport-aws-6.14`); the branch name is derived automatically from the version series. |
+  Common optional flags:
 
-    Common optional flags:
+  | Flag | Description |
+  |------|-------------|
+  | `--open-pr` | Create a GitHub PR after pushing the working branch. |
+  | `--dry-run` | Commit locally and skip push and PR creation; use to review the result before opening a PR. |
+  | `--origin-pr-number` | Number of the source PR on `main`; used to auto-assign the backport PR to the original author or merger. Optional — omit if running outside a PR context. |
 
-    | Flag | Description |
-    |------|-------------|
-    | `--open-pr` | Create a GitHub PR after pushing the working branch. |
-    | `--dry-run` | Commit locally and skip push and PR creation; use to review the result before opening a PR. |
-    | `--origin-pr-number` | Number of the source PR on `main`; used to auto-assign the backport PR to the original author or merger. Optional — omit if running outside a PR context. |
+  What the script does, in order:
 
-    What the script does, in order:
+  1. Fetches the backport branch and creates a local working branch (`auto-backport/<pkg>-<version>-<sha8>`).
+  2. Cherry-picks `<sha>`, auto-resolving version-only conflicts in `manifest.yml`; restores `changelog.yml` to HEAD (it is regenerated in the next step).
+  3. Bumps the patch version in `manifest.yml` and inserts a new `changelog.yml` entry (with a placeholder link that is fixed after the PR is opened).
+  4. Syncs package owners from `main` as a separate commit — see [Package owner synchronization](#package-owner-synchronization).
+  5. With `--open-pr`:
+     1. Pushes the working branch and opens a PR against the backport branch.
+     2. Replaces the placeholder link in `changelog.yml` with the real backport PR URL and pushes a second `Fix changelog link to backport PR` commit.
 
-    1. Fetches the backport branch and creates a local working branch (`auto-backport/<pkg>-<version>-<sha8>`).
-    2. Cherry-picks `<sha>`, auto-resolving version-only conflicts in `manifest.yml`; restores `changelog.yml` to HEAD (it is regenerated in the next step).
-    3. Bumps the patch version in `manifest.yml` and inserts a new `changelog.yml` entry (with a placeholder link that is fixed after the PR is opened).
-    4. Syncs package owners from `main` as a separate commit — see [Package owner synchronization](#package-owner-synchronization).
-    5. With `--open-pr`:
-       1. Pushes the working branch and opens a PR against the backport branch.
-       2. Replaces the placeholder link in `changelog.yml` with the real backport PR URL and pushes a second `Fix changelog link to backport PR` commit.
+  If the cherry-pick conflicts on files beyond a version-line difference in `manifest.yml`, the script reports the conflicting files and cleans up. In this case, apply the fix manually using the alternative path below.
 
-    If the cherry-pick conflicts on files beyond a version-line difference in `manifest.yml`, the script reports the conflicting files and cleans up. In this case, apply the fix manually using the alternative path below.
+- **Alternative: manual cherry-pick**
 
-    **Alternative: manual cherry-pick**
+  Create a new branch in your own remote (do **not** use a name starting with `backport-`), apply the bug fix, bump the patch version in `manifest.yml`, and add a `changelog.yml` entry. Open a PR targeting the backport branch.
 
-    Create a new branch in your own remote (do **not** use a name starting with `backport-`), apply the bug fix, bump the patch version in `manifest.yml`, and add a `changelog.yml` entry. Open a PR targeting the backport branch.
+  Once this PR is merged, the new version of the package is published automatically. The changelog sync to `main` (step 4) fires automatically — no manual action needed.
 
-    Once this PR is merged, the new version of the package is published automatically. The changelog sync to `main` (step 4) fires automatically — no manual action needed.
+  For subsequent fixes to the same version, no new branch is needed — open a new PR against the same backport branch.
 
-    For subsequent fixes to the same version, no new branch is needed — open a new PR against the same backport branch.
+### Step 4: Update changelog in main
 
-4. **Update changelog in main**
+This step is handled automatically. When a backport PR is merged, the `sync-backport-changelog.yml` workflow fires and opens a PR against `main` that adds the new changelog entry for the backport version. The sync PR is created with two labels:
 
-    This step is handled automatically. When a backport PR is merged, the `sync-backport-changelog.yml` workflow fires and opens a PR against `main` that adds the new changelog entry for the backport version. The sync PR is created with two labels:
+- `backport:sync-changelog` — identifies it as an automated sync PR.
+- `changelog-link-check:skip` — skips the changelog link validation (the entry's link points to the backport PR, not the sync PR itself).
 
-    - `backport:sync-changelog` — identifies it as an automated sync PR.
-    - `changelog-link-check:skip` — skips the changelog link validation (the entry's link points to the backport PR, not the sync PR itself).
+The sync PR is also automatically assigned: the workflow uses the backport PR's author if they are not a bot and have write/maintain/admin access on the repository, otherwise the merger if they are not a bot and have write/maintain/admin access. If neither qualifies, no assignee is set.
 
-    The sync PR is also automatically assigned: the workflow uses the backport PR's author if they are not a bot and have write/maintain/admin access on the repository, otherwise the merger if they are not a bot and have write/maintain/admin access. If neither qualifies, no assignee is set.
+After the workflow runs, a comment is posted on the merged backport PR linking to the sync PR or reporting a failure. No manual action is needed.
 
-    After the workflow runs, a comment is posted on the merged backport PR linking to the sync PR or reporting a failure. No manual action is needed.
-
-    **Retrying a failed sync:** if the workflow posts a failure comment, it includes a `/sync-changelog` retry hint. Any repository member with write, maintain, or admin access can re-trigger the sync by commenting `/sync-changelog` on the original merged backport PR — no dummy commit required. The workflow will overwrite any stale working branch left by the previous attempt and open the sync PR. Commenting on an unmerged PR exits silently with no side effects.
+**Retrying a failed sync:** if the workflow posts a failure comment, it includes a `/sync-changelog` retry hint. Any repository member with write, maintain, or admin access can re-trigger the sync by commenting `/sync-changelog` on the original merged backport PR — no dummy commit required. The workflow will overwrite any stale working branch left by the previous attempt and open the sync PR. Commenting on an unmerged PR exits silently with no side effects.
 
 ## Package owner synchronization
 
