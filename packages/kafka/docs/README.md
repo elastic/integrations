@@ -4,7 +4,7 @@ This integration collects logs and metrics from [Kafka](https://kafka.apache.org
 
 ## Compatibility
 
-The `log` dataset is tested with logs from Kafka 0.9, 1.1.0 and 2.0.0.
+The `log` dataset is tested with logs from Kafka 0.9, 1.1.0, 2.0.0 and Strimzi Kafka 4.1.1.
 
 The `broker`, `consumergroup`, `partition` datastreams are tested with Kafka 0.10.2.1, 1.1.0, 2.1.1, 2.2.2 ,3.6.0, 4.0.0. If you are on any earlier 9.1.x release, you must upgrade to 9.1.3 for Kafka 4.0.0 support.
 
@@ -58,6 +58,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | host.os.codename | OS codename, if any. | keyword |
 | kafka.log.class | Java class the log is coming from. | keyword |
 | kafka.log.component | Component the log is coming from. | keyword |
+| kafka.log.line | Line in Java class the log is coming from. | long |
 | kafka.log.thread | Thread name the log is coming from. | keyword |
 | kafka.log.trace.class | Java class the trace is coming from. | keyword |
 | kafka.log.trace.message | Message part of the trace. | text |
