@@ -239,7 +239,7 @@ As part of the PR that modifies `.backports.yml`, CI automatically:
 - Validates the new inventory schema (`check-backports-inventory` step). In the public `integrations` pipeline this step runs on PRs targeting `main` only — it is skipped on PRs targeting `backport-*` branches, which carry only a subset of packages and would fail the validation unnecessarily. On pushes to `main`, the `integrations-backport-dispatch` pipeline runs its own validation before triggering branch creation.
 - Runs a **dry run** of the branch creation (`trigger-backport-dryrun` step), verifying the commit exists and the branch does not already exist, without pushing anything.
 
-When `remove_other_packages: true` is set in `.backports.yml`, the created branch contains the target package along with any `requires.*` dependencies and packages that own `.link` file sources referenced by the target — all unrelated packages in `packages/` are removed to keep the branch lean.
+When `remove_other_packages: true` is set in `.backports.yml`, the created branch contains the target package along with its `requires.*` dependencies and `.link` file source packages, transitively expanded — all unrelated packages in `packages/` are removed to keep the branch lean.
 
 On pull requests targeting a `backport-*` branch that modify a `changelog.yml` file, the `check-changelog-versions-in-main` step verifies that no changelog version introduced by the PR already exists on `main`, catching sync collisions before merge.
 
