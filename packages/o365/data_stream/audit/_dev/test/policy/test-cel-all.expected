@@ -134,13 +134,14 @@ inputs:
                           //   http://localhost/<tenant>/activity/feed/audit/<contentId>
                           // instead of
                           //   <url>/api/v1.0/<tenant>/activity/feed/audit/<contentId>
-                          // (elastic/sdh-beats#7627). That URL can never be fetched, and
-                          // since it is persisted in the cursor it stalls this data
-                          // stream entirely: the transport-failure branch below rotates
-                          // the queue, which is a no-op while the bad item is the only
-                          // one left, and once the failure threshold is reached the
-                          // single-object error freezes the cursor. Nothing clears it
-                          // short of contentExpiration, up to two weeks later.
+                          // (elastic/sdh-beats#7627). Without this repair such a URL
+                          // would never be fetchable; were it left in the cursor it
+                          // would stall this data stream entirely: the transport-failure
+                          // branch below would rotate the queue, which would be a no-op
+                          // while the bad item is the only one left, and once the
+                          // failure threshold were reached the single-object error would
+                          // freeze the cursor until contentExpiration, up to two weeks
+                          // later.
                           //
                           // The content URL is fully determined by the configured
                           // resource URL, the tenant and the content ID, so rebuild it
@@ -363,12 +364,12 @@ inputs:
                             {
                               "error": {
                                 "code": string(content_resp.StatusCode),
-                                "id": string(content_resp.Status),
+                                "id": content_resp.Status,
                                 "message": "GET " + state.cursor.todo_content[0].contentUri + ": " + (
                                   (size(content_resp.Body) != 0) ?
                                     string(content_resp.Body)
                                   :
-                                    string(content_resp.Status) + " (" + string(content_resp.StatusCode) + ")"
+                                    content_resp.Status + " (" + string(content_resp.StatusCode) + ")"
                                 ),
                               },
                             },
