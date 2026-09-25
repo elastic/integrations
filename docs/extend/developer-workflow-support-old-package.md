@@ -7,6 +7,18 @@ mapped_pages:
 
 When a bug fix needs to be released for an older package version, the backport workflow handles most of the process automatically: branch creation, cherry-picking, changelog syncing, and PR assignment. The steps below cover how to set up a backport branch and apply a fix. For example: in this [PR](https://github.com/elastic/integrations/pull/3688) (AWS package version 1.23.4), support for Kibana version 7.x was dropped and the AWS package version was bumped from 1.19.5 to 1.20.0. A bug was later found in the EC2 dashboard that needed to be fixed for Kibana version 7.x, so instead of adding a new AWS package version 1.23.5, a fix was needed between 1.19.5 and 1.20.0 — creating a new version (for example, 1.19.6) based on 1.19.5.
 
+**Contents:**
+
+- [Overview of the process](#overview-of-the-process)
+  - [Step 1: Find the git commit for the target package version](#step-1-find-the-git-commit-for-the-target-package-version)
+  - [Step 2: Add a new entry to `.backports.yml` and open a PR](#step-2-add-a-new-entry-to-backportsyml-and-open-a-pr)
+  - [Step 3: Create a PR for the bug fix](#step-3-create-a-pr-for-the-bug-fix)
+  - [Step 4: Update changelog in main](#step-4-update-changelog-in-main)
+- [Package owner synchronization](#package-owner-synchronization)
+- [Backport checklist comment](#backport-checklist-comment)
+- [Backport branches](#backport-branches)
+- [Known issues](#known-issues)
+
 ## Overview of the process
 
 1. [Find the git commit for the target package version](#step-1-find-the-git-commit-for-the-target-package-version)
