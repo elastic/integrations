@@ -149,7 +149,7 @@ The backport branch is created automatically when a new entry is merged into `.b
   * **`base_commit`** — required. The commit SHA found in the previous step.
   * **`maintained_until`** — optional. `null` for a new active branch. Set to a `YYYY-MM-DD` date when the branch has a known end-of-life: the branch is automatically excluded from the checklist and branch creation once that date passes (strictly before today in UTC). Prefer this over `archived: true` when the end-of-life date is known in advance.
   * **`archived`** — required. `false` for a new active branch. Set to `true` to immediately exclude the branch from the checklist and branch creation, with no fixed end-of-life date. Archiving does **not** delete the branch — packages can still be published from it; archiving only removes it from automated tooling.
-  * **`remove_other_packages`** — required. `true`: the target package is kept along with any `requires.*` dependencies and packages that own `.link` file sources referenced by the target; all others are removed from `packages/`. `false`: all packages are kept. Set to `true` for the standard case — it keeps the branch lean and avoids running tests for unrelated packages on every PR.
+  * **`remove_other_packages`** — required. `true`: the target package is kept along with its `requires.*` dependencies and `.link` file source packages, transitively expanded; all others are removed from `packages/`. `false`: all packages are kept. Set to `true` for the standard case — it keeps the branch lean and avoids running tests for unrelated packages on every PR.
 
 Once the PR is opened, CI automatically:
 
@@ -158,7 +158,7 @@ Once the PR is opened, CI automatically:
 
 The PR requires review from the `elastic/ecosystem` team (they are the CODEOWNERS of `.backports.yml`). Once merged to `main`, the branch `backport-<package_name>-<major>.<minor>` is created and pushed automatically. A comment is posted on the merged PR confirming success or failure of the branch creation.
 
-When `remove_other_packages: true` is set in `.backports.yml` (the standard case), the backport branch is created with the target package and its required dependencies — all unrelated packages are removed. This keeps the branch lean and avoids running tests for unrelated packages on every PR opened against it.
+When `remove_other_packages: true` is set in `.backports.yml` (the standard case), the backport branch is created with the target package and its `requires.*` dependencies and `.link` source packages, transitively expanded — all unrelated packages are removed. This keeps the branch lean and avoids running tests for unrelated packages on every PR opened against it.
 
 ### Step 3: Create a PR for the bug fix
 
