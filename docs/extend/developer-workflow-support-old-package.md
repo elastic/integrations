@@ -16,7 +16,6 @@ When a bug fix needs to be released for an older package version, the backport w
   - [Step 4: Update changelog in main](#step-4-update-changelog-in-main)
 - [Package owner synchronization](#package-owner-synchronization)
 - [Backport checklist comment](#backport-checklist-comment)
-- [Backport branches](#backport-branches)
 - [Known issues](#known-issues)
 
 ## Overview of the process
