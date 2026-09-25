@@ -251,7 +251,7 @@ The following parameters can be configured when triggering manually from the UI:
 | `BASE_COMMIT` | ✅ | | Commit SHA to branch from (the output of step 1 in the backport guide). |
 | `PACKAGE_NAME` | ✅ | | Package name as defined in `manifest.yml`. |
 | `PACKAGE_VERSION` | ✅ | | Package version to branch from (e.g. `1.5.7`, `1.0.0-beta1`). |
-| `REMOVE_OTHER_PACKAGES` | | `true` | If `true`, the target package and its required dependencies are kept; all unrelated packages are removed from `packages/`. |
+| `REMOVE_OTHER_PACKAGES` | | `true` | If `true`, the target package and its `requires.*` dependencies and `.link` file source packages, transitively expanded, are kept; all unrelated packages are removed from `packages/`. |
 | `BACKPORT_BRANCH_NAME` | | auto | Override the generated branch name (default: `backport-<package>-<major>.<minor>`). |
 | `PR_NUMBER` | | | PR number to notify on completion (posts a comment with success or failure). |
 
