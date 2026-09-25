@@ -133,12 +133,12 @@ When a bug fix needs to be released for an older package version, the backport w
 
     Fields:
 
-    * **`package`** — package name as defined in the `name` field of `manifest.yml`
-    * **`branch`** — name of the backport branch to create, following the format `backport-<package_name>-<major>.<minor>`
-    * **`base_version`** — the package version to branch from (e.g. `1.19.5`, `1.0.0-beta1`)
-    * **`base_commit`** — the commit SHA found in the previous step
-    * **`maintained_until`** — `null` for a new active branch. Set to a `YYYY-MM-DD` date when the branch has a known end-of-life: the branch is automatically excluded from the checklist and branch creation once that date passes (strictly before today in UTC). Prefer this over `archived: true` when the end-of-life date is known in advance.
-    * **`archived`** — `false` for a new active branch. Set to `true` to immediately exclude the branch from the checklist and branch creation, with no fixed end-of-life date. Archiving does **not** delete the branch — packages can still be published from it; archiving only removes it from automated tooling.
+    * **`package`** — required. Package name as defined in the `name` field of `manifest.yml`.
+    * **`branch`** — required. Name of the backport branch to create, following the format `backport-<package_name>-<major>.<minor>`.
+    * **`base_version`** — required. The package version to branch from (e.g. `1.19.5`, `1.0.0-beta1`).
+    * **`base_commit`** — required. The commit SHA found in the previous step.
+    * **`maintained_until`** — optional. `null` for a new active branch. Set to a `YYYY-MM-DD` date when the branch has a known end-of-life: the branch is automatically excluded from the checklist and branch creation once that date passes (strictly before today in UTC). Prefer this over `archived: true` when the end-of-life date is known in advance.
+    * **`archived`** — required. `false` for a new active branch. Set to `true` to immediately exclude the branch from the checklist and branch creation, with no fixed end-of-life date. Archiving does **not** delete the branch — packages can still be published from it; archiving only removes it from automated tooling.
     * **`remove_other_packages`** — required. `true`: the target package is kept along with any `requires.*` dependencies and packages that own `.link` file sources referenced by the target; all others are removed from `packages/`. `false`: all packages are kept. Set to `true` for the standard case — it keeps the branch lean and avoids running tests for unrelated packages on every PR.
 
     Once the PR is opened, CI automatically:
