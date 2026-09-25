@@ -1,7 +1,7 @@
 format_version: "3.3.2"
 name: cisco_duo
 title: Cisco Duo
-version: "2.13.0"
+version: "2.14.0"
 description: Collect logs from Cisco Duo with Elastic Agent.
 type: integration
 categories:
@@ -58,57 +58,6 @@ policy_templates:
         division: engineering
         team: security-service-integrations
     inputs:
-      - type: httpjson
-        vars:
-          - name: hostname
-            type: text
-            title: Hostname
-            description: Hostname for the Cisco Duo Admin API (Add https:// before the hostname).
-            required: true
-          - name: integration_key
-            type: text
-            title: Integration Key
-            description: Integration key for the Cisco Duo Admin API.
-            required: true
-          - name: secret_key
-            type: password
-            title: Secret Key
-            description: Secret key for the Cisco Duo Admin API.
-            required: true
-            secret: true
-          - name: interval
-            type: text
-            title: Interval
-            description: "Interval to query Cisco Duo Admin API. NOTE: Supported units for this parameter are h/m/s."
-            multi: false
-            required: true
-            show_user: true
-            default: 1m
-          - name: proxy_url
-            type: text
-            title: Proxy URL
-            multi: false
-            required: false
-            show_user: false
-            description: URL to proxy connections in the form of http\[s\]://<user>:<password>@<server name/ip>:<port>
-          - name: rate_limit
-            type: text
-            title: Rate limit
-            description: "The maximum per endpoint request rate, in requests per second (e.g. 0.5 reqs/sec for 30 reqs/min)."
-            default: "0.5"
-            multi: false
-            required: true
-            show_user: false
-          - name: enable_request_tracer
-            type: bool
-            title: Enable request tracing
-            default: false
-            multi: false
-            required: false
-            show_user: false
-            description: The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-httpjson.html#_request_tracer_filename) for details.
-        title: Collect Cisco Duo logs via API v1
-        description: Collect Cisco Duo Administrator, Offline Enrollment, Summary, and Telephony (legacy) logs
       - type: cel
         vars:
           - name: hostname
@@ -160,6 +109,57 @@ policy_templates:
             description: The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-httpjson.html#_request_tracer_filename) for details.
         title: Collect Cisco Duo logs via API v2
         description: Collect Cisco Duo Activity, Authentication, Telephony, Trust Monitor and User logs
+      - type: httpjson
+        vars:
+          - name: hostname
+            type: text
+            title: Hostname
+            description: Hostname for the Cisco Duo Admin API (Add https:// before the hostname).
+            required: true
+          - name: integration_key
+            type: text
+            title: Integration Key
+            description: Integration key for the Cisco Duo Admin API.
+            required: true
+          - name: secret_key
+            type: password
+            title: Secret Key
+            description: Secret key for the Cisco Duo Admin API.
+            required: true
+            secret: true
+          - name: interval
+            type: text
+            title: Interval
+            description: "Interval to query Cisco Duo Admin API. NOTE: Supported units for this parameter are h/m/s."
+            multi: false
+            required: true
+            show_user: true
+            default: 1m
+          - name: proxy_url
+            type: text
+            title: Proxy URL
+            multi: false
+            required: false
+            show_user: false
+            description: URL to proxy connections in the form of http\[s\]://<user>:<password>@<server name/ip>:<port>
+          - name: rate_limit
+            type: text
+            title: Rate limit
+            description: "The maximum per endpoint request rate, in requests per second (e.g. 0.5 reqs/sec for 30 reqs/min)."
+            default: "0.5"
+            multi: false
+            required: true
+            show_user: false
+          - name: enable_request_tracer
+            type: bool
+            title: Enable request tracing
+            default: false
+            multi: false
+            required: false
+            show_user: false
+            description: The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-httpjson.html#_request_tracer_filename) for details.
+        title: Collect Cisco Duo logs via API v1
+        description: Collect Cisco Duo Administrator, Offline Enrollment, Summary, and Telephony (v1) logs. The Telephony (v1) data stream is deprecated and will be removed in a future release. Enable Telephony v2 in the `Collect Cisco Duo logs via API v2` option instead.
 owner:
   github: elastic/security-service-integrations
   type: elastic
