@@ -35,16 +35,24 @@ streams:
         type: bool
         multi: false
         default: false
-      - name: use_auditd_parser
-        type: bool
-        title: Use auditd parser (experimental)
+      - name: parser_mode
+        type: select
+        title: Parser mode
         description: >
-          When enabled on supported Elastic Agent versions, the integration parses each audit.log line as an auditd log before sending to Elasticsearch. This populates auditd.log.* fields on the agent and skips the ingest pipeline raw parsing stages. Defaults to false while this experimental feature is being validated.
-
-        multi: false
+          Controls how the Elastic Agent processes auditd log records. Requires Elastic Agent 9.6.0 or later; on older agents the setting is ignored.
+          none: records are passed through as raw text and parsed by the ingest pipeline.
+          parse: each record is parsed independently by the agent into auditd.log.* fields, skipping the ingest pipeline raw-parsing stages.
+          coalesce: related records are grouped by sequence number into a single document whose field schema aligns with the auditd_manager integration. Note that coalesce mode emits auditd.data.* fields instead of auditd.log.* fields, so saved searches and custom rules targeting auditd.log.* will not match coalesced documents.
         required: true
-        show_user: false
-        default: false
+        show_user: true
+        options:
+          - value: none
+            text: none
+          - value: parse
+            text: parse
+          - value: coalesce
+            text: coalesce
+        default: none
       - name: processors
         type: yaml
         title: Processors
@@ -54,6 +62,6 @@ streams:
         description: >
           Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
 
-    template_path: log.yml.hbs
+    template_path: filestream.yml.hbs
     title: Auditd logs
-    description: Collect Auditd logs using log input
+    description: Collect Auditd logs

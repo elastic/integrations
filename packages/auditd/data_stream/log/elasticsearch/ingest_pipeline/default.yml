@@ -19,10 +19,11 @@ processors:
       if: ctx.event?.original != null
   - pipeline:
       tag: pipeline_raw_da8a4728
-      if: ctx.auditd?.log?.record_type == null
+      if: ctx.auditd?.log?.record_type == null && ctx.auditd?.message_type == null
       name: '{{ IngestPipeline "raw" }}'
   - script:
       tag: script_process_fields
+      if: ctx.auditd?.log != null
       lang: painless
       source: |
         String trimQuotes(def singleQuote, def doubleQuote, def v) {
@@ -187,6 +188,11 @@ processors:
       field: auditd.log.sequence
       type: long
       ignore_missing: true
+  - set:
+      tag: set_event_sequence_from_auditd_log_b1c8a3f2
+      field: event.sequence
+      copy_from: auditd.log.sequence
+      ignore_empty_value: true
   - convert:
       tag: convert_auditd_log_lport_to_long_0c5e8d66
       field: auditd.log.lport
@@ -2393,6 +2399,12 @@ processors:
       ignore_missing: true
       field: process.exit_code
       type: long
+      on_failure:
+        - rename:
+            tag: rename_process_exit_code_to_auditd_log_exit_on_failure_a411f969
+            field: process.exit_code
+            target_field: auditd.log.exit
+            ignore_missing: true
   - rename:
       tag: rename_auditd_log_cwd_to_process_working_directory_023a984f
       ignore_missing: true
@@ -2514,6 +2526,7 @@ processors:
       field: event.action
       copy_from: auditd.log.record_type
       override: false
+      if: ctx.auditd?.log?.record_type != null
   - lowercase:
       tag: lowercase_event_action_720d270c
       ignore_failure: true
@@ -2620,6 +2633,10 @@ processors:
         - auditd.log.acct
       ignore_failure: true
       ignore_missing: true
+  - pipeline:
+      tag: pipeline_coalesced_7f3b9e12
+      if: ctx.auditd?.message_type != null
+      name: '{{ IngestPipeline "coalesced" }}'
 on_failure:
   - set:
       tag: set_event_kind_72b1902f
