@@ -239,7 +239,7 @@ When `backport_apply.sh` (a wrapper around `backport apply`) creates a backport 
 - **What is synced:** the `owner.github` field in `manifest.yml`, the package's own `.github/CODEOWNERS` line, and any sub-path entries nested under the package (data streams, `kibana/` directory, and other subdirectory overrides).
 - **Commit message:** `Sync <package> package owners from main`
 - **No-op:** if the owners already match `main`, the commit is skipped silently.
-- **Warn-and-continue:** if `main` cannot be fetched, or the package no longer exists on `main`, a warning is printed and the apply continues without syncing. The backport PR is still opened; the CI check below surfaces any remaining mismatch.
+- **Warn-and-continue:** if `main` cannot be fetched, a warning is printed and the apply continues without syncing. If the package no longer exists on `main`, the sync is skipped silently. The backport PR is still opened; the CI check below surfaces any remaining mismatch.
 
 ### CI check: `check-backport-owners`
 
