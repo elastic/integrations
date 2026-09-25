@@ -11,7 +11,7 @@ When a bug fix needs to be released for an older package version, the backport w
 
 - [Overview of the process](#overview-of-the-process)
   - [Step 1: Find the git commit for the target package version](#step-1-find-the-git-commit-for-the-target-package-version)
-  - [Step 2: Add a new entry to `.backports.yml` and open a PR](#step-2-add-a-new-entry-to-backportsyml-and-open-a-pr)
+  - [Step 2: Add a backport branch entry and open a PR](#step-2-add-a-backport-branch-entry-and-open-a-pr)
   - [Step 3: Create a PR for the bug fix](#step-3-create-a-pr-for-the-bug-fix)
   - [Step 4: Update changelog in main](#step-4-update-changelog-in-main)
 - [Package owner synchronization](#package-owner-synchronization)
@@ -21,7 +21,7 @@ When a bug fix needs to be released for an older package version, the backport w
 ## Overview of the process
 
 1. [Find the git commit for the target package version](#step-1-find-the-git-commit-for-the-target-package-version)
-2. [Add a new entry to `.backports.yml` and open a PR](#step-2-add-a-new-entry-to-backportsyml-and-open-a-pr) *(skip if the branch already exists)*
+2. [Add a backport branch entry and open a PR](#step-2-add-a-backport-branch-entry-and-open-a-pr) *(skip if the branch already exists)*
 3. [Create a PR for the bug fix](#step-3-create-a-pr-for-the-bug-fix)
 4. [Update the changelog in main](#step-4-update-changelog-in-main)
 
@@ -89,7 +89,7 @@ In the example above, the commit to be fixed is the one right before this [PR](h
             Move lightweight manifest to integration for EBS data stream (#3856)
         ```
 
-### Step 2: Add a new entry to `.backports.yml` and open a PR
+### Step 2: Add a backport branch entry and open a PR
 
 The backport branch is created automatically when a new entry is merged into `.backports.yml`.
 
