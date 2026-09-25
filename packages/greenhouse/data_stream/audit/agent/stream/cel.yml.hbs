@@ -61,6 +61,15 @@ Rejection enrichment (optional, enrich_rejections):
   1. Collect: identify "Candidate or Prospect rejected" action events and
      correlate each to its sibling "RejectionDetails" audit event via
      request.id. Extract the application_id from unambiguous (1:1) matches.
+     The API does not document result ordering, so the sibling may land on
+     a neighbouring page. To avoid page-local misses or false 1:1 matches,
+     the {request.id, application_id} pairs of every RejectionDetails seen
+     are carried in the cursor for two pages (rd_prev, rd_prev2), and each
+     rejection action is resolved only after the following page has been
+     seen: actions on a page are held in the cursor (pending_actions) for
+     exactly one evaluation when more pages follow, or when no sibling was
+     found on the final page of a window (it may arrive in the next poll).
+     All other events are emitted immediately.
 
   2. Fetch (batched): a single call to rejection_details retrieves all
      matched application_ids at once; notes are batch-fetched similarly.
@@ -92,6 +101,11 @@ Cursor:
     Cleared when the window completes; preserved when an expired PIT
     forces a retry of the same window.
   pit_id, search_after — pagination state; cleared between poll intervals.
+  rd_prev, rd_prev2 — compact RejectionDetails pairs from the previous two
+    pages, used to correlate rejection actions across page boundaries.
+  pending_actions — rejection action events held for one evaluation until
+    the following page has been seen. Preserved across PIT-expiry retries
+    (duplicates are collapsed by the ingest pipeline fingerprint).
 --}}
 program: |-
   // 1. Resolve auth token (sequential state pipeline — avoids nesting the event fetch inside the auth block).
@@ -184,7 +198,8 @@ program: |-
         ).do_request().as(resp,
           (resp.StatusCode == 200) ?
             resp.Body.decode_json().as(body,
-              // 3. Collect: page metadata and per-event rejection correlations.
+              // 3. Collect: page metadata, the RejectionDetails seen on this page, and the
+              //    rejection action events that need correlating.
               {
                 "results": body.?results.orValue([]),
                 "has_more": body.?paging.next_search_after.orValue(null) != null,
@@ -195,216 +210,241 @@ program: |-
                   :
                     prev_max
                 ),
-                // Pre-filter RejectionDetails events once (O(n)) to avoid an O(n²) scan per rejection event.
-                "correlations": body.?results.orValue([]).filter(rd_e,
-                  rd_e.?event.target_type.orValue("") == "RejectionDetails" &&
-                  rd_e.?event.type.orValue("") == "data_change_create" &&
-                  has(rd_e.?event.meta.application_id)
-                ).as(rd_events,
-                  // For each event: n=-1 (not a rejection), n=0 (no match), n=1 (matched), n>1 (ambiguous).
-                  body.?results.orValue([]).map(e,
-                    !(
-                      state.enrich_rejections && e.?event.type.orValue("") == "action" &&
-                      e.?event.target_type.orValue("") == "Candidate or Prospect rejected"
-                    ) ?
-                      {"n": -1, "app_id": "", "ambiguous_ids": []}
-                    :
-                      // Guard: require a non-empty request.id to avoid spurious matches when both events lack one.
-                      rd_events.filter(rd,
-                        e.?request.id.orValue("") != "" &&
-                        rd.?request.id.orValue("") == e.?request.id.orValue("")
-                      ).as(matches,
-                        {
-                          "n": matches.size(),
-                          "app_id": (matches.size() == 1) ? string(int(matches[0].event.meta.application_id)) : "",
-                          "ambiguous_ids": (matches.size() > 1) ? matches.map(m, string(int(m.event.meta.application_id))) : [],
-                        }
-                      )
-                  )
+                // Compact {request.id, application_id} pairs for the RejectionDetails on this page.
+                "rd_now": !state.enrich_rejections ? [] :
+                  body.?results.orValue([]).filter(rd_e,
+                    rd_e.?event.target_type.orValue("") == "RejectionDetails" &&
+                    rd_e.?event.type.orValue("") == "data_change_create" &&
+                    has(rd_e.?event.meta.application_id) &&
+                    rd_e.?request.id.orValue("") != ""
+                  ).map(rd_e, {"r": rd_e.request.id, "a": string(int(rd_e.event.meta.application_id))}),
+                // Rejection action events on this page (empty when enrichment is disabled).
+                "acts_now": body.?results.orValue([]).filter(e,
+                  state.enrich_rejections && e.?event.type.orValue("") == "action" &&
+                  e.?event.target_type.orValue("") == "Candidate or Prospect rejected"
                 ),
-              }.as(pg,
-                // 4. Fetch: batch-retrieve rejection_details for all unambiguous matches.
-                (pg.correlations.filter(c, c.n == 1).size() > 0 ?
-                  request(
-                    "GET",
-                    state.harvest_url.trim_right("/") + "/v3/rejection_details?application_ids=" +
-                    pg.correlations.map(c, c.n == 1, c.app_id).join(",")
-                  ).with(pg.harvest_hdr).do_request().as(rd_resp,
-                    {"status": rd_resp.StatusCode, "data": (rd_resp.StatusCode == 200) ? rd_resp.Body.decode_json() : []}
+                // Everything else is emitted unchanged. If enrichment was switched off while
+                // actions were held, release them unchanged too.
+                "passthrough": body.?results.orValue([]).filter(e,
+                  !(
+                    state.enrich_rejections && e.?event.type.orValue("") == "action" &&
+                    e.?event.target_type.orValue("") == "Candidate or Prospect rejected"
                   )
-                :
-                  {"status": 200, "data": []}
-                ).as(rd_fetch,
-                  // Build lookup maps keyed by application_id, rejection reason id, and note id.
-                  {
-                    "rd_map": rd_fetch.data.transformMapEntry(_, rd,
-                      {string(int(rd.application_id)): rd}
-                    ),
-                    "reason_map": rd_fetch.data.map(rd, rd.?rejection_reason_id.orValue(null) != null, string(int(rd.rejection_reason_id))).as(rr_ids,
-                      // Deduplicate: zip with self produces {id: id} map; keys() extracts the unique ids.
-                      rr_ids.zip(rr_ids).keys()
-                    ).as(unique_rr_ids,
-                      unique_rr_ids.size() > 0 ?
-                        unique_rr_ids.map(id,
-                          request(
-                            "GET",
-                            state.harvest_url.trim_right("/") + "/v3/rejection_reasons/" + id
-                          ).with(pg.harvest_hdr).do_request().as(rr_resp,
-                            (rr_resp.StatusCode == 200) ?
-                              {"id": id, "val": rr_resp.Body.decode_json()}
-                            :
-                              {"id": id, "error": "rejection_reason fetch failed: HTTP " + string(rr_resp.StatusCode)}
-                          )
-                        ).transformMapEntry(_, r, {r.id: has(r.val) ? r.val : {"_error": r.error}})
-                      :
-                        {}
-                    ),
-                    "note_map": rd_fetch.data.map(rd, rd.?rejection_note_id.orValue(null) != null, string(int(rd.rejection_note_id))).as(note_ids,
-                      note_ids.size() > 0 ?
+                ) + (state.enrich_rejections ? [] : state.?cursor.pending_actions.orValue([])),
+                // Rejection actions held from the previous evaluation; all of their neighbouring
+                // pages have now been seen, so they are resolved in this evaluation.
+                "held": state.enrich_rejections ? state.?cursor.pending_actions.orValue([]) : [],
+              }.as(pg,
+                // 4. Correlate against the RejectionDetails from the previous two pages and this one.
+                //    Actions on this page are held for one more evaluation when more pages follow,
+                //    or when no sibling was found on the final page of a window (it may arrive in the
+                //    next poll). An action is never held for more than one evaluation.
+                (state.?cursor.rd_prev2.orValue([]) + state.?cursor.rd_prev.orValue([]) + pg.rd_now).as(rd_all,
+                  (pg.held + pg.acts_now).transformList(i, e,
+                    // Unique application IDs sharing this action's request.id. Dedup protects the
+                    // count when a PIT-expiry retry re-reads a page already carried in rd_prev.
+                    rd_all.filter(rd,
+                      e.?request.id.orValue("") != "" && rd.r == e.?request.id.orValue("")
+                    ).map(rd, rd.a).as(ids, ids.zip(ids).keys()).as(m,
+                      {
+                        "e": e,
+                        "n": m.size(),
+                        "app_id": (m.size() == 1) ? m[0] : "",
+                        "ambiguous_ids": (m.size() > 1) ? m : [],
+                        "hold": i >= pg.held.size() && (pg.has_more || m.size() == 0),
+                      }
+                    )
+                  ).as(corr,
+                    {
+                      "resolve": corr.filter(c, !c.hold),
+                      "hold": corr.filter(c, c.hold).map(c, c.e),
+                    }.as(cx,
+                      // 5. Fetch: batch-retrieve rejection_details for all unambiguous matches.
+                      (cx.resolve.filter(c, c.n == 1).size() > 0 ?
                         request(
                           "GET",
-                          state.harvest_url.trim_right("/") + "/v3/notes?ids=" + note_ids.zip(note_ids).keys().join(",")
-                        ).with(pg.harvest_hdr).do_request().as(n_resp,
-                          n_resp.StatusCode == 200 ?
-                            n_resp.Body.decode_json().transformMapEntry(_, note, {string(int(note.id)): note.?body.orValue("")})
-                          : {"_error": "notes fetch failed: HTTP " + string(n_resp.StatusCode)}
+                          state.harvest_url.trim_right("/") + "/v3/rejection_details?application_ids=" +
+                          cx.resolve.map(c, c.n == 1, c.app_id).as(ids, ids.zip(ids).keys().join(","))
+                        ).with(pg.harvest_hdr).do_request().as(rd_resp,
+                          {"status": rd_resp.StatusCode, "data": (rd_resp.StatusCode == 200) ? rd_resp.Body.decode_json() : []}
                         )
-                      : {}
-                    ),
-                  }.as(lookups,
-                    // 5. Apply: emit events, enriching rejections from the lookup maps.
-                    {
-                      "auth_token": state.auth_token,
-                      "events": pg.results.transformList(i, e,
+                      :
+                        {"status": 200, "data": []}
+                      ).as(rd_fetch,
+                        // Build lookup maps keyed by application_id, rejection reason id, and note id.
                         {
-                          "message": (
-                            (pg.correlations[i].n == -1) ?
-                              e
-                            : (pg.correlations[i].n == 0) ?
-                              e.with(
-                                {
-                                  "event": e.event.with(
-                                    {
-                                      "rejection": {
-                                        "error": "no RejectionDetails audit event found sharing request.id " + e.?request.id.orValue(""),
-                                      },
-                                    }
-                                  ),
-                                }
-                              )
-                            : (pg.correlations[i].n > 1) ?
-                              e.with(
-                                {
-                                  "event": e.event.with(
-                                    {
-                                      "rejection": {
-                                        "error": "ambiguous: " + string(pg.correlations[i].n) + " RejectionDetails events share request.id " + e.?request.id.orValue("") + " (likely a bulk rejection)",
-                                        "ambiguous_application_ids": pg.correlations[i].ambiguous_ids,
-                                      },
-                                    }
-                                  ),
-                                }
-                              )
+                          "rd_map": rd_fetch.data.transformMapEntry(_, rd,
+                            {string(int(rd.application_id)): rd}
+                          ),
+                          "reason_map": rd_fetch.data.map(rd, rd.?rejection_reason_id.orValue(null) != null, string(int(rd.rejection_reason_id))).as(rr_ids,
+                            // Deduplicate: zip with self produces {id: id} map; keys() extracts the unique ids.
+                            rr_ids.zip(rr_ids).keys()
+                          ).as(unique_rr_ids,
+                            unique_rr_ids.size() > 0 ?
+                              unique_rr_ids.map(id,
+                                request(
+                                  "GET",
+                                  state.harvest_url.trim_right("/") + "/v3/rejection_reasons/" + id
+                                ).with(pg.harvest_hdr).do_request().as(rr_resp,
+                                  (rr_resp.StatusCode == 200) ?
+                                    {"id": id, "val": rr_resp.Body.decode_json()}
+                                  :
+                                    {"id": id, "error": "rejection_reason fetch failed: HTTP " + string(rr_resp.StatusCode)}
+                                )
+                              ).transformMapEntry(_, r, {r.id: has(r.val) ? r.val : {"_error": r.error}})
                             :
-                              pg.correlations[i].app_id.as(app_id,
-                                (rd_fetch.status != 200) ?
-                                  e.with(
-                                    {
-                                      "event": e.event.with(
-                                        {
-                                          "rejection": {
-                                            "application_id": app_id,
-                                            "error": "rejection_details fetch failed: " + string(rd_fetch.status),
-                                          },
-                                        }
-                                      ),
-                                    }
-                                  )
-                                : !(app_id in lookups.rd_map) ?
-                                  // API returned 200 but no record for this application — flag as a diagnosable failure.
-                                  e.with(
-                                    {
-                                      "event": e.event.with(
-                                        {
-                                          "rejection": {
-                                            "application_id": app_id,
-                                            "error": "rejection_details returned 200 but contained no record for application_id " + app_id,
-                                          },
-                                        }
-                                      ),
-                                    }
-                                  )
-                                :
-                                  lookups.rd_map[app_id].as(rd,
-                                    {
-                                      "reason": rd.?rejection_reason_id.orValue(null).as(rr_id,
-                                        (rr_id != null) ? lookups.reason_map[?string(int(rr_id))].orValue(null) : null
-                                      ),
-                                      "notes_text": rd.?rejection_note_id.orValue(null).as(rn_id,
-                                        (rn_id != null) ? lookups.note_map[?string(int(rn_id))].orValue("") : ""
-                                      ),
-                                      // Non-empty when the batch notes fetch returned non-200.
-                                      "note_error": lookups.note_map[?"_error"].orValue(""),
-                                    }.as(enrich,
-                                      e.with(
-                                        {
-                                          "event": e.event.with(
-                                            {
-                                              "rejection": {
-                                                "application_id": app_id,
-                                                ?"candidate_id": (rd.?candidate_id.orValue(null) == null) ?
-                                                  optional.none()
-                                                :
-                                                  optional.of(string(int(rd.candidate_id))),
-                                                ?"reason": (enrich.reason == null) ?
-                                                  // No rejection_reason_id on the record; try the legacy notes fallback.
-                                                  // Parenthesised: CEL only allows a nested ternary in the true branch when wrapped.
-                                                  (
-                                                    enrich.notes_text.startsWith("Reason: ") ?
-                                                      optional.of(
-                                                        {
-                                                          "name": enrich.notes_text.split("\n")[0].trim_prefix("Reason: "),
-                                                          "type": "",
-                                                        }
-                                                      )
-                                                    : optional.none()
-                                                  )
-                                                : ("_error" in enrich.reason) ?
-                                                  // Reason lookup failed; surface the error so it's diagnosable.
-                                                  optional.of({"error": enrich.reason["_error"]})
-                                                :
-                                                  optional.of(
-                                                    {
-                                                      "id": string(int(enrich.reason.id)),
-                                                      "name": enrich.reason.name,
-                                                      "type": enrich.reason.?type.?name.orValue(""),
-                                                    }
-                                                  ),
-                                                ?"notes": (enrich.notes_text == "") ? optional.none() : optional.of(enrich.notes_text),
-                                                ?"notes_error": (enrich.note_error == "") ? optional.none() : optional.of(enrich.note_error),
-                                                ?"rejected_at": rd.?rejected_at,
-                                              },
-                                            }
-                                          ),
-                                        }
-                                      )
-                                    )
-                                  )
+                              {}
+                          ),
+                          "note_map": rd_fetch.data.map(rd, rd.?rejection_note_id.orValue(null) != null, string(int(rd.rejection_note_id))).as(note_ids,
+                            note_ids.size() > 0 ?
+                              request(
+                                "GET",
+                                state.harvest_url.trim_right("/") + "/v3/notes?ids=" + note_ids.zip(note_ids).keys().join(",")
+                              ).with(pg.harvest_hdr).do_request().as(n_resp,
+                                n_resp.StatusCode == 200 ?
+                                  n_resp.Body.decode_json().transformMapEntry(_, note, {string(int(note.id)): note.?body.orValue("")})
+                                : {"_error": "notes fetch failed: HTTP " + string(n_resp.StatusCode)}
                               )
-                          ).encode_json(),
-                        }
-                      ),
-                      "cursor": {
-                        "window_start_time": (pg.has_more || pg.next_max == "") ?
-                          window_start_time
-                        :
-                          pg.next_max,
-                        "max_event_time": pg.has_more ? pg.next_max : "",
-                        "pit_id": pg.has_more ? string(body.paging.pit_id) : "",
-                        "search_after": pg.has_more ? string(body.paging.next_search_after) : "",
-                      },
-                      "want_more": pg.has_more,
-                    }
+                            : {}
+                          ),
+                        }.as(lookups,
+                          // 6. Apply: emit passthrough events unchanged and resolved rejections enriched.
+                          {
+                            "auth_token": state.auth_token,
+                            "events": pg.passthrough.map(e, {"message": e.encode_json()}) + cx.resolve.map(c,
+                              {
+                                "message": c.e.as(e,
+                                  (c.n == 0) ?
+                                    e.with(
+                                      {
+                                        "event": e.event.with(
+                                          {
+                                            "rejection": {
+                                              "error": "no RejectionDetails audit event found sharing request.id " + e.?request.id.orValue(""),
+                                            },
+                                          }
+                                        ),
+                                      }
+                                    )
+                                  : (c.n > 1) ?
+                                    e.with(
+                                      {
+                                        "event": e.event.with(
+                                          {
+                                            "rejection": {
+                                              "error": "ambiguous: " + string(c.n) + " RejectionDetails events share request.id " + e.?request.id.orValue("") + " (likely a bulk rejection)",
+                                              "ambiguous_application_ids": c.ambiguous_ids,
+                                            },
+                                          }
+                                        ),
+                                      }
+                                    )
+                                  :
+                                    c.app_id.as(app_id,
+                                      (rd_fetch.status != 200) ?
+                                        e.with(
+                                          {
+                                            "event": e.event.with(
+                                              {
+                                                "rejection": {
+                                                  "application_id": app_id,
+                                                  "error": "rejection_details fetch failed: " + string(rd_fetch.status),
+                                                },
+                                              }
+                                            ),
+                                          }
+                                        )
+                                      : !(app_id in lookups.rd_map) ?
+                                        // API returned 200 but no record for this application — flag as a diagnosable failure.
+                                        e.with(
+                                          {
+                                            "event": e.event.with(
+                                              {
+                                                "rejection": {
+                                                  "application_id": app_id,
+                                                  "error": "rejection_details returned 200 but contained no record for application_id " + app_id,
+                                                },
+                                              }
+                                            ),
+                                          }
+                                        )
+                                      :
+                                        lookups.rd_map[app_id].as(rd,
+                                          {
+                                            "reason": rd.?rejection_reason_id.orValue(null).as(rr_id,
+                                              (rr_id != null) ? lookups.reason_map[?string(int(rr_id))].orValue(null) : null
+                                            ),
+                                            "notes_text": rd.?rejection_note_id.orValue(null).as(rn_id,
+                                              (rn_id != null) ? lookups.note_map[?string(int(rn_id))].orValue("") : ""
+                                            ),
+                                            // Non-empty when the batch notes fetch returned non-200.
+                                            "note_error": lookups.note_map[?"_error"].orValue(""),
+                                          }.as(enrich,
+                                            e.with(
+                                              {
+                                                "event": e.event.with(
+                                                  {
+                                                    "rejection": {
+                                                      "application_id": app_id,
+                                                      ?"candidate_id": (rd.?candidate_id.orValue(null) == null) ?
+                                                        optional.none()
+                                                      :
+                                                        optional.of(string(int(rd.candidate_id))),
+                                                      ?"reason": (enrich.reason == null) ?
+                                                        // No rejection_reason_id on the record; try the legacy notes fallback.
+                                                        // Parenthesised: CEL only allows a nested ternary in the true branch when wrapped.
+                                                        (
+                                                          enrich.notes_text.startsWith("Reason: ") ?
+                                                            optional.of(
+                                                              {
+                                                                "name": enrich.notes_text.split("\n")[0].trim_prefix("Reason: "),
+                                                                "type": "",
+                                                              }
+                                                            )
+                                                          : optional.none()
+                                                        )
+                                                      : ("_error" in enrich.reason) ?
+                                                        // Reason lookup failed; surface the error so it's diagnosable.
+                                                        optional.of({"error": enrich.reason["_error"]})
+                                                      :
+                                                        optional.of(
+                                                          {
+                                                            "id": string(int(enrich.reason.id)),
+                                                            "name": enrich.reason.name,
+                                                            "type": enrich.reason.?type.?name.orValue(""),
+                                                          }
+                                                        ),
+                                                      ?"notes": (enrich.notes_text == "") ? optional.none() : optional.of(enrich.notes_text),
+                                                      ?"notes_error": (enrich.note_error == "") ? optional.none() : optional.of(enrich.note_error),
+                                                      ?"rejected_at": rd.?rejected_at,
+                                                    },
+                                                  }
+                                                ),
+                                              }
+                                            )
+                                          )
+                                        )
+                                    )
+                                ).encode_json(),
+                              }
+                            ),
+                            "cursor": {
+                              "window_start_time": (pg.has_more || pg.next_max == "") ?
+                                window_start_time
+                              :
+                                pg.next_max,
+                              "max_event_time": pg.has_more ? pg.next_max : "",
+                              "pit_id": pg.has_more ? string(body.paging.pit_id) : "",
+                              "search_after": pg.has_more ? string(body.paging.next_search_after) : "",
+                              "rd_prev": pg.rd_now,
+                              "rd_prev2": state.?cursor.rd_prev.orValue([]),
+                              "pending_actions": cx.hold,
+                            },
+                            "want_more": pg.has_more,
+                          }
+                        )
+                      )
+                    )
                   )
                 )
               )
@@ -429,6 +469,9 @@ program: |-
                 "max_event_time": state.?cursor.max_event_time.orValue(""),
                 "pit_id": "",
                 "search_after": "",
+                "rd_prev": state.?cursor.rd_prev.orValue([]),
+                "rd_prev2": state.?cursor.rd_prev2.orValue([]),
+                "pending_actions": state.?cursor.pending_actions.orValue([]),
               },
               "want_more": false,
             }
