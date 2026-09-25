@@ -60,7 +60,7 @@ setup_dummy_repo() {
     git -C "$tmpdir" add .
     git -C "$tmpdir" commit -q -m "Release flat_pkg 1.0.0"
     mkdir -p "${tmpdir}/.state"
-    git -C "$tmpdir" rev-parse --short=10 HEAD > "${tmpdir}/.state/flat_pkg_1.0.0"
+    git -C "$tmpdir" rev-parse --short HEAD > "${tmpdir}/.state/flat_pkg_1.0.0"
 
     printf 'name: flat_pkg\nversion: 1.1.0\n' > "${tmpdir}/packages/flat_pkg/manifest.yml"
     git -C "$tmpdir" add .
@@ -70,7 +70,7 @@ setup_dummy_repo() {
     printf 'name: nested_pkg\nversion: 2.0.0\n' > "${tmpdir}/packages/group/nested_pkg/manifest.yml"
     git -C "$tmpdir" add .
     git -C "$tmpdir" commit -q -m "Release nested_pkg 2.0.0"
-    git -C "$tmpdir" rev-parse --short=10 HEAD > "${tmpdir}/.state/nested_pkg_2.0.0"
+    git -C "$tmpdir" rev-parse --short HEAD > "${tmpdir}/.state/nested_pkg_2.0.0"
 
     printf 'name: nested_pkg\nversion: 2.1.0\n' > "${tmpdir}/packages/group/nested_pkg/manifest.yml"
     git -C "$tmpdir" add .

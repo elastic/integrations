@@ -61,10 +61,10 @@ COMMITS=()
 while IFS= read -r line; do
     [[ -n "$line" ]] && COMMITS+=("$line")
 done < <(
-    git log --format='%H' \
+    git log --oneline \
         -G "^version: ['\"]?${ESCAPED_VERSION}['\"]?[[:space:]]*$" \
         -- "$MANIFEST" \
-        | sort -u
+        | awk 'NF {print $1}' | sort -u
 )
 
 # Among matching commits, keep only those that *added* (not removed) the version.
@@ -82,5 +82,4 @@ if [[ -z "$FOUND" ]]; then
     exit 1
 fi
 
-# Fixed-length short SHA so callers/tests are not brittle to git's dynamic --abbrev.
-git rev-parse --short=10 "$FOUND"
+echo "$FOUND"
