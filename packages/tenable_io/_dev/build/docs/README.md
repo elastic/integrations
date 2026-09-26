@@ -35,11 +35,11 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
   - While an export job is queued or processing, its status is checked once every "Export Status Poll Interval" (default 30s). Export jobs that Tenable reports as "CANCELLED", "ERROR", or "FINISHED" with failed chunks are abandoned and reported as an error. The same data window is retried with a new export job at the next interval.
   - "Maximum Pages Per Interval" bounds the total number of status checks and chunk downloads per interval. A 12h export status timeout at the default 30s poll interval alone accounts for 1440 of them.
 
-## Agentless-enabled integration
+## Elastic Managed enabled integration
 
-Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and the [Agentless integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
+Elastic Managed integrations are only supported on Elastic Cloud Serverless and Elastic Cloud Hosted deployments. An Elastic Managed integration lets you ingest data from a cloud source while avoiding the orchestration, management, and maintenance associated with standard ingest infrastructure. Elastic runs the collector for you, so you can focus on your data instead of the infrastructure that collects it.
 
-Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments.  This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+For more information, refer to [Elastic Managed integrations](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations) and the [Elastic Managed integrations FAQ](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations-faq).
 
 ## Setup
 

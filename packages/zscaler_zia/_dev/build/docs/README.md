@@ -11,13 +11,13 @@ This module has been tested against the **Zscaler Internet Access version 6.1** 
 
 ## Requirements
 
-### Agentless-enabled integration
+### Elastic Managed enabled integration
 
-Agentless integrations allow you to collect data without having to manage Elastic Agent in your cloud. They make manual agent deployment unnecessary, so you can focus on your data instead of the agent that collects it. For more information, refer to [Agentless integrations](https://www.elastic.co/docs/manage-data/ingest/agentless/agentless-integrations) and the [Agentless integrations FAQ](https://www.elastic.co/docs/troubleshoot/security/agentless-integrations).
+Elastic Managed integrations are only supported on Elastic Cloud Serverless and Elastic Cloud Hosted deployments. An Elastic Managed integration lets you ingest data from a cloud source while avoiding the orchestration, management, and maintenance associated with standard ingest infrastructure. Elastic runs the collector for you, so you can focus on your data instead of the infrastructure that collects it.
 
-Agentless deployments are only supported in Elastic Serverless and Elastic Cloud environments. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+For more information, refer to [Elastic Managed integrations](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations) and the [Elastic Managed integrations FAQ](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations-faq).
 
-**NOTE:** When using an agentless deployment, only the **Sandbox Report** data stream is available. Sandbox Report uses the API-based CEL input, which is compatible with agentless mode. Other data streams (Alerts, Audit, DNS, Endpoint DLP, Firewall, Tunnel, Web) require TCP or HTTP Endpoint inputs, which are not supported in agentless deployments. To collect data from these data streams, use Elastic Agent.
+**NOTE:** When using an Elastic Managed deployment, only the **Sandbox Report** data stream is available. Sandbox Report uses the API-based CEL input, which is compatible with Elastic Managed mode. Other data streams (Alerts, Audit, DNS, Endpoint DLP, Firewall, Tunnel, Web) require TCP or HTTP Endpoint inputs, which are not supported in Elastic Managed deployments. To collect data from these data streams, use Elastic Agent.
 
 ### Agent-based installation
 

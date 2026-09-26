@@ -24,11 +24,15 @@ Elastic Agent must be installed for standard deployments. For more details, chec
 
 ### Elastic Managed deployment
 
-This integration supports Elastic Managed deployment, where the collection agent runs in Elastic's cloud rather than inside your network. Because the agent must still speak LDAP to an Active Directory server, the server must be reachable over the public internet on TCP port 636 (LDAPS). Plain LDAP on port 389 is not accepted in this configuration.
+Elastic Managed integrations are only supported on Elastic Cloud Serverless and Elastic Cloud Hosted deployments. An Elastic Managed integration lets you ingest data from a cloud source while avoiding the orchestration, management, and maintenance associated with standard ingest infrastructure. Elastic runs the collector for you, so you can focus on your data instead of the infrastructure that collects it. This functionality is in beta and is subject to change. Beta features are not subject to the support SLA of official GA features.
+
+For more information, refer to [Elastic Managed integrations](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations) and the [Elastic Managed integrations FAQ](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations-faq).
+
+Because the agent must still speak LDAP to an Active Directory server, the server must be reachable over the public internet on TCP port 636 (LDAPS). Plain LDAP on port 389 is not accepted in this configuration.
 
 Elastic Managed deployment works with:
 
-- **Microsoft Entra Domain Services (Azure AD DS)** — when the "Allow secure LDAP access over the internet" option is enabled on the managed domain, the domain is assigned a public IP address on port 636. Microsoft recommends restricting inbound access to known source IP ranges using an NSG rule. See [Configure secure LDAP for Microsoft Entra Domain Services](https://learn.microsoft.com/en-us/entra/identity/domain-services/tutorial-configure-ldaps) for setup instructions. Check Elastic's documentation for the current agentless egress IP ranges to use in your NSG rule.
+- **Microsoft Entra Domain Services (Azure AD DS)** — when the "Allow secure LDAP access over the internet" option is enabled on the managed domain, the domain is assigned a public IP address on port 636. Microsoft recommends restricting inbound access to known source IP ranges using an NSG rule. See [Configure secure LDAP for Microsoft Entra Domain Services](https://learn.microsoft.com/en-us/entra/identity/domain-services/tutorial-configure-ldaps) for setup instructions. Check Elastic's documentation for the current Elastic Managed egress IP ranges to use in your NSG rule.
 - **JumpCloud Cloud LDAP** — `ldap.jumpcloud.com:636` is a public endpoint and requires no additional configuration.
 - **Okta LDAP Interface** — `<org>.ldap.okta.com:636` is a public endpoint and requires no additional configuration.
 

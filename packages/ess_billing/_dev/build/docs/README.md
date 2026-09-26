@@ -42,7 +42,7 @@ For private cloud, or admin users, the cloud endpoint can be altered to match yo
 For step-by-step instructions on how to set up an integration, see the
 [Getting started](https://www.elastic.co/docs/solutions/observability/get-started/quickstart-monitor-hosts-with-elastic-agent) guide.
 
-If you run on Elastic Cloud (Hosted or Serverless), this integration is available [agentless](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) from cluster version 8.17 onward. When agentless deployment is available, you don't need to install an Elastic Agent to gather these metrics.
+If you run on Elastic Cloud (Hosted or Serverless), this integration is available as an [Elastic Managed integration](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations) from cluster version 8.17 onward. When an Elastic Managed integration is available, you don't need to install an Elastic Agent to gather these metrics.
 
 ## Data streams reference
 
