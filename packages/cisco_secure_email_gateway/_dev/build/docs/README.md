@@ -235,6 +235,36 @@ The `log` data stream provides events from Cisco Secure Email Gateway of the fol
 
 {{ event "log" }}
 
+#### metrics
+
+The `metrics` data stream collects health and performance metrics from each configured ESA node via the `/esa/api/v2.0/health` REST API endpoint. Metrics include CPU load, RAM utilization, swap utilization, disk I/O, mail queue utilization, work queue depth, PVO quarantine message count, and resource conservation level.
+
+**REST API setup:** Enable the Cisco ESA AsyncOS API and ensure the configured user account has read access to the health endpoint. The API is available at `https://<esa-hostname>/esa/api/v2.0/`.
+
+##### metrics fields
+
+{{ fields "metrics" }}
+
+#### delivery_status
+
+The `delivery_status` data stream collects per-domain mail delivery status metrics from each configured ESA node via the `/esa/api/v2.0/health/delivery_status` REST API endpoint. Each event represents one destination domain and includes active recipients, delivered recipients, soft and hard bounce counts, and current outbound connections.
+
+**REST API setup:** Enable the Cisco ESA AsyncOS API and ensure the configured user account has read access to the health endpoints. The API is available at `https://<esa-hostname>/esa/api/v2.0/`.
+
+##### delivery_status fields
+
+{{ fields "delivery_status" }}
+
+#### system_status
+
+The `system_status` data stream collects overall system status from each configured ESA node via the `/esa/api/v2.0/health/system_status` REST API endpoint. Data includes message rate statistics (1, 5, and 15-minute averages), system gauges (CPU, RAM, disk I/O, queue utilization, active recipients, connection counts), uptime counters, mail system status, and appliance version details.
+
+**REST API setup:** Enable the Cisco ESA AsyncOS API and ensure the configured user account has read access to the health endpoints. The API is available at `https://<esa-hostname>/esa/api/v2.0/`.
+
+##### system_status fields
+
+{{ fields "system_status" }}
+
 ### Vendor documentation links
 
 You can find more information about Cisco Secure Email Gateway logging in the following resources:
