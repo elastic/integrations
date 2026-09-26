@@ -1,0 +1,18 @@
+deployer: tf
+input: aws-s3
+# Bucket listing runs on `interval`, so allow more than one pass.
+wait_for_data_timeout: 20m
+vars:
+  collection_mode: polling
+  bucket_arn: '{{TF_OUTPUT_bucket_arn}}'
+  # Scope collection to the Log Archives root, as the package docs recommend.
+  bucket_list_prefix: '{{TF_OUTPUT_bucket_list_prefix}}'
+  interval: 1m
+  access_key_id: '{{AWS_ACCESS_KEY_ID}}'
+  secret_access_key: '{{AWS_SECRET_ACCESS_KEY}}'
+  session_token: '{{AWS_SESSION_TOKEN}}'
+data_stream:
+  vars:
+    preserve_original_event: true
+assert:
+  hit_count: 4
