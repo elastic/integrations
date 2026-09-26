@@ -349,6 +349,12 @@ For more details on ECS fields, check the [ECS Field Reference](https://www.elas
 | azure.ai_foundry.sku | Stock Keeping Unit that is associated with a particular API Management instance. | keyword |
 | azure.ai_foundry.tenant | The tenant location. | keyword |
 | azure.ai_foundry.truncated | Condition where the response message is too large to fit in a single packet, so it is truncated or cut off. | long |
+| azure.consumer_group | Consumer group. | keyword |
+| azure.enqueued_time | The enqueued time. | date |
+| azure.eventhub | Event hub name. | keyword |
+| azure.offset | Offset. | long |
+| azure.partition_id | Partition ID. | keyword |
+| azure.partition_key | Partition key. | keyword |
 | azure.resource.authorization_rule | Authorization rule | keyword |
 | azure.resource.group | The resource group | keyword |
 | azure.resource.id | Resource ID | keyword |
@@ -356,6 +362,7 @@ For more details on ECS fields, check the [ECS Field Reference](https://www.elas
 | azure.resource.namespace | Resource type/namespace | keyword |
 | azure.resource.provider | The resource group | keyword |
 | azure.resource.type | The type of the resource | keyword |
+| azure.sequence_number | Sequence number. | long |
 | azure.subscription_id | The subscription ID | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |

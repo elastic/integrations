@@ -60,6 +60,13 @@ For Filebeat input documentation, refer to the following pages:
 | aws.s3.bucket.arn | The AWS S3 bucket ARN. | keyword |
 | aws.s3.bucket.name | The AWS S3 bucket name. | keyword |
 | aws.s3.object.key | The AWS S3 Object key. | keyword |
+| azure.consumer_group | Consumer group. | keyword |
+| azure.enqueued_time | The enqueued time. | date |
+| azure.eventhub | Event hub name. | keyword |
+| azure.offset | Offset. | long |
+| azure.partition_id | Partition ID. | keyword |
+| azure.partition_key | Partition key. | keyword |
+| azure.sequence_number | Sequence number. | long |
 | azure.storage.blob.content_type | The content type of the Azure Blob Storage blob object | keyword |
 | azure.storage.blob.name | The name of the Azure Blob Storage blob object | keyword |
 | azure.storage.container.name | The name of the Azure Blob Storage container | keyword |
