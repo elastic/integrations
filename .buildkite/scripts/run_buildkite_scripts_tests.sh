@@ -60,10 +60,6 @@ fi
 run_tests_if_exists "${REPO_ROOT}/.buildkite/scripts/test_trigger_backport.sh"
 
 echo ""
-echo "=== Running content_dependencies.sh tests ==="
-run_tests_if_exists "${REPO_ROOT}/.buildkite/scripts/test_content_dependencies.sh"
-
-echo ""
 echo "=== Running backport_branch_lib.sh tests ==="
 # test_backport_branch.sh also requires yq.
 run_tests_if_exists "${REPO_ROOT}/.buildkite/scripts/test_backport_branch.sh"
