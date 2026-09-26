@@ -77,6 +77,12 @@ elasticsearch:
     supported: true
 ```
 
+A data stream manifest has **one** `elasticsearch:` key, and the index sort lives
+under the same one. Write them as a single block and merge that block into whatever
+`elasticsearch:` the manifest already has — two pasted `elasticsearch:` snippets are a
+duplicate key, and the file silently keeps only one of them. The merged shape is in
+step 4.2 of the migration, and the audit emits it that way.
+
 It asserts the stream is columnar-ready; the 3.7.0 validator rejects it if any
 blocker remains. It is **not** the same as setting a columnar `index_mode`:
 
@@ -100,15 +106,33 @@ migration.
 ### 1. Audit
 
 ```bash
-# one package
+# one package — `kibana/` assets are scanned by default
 .claude/skills/columnar-readiness/scripts/audit.py packages/<pkg>
 
-# whole catalog (~30 s over ~490 packages)
-.claude/skills/columnar-readiness/scripts/audit.py packages/ --catalog
+# one package, dashboards spelled out (same thing), or skipped on a package that
+# ships hundreds of saved objects and whose sort you have already decided
+.claude/skills/columnar-readiness/scripts/audit.py packages/<pkg> --dashboards
+.claude/skills/columnar-readiness/scripts/audit.py packages/<pkg> --no-dashboards
 
-# machine-readable
+# whole catalog (~15-30 s over ~490 packages). Dashboards are OFF here by default;
+# `--dashboards` turns the sort tie-break on for every package and costs ~2x
+.claude/skills/columnar-readiness/scripts/audit.py packages/ --catalog --dashboards
+
+# catalog, only the statuses you care about, written to a file
+.claude/skills/columnar-readiness/scripts/audit.py packages/ --catalog \
+  --status READY --status READY_AFTER_AUTO_FIX --out /tmp/columnar-ready.md
+
+# machine-readable (`both` prints Markdown and JSON)
 .claude/skills/columnar-readiness/scripts/audit.py packages/<pkg> --format json
 ```
+
+| Flag | Default | Effect |
+| --- | --- | --- |
+| `--catalog` | off | PATH is the `packages/` root; prints the catalog summary instead of a per-package report |
+| `--dashboards` / `--no-dashboards` | on for one package, off for `--catalog` | count the fields in `kibana/` saved objects, for the sort tie-break hint and the benchmark workload list. The `_source` consumer scan (C6-C8) runs either way — it is not affected by this flag |
+| `--format markdown\|json\|both` | `markdown` | JSON has stable keys; use it when feeding another tool |
+| `--out FILE` | stdout | write the report to FILE |
+| `--status STATUS` | all | catalog mode only, repeatable: list only packages with that status |
 
 Needs PyYAML. If `python3 -c "import yaml"` fails:
 
@@ -193,9 +217,33 @@ ES|QL queries that explicitly ask for `METADATA _source` (usually with
 The audit reports these as `source_consumer_transform`, `source_consumer_kibana`
 (both `review`) and `object_array_flattening` (`info`). **Do not declare a data stream
 `columnar.supported: true` until that review is done** — it is a question about the
-stream's consumers, and no mapping check can answer it. Note that detection rules live
-in `elastic/detection-rules`, not in the package, so the audit cannot see them: check
-there too. Full rules and what is deliberately *not* flagged (a runtime field that only
+stream's consumers, and no mapping check can answer it.
+
+**A negative result is a result, and the report prints it.** Every data stream gets a
+`_source` consumers: line, including when nothing was found — "none found in this
+package (no transforms reading `_source`, no scripted/runtime fields in `kibana/`, no
+ES|QL `METADATA _source`); object arrays: none in the sampled documents". Fields of
+type `flattened` are exempt (they keep their JSON verbatim) and are listed by name when
+they did hold an object array in the sample, so "exempt" is never mistaken for "not
+looked at". Quote that line in the report you hand back; an empty Class C section
+reads as "not checked".
+
+**Detection rules are the one consumer class the audit cannot see.** They are
+generated from `elastic/detection-rules` and reach users through the
+`security_detection_engine` package, so they are invisible to an audit of the package
+they query. Check them by hand — there is no automated equivalent:
+
+```bash
+git clone https://github.com/elastic/detection-rules
+cd detection-rules
+grep -rl 'logs-<pkg>\.' rules/ | xargs grep -l '_source'
+```
+
+A hit is a rule that walks the document source of one of this package's data streams;
+read it before declaring readiness. Rules that only query *fields* (KQL, EQL, ES|QL
+without `METADATA _source`) are unaffected.
+
+Full rules and what is deliberately *not* flagged (a runtime field that only
 reads `doc[...]` is unaffected):
 [references/blockers.md](references/blockers.md), section C6-C8.
 
@@ -275,14 +323,28 @@ applied the fix):
    standard mappings of this same package version are unchanged and no existing user
    pays storage for a fix they cannot use. Never write `columnar: {index: true}`.
    The `copy_to` and `normalizer` fixes change what the ingest pipeline emits, so
-   pipeline test expectations will have to be regenerated — see step 5.
-2. `data_stream/<ds>/manifest.yml` — declare the stream ready:
+   pipeline test expectations will have to be regenerated — see step 4.5 below.
+2. `data_stream/<ds>/manifest.yml` — declare the stream ready. The readiness flag and
+   the index sort are children of the manifest's **single** `elasticsearch:` key, so
+   write them as one block, and **merge it into the `elasticsearch:` that is already
+   there** rather than appending a second one (a duplicate key is not an error in
+   YAML — the file just keeps one of them, and you lose the other silently):
    ```yaml
    elasticsearch:
      columnar:
        supported: true
+     index_template:              # only when you proposed an explicit sort
+       settings:
+         index:
+           sort:
+             field: ["<field>", "@timestamp"]
+             order: ["asc", "desc"]
    ```
-   plus the explicit `index.sort` settings if you proposed any. Leave non-ready
+   With the default sort (`host.name asc, @timestamp desc` from the logs profile),
+   the `index_template` half is omitted and the block is just `columnar.supported`.
+   If the manifest already declares an explicit `index.sort`, leave it alone unless
+   the dataset says otherwise: changing a sort key rewrites the segment layout on the
+   next rollover. Leave non-ready
    streams untouched: the flag is per data stream, and the 3.7.0 validator fails the
    build if you set it on a stream that still has a blocker. Do not set it before the
    columnar `_source` consumer review of step 2 is done either — the validator cannot
@@ -303,14 +365,38 @@ applied the fix):
        supported: true
    ```
 3. Root `manifest.yml`: `format_version: "3.7.0"`,
-   `conditions.kibana.version: "^9.6.0"`, and a minor version bump.
+   `conditions.kibana.version: "^9.6.0"`, and a **major** version bump.
+
+   **A major bump, not a minor one.** Raising the Kibana floor to `^9.6.0` drops 8.x
+   and 9.0-9.5 users, and elastic/integrations treats a floor raise as a breaking
+   change with a major version: `aws` 7.0.0 ("Require Kibana and Elastic Agent
+   ^9.4.0 (drop support for Kibana 8.x…)"), `aws_bedrock` 2.0.0, `aws_logs` 2.0.0,
+   `aws_mq` 2.0.0, `aws_securityhub` 2.0.0, `aws_bedrock_agentcore` 1.0.0 ("Raise the
+   minimum required Kibana … to 9.6.0 … Deployments on older stacks cannot upgrade").
+   The many "Update Kibana constraint to support 9.0.0" entries shipped as minors are
+   range *expansions*, not floor raises — they are not precedent for this. The major
+   bump is what makes the backport cost below visible to the user instead of arriving
+   as a surprise on upgrade.
+
+   **Replace the entire `conditions.kibana.version` range with `"^9.6.0"`** — do not
+   add a branch to it. A package on `"^8.19.0 || ^9.1.0"` becomes:
+   ```yaml
+   conditions:
+     kibana:
+       version: "^9.6.0"      # replaces the whole range, 8.19 and 9.1 branches included
+   ```
+   Every `||` branch has to be 9.6+, because a single older branch is exactly what lets
+   Fleet keep offering this version to a stack that ignores both columnar constructs.
+   Dropping the older branches is the **point** of declaring readiness — and its cost.
+   If the package has to keep serving older stacks, do not declare readiness on this
+   release line.
 
    The Kibana constraint is **not** about Elasticsearch — 9.5 already has the index
    mode. Both constructs are read by **Fleet**: Fleet parses
    `elasticsearch.columnar.supported` to decide whether to offer the per-stream opt-in
    toggle, and Fleet applies the field-level `columnar:` overrides when it builds the
    mapping, on the install path and on the toggle path. The Fleet changes ship in
-   **9.6**, so write `conditions.kibana.version: "^9.6.0"` *(on older Kibana the
+   **9.6**, which is where the floor comes from *(on older Kibana the
    override and the flag are silently ignored, so the toggle is unavailable and any
    `doc_values: false` field will make a manual columnar opt-in fail)*.
 
@@ -328,27 +414,62 @@ applied the fix):
    > deliberately, only for the integrations picked as tech-preview targets — never
    > catalog-wide**. A `READY` status means "no mapping blocker"; it does not mean
    > "worth a 9.6 floor and a backport line".
-4. `changelog.yml` — a new entry at the top, type `enhancement`, with a placeholder
-   link the user must replace:
+4. `changelog.yml` — a new entry at the top with **two** changes, the breaking one
+   first, both with a placeholder link the user must replace:
    ```yaml
-   - version: "<new version>"
+   - version: "<new major version>"
      changes:
-       - description: Declare logsdb_columnar support for <data streams>
+       - description: Raise the minimum required Kibana version to 9.6.0 (drops support
+           for Kibana 8.x and 9.x below 9.6.0), required for columnar index mode support.
+         type: breaking-change
+         link: https://github.com/elastic/integrations/pull/XXXXX
+       - description: Declare columnar index mode support for the <ds> data stream(s),
+           enabling the per-data-stream logsdb_columnar opt-in in Fleet (tech preview).
          type: enhancement
          link: https://github.com/elastic/integrations/pull/XXXXX
    ```
-   Say *declare support for* when you only set `columnar.supported: true`, and
-   *enable ... index mode* when you also set `index_mode` — the two are different
-   promises to the user reading the changelog.
-5. `elastic-package build` to regenerate `docs/README.md` (never edit it directly —
-   edit `_dev/build/docs/README.md`).
-6. `elastic-package lint` **and** `elastic-package build` — `build` is the only one
-   that sees the resolved ECS attributes, which is also the only place a
-   `columnar: {doc_values: true}` override on an `external: ecs` field can be
-   confirmed to have won the merge. Add `validation.yml` exclusions **only** for
-   pre-existing failures that the `format_version` bump surfaced, each with a comment.
-   **Never** exclude a columnar validator error (`SVR00011`, `SVR00012`, `SVR00013`);
-   the hard mapping errors have no code and cannot be excluded at all.
+   The `breaking-change` entry is not optional: it is the only place a user on 9.3
+   learns why this package stopped updating for them. Say *declare support for* when
+   you only set `columnar.supported: true`, and *enable ... index mode* when you also
+   set `index_mode` — the two are different promises to the user reading the changelog.
+5. Build and check, in this order:
+   ```bash
+   cd packages/<pkg>
+   elastic-package lint                      # run this FIRST, right after the bump
+   # ... fix what is cheap, exclude the rest in validation.yml, one comment each ...
+   elastic-package build                     # regenerates docs/README.md
+   elastic-package test pipeline             # no -g unless an auto-fix touched the pipeline
+   elastic-package test static
+   ```
+   - **`lint` immediately after the `format_version` bump, before anything else.** A
+     multi-minor jump turns on every validator added in between, and they fire on
+     code that was already there. Bumping `anthropic` from 3.4.x to 3.7.0 surfaced
+     `SVR00008`/`SVR00009` — the ingest-pipeline `on_failure` requirements — which
+     have nothing to do with columnar. Expect that, and do not read it as damage from
+     your change.
+   - **Prefer fixing those findings when the fix is cheap.** `on_failure` handlers are
+     the cheap case: they add an error path that the pipeline tests never take, so
+     `*-expected.json` does not move. Use `validation.yml` exclusions only for what is
+     genuinely out of scope, each with a comment saying why. **Never exclude a columnar
+     finding** — `SVR00011`, `SVR00012`, `SVR00013`, or a hard mapping error (those
+     have no code and cannot be excluded at all). They are what the exercise is about.
+   - **`build` is not optional and it is not the same check as `lint`.** `build`
+     validates the built zip, the only place the resolved ECS attributes exist — and
+     therefore the only place a `columnar: {doc_values: true}` override on an
+     `external: ecs` field can be confirmed to have won the merge.
+   - **`docs/README.md` is generated by `build`** from `_dev/build/docs/README.md`;
+     never edit the generated file. When validation legitimately fails only on
+     something you cannot fix yet — `PSR00001` for the unreleased 3.7.0 spec, or the
+     `https://github.com/elastic/integrations/pull/XXXXX` changelog placeholder —
+     `elastic-package build --skip-validation` regenerates the docs anyway.
+     `--skip-validation` is acceptable **only** when you have read the whole error
+     list, every entry in it is one of those two, and you re-run `lint`/`build`
+     without the flag before opening the PR. It is **never** acceptable as a way past
+     a columnar finding: that ships a data stream whose index template PUT fails.
+   - **`test pipeline` with no `-g`.** Pipeline tests run through
+     `_ingest/pipeline/_simulate`; nothing is indexed, so the index mode cannot change
+     their output. `-g` is correct only when an auto-fix moved a `copy_to` into a
+     processor or replaced a normalizer — then read every hunk of the diff.
 
 Tell the user that both `elasticsearch.columnar.supported` and the field-level
 `columnar:` block require package-spec 3.7.0, which is unreleased (`3.7.0-next`), so a
@@ -356,12 +477,14 @@ stock `elastic-package` binary will reject the manifest and the fields files loc
 [references/correctness-and-performance.md](references/correctness-and-performance.md)
 explains how to build `elastic-package` against a local package-spec checkout.
 
-### 5. Validate
+### 5. Validate against a stack
 
-Static lint and **build** → install against a 9.5+ stack (with a Kibana new enough to
-have the Fleet support from step 3) and verify `index.mode` and `index.sort.field` on
-the real index → run `elastic-package test pipeline` and `test system` with and
-without columnar and diff → benchmark the dashboard workload at scale.
+The static half — `lint` → fix/exclude → `build` → `test pipeline` → `test static` —
+is step 4.5 above and is where most migrations end. This step is the rest: install
+against a 9.5+ stack (with a Kibana new enough to have the Fleet support from step 3)
+and verify `index.mode` and `index.sort.field` on the real index → run
+`elastic-package test system` with and without columnar and diff → benchmark the
+dashboard workload at scale.
 
 **`supported: true` on its own never produces a columnar index.** The stream still
 installs on logsdb, `index.mode` reads `logsdb`, and no `elastic-package` flag flips
@@ -378,13 +501,6 @@ nothing about it. To actually exercise columnar locally, pick one of:
 Both routes, the exact commands, and which test diffs are expected versus which are
 bugs:
 **[references/correctness-and-performance.md](references/correctness-and-performance.md)**.
-
-`elastic-package lint` validates the package **source**, where an `external: ecs`
-reference to `event.original` carries no `doc_values` at all — so the ECS blocker is
-invisible to it. `elastic-package build` validates the **built zip**, where ECS has
-already been resolved into `doc_values: false`, and that is where the blocker
-surfaces. Every affected package will fail `build` once it opts in, independent of
-which spec version it declares. Always run both.
 
 Pipeline tests are run through `_ingest/pipeline/_simulate` — nothing is indexed, so
 the index mode cannot influence their output. **If the only change is `index_mode`,

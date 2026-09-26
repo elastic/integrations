@@ -14,6 +14,15 @@ elastic-package build
 elastic-package check
 ```
 
+`build` also regenerates `docs/README.md` from `_dev/build/docs/README.md` — never edit
+the generated file. While the 3.7.0 spec is unreleased, validation can fail on things
+the migration cannot fix: `PSR00001` for the spec version itself, or the
+`https://github.com/elastic/integrations/pull/XXXXX` changelog placeholder. Then
+`elastic-package build --skip-validation` regenerates the docs anyway. That is
+acceptable **only** when you have read the whole error list, every entry is one of
+those two, and you re-run `lint`/`build` without the flag before opening the PR. It is
+**never** a way past a columnar finding — see `validation.yml` below.
+
 **Run `build`, not just `lint`.** `lint` validates the package **source**. `build`
 resolves `external: ecs` references first and validates the **built zip**. The two see
 different documents, and the difference matters: in the source an `external: ecs`
@@ -73,8 +82,16 @@ Revert with `go mod edit -dropreplace github.com/elastic/package-spec/v3`.
 ### `validation.yml`
 
 Bumping `format_version` to 3.7.0 turns on validators the package never had to satisfy
-before, so unrelated pre-existing problems can surface. Those may be excluded in
-`validation.yml`, with a comment explaining each one.
+before, so unrelated pre-existing problems can surface. **Run `elastic-package lint`
+immediately after the bump**, before any other change, so the pre-existing findings are
+separated from anything your migration caused. A multi-minor jump surfaces the most:
+taking `anthropic` from 3.4.x to 3.7.0 turned on `SVR00008` and `SVR00009`, the ingest
+pipeline `on_failure` requirements, which have nothing to do with columnar.
+
+**Prefer fixing them when the fix is cheap.** `on_failure` handlers are the cheap case:
+they add an error path the pipeline tests never take, so `*-expected.json` does not
+move and no `-g` regeneration is needed. Exclude in `validation.yml` only what is
+genuinely out of scope for the PR, with a comment explaining each one.
 
 **Never add an exclusion for a columnar validator error.** The `CodeColumnar*` codes in
 `code/go/pkg/specerrors/constants.go` are:
@@ -264,13 +281,46 @@ system tests, or by installing the package twice (one data stream on `logsdb`, o
 
 Expected differences **in indexed documents**:
 
-| Difference | Why |
-| --- | --- |
-| Objects appear flattened (`a.b.c` instead of nested objects) | Synthetic source is reconstructed from doc values |
-| Arrays of objects lose their per-object grouping | Object arrays are not retained faithfully |
-| Multi-value arrays keep ingest order instead of being sorted/de-duplicated | Columnar preserves original order; plain logsdb synthetic source sorts and dedupes |
-| A field under `dynamic: false` disappears | Class B data loss — must already have been reviewed |
-| A keyword with `normalizer: lowercase` comes back lowercased | Class C4 — the original casing is not stored |
+| Difference | Example | Why |
+| --- | --- | --- |
+| `_source` keys are **dotted**, not nested objects | `{"event.id": "abc", "anthropic.audit.actor.type": "user_actor"}` instead of `{"event": {"id": "abc"}}` | Synthetic source is reconstructed from doc values, which are flat. `geo_point` is the exception and still returns `{lat, lon}` |
+| **Single-element arrays collapse to scalars** | `event.category: ["web"]` reads back as `"web"` | logsdb keeps the array via `index.mapping.synthetic_source_keep: arrays`, a setting columnar does not support. Seen on `event.category`, `event.type`, `related.ip`, `related.hosts`, `anthropic.audit.scopes` |
+| Arrays of objects lose their per-object grouping | `[{a:1,b:2},{a:3,b:4}]` → `{a:[1,3], b:[2,4]}` | Object arrays are not retained faithfully |
+| Multi-value arrays keep ingest order instead of being sorted/de-duplicated | | Columnar preserves original order; plain logsdb synthetic source sorts and dedupes |
+| A field under `dynamic: false` disappears | | Class B data loss — must already have been reviewed |
+| A keyword with `normalizer: lowercase` comes back lowercased | | Class C4 — the original casing is not stored |
+
+The first four rows are the **complete** expected-diff set for a package with no Class
+B finding: dotted keys, collapsed single-element arrays, parallel object arrays,
+preserved order. Measured on `anthropic` — the same mock data indexed in both modes, 8
+documents matched on `event.id`, **zero value differences**, shape only.
+
+**Who is affected by the first two.** Anything doing *nested* access on the source
+breaks: `_source.event.id`, Painless `params._source.event.id`, ES|QL
+`JSON_EXTRACT(_source, "event.id")` paths, Kibana code walking the object. Anything
+indexing into an array (`event.category[0]`) or asserting a list type has to tolerate
+a scalar. **Field-level access is unaffected** — `doc[...]`, KQL, aggregations, ES|QL
+columns, dashboards and alerting rules that query fields all behave identically.
+
+### Comparing the two modes
+
+```
+# 1. logsdb baseline
+elastic-package test system --defer-cleanup 4m
+#    during the deferral window, against the test stack:
+#    GET logs-<pkg>.<ds>-*/_search?size=100      -> save as logsdb.json
+
+# 2. same again with a TEMPORARY index_mode: logsdb_columnar in the stream manifest
+#    (route A above, uncommitted)
+elastic-package test system --defer-cleanup 4m
+#    GET logs-<pkg>.<ds>-*/_search?size=100      -> save as columnar.json
+```
+
+`--defer-cleanup` keeps the data stream alive long enough to snapshot it; without it
+the documents are deleted before you can read them. Match the documents across the two
+snapshots on a **flattened** `event.id` (the columnar half has dotted keys, so compare
+`doc.get("event.id") or doc["event"]["id"]`), then classify every difference into the
+four classes above. A difference that fits none of them is a bug.
 
 ### Anything else is a bug
 

@@ -479,6 +479,39 @@ def columnar_block(container: Any) -> Dict[str, Any]:
     return block if isinstance(block, dict) else {}
 
 
+def existing_index_sort(es_section: Any) -> Optional[Dict[str, List[str]]]:
+    """The `index.sort` a data stream manifest already declares, or None.
+
+    Read so the report can say "already present" instead of proposing a sort the
+    package has had for three releases. Package sources write the settings both
+    nested (`index: {sort: {field: [...]}}`) and with dotted keys
+    (`index.sort.field: [...]`), so both are flattened before the lookup.
+    """
+    if not isinstance(es_section, dict):
+        return None
+    itpl = es_section.get("index_template")
+    settings = itpl.get("settings") if isinstance(itpl, dict) else None
+    if not isinstance(settings, dict):
+        return None
+    flat: Dict[str, Any] = {}
+
+    def walk(node: Dict[str, Any], prefix: str) -> None:
+        for key, value in node.items():
+            path = f"{prefix}.{key}" if prefix else str(key)
+            if isinstance(value, dict):
+                walk(value, path)
+            else:
+                flat[path] = value
+
+    walk(settings, "")
+    fields = flat.get("index.sort.field")
+    if fields is None:
+        return None
+    listed = lambda v: [str(x) for x in (v if isinstance(v, list) else [v])]  # noqa: E731
+    orders = flat.get("index.sort.order")
+    return {"field": listed(fields), "order": listed(orders) if orders is not None else []}
+
+
 # The package-spec version that introduced both columnar constructs.
 COLUMNAR_SPEC_VERSION = (3, 7)
 
@@ -513,8 +546,13 @@ COLUMNAR_MIN_STACK_COST = (
     "**Cost:** declaring `columnar.supported` (and bumping `format_version` to "
     "`\"3.7.0\"`) raises this package's **minimum stack version to 9.6**. Users on an "
     "older stack stop receiving *any* further update to this package, so a bug fix for "
-    "them needs a backport branch/release line. Declare readiness deliberately, for the "
-    "packages picked as tech-preview targets — not catalog-wide."
+    "them needs a backport branch/release line. That makes it a **breaking change**: "
+    "ship it as a **major** version bump with a `type: breaking-change` changelog entry "
+    "(\"Raise the minimum required Kibana version to 9.6.0 …\") alongside the "
+    "`enhancement` one — the convention elastic/integrations follows for a Kibana floor "
+    "raise (`aws` 7.0.0, `aws_bedrock` 2.0.0, `aws_bedrock_agentcore` 1.0.0). Declare "
+    "readiness deliberately, for the packages picked as tech-preview targets — not "
+    "catalog-wide."
 )
 
 # Finding codes that describe the columnar *declaration* itself rather than a
@@ -1304,18 +1342,26 @@ def _add_pattern_targets(ptype: str, body: Dict[str, Any], facts: PipelineFacts,
         facts.unconditional_targets |= set.intersection(*per_pattern)
 
 
-SORT_YAML_HEADER = (
-    "elasticsearch:\n"
+# The index sort as the CHILDREN of the stream manifest's `elasticsearch:` key. A
+# data stream manifest has exactly one `elasticsearch:` mapping, so the sort and the
+# `columnar.supported` flag are siblings inside it — the report therefore emits a
+# single merged block (`stream_manifest_block`). Two separate `elasticsearch:`
+# snippets are a duplicate key when pasted literally, and YAML keeps only the last.
+SORT_YAML_BODY = (
     "  index_template:\n"
     "    settings:\n"
     "      index:\n"
     "        sort:\n"
 )
+SORT_YAML_HEADER = "elasticsearch:\n" + SORT_YAML_BODY
+
+# Same, for the stream-level readiness flag.
+SUPPORTED_YAML_BODY = "  columnar:\n    supported: true\n"
 
 
-def _sort_yaml(fields: List[str], orders: List[str]) -> str:
+def _sort_yaml(fields: List[str], orders: List[str], header: bool = True) -> str:
     return (
-        SORT_YAML_HEADER
+        (SORT_YAML_HEADER if header else SORT_YAML_BODY)
         + "          field: [" + ", ".join(f'"{f}"' for f in fields) + "]\n"
         + "          order: [" + ", ".join(f'"{o}"' for o in orders) + "]\n"
     )
@@ -2133,34 +2179,46 @@ def _object_array_paths(doc: Any, prefix: str = "", out: Optional[Dict[str, Any]
     return out
 
 
-def _object_array_excluded(path: str, field_index: Dict[str, Dict[str, Any]]) -> bool:
-    """Whether `path` (or an ancestor) is already covered by another finding.
+def _object_array_exemption(path: str, field_index: Dict[str, Dict[str, Any]]
+                            ) -> Optional[Tuple[str, str]]:
+    """(reason, owning field) when `path` is not reported, None when it is.
 
     `nested` is reported by `nested_single_level` / `nested_in_nested`, `flattened`
     keeps its JSON verbatim, and a `geo_point` array is a list of coordinates rather
     than an object array.
+
+    The caller collects the `flattened` ones so the report can name them. That
+    matters for reading a negative result: the field really does hold an array of
+    objects, and "checked, exempt because it is `flattened`" is a different statement
+    from "no object arrays anywhere".
     """
     parts = path.split(".")
     if parts[0] in PIPELINE_TEMP_ROOTS:
-        return True  # pipeline scratch object, not an indexed field
+        return ("pipeline_scratch", parts[0])  # not an indexed field
     for i in range(1, len(parts) + 1):
         ancestor = ".".join(parts[:i])
         fdef = field_index.get(ancestor)
         if fdef is not None:
             ftype = fdef.get("type") or fdef.get("object_type")
             if ftype in ("nested", "flattened"):
-                return True
+                return (ftype, ancestor)
             if ancestor == path and ftype == "geo_point":
-                return True
+                return ("geo_point", ancestor)
         ecs_type = (ecs_schema().get(ancestor) or {}).get("type")
         if ecs_type in ("nested", "flattened", "geo_point"):
-            return True
-    return False
+            return (ecs_type, ancestor)
+    return None
 
 
 def object_array_findings(ds_dir: str, ds_name: str, field_index: Dict[str, Dict[str, Any]],
-                          sample: Dict[str, Any]) -> List[Dict[str, Any]]:
-    """`object_array_flattening` — one finding per data stream, not per field."""
+                          sample: Dict[str, Any],
+                          flattened_exempt: Optional[set] = None) -> List[Dict[str, Any]]:
+    """`object_array_flattening` — one finding per data stream, not per field.
+
+    `flattened_exempt`, when given, is filled with the `flattened` fields that hold an
+    object array in the sampled documents and are therefore *not* findings — the
+    report lists them, so a reader can tell "exempt" from "not looked at".
+    """
     docs: List[Tuple[str, Dict[str, Any]]] = []
     if sample:
         docs.append(("sample_event.json", sample))
@@ -2184,7 +2242,13 @@ def object_array_findings(ds_dir: str, ds_name: str, field_index: Dict[str, Dict
     found: Dict[str, Tuple[str, Any]] = {}
     for where, doc in docs:
         for path, value in _object_array_paths(doc).items():
-            if path in found or _object_array_excluded(path, field_index):
+            if path in found:
+                continue
+            exemption = _object_array_exemption(path, field_index)
+            if exemption is not None:
+                kind, owner = exemption
+                if kind == "flattened" and flattened_exempt is not None:
+                    flattened_exempt.add(owner)
                 continue
             found[path] = (where, value)
     if not found:
@@ -2343,6 +2407,7 @@ def audit_data_stream(pkg_dir: str, ds_dir: str, ds_name: str,
         "columnar_supported": False,
         "columnar_enabled": False,
         "columnar_supported_with_blockers": False,
+        "existing_index_sort": None,
         "inputs": [],
         "findings": [],
         "errors": [],
@@ -2369,6 +2434,7 @@ def audit_data_stream(pkg_dir: str, ds_dir: str, ds_name: str,
     stream["columnar_enabled"] = bool(
         stream["columnar_supported"] or stream["index_mode"] in COLUMNAR_INDEX_MODES
     )
+    stream["existing_index_sort"] = existing_index_sort(es_section)
 
     if stream["type"] != "logs":
         stream["out_of_scope_reason"] = f"data stream type is `{stream['type']}` (logs only)"
@@ -2428,10 +2494,14 @@ def audit_data_stream(pkg_dir: str, ds_dir: str, ds_name: str,
             f"field-level `columnar:` block and `elasticsearch.columnar` are new in "
             f"package-spec 3.7.0, so the package fails validation as an unknown "
             f"property.",
-            "Bump `format_version` to `\"3.7.0\"` in the root `manifest.yml`. That turns "
-            "on validators this package never had to satisfy before, so expect unrelated "
-            "pre-existing failures to surface — those may go in `validation.yml` with a "
-            "comment each, but never a columnar validator error.",
+            "Bump `format_version` to `\"3.7.0\"` in the root `manifest.yml`, then run "
+            "`elastic-package lint` immediately, before anything else: a multi-minor jump "
+            "(3.4.x -> 3.7.0) turns on every validator added in between, so expect "
+            "pre-existing findings that have nothing to do with columnar (a 3.4 -> 3.7 bump "
+            "surfaces `SVR00008`/`SVR00009`, the ingest-pipeline `on_failure` requirements). "
+            "Prefer FIXING them when the fix is cheap — `on_failure` handlers do not change "
+            "pipeline test expectations — and use `validation.yml` exclusions only for the "
+            "rest, one comment each. Never exclude a columnar validator error.",
             "manifest.yml"))
 
     # --- `columnar.supported: true` with unresolved Class A findings ----- #
@@ -2466,7 +2536,21 @@ def audit_data_stream(pkg_dir: str, ds_dir: str, ds_name: str,
     # `METADATA _source` query should not be declared `supported` before someone has
     # looked at it.
     findings.extend(source_consumer_findings(ds_name, transforms or [], kibana or []))
-    findings.extend(object_array_findings(ds_dir, ds_name, field_index, sample))
+    flattened_exempt: set = set()
+    findings.extend(object_array_findings(ds_dir, ds_name, field_index, sample,
+                                          flattened_exempt))
+
+    # What the C6-C8 scan actually looked at. Recorded so the report can state the
+    # NEGATIVE result in words: an empty Class C section is indistinguishable from a
+    # check that never ran, and the reader has to know which one it was before
+    # declaring a stream ready.
+    code_counts = Counter(f["code"] for f in findings)
+    stream["source_consumers"] = {
+        "transform": code_counts["source_consumer_transform"],
+        "kibana": code_counts["source_consumer_kibana"],
+        "object_arrays": code_counts["object_array_flattening"],
+        "flattened_exempt": sorted(flattened_exempt),
+    }
 
     stream["findings"] = findings
     stream["field_count"] = len(field_index)
@@ -2558,10 +2642,123 @@ def columnar_optin_label(stream: Dict[str, Any]) -> str:
         label += (f". **Inconsistent**{code}: the stream still has {len(blocking)} Class A "
                   "finding(s), which the 3.7.0 columnar validator rejects — fix them or "
                   "drop the declaration")
-    label += (f". Either declaration also needs `format_version: \"3.7.0\"` and "
-              f"`conditions.kibana.version: \"{COLUMNAR_KIBANA_CONSTRAINT}\"` "
-              f"({COLUMNAR_KIBANA_NOTE}). {COLUMNAR_MIN_STACK_COST}")
+    # Plumbing pointer only. The 9.6 minimum-stack cost is stated ONCE, in the
+    # package header: repeating it per data stream turned a one-stream report into
+    # three copies of the same paragraph, which is how a warning stops being read.
+    label += (f". Plumbing: `format_version: \"3.7.0\"` + "
+              f"`conditions.kibana.version: \"{COLUMNAR_KIBANA_CONSTRAINT}\"` — see the "
+              f"package header for the 9.6 minimum-stack cost")
     return label
+
+
+def kibana_condition_meets_columnar(condition: Any) -> bool:
+    """Whether `conditions.kibana.version` already floors the package at 9.6+.
+
+    The condition is a semver range, usually with several `||` branches
+    (`"^8.19.0 || ^9.1.0"`). EVERY branch has to be 9.6 or newer: one older branch is
+    enough for Fleet to keep offering the package to a stack that ignores both
+    columnar constructs, which is exactly the case the constraint exists to prevent.
+    That is why the remediation is "replace the whole range", not "add a branch".
+    """
+    if not condition:
+        return False
+    branches = [b.strip() for b in str(condition).split("||") if b.strip()]
+    if not branches:
+        return False
+    for branch in branches:
+        match = re.search(r"(\d+)\.(\d+)", branch)
+        if not match or (int(match.group(1)), int(match.group(2))) < (9, 6):
+            return False
+    return True
+
+
+def stream_manifest_block(s: Dict[str, Any]) -> Tuple[List[str], List[str]]:
+    """(YAML body lines, notes) for the one `elasticsearch:` key of a stream manifest.
+
+    The readiness flag and the index sort live under the same `elasticsearch:`
+    mapping, so they are emitted merged — a reader who pastes two snippets gets a
+    duplicate key and loses one of them.
+
+    Anything the manifest already declares becomes a note ("already present") instead
+    of a proposal: the audit is run again after the migration, and a report that still
+    says "add this" about a line that is already there is indistinguishable from a
+    migration that did not take.
+    """
+    body: List[str] = []
+    notes: List[str] = []
+
+    if s.get("columnar_supported"):
+        notes.append("`elasticsearch.columnar.supported: true` already present")
+    elif s["status"] in ("READY", "READY_AFTER_AUTO_FIX"):
+        body.extend(SUPPORTED_YAML_BODY.rstrip("\n").split("\n"))
+    else:
+        notes.append(f"`columnar.supported: true` is not proposed while this stream is "
+                     f"{s['status']} — the 3.7.0 validator rejects the flag until the "
+                     f"findings below are resolved")
+
+    sort = s["sort"]
+    existing = s.get("existing_index_sort")
+    if existing:
+        shown = _sort_summary(existing["field"], existing["order"])
+        note = f"explicit `index.sort` already present ({shown})"
+        proposed = _sort_summary(sort["sort_fields"], sort["sort_orders"])
+        if sort["explicit_sort_yaml"] and shown != proposed:
+            note += (f" — the audit would propose {proposed}; keep the existing sort "
+                     f"unless the dataset says otherwise, changing it rewrites the "
+                     f"segment layout on the next rollover")
+        notes.append(note)
+    elif sort["explicit_sort_yaml"]:
+        body.extend(_sort_yaml(sort["sort_fields"], sort["sort_orders"],
+                               header=False).rstrip("\n").split("\n"))
+    elif sort["class"] == "default_ok":
+        notes.append("no `index.sort` to write — the `logsdb_columnar` logs profile "
+                     "already sorts on `host.name asc, @timestamp desc`")
+    return body, notes
+
+
+def _sort_summary(fields: List[str], orders: List[str]) -> str:
+    """`organization.id asc, @timestamp desc`, for prose rather than YAML."""
+    pairs = []
+    for idx, field in enumerate(fields):
+        order = orders[idx] if idx < len(orders) else ""
+        pairs.append(f"`{field}`" + (f" {order}" if order else ""))
+    return ", ".join(pairs) or "(no fields)"
+
+
+def source_consumer_line(result: Dict[str, Any], s: Dict[str, Any]) -> str:
+    """The C6-C8 result for one stream — stated in words even when it is empty.
+
+    A negative result has to be printed: an absent Class C section reads as "not
+    checked", and the migration decision depends on knowing which one it was. The
+    consumer class the audit genuinely cannot see — detection rules, which live in
+    `elastic/detection-rules` — is named every time so it is never mistaken for part
+    of the "none found".
+    """
+    sc = s.get("source_consumers") or {}
+    pkg = result.get("package")
+    hits: List[str] = []
+    if sc.get("transform"):
+        hits.append(f"{sc['transform']} transform finding(s) (`source_consumer_transform`)")
+    if sc.get("kibana"):
+        hits.append(f"{sc['kibana']} `kibana/` asset finding(s) (`source_consumer_kibana`)")
+    if hits:
+        head = "**" + " and ".join(hits) + "** — see the Class C findings below"
+    else:
+        head = ("none found in this package (no transforms reading `_source`, no "
+                "scripted/runtime fields in `kibana/`, no ES|QL `METADATA _source`)")
+    if sc.get("object_arrays"):
+        arrays = "see `object_array_flattening` below"
+    else:
+        arrays = ("none in the sampled documents (`sample_event.json` and up to four "
+                  "`_dev/test/pipeline/*-expected.json`)")
+    exempt = sc.get("flattened_exempt") or []
+    if exempt:
+        arrays += ("; fields of type `flattened` are exempt, they keep their JSON "
+                   "verbatim: " + ", ".join(f"`{f}`" for f in exempt))
+    return (f"`_source` consumers: {head}; object arrays: {arrays}. Detection rules are "
+            f"**not** part of the package — still check `elastic/detection-rules` by hand "
+            f"for rules that read `_source` of `logs-{pkg}.*` (command at the end of this "
+            f"report).")
 
 
 def md_package(result: Dict[str, Any]) -> str:
@@ -2572,10 +2769,19 @@ def md_package(result: Dict[str, Any]) -> str:
     lines.append(f"- Package type: `{result.get('type')}`, version `{result.get('version')}`, "
                  f"format_version `{result.get('format_version')}`")
     if result.get("kibana_condition"):
-        lines.append(f"- Kibana condition: `{result['kibana_condition']}` "
-                     f"(needs at least `{COLUMNAR_KIBANA_CONSTRAINT}`, the first Kibana "
-                     f"minor with Fleet support for `columnar.supported` and the "
-                     f"field-level `columnar` overrides — {COLUMNAR_KIBANA_NOTE})")
+        if kibana_condition_meets_columnar(result["kibana_condition"]):
+            lines.append(f"- Kibana condition: `{result['kibana_condition']}` — already at "
+                         f"the `{COLUMNAR_KIBANA_CONSTRAINT}` floor the columnar constructs "
+                         f"need; nothing to change ({COLUMNAR_KIBANA_NOTE})")
+        else:
+            lines.append(
+                f"- Kibana condition: `{result['kibana_condition']}` — declaring readiness "
+                f"means **replacing the whole range** with "
+                f"`conditions.kibana.version: \"{COLUMNAR_KIBANA_CONSTRAINT}\"`, not adding "
+                f"a branch to it: every `||` branch has to be 9.6+, so the older branches "
+                f"go away. That is the point of the declaration *and* its cost — if this "
+                f"package must keep serving older stacks, do not declare readiness on this "
+                f"release line ({COLUMNAR_KIBANA_NOTE})")
         lines.append(f"- {COLUMNAR_MIN_STACK_COST}")
     if result.get("out_of_scope_reason"):
         lines.append(f"- Out of scope: {result['out_of_scope_reason']}")
@@ -2601,12 +2807,22 @@ def md_package(result: Dict[str, Any]) -> str:
         lines.append(f"- Current `index_mode`: `{s['index_mode'] or 'unset (logsdb default)'}`")
         lines.append(f"- Columnar opt-in: {columnar_optin_label(s)}")
         lines.append(f"- Sort: **{s['sort']['recommendation']}** — {s['sort']['reason']}")
-        if s["sort"]["explicit_sort_yaml"]:
-            lines.append("")
-            lines.append("  Add to `data_stream/%s/manifest.yml`:" % s["data_stream"])
+        lines.append(f"- {source_consumer_line(result, s)}")
+        body, notes = stream_manifest_block(s)
+        segments: List[str] = list(notes)
+        if body:
+            segments.append(
+                f"merge the block below into `data_stream/{s['data_stream']}/manifest.yml` — "
+                f"a manifest has a **single** `elasticsearch:` key, so add these children to "
+                f"the one already there; a second `elasticsearch:` is a duplicate key and "
+                f"the file keeps only one of them")
+        lines.append("- Stream manifest: "
+                     + ("; ".join(segments) if segments else "nothing to add") + ".")
+        if body:
             lines.append("")
             lines.append("  ```yaml")
-            for ln in s["sort"]["explicit_sort_yaml"].rstrip("\n").split("\n"):
+            lines.append("  elasticsearch:")
+            for ln in body:
                 lines.append(f"  {ln}")
             lines.append("  ```")
         lines.append("")
@@ -2648,6 +2864,24 @@ def md_package(result: Dict[str, Any]) -> str:
                      "dashboard evidence the sort heuristic accepts.")
         lines.append("")
         lines.append(", ".join(f"`{f}`" for f in result["dashboard_filter_fields"]))
+        lines.append("")
+    if in_scope:
+        lines.append("## `_source` consumers the audit cannot see (manual)")
+        lines.append("")
+        lines.append("Detection rules are generated from `elastic/detection-rules` and reach "
+                     "users through the `security_detection_engine` package, so a rule that "
+                     "reads the `_source` of this package's indices is invisible to an audit "
+                     "of this package. There is no automated check — run it by hand:")
+        lines.append("")
+        lines.append("```bash")
+        lines.append("git clone https://github.com/elastic/detection-rules")
+        lines.append("cd detection-rules")
+        lines.append(f"grep -rl 'logs-{result['package']}\\.' rules/ | xargs grep -l '_source'")
+        lines.append("```")
+        lines.append("")
+        lines.append("A hit is a rule that walks the document source of a data stream in this "
+                     "package — read it before declaring readiness. Rules that only query "
+                     "*fields* (KQL, EQL, ES|QL without `METADATA _source`) are unaffected.")
         lines.append("")
     return "\n".join(lines)
 
