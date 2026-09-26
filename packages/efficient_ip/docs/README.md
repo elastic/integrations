@@ -131,9 +131,9 @@ An example event for `log` looks as following:
 {
     "@timestamp": "2026-04-17T12:39:52.000Z",
     "agent": {
-        "ephemeral_id": "1d2a0a10-0d6d-4d73-a49d-69ed6c99eddb",
-        "id": "27ae2207-a923-4756-8fbe-78ed4e4ea58e",
-        "name": "elastic-agent-78473",
+        "ephemeral_id": "80c4a1f4-b121-403b-bc2a-a885b9f64ba5",
+        "id": "aa0852d8-0034-4841-87fb-595076144d3a",
+        "name": "elastic-agent-74438",
         "type": "filebeat",
         "version": "9.3.3"
     },
@@ -143,18 +143,19 @@ An example event for `log` looks as following:
     },
     "data_stream": {
         "dataset": "efficient_ip.log",
-        "namespace": "83881",
+        "namespace": "93151",
         "type": "logs"
     },
     "dns": {
         "question": {
             "class": "IN",
-            "name": "euc-common.online.office.com",
-            "registered_domain": "office.com",
+            "name": "euc-common.online.example.com",
+            "registered_domain": "example.com",
             "subdomain": "euc-common.online",
             "top_level_domain": "com",
             "type": "A"
-        }
+        },
+        "type": "query"
     },
     "ecs": {
         "version": "9.4.0"
@@ -169,7 +170,7 @@ An example event for `log` looks as following:
         }
     },
     "elastic_agent": {
-        "id": "27ae2207-a923-4756-8fbe-78ed4e4ea58e",
+        "id": "aa0852d8-0034-4841-87fb-595076144d3a",
         "snapshot": false,
         "version": "9.3.3"
     },
@@ -180,7 +181,7 @@ An example event for `log` looks as following:
         ],
         "created": "2026-04-17T12:39:52.000Z",
         "dataset": "efficient_ip.log",
-        "ingested": "2026-06-24T19:39:06Z",
+        "ingested": "2026-09-26T08:32:25Z",
         "kind": "event",
         "module": "efficient_ip",
         "type": [
@@ -195,7 +196,7 @@ An example event for `log` looks as following:
     },
     "log": {
         "source": {
-            "address": "172.20.0.3:42079"
+            "address": "172.19.0.3:58104"
         },
         "syslog": {
             "priority": 13
@@ -209,7 +210,7 @@ An example event for `log` looks as following:
     },
     "related": {
         "hosts": [
-            "euc-common.online.office.com"
+            "euc-common.online.example.com"
         ],
         "ip": [
             "10.100.0.1",
@@ -285,3 +286,10 @@ To collect logs via UDP, select **Collect logs via UDP** and configure the follo
 - Read Buffer - UDP socket read buffer size for handling bursts of messages
 - Read Timeout - How long to wait for incoming packets before checking for shutdown
 </details>
+
+
+### Future updates
+
+Working on future updates:
+- IPAM auditing and infrastructure compliance
+- Network anomaly identification and security investigations
