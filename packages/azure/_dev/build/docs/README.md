@@ -576,13 +576,13 @@ Every data stream in this integration emits a consistent set of Azure metadata f
 |---|---|---|---|
 | `cloud.provider` | keyword | Always `azure`. | All streams |
 | `cloud.account.id` | keyword | Azure subscription ID. Per OTel semconv, this field means subscription — it is **not** set to the tenant ID. | Streams with ARM resource IDs (activitylogs, platformlogs, springcloudlogs, application_gateway, firewall_logs, eventhub) |
-| `cloud.resource_id` | keyword | Fully-qualified Azure Resource Manager (ARM) resource ID, e.g. `/subscriptions/{id}/resourceGroups/{rg}/providers/…`. | All streams that receive an ARM resource path |
-| `cloud.region` | keyword | Azure region slug (lowercase, no spaces), e.g. `westeurope`, `eastus`. Set from the envelope `location` field; the value `global` is removed (not a region). | activitylogs, eventhub (with parse_message), streams that carry location |
+| `cloud.resource_id` | keyword | Fully-qualified Azure Resource Manager (ARM) resource ID, for example `/subscriptions/{id}/resourceGroups/{rg}/providers/…`. | All streams that receive an ARM resource path |
+| `cloud.region` | keyword | Azure region slug (lowercase, no spaces), for example `westeurope`, `eastus`. Set from the envelope `location` field; the value `global` is removed (not a region). | activitylogs, eventhub (with parse_message), streams that carry location |
 | `azure.subscription_id` | keyword | Azure subscription ID (unchanged from the original field). | Same as `cloud.account.id` |
 | `azure.tenant.id` | keyword | Azure tenant (directory) ID. | Entra ID streams (auditlogs, signinlogs, identity_protection, provisioning, graphactivitylogs, aadgraphactivitylogs) and activitylogs |
 | `azure.correlation.id` | keyword | Correlation ID for grouping related operations. | All streams |
 | `azure.resource_group.name` | keyword | Azure resource group name parsed from the ARM resource ID. | Full ARM streams |
-| `azure.resource_provider.namespace` | keyword | Azure resource provider namespace, e.g. `Microsoft.EventHub/namespaces`. | All streams |
+| `azure.resource_provider.namespace` | keyword | Azure resource provider namespace, for example `Microsoft.EventHub/namespaces`. | All streams |
 
 ### Deprecated aliases
 
