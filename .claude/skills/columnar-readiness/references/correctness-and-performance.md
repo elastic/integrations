@@ -9,19 +9,25 @@ today; stage 4 is manual.
 
 ```
 cd packages/<pkg>
-elastic-package lint
+elastic-package lint      # twice, before and after the format_version bump — see below
 elastic-package build
 elastic-package check
 ```
 
 `build` also regenerates `docs/README.md` from `_dev/build/docs/README.md` — never edit
-the generated file. While the 3.7.0 spec is unreleased, validation can fail on things
-the migration cannot fix: `PSR00001` for the spec version itself, or the
-`https://github.com/elastic/integrations/pull/XXXXX` changelog placeholder. Then
-`elastic-package build --skip-validation` regenerates the docs anyway. That is
-acceptable **only** when you have read the whole error list, every entry is one of
-those two, and you re-run `lint`/`build` without the flag before opening the PR. It is
-**never** a way past a columnar finding — see `validation.yml` below.
+the generated file. It renders the README **before** it validates, so a `build` that
+then fails validation has still updated `docs/README.md`: `--skip-validation` is not
+needed for the docs. What a failed validation denies you is the **zip**, so
+`elastic-package build --skip-validation` is for when you actually need one — an
+`elastic-package install` against a stack, stage 2 below.
+
+While the 3.7.0 spec is unreleased, validation can fail on things the migration cannot
+fix: `PSR00001` for the spec version itself, or the
+`https://github.com/elastic/integrations/pull/XXXXX` changelog placeholder. Skipping
+validation for those is acceptable **only** when you have read the whole error list,
+every entry is one of those two, and you re-run `lint`/`build` without the flag before
+opening the PR. It is **never** a way past a columnar finding — see `validation.yml`
+below.
 
 **Run `build`, not just `lint`.** `lint` validates the package **source**. `build`
 resolves `external: ecs` references first and validates the **built zip**. The two see
@@ -82,16 +88,49 @@ Revert with `go mod edit -dropreplace github.com/elastic/package-spec/v3`.
 ### `validation.yml`
 
 Bumping `format_version` to 3.7.0 turns on validators the package never had to satisfy
-before, so unrelated pre-existing problems can surface. **Run `elastic-package lint`
-immediately after the bump**, before any other change, so the pre-existing findings are
-separated from anything your migration caused. A multi-minor jump surfaces the most:
-taking `anthropic` from 3.4.x to 3.7.0 turned on `SVR00008` and `SVR00009`, the ingest
-pipeline `on_failure` requirements, which have nothing to do with columnar.
+before, so unrelated pre-existing problems can surface. **Lint twice, and bracket the
+bump with the two runs:**
 
-**Prefer fixing them when the fix is cheap.** `on_failure` handlers are the cheap case:
-they add an error path the pipeline tests never take, so `*-expected.json` does not
-move and no `-g` regeneration is needed. Exclude in `validation.yml` only what is
-genuinely out of scope for the PR, with a comment explaining each one.
+1. `elastic-package lint` on the **pristine** package, before any edit — the control.
+   Whatever it reports is pre-existing under the package's current `format_version`.
+2. bump `format_version` to `"3.7.0"` and nothing else, then `elastic-package lint`
+   again. Every finding that is new relative to run 1 is **attributable to the spec
+   jump**. Resolve them here, before any columnar edit goes in; afterwards the three
+   causes are indistinguishable.
+
+A multi-minor jump surfaces the most: taking `anthropic` from 3.4.x to 3.7.0 turned on
+`SVR00008` and `SVR00009`, the ingest pipeline `on_failure` requirements, which have
+nothing to do with columnar.
+
+#### The three classes a 3.0.x → 3.7.0 jump surfaces
+
+| Code | Finding | Treatment |
+| --- | --- | --- |
+| `SVR00006` | ingest processors missing a `tag` | **Many** hits — 62 on `apache`. The fix is output-neutral but purely mechanical. An **exclusion with a comment is accepted repo practice**: `akamai`, `mimecast` and `aws` each ship one. Either way, say which you chose. |
+| `SVR00008` / `SVR00009` | `on_failure` handler shape (`event.kind`, `error.message`) | **Fix.** It only adds an *error* path, which the pipeline tests never take, so `*-expected.json` does not move and no `-g` is needed. |
+| `JSE00001` | the `message` / `event.original` removal pattern: a `rename` of `message` → `event.original` must carry `if: ctx.event?.original == null` and be paired with a `remove` of `message` (`ignore_missing: true`, `if: ctx.event?.original != null`). The rule arrived in spec 3.1.0, so any 3.0.x package gets it. | **Not automatically cheap.** The fix **inserts a processor on the main path** — it deletes `message` from every document. It is cheap only once the placement is reasoned about: typically between the `rename` and the `grok`/`dissect` that recreates `message`, so the net output is unchanged. Prove it with `elastic-package test pipeline` **without `-g`**; a diff means the placement is wrong, and `-g` is not the answer. |
+
+**Prefer fixing when the fix is cheap** — the `SVR00008`/`SVR00009` row is the
+archetype. Exclude in `validation.yml` only what is genuinely out of scope for the PR,
+with a comment explaining each one. The file lives at the package root:
+
+```yaml
+errors:
+  exclude_checks:
+    - SVR00006  # pre-existing: ingest pipeline processors missing required tag
+    - SVR00008  # pre-existing: on_failure handler missing event.kind
+```
+
+Whatever you fix here is a **user-visible pipeline change** and needs its own
+`enhancement`/`bugfix` changelog entry alongside the columnar ones — e.g. "Add
+processor tags and on_failure handlers to ingest pipelines."
+
+**Excluded checks are still printed, in full.** `lint` logs every suppressed finding
+first under `Skipped errors:` (`cmd/lint.go`), and that list carries its own
+`found N validation errors:` header — so a run with 62 silenced `SVR00006` hits reads
+like a failure. The number that matters is in the **final**
+`linting package failed: found N validation errors:` line; on a clean run there is no
+such line at all.
 
 **Never add an exclusion for a columnar validator error.** The `CodeColumnar*` codes in
 `code/go/pkg/specerrors/constants.go` are:

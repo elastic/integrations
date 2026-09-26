@@ -81,7 +81,7 @@ A data stream manifest has **one** `elasticsearch:` key, and the index sort live
 under the same one. Write them as a single block and merge that block into whatever
 `elasticsearch:` the manifest already has — two pasted `elasticsearch:` snippets are a
 duplicate key, and the file silently keeps only one of them. The merged shape is in
-step 4.2 of the migration, and the audit emits it that way.
+step 4.4 of the migration, and the audit emits it that way.
 
 It asserts the stream is columnar-ready; the 3.7.0 validator rejects it if any
 blocker remains. It is **not** the same as setting a columnar `index_mode`:
@@ -98,7 +98,7 @@ Both constructs need `format_version: "3.7.0"` in the root manifest, and because
 are read by **Fleet** they also need `conditions.kibana.version: "^9.6.0"` — the Fleet
 support ships in 9.6. **That is the expensive part of the decision**: it raises the
 package's minimum stack version to 9.6, so users on an older stack stop receiving this
-package's updates and a bug fix for them needs a backport. See step 3 of the
+package's updates and a bug fix for them needs a backport. See step 4.5 of the
 migration.
 
 ## Workflow
@@ -202,6 +202,19 @@ largest field in the document:
     doc_values: true
 ```
 
+**The blocker is the *declaration*, not the field.** `doc_values: false` comes from the
+**ECS schema**, and a package only imports that schema where it writes
+`external: ecs`. A package that never declares `event.original` at all — `rabbitmq`,
+`apache`, `nginx` — has no such mapping in its index template: the field is mapped at
+runtime by the stack's `ecs@mappings` component template, whose
+`ecs_non_indexed_keyword` dynamic template (matching `*event.original` and
+`*gen_ai.agent.description`) sets **`index: false` only, with no `doc_values: false`**
+(verified on 9.6.0-SNAPSHOT). Doc values are on, and columnar is happy. So a pipeline
+that merely *populates* `event.original` — the `rename` + `remove` pattern in half the
+log packages — is **not** a finding, and the audit does not report one. Only an
+`external: ecs` declaration of an affected field, or an explicit `doc_values: false`
+the package wrote itself, is.
+
 See [references/blockers.md](references/blockers.md), section A2b.
 
 **Columnar `_source` is not a faithful copy of what was ingested.** It is
@@ -236,12 +249,24 @@ they query. Check them by hand — there is no automated equivalent:
 ```bash
 git clone https://github.com/elastic/detection-rules
 cd detection-rules
-grep -rl 'logs-<pkg>\.' rules/ | xargs grep -l '_source'
+grep -rl 'logs-<pkg>\.' rules/ | xargs grep -l '_source'      # rules that read _source
+grep -rl 'logs-<pkg>\.' rules/ | wc -l                        # rules that touch the package
 ```
 
-A hit is a rule that walks the document source of one of this package's data streams;
-read it before declaring readiness. Rules that only query *fields* (KQL, EQL, ES|QL
-without `METADATA _source`) are unaffected.
+A hit on the first command is a rule that walks the document source of one of this
+package's data streams; read it before declaring readiness. Rules that only query
+*fields* (KQL, EQL, ES|QL without `METADATA _source`) are unaffected.
+
+**Record the result either way, with both numbers.** The interesting outcome is the
+common one — rules exist, none of them read `_source` — and it is only meaningful if
+you say how many you looked at. On `apache` the check found 10 rules querying
+`logs-apache.` and 0 reading `_source`, so the PR notes say:
+
+> 10 detection rules query this package; none read `_source`.
+
+"No detection rule concerns" is not the same statement and does not tell a reviewer
+whether the check ran. When the grep finds nothing at all, write "no detection rules
+query this package".
 
 Full rules and what is deliberately *not* flagged (a runtime field that only
 reads `doc[...]` is unaffected):
@@ -298,9 +323,57 @@ Constraints, candidate ranking and the YAML to write:
 ### 4. Migrate a package (only when asked to)
 
 For each data stream whose status is `READY` (or `READY_AFTER_AUTO_FIX` once you have
-applied the fix):
+applied the fix). **Do the steps in this order.** The two `lint` runs come first on
+purpose: they bracket the `format_version` bump, so every finding is attributable to
+exactly one cause — pre-existing, or the spec jump — and you are never left guessing
+whether it was your columnar edit.
 
-1. Apply the mechanical fixes: `copy_to` → `set`/`append` in the ingest pipeline; a
+1. **Baseline `lint`, on the package exactly as you found it**, before any edit:
+   ```bash
+   cd packages/<pkg>
+   elastic-package lint                      # pristine package, current format_version
+   ```
+   Keep the output. It is the control: whatever it reports is pre-existing under the
+   `format_version` the package already declares and has nothing to do with columnar.
+   Most packages are clean here.
+2. **Bump `format_version` to `"3.7.0"` in the root `manifest.yml` — that one line,
+   nothing else yet — and `lint` again.**
+   ```bash
+   elastic-package lint                      # same package, 3.7.0 spec
+   ```
+   A multi-minor jump turns on every validator added in between, and they fire on code
+   that was already there. `anthropic` went 3.4.x → 3.7.0 and surfaced
+   `SVR00008`/`SVR00009`, which have nothing to do with columnar. Diff this run against
+   the baseline: **every new finding is attributable to the spec jump**. Resolve them
+   here, while the package still has no columnar edits in it — after step 3 you can no
+   longer tell which change produced what.
+
+   A 3.0.x → 3.7.0 jump (seven minors, the common case) surfaces three classes, and
+   they are not equally cheap:
+
+   | Code | Finding | Treatment |
+   | --- | --- | --- |
+   | `SVR00006` | ingest processors missing a `tag` | **many** hits — 62 on `apache`. Each fix is output-neutral but purely mechanical and tedious. An **exclusion with a comment is accepted repo practice**: `akamai`, `mimecast` and `aws` all ship one. Fix or exclude, but say which you chose in the PR. |
+   | `SVR00008` / `SVR00009` | `on_failure` handler shape (`event.kind`, `error.message`) | **Fix them.** The fix only adds an *error* path, which the pipeline tests never take, so `*-expected.json` does not move and no `-g` is needed. |
+   | `JSE00001` | the `message` / `event.original` removal pattern — a `rename` of `message` to `event.original` must be guarded by `if: ctx.event?.original == null` and paired with a `remove` of `message` (`ignore_missing: true`, `if: ctx.event?.original != null`) | **Reason about it before fixing.** Unlike the other two, the fix **inserts a processor on the main path** — it deletes `message` from every document. It is only cheap once you have worked out the placement: typically between the `rename` and the `grok`/`dissect` that recreates `message` from the raw line, so the net output is unchanged. Then re-run `elastic-package test pipeline` **without `-g`** to prove it: green means neutral, a diff means you put it in the wrong place. Never `-g` your way past this one. |
+
+   `validation.yml` lives at the package root — one comment per exclusion, saying why:
+   ```yaml
+   errors:
+     exclude_checks:
+       - SVR00006  # pre-existing: ingest pipeline processors missing required tag
+   ```
+   **Never exclude a columnar finding** — `SVR00011`, `SVR00012`, `SVR00013`, or a
+   hard mapping error (those have no code and cannot be excluded at all). They are
+   what the exercise is about.
+
+   **Excluded checks still print, in full.** `lint` logs every suppressed finding
+   first, under `Skipped errors:`, and that list carries its own
+   `found N validation errors:` header — so a run with 62 silenced `SVR00006` hits
+   reads like a failure. The count that matters is the one in the **final**
+   `linting package failed: found N validation errors:` line; a clean run has no such
+   line at all.
+3. Apply the mechanical fixes: `copy_to` → `set`/`append` in the ingest pipeline; a
    non-`lowercase` `normalizer` → ingest processor or a multi-field; `store: true` →
    delete it; `dynamic: runtime` → `dynamic: true`; and for `doc_values: false`,
    whether the package declares it or inherits it from `external: ecs`, add the
@@ -323,12 +396,21 @@ applied the fix):
    standard mappings of this same package version are unchanged and no existing user
    pays storage for a fix they cannot use. Never write `columnar: {index: true}`.
    The `copy_to` and `normalizer` fixes change what the ingest pipeline emits, so
-   pipeline test expectations will have to be regenerated — see step 4.5 below.
-2. `data_stream/<ds>/manifest.yml` — declare the stream ready. The readiness flag and
+   pipeline test expectations will have to be regenerated — see step 4.7 below.
+4. `data_stream/<ds>/manifest.yml` — declare the stream ready. The readiness flag and
    the index sort are children of the manifest's **single** `elasticsearch:` key, so
-   write them as one block, and **merge it into the `elasticsearch:` that is already
-   there** rather than appending a second one (a duplicate key is not an error in
-   YAML — the file just keeps one of them, and you lose the other silently):
+   write them as one block. **Look at the manifest before pasting**, because there are
+   two different edits here:
+   - the manifest **already has** an `elasticsearch:` key → **merge** these children
+     into it. Do not append a second one: a duplicate key is not an error in YAML, the
+     file just keeps one of them and you lose the other silently.
+   - the manifest has **no** `elasticsearch:` key (common — `nginx`'s `access` and
+     `error` streams, for instance) → **add** it as a new top-level key, conventionally
+     after `streams:` at the end of the file.
+
+   The audit says which one applies, per stream, on its **Stream manifest** line
+   ("merge the block below into the existing `elasticsearch:` key of …" vs "add the
+   block below to … (there is no `elasticsearch:` key yet)"):
    ```yaml
    elasticsearch:
      columnar:
@@ -364,8 +446,8 @@ applied the fix):
      columnar:
        supported: true
    ```
-3. Root `manifest.yml`: `format_version: "3.7.0"`,
-   `conditions.kibana.version: "^9.6.0"`, and a **major** version bump.
+5. Root `manifest.yml`: `conditions.kibana.version: "^9.6.0"` and a **major** version
+   bump (`format_version: "3.7.0"` already went in at step 2).
 
    **A major bump, not a minor one.** Raising the Kibana floor to `^9.6.0` drops 8.x
    and 9.0-9.5 users, and elastic/integrations treats a floor raise as a breaking
@@ -414,8 +496,8 @@ applied the fix):
    > deliberately, only for the integrations picked as tech-preview targets — never
    > catalog-wide**. A `READY` status means "no mapping blocker"; it does not mean
    > "worth a 9.6 floor and a backport line".
-4. `changelog.yml` — a new entry at the top with **two** changes, the breaking one
-   first, both with a placeholder link the user must replace:
+6. `changelog.yml` — a new entry at the top with **at least two** changes, the
+   breaking one first, each with a placeholder link the user must replace:
    ```yaml
    - version: "<new major version>"
      changes:
@@ -432,40 +514,46 @@ applied the fix):
    learns why this package stopped updating for them. Say *declare support for* when
    you only set `columnar.supported: true`, and *enable ... index mode* when you also
    set `index_mode` — the two are different promises to the user reading the changelog.
-5. Build and check, in this order:
+
+   **Plus one `enhancement`/`bugfix` entry for anything you fixed in step 2.** Those
+   lint fixes are not housekeeping: an `on_failure` handler or a `JSE00001` `remove`
+   processor changes what the ingest pipeline does, which is user-visible and belongs
+   in the changelog like any other pipeline change. One entry covering them is enough:
+   ```yaml
+       - description: Add processor tags and on_failure handlers to ingest pipelines.
+         type: enhancement
+         link: https://github.com/elastic/integrations/pull/XXXXX
+   ```
+   Nothing to add only if step 2 found nothing and you excluded nothing.
+7. Build and check, in this order:
    ```bash
    cd packages/<pkg>
-   elastic-package lint                      # run this FIRST, right after the bump
-   # ... fix what is cheap, exclude the rest in validation.yml, one comment each ...
+   elastic-package lint                      # third run: now it also covers your edits
    elastic-package build                     # regenerates docs/README.md
    elastic-package test pipeline             # no -g unless an auto-fix touched the pipeline
    elastic-package test static
    ```
-   - **`lint` immediately after the `format_version` bump, before anything else.** A
-     multi-minor jump turns on every validator added in between, and they fire on
-     code that was already there. Bumping `anthropic` from 3.4.x to 3.7.0 surfaced
-     `SVR00008`/`SVR00009` — the ingest-pipeline `on_failure` requirements — which
-     have nothing to do with columnar. Expect that, and do not read it as damage from
-     your change.
-   - **Prefer fixing those findings when the fix is cheap.** `on_failure` handlers are
-     the cheap case: they add an error path that the pipeline tests never take, so
-     `*-expected.json` does not move. Use `validation.yml` exclusions only for what is
-     genuinely out of scope, each with a comment saying why. **Never exclude a columnar
-     finding** — `SVR00011`, `SVR00012`, `SVR00013`, or a hard mapping error (those
-     have no code and cannot be excluded at all). They are what the exercise is about.
+   - **This `lint` is the third run, not the first.** Steps 1 and 2 already separated
+     the pre-existing findings from the spec-jump ones and dealt with both; anything
+     new that appears *here* was caused by your columnar edits, so do not reach for
+     `validation.yml` — fix it.
    - **`build` is not optional and it is not the same check as `lint`.** `build`
      validates the built zip, the only place the resolved ECS attributes exist — and
      therefore the only place a `columnar: {doc_values: true}` override on an
      `external: ecs` field can be confirmed to have won the merge.
    - **`docs/README.md` is generated by `build`** from `_dev/build/docs/README.md`;
-     never edit the generated file. When validation legitimately fails only on
-     something you cannot fix yet — `PSR00001` for the unreleased 3.7.0 spec, or the
-     `https://github.com/elastic/integrations/pull/XXXXX` changelog placeholder —
-     `elastic-package build --skip-validation` regenerates the docs anyway.
-     `--skip-validation` is acceptable **only** when you have read the whole error
-     list, every entry in it is one of those two, and you re-run `lint`/`build`
-     without the flag before opening the PR. It is **never** acceptable as a way past
-     a columnar finding: that ships a data stream whose index template PUT fails.
+     never edit the generated file. Plain `elastic-package build` renders the README
+     *before* it validates, so a build that then fails validation has **already
+     updated `docs/README.md`** — you do not need `--skip-validation` to get the docs
+     regenerated. What a failed validation costs you is the **zip**, so reach for
+     `--skip-validation` only when you actually need one — typically the
+     `elastic-package install` in **§5 Validate against a stack** below. Even then it is acceptable **only**
+     when you have read the whole error list, every entry in it is one of the two
+     things this migration cannot fix yet (`PSR00001` for the unreleased 3.7.0 spec,
+     or the `https://github.com/elastic/integrations/pull/XXXXX` changelog
+     placeholder), and you re-run `lint`/`build` without the flag before opening the
+     PR. It is **never** acceptable as a way past a columnar finding: that ships a
+     data stream whose index template PUT fails.
    - **`test pipeline` with no `-g`.** Pipeline tests run through
      `_ingest/pipeline/_simulate`; nothing is indexed, so the index mode cannot change
      their output. `-g` is correct only when an auto-fix moved a `copy_to` into a
@@ -479,9 +567,10 @@ explains how to build `elastic-package` against a local package-spec checkout.
 
 ### 5. Validate against a stack
 
-The static half — `lint` → fix/exclude → `build` → `test pipeline` → `test static` —
-is step 4.5 above and is where most migrations end. This step is the rest: install
-against a 9.5+ stack (with a Kibana new enough to have the Fleet support from step 3)
+The static half — baseline `lint` → bump `format_version` and `lint` again →
+fix/exclude → the columnar edits → `lint`/`build` → `test pipeline` → `test static` —
+is steps 4.1 to 4.7 above, and is where most migrations end. This step is the rest: install
+against a 9.5+ stack (with a Kibana new enough to have the Fleet support from step 4.5)
 and verify `index.mode` and `index.sort.field` on the real index → run
 `elastic-package test system` with and without columnar and diff → benchmark the
 dashboard workload at scale.

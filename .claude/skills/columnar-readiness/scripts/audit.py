@@ -87,6 +87,14 @@ SORTABLE_TYPES = SORTABLE_STRING_TYPES | SORTABLE_NUMERIC_TYPES
 # `external: ecs` reference to one of these lands `doc_values: false` in the
 # built fields file even though the package source never mentions it.
 # Verified against ECS v8.11.0 and v9.3.0 schemas.
+#
+# The `external: ecs` declaration is what makes it a blocker, which is why the check
+# below requires it. A package that never declares the field gets its mapping from the
+# stack's `ecs@mappings` component template instead, and that template's
+# `ecs_non_indexed_keyword` dynamic template (`*event.original`,
+# `*gen_ai.agent.description`) sets `index: false` ONLY — no `doc_values: false`
+# (verified on 9.6.0-SNAPSHOT). So a pipeline that merely populates `event.original`
+# is columnar-clean and must not be flagged.
 ECS_DOC_VALUES_FALSE = {
     "event.original",
     "gen_ai.agent.description",
@@ -2408,6 +2416,7 @@ def audit_data_stream(pkg_dir: str, ds_dir: str, ds_name: str,
         "columnar_enabled": False,
         "columnar_supported_with_blockers": False,
         "existing_index_sort": None,
+        "has_es_key": False,
         "inputs": [],
         "findings": [],
         "errors": [],
@@ -2424,6 +2433,11 @@ def audit_data_stream(pkg_dir: str, ds_dir: str, ds_name: str,
         return stream
 
     stream["type"] = manifest.get("type")
+    # Whether the manifest has an `elasticsearch:` key *at all*, which decides the
+    # wording of the Stream manifest line: "merge into the existing key" vs "add a
+    # new top-level key". Membership, not truthiness — a present-but-empty
+    # `elasticsearch:` still has to be merged into, never duplicated.
+    stream["has_es_key"] = "elasticsearch" in manifest
     es_section = manifest.get("elasticsearch") if isinstance(manifest.get("elasticsearch"), dict) else {}
     stream["index_mode"] = es_section.get("index_mode")
     # package-spec 3.7.0 stream-level readiness flag. Fleet shows the per-stream
@@ -2716,6 +2730,27 @@ def stream_manifest_block(s: Dict[str, Any]) -> Tuple[List[str], List[str]]:
     return body, notes
 
 
+def stream_manifest_placement(s: Dict[str, Any]) -> str:
+    """Where the emitted `elasticsearch:` block goes in this stream's manifest.
+
+    Two different edits, and the reader cannot tell which one they are making from
+    the snippet alone: a manifest that already has an `elasticsearch:` key needs the
+    children merged into it (a second key is a duplicate and YAML silently keeps one
+    of them), while a manifest with no such key needs it added as a brand-new
+    top-level key. `has_es_key` is read from the manifest, so the line states which.
+    """
+    ds = s["data_stream"]
+    if s.get("has_es_key"):
+        return (f"merge the block below into the existing `elasticsearch:` key of "
+                f"`data_stream/{ds}/manifest.yml` — a manifest has a **single** "
+                f"`elasticsearch:` key, so add these children to the one already "
+                f"there; a second `elasticsearch:` is a duplicate key and the file "
+                f"keeps only one of them")
+    return (f"add the block below to `data_stream/{ds}/manifest.yml` (there is no "
+            f"`elasticsearch:` key yet) — it goes in as a new top-level key, "
+            f"conventionally after `streams:` at the end of the file")
+
+
 def _sort_summary(fields: List[str], orders: List[str]) -> str:
     """`organization.id asc, @timestamp desc`, for prose rather than YAML."""
     pairs = []
@@ -2811,11 +2846,7 @@ def md_package(result: Dict[str, Any]) -> str:
         body, notes = stream_manifest_block(s)
         segments: List[str] = list(notes)
         if body:
-            segments.append(
-                f"merge the block below into `data_stream/{s['data_stream']}/manifest.yml` — "
-                f"a manifest has a **single** `elasticsearch:` key, so add these children to "
-                f"the one already there; a second `elasticsearch:` is a duplicate key and "
-                f"the file keeps only one of them")
+            segments.append(stream_manifest_placement(s))
         lines.append("- Stream manifest: "
                      + ("; ".join(segments) if segments else "nothing to add") + ".")
         if body:
@@ -2877,11 +2908,19 @@ def md_package(result: Dict[str, Any]) -> str:
         lines.append("git clone https://github.com/elastic/detection-rules")
         lines.append("cd detection-rules")
         lines.append(f"grep -rl 'logs-{result['package']}\\.' rules/ | xargs grep -l '_source'")
+        lines.append(f"grep -rl 'logs-{result['package']}\\.' rules/ | wc -l")
         lines.append("```")
         lines.append("")
-        lines.append("A hit is a rule that walks the document source of a data stream in this "
-                     "package — read it before declaring readiness. Rules that only query "
-                     "*fields* (KQL, EQL, ES|QL without `METADATA _source`) are unaffected.")
+        lines.append("A hit on the first command is a rule that walks the document source of a "
+                     "data stream in this package — read it before declaring readiness. Rules "
+                     "that only query *fields* (KQL, EQL, ES|QL without `METADATA _source`) "
+                     "are unaffected.")
+        lines.append("")
+        lines.append("Record both numbers in the PR notes — "
+                     "\"N detection rules query this package; none read `_source`\", or "
+                     "\"no detection rules query this package\" when the second command "
+                     "returns 0. \"No detection rule concerns\" does not tell a reviewer "
+                     "whether the check ran.")
         lines.append("")
     return "\n".join(lines)
 

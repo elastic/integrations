@@ -237,8 +237,8 @@ modes.
 **This one is invisible in the package source.** `elastic-package`'s dependency manager
 (`internal/fields/dependency_manager.go`, `transformImportedField`) copies `index` and
 `doc_values` from the ECS schema into the built package when a field is declared as
-`external: ecs`. ECS defines `event.original` with `index: false, doc_values: false`,
-so:
+`external: ecs`. The **ECS schema** defines `event.original` with
+`index: false, doc_values: false`, so:
 
 ```yaml
 # data_stream/<ds>/fields/ecs.yml  — source
@@ -305,6 +305,44 @@ package will fail, whatever spec version it declares.
 
 **Known in catalog:** 49 packages, 72 data streams. Run
 `scripts/audit.py packages/ --catalog` for the current list.
+
+#### The dynamic path is *not* a blocker — packages that never declare the field
+
+`doc_values: false` is an attribute of the **ECS schema**, and a package only imports
+that schema where it writes `external: ecs`. It is **not** an attribute of
+`event.original` as such, and that distinction decides whether a package has the
+blocker at all.
+
+A package that never declares `event.original` — `rabbitmq`, `apache`, `nginx`, and
+most `logfile`/`filestream` packages — puts no mapping for it in its index template at
+all. The field is mapped at index time by the stack's `ecs@mappings` component
+template, whose `ecs_non_indexed_keyword` dynamic template matches `*event.original`
+and `*gen_ai.agent.description` and sets:
+
+```json
+{ "ecs_non_indexed_keyword": {
+    "mapping": { "type": "keyword", "index": false },
+    "path_match": ["*event.original", "*gen_ai.agent.description"] } }
+```
+
+`index: false` **only** — no `doc_values: false` (`ecs@mappings.json` in
+`x-pack/plugin/core/template-resources`, verified on 9.6.0-SNAPSHOT). Its sibling
+`ecs_non_indexed_long` does the same for `*.x509.public_key_exponent`, so the whole
+`doc_values: false` list above behaves this way on the dynamic path. Doc values are
+on, so columnar accepts the mapping and reconstructs the field from them.
+
+An ingest pipeline that merely *populates* `event.original` — the `rename` + `remove`
+pattern in half the log packages — is therefore columnar-clean and is **not** a
+finding. The audit requires `external: ecs` on the field before it raises
+`doc_values_false_ecs`, for exactly this reason.
+
+So the blocker exists in exactly two situations:
+
+1. the package declares the field with `external: ecs` (this section), or
+2. the package writes `doc_values: false` on it itself (A2).
+
+Nothing else about `event.original` — populating it, renaming into it, reading it back
+— is a columnar problem.
 
 ### A2c. `store: true` — `store_true`
 

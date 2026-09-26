@@ -104,6 +104,20 @@ manifest (see the **Stream manifest** line below), because a manifest has a sing
 the manifest already declares is read back into `existing_index_sort` (dotted or nested
 spelling) and reported as "already present" instead of being proposed again.
 
+The **Stream manifest** line also states *where the block goes*, read from the manifest
+(`has_es_key`), because those are two different edits:
+
+- manifest already has an `elasticsearch:` key → "merge the block below into the
+  existing `elasticsearch:` key of `data_stream/<ds>/manifest.yml` — a manifest has a
+  **single** `elasticsearch:` key, so add these children to the one already there; a
+  second `elasticsearch:` is a duplicate key and the file keeps only one of them"
+- manifest has no `elasticsearch:` key → "add the block below to
+  `data_stream/<ds>/manifest.yml` (there is no `elasticsearch:` key yet) — it goes in
+  as a new top-level key, conventionally after `streams:` at the end of the file"
+
+`nginx` shows both in one run: `access` and `error` have no `elasticsearch:` key,
+`stubstatus` does.
+
 ## Per-package report
 
 ```markdown
@@ -125,7 +139,7 @@ spelling) and reported as "already present" instead of being proposed again.
 - Columnar opt-in: <declared ready via `elasticsearch.columnar.supported: true` | columnar by default via `index_mode: logsdb_columnar` | not declared>. Plumbing: `format_version: "3.7.0"` + `conditions.kibana.version: "^9.6.0"` — see the package header for the 9.6 minimum-stack cost.
 - Sort: **<recommendation>** — <why: inputs, host.name evidence>
 - `_source` consumers: none found in this package (no transforms reading `_source`, no scripted/runtime fields in `kibana/`, no ES|QL `METADATA _source`); object arrays: none in the sampled documents (`sample_event.json` and up to four `_dev/test/pipeline/*-expected.json`); fields of type `flattened` are exempt, they keep their JSON verbatim: `<pkg>.<ds>.updates`. Detection rules are **not** part of the package — still check `elastic/detection-rules` by hand for rules that read `_source` of `logs-<pkg>.*` (command at the end of this report).
-- Stream manifest: merge the block below into `data_stream/<ds>/manifest.yml` — a manifest has a **single** `elasticsearch:` key, so add these children to the one already there; a second `elasticsearch:` is a duplicate key and the file keeps only one of them.
+- Stream manifest: <merge the block below into the existing `elasticsearch:` key of `data_stream/<ds>/manifest.yml` — a manifest has a **single** `elasticsearch:` key, so add these children to the one already there; a second `elasticsearch:` is a duplicate key and the file keeps only one of them | add the block below to `data_stream/<ds>/manifest.yml` (there is no `elasticsearch:` key yet) — it goes in as a new top-level key, conventionally after `streams:` at the end of the file>.
 
   ```yaml
   elasticsearch:
@@ -181,7 +195,12 @@ spelling) and reported as "already present" instead of being proposed again.
 git clone https://github.com/elastic/detection-rules
 cd detection-rules
 grep -rl 'logs-<pkg>\.' rules/ | xargs grep -l '_source'
+grep -rl 'logs-<pkg>\.' rules/ | wc -l
 ```
+
+A hit on the first command is a rule that walks the document source of a data stream in this package — read it before declaring readiness. Rules that only query *fields* (KQL, EQL, ES|QL without `METADATA _source`) are unaffected.
+
+Record both numbers in the PR notes — "N detection rules query this package; none read `_source`", or "no detection rules query this package" when the second command returns 0. "No detection rule concerns" does not tell a reviewer whether the check ran.
 ```
 
 The **Stream manifest** line is idempotent: whatever the manifest already declares is
