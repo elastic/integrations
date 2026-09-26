@@ -84,6 +84,26 @@ elasticsearch:
     supported: true
 ```
 
+**A manifest has one `elasticsearch:` key.** The readiness flag and the index sort are
+children of the same mapping, so they go in as one merged block — and that block is
+merged into whatever `elasticsearch:` the manifest already has (`index_mode`,
+`source_mode`, an existing `index_template`). Pasting a second `elasticsearch:`
+snippet is a duplicate key: YAML does not error, it keeps one of them and drops the
+other, and the migration silently loses either the flag or the sort.
+
+```yaml
+# data_stream/<ds>/manifest.yml — the whole block, merged into the existing key
+elasticsearch:
+  columnar:
+    supported: true
+  index_template:              # only when an explicit sort was proposed
+    settings:
+      index:
+        sort:
+          field: ["<field>", "@timestamp"]
+          order: ["asc", "desc"]
+```
+
 This asserts "this data stream is columnar-ready". The 3.7.0 validator enforces
 it: setting it while the stream still has a Class A blocker is a validation
 error. Fleet enables the per-stream columnar opt-in toggle for a stream that sets
@@ -103,7 +123,14 @@ Both constructs are read by **Fleet**, not only by the spec validator, so both
 need a `conditions.kibana.version` of at least the first Kibana minor that ships
 that Fleet support. That is **9.6**, so write `"^9.6.0"` (on older Kibana the
 override and the flag are silently ignored, so the toggle is unavailable and any
-`doc_values: false` field will make a manual columnar opt-in fail). And both need
+`doc_values: false` field will make a manual columnar opt-in fail).
+
+**Replace the whole range, do not add a branch to it.** A package on
+`"^8.19.0 || ^9.1.0"` becomes `"^9.6.0"`, full stop — every `||` branch has to be
+9.6+, because one older branch is precisely what keeps Fleet offering this version to
+a stack that ignores both constructs. Dropping the older branches is the point of the
+declaration and its cost at the same time; if the package has to keep serving older
+stacks, it does not declare readiness on this release line. And both need
 `format_version: "3.7.0"` in the root
 manifest: declaring either one under an older spec version is
 `columnar_requires_spec_3_7`. Setting `supported: true` on a stream that still
@@ -621,13 +648,34 @@ that is the per-integration lever.
 Columnar `_source` **is not a faithful representation of the original source**. It
 is reconstructed from doc values, and:
 
-- **nested objects are flattened**, which can impact runtime fields and other
-  consumers that access `_source` and expect a hierarchical structure;
+- **nested objects are flattened to dotted keys** — the document comes back as
+  `{"event.id": "...", "anthropic.audit.actor.type": "user_actor"}` where logsdb
+  returns `{"event": {"id": "..."}}`. Any consumer doing nested access on the source
+  (`_source.event.id`, Painless `params._source.event.id`, an ES|QL
+  `JSON_EXTRACT(_source, "event.id")`-style path, Kibana code walking the object)
+  breaks; field-level access — `doc[...]`, KQL, aggregations, ES|QL columns — is
+  unaffected. `geo_point` values are the exception that stays an object: they still
+  come back as `{lat, lon}`;
+- **single-element arrays collapse to scalars** — `event.category: ["web"]` reads
+  back as `"web"`. logsdb keeps the array because it defaults
+  `index.mapping.synthetic_source_keep: arrays`, a setting columnar does not support.
+  A consumer that indexes into the array (`event.category[0]`) or asserts a list type
+  has to tolerate a scalar. Observed on `event.category`, `event.type`, `related.ip`,
+  `related.hosts` and `anthropic.audit.scopes` in the same document set;
 - **object arrays under a non-`nested` object become parallel arrays** —
   `[{a:1,b:2},{a:3,b:4}]` reads back as `{a:[1,3], b:[2,4]}`. The association
   between one element's leaves is gone;
 - **multi-value order is preserved** (unlike plain logsdb synthetic source, which
   sorts and de-duplicates).
+
+**Those four are the complete set of expected differences.** They were measured on
+`anthropic`, system-testing the same mock data twice — once on logsdb, once with a
+temporary `index_mode: logsdb_columnar` — and matching the 8 resulting documents on
+`event.id`: **zero value differences**, only shape. Anything else you see in such a
+diff — a changed value, a dropped field that is explicitly mapped, numeric precision
+loss, `null`/empty-string confusion — is a bug, not a columnar effect. The procedure
+is in
+[`correctness-and-performance.md`](correctness-and-performance.md#comparing-the-two-modes).
 
 **The ES|QL exception.** Experiences that use ES|QL are **mostly unaffected**: ES|QL
 reads doc values, not `_source`. The exception is a query that explicitly requests
@@ -640,6 +688,33 @@ document, so nothing in this section applies to them and the audit never flags t
 So a data stream should not be declared `elasticsearch.columnar.supported: true`
 until this review is done. It is a per-integration question about *consumers*, which
 no mapping check can answer.
+
+### Reading a negative result
+
+The audit prints the C6-C8 outcome for every data stream **including when it is
+empty** — "`_source` consumers: none found in this package (no transforms reading
+`_source`, no scripted/runtime fields in `kibana/`, no ES|QL `METADATA _source`);
+object arrays: none in the sampled documents". Silence would be ambiguous: an absent
+Class C section looks identical to a check that never ran.
+
+Fields of type `flattened` that *do* hold an object array in the sampled documents are
+listed on that same line as exempt (they keep their JSON verbatim under columnar, so
+the parallel-array reshaping does not apply to them) — `anthropic.audit.updates` is
+one. Naming them is the difference between "checked, exempt" and "not looked at".
+
+**The detection-rules check is manual and always outstanding.** Rules that query this
+package's data streams live in `elastic/detection-rules` and ship through
+`security_detection_engine`, so no audit of the package can see them:
+
+```bash
+git clone https://github.com/elastic/detection-rules
+cd detection-rules
+grep -rl 'logs-<pkg>\.' rules/ | xargs grep -l '_source'
+```
+
+A hit is a rule that walks the document source of one of this package's data streams.
+Rules that only query *fields* (KQL, EQL, ES|QL without `METADATA _source`) are
+unaffected.
 
 ### C6. Transform reads `_source` — `source_consumer_transform`
 

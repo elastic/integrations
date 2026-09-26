@@ -45,6 +45,18 @@ example documents, which come back as parallel arrays. Ingest pipelines are neve
 flagged (they run before indexing), and plain ES|QL is unaffected unless the query
 asks for `METADATA _source`.
 
+**The negative result is printed too.** Every in-scope data stream gets a
+`` `_source` consumers: `` line whether or not anything was found, because an empty
+Class C section is indistinguishable from a check that never ran. When the scan is
+clean the line reads "none found in this package (no transforms reading `_source`, no
+scripted/runtime fields in `kibana/`, no ES|QL `METADATA _source`); object arrays: none
+in the sampled documents", and it names any `flattened` field that held an object array
+in the sample as exempt. It always ends with the reminder that detection rules live in
+`elastic/detection-rules` and have to be checked by hand; the command is in the
+per-package **`_source` consumers the audit cannot see (manual)** section at the end of
+the report. In JSON this is `source_consumers`:
+`{"transform": 0, "kibana": 0, "object_arrays": 0, "flattened_exempt": [...]}`.
+
 Two more checks on the plumbing rather than the mappings:
 `columnar_requires_spec_3_7` (Class A, `auto_fix`) fires when either construct
 appears while the root `format_version` is below 3.7.0 — bump it — and
@@ -80,9 +92,17 @@ Sort recommendation is one of (JSON: `sort.class`):
   choice` (`no_candidate`) — no field passed validation. Deliberately not a guess: a
   weak or multi-valued sort key is worse than none.
 
-Only `default_ok`, `degraded`, `receiver_proposed`, `explicit` and `no_candidate`
-carry an `explicit_sort_yaml` block; `review_candidate` deliberately does not, so a
-migration PR cannot pick up a dashboard hint by accident.
+`receiver_proposed`, `explicit`, `receiver_no_candidate` and `no_candidate` carry an
+`explicit_sort_yaml` fragment; `default_ok` and `degraded` do not (there is nothing to
+write — the logs profile default already applies), and `review_candidate` deliberately
+does not, so a migration PR cannot pick up a dashboard hint by accident.
+
+In the Markdown report that fragment is never printed on its own: it is merged with
+`columnar.supported: true` into the **one** `elasticsearch:` block of the stream
+manifest (see the **Stream manifest** line below), because a manifest has a single
+`elasticsearch:` key and two pasted snippets would be a duplicate key. An `index.sort`
+the manifest already declares is read back into `existing_index_sort` (dotted or nested
+spelling) and reported as "already present" instead of being proposed again.
 
 ## Per-package report
 
@@ -91,8 +111,8 @@ migration PR cannot pick up a dashboard hint by accident.
 
 - Status: **<STATUS>**
 - Package type: `integration`, version `X.Y.Z`, format_version `3.x.y`
-- Kibana condition: `^9.x.0` (needs at least `^9.6.0`, the first Kibana minor with Fleet support for `columnar.supported` and the field-level `columnar` overrides — the Fleet support ships in 9.6; on older Kibana the override and the flag are silently ignored, so the toggle is unavailable and any `doc_values: false` field will make a manual columnar opt-in fail)
-- **Cost:** declaring `columnar.supported` (and bumping `format_version` to `"3.7.0"`) raises this package's **minimum stack version to 9.6**. Users on an older stack stop receiving *any* further update to this package, so a bug fix for them needs a backport branch/release line. Declare readiness deliberately, for the packages picked as tech-preview targets — not catalog-wide.
+- Kibana condition: `^8.19.0 || ^9.1.0` — declaring readiness means **replacing the whole range** with `conditions.kibana.version: "^9.6.0"`, not adding a branch to it: every `||` branch has to be 9.6+, so the older branches go away. That is the point of the declaration *and* its cost — if this package must keep serving older stacks, do not declare readiness on this release line (…). <When the package is already at ^9.6.0 the line instead reads "already at the `^9.6.0` floor …; nothing to change".>
+- **Cost:** … raises this package's **minimum stack version to 9.6**. … That makes it a **breaking change**: ship it as a **major** version bump with a `type: breaking-change` changelog entry ("Raise the minimum required Kibana version to 9.6.0 …") alongside the `enhancement` one — the convention elastic/integrations follows for a Kibana floor raise (`aws` 7.0.0, `aws_bedrock` 2.0.0, `aws_bedrock_agentcore` 1.0.0). Declare readiness deliberately, for the packages picked as tech-preview targets — not catalog-wide.
 
 | Data stream | Status | Findings | Index sort |
 | --- | --- | --- | --- |
@@ -102,13 +122,15 @@ migration PR cannot pick up a dashboard hint by accident.
 
 - Inputs: `cel`, `httpjson`
 - Current `index_mode`: `unset (logsdb default)`
-- Columnar opt-in: <declared ready via `elasticsearch.columnar.supported: true` | columnar by default via `index_mode: logsdb_columnar` | not declared>. Either declaration also needs `format_version: "3.7.0"` and `conditions.kibana.version: "^9.6.0"` — and with it the 9.6 minimum-stack cost above.
+- Columnar opt-in: <declared ready via `elasticsearch.columnar.supported: true` | columnar by default via `index_mode: logsdb_columnar` | not declared>. Plumbing: `format_version: "3.7.0"` + `conditions.kibana.version: "^9.6.0"` — see the package header for the 9.6 minimum-stack cost.
 - Sort: **<recommendation>** — <why: inputs, host.name evidence>
-
-  Add to `data_stream/<ds>/manifest.yml`:
+- `_source` consumers: none found in this package (no transforms reading `_source`, no scripted/runtime fields in `kibana/`, no ES|QL `METADATA _source`); object arrays: none in the sampled documents (`sample_event.json` and up to four `_dev/test/pipeline/*-expected.json`); fields of type `flattened` are exempt, they keep their JSON verbatim: `<pkg>.<ds>.updates`. Detection rules are **not** part of the package — still check `elastic/detection-rules` by hand for rules that read `_source` of `logs-<pkg>.*` (command at the end of this report).
+- Stream manifest: merge the block below into `data_stream/<ds>/manifest.yml` — a manifest has a **single** `elasticsearch:` key, so add these children to the one already there; a second `elasticsearch:` is a duplicate key and the file keeps only one of them.
 
   ```yaml
   elasticsearch:
+    columnar:
+      supported: true
     index_template:
       settings:
         index:
@@ -152,7 +174,23 @@ migration PR cannot pick up a dashboard hint by accident.
 ## Dashboard filter fields (sort tie-break)
 
 `field.a`, `field.b`, …
+
+## `_source` consumers the audit cannot see (manual)
+
+```bash
+git clone https://github.com/elastic/detection-rules
+cd detection-rules
+grep -rl 'logs-<pkg>\.' rules/ | xargs grep -l '_source'
 ```
+```
+
+The **Stream manifest** line is idempotent: whatever the manifest already declares is
+reported as "already present" (`` `elasticsearch.columnar.supported: true` already
+present; explicit `index.sort` already present (`organization.id` asc, `@timestamp`
+desc) ``) and left out of the YAML block, which disappears entirely once there is
+nothing to add. Re-running the audit after a migration is therefore a check that the
+migration landed. On a stream that is not READY the flag is not proposed at all — the
+3.7.0 validator would reject it — and the line says so.
 
 ## Catalog report
 
@@ -220,9 +258,17 @@ Per data stream, alongside `index_mode`:
 {
   "columnar_supported": true,
   "columnar_enabled": true,
-  "columnar_supported_with_blockers": false
+  "columnar_supported_with_blockers": false,
+  "existing_index_sort": { "field": ["organization.id", "@timestamp"], "order": ["asc", "desc"] },
+  "source_consumers": { "transform": 0, "kibana": 0, "object_arrays": 0,
+                        "flattened_exempt": ["anthropic.audit.updates"] }
 }
 ```
+
+`existing_index_sort` is `null` when the manifest declares no sort; it is read from
+both the nested (`index: {sort: {...}}`) and the dotted (`index.sort.field`) spelling.
+`source_consumers` is the C6-C8 scan result, including when every count is zero — that
+is the negative the Markdown line states in words.
 
 `severity` is one of `blocker`, `review`, `auto_fix`, `info` and maps 1:1 onto the
 status table above. Use `--format json` when feeding another tool; use the Markdown
