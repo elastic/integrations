@@ -10,6 +10,9 @@ platform_type_lowercase="${platform_type,,}"
 
 SCRIPTS_BUILDKITE_PATH="${WORKSPACE}/.buildkite/scripts"
 
+# shellcheck source=content_dependencies.sh
+source "${SCRIPTS_BUILDKITE_PATH}/content_dependencies.sh"
+
 readonly LONG_RUNNING_BRANCH_PATTERN="^(backport-|feature/)"
 
 export ELASTIC_PACKAGE_BIN=${WORKSPACE}/build/elastic-package
@@ -1023,8 +1026,13 @@ run_tests_package() {
         return 1
     fi
 
-    # For non serverless, each Elastic stack is boot up checking each package manifest
+    # For non serverless, each Elastic stack is boot up checking each package manifest.
+    # Build same-checkout content dependencies first so the local package registry
+    # can serve versions that are not published to production EPR yet.
     if ! is_serverless ; then
+        if ! build_local_content_dependencies ; then
+            return 1
+        fi
         if ! prepare_stack ; then
             return 1
         fi
