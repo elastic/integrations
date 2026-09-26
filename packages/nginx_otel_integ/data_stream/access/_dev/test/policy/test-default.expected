@@ -1,0 +1,109 @@
+connectors:
+    forward/componentid-0: {}
+exporters:
+    elasticsearch/componentid-0:
+        endpoints:
+            - https://elasticsearch:9200
+inputs: []
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-nginx.access.otel-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+processors:
+    resourcedetection/componentid-0:
+        detectors:
+            - system
+        system:
+            hostname_sources:
+                - os
+    transform/componentid-1:
+        error_mode: ignore
+        log_statements:
+            - conditions:
+                - IsMatch(body, "^\\S+ - .+ \\[.+\\] \".+\" \\d+ \\d+ \".+\" \".+\"")
+              context: log
+              statements:
+                - set(body, ExtractGrokPatterns(body, "%{IPORHOST:source.address} - (-|%{DATA:user.name}) \\[%{HTTPDATE:nginx.access.time}\\] \"%{WORD:http.request.method} %{DATA:url.original} HTTP/%{NUMBER:http.version}\" %{NUMBER:http.response.status_code:long} %{NUMBER:http.response.body.size:long} \"(-|%{DATA:http.request.referrer})\" \"(-|%{DATA:user_agent.original})\"", true))
+                - set(event_name, "nginx.access")
+                - set(attributes["event.name"], "nginx.access")
+                - set(time, Time(body["nginx.access.time"], "%d/%b/%Y:%H:%M:%S %z"))
+                - delete_key(body, "nginx.access.time")
+                - set(attributes["http.response.status_code"], body["http.response.status_code"])
+                - set(attributes["http.request.method"], body["http.request.method"])
+                - set(attributes["url.original"], body["url.original"])
+                - set(attributes["url.path"], Split(body["url.original"], "?")[0]) where body["url.original"] != nil
+                - set(attributes["url.query"], Split(body["url.original"], "?")[1]) where body["url.original"] != nil and Len(Split(body["url.original"], "?")) > 1
+                - set(attributes["source.address"], body["source.address"])
+                - set(attributes["client.address"], body["source.address"])
+                - set(attributes["http.response.body.size"], body["http.response.body.size"])
+                - set(attributes["http.version"], body["http.version"])
+                - set(attributes["network.protocol.name"], "http")
+                - set(attributes["network.protocol.version"], body["http.version"])
+                - set(attributes["user_agent.original"], body["user_agent.original"])
+                - set(attributes["user.name"], body["user.name"]) where body["user.name"] != nil and body["user.name"] != "-"
+                - set(attributes["http.request.header.referer"], body["http.request.referrer"]) where body["http.request.referrer"] != nil and body["http.request.referrer"] != "-"
+            - conditions:
+                - body["user_agent.original"] != nil
+              context: log
+              statements:
+                - merge_maps(body, UserAgent(body["user_agent.original"]), "upsert")
+                - set(attributes["user_agent.name"], body["user_agent.name"])
+                - set(attributes["user_agent.version"], body["user_agent.version"]) where body["user_agent.version"] != nil
+                - set(attributes["os.name"], body["os.name"]) where body["os.name"] != nil
+                - set(attributes["os.version"], body["os.version"]) where body["os.version"] != nil
+    transform/componentid-2:
+        log_statements:
+            - context: log
+              statements:
+                - set(attributes["data_stream.type"], "logs")
+                - set(attributes["data_stream.dataset"], "nginx.access")
+                - set(attributes["data_stream.namespace"], "ep")
+receivers:
+    filelog/componentid-0:
+        encoding: utf-8
+        fingerprint_size: 1kb
+        force_flush_period: 500ms
+        include:
+            - /var/log/nginx/access.log
+        include_file_name: true
+        include_file_name_resolved: false
+        include_file_owner_group_name: false
+        include_file_owner_name: false
+        include_file_path: true
+        include_file_path_resolved: false
+        include_file_record_number: false
+        include_file_record_offset: false
+        initial_buffer_size: 16KiB
+        max_concurrent_files: 1024
+        max_log_size: 1MiB
+        poll_interval: 200ms
+        preserve_leading_whitespaces: false
+        preserve_trailing_whitespaces: false
+        start_at: beginning
+secret_references: []
+service:
+    pipelines:
+        logs/componentid-0:
+            exporters:
+                - elasticsearch/componentid-0
+            receivers:
+                - forward/componentid-0
+        logs/componentid-1:
+            exporters:
+                - forward/componentid-0
+            processors:
+                - transform/componentid-1
+                - resourcedetection/componentid-0
+                - transform/componentid-2
+            receivers:
+                - filelog/componentid-0

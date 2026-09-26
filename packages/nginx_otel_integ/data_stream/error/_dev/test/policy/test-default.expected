@@ -1,0 +1,150 @@
+connectors:
+    forward/componentid-0: {}
+exporters:
+    elasticsearch/componentid-0:
+        endpoints:
+            - https://elasticsearch:9200
+inputs: []
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-nginx.error.otel-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+processors:
+    resourcedetection/componentid-0:
+        detectors:
+            - system
+        system:
+            hostname_sources:
+                - os
+    transform/componentid-1:
+        error_mode: ignore
+        log_statements:
+            - conditions:
+                - IsMatch(body, "^\\d{4}/\\d{2}/\\d{2} \\d{2}:\\d{2}:\\d{2} \\[.+\\]")
+              context: log
+              statements:
+                - 'set(body, ExtractGrokPatterns(body, "%{DATA:nginx.error.time} \\[%{LOGLEVEL:log.level}\\] %{NUMBER:process.pid:long}#%{NUMBER:process.thread.id:long}: (\\*%{NUMBER:nginx.error.connection_id:long} )?%{GREEDYMULTILINE:message}", true, ["GREEDYMULTILINE=(.|\\n)*", "LOGLEVEL=[a-zA-Z]+"]))'
+                - set(event_name, "nginx.error")
+                - set(attributes["event.name"], "nginx.error")
+                - set(time, Time(body["nginx.error.time"], "%Y/%m/%d %H:%M:%S"))
+                - delete_key(body, "nginx.error.time")
+                - set(severity_text, body["log.level"])
+                - set(attributes["log.level"], body["log.level"])
+                - set(attributes["message"], body["message"])
+                - set(attributes["process.pid"], body["process.pid"])
+                - set(attributes["process.thread.id"], body["process.thread.id"])
+                - set(attributes["nginx.error.connection_id"], body["nginx.error.connection_id"]) where body["nginx.error.connection_id"] != nil
+            - conditions:
+                - body["log.level"] == "debug"
+              context: log
+              statements:
+                - set(severity_number, 5)
+            - conditions:
+                - body["log.level"] == "info"
+              context: log
+              statements:
+                - set(severity_number, 9)
+            - conditions:
+                - body["log.level"] == "notice"
+              context: log
+              statements:
+                - set(severity_number, 10)
+            - conditions:
+                - body["log.level"] == "warn"
+              context: log
+              statements:
+                - set(severity_number, 13)
+            - conditions:
+                - body["log.level"] == "error"
+              context: log
+              statements:
+                - set(severity_number, 17)
+            - conditions:
+                - body["log.level"] == "crit"
+              context: log
+              statements:
+                - set(severity_number, 21)
+            - conditions:
+                - body["log.level"] == "alert"
+              context: log
+              statements:
+                - set(severity_number, 22)
+            - conditions:
+                - body["log.level"] == "emerg"
+              context: log
+              statements:
+                - set(severity_number, 23)
+            - conditions:
+                - body["message"] != nil
+              context: log
+              statements:
+                - 'merge_maps(body, ExtractPatterns(body["message"], "client: (?P<client_address>[^,\\s]+)(?:, server: (?P<nginx_error_server>[^,\\s]+))?(?:, request: \"(?P<http_request_method>\\w+) (?P<url_original>\\S+) HTTP/(?P<http_version>[\\d.]+)\")?(?:, host: \"(?P<server_address>[^\"]+)\")?"), "upsert")'
+                - set(attributes["client.address"], body["client_address"]) where body["client_address"] != nil and body["client_address"] != ""
+                - set(attributes["server.address"], body["server_address"]) where body["server_address"] != nil and body["server_address"] != ""
+                - set(attributes["server.address"], body["nginx_error_server"]) where attributes["server.address"] == nil and body["nginx_error_server"] != nil and body["nginx_error_server"] != ""
+                - set(attributes["http.request.method"], body["http_request_method"]) where body["http_request_method"] != nil and body["http_request_method"] != ""
+                - set(attributes["url.original"], body["url_original"]) where body["url_original"] != nil and body["url_original"] != ""
+                - set(attributes["url.path"], Split(body["url_original"], "?")[0]) where body["url_original"] != nil and body["url_original"] != ""
+                - set(attributes["url.query"], Split(body["url_original"], "?")[1]) where body["url_original"] != nil and Len(Split(body["url_original"], "?")) > 1
+                - set(attributes["http.version"], body["http_version"]) where body["http_version"] != nil and body["http_version"] != ""
+                - set(attributes["network.protocol.name"], "http") where body["http_version"] != nil and body["http_version"] != ""
+                - set(attributes["network.protocol.version"], body["http_version"]) where body["http_version"] != nil and body["http_version"] != ""
+    transform/componentid-2:
+        log_statements:
+            - context: log
+              statements:
+                - set(attributes["data_stream.type"], "logs")
+                - set(attributes["data_stream.dataset"], "nginx.error")
+                - set(attributes["data_stream.namespace"], "ep")
+receivers:
+    filelog/componentid-0:
+        encoding: utf-8
+        fingerprint_size: 1kb
+        force_flush_period: 500ms
+        include:
+            - /var/log/nginx/error.log
+        include_file_name: true
+        include_file_name_resolved: false
+        include_file_owner_group_name: false
+        include_file_owner_name: false
+        include_file_path: true
+        include_file_path_resolved: false
+        include_file_record_number: false
+        include_file_record_offset: false
+        initial_buffer_size: 16KiB
+        max_concurrent_files: 1024
+        max_log_size: 1MiB
+        multiline:
+            line_start_pattern: ^\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2}
+            omit_pattern: false
+        poll_interval: 200ms
+        preserve_leading_whitespaces: false
+        preserve_trailing_whitespaces: false
+        start_at: beginning
+secret_references: []
+service:
+    pipelines:
+        logs/componentid-0:
+            exporters:
+                - elasticsearch/componentid-0
+            receivers:
+                - forward/componentid-0
+        logs/componentid-1:
+            exporters:
+                - forward/componentid-0
+            processors:
+                - transform/componentid-1
+                - resourcedetection/componentid-0
+                - transform/componentid-2
+            receivers:
+                - filelog/componentid-0
