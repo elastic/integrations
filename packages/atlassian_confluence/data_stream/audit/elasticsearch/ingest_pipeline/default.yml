@@ -50,6 +50,12 @@ processors:
           list.removeIf(v -> v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0));
         }
         handleMap(ctx.json);
+  - set:
+      tag: set_config_atlassian_cloud_from_content
+      field: _config.atlassian_cloud
+      value: true
+      description: Route Cloud-format documents (identified by `creationDate` and the absence of the self-hosted `timestamp` field) to the cloud pipeline even when the input did not set `_config.atlassian_cloud`, for example when the document arrived via Logstash or a misconfigured policy.
+      if: ctx._config?.atlassian_cloud == null && ctx.json?.creationDate != null && ctx.json?.timestamp == null
   - pipeline:
       tag: pipeline_cloud_a9467602
       name: '{{ IngestPipeline "cloud" }}'
@@ -344,11 +350,33 @@ processors:
             if(ctx.confluence?.audit?.affected_objects[j]?.type == 'Group') {
               String group_name = ctx.confluence?.audit?.affected_objects[j]?.name;
               String group_id = ctx.confluence?.audit?.affected_objects[j]?.id;
-              if(ctx._config?.atlassian_cloud != null) {
-                  def m = /(.+):(\b[0-9a-f]{8}\b-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-\b[0-9a-f]{12}\b)$/.matcher(group_name);
-                  if (m.find()) {
-                    group_name = m.group(1);
-                    group_id = m.group(2);
+              String target_user_id = null;
+              if(ctx._config?.atlassian_cloud != null && group_name != null) {
+                  // Cloud renders groups as '<groupName>:<groupId>'
+                  // (https://community.developer.atlassian.com/t/adding-groupid-to-audit-logs/45177).
+                  // Split on the last ':' only when a 36-char UUID follows; checking length and
+                  // suffix first keeps the regex work bounded (avoids the Painless regex limit
+                  // that unanchored patterns can hit on long names).
+                  int sep = group_name.lastIndexOf(':');
+                  if (sep > 0 && group_name.length() - sep - 1 == 36) {
+                    String suffix = group_name.substring(sep + 1);
+                    if (suffix ==~ /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/) {
+                      group_name = group_name.substring(0, sep);
+                      group_id = suffix;
+                    }
+                  }
+                  // Some Cloud membership events carry no group name, only
+                  // '<groupId>; User: <accountId>' (observed, undocumented). Extract both IDs
+                  // and drop the name, which does not exist in the source.
+                  int marker = group_name.indexOf('; User: ');
+                  if (marker == 36) {
+                    String gid = group_name.substring(0, 36);
+                    String uid = group_name.substring(marker + 8);
+                    if (gid ==~ /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/ && uid ==~ /[a-zA-Z0-9:_-]+/) {
+                      group_id = gid;
+                      group_name = null;
+                      target_user_id = uid;
+                    }
                   }
               }
               if(['audit.logging.summary.group.created', 'audit.logging.summary.group.deleted', 'Group created', 'Group deleted'].contains(ctx.event.action)) {
@@ -358,6 +386,11 @@ processors:
               if(['audit.logging.summary.group.membership.added', 'audit.logging.summary.group.membership.removed', 'User added to group','User removed from group'].contains(ctx.event.action)) {
                 ctx.user.target.group.put("name", group_name);
                 ctx.user.target.group.put("id", group_id);
+                // Account ID recovered from a '<groupId>; User: <accountId>' group name; a
+                // User-typed affected object, when present, takes precedence below.
+                if (target_user_id != null && ctx.user.target.id == null) {
+                  ctx.user.target.put("id", target_user_id);
+                }
               }
             }
             if(ctx.confluence?.audit?.affected_objects[j]?.type == 'User') {
