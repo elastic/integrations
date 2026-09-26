@@ -11,7 +11,7 @@ Per data stream, worst finding wins:
 | --- | --- |
 | `READY` | No findings. Opt in. |
 | `READY_AFTER_AUTO_FIX` | Only Class A findings with a mechanical fix: `copy_to` → ingest pipeline, a non-`lowercase` `normalizer` → pipeline or multi-field, `store: true` → removed, `doc_values: false` → a mode-scoped `columnar: {doc_values: true}` override on the field (package-owned or `external: ecs` alike), `dynamic: runtime` → `dynamic: true`. |
-| `NEEDS_REVIEW` | A Class B data-loss finding (`dynamic: false`, `enabled: false`), a single-level `nested` field, or a mapping-level runtime field. Needs a human decision before opting in. |
+| `NEEDS_REVIEW` | A Class B data-loss finding (`dynamic: false`, `enabled: false`), a single-level `nested` field, a mapping-level runtime field, or a columnar `_source` consumer — a transform (`source_consumer_transform`) or Kibana asset (`source_consumer_kibana`) that reads `_source`. Needs a human decision before opting in. |
 | `BLOCKED` | `nested` inside `nested`, an unsupported field type, a stored-`_source` override, or an invalid `columnar: {doc_values: false}`. No mechanical fix. |
 | `OUT_OF_SCOPE` | Not a `type: logs` data stream, or the package is `type: input`. |
 
@@ -34,6 +34,16 @@ validator rejects that combination — and when the declaration is
 `columnar.supported: true` that inconsistency also gets its own Class A finding,
 `columnar_supported_with_blockers` (severity `blocker`), plus the boolean
 `columnar_supported_with_blockers` on the data stream in JSON.
+
+Three Class C codes cover the columnar `_source` shape
+([`blockers.md`](blockers.md) C6-C8). `source_consumer_transform` and
+`source_consumer_kibana` are severity `review`, so they move the stream to
+NEEDS_REVIEW: columnar `_source` is reconstructed and flattened, and anything that
+reads it at query time has to be checked first. `object_array_flattening` is severity
+`info` and never changes a status — it records the object arrays in the stream's own
+example documents, which come back as parallel arrays. Ingest pipelines are never
+flagged (they run before indexing), and plain ES|QL is unaffected unless the query
+asks for `METADATA _source`.
 
 Two more checks on the plumbing rather than the mappings:
 `columnar_requires_spec_3_7` (Class A, `auto_fix`) fires when either construct
@@ -81,7 +91,8 @@ migration PR cannot pick up a dashboard hint by accident.
 
 - Status: **<STATUS>**
 - Package type: `integration`, version `X.Y.Z`, format_version `3.x.y`
-- Kibana condition: `^9.x.0` (needs at least `^9.7.0`, the first Kibana minor with Fleet support for `columnar.supported` and the field-level `columnar` overrides — adjust to the actual Fleet release; on older Kibana the override and the flag are silently ignored, so the toggle is unavailable and any `doc_values: false` field will make a manual columnar opt-in fail)
+- Kibana condition: `^9.x.0` (needs at least `^9.6.0`, the first Kibana minor with Fleet support for `columnar.supported` and the field-level `columnar` overrides — the Fleet support ships in 9.6; on older Kibana the override and the flag are silently ignored, so the toggle is unavailable and any `doc_values: false` field will make a manual columnar opt-in fail)
+- **Cost:** declaring `columnar.supported` (and bumping `format_version` to `"3.7.0"`) raises this package's **minimum stack version to 9.6**. Users on an older stack stop receiving *any* further update to this package, so a bug fix for them needs a backport branch/release line. Declare readiness deliberately, for the packages picked as tech-preview targets — not catalog-wide.
 
 | Data stream | Status | Findings | Index sort |
 | --- | --- | --- | --- |
@@ -91,7 +102,7 @@ migration PR cannot pick up a dashboard hint by accident.
 
 - Inputs: `cel`, `httpjson`
 - Current `index_mode`: `unset (logsdb default)`
-- Columnar opt-in: <declared ready via `elasticsearch.columnar.supported: true` | columnar by default via `index_mode: logsdb_columnar` | not declared>
+- Columnar opt-in: <declared ready via `elasticsearch.columnar.supported: true` | columnar by default via `index_mode: logsdb_columnar` | not declared>. Either declaration also needs `format_version: "3.7.0"` and `conditions.kibana.version: "^9.6.0"` — and with it the 9.6 minimum-stack cost above.
 - Sort: **<recommendation>** — <why: inputs, host.name evidence>
 
   Add to `data_stream/<ds>/manifest.yml`:
@@ -116,6 +127,18 @@ migration PR cannot pick up a dashboard hint by accident.
 
 - `<code>` — <what and where>
   - Where: `data_stream/<ds>/manifest.yml`
+  - <remediation>
+
+### Class C — behaviour change
+
+- `source_consumer_transform` — the `<name>` transform reads `_source` in `<script path>`
+  - Where: `elasticsearch/transform/<name>/transform.yml`
+  - <remediation>
+- `source_consumer_kibana` — `<asset>` consumes `_source`: <ES|QL METADATA _source | params._source | scripted field> — `<expression>`
+  - Where: `kibana/<type>/<asset>.json`
+  - <remediation>
+- `object_array_flattening` — <n> object field(s) hold an array of objects: `<field>` (`sample_event.json`), …
+  - Where: `data_stream/<ds>/sample_event.json`
   - <remediation>
 
 ## Out of scope

@@ -1,6 +1,6 @@
 ---
 name: columnar-readiness
-description: Audits and migrates Elastic integration packages to the logsdb_columnar Elasticsearch index mode. Use for "columnar readiness", "logsdb_columnar", "migrate to columnar", "columnar audit", "index sorting for columnar", "is this package columnar-ready", "columnar blockers", or when asked which integrations can adopt columnar index mode, why a package is blocked, or what index sort a data stream should use.
+description: Audits and migrates Elastic integration packages to the logsdb_columnar Elasticsearch index mode. Use for "columnar readiness", "logsdb_columnar", "migrate to columnar", "columnar audit", "index sorting for columnar", "is this package columnar-ready", "columnar blockers", or when asked which integrations can adopt columnar index mode, why a package is blocked, what index sort a data stream should use, or what columnar `_source` does to transforms, runtime fields and other `_source` consumers.
 ---
 
 # Columnar readiness
@@ -89,8 +89,11 @@ blocker remains. It is **not** the same as setting a columnar `index_mode`:
 the rollout strategy is that users opt in.
 
 Both constructs need `format_version: "3.7.0"` in the root manifest, and because both
-are read by **Fleet** they also need a `conditions.kibana.version` of at least the
-first Kibana minor that ships that Fleet support — see step 3 of the migration.
+are read by **Fleet** they also need `conditions.kibana.version: "^9.6.0"` — the Fleet
+support ships in 9.6. **That is the expensive part of the decision**: it raises the
+package's minimum stack version to 9.6, so users on an older stack stop receiving this
+package's updates and a bug fix for them needs a backport. See step 3 of the
+migration.
 
 ## Workflow
 
@@ -146,7 +149,11 @@ Short version:
   synthetic-source shape; dynamic fields become non-indexed doc values;
   `normalizer: lowercase` returns the lowercased value from synthetic source; an
   existing `columnar: {index: true}` override, which is reported so its benchmark
-  evidence can be confirmed and is never proposed.
+  evidence can be confirmed and is never proposed; and object arrays in the stream's
+  own example documents (`object_array_flattening`).
+- **Class C, but severity `review`, so the stream becomes NEEDS_REVIEW:** a columnar
+  **`_source` consumer** — a transform (`source_consumer_transform`) or a Kibana asset
+  (`source_consumer_kibana`) that reads `_source` at query time. See below.
 
 **`store: true` is not an escape hatch.** Elasticsearch rejects `store` outright in
 columnar modes (`[store] cannot be enabled on field [...] in [logsdb_columnar] index
@@ -172,6 +179,25 @@ largest field in the document:
 ```
 
 See [references/blockers.md](references/blockers.md), section A2b.
+
+**Columnar `_source` is not a faithful copy of what was ingested.** It is
+reconstructed from doc values: nested objects are flattened, and an object array under
+a non-`nested` object becomes parallel arrays — `[{a:1,b:2},{a:3,b:4}]` reads back as
+`{a:[1,3], b:[2,4]}` (multi-value order *is* preserved). That is invisible to anything
+querying the leaf fields — dashboards, alerting rules, ES|QL — and it is invisible to
+**ingest pipelines**, which run before indexing. It is *not* invisible to anything that
+reads `_source` at query time: transforms, Kibana runtime and scripted fields, and
+ES|QL queries that explicitly ask for `METADATA _source` (usually with
+`JSON_EXTRACT(_source, ...)`).
+
+The audit reports these as `source_consumer_transform`, `source_consumer_kibana`
+(both `review`) and `object_array_flattening` (`info`). **Do not declare a data stream
+`columnar.supported: true` until that review is done** — it is a question about the
+stream's consumers, and no mapping check can answer it. Note that detection rules live
+in `elastic/detection-rules`, not in the package, so the audit cannot see them: check
+there too. Full rules and what is deliberately *not* flagged (a runtime field that only
+reads `doc[...]` is unaffected):
+[references/blockers.md](references/blockers.md), section C6-C8.
 
 ### 3. Decide the index sort
 
@@ -258,7 +284,10 @@ applied the fix):
    ```
    plus the explicit `index.sort` settings if you proposed any. Leave non-ready
    streams untouched: the flag is per data stream, and the 3.7.0 validator fails the
-   build if you set it on a stream that still has a blocker.
+   build if you set it on a stream that still has a blocker. Do not set it before the
+   columnar `_source` consumer review of step 2 is done either — the validator cannot
+   check that one, and a transform or runtime field reading `_source` will not fail,
+   it will quietly return a different shape.
 
    **Do not add `index_mode: logsdb_columnar` unless the user asks for it.**
    `supported: true` makes Fleet offer the per-stream opt-in toggle and leaves logsdb
@@ -274,18 +303,31 @@ applied the fix):
        supported: true
    ```
 3. Root `manifest.yml`: `format_version: "3.7.0"`,
-   `conditions.kibana.version: "^9.7.0"`, and a minor version bump.
+   `conditions.kibana.version: "^9.6.0"`, and a minor version bump.
 
    The Kibana constraint is **not** about Elasticsearch — 9.5 already has the index
    mode. Both constructs are read by **Fleet**: Fleet parses
    `elasticsearch.columnar.supported` to decide whether to offer the per-stream opt-in
    toggle, and Fleet applies the field-level `columnar:` overrides when it builds the
-   mapping, on the install path and on the toggle path. So the constraint has to be at
-   least the first Kibana minor that ships that Fleet support. Write
-   `conditions.kibana.version: "^9.7.0"` *(adjust to the actual Fleet release; on
-   older Kibana the override and the flag are silently ignored, so the toggle is
-   unavailable and any `doc_values: false` field will make a manual columnar opt-in
-   fail)*.
+   mapping, on the install path and on the toggle path. The Fleet changes ship in
+   **9.6**, so write `conditions.kibana.version: "^9.6.0"` *(on older Kibana the
+   override and the flag are silently ignored, so the toggle is unavailable and any
+   `doc_values: false` field will make a manual columnar opt-in fail)*.
+
+   > ### ⚠ This raises the package's minimum stack version to 9.6
+   >
+   > Enhancing the package spec and the opt-in mechanism **automatically bumps the
+   > minimum stack version of a columnar-ready integration to 9.6**. Fleet will not
+   > offer the new package version to an older stack, so every user still on 9.5 or
+   > below **stops receiving any further update to this package** — security fixes and
+   > unrelated bug fixes included, not only the columnar ones. Fixing a bug for them
+   > then requires a **backport**: a separate branch and release line off the last
+   > pre-9.6 version.
+   >
+   > Say this to the user before writing the change, and **declare readiness
+   > deliberately, only for the integrations picked as tech-preview targets — never
+   > catalog-wide**. A `READY` status means "no mapping blocker"; it does not mean
+   > "worth a 9.6 floor and a backport line".
 4. `changelog.yml` — a new entry at the top, type `enhancement`, with a placeholder
    link the user must replace:
    ```yaml
@@ -365,7 +407,8 @@ normalised.
 | `data_stream/<ds>/fields/*.yml` | field definitions; nesting via `fields:`, multi-fields via `multi_fields:`, ECS imports via `external: ecs`, mode-scoped overrides via `columnar:` (3.7.0) |
 | `data_stream/<ds>/elasticsearch/ingest_pipeline/*.yml` | where `copy_to`, normalizers and runtime scripts get re-implemented |
 | `data_stream/<ds>/sample_event.json`, `_dev/test/pipeline/*`, `_dev/test/system/*` | evidence for which fields are actually populated |
-| `kibana/dashboard\|lens\|search\|ml_module/*.json` | dominant slicing fields → sort key and benchmark workload |
+| `elasticsearch/transform/<name>/transform.yml` | package-level transforms; scripts here run at query time, so `_source` access is a `source_consumer_transform` finding |
+| `kibana/dashboard\|lens\|search\|ml_module/*.json` | dominant slicing fields → sort key and benchmark workload; also scanned for `_source` consumers (`params._source`, scripted/runtime fields, ES|QL `METADATA _source`) |
 | `changelog.yml`, `_dev/build/docs/README.md`, `validation.yml` | release plumbing |
 
 ## Reporting back

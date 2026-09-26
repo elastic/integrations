@@ -46,10 +46,16 @@ multi-field or on an `object_type` dynamic-template field is
 spec rejects them there.
 
 Separately, `conditions.kibana.version` has to be at least the first Kibana minor that
-ships the Fleet support for these constructs — currently written as `"^9.7.0"` (adjust
-to the actual Fleet release). Elasticsearch 9.5 already has the index mode, but
-`columnar.supported` and the field-level `columnar` overrides are read by **Fleet**, and
-an older Kibana ignores both silently.
+ships the Fleet support for these constructs, which is **9.6**: write `"^9.6.0"`.
+Elasticsearch 9.5 already has the index mode, but `columnar.supported` and the
+field-level `columnar` overrides are read by **Fleet**, and an older Kibana ignores
+both silently.
+
+**That constraint has a cost.** `"^9.6.0"` plus `format_version: "3.7.0"` raises the
+package's **minimum stack version to 9.6**, so users on an older stack stop receiving
+any further update to the package — a bug fix for them then needs a backport
+branch/release line. Declare readiness only for the packages deliberately picked as
+tech-preview targets.
 
 That is a **tooling** failure, not a package failure. To validate locally, build
 `elastic-package` against a local package-spec checkout:
@@ -173,6 +179,15 @@ Kibana with the Fleet support (see `conditions.kibana.version` above) and it lea
 already-created backing index on the old mode, so force a rollover
 (`POST logs-<pkg>.<ds>/_rollover`) and check `index.mode` on the **new** backing index.
 
+> **Footnote — the opt-in requests a *lazy* rollover.** Fleet does not create the new
+> backing index when the toggle is turned on; it marks the data stream to roll over on
+> the **next indexed document**. So `GET _data_stream/logs-<pkg>.<ds>` can still show
+> the old generation, and the old `index.mode`, long after the opt-in succeeded —
+> which looks exactly like the opt-in having failed. **Verify with a write**, not by
+> reading the generation number: index one document (or let the agent ship one), then
+> re-read `GET logs-<pkg>.<ds>/_settings` and look at the newest backing index. An
+> explicit `POST .../_rollover` forces the same thing immediately.
+
 Either way, re-run the `GET _settings` check above and confirm `index.mode` is
 `logsdb_columnar` before believing any correctness or performance result.
 
@@ -286,6 +301,30 @@ detection rules, alerts and SLOs, is the query workload to replay. Sources:
 - the detection rules that reference `logs-<pkg>.<ds>-*` (these live in
   `elastic/detection-rules`, not in this repo)
 
+**The workload must include Query DSL, not only ES|QL.** Two kinds of query dominate
+the real load on these indices and neither is ES|QL:
+
+- **dashboards**, which are Query DSL — filter pills, KQL query bars and the
+  aggregations behind every panel;
+- **EQL detection rules**, which are **built on Query DSL** and run on a schedule
+  against the same indices.
+
+ES|QL is the case that is *least* sensitive to this migration: it reads doc values, so
+the `_source` shape does not reach it — the exception being a query that explicitly
+asks for `METADATA _source` (see [`blockers.md`](blockers.md) C6-C8). Benchmarking only
+ES|QL therefore measures the easy half of the workload and misses the needle-in-a-
+haystack Query DSL filters that decide whether the index sort was chosen well.
+
+**Solution workloads have to be added by hand.** The detection rules that query an
+integration's data streams are **not shipped in the integration package** — they live
+in `elastic/detection-rules` and reach users through the `security_detection_engine`
+package — so neither `scripts/audit.py` nor anything else in this repo can enumerate
+them for you. (Four of them already use `FROM ... METADATA _source` against
+`logs-network_traffic.sip-*`, `logs-network_traffic.nfs-*` and `logs-gcp.audit-*`.)
+Search `elastic/detection-rules` for the data stream, take the EQL and KQL rules plus
+the Security and Observability solution views that read the stream, and add them to
+the replay set explicitly.
+
 ### Run it
 
 Index a realistic volume (weeks of data, not the handful of documents in
@@ -299,7 +338,9 @@ the workload against both. Compare latency, storage size and CPU.
   inverted index this becomes a doc-value scan. Measure this case explicitly; it is
   the one that decides whether the sort key was chosen well.
 - **Aggregations and ES|QL should be neutral to better** — they read doc values in
-  both modes and benefit from the improved compression.
+  both modes and benefit from the improved compression. This is why they cannot be
+  the whole workload: measure the Query DSL and EQL side, which is where the
+  regression would be.
 - **Storage** should drop noticeably; that is the point of the exercise.
 - If a specific field is unacceptably slow and cannot be worked into the sort key,
   record it as benchmark evidence for a future per-field `index: true` decision. Do
