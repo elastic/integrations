@@ -1,0 +1,283 @@
+config_version: 1
+interval: {{interval}}
+max_executions: {{max_executions}}
+{{#if enable_request_tracer}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{/if}}
+resource:
+  url: {{base_url}}
+{{#if ssl}}
+  ssl: {{ssl}}
+{{/if}}
+state:
+  token_id: {{token_id}}
+  token_key: {{token_key}}
+  base_url: {{base_url}}
+  selected_environment: {{selected_environment}}
+  bhe_zones: {{bhe_zones}}
+  details_limit: {{details_limit}}
+  step: 1
+  domains: []
+  domain_index: 0
+  tag_index: 0
+  process_findings: []
+  finding_index: 0
+  details_skip: 0
+  want_more: true
+redact:
+  fields:
+    - token_key
+program: |
+  int(state.step).as(current_step,
+  (has(state.process_findings) && size(state.process_findings) > 0 ?
+    state.process_findings[int(state.finding_index)] :
+    {"type": "", "_domain_id": "", "_domain_name": "", "_asset_group_tag_id": "", "_asset_group_tag_name": ""}
+  ).as(cur_finding,
+
+  "GET".as(method,
+  (current_step == 1 ? "/api/v2/available-domains" :
+   current_step == 2 ? "/api/v2/domains/" + string(state.domains[int(state.domain_index)].id) + "/available-types?asset_group_tag_id=" + string(state.domains[int(state.domain_index)].tags[int(state.tag_index)].id) :
+   current_step == 3 ? "/api/v2/findings/" + cur_finding.type :
+   "/api/v2/domains/" + string(cur_finding._domain_id) + "/details?finding=" + string(cur_finding.type) + "&skip=" + string(state.details_skip) + "&limit=" + string(state.details_limit) + "&Accepted=eq%3Afalse&asset_group_tag_id=" + string(cur_finding._asset_group_tag_id)
+  ).as(uri,
+
+  "".as(body_data,
+  now.format("2006-01-02T15:04:05Z07:00").as(timestamp,
+  timestamp.substring(0, 13).as(date_prefix,
+  hmac(method + uri, "sha256", bytes(state.token_key)).as(op_key,
+  hmac(date_prefix, "sha256", op_key).as(date_key,
+  base64(hmac(bytes(body_data), "sha256", date_key)).as(signature,
+
+  request(method, state.base_url + uri).with({
+    "Header": {
+      "Authorization": ["bhesignature " + state.token_id],
+      "RequestDate": [timestamp],
+      "Signature": [signature],
+      "Content-Type": ["application/json"],
+      "User-Agent": ["Elastic-Kibana-BloodHound Enterprise-Application/v1.0.0"]
+    },
+    "Body": body_data
+  }).do_request().as(resp,
+  bytes(
+    (string(resp.Body).startsWith('{') || string(resp.Body).startsWith('[')) ?
+    string(resp.Body) :
+    "{}"
+  ).decode_json().as(parsed_body,
+
+  current_step == 1 ?
+    ((has(resp.StatusCode) && int(resp.StatusCode) == 401) ?
+      state.with({"events": [{"error": {"message": "BloodHound authentication failed (invalid token_id or token_key)"}}], "step": 1, "want_more": false}) :
+    (has(resp.StatusCode) && int(resp.StatusCode) == 403) ?
+      state.with({"events": [{"error": {"message": "BloodHound authorization failed (token lacks endpoint permissions)"}}], "step": 1, "want_more": false}) :
+    ((has(state.selected_environment) ? string(state.selected_environment) : "").as(selected_env,
+      (has(state.bhe_zones) ? string(state.bhe_zones) : "").as(selected_zones,
+        (has(parsed_body.data) && size(parsed_body.data) > 0 ?
+          parsed_body.data.map(d, {
+            "id": string(d.id),
+            "name": string(d.name),
+            "tags": (has(d.exposures) && size(d.exposures) > 0 ?
+              d.exposures.map(e, {"id": string(e.asset_group_tag.id), "name": string(e.asset_group_tag.name)}) :
+              [{"id": "1", "name": "default"}])
+          }).as(all_domains,
+            (
+              selected_env == "" || selected_env == "*" || selected_env == "All" || selected_env == "all" ||
+              !all_domains.exists(d,
+                ("," + selected_env + ",").contains("," + string(d.name) + ",") ||
+                ("," + selected_env + ",").contains(", " + string(d.name) + ",") ||
+                ("," + selected_env + ",").contains(",\"" + string(d.name) + "\",") ||
+                ("," + selected_env + ",").contains(", \"" + string(d.name) + "\",") ||
+                ("," + selected_env + ",").contains(",'" + string(d.name) + "',") ||
+                ("," + selected_env + ",").contains(", '" + string(d.name) + "',")
+              )
+            ).as(env_is_all,
+            (
+              selected_zones == "" || selected_zones == "*" || selected_zones == "All" || selected_zones == "all" ||
+              !all_domains.exists(d, d.tags.exists(t,
+                ("," + selected_zones + ",").contains("," + string(t.name) + ",") ||
+                ("," + selected_zones + ",").contains(", " + string(t.name) + ",") ||
+                ("," + selected_zones + ",").contains(",\"" + string(t.name) + "\",") ||
+                ("," + selected_zones + ",").contains(", \"" + string(t.name) + "\",") ||
+                ("," + selected_zones + ",").contains(",'" + string(t.name) + "',") ||
+                ("," + selected_zones + ",").contains(", '" + string(t.name) + "',")
+              ))
+            ).as(zones_is_all,
+              all_domains.filter(d,
+                env_is_all ||
+                ("," + selected_env + ",").contains("," + string(d.name) + ",") ||
+                ("," + selected_env + ",").contains(", " + string(d.name) + ",") ||
+                ("," + selected_env + ",").contains(",\"" + string(d.name) + "\",") ||
+                ("," + selected_env + ",").contains(", \"" + string(d.name) + "\",") ||
+                ("," + selected_env + ",").contains(",'" + string(d.name) + "',") ||
+                ("," + selected_env + ",").contains(", '" + string(d.name) + "',")
+              ).map(d,
+                d.with({"tags":
+                  d.tags.filter(t,
+                    zones_is_all ||
+                    ("," + selected_zones + ",").contains("," + string(t.name) + ",") ||
+                    ("," + selected_zones + ",").contains(", " + string(t.name) + ",") ||
+                    ("," + selected_zones + ",").contains(",\"" + string(t.name) + "\",") ||
+                    ("," + selected_zones + ",").contains(", \"" + string(t.name) + "\",") ||
+                    ("," + selected_zones + ",").contains(",'" + string(t.name) + "',") ||
+                    ("," + selected_zones + ",").contains(", '" + string(t.name) + "',")
+                  )})
+              ).filter(d, size(d.tags) > 0).as(domains_list,
+                size(domains_list) > 0 ?
+                  state.with({
+                    "step": 2,
+                    "domains": domains_list,
+                    "domain_index": 0,
+                    "tag_index": 0,
+                    "process_findings": [],
+                    "finding_index": 0,
+                    "details_skip": 0,
+                    "want_more": true,
+                    "events": [{"retry": true}]
+                  }) :
+                  state.with({"events": [{"error": {"message": "No domains found after selected_environment/bhe_zones filters"}}], "step": 1, "want_more": false})
+              )
+            ))
+          ) :
+          state.with({"events": [{"error": {"message": "No domains found"}}], "step": 1, "want_more": false})
+        )
+      )
+    ))) :
+
+  current_step == 2 ?
+    (has(parsed_body.data) ? parsed_body.data : (type(parsed_body) == list ? parsed_body : [])).as(raw_types,
+    (type(raw_types) == list && size(raw_types) > 0 ?
+      raw_types.map(t, type(t) == string ? t : (has(t.finding_type) ? string(t.finding_type) : (has(t.id) ? string(t.id) : string(t)))).as(types_list,
+        (state.process_findings + types_list.map(t, {
+          "type": t,
+          "_domain_id": string(state.domains[int(state.domain_index)].id),
+          "_domain_name": string(state.domains[int(state.domain_index)].name),
+          "_asset_group_tag_id": string(state.domains[int(state.domain_index)].tags[int(state.tag_index)].id),
+          "_asset_group_tag_name": string(state.domains[int(state.domain_index)].tags[int(state.tag_index)].name),
+          "_unique_key": string(state.domains[int(state.domain_index)].id) + "|" + string(state.domains[int(state.domain_index)].tags[int(state.tag_index)].id) + "|" + t
+        }).filter(f,
+          !state.process_findings.exists(existing, existing._unique_key == f._unique_key)
+        )).as(updated_process_findings,
+          int(state.tag_index) + 1 < size(state.domains[int(state.domain_index)].tags) ?
+            state.with({"step": 2, "tag_index": int(state.tag_index) + 1,
+              "process_findings": updated_process_findings,
+              "want_more": true, "events": [{"retry": true}]}) :
+          int(state.domain_index) + 1 < size(state.domains) ?
+            state.with({"step": 2, "domain_index": int(state.domain_index) + 1, "tag_index": 0,
+              "process_findings": updated_process_findings,
+              "want_more": true, "events": [{"retry": true}]}) :
+          size(updated_process_findings) > 0 ?
+            state.with({"step": 3, "process_findings": updated_process_findings, "finding_index": 0,
+              "details_skip": 0, "want_more": true, "events": [{"retry": true}]}) :
+            state.with({"step": 1, "want_more": false, "process_findings": [],
+              "events": [{"retry": true}]})
+        )
+      ) :
+      (int(state.tag_index) + 1 < size(state.domains[int(state.domain_index)].tags) ?
+        state.with({"step": 2, "tag_index": int(state.tag_index) + 1, "want_more": true,
+          "events": [{"retry": true}]}) :
+      int(state.domain_index) + 1 < size(state.domains) ?
+        state.with({"step": 2, "domain_index": int(state.domain_index) + 1, "tag_index": 0, "want_more": true,
+          "events": [{"retry": true}]}) :
+      size(state.process_findings) > 0 ?
+        state.with({"step": 3, "finding_index": 0, "details_skip": 0, "want_more": true,
+          "events": [{"retry": true}]}) :
+        state.with({"step": 1, "want_more": false, "process_findings": [],
+          "events": [{"retry": true}]})
+      )
+    )) :
+
+  current_step == 3 ?
+    (has(parsed_body.data) ?
+      (type(parsed_body.data) == list ?
+        (size(parsed_body.data) > 0 ? parsed_body.data[0] : {}) :
+        parsed_body.data
+      ) : {}
+    ).as(finding_detail,
+      state.process_findings.map(f,
+        f._unique_key == cur_finding._unique_key ?
+          f.with({
+            "finding_title": (has(finding_detail.title) ? string(finding_detail.title) : ""),
+            "finding_type_label": (has(finding_detail.type) ? string(finding_detail.type) : ""),
+            "short_remediation": (has(finding_detail.short_remediation) ? string(finding_detail.short_remediation) : ""),
+            "long_remediation": (has(finding_detail.long_remediation) ? string(finding_detail.long_remediation) : "")
+          }) : f
+      ).as(updated_findings,
+        state.with({"step": 4, "process_findings": updated_findings, "details_skip": 0, "want_more": true,
+          "events": [{"retry": true}]})
+      )
+    ) :
+
+  current_step == 4 ?
+    (has(parsed_body.data) && type(parsed_body.data) == list ? parsed_body.data : []).as(page_data,
+      page_data.map(inst, {
+        "message": inst.with({
+          "Finding": string(cur_finding.type),
+          "domain_name": string(cur_finding._domain_name),
+          "finding_type": string(cur_finding.type),
+          "category": string(cur_finding._asset_group_tag_name),
+          "title": (has(cur_finding.finding_title) && string(cur_finding.finding_title) != "" ?
+            string(cur_finding.finding_title) : string(cur_finding.type)),
+          "remediation": (has(cur_finding.short_remediation) ? string(cur_finding.short_remediation) : ""),
+          "impact_score": (has(inst.ImpactPercentage) ? double(inst.ImpactPercentage) * 10.0 : 0.0),
+          "graph_url": (has(inst.graph_url) ? string(inst.graph_url) :
+            (has(inst.GraphURL) ? string(inst.GraphURL) : ""))
+        }).encode_json()
+      }).as(finding_events,
+        (has(parsed_body.count) ? int(parsed_body.count) : (int(state.details_skip) + size(page_data))).as(total_count,
+          int(state.details_skip) + size(page_data) < total_count ?
+            state.with({
+              "step": 4,
+              "details_skip": int(state.details_skip) + size(page_data),
+              "want_more": true,
+              "events": size(finding_events) > 0 ? dyn(finding_events) : dyn([{"retry": true}])
+            }) :
+          int(state.finding_index) + 1 < size(state.process_findings) ?
+            state.with({
+              "step": 3,
+              "finding_index": int(state.finding_index) + 1,
+              "details_skip": 0,
+              "want_more": true,
+              "events": size(finding_events) > 0 ? dyn(finding_events) : dyn([{"retry": true}])
+            }) :
+            state.with({
+              "step": 1,
+              "want_more": false,
+              "process_findings": [],
+              "finding_index": 0,
+              "details_skip": 0,
+              "domain_index": 0,
+              "tag_index": 0,
+              "events": size(finding_events) > 0 ? dyn(finding_events) : dyn([{"retry": true}])
+            })
+        )
+      )
+    ) :
+
+  state.with({"step": 1, "want_more": false, "events": [{"retry": true}]})
+
+  ))))))))))))
+{{#if preserve_original_event}}
+tags:
+  - preserve_original_event
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{else}}
+tags:
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{/if}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+processors:
+  - drop_event:
+      when:
+        equals:
+          retry: true
+{{#if processors}}
+{{processors}}
+{{/if}}

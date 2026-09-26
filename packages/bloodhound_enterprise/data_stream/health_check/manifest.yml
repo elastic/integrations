@@ -1,0 +1,34 @@
+title: BloodHound Enterprise Sync
+type: logs
+streams:
+  - input: cel
+    template_path: cel.yml.hbs
+    title: BloodHound Enterprise Case & Alert Sync
+    description: >-
+      Synchronizes BloodHound Enterprise attack-path findings into Elastic Security Cases and Alerts. Emits sync-step metadata events to this data stream for troubleshooting.
+    vars:
+      - name: enable_request_tracer
+        type: bool
+        title: Enable request tracer
+        default: false
+        show_user: false
+      - name: preserve_original_event
+        type: bool
+        title: Preserve original event
+        default: false
+        show_user: false
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        show_user: false
+        default:
+          - bloodhound_integration-health_check
+      - name: processors
+        type: yaml
+        title: Processors
+        show_user: false
+elasticsearch:
+  index_template:
+    mappings:
+      dynamic: true
