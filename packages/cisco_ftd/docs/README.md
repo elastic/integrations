@@ -202,13 +202,13 @@ The `log` data stream collects logs from Cisco Firepower Threat Defense (FTD) de
 | cisco.ftd.security_event.ingress_interface |  | keyword |
 | cisco.ftd.security_event.ingress_zone |  | keyword |
 | cisco.ftd.security_event.initiator_bytes |  | long |
-| cisco.ftd.security_event.initiator_packets |  | integer |
+| cisco.ftd.security_event.initiator_packets |  | long |
 | cisco.ftd.security_event.nap_policy |  | keyword |
 | cisco.ftd.security_event.prefilter_policy |  | keyword |
 | cisco.ftd.security_event.protocol |  | keyword |
 | cisco.ftd.security_event.referenced_host |  | keyword |
 | cisco.ftd.security_event.responder_bytes |  | long |
-| cisco.ftd.security_event.responder_packets |  | integer |
+| cisco.ftd.security_event.responder_packets |  | long |
 | cisco.ftd.security_event.sha_disposition |  | keyword |
 | cisco.ftd.security_event.source_security_group | Source Security Group Tag (SGT) | keyword |
 | cisco.ftd.security_event.source_security_group_tag | Source Security Group Tag number | keyword |
