@@ -2,61 +2,61 @@
   changes:
     - description: Collapse four divergent `azure-shared-pipeline.yml` variants into two canonical forms (Full ARM and Tenant-only). The `aadgraphactivitylogs` `.link` file is replaced by a physical pipeline copy. All 12 copies are now consistent.
       type: enhancement
-      link: https://github.com/elastic/integrations/pull/21261
+      link: https://github.com/elastic/integrations/pull/21629
     - description: "Fix case-insensitive ARM resource ID matching: `(?i)` flag is now placed before the leading slash in all grok patterns (was `/(?i)subscriptions/`, now `(?i)/subscriptions/`). Mixed-case paths like `/resourcegroups/` now parse correctly across all data streams."
       type: bugfix
-      link: https://github.com/elastic/integrations/pull/21261
+      link: https://github.com/elastic/integrations/pull/21629
     - description: Add tenant-scoped ARM resource ID grok `(?i)/tenants/{id}/providers/{namespace}` to the Full ARM variant so tenant-scoped paths in `activitylogs`, `platformlogs`, `springcloudlogs`, `application_gateway`, `firewall_logs`, and `eventhub` are parsed correctly.
       type: enhancement
-      link: https://github.com/elastic/integrations/pull/21261
+      link: https://github.com/elastic/integrations/pull/21629
     - description: "Rename `azure.resource.group` → `azure.resource_group.name` and `azure.resource.provider` → `azure.resource_provider.namespace` to align with OTel semantic conventions (`azure.resource_group.name`, `azure.resource_provider.namespace`). Legacy names remain available as `type: alias` fields."
       type: breaking-change
-      link: https://github.com/elastic/integrations/pull/21261
+      link: https://github.com/elastic/integrations/pull/21629
     - description: "Rename `azure.tenant_id` → `azure.tenant.id` and `azure.correlation_id` → `azure.correlation.id` to follow OTel semconv dotted-id style. Vendor-specific copies (`azure.activitylogs.tenant_id`, `azure.auditlogs.tenant_id`, `azure.provisioning.tenant_id`, `azure.signinlogs.tenant_id`) are converted to aliases. Legacy flat names remain as aliases."
       type: breaking-change
-      link: https://github.com/elastic/integrations/pull/21261
+      link: https://github.com/elastic/integrations/pull/21629
     - description: "Rename `azure.resource.id` and the transient `azure.resource_id` → `cloud.resource_id` (the OTel semconv ARM resource ID field). Both old names remain as `type: alias`."
       type: breaking-change
-      link: https://github.com/elastic/integrations/pull/21261
+      link: https://github.com/elastic/integrations/pull/21629
     - description: Add `cloud.resource_id` (keyword) declared in all 13 data streams as a concrete field, making it safe to add aliases pointing to it across the package.
       type: enhancement
-      link: https://github.com/elastic/integrations/pull/21261
+      link: https://github.com/elastic/integrations/pull/21629
     - description: "Add `cloud.account.id` (subscription ID) to all data streams that carry a subscription: `activitylogs`, `platformlogs`, `springcloudlogs`, `application_gateway`, `firewall_logs`, `eventhub`, `events` (via sub-pipeline routing). Entra ID streams (`auditlogs`, `signinlogs`, `identity_protection`, `provisioning`, `graphactivitylogs`, `aadgraphactivitylogs`) do not populate this field — per OTel semconv, `cloud.account.id` means subscription only."
       type: enhancement
-      link: https://github.com/elastic/integrations/pull/21261
+      link: https://github.com/elastic/integrations/pull/21629
     - description: "Remove incorrect `cloud.account.id` from `graphactivitylogs` and `aadgraphactivitylogs` (was set to tenant ID, violating semconv). Tenant ID is now in `azure.tenant.id` only."
       type: breaking-change
-      link: https://github.com/elastic/integrations/pull/21261
+      link: https://github.com/elastic/integrations/pull/21629
     - description: "Normalize `cloud.region` to the canonical Azure slug format (lowercase, no spaces or hyphens, e.g. `\"West Europe\"` → `westeurope`, `\"UK South\"` → `uksouth`). Existing saved queries that match a display name need updating."
       type: breaking-change
-      link: https://github.com/elastic/integrations/pull/21261
+      link: https://github.com/elastic/integrations/pull/21629
     - description: "`cloud.region` is no longer set to `global` (not a valid Azure region)."
       type: breaking-change
-      link: https://github.com/elastic/integrations/pull/21261
+      link: https://github.com/elastic/integrations/pull/21629
     - description: "Remove incorrect `cloud.region` from `graphactivitylogs` and `aadgraphactivitylogs` (was set from `destination.geo.region_name`, a geoip place name, not an Azure region slug)."
       type: breaking-change
-      link: https://github.com/elastic/integrations/pull/21261
+      link: https://github.com/elastic/integrations/pull/21629
     - description: "Set `cloud.region` in `activitylogs` from the envelope `location` field (after normalizing). Two-letter country codes (e.g. `GB`) are excluded."
       type: enhancement
-      link: https://github.com/elastic/integrations/pull/21261
+      link: https://github.com/elastic/integrations/pull/21629
     - description: Promote envelope `tenantId`/`TenantId` to `azure.tenant.id` in `platformlogs` and `springcloudlogs`.
       type: enhancement
-      link: https://github.com/elastic/integrations/pull/21261
+      link: https://github.com/elastic/integrations/pull/21629
     - description: Promote envelope `correlationId` and `tenantId` to `azure.correlation.id` and `azure.tenant.id` in `application_gateway` and `firewall_logs`.
       type: enhancement
-      link: https://github.com/elastic/integrations/pull/21261
+      link: https://github.com/elastic/integrations/pull/21629
     - description: Promote `resource_id` and `correlation_id` to `azure.resource_id` and `azure.correlation.id` in `aadgraphactivitylogs` (mirroring `graphactivitylogs`; the shared-pipeline groks were targeting an unpopulated field).
       type: bugfix
-      link: https://github.com/elastic/integrations/pull/21261
+      link: https://github.com/elastic/integrations/pull/21629
     - description: Promote `resourceId`/`ResourceId`, `tenantId`/`TenantId`, `correlationId`, and `location`/`Region` in the `eventhub` `parsed-message.yml` pipeline so those fields are available in the shared pipeline.
       type: enhancement
-      link: https://github.com/elastic/integrations/pull/21261
+      link: https://github.com/elastic/integrations/pull/21629
     - description: "Add `cloud.provider: azure` to the `events` data stream (it previously emitted no `cloud.*` fields at all)."
       type: enhancement
-      link: https://github.com/elastic/integrations/pull/21261
+      link: https://github.com/elastic/integrations/pull/21629
     - description: Update 7 Kibana dashboards to use the new semconv field names and unify Subscription filter controls on `cloud.account.id`.
       type: enhancement
-      link: https://github.com/elastic/integrations/pull/21261
+      link: https://github.com/elastic/integrations/pull/21629
 - version: "1.40.0"
   changes:
     - description: Add routing system test for the events data stream and a `storage_account_connection_string` package variable for pointing at a custom blob endpoint.
