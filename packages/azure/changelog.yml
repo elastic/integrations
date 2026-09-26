@@ -1,3 +1,76 @@
+- version: "1.41.0"
+  changes:
+    - description: >-
+        Consolidate the duplicated `azure-shared-pipeline.yml` into a single shared source under `_dev/shared/ingest_pipeline/` and replace all per-data-stream copies (including `eventhub`) with `.link` files, so all 12 data streams that use the shared pipeline now share one canonical copy.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/21261
+    - description: >-
+        Extend the metadata normalization to the `eventhub` data stream: when **Parse azure message** is enabled, the envelope `tenantId`/`TenantId` is promoted to `azure.tenant_id`, `correlationId` to `azure.correlation_id`, `location`/`Region` to `cloud.region`, and the ARM resource ID is parsed case-insensitively into `azure.subscription_id`, `azure.resource.*`, and the `/tenants/` path variant into `azure.tenant_id`. `cloud.account.id` is then set from the subscription ID (or tenant ID as a fallback), and `cloud.region` is normalized to the canonical slug.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/21261
+    - description: >-
+        Add the missing `azure-eventhub.partition_key` field definition to the `eventhub` data stream; the v2 event hub processor emits this field but it was previously undeclared.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/21261
+    - description: >-
+        Set `cloud.account.id` consistently across the data streams that share the pipeline: from `azure.subscription_id` where present, falling back to `azure.tenant_id` for tenant-scoped logs that have no subscription (auditlogs, signinlogs, identity_protection, provisioning, graphactivitylogs, aadgraphactivitylogs, activitylogs, platformlogs, springcloudlogs).
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/21261
+    - description: >-
+        Promote the envelope `tenantId` field to the shared `azure.tenant_id` field in activitylogs, platformlogs, and springcloudlogs; extract `azure.correlation_id` and `azure.tenant_id` from the envelope in application_gateway and firewall_logs; promote `resource_id` and `correlation_id` to shared fields in aadgraphactivitylogs.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/21261
+    - description: >-
+        Extract `azure.tenant_id` from a `/tenants/{id}/providers/...` ARM resource ID when the envelope carries neither a tenant ID nor a subscription ID.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/21261
+    - description: >-
+        Set `cloud.region` from the `location` envelope field in activitylogs, platformlogs, and springcloudlogs, guarded to exclude the 2-letter country codes that appear in sign-in events.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/21261
+    - description: >-
+        Normalize `cloud.region` to the canonical Azure region slug by stripping whitespace and lowercasing, so that the display names some log categories emit ("West Europe") and the slugs others emit ("westeurope") no longer split into separate buckets when aggregating. Values of `"global"`, which identify non-regional resources rather than a region, are no longer written to `cloud.region`. This changes existing `cloud.region` values in activitylogs, platformlogs, springcloudlogs, graphactivitylogs, and aadgraphactivitylogs; saved queries and dashboards that match on a region display name need updating.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/21261
+    - description: >-
+        Move the envelope tenant ID in activitylogs to `azure.tenant_id` instead of copying it, so the value is no longer indexed twice. `azure.activitylogs.tenant_id` is redefined as a field alias of `azure.tenant_id`, so existing queries, aggregations, and dashboards that reference the old name keep working.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/21261
+    - description: >-
+        Stop overriding `cloud.account.id` with the tenant ID in graphactivitylogs and aadgraphactivitylogs when the shared pipeline already resolved a subscription ID.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/21261
+    - description: Set `cloud.provider` to `"azure"` in the events (routing) data stream.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/21261
+    - description: >-
+        Add `azure.resource.authorization_rule` field definition to identity_protection and provisioning data streams; add metadata fields documentation section to the integration README.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/21261
+    - description: >-
+        Set `client.ip` from `source.ip` in the application_gateway, identity_protection, and provisioning data streams, matching the mapping that signinlogs, auditlogs, graphactivitylogs, and aadgraphactivitylogs already apply.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/21261
+    - description: >-
+        Populate `related.ip` from `source.ip` in the identity_protection and provisioning data streams, so that caller addresses in Microsoft Entra ID logs are reachable from the same pivot as the other data streams.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/21261
+    - description: >-
+        Rename the geoip ASN output in the provisioning data stream from `source.as.asn` and `source.as.organization_name` to the ECS field names `source.as.number` and `source.as.organization.name`, as every other data stream in the package already does.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/21261
+    - description: >-
+        Fall back to the detection IP in `properties.ipAddress` when setting `source.ip` in the identity_protection data stream, for risk detections that carry no envelope `callerIpAddress`.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/21261
+    - description: >-
+        Set `event.outcome` from the HTTP response status code in the application_gateway data stream. Web application firewall records, which carry no status code, are left without an outcome.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/21261
+    - description: >-
+        Populate `event.reason` in the signinlogs, auditlogs, and provisioning data streams, from the sign-in `status.failureReason`, the audit `resultReason`, and the provisioning error `reason` respectively. In signinlogs the vendor field is consumed into `message` and then removed, so the value was previously not queryable as a field at all.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/21261
 - version: "1.40.0"
   changes:
     - description: Add routing system test for the events data stream and a `storage_account_connection_string` package variable for pointing at a custom blob endpoint.
