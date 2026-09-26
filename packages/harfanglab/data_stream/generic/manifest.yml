@@ -1,0 +1,104 @@
+title: "HarfangLab EDR logs"
+type: logs
+dataset: harfanglab.generic
+elasticsearch:
+  dynamic_dataset: true
+  dynamic_namespace: true
+streams:
+  - input: http_endpoint
+    title: "HarfangLab EDR logs"
+    description: "Collect ECS-formatted logs sent by the HarfangLab EDR over an HTTP endpoint."
+    template_path: http_endpoint.yml.hbs
+    vars:
+      - name: listen_address
+        type: text
+        title: Listen address
+        description: The bind address the HTTP endpoint listens on.
+        default: "0.0.0.0"
+        required: true
+        show_user: true
+      - name: listen_port
+        type: integer
+        title: Listen port
+        description: The port the HTTP endpoint listens on.
+        default: 8080
+        required: true
+        show_user: true
+      - name: secret_header_name
+        type: text
+        title: Secret header name
+        description: Name of the HTTP request header used to authenticate incoming requests.
+        default: Authorization
+        required: true
+        secret: false
+        show_user: true
+      - name: secret_header
+        type: password
+        title: Secret header value
+        description: >-
+          Expected value of the secret header. When set, requests that do not present a
+          matching header value are rejected. Leave empty to disable header authentication.
+        required: false
+        secret: true
+        show_user: true
+      - name: ssl
+        type: yaml
+        title: TLS configuration
+        description: >-
+          Optional TLS settings for the HTTP endpoint. When a server certificate and key are
+          provided, the endpoint serves HTTPS instead of HTTP. Add certificate_authorities
+          and client_authentication to require client certificates (mTLS). Leave empty (or
+          fully commented out) to serve plain HTTP.
+        required: false
+        show_user: true
+        default: |
+          #certificate: "/etc/elastic-agent/certs/server.crt"
+          #key: "/etc/elastic-agent/certs/server.key"
+          #certificate_authorities:
+          #  - "/etc/elastic-agent/certs/ca.crt"
+          #client_authentication: optional
+  - input: cel
+    title: "HarfangLab EDR logs (pull mode)"
+    description: "Periodically pull ECS-formatted logs from the HarfangLab EDR API."
+    template_path: cel.yml.hbs
+    vars:
+      - name: url
+        type: text
+        title: HarfangLab base URL
+        description: >-
+          Base URL of the HarfangLab instance (for example https://edr.example.com). A trailing
+          slash is allowed and the integration appends the fixed pull endpoint path automatically.
+        required: true
+        show_user: true
+      - name: api_token
+        type: password
+        title: API token
+        description: >-
+          API token of a HarfangLab user granted the "elastic pull" permission. Provide the token
+          value only; a leading "Token " prefix is stripped automatically. Sent as
+          "Authorization: Token <value>" on each request.
+        required: true
+        secret: true
+        show_user: true
+      - name: interval
+        type: text
+        title: Polling interval
+        description: >-
+          How often to poll the HarfangLab API for new events. Each poll drains every chunk
+          currently queued. Supports duration units such as 30s, 1m, 5m.
+        default: 1m
+        required: true
+        show_user: true
+      - name: ssl
+        type: yaml
+        title: TLS configuration
+        description: >-
+          Optional TLS settings for the connection to the HarfangLab API. Use this to trust a
+          private CA or to disable verification in test environments. Leave empty to use the
+          system trust store with full verification.
+        required: false
+        show_user: true
+        default: |
+          #certificate_authorities:
+          #  - "/etc/elastic-agent/certs/ca.crt"
+          #verification_mode: full

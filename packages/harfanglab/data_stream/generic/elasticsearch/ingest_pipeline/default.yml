@@ -1,0 +1,71 @@
+---
+description: "Parses ECS-formatted JSON events received from the HarfangLab EDR."
+processors:
+  - set:
+      tag: copy_event_original_to_tmp
+      field: _original
+      copy_from: event.original
+  - json:
+      tag: json_decode_event_original
+      field: _original
+      add_to_root: true
+      add_to_root_conflict_strategy: replace
+  - set:
+      tag: restore_event_original
+      field: event.original
+      copy_from: _original
+  - set:
+      tag: set_host_name_from_hostname
+      field: host.name
+      copy_from: host.hostname
+      ignore_empty_value: true
+      override: false
+  - set:
+      tag: set_user_name_from_process_user
+      field: user.name
+      copy_from: process.user.name
+      ignore_empty_value: true
+      override: false
+  - set:
+      tag: set_labels_agent_type
+      field: labels.agent_type
+      copy_from: agent.type
+      ignore_empty_value: true
+      override: false
+      if: ctx.process?.entity_id != null
+  - set:
+      tag: set_agent_type_winlogbeat
+      field: agent.type
+      value: winlogbeat
+      if: ctx.process?.entity_id != null
+  - set:
+      tag: set_event_module_sysmon
+      field: event.module
+      value: sysmon
+      if: ctx.process?.entity_id != null
+  - remove:
+      tag: remove_tmp_fields
+      field:
+        - _original
+        - json
+      ignore_missing: true
+  - drop:
+      tag: drop_empty_events
+      if: "ctx.event?.original == null || ctx.event?.original == '{}'"
+on_failure:
+  - set:
+      tag: set_event_kind_pipeline_error
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_preserve_original_event_tag
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+  - append:
+      tag: append_error_message
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
