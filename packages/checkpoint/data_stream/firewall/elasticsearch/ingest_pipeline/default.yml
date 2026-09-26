@@ -250,11 +250,6 @@ processors:
       target_field: destination.nat.ip
       if: "ctx.checkpoint?.xlatedst != '0.0.0.0' && ctx.checkpoint?.xlatedst != ''"
       ignore_missing: true
-  - rename:
-      tag: rename_checkpoint_uid_to_source_user_id_01e2c781
-      field: checkpoint.uid
-      target_field: source.user.id
-      ignore_missing: true
   - grok:
       tag: grok_src_user_name
       field: checkpoint.src_user_name
@@ -687,11 +682,6 @@ processors:
       copy_from: checkpoint.email_queue_id
       if: "ctx?.checkpoint?.email_queue_id != null"
   - rename:
-      tag: rename_checkpoint_usercheck_incident_uid_to_destination_user_id_b5f87427
-      field: checkpoint.usercheck_incident_uid
-      target_field: destination.user.id
-      ignore_missing: true
-  - rename:
       tag: rename_checkpoint_service_name_to_destination_service_name_65ae0b7d
       field: checkpoint.service_name
       target_field: destination.service.name
@@ -823,12 +813,6 @@ processors:
       override: false
       ignore_empty_value: true
   - set:
-      tag: set_user_id_cc07e8aa
-      field: user.id
-      value: '{{{ source.user.id }}}'
-      override: false
-      ignore_empty_value: true
-  - set:
       tag: set_user_group_name_9c5d2f82
       field: user.group.name
       value: '{{{ source.user.group.name }}}'
@@ -862,10 +846,6 @@ processors:
   - lowercase:
       tag: lowercase_user_name_6eed8999
       field: user.name
-      ignore_missing: true
-  - lowercase:
-      tag: lowercase_user_id_1ebe4987
-      field: user.id
       ignore_missing: true
   - lowercase:
       tag: lowercase_user_email_75b1062e
@@ -1455,15 +1435,26 @@ processors:
       target_field: event.end
       if: "ctx.checkpoint?.lastupdatetime != null"
   - date:
+      tag: set_timestamp_from_lastupdatetime
+      field: checkpoint.lastupdatetime
+      formats: ["UNIX"]
+      target_field: "@timestamp"
+      if: "ctx.checkpoint?.lastupdatetime != null"
+  - date:
       tag: date_checkpoint_creation_time_to_event_start_f2bceb79
       field: checkpoint.creation_time
-      formats: ["ISO8601", "UNIX"]
+      formats:
+        - "UNIX"
+        - "yyyy-MM-dd HH:mm:ss.SSSSSS"
+        - "yyyy-MM-dd HH:mm:ss.SSS"
+        - "yyyy-MM-dd HH:mm:ss"
+        - "ISO8601"
       target_field: event.start
       if: "ctx.checkpoint?.creation_time != null"
   - date:
       tag: convert_login_timestamp
       field: checkpoint.login_timestamp
-      formats: ["ISO8601", "UNIX"]
+      formats: ["UNIX", "ISO8601"]
       target_field: checkpoint.login_timestamp
       if: "ctx.checkpoint?.login_timestamp != null"
   - rename:
@@ -1534,12 +1525,6 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - append:
-      tag: append_related_user_7f407fef
-      field: related.user
-      value: "{{{user.id}}}"
-      allow_duplicates: false
-      if: ctx.user?.id != null
-  - append:
       tag: append_related_user_837e080f
       field: related.user
       value: "{{{user.name}}}"
@@ -1565,12 +1550,6 @@ processors:
       ignore_missing: true
       ignore_failure: true
   - append:
-      tag: append_related_user_bcb5a560
-      field: related.user
-      value: "{{{source.user.id}}}"
-      allow_duplicates: false
-      if: ctx.source?.user?.id != null
-  - append:
       tag: append_related_user_f745a124
       field: related.user
       value: "{{{source.user.name}}}"
@@ -1595,12 +1574,6 @@ processors:
       if: ctx.destination?.user?.name == null
       ignore_missing: true
       ignore_failure: true
-  - append:
-      tag: append_related_user_8e80602e
-      field: related.user
-      value: "{{{destination.user.id}}}"
-      allow_duplicates: false
-      if: ctx.destination?.user?.id != null
   - append:
       tag: append_related_user_8f37bc82
       field: related.user
@@ -1778,7 +1751,6 @@ processors:
         - checkpoint.severity
         - checkpoint.xlatesrc
         - checkpoint.xlatedst
-        - checkpoint.uid
         - checkpoint.time
         - checkpoint.__nsons
         - checkpoint.__p_dport
