@@ -1,0 +1,79 @@
+---
+description: Parse Wallix PAM audit events
+processors:
+  - grok:
+      field: message
+      patterns:
+        - '^\[wabaudit\] %{GREEDYDATA:_tmp.kv}$'
+      ignore_failure: true
+  - kv:
+      field: _tmp.kv
+      field_split: ' (?=(?:[^"]*"[^"]*")*[^"]*$)(?=[A-Za-z_][A-Za-z0-9_]*=)'
+      value_split: '='
+      target_field: wallix_pam
+      trim_value: '"'
+      ignore_missing: true
+      ignore_failure: true
+  - set:
+      field: user.name
+      copy_from: wallix_pam.user
+      if: ctx.wallix_pam?.user != null && ctx.user?.name == null
+  - set:
+      field: source.address
+      copy_from: wallix_pam.client_ip
+      if: ctx.wallix_pam?.client_ip != null && ctx.source?.address == null
+  - grok:
+      field: source.address
+      patterns:
+        - '^%{IP:source.ip}$'
+      ignore_failure: true
+      if: ctx.source?.address != null
+  - append:
+      field: event.category
+      value: configuration
+      allow_duplicates: false
+  - set:
+      field: event.action
+      copy_from: wallix_pam.action
+      if: ctx.wallix_pam?.action != null && ctx.event?.action == null
+  - append:
+      field: event.type
+      value: creation
+      allow_duplicates: false
+      if: ctx.wallix_pam?.action == 'add'
+  - append:
+      field: event.type
+      value: change
+      allow_duplicates: false
+      if: >-
+        ctx.wallix_pam?.action == 'edit' ||
+        ctx.wallix_pam?.action == 'backup' ||
+        ctx.wallix_pam?.action == 'restore'
+  - append:
+      field: event.type
+      value: deletion
+      allow_duplicates: false
+      if: ctx.wallix_pam?.action == 'delete'
+  - append:
+      field: event.type
+      value: info
+      allow_duplicates: false
+      if: ctx.wallix_pam?.action == 'list' || ctx.wallix_pam?.action == 'download'
+  - set:
+      field: event.outcome
+      value: success
+      if: ctx.event?.outcome == null
+  - set:
+      field: event.reason
+      copy_from: wallix_pam.infos
+      if: >-
+        ctx.wallix_pam?.infos != null &&
+        ctx.wallix_pam.infos != '' &&
+        ctx.event?.reason == null
+  - remove:
+      field:
+        - _tmp
+        - wallix_pam.action
+        - wallix_pam.client_ip
+        - wallix_pam.user
+      ignore_missing: true
