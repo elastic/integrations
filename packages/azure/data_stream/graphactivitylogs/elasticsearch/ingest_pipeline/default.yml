@@ -476,6 +476,12 @@ processors:
       value: failure
       tag: set-event_outcome-failure_920d8a8a
       if: ctx.http?.response?.status_code != null && ctx.http.response.status_code >= 400
+  - set:
+      tag: set_cloud_region_from_location_3f7a1c2e
+      field: cloud.region
+      copy_from: destination.geo.region_name
+      ignore_empty_value: true
+      description: 'The Graph `location` field holds the Azure datacenter region (for example `UK South`), not a geoip place name. Set before the shared pipeline so it is normalized to the canonical Azure slug.'
   - pipeline:
       name: '{{ IngestPipeline "azure-shared-pipeline" }}'
       tag: pipeline-azure-shared-pipeline_431c6aae
