@@ -1,0 +1,38 @@
+services:
+  mqtt-broker:
+    image: eclipse-mosquitto:2.0.18
+    hostname: mqtt-broker
+    volumes:
+      - ./config/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+    ports:
+      - 1883
+    healthcheck:
+      test: ["CMD-SHELL", "mosquitto_sub -h 127.0.0.1 -p 1883 -t healthcheck -E || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 5s
+  # Publishes each sample line as a *retained* message on its own topic. The
+  # broker replays retained messages to every new subscriber, so the agent
+  # receives all of them whenever it connects — no signal coordination needed,
+  # and the hit count stays deterministic. Retain keeps only the newest message
+  # per topic, hence one topic per line.
+  mqtt-publisher:
+    image: eclipse-mosquitto:2.0.18
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        set -e
+        i=0
+        while IFS= read -r line; do
+          [ -z "$$line" ] && continue
+          i=$$((i+1))
+          mosquitto_pub -h mqtt-broker -p 1883 -t "sensors/$$i" -q 1 -r -m "$$line"
+        done < /sample_logs/mqtt.log
+        echo "published $$i retained messages"
+    depends_on:
+      mqtt-broker:
+        condition: service_healthy
