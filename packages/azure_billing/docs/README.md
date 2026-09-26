@@ -236,6 +236,70 @@ To change the scope, expand the data stream section named **Collect Azure Billin
 * `Billing Scope Department ID` : Collect user details and forecast data for the given department ID.
 * `Billing Scope Account ID` : Collect user details and forecast data for the given billing account ID.
 
+## Deduplication and transforms
+
+### Why duplicates happen
+
+The Azure billing metricset re-fetches the most recent days on every run, and it starts
+over whenever the Elastic Agent restarts. Azure also keeps revising cost rows for about
+72 hours after they first appear, so re-fetching them is intentional and must keep
+happening. The consequence is that `metrics-azure.billing-*` holds several copies of the
+same cost row, and any visualization that sums `azure.billing.pretax_cost` over the raw
+data stream over-reports the cost.
+
+### The transforms
+
+To solve this, the integration installs two Elasticsearch [transforms](https://www.elastic.co/docs/explore-analyze/transforms/transform-overview)
+that maintain a deduplicated view of the raw data stream:
+
+| Transform | Alias | Deduplicates | How |
+| --- | --- | --- | --- |
+| `usage` | `azure_billing.usage_latest` | Usage detail rows (documents with `azure.billing.pretax_cost`) | A pivot per usage day, meter (`azure.billing.billing_period_id`), and resource. For each bucket it keeps only the rows written by the **most recent fetch** and sums their `pretax_cost`. Older fetches of the same day are discarded, so agent restarts and short collection periods no longer inflate the cost, and the newest fetch carries Azure's latest revision. |
+| `latest_forecast` | `azure_billing.forecast_latest` | Actual and forecast cost rows from the Cost Management forecast API | A `latest` transform keyed on `azure.subscription_id`, `azure.billing.usage_date`, `azure.billing.currency`, and a derived `azure.billing.cost_status` that separates actual rows from forecast rows. The most recently collected row wins. |
+
+The usage transform does not deduplicate individual rows on purpose. The Azure Usage Details
+API does not give every row a unique ID: rows for the same day, meter, and resource share one
+`id` and legitimately appear more than once, for example one row per VM instance of a scale
+set. The fields that tell those rows apart are not part of the document, so the only safe unit
+of deduplication is the fetch. Each fetch is a complete snapshot of a day, and the newest
+snapshot replaces the previous ones.
+
+This also makes a longer `Billing Usage Lookback` safe: with `72h`, every fetch re-reads the last
+three days and picks up Azure's late revisions, and the transform replaces each day with the
+newest snapshot instead of adding the re-read rows to the total.
+
+```text
+                                                              ┌───────────────────────────┐
+                                                        ┌────▶│ azure_billing.usage_latest│
+                                                        │     │        <<alias>>          │
+┌────────────────┐    ┌─────────┐    ┌────────────────┐  │     └───────────────────────────┘
+│                │    │         │    │ metrics-azure. │  │
+│   Azure APIs   │───▶│  Agent  │───▶│    billing     │──┤     ┌───────────────────────────┐
+│                │    │         │    │ <<data stream>>│  │     │azure_billing.forecast_    │
+└────────────────┘    └─────────┘    └────────────────┘  └────▶│         latest            │
+                                                               │        <<alias>>          │
+                                                               └───────────────────────────┘
+```
+
+The raw `metrics-azure.billing-*` data stream is **not** modified and remains the system
+of record: nothing is deleted from it, and no retention policy is applied to the
+transform destination indices. The transforms simply maintain a second, deduplicated copy
+of the data. The destination indices are `azure_billing.usage-v1` and
+`azure_billing.forecast-v1`; they are deliberately named so they do **not** match
+`metrics-*`, otherwise a `metrics-*` data view would count both the raw and the
+deduplicated documents.
+
+### Dashboard
+
+The **[Azure Billing] Billing overview** dashboard reads from the
+`azure_billing.usage_latest` and `azure_billing.forecast_latest` aliases, so its cost
+figures are deduplicated. All cost panels are broken down by `azure.billing.currency`, so
+amounts in different currencies are never added together.
+
+The transforms must be running for the dashboard to show data. You can check their status
+in Kibana under **Stack Management > Transforms**. If you prefer to query the raw,
+non-deduplicated documents, use the `metrics-azure.billing-*` data stream directly.
+
 ## Metrics Reference
 
 ### Azure Billing Metrics
