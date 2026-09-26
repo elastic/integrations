@@ -568,6 +568,39 @@ Known data streams that might produce malformed logs:
 - Platform Logs
 - Spring Apps Logs
 
+## Common Azure metadata fields
+
+Every data stream in this integration emits a consistent set of Azure metadata fields based on [OpenTelemetry semantic conventions for Azure](https://opentelemetry.io/docs/specs/semconv/cloud/azure/).
+
+| Field | Type | Description | Available in |
+|---|---|---|---|
+| `cloud.provider` | keyword | Always `azure`. | All streams |
+| `cloud.account.id` | keyword | Azure subscription ID. Per OTel semconv, this field means subscription — it is **not** set to the tenant ID. | Streams with ARM resource IDs (activitylogs, platformlogs, springcloudlogs, application_gateway, firewall_logs, eventhub) |
+| `cloud.resource_id` | keyword | Fully-qualified Azure Resource Manager (ARM) resource ID, for example `/subscriptions/{id}/resourceGroups/{rg}/providers/…`. | All streams that receive an ARM resource path |
+| `cloud.region` | keyword | Azure region slug (lowercase, no spaces), for example `westeurope`, `eastus`. Set from the envelope `location` field; the value `global` is removed (not a region). | activitylogs, eventhub (with parse_message), streams that carry location |
+| `azure.subscription_id` | keyword | Azure subscription ID (unchanged from the original field). | Same as `cloud.account.id` |
+| `azure.tenant.id` | keyword | Azure tenant (directory) ID. | Entra ID streams (auditlogs, signinlogs, identity_protection, provisioning, graphactivitylogs, aadgraphactivitylogs) and activitylogs |
+| `azure.correlation.id` | keyword | Correlation ID for grouping related operations. | All streams |
+| `azure.resource_group.name` | keyword | Azure resource group name parsed from the ARM resource ID. | Full ARM streams |
+| `azure.resource_provider.namespace` | keyword | Azure resource provider namespace, for example `Microsoft.EventHub/namespaces`. | All streams |
+
+### Deprecated aliases
+
+All previously published field names are preserved as `type: alias` fields so existing queries, dashboards, and saved searches continue to work. Pipelines that **write** to the old names will fail (Elasticsearch rejects indexing into an alias), but read-only consumers are unaffected.
+
+| Deprecated name | Points to |
+|---|---|
+| `azure.resource.id` | `cloud.resource_id` |
+| `azure.resource_id` | `cloud.resource_id` |
+| `azure.resource.group` | `azure.resource_group.name` |
+| `azure.resource.provider` | `azure.resource_provider.namespace` |
+| `azure.tenant_id` | `azure.tenant.id` |
+| `azure.activitylogs.tenant_id` | `azure.tenant.id` |
+| `azure.auditlogs.tenant_id` | `azure.tenant.id` |
+| `azure.provisioning.tenant_id` | `azure.tenant.id` |
+| `azure.signinlogs.tenant_id` | `azure.tenant.id` |
+| `azure.correlation_id` | `azure.correlation.id` |
+
 ## Reference
 
 Visit the page for each individual Azure Logs integration to see details about exported fields and sample events.

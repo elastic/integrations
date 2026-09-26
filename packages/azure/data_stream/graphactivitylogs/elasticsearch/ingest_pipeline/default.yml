@@ -264,25 +264,25 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: azure.graphactivitylogs.tenant_id
-      target_field: azure.tenant_id
+      target_field: azure.tenant.id
       ignore_missing: true
       tag: rename-tenant_id_26e0d793
   - rename:
       field: azure.graphactivitylogs.properties.tenant_id
-      target_field: azure.tenant_id
+      target_field: azure.tenant.id
       ignore_missing: true
-      if: ctx.azure?.tenant_id == null
+      if: ctx.azure?.tenant?.id == null
       tag: rename-properties_tenant_id_cc174fdb
   - remove:
       field:
         - azure.graphactivitylogs.tenant_id
         - azure.graphactivitylogs.properties.tenant_id
       tag: remove-tenant_id_8e800dd5
-      if: ctx.azure?.tenant_id != null
+      if: ctx.azure?.tenant?.id != null
       ignore_missing: true
   - rename:
       field: azure.graphactivitylogs.correlation_id
-      target_field: azure.correlation_id
+      target_field: azure.correlation.id
       ignore_missing: true
       tag: rename-correlation_id_404535e8
   - rename:
@@ -476,6 +476,12 @@ processors:
       value: failure
       tag: set-event_outcome-failure_920d8a8a
       if: ctx.http?.response?.status_code != null && ctx.http.response.status_code >= 400
+  - set:
+      tag: set_cloud_region_from_location_3f7a1c2e
+      field: cloud.region
+      copy_from: destination.geo.region_name
+      ignore_empty_value: true
+      description: 'The Graph `location` field holds the Azure datacenter region (for example `UK South`), not a geoip place name. Set before the shared pipeline so it is normalized to the canonical Azure slug.'
   - pipeline:
       name: '{{ IngestPipeline "azure-shared-pipeline" }}'
       tag: pipeline-azure-shared-pipeline_431c6aae
@@ -483,21 +489,11 @@ processors:
       fields:
         - azure.graphactivitylogs.properties.request_uri
         - http.request.id
-        - azure.tenant_id
+        - azure.tenant.id
         - azure.graphactivitylogs.properties.time_generated
       target_field: _id
       ignore_missing: true
       tag: fingerprint-id_20ad8706
-  - set:
-      field: cloud.account.id
-      value: '{{azure.tenant_id}}'
-      tag: set-cloud_account_id_a16bbfe4
-      ignore_empty_value: true
-  - set:
-      field: cloud.region
-      value: '{{destination.geo.region_name}}'
-      tag: set-cloud_region_d432e8db
-      ignore_empty_value: true
   - set:
       field: cloud.service.name
       value: 'Microsoft Graph'

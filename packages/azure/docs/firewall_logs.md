@@ -95,18 +95,22 @@ An example event for `firewall` looks as following:
             "operation_name": "AzureFirewallNetworkRuleLog"
         },
         "resource": {
-            "group": "TEST-FW-RG",
-            "id": "/SUBSCRIPTIONS/23103928-B2CF-472A-8CDB-0146E2849129/RESOURCEGROUPS/TEST-FW-RG/PROVIDERS/MICROSOFT.NETWORK/AZUREFIREWALLS/TEST-FW01",
-            "name": "TEST-FW01",
-            "provider": "MICROSOFT.NETWORK/AZUREFIREWALLS"
+            "name": "TEST-FW01"
         },
-        "subscription_id": "23103928-B2CF-472A-8CDB-0146E2849129"
+        "subscription_id": "23103928-B2CF-472A-8CDB-0146E2849129",
+        "resource_group": {
+            "name": "TEST-FW-RG"
+        },
+        "resource_provider": {
+            "namespace": "MICROSOFT.NETWORK/AZUREFIREWALLS"
+        }
     },
     "cloud": {
         "account": {
             "id": "23103928-B2CF-472A-8CDB-0146E2849129"
         },
-        "provider": "azure"
+        "provider": "azure",
+        "resource_id": "/SUBSCRIPTIONS/23103928-B2CF-472A-8CDB-0146E2849129/RESOURCEGROUPS/TEST-FW-RG/PROVIDERS/MICROSOFT.NETWORK/AZUREFIREWALLS/TEST-FW01"
     },
     "destination": {
         "address": "89.160.20.156",
@@ -117,7 +121,7 @@ An example event for `firewall` looks as following:
             }
         },
         "geo": {
-            "city_name": "Linköping",
+            "city_name": "Link\u00f6ping",
             "continent_name": "Europe",
             "country_iso_code": "SE",
             "country_name": "Sweden",
@@ -126,7 +130,7 @@ An example event for `firewall` looks as following:
                 "lon": 15.6167
             },
             "region_iso_code": "SE-E",
-            "region_name": "Östergötland County"
+            "region_name": "\u00d6sterg\u00f6tland County"
         },
         "ip": "89.160.20.156"
     },
@@ -178,7 +182,8 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| azure.correlation_id | Correlation ID | keyword |
+| azure.correlation.id | Correlation ID for grouping related operations. | keyword |
+| azure.correlation_id | Deprecated: use `azure.correlation.id`. | alias |
 | azure.firewall.action | Action taken by the firewall following the match with the network rule. | keyword |
 | azure.firewall.action_reason | Reason for the action performed by the firewall. | keyword |
 | azure.firewall.category | Category | keyword |
@@ -206,14 +211,19 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | azure.firewall.rule_collection_group | Name of the rule collection group in which the triggered rule resides. | keyword |
 | azure.firewall.target_url | Request's target address URL. | keyword |
 | azure.firewall.web_category | Web Category identified for the requested FQDN (Azure Firewall Standard) or URL (Azure Firewall Premium). | keyword |
-| azure.resource.authorization_rule | Authorization rule | keyword |
-| azure.resource.group | Resource group | keyword |
-| azure.resource.id | Resource ID | keyword |
-| azure.resource.name | Name | keyword |
-| azure.resource.namespace | Resource type/namespace | keyword |
-| azure.resource.provider | Resource type/namespace | keyword |
-| azure.subscription_id | Azure subscription ID | keyword |
-| azure.tenant_id | tenant ID | keyword |
+| azure.resource.authorization_rule | Authorization rule. | keyword |
+| azure.resource.group | Deprecated: use `azure.resource_group.name`. | alias |
+| azure.resource.id | Deprecated: use `cloud.resource_id`. | alias |
+| azure.resource.name | Resource name. | keyword |
+| azure.resource.namespace | Event Hub namespace parsed from the ARM resource ID. | keyword |
+| azure.resource.provider | Deprecated: use `azure.resource_provider.namespace`. | alias |
+| azure.resource_group.name | Azure resource group name. | keyword |
+| azure.resource_id | Deprecated: use `cloud.resource_id`. | alias |
+| azure.resource_provider.namespace | Azure resource provider namespace (e.g., Microsoft.EventHub). | keyword |
+| azure.subscription_id | Azure subscription ID. | keyword |
+| azure.tenant.id | Azure tenant ID. | keyword |
+| azure.tenant_id | Deprecated: use `azure.tenant.id`. | alias |
+| cloud.resource_id | Fully-qualified Azure Resource Manager (ARM) resource ID. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |

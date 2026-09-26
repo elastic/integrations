@@ -96,6 +96,16 @@ processors:
         - azure.aadgraphactivitylogs.properties.__udi_required_fields_unique_id
       ignore_missing: true
       tag: remove-udi_required_fields_c72ae49a
+  - rename:
+      field: azure.aadgraphactivitylogs.resource_id
+      target_field: azure.resource_id
+      ignore_missing: true
+      tag: rename-resource_id_aad_4f5a6b7c
+  - rename:
+      field: azure.aadgraphactivitylogs.correlation_id
+      target_field: azure.correlation.id
+      ignore_missing: true
+      tag: rename-correlation_id_aad_8d9e0f1a
   - date:
       field: azure.aadgraphactivitylogs.properties.time_generated
       target_field: '@timestamp'
@@ -245,21 +255,21 @@ processors:
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: azure.aadgraphactivitylogs.tenant_id
-      target_field: azure.tenant_id
+      target_field: azure.tenant.id
       ignore_missing: true
       tag: rename-tenant_id_46619137
   - rename:
       field: azure.aadgraphactivitylogs.properties.tenant_id
-      target_field: azure.tenant_id
+      target_field: azure.tenant.id
       ignore_missing: true
-      if: ctx.azure?.tenant_id == null
+      if: ctx.azure?.tenant?.id == null
       tag: rename-properties_tenant_id_f4e63696
   - remove:
       field:
         - azure.aadgraphactivitylogs.tenant_id
         - azure.aadgraphactivitylogs.properties.tenant_id
       tag: remove-tenant_id_62b20021
-      if: ctx.azure?.tenant_id != null
+      if: ctx.azure?.tenant?.id != null
       ignore_missing: true
   - rename:
       field: azure.aadgraphactivitylogs.properties.request_id
@@ -543,6 +553,12 @@ processors:
         ctx.event.action = hyphenated.toString() + '-' + verb;
       ignore_failure: true
 
+  - set:
+      tag: set_cloud_region_from_location_3f7a1c2e
+      field: cloud.region
+      copy_from: destination.geo.region_name
+      ignore_empty_value: true
+      description: 'The Graph `location` field holds the Azure datacenter region (for example `UK South`), not a geoip place name. Set before the shared pipeline so it is normalized to the canonical Azure slug.'
   - pipeline:
       name: '{{ IngestPipeline "azure-shared-pipeline" }}'
       tag: pipeline-azure-shared-pipeline_431c6aae
@@ -553,21 +569,11 @@ processors:
       fields:
         - url.original
         - http.request.id
-        - azure.tenant_id
+        - azure.tenant.id
         - azure.aadgraphactivitylogs.properties.time_generated
       target_field: _id
       ignore_missing: true
       tag: fingerprint-id_8fd61902
-  - set:
-      field: cloud.account.id
-      value: '{{azure.tenant_id}}'
-      tag: set-cloud_account_id_a16bbfe4
-      ignore_empty_value: true
-  - set:
-      field: cloud.region
-      value: '{{destination.geo.region_name}}'
-      tag: set-cloud_region_d432e8db
-      ignore_empty_value: true
   - set:
       field: cloud.service.name
       value: 'Azure AD Graph'

@@ -85,7 +85,6 @@ An example event for `graphactivitylogs` looks as following:
 {
     "@timestamp": "2024-03-07T10:24:44.793Z",
     "azure": {
-        "correlation_id": "f7839da0-e7d1-4e4f-985a-64937fbge347",
         "graphactivitylogs": {
             "category": "MicrosoftGraphActivityLogs",
             "operation_name": "Microsoft Graph Activity",
@@ -121,11 +120,15 @@ An example event for `graphactivitylogs` looks as following:
             },
             "result_signature": "200"
         },
-        "resource": {
-            "id": "/TENANTS/AB30785B-417F-42A4-B5DC-8F9051718ACB/PROVIDERS/MICROSOFT.AADIAM",
-            "provider": "MICROSOFT.AADIAM"
+        "resource_provider": {
+            "namespace": "MICROSOFT.AADIAM"
         },
-        "tenant_id": "ab30785b-417f-42a4-b5dc-8f9051718acb"
+        "tenant": {
+            "id": "ab30785b-417f-42a4-b5dc-8f9051718acb"
+        },
+        "correlation": {
+            "id": "f7839da0-e7d1-4e4f-985a-64937fbge347"
+        }
     },
     "client": {
         "geo": {
@@ -150,7 +153,8 @@ An example event for `graphactivitylogs` looks as following:
         "region": "France Central",
         "service": {
             "name": "Microsoft Graph"
-        }
+        },
+        "resource_id": "/TENANTS/AB30785B-417F-42A4-B5DC-8F9051718ACB/PROVIDERS/MICROSOFT.AADIAM"
     },
     "destination": {
         "geo": {
@@ -228,7 +232,8 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
-| azure.correlation_id | Correlation ID. | keyword |
+| azure.correlation.id | Correlation ID for grouping related operations. | keyword |
+| azure.correlation_id | Deprecated: use `azure.correlation.id`. | alias |
 | azure.graphactivitylogs.category | Azure Event Category. For example, Graph Activity Logs has value `MicrosoftGraphActivityLogs`. | keyword |
 | azure.graphactivitylogs.operation_name | Operation name. | keyword |
 | azure.graphactivitylogs.operation_version | The Graph API version of the event. | keyword |
@@ -256,15 +261,20 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | azure.graphactivitylogs.properties.wids | Denotes the tenant-wide roles assigned to this user. | keyword |
 | azure.graphactivitylogs.result_signature | Result signature. | keyword |
 | azure.resource.authorization_rule | Authorization rule. | keyword |
-| azure.resource.group | Resource group. | keyword |
-| azure.resource.id | Resource ID. | keyword |
-| azure.resource.name | Name. | keyword |
-| azure.resource.namespace | Resource type/namespace. | keyword |
-| azure.resource.provider | Resource type/namespace. | keyword |
+| azure.resource.group | Deprecated: use `azure.resource_group.name`. | alias |
+| azure.resource.id | Deprecated: use `cloud.resource_id`. | alias |
+| azure.resource.name | Resource name. | keyword |
+| azure.resource.namespace | Event Hub namespace parsed from the ARM resource ID. | keyword |
+| azure.resource.provider | Deprecated: use `azure.resource_provider.namespace`. | alias |
+| azure.resource_group.name | Azure resource group name. | keyword |
+| azure.resource_id | Deprecated: use `cloud.resource_id`. | alias |
+| azure.resource_provider.namespace | Azure resource provider namespace (e.g., Microsoft.EventHub). | keyword |
 | azure.subscription_id | Azure subscription ID. | keyword |
-| azure.tenant_id | tenant ID. | keyword |
+| azure.tenant.id | Azure tenant ID. | keyword |
+| azure.tenant_id | Deprecated: use `azure.tenant.id`. | alias |
 | client.geo.location | Longitude and latitude. | geo_point |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
+| cloud.resource_id | Fully-qualified Azure Resource Manager (ARM) resource ID. | keyword |
 | data_stream.dataset | Data stream dataset name. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
