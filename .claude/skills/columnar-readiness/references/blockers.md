@@ -101,15 +101,30 @@ For the tech-preview wave the answer is `supported: true` alone, with
 
 Both constructs are read by **Fleet**, not only by the spec validator, so both
 need a `conditions.kibana.version` of at least the first Kibana minor that ships
-that Fleet support — currently written as `"^9.7.0"` (adjust to the actual Fleet
-release; on older Kibana the override and the flag are silently ignored, so the
-toggle is unavailable and any `doc_values: false` field will make a manual
-columnar opt-in fail). And both need `format_version: "3.7.0"` in the root
+that Fleet support. That is **9.6**, so write `"^9.6.0"` (on older Kibana the
+override and the flag are silently ignored, so the toggle is unavailable and any
+`doc_values: false` field will make a manual columnar opt-in fail). And both need
+`format_version: "3.7.0"` in the root
 manifest: declaring either one under an older spec version is
 `columnar_requires_spec_3_7`. Setting `supported: true` on a stream that still
 has a Class A finding is `columnar_supported_with_blockers` — the 3.7.0
 validator rejects it, and a user who did turn the toggle on would get a failed
 index template PUT.
+
+### The cost of declaring readiness
+
+`conditions.kibana.version: "^9.6.0"` is not free. Enhancing the package spec and
+the opt-in mechanism **automatically raises the minimum stack version of a
+columnar-ready integration to 9.6**: Fleet will not offer the new package version
+to anything older, so every user still on 9.5 or below stops receiving *any*
+further update to this package — security fixes and unrelated bug fixes included,
+not just the columnar ones. Fixing a bug for those users then requires a
+**backport**: a separate release line off the last pre-9.6 version of the package.
+
+That is a permanent, per-package maintenance commitment, and it is the reason
+readiness is declared **deliberately, for the packages chosen as tech-preview
+targets**, and never swept across the catalog because the audit says `READY`.
+`READY` means "no mapping blocker"; it does not mean "worth the 9.6 floor".
 
 ---
 
@@ -598,3 +613,107 @@ remove it and reach for index sorting instead ([`sorting.md`](sorting.md)) —
 that is the per-integration lever.
 
 **Known in catalog:** none.
+
+---
+
+## C6-C8: columnar `_source` consumers
+
+Columnar `_source` **is not a faithful representation of the original source**. It
+is reconstructed from doc values, and:
+
+- **nested objects are flattened**, which can impact runtime fields and other
+  consumers that access `_source` and expect a hierarchical structure;
+- **object arrays under a non-`nested` object become parallel arrays** —
+  `[{a:1,b:2},{a:3,b:4}]` reads back as `{a:[1,3], b:[2,4]}`. The association
+  between one element's leaves is gone;
+- **multi-value order is preserved** (unlike plain logsdb synthetic source, which
+  sorts and de-duplicates).
+
+**The ES|QL exception.** Experiences that use ES|QL are **mostly unaffected**: ES|QL
+reads doc values, not `_source`. The exception is a query that explicitly requests
+`METADATA _source` — and those normally go on to pick the document apart with
+`JSON_EXTRACT(_source, "...")`, which is exactly where the flattened shape shows up.
+
+**Ingest pipelines are NOT affected.** They run *before* indexing, on the real
+document, so nothing in this section applies to them and the audit never flags them.
+
+So a data stream should not be declared `elasticsearch.columnar.supported: true`
+until this review is done. It is a per-integration question about *consumers*, which
+no mapping check can answer.
+
+### C6. Transform reads `_source` — `source_consumer_transform`
+
+**Rule.** Any `elasticsearch/transform/<name>/transform.yml` in the package whose
+scripts reference `_source` — a `scripted_metric` script, a `bucket_script`, or a
+runtime field under `source.runtime_mappings`. Severity `review`, so the stream
+becomes NEEDS_REVIEW.
+
+**Why.** A transform runs at **query time** against the source Elasticsearch
+reconstructs. On a columnar index that is the flattened shape, not the document the
+ingest pipeline produced, so a `params._source.a.b` walk can return something else —
+or nothing.
+
+**Which data streams it is attached to.** The transform's `source.index` patterns
+are resolved against this package's data streams (`logs-<pkg>.<ds>-*`). A transform
+reading another package's indices — `beaconing` reads `logs-endpoint.events.network-*`
+— is attached to every logs stream of its own package, because that is where the fix
+would be discussed.
+
+**Remediation.** Read doc values (`doc['field']`) or the aggregated fields instead of
+`_source`; or verify against a real columnar index that the destination documents are
+unchanged.
+
+**Known in catalog:** none. All 67 packages with transforms use `doc[...]`. Three of
+them contain the letters `_source` in an identifier — `low_source_bytes_variation`
+and `mean_source_bytes` (`beaconing`), `avg_source_bytes` (`ded`),
+`labels.is_ioc_transform_source` (`ti_rapid7_threat_command`) — and are **not** hits;
+the detector matches `_source` as a token, never as a substring.
+
+### C7. Kibana asset reads `_source` — `source_consumer_kibana`
+
+**Rule.** A saved object under `kibana/` that consumes the document source:
+`params._source` / `ctx._source` in a script, a scripted field (`scriptedFields`,
+`"scripted": true`), a runtime field (`runtimeFieldMap`, `runtime_mappings`) whose
+script reads `_source`, or an ES|QL query with `METADATA _source` (usually together
+with `JSON_EXTRACT(_source, ...)`). Severity `review`. The finding names the asset
+file and the expression.
+
+**`doc[...]` is deliberately not a hit.** A runtime field that only reads doc values
+behaves identically under columnar — doc values are precisely what columnar keeps.
+The three ml-module assets in this catalog that define `runtime_mappings` (`dga`,
+`lmd`, `problemchild`) are all of that kind and are not reported. Reporting them
+would be noise, not signal.
+
+**Remediation.** Move the expression onto doc values or onto the mapped fields; or
+check it against a columnar index.
+
+**Known in catalog:** four detection rules in `security_detection_engine` use
+`FROM ... METADATA _source` with `JSON_EXTRACT(_source, ...)`:
+`1ca59146`, `4159bec9`, `8e78b1a5`, `e7bf9314`. They produce no data stream finding
+because `security_detection_engine` ships no data streams — but note **which indices
+they read**: `logs-network_traffic.sip-*`, `logs-network_traffic.nfs-*`,
+`logs-gcp.audit-*`. Detection rules live outside the packages they query (they are
+generated from `elastic/detection-rules`), so a `_source` consumer of the
+`network_traffic` or `gcp` package is invisible to an audit of that package. See
+[`correctness-and-performance.md`](correctness-and-performance.md).
+
+### C8. Object arrays in the documents — `object_array_flattening`
+
+**Rule.** An object/`group` field — not `nested`, not `flattened` — whose value is an
+array of objects in `sample_event.json` or in a `_dev/test/pipeline/*-expected.json`
+document. Severity `info`: it never changes a status.
+
+**Why it is only informational.** Dashboards, alerting rules and ES|QL that query the
+**leaf fields** are unaffected — the leaves are all still there, with their order
+intact. What changes is the shape a `_source` reader sees: a runtime field on
+`params._source`, Kibana code walking the object, an ES|QL `METADATA _source` query,
+or a person reading the JSON in Discover.
+
+Mapping the field as `nested` does **not** restore the shape (see A1/C2); it only
+restores per-element query semantics.
+
+**Known in catalog:** 226 logs data streams in 119 packages. Security packages
+dominate — `crowdstrike/alert` (7 fields, e.g. `crowdstrike.alert.ioc_context`,
+`crowdstrike.alert.quarantined_files`), `okta/system` (`okta.target`), `o365/audit`
+(`o365.audit.Actor`, `o365.audit.Target`), `aws/securityhub_findings` — but so do
+plain ECS arrays such as `dns.answers` (`aws/route53_resolver_logs`).

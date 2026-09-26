@@ -195,7 +195,7 @@ SORT_CANDIDATES_COLLECTOR_ONLY = {"agent.id"}
 # best first.
 SORT_CANDIDATE_LEAVES = [
     "tenantid", "tenant", "organizationid", "orgid", "accountid", "customerid",
-    "subscriptionid", "workspaceid", "projectid", "clientid", "organization",
+    "subscriptionid", "workspaceid", "projectid", "organization",
     "instanceid", "siteid",
 ]
 
@@ -214,9 +214,15 @@ SORT_CANDIDATE_LEAVES = [
 # carries an id token (`id`, `uid`, so `account_id` / `eventId` / plain `id`), or it
 # names a tenant-like entity outright (`tenant`, `organization`, …).
 ID_TOKENS = {"id", "uid", "identifier"}  # `guid` is in HASH_TOKENS: it is per-event
+# `client` is deliberately NOT here. An OAuth application id is what it almost always
+# spells in this catalog — `okta.client.id`, `auth0.logs.data.client_id`,
+# `ping_one.audit.actors.client.id`, `zeronetworks.audit.details.clientId` — and a
+# per-application id is neither a tenant nor low enough in cardinality to lead an
+# index sort. `infoblox_bloxone_ddi.dhcp_lease.client_id` is not even an application:
+# it is the DHCP client, one value per device.
 TENANT_TOKENS = {
     "account", "tenant", "organization", "organisation", "org", "customer",
-    "project", "subscription", "workspace", "client", "site", "instance",
+    "project", "subscription", "workspace", "site", "instance",
 }
 
 # Measurement words. A field whose leaf carries one of these is a per-event number:
@@ -486,12 +492,29 @@ COLUMNAR_SPEC_VERSION = (3, 7)
 # both: the toggle is not offered, and a manual columnar opt-in still ships the
 # unpatched `doc_values: false`, so the index template PUT fails. So the
 # constraint must be at least the first Kibana minor that ships that Fleet
-# support.
-COLUMNAR_KIBANA_CONSTRAINT = "^9.7.0"
+# support, which is 9.6.
+COLUMNAR_KIBANA_CONSTRAINT = "^9.6.0"
 COLUMNAR_KIBANA_NOTE = (
-    "adjust to the actual Fleet release; on older Kibana the override and the flag are "
+    "the Fleet support ships in 9.6; on older Kibana the override and the flag are "
     "silently ignored, so the toggle is unavailable and any `doc_values: false` field "
     "will make a manual columnar opt-in fail"
+)
+
+# The constraint is not free, and this is the sentence the package owner has to read
+# before declaring readiness. `conditions.kibana.version: "^9.6.0"` (and the
+# `format_version: "3.7.0"` bump that goes with it) RAISES THE PACKAGE'S MINIMUM
+# STACK VERSION to 9.6: Fleet will not offer the new package version to a stack older
+# than that, so every user still on 9.5 or below stops receiving this package's
+# updates altogether — not just the columnar ones. Fixing a bug for those users then
+# needs a backport: a separate release line off the last pre-9.6 version. That is a
+# real, recurring maintenance cost, so readiness is declared deliberately, for the
+# packages chosen as tech-preview targets, and not swept across the catalog.
+COLUMNAR_MIN_STACK_COST = (
+    "**Cost:** declaring `columnar.supported` (and bumping `format_version` to "
+    "`\"3.7.0\"`) raises this package's **minimum stack version to 9.6**. Users on an "
+    "older stack stop receiving *any* further update to this package, so a bug fix for "
+    "them needs a backport branch/release line. Declare readiness deliberately, for the "
+    "packages picked as tech-preview targets — not catalog-wide."
 )
 
 # Finding codes that describe the columnar *declaration* itself rather than a
@@ -950,8 +973,15 @@ KQL_FIELD_RE = re.compile(r'([a-zA-Z][\w.@*-]*)\s*(?::|>=|<=|>|<)')
 KQL_KEYWORDS = {"and", "or", "not"}
 
 
-def dashboard_fields(pkg_dir: str, limit_bytes: int = 4_000_000) -> Tuple[Counter, Counter]:
-    """(referenced, filtered) field-name counters from the package's Kibana assets.
+def scan_kibana_assets(pkg_dir: str, count_fields: bool = True,
+                       limit_bytes: int = 4_000_000
+                       ) -> Tuple[Counter, Counter, List[Dict[str, Any]]]:
+    """(referenced, filtered, `_source` consumers) from the package's Kibana assets.
+
+    Every `kibana/**/*.json` is read exactly once. The two field counters feed the
+    index-sort tie-break and are skipped when `count_fields` is false
+    (`--no-dashboards`); the `_source` consumer scan always runs, because it is a
+    correctness check rather than a sort hint.
 
     `referenced` is every `field`/`key`/`sourceField` mention — axes, group-bys,
     metrics, columns. It is the benchmark workload.
@@ -963,10 +993,14 @@ def dashboard_fields(pkg_dir: str, limit_bytes: int = 4_000_000) -> Tuple[Counte
     """
     referenced: Counter = Counter()
     filtered: Counter = Counter()
+    texts: List[Tuple[str, str]] = []
     kibana_dir = os.path.join(pkg_dir, "kibana")
     if not os.path.isdir(kibana_dir):
-        return referenced, filtered
+        return referenced, filtered, []
     for root, _dirs, files in os.walk(kibana_dir):
+        # NOT sorted: `filter_fields.most_common()` breaks ties by insertion order, so
+        # changing the walk order would silently move the tier-3 dashboard hint of
+        # streams whose filter fields are all tied at 1 (`elastic_agent`).
         for name in files:
             if not name.endswith(".json"):
                 continue
@@ -978,6 +1012,10 @@ def dashboard_fields(pkg_dir: str, limit_bytes: int = 4_000_000) -> Tuple[Counte
                     text = fh.read()
             except OSError:
                 continue
+            if "_source" in text or "script" in text:
+                texts.append((os.path.relpath(path, pkg_dir), text))
+            if not count_fields:
+                continue
             for match in DASHBOARD_FIELD_RE.finditer(text):
                 referenced[match.group(1)] += 1
             try:
@@ -985,7 +1023,7 @@ def dashboard_fields(pkg_dir: str, limit_bytes: int = 4_000_000) -> Tuple[Counte
             except ValueError:
                 continue
             _collect_filter_fields(doc, filtered)
-    return referenced, filtered
+    return referenced, filtered, kibana_source_consumers(texts)
 
 
 def _collect_filter_fields(node: Any, counts: Counter, depth: int = 0) -> None:
@@ -1096,6 +1134,43 @@ def _observer_device_hits(text: str) -> set:
     return hits
 
 
+# The tier-1 ECS grouping fields that need *event* evidence before they can lead an
+# index sort — see `_tier1_event_evidence`. `agent.id` is excluded because it already
+# has its own, stricter rule (`SORT_CANDIDATES_COLLECTOR_ONLY`).
+TIER1_EVENT_EVIDENCE_FIELDS = frozenset(SORT_CANDIDATES) - SORT_CANDIDATES_COLLECTOR_ONLY
+
+
+def _field_name_res(names):
+    """(name, dotted_re, bracket_re) for each dotted field name.
+
+    `cloud.account.id` is matched as `cloud.account.id`, `ctx?.cloud?.account?.id`
+    (Painless null-safe access) and `ctx['cloud']['account']['id']`.
+    """
+    out = []
+    for name in names:
+        parts = name.split(".")
+        dotted = r"(?<!\w)" + r"\??\.\??".join(re.escape(p) for p in parts) + r"\b"
+        bracket = r"\s*".join(r"\[\s*['\"]%s['\"]\s*\]" % re.escape(p) for p in parts)
+        out.append((name, re.compile(dotted), re.compile(bracket)))
+    return out
+
+
+# Fields a `script` processor is allowed to claim as a write. Kept to an allow-list
+# on purpose: a Painless mention is not proof of a write, so this is only trusted for
+# the handful of names where the alternative is a *worse* answer (an `observer.*`
+# device for a receiver stream, a tenant id for a poller).
+_SCRIPT_TARGET_RES = _field_name_res(
+    sorted(set(RECEIVER_SORT_FIELDS) | TIER1_EVENT_EVIDENCE_FIELDS))
+
+
+def _script_field_hits(text: str) -> set:
+    """Allow-listed field names a chunk of Painless / processor params refers to."""
+    if not text:
+        return set()
+    return {name for name, dotted, bracket in _SCRIPT_TARGET_RES
+            if dotted.search(text) or bracket.search(text)}
+
+
 class PipelineFacts:
     """What the ingest pipelines of one data stream say about its fields."""
 
@@ -1177,16 +1252,18 @@ def _walk_processors(procs: Any, facts: PipelineFacts, conditional: bool) -> Non
                                  facts, conditional=True)
             elif ptype == "script":
                 # Painless writes are invisible to the structured walk, so the
-                # `observer.*` device identifiers are recovered from the text of
-                # `source` and `params`. `targets` only: a Painless write is almost
-                # always branch-dependent, so it is never evidence of an
-                # unconditional target.
+                # allow-listed names (`observer.*` device identifiers and the tier-1
+                # ECS grouping fields) are recovered from the text of `source` and
+                # `params` — `aws_bedrock_agentcore/memory_application_logs` sets
+                # `ctx.service.name` that way and nowhere else. `targets` only: a
+                # Painless write is almost always branch-dependent, so it is never
+                # evidence of an unconditional target.
                 chunks = [body.get("source") or ""]
                 params = body.get("params")
                 if params is not None:
                     chunks.append(json.dumps(params, default=str))
                 for chunk in chunks:
-                    facts.targets |= _observer_device_hits(chunk)
+                    facts.targets |= _script_field_hits(chunk)
             elif ptype in ("grok", "dissect"):
                 _add_pattern_targets(ptype, body, facts, cond)
             elif ptype not in _NON_PRODUCING_PROCESSORS:
@@ -1248,7 +1325,8 @@ def recommend_sort(stream: Dict[str, Any], field_index: Dict[str, Dict[str, Any]
                    dash_fields: Counter, filter_fields: Counter,
                    array_fields: Optional[set] = None,
                    pipeline_arrays: Optional[PipelineFacts] = None,
-                   sample: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+                   sample: Optional[Dict[str, Any]] = None,
+                   field_sources: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
     """Decide whether the logsdb_columnar default sort is right for this stream.
 
     The input types pick the **regime**:
@@ -1274,6 +1352,7 @@ def recommend_sort(stream: Dict[str, Any], field_index: Dict[str, Dict[str, Any]
     top_dash = [f for f, _ in dash_fields.most_common(10)]
     pipeline_arrays = pipeline_arrays or PipelineFacts()
     sample = sample or {}
+    field_sources = field_sources or {}
 
     reason_bits = []
     if host_inputs:
@@ -1303,7 +1382,12 @@ def recommend_sort(stream: Dict[str, Any], field_index: Dict[str, Dict[str, Any]
             # on. Never a proposal — see `review_candidate` below.
             "dashboard_sort_hint": hint,
             "dashboard_sort_hint_filters": filter_fields.get(hint, 0) if hint else 0,
+            # Tier-1 ECS fields that are present but were refused for want of event
+            # evidence — see `_tier1_event_evidence`.
+            "rejected_candidates": list(rejected),
         }
+
+    rejected: List[str] = []
 
     def default_or_degraded(extra_reason: str) -> Dict[str, Any]:
         bad_type = _host_name_sort_problem(field_index)
@@ -1349,7 +1433,11 @@ def recommend_sort(stream: Dict[str, Any], field_index: Dict[str, Dict[str, Any]
 
     candidate, tier = _pick_sort_candidate(
         field_index, filter_fields, array_fields or set(), pipeline_arrays, sample,
-        allow_agent_id=not api_inputs)
+        allow_agent_id=not api_inputs, field_sources=field_sources, rejected=rejected)
+    if rejected:
+        reason_bits.append(
+            "rejected tier-1 " + ", ".join(f"`{n}`" for n in rejected)
+            + ": populated by agent metadata (collector), not by the event")
     if candidate:
         return result("explicit",
                       f"explicit sort proposed: {candidate} asc, @timestamp desc",
@@ -1633,9 +1721,60 @@ def _ecs_sample_candidate(name: str, field_index: Dict[str, Dict[str, Any]],
     return _sample_scalar(sample, name)
 
 
+# `fields/*.yml` files that describe what **Elastic Agent** adds to every event, not
+# what this data stream's events contain. A `cloud.account.id` whose only declaration
+# lives here is `add_cloud_metadata` talking about the collector VM.
+AGENT_METADATA_FIELD_FILES = {"agent.yml", "beats.yml"}
+
+
+def _tier1_event_evidence(name: str, field_index: Dict[str, Dict[str, Any]],
+                          field_sources: Dict[str, str],
+                          pipeline_arrays: PipelineFacts) -> Optional[str]:
+    """Why `name` holds the EVENT's tenant rather than the collector's, or None.
+
+    Elastic Agent's `add_cloud_metadata` puts `cloud.account.id`, `cloud.project.id`
+    and `cloud.instance.id` on every event it ships, and the generated
+    `fields/agent.yml` declares them, so "the field exists" is worth nothing: on a
+    poller those are the *collector's* cloud account, one value for the whole data
+    stream, which is the worst possible leading sort key. `netflow/log`,
+    `kubernetes/audit_logs` and all twelve `elastic_agent/*_logs` streams were being
+    proposed `cloud.account.id` on exactly that evidence.
+
+    Two things count as evidence that the *event* carries it:
+
+      * an ingest pipeline of this data stream writes it — a `set` (including
+        `copy_from`), `rename`, `append`, grok/dissect target or an allow-listed
+        Painless write. `aws/cloudtrail`, `aws/guardduty` and `aws/vpcflow` all set
+        `cloud.account.id` from the record, and keep their proposal;
+      * the package declares the field itself, with its own description, outside the
+        generated agent-metadata files. A bare `external: ecs` stub in `ecs.yml`
+        does not count: it asserts nothing about who populates the field.
+
+    A CSPM-style stream where the *input* (not the pipeline) supplies the tenant —
+    `cloud_security_posture/findings`, `cloud_asset_inventory/asset_inventory` — is
+    rejected here too. That is the intended direction: the audit says "no confident
+    candidate; needs human choice" instead of proposing the collector's account id.
+    """
+    if name in pipeline_arrays.targets:
+        return "the data stream's ingest pipeline writes it"
+    fdef = field_index.get(name)
+    if fdef is not None:
+        source_file = field_sources.get(name, "")
+        described = str(fdef.get("description") or "").strip()
+        if described and source_file not in AGENT_METADATA_FIELD_FILES:
+            return f"declared with a package-specific description in `fields/{source_file}`"
+    return None
+
+
 def _tier2_hits(field_index: Dict[str, Dict[str, Any]], leaf: str,
-                array_fields: set, pipeline_arrays: PipelineFacts) -> List[str]:
+                array_fields: set, pipeline_arrays: PipelineFacts,
+                exclude: Optional[set] = None) -> List[str]:
     """Fields whose last one *or two* path segments normalise to `leaf`.
+
+`exclude` keeps tier 1's names out: `cloud.account.id` normalises to `accountid`
+    and `organization.id` to `organizationid`, so without it a tier-1 field that was
+    just *refused* for want of event evidence would walk straight back in through
+    tier 2 (`netflow/log`).
 
     The two-segment form is how the `<object>.id` spelling of a tenant identifier is
     found: `netbox.tenant.id`, `sentinel_one.*.account.id`,
@@ -1644,8 +1783,11 @@ def _tier2_hits(field_index: Dict[str, Dict[str, Any]], leaf: str,
     suffix collapsed to one segment — so those survive it while a tenant id buried in
     a request payload (`...context.http_request.args.client_id`) still does not.
     """
+    exclude = exclude or set()
     hits: List[Tuple[int, int, str]] = []
     for name in field_index:
+        if name in exclude:
+            continue
         for segments in (1, 2):
             if name.count(".") + 1 < segments:
                 continue
@@ -1666,7 +1808,10 @@ def _pick_sort_candidate(field_index: Dict[str, Dict[str, Any]],
                          array_fields: set,
                          pipeline_arrays: Optional[PipelineFacts] = None,
                          sample: Optional[Dict[str, Any]] = None,
-                         allow_agent_id: bool = True) -> Tuple[Optional[str], str]:
+                         allow_agent_id: bool = True,
+                         field_sources: Optional[Dict[str, str]] = None,
+                         rejected: Optional[List[str]] = None
+                         ) -> Tuple[Optional[str], str]:
     """Tiers 1 and 2 — the curated lists, the only tiers that yield a *proposal*.
 
     Tier 3 (dashboard filter fields) lives in `_dashboard_sort_hint`, because it is
@@ -1674,17 +1819,31 @@ def _pick_sort_candidate(field_index: Dict[str, Dict[str, Any]],
     """
     pipeline_arrays = pipeline_arrays or PipelineFacts()
     sample = sample or {}
-    # Tier 1: well-known ECS grouping fields, declared or merely populated.
+    field_sources = field_sources or {}
+    # Tier 1: well-known ECS grouping fields, declared or merely populated — but only
+    # when the *event* is what populates them (`_tier1_event_evidence`).
     for name in SORT_CANDIDATES:
         if name in SORT_CANDIDATES_COLLECTOR_ONLY and not allow_agent_id:
             continue
-        if _sortable(field_index, name, array_fields, pipeline_arrays):
-            return name, "tier 1 (ECS grouping field)"
-        if _ecs_sample_candidate(name, field_index, sample):
-            return name, "tier 1 (ECS grouping field, populated in sample_event.json)"
-    # Tier 2: vendor tenant/account identifiers, by normalised leaf name.
+        present = (_sortable(field_index, name, array_fields, pipeline_arrays)
+                   or _ecs_sample_candidate(name, field_index, sample))
+        if not present:
+            continue
+        if name in TIER1_EVENT_EVIDENCE_FIELDS:
+            evidence = _tier1_event_evidence(name, field_index, field_sources,
+                                             pipeline_arrays)
+            if not evidence:
+                if rejected is not None and name not in rejected:
+                    rejected.append(name)
+                continue
+            return name, f"tier 1 (ECS grouping field; {evidence})"
+        return name, "tier 1 (ECS grouping field)"
+    # Tier 2: vendor tenant/account identifiers, by normalised leaf name. Tier 1's
+    # own field names are excluded: tier 1 has already ruled on them, and a name it
+    # rejected for want of event evidence must not come back through the leaf match.
     for leaf in SORT_CANDIDATE_LEAVES:
-        hits = _tier2_hits(field_index, leaf, array_fields, pipeline_arrays)
+        hits = _tier2_hits(field_index, leaf, array_fields, pipeline_arrays,
+                           exclude=set(SORT_CANDIDATES))
         if hits:
             return hits[0], "tier 2 (vendor tenant/account id)"
     return None, ""
@@ -1738,6 +1897,376 @@ def _is_low_cardinality(name: str) -> bool:
 
 
 # --------------------------------------------------------------------------- #
+# Columnar `_source` consumers (Class C — `references/blockers.md` C6-C8)
+#
+# Columnar never stores the original JSON. What comes back as `_source` is
+# reconstructed from doc values, and it is NOT a faithful copy:
+#
+#   * object arrays under a non-`nested` object are flattened into parallel
+#     arrays — `[{a:1,b:2},{a:3,b:4}]` reads back as `{a:[1,3], b:[2,4]}`
+#     (multi-value order within a field IS preserved);
+#   * the hierarchy a consumer walked is therefore not the hierarchy it gets.
+#
+# Who cares, and who does not:
+#
+#   * ingest pipelines: NOT affected. They run before indexing, on the real
+#     document, so nothing here flags them.
+#   * transforms, Kibana runtime/scripted fields, anything reading `params._source`
+#     or `ctx._source`: affected, because they run at query time on the
+#     reconstructed source.
+#   * ES|QL: mostly unaffected — it reads doc values — unless the query explicitly
+#     asks for `METADATA _source` (and then usually picks it apart with
+#     `JSON_EXTRACT(_source, ...)`).
+#   * dashboards, alerting rules and detection rules that query *fields*: unaffected.
+#
+# `doc[...]` is not a `_source` consumer. A runtime field that only reads doc values
+# behaves identically in columnar — doc values are precisely what columnar keeps — so
+# the three ml-module assets in the catalog that define `runtime_mappings`
+# (`dga`, `lmd`, `problemchild`) are deliberately NOT reported.
+# --------------------------------------------------------------------------- #
+
+# `_source` as a *token*. The negative look-behind is what keeps the three false
+# positives a naive substring search finds in the catalog out: `low_source_bytes`
+# and `mean_source_bytes` (`beaconing`), `avg_source_bytes` (`ded`) and
+# `labels.is_ioc_transform_source` (`ti_rapid7_threat_command`) all contain the
+# letters `_source` and none of them touches the document source.
+_SOURCE_ACCESS_PATTERNS = [
+    (re.compile(r"""params\s*\.\s*_source\b|params\s*\[\s*['"]_source['"]\s*\]"""),
+     "params._source"),
+    (re.compile(r"""ctx\s*\.\s*_source\b|ctx\s*\[\s*['"]_source['"]\s*\]"""),
+     "ctx._source"),
+    (re.compile(r"(?i)json_extract\s*\(\s*_source\b"), "JSON_EXTRACT(_source, ...)"),
+    (re.compile(r"(?<![A-Za-z0-9])_source\s*[.\[]"), "_source field access"),
+]
+
+# ES|QL `FROM ... METADATA _source`, the one way an ES|QL query does depend on the
+# `_source` shape.
+_ESQL_METADATA_SOURCE_RE = re.compile(r"(?i)metadata\s+[^|\n\"]{0,80}?_source\b")
+
+# Kibana scripted fields (deprecated, and none are left in this catalog) in an
+# index-pattern / data-view saved object, in both the plain and the
+# embedded-JSON-string spelling.
+_KIBANA_SCRIPTED_FIELD_RE = re.compile(
+    r"""\\?"scriptedFields\\?"|\\?"scripted\\?"\s*:\s*true""")
+
+
+def _source_access_hits(text: str, limit: int = 3) -> List[Tuple[str, str]]:
+    """[(label, excerpt)] for every distinct way `text` reads the document source.
+
+    One hit per pattern, and the catch-all `_source.` / `_source[` pattern is only
+    reported when nothing more specific matched — `params._source.foo` is one finding,
+    not two.
+    """
+    hits: List[Tuple[str, str]] = []
+    generic: List[Tuple[str, str]] = []
+    for regex, label in _SOURCE_ACCESS_PATTERNS + [
+            (_ESQL_METADATA_SOURCE_RE, "ES|QL METADATA _source")]:
+        match = regex.search(text)
+        if not match:
+            continue
+        entry = (label, _excerpt(text, match.start(), match.end()))
+        if label == "_source field access":
+            generic.append(entry)
+        else:
+            hits.append(entry)
+    return (hits or generic)[:limit]
+
+
+def _excerpt(text: str, start: int, end: int, pad: int = 60) -> str:
+    """A one-line, whitespace-collapsed window around a match."""
+    chunk = text[max(0, start - pad):end + pad]
+    chunk = re.sub(r"\s+", " ", chunk).strip()
+    return (chunk[:160] + ("…" if len(chunk) > 160 else "")).replace("`", "'")
+
+
+# --------------------------------------------------------------------------- #
+# Transforms
+# --------------------------------------------------------------------------- #
+
+# Keys whose string values are Painless / runtime-field scripts:
+# `pivot.aggregations.*.scripted_metric.map_script`,
+# `source.runtime_mappings.<field>.script.source`, `bucket_script`, `script_fields`.
+_SCRIPT_KEY_HINTS = ("script", "runtime_mappings", "inline")
+
+
+def _script_texts(node: Any, path: str = "", depth: int = 0) -> Iterator[Tuple[str, str]]:
+    """(dotted key path, string) for every string that sits under a script-ish key."""
+    if depth > 20:
+        return
+    if isinstance(node, dict):
+        for key, value in node.items():
+            child = f"{path}.{key}" if path else str(key)
+            yield from _script_texts(value, child, depth + 1)
+    elif isinstance(node, list):
+        for idx, value in enumerate(node):
+            yield from _script_texts(value, f"{path}[{idx}]", depth + 1)
+    elif isinstance(node, str):
+        if any(hint in path for hint in _SCRIPT_KEY_HINTS):
+            yield path, node
+
+
+_TRANSFORM_INDEX_RE = re.compile(r"^(?:logs|metrics|traces|profiling)-([a-z0-9_]+)\.([a-z0-9_]+)")
+
+
+def _transform_stream_names(indices: Any, pkg_name: str) -> Tuple[set, bool]:
+    """(data stream names of THIS package the transform reads, reads_elsewhere)."""
+    names: set = set()
+    external = False
+    if isinstance(indices, str):
+        indices = [indices]
+    for entry in indices if isinstance(indices, list) else []:
+        for part in str(entry).split(","):
+            match = _TRANSFORM_INDEX_RE.match(part.strip().strip('"\''))
+            if not match:
+                continue
+            if match.group(1) == pkg_name:
+                names.add(match.group(2))
+            else:
+                external = True
+    return names, external
+
+
+def transform_source_consumers(pkg_dir: str) -> List[Dict[str, Any]]:
+    """Transforms of this package whose scripts read the document `_source`.
+
+    Layout: `elasticsearch/transform/<name>/transform.yml` (the `manifest.yml` and
+    `fields/` beside it are metadata, not scripts). Across the whole catalog this
+    currently returns nothing: every packaged transform script reads `doc[...]`.
+    """
+    out: List[Dict[str, Any]] = []
+    root = os.path.join(pkg_dir, "elasticsearch", "transform")
+    if not os.path.isdir(root):
+        return out
+    pkg_name = os.path.basename(pkg_dir)
+    for name in sorted(os.listdir(root)):
+        path = os.path.join(root, name, "transform.yml")
+        if not os.path.isfile(path):
+            continue
+        try:
+            doc = load_yaml(path) or {}
+        except RuntimeError:
+            continue
+        if not isinstance(doc, dict):
+            continue
+        hits: List[Tuple[str, str, str]] = []
+        for where, text in _script_texts(doc):
+            for label, excerpt in _source_access_hits(text):
+                hits.append((where, label, excerpt))
+        if not hits:
+            continue
+        streams, external = _transform_stream_names(
+            (doc.get("source") or {}).get("index") if isinstance(doc.get("source"), dict) else None,
+            pkg_name)
+        out.append({
+            "name": name,
+            "file": os.path.relpath(path, pkg_dir),
+            "streams": sorted(streams),
+            "external_source": external,
+            "hits": hits[:4],
+        })
+    return out
+
+
+# --------------------------------------------------------------------------- #
+# Kibana assets
+# --------------------------------------------------------------------------- #
+
+def kibana_source_consumers(texts: List[Tuple[str, str]],
+                            limit: int = 12) -> List[Dict[str, Any]]:
+    """Kibana saved objects that read `_source` — scripts, runtime fields, ES|QL.
+
+    `texts` is [(relative path, file text)]; the caller reads every `kibana/*.json`
+    once and hands the text to both this and the dashboard field counters.
+    """
+    out: List[Dict[str, Any]] = []
+    for rel, text in texts:
+        if len(out) >= limit:
+            break
+        hits: List[Tuple[str, str]] = []
+        if "_source" in text:
+            hits.extend(_source_access_hits(text))
+        match = _KIBANA_SCRIPTED_FIELD_RE.search(text)
+        if match:
+            hits.append(("scripted field",
+                         _excerpt(text, match.start(), match.end())))
+        if hits:
+            out.append({"file": rel, "hits": hits[:3]})
+    return out
+
+
+# --------------------------------------------------------------------------- #
+# Object arrays in the package's own example documents
+# --------------------------------------------------------------------------- #
+
+# Docs to read per data stream, and how much of them. `_dev/test/pipeline` is 104 MB
+# across the catalog, so it is sampled rather than read whole: an object array shows
+# up in the first documents or not at all.
+_EXPECTED_FILES_PER_STREAM = 4
+_EXPECTED_FILE_MAX_BYTES = 2_000_000
+_EXPECTED_DOCS_PER_FILE = 10
+
+# Types whose JSON value is an object (or an array of them) without being an object
+# *array* in the flattening sense.
+_NON_OBJECT_ARRAY_TYPES = {"nested", "flattened", "geo_point", "object_from_dotted"}
+
+
+def _object_array_paths(doc: Any, prefix: str = "", out: Optional[Dict[str, Any]] = None,
+                        depth: int = 0) -> Dict[str, Any]:
+    """field path -> the array value, for every field holding an array of objects.
+
+    Does not descend into the array: the flattening happens at the outermost object
+    array, and reporting its children as well would say the same thing three times.
+    """
+    if out is None:
+        out = {}
+    if depth > 12 or not isinstance(doc, dict):
+        return out
+    for key, value in doc.items():
+        if not isinstance(key, str) or key.startswith("_"):
+            continue
+        path = f"{prefix}.{key}" if prefix else key
+        if isinstance(value, list):
+            if any(isinstance(item, dict) for item in value):
+                out.setdefault(path, value)
+        elif isinstance(value, dict):
+            _object_array_paths(value, path, out, depth + 1)
+    return out
+
+
+def _object_array_excluded(path: str, field_index: Dict[str, Dict[str, Any]]) -> bool:
+    """Whether `path` (or an ancestor) is already covered by another finding.
+
+    `nested` is reported by `nested_single_level` / `nested_in_nested`, `flattened`
+    keeps its JSON verbatim, and a `geo_point` array is a list of coordinates rather
+    than an object array.
+    """
+    parts = path.split(".")
+    if parts[0] in PIPELINE_TEMP_ROOTS:
+        return True  # pipeline scratch object, not an indexed field
+    for i in range(1, len(parts) + 1):
+        ancestor = ".".join(parts[:i])
+        fdef = field_index.get(ancestor)
+        if fdef is not None:
+            ftype = fdef.get("type") or fdef.get("object_type")
+            if ftype in ("nested", "flattened"):
+                return True
+            if ancestor == path and ftype == "geo_point":
+                return True
+        ecs_type = (ecs_schema().get(ancestor) or {}).get("type")
+        if ecs_type in ("nested", "flattened", "geo_point"):
+            return True
+    return False
+
+
+def object_array_findings(ds_dir: str, ds_name: str, field_index: Dict[str, Dict[str, Any]],
+                          sample: Dict[str, Any]) -> List[Dict[str, Any]]:
+    """`object_array_flattening` — one finding per data stream, not per field."""
+    docs: List[Tuple[str, Dict[str, Any]]] = []
+    if sample:
+        docs.append(("sample_event.json", sample))
+    test_dir = os.path.join(ds_dir, "_dev", "test", "pipeline")
+    if os.path.isdir(test_dir):
+        expected = sorted(f for f in os.listdir(test_dir) if f.endswith("-expected.json"))
+        for fname in expected[:_EXPECTED_FILES_PER_STREAM]:
+            path = os.path.join(test_dir, fname)
+            try:
+                if os.path.getsize(path) > _EXPECTED_FILE_MAX_BYTES:
+                    continue
+                with open(path, "r", encoding="utf-8") as fh:
+                    parsed = json.load(fh)
+            except (OSError, ValueError):
+                continue
+            entries = parsed.get("expected") if isinstance(parsed, dict) else None
+            for entry in (entries or [])[:_EXPECTED_DOCS_PER_FILE]:
+                if isinstance(entry, dict):
+                    docs.append((f"_dev/test/pipeline/{fname}", entry))
+
+    found: Dict[str, Tuple[str, Any]] = {}
+    for where, doc in docs:
+        for path, value in _object_array_paths(doc).items():
+            if path in found or _object_array_excluded(path, field_index):
+                continue
+            found[path] = (where, value)
+    if not found:
+        return []
+
+    paths = sorted(found)
+    shown = paths[:6]
+    listed = "; ".join(f"`{p}` ({found[p][0]})" for p in shown)
+    if len(paths) > len(shown):
+        listed += f"; and {len(paths) - len(shown)} more"
+    first = paths[0]
+    example = json.dumps(found[first][1], sort_keys=True)
+    if len(example) > 120:
+        example = example[:120] + "…"
+    return [finding(
+        "object_array_flattening", "C", "info",
+        f"{len(paths)} object field(s) hold an **array of objects** in this package's "
+        f"own example documents: {listed}. Example — `{first}` = `{example}`. Columnar "
+        f"`_source` flattens these into parallel arrays "
+        f"(`[{{a:1,b:2}},{{a:3,b:4}}]` reads back as `{{a:[1,3], b:[2,4]}}`; multi-value "
+        f"order is preserved, the association between one element's leaves is not). "
+        f"See `references/blockers.md` C8.",
+        "No mapping change is required and this is not a blocker: dashboards, alerting "
+        "rules and ES|QL that query the **leaf fields** are unaffected, and so are "
+        "ingest pipelines (they run before indexing). What changes is what a `_source` "
+        "reader sees — a transform or runtime field using `params._source`, Kibana code "
+        "walking `_source`, an ES|QL query with `METADATA _source`, or a user reading "
+        "the JSON in Discover. Confirm those consumers before declaring this stream "
+        "`columnar.supported: true`; mapping the field as `nested` does not restore the "
+        "shape either (see `nested_single_level`).",
+        f"data_stream/{ds_name}/sample_event.json", first)]
+
+
+def source_consumer_findings(ds_name: str, transforms: List[Dict[str, Any]],
+                             kibana: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """`source_consumer_transform` / `source_consumer_kibana` for one data stream.
+
+    Both are package-level artifacts. A transform is attached to the data streams its
+    `source.index` names; one that reads another package's indices (`beaconing` reads
+    `logs-endpoint.events.network-*`) is attached to every logs stream, because its
+    own package is where the fix would be discussed. Kibana assets are not attributable
+    to a single stream at all, so they are attached to all of them.
+    """
+    out: List[Dict[str, Any]] = []
+    for tr in transforms:
+        if tr["streams"] and ds_name not in tr["streams"]:
+            continue
+        detail = "; ".join(f"`{where}` reads `{label}` — `{excerpt}`"
+                           for where, label, excerpt in tr["hits"])
+        scope = (f"its source index is `{', '.join(tr['streams'])}`" if tr["streams"]
+                 else "its source index is outside this package")
+        out.append(finding(
+            "source_consumer_transform", "C", "review",
+            f"The `{tr['name']}` transform reads the document `_source` in a script "
+            f"({scope}): {detail}. A transform runs at **query time** against the "
+            f"source Elasticsearch reconstructs, so on a columnar index it sees the "
+            f"flattened shape — nested objects collapsed, object arrays turned into "
+            f"parallel arrays — not the document the ingest pipeline produced.",
+            "Rewrite the script to read doc values (`doc['field']`) or the aggregated "
+            "fields instead of `_source`, or confirm against a real columnar index that "
+            "the transform still produces the same destination documents. Ingest "
+            "pipelines need no change — they run before indexing.",
+            tr["file"]))
+    for asset in kibana:
+        detail = "; ".join(f"{label} — `{excerpt}`" for label, excerpt in asset["hits"])
+        out.append(finding(
+            "source_consumer_kibana", "C", "review",
+            f"`{asset['file']}` consumes the document `_source`: {detail}. Kibana "
+            f"runtime fields, scripted fields and ES|QL queries that ask for "
+            f"`METADATA _source` all read the source Elasticsearch reconstructs, which "
+            f"on a columnar index is flattened and is not the original JSON.",
+            "Check the expression against a columnar index. A runtime field that only "
+            "reads `doc['field']` needs no change — doc values are exactly what columnar "
+            "keeps — and plain ES|QL is unaffected; it is `params._source`, `ctx._source` "
+            "and `METADATA _source` (usually with `JSON_EXTRACT(_source, ...)`) that see "
+            "the flattened shape. Move the logic onto doc values or onto the mapped "
+            "fields where possible.",
+            asset["file"]))
+    return out
+
+
+# --------------------------------------------------------------------------- #
 # Package audit
 # --------------------------------------------------------------------------- #
 
@@ -1776,10 +2305,13 @@ def audit_package(pkg_dir: str, scan_dashboards: bool = True) -> Dict[str, Any]:
         result["out_of_scope_reason"] = "no data_stream directory"
         return result
 
-    if scan_dashboards:
-        dash_fields, filter_fields = dashboard_fields(pkg_dir)
-    else:
-        dash_fields, filter_fields = Counter(), Counter()
+    # Kibana assets are read once: the field counters are the index-sort tie-break
+    # (off by default in catalog mode), the `_source` consumer scan always runs.
+    dash_fields, filter_fields, kibana_consumers = scan_kibana_assets(
+        pkg_dir, count_fields=scan_dashboards)
+    transforms = transform_source_consumers(pkg_dir)
+    result["source_consumer_assets"] = (
+        [t["file"] for t in transforms] + [k["file"] for k in kibana_consumers])
     result["dashboard_top_fields"] = [f for f, _ in dash_fields.most_common(15)]
     result["dashboard_filter_fields"] = [f for f, _ in filter_fields.most_common(15)]
 
@@ -1789,7 +2321,8 @@ def audit_package(pkg_dir: str, scan_dashboards: bool = True) -> Dict[str, Any]:
         if not os.path.isdir(ds_dir):
             continue
         stream = audit_data_stream(pkg_dir, ds_dir, ds_name, dash_fields, filter_fields,
-                                   format_version=result.get("format_version"))
+                                   format_version=result.get("format_version"),
+                                   transforms=transforms, kibana=kibana_consumers)
         result["data_streams"].append(stream)
         status = worse(status, stream["status"])
     result["status"] = status
@@ -1798,7 +2331,9 @@ def audit_package(pkg_dir: str, scan_dashboards: bool = True) -> Dict[str, Any]:
 
 def audit_data_stream(pkg_dir: str, ds_dir: str, ds_name: str,
                       dash_fields: Counter, filter_fields: Counter,
-                      format_version: Any = None) -> Dict[str, Any]:
+                      format_version: Any = None,
+                      transforms: Optional[List[Dict[str, Any]]] = None,
+                      kibana: Optional[List[Dict[str, Any]]] = None) -> Dict[str, Any]:
     rel = lambda p: os.path.relpath(p, pkg_dir)  # noqa: E731
     stream: Dict[str, Any] = {
         "data_stream": ds_name,
@@ -1854,6 +2389,10 @@ def audit_data_stream(pkg_dir: str, ds_dir: str, ds_name: str,
 
     # Fields
     field_index: Dict[str, Dict[str, Any]] = {}
+    # flat name -> the `fields/*.yml` that declared it. The *file* matters: a
+    # `cloud.account.id` declared only in the generated `agent.yml` is Elastic
+    # Agent's metadata, not the event's tenant (`_tier1_event_evidence`).
+    field_sources: Dict[str, str] = {}
     fields_dir = os.path.join(ds_dir, "fields")
     if os.path.isdir(fields_dir):
         for fname in sorted(os.listdir(fields_dir)):
@@ -1868,6 +2407,7 @@ def audit_data_stream(pkg_dir: str, ds_dir: str, ds_name: str,
             for fdef, flat, depth, in_mf in walk_fields(defs):
                 if not in_mf:
                     field_index.setdefault(flat, fdef)
+                    field_sources.setdefault(flat, fname)
                 if columnar_block(fdef):
                     columnar_construct_sites.append(f"`{flat}` ({rel(fpath)})")
                 findings.extend(check_field(fdef, flat, depth, in_mf, rel(fpath)))
@@ -1918,13 +2458,24 @@ def audit_data_stream(pkg_dir: str, ds_dir: str, ds_name: str,
 
     sample = load_sample_event(ds_dir)
     pipeline_arrays = scan_pipelines(ds_dir)
+
+    # --- columnar `_source` consumers (C6-C8) ---------------------------- #
+    # Appended last: they are Class C, so they cannot turn a Class A verdict, but a
+    # `review` one does move a stream to NEEDS_REVIEW, which is the point — a stream
+    # whose `_source` is read by a transform, a Kibana runtime field or an ES|QL
+    # `METADATA _source` query should not be declared `supported` before someone has
+    # looked at it.
+    findings.extend(source_consumer_findings(ds_name, transforms or [], kibana or []))
+    findings.extend(object_array_findings(ds_dir, ds_name, field_index, sample))
+
     stream["findings"] = findings
     stream["field_count"] = len(field_index)
     stream["host_name_in_sample"] = sample_has_host_name(sample)
     stream["sort"] = recommend_sort(stream, field_index, dash_fields, filter_fields,
                                     array_fields=sample_array_fields(sample),
                                     pipeline_arrays=pipeline_arrays,
-                                    sample=sample)
+                                    sample=sample,
+                                    field_sources=field_sources)
     stream["status"] = status_from_findings(findings)
     return stream
 
@@ -2007,9 +2558,9 @@ def columnar_optin_label(stream: Dict[str, Any]) -> str:
         label += (f". **Inconsistent**{code}: the stream still has {len(blocking)} Class A "
                   "finding(s), which the 3.7.0 columnar validator rejects — fix them or "
                   "drop the declaration")
-    label += (f". Either declaration also needs "
+    label += (f". Either declaration also needs `format_version: \"3.7.0\"` and "
               f"`conditions.kibana.version: \"{COLUMNAR_KIBANA_CONSTRAINT}\"` "
-              f"({COLUMNAR_KIBANA_NOTE})")
+              f"({COLUMNAR_KIBANA_NOTE}). {COLUMNAR_MIN_STACK_COST}")
     return label
 
 
@@ -2025,6 +2576,7 @@ def md_package(result: Dict[str, Any]) -> str:
                      f"(needs at least `{COLUMNAR_KIBANA_CONSTRAINT}`, the first Kibana "
                      f"minor with Fleet support for `columnar.supported` and the "
                      f"field-level `columnar` overrides — {COLUMNAR_KIBANA_NOTE})")
+        lines.append(f"- {COLUMNAR_MIN_STACK_COST}")
     if result.get("out_of_scope_reason"):
         lines.append(f"- Out of scope: {result['out_of_scope_reason']}")
     for err in result.get("errors", []):
@@ -2233,7 +2785,8 @@ def md_catalog(results: List[Dict[str, Any]]) -> str:
     lines.append("")
     lines.extend(code_rows(LOSS_CODES))
 
-    REVIEW_CODES = ["nested_single_level", "runtime_field"]
+    REVIEW_CODES = ["nested_single_level", "runtime_field",
+                    "source_consumer_transform", "source_consumer_kibana"]
     npkg, nds, _ = union(REVIEW_CODES)
     lines.append(f"## Judgement calls — review ({npkg} packages, {nds} data streams)")
     lines.append("")
@@ -2257,11 +2810,18 @@ def md_catalog(results: List[Dict[str, Any]]) -> str:
         lines.append("")
         lines.extend(code_rows(DECLARATION_PROBLEM_CODES))
 
-    npkg, nds, _ = union(["keyword_normalizer_lowercase"])
+    INFO_CODES = ["keyword_normalizer_lowercase", "object_array_flattening"]
+    npkg, nds, _ = union(INFO_CODES)
     lines.append("## Informational — Class C "
                  f"({npkg} packages, {nds} data streams)")
     lines.append("")
-    lines.extend(code_rows(["keyword_normalizer_lowercase"]) or ["(none)", ""])
+    lines.append("`object_array_flattening` changes no status: it records that the data "
+                 "stream's own example documents contain object arrays, whose columnar "
+                 "`_source` shape is flattened into parallel arrays. Queries on the leaf "
+                 "fields are unaffected; `_source` readers are not. See "
+                 "`references/blockers.md` C8.")
+    lines.append("")
+    lines.extend(code_rows(INFO_CODES) or ["(none)", ""])
 
     lines.append("## Packages by status")
     lines.append("")
@@ -2308,11 +2868,12 @@ def md_catalog(results: List[Dict[str, Any]]) -> str:
                  "hint for a human, never an `index.sort` proposal.")
     lines.append("")
     if not any(r.get("dashboard_filter_fields") for r in results):
-        lines.append("Kibana assets were not scanned (`--catalog` defaults to "
-                     "`--no-dashboards`), so the dashboard tier never fired and the "
-                     "\"no confident candidate\" count is an upper bound. Re-run with "
-                     "`--dashboards`, or audit the package on its own, before concluding "
-                     "that a data stream has no grouping field.")
+        lines.append("Kibana assets were not scanned **for sort hints** (`--catalog` "
+                     "defaults to `--no-dashboards`), so the dashboard tier never fired "
+                     "and the \"no confident candidate\" count is an upper bound. Re-run "
+                     "with `--dashboards`, or audit the package on its own, before "
+                     "concluding that a data stream has no grouping field. (The "
+                     "`source_consumer_kibana` scan runs either way.)")
         lines.append("")
     return "\n".join(lines)
 
