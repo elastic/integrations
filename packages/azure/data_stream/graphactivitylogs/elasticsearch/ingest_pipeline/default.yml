@@ -295,16 +295,45 @@ processors:
       target_field: http.request.method
       ignore_missing: true
       tag: rename-properties_request_methods_8ca31c8f
+  # Microsoft emits requestUri values containing literal PII markers, e.g.
+  #   /v2/{tid}/users/<pii>First.Last</pii>@example.com
+  # Angle brackets are illegal in a URI, so uri_parts cannot parse the value.
+  # Copy to a scratch field and strip the markers there so the structured
+  # url.* fields can still be derived; url.original keeps the unmodified value.
+  - set:
+      field: _tmp.request_uri
+      copy_from: azure.graphactivitylogs.properties.request_uri
+      ignore_empty_value: true
+      tag: set-tmp_request_uri_graph
+  - gsub:
+      field: _tmp.request_uri
+      pattern: '</?pii>'
+      replacement: ''
+      ignore_missing: true
+      tag: gsub-strip_pii_markers_request_uri_graph
   - uri_parts:
-      field: azure.graphactivitylogs.properties.request_uri
-      if: ctx.azure?.graphactivitylogs?.properties?.request_uri != null
-      keep_original: true
+      field: _tmp.request_uri
+      if: ctx._tmp?.request_uri != null
+      keep_original: false
       tag: uri_parts-properties-request_uri_5f9defda
       on_failure:
         - append:
-            tag: append_error_message_deea897d
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            tag: append_tags_uri_parts_failure_graph
+            field: tags
+            value: _azure_uri_parse_failure
+            allow_duplicates: false
+  # Set url.original AFTER uri_parts — that processor replaces the whole `url`
+  # object, so any earlier set is clobbered. This keeps url.original faithful
+  # to the value Microsoft sent, PII markers included.
+  - set:
+      field: url.original
+      copy_from: azure.graphactivitylogs.properties.request_uri
+      if: ctx.azure?.graphactivitylogs?.properties?.request_uri != null
+      tag: set-url_original_request_uri_graph
+  - remove:
+      field: _tmp.request_uri
+      ignore_missing: true
+      tag: remove-tmp_request_uri_graph
   - remove:
       field: azure.graphactivitylogs.properties.request_uri
       tag: remove-properties_request_uri_f2cb929d
@@ -481,7 +510,7 @@ processors:
       tag: pipeline-azure-shared-pipeline_431c6aae
   - fingerprint:
       fields:
-        - azure.graphactivitylogs.properties.request_uri
+        - url.original
         - http.request.id
         - azure.tenant_id
         - azure.graphactivitylogs.properties.time_generated
