@@ -1,0 +1,151 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+state:
+  url: {{url}}
+  api_token: {{escape_string api_token}}
+  iterator_index: {{escape_string iterator_index}}
+  initial_interval: {{initial_interval}}
+  family: alerts
+  worklist: []
+  export_types:
+{{#each alert_types as |t|}}
+    - {{t}}
+{{/each}}
+redact:
+  fields:
+    - api_token
+program: |-
+  (
+    (size(state.worklist) == 0) ?
+      state.with({"worklist": state.export_types})
+    :
+      state
+  ).as(state,
+    state.with(
+      (size(state.export_types) == 0) ?
+        {
+          "events": {
+            "error": {
+              "code": "400",
+              "id": "configuration_error",
+              "message": "no alert types configured; enable at least one alert type",
+            },
+          },
+          "want_more": false,
+        }
+      :
+        state.worklist[0].as(current_type,
+          get_request(
+            state.url.trim_right("/") + "/api/v2/events/dataexport/" + state.family + "/" + current_type + "?" + {
+              "operation": [
+                (current_type in state.?cursor.started_types.orValue([])) ?
+                  "next"
+                :
+                  string(int(now - duration(state.initial_interval))),
+              ],
+              "index": [state.iterator_index],
+            }.format_query()
+          ).with(
+            {
+              "Header": {
+                "Netskope-Api-Token": [state.api_token],
+                "Accept": ["application/json"],
+              },
+            }
+          ).do_request().as(resp, (resp.StatusCode == 200) ?
+            resp.Body.decode_json().?result.orValue([]).as(result,
+              (size(result) > 0) ?
+                {
+                  "events": result.map(e, {"message": e.encode_json()}),
+                  "want_more": true,
+                  "worklist": state.worklist,
+                  "cursor": {
+                    "started_types": (current_type in state.?cursor.started_types.orValue([])) ?
+                      state.?cursor.started_types.orValue([])
+                    :
+                      state.?cursor.started_types.orValue([]) + [current_type],
+                  },
+                }
+              :
+                {
+                  "events": [{"retry": true}],
+                  "want_more": size(state.worklist) > 1,
+                  "worklist": (size(state.worklist) > 1) ? tail(state.worklist) : [],
+                  "cursor": {
+                    "started_types": (current_type in state.?cursor.started_types.orValue([])) ?
+                      state.?cursor.started_types.orValue([])
+                    :
+                      state.?cursor.started_types.orValue([]) + [current_type],
+                  },
+                }
+            )
+          : (resp.StatusCode == 409 || resp.StatusCode == 429 || resp.StatusCode >= 500) ?
+            {
+              "events": [
+                {
+                  "error": {
+                    "code": string(resp.StatusCode),
+                    "id": resp.Status,
+                    "message": "GET /api/v2/events/dataexport/" + state.family + "/" + current_type + ": " + ((size(resp.Body) != 0) ? string(resp.Body) : (resp.Status + " (" + string(resp.StatusCode) + ")")),
+                  },
+                },
+              ],
+              "want_more": false,
+              "worklist": state.worklist,
+              "cursor": {
+                "started_types": state.?cursor.started_types.orValue([]),
+              },
+            }
+          :
+            {
+              "events": [
+                {
+                  "error": {
+                    "code": string(resp.StatusCode),
+                    "id": resp.Status,
+                    "message": "GET /api/v2/events/dataexport/" + state.family + "/" + current_type + ": " + ((size(resp.Body) != 0) ? string(resp.Body) : (resp.Status + " (" + string(resp.StatusCode) + ")")),
+                  },
+                },
+              ],
+              "want_more": size(state.worklist) > 1,
+              "worklist": (size(state.worklist) > 1) ? tail(state.worklist) : [],
+              "cursor": {
+                "started_types": state.?cursor.started_types.orValue([]),
+              },
+            }
+          )
+        )
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+processors:
+  - drop_event:
+      when:
+        equals:
+          retry: true
+{{#if processors}}
+{{processors}}
+{{/if}}
