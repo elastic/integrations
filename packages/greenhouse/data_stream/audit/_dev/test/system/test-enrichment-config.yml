@@ -1,0 +1,30 @@
+input: cel
+service: greenhouse
+vars:
+  url: http://{{Hostname}}:{{Port}}
+  token_url: http://{{Hostname}}:{{Port}}/token
+  harvest_url: http://{{Hostname}}:{{Port}}
+  client_id: test_client_id
+  client_secret: test_client_secret
+  user_id: "12345"
+  ssl:
+    verification_mode: none
+data_stream:
+  vars:
+    preserve_original_event: true
+    initial_interval: 24h
+    batch_size: 500
+    enrich_rejections: true
+    enable_request_tracer: true
+assert:
+  hit_count: 4
+  # Verify the Harvest lookups actually populated the rejection fields; hit_count alone passes
+  # even if every lookup silently fails.
+  fields_present:
+    - greenhouse.audit.event.rejection.application_id
+    - greenhouse.audit.event.rejection.candidate_id
+    - greenhouse.audit.event.rejection.reason.id
+    - greenhouse.audit.event.rejection.reason.name
+    - greenhouse.audit.event.rejection.reason.type
+    - greenhouse.audit.event.rejection.notes
+    - greenhouse.audit.event.rejection.rejected_at
