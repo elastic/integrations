@@ -285,10 +285,3 @@ To collect logs via UDP, select **Collect logs via UDP** and configure the follo
 - Read Buffer - UDP socket read buffer size for handling bursts of messages
 - Read Timeout - How long to wait for incoming packets before checking for shutdown
 </details>
-
-
-### Future updates
-
-Working on future updates:
-- IPAM auditing and infrastructure compliance
-- Network anomaly identification and security investigations
