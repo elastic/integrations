@@ -1,0 +1,619 @@
+---
+description: Parse HarfangLab syslog alert events.
+processors:
+  - set:
+      field: json
+      tag: copy_harfang_labs_to_json
+      copy_from: harfang_labs
+      if: ctx.harfang_labs != null
+  - set:
+      field: harfang_labs.event.log_type
+      tag: ensure_event_log_type
+      copy_from: harfang_labs.log_type
+      if: ctx.harfang_labs?.log_type != null
+  - script:
+      lang: painless
+      tag: copy_event_create_date
+      description: Copy @event_create_date to a normalized temporary field for date parsing.
+      if: ctx.json != null && ctx.json.containsKey('@event_create_date')
+      source: |-
+        ctx._temp = ctx._temp ?: [:];
+        ctx._temp.event_create_date = ctx.json['@event_create_date'];
+  - date:
+      field: _temp.event_create_date
+      target_field: '@timestamp'
+      formats:
+        - ISO8601
+      tag: date_event_create_date
+      if: ctx._temp?.event_create_date != null
+  - date:
+      field: json.alert_time
+      target_field: '@timestamp'
+      formats:
+        - ISO8601
+      tag: date_alert_time
+      if: ctx._temp?.event_create_date == null && ctx.json?.alert_time != null
+  - date:
+      field: json.alert_time
+      target_field: event.start
+      formats:
+        - ISO8601
+      tag: date_alert_time_start
+      if: ctx.json?.alert_time != null
+  - date:
+      field: json.last_update
+      target_field: event.end
+      formats:
+        - ISO8601
+      tag: date_last_update
+      if: ctx.json?.last_update != null
+  - rename:
+      field: json.id
+      target_field: harfang_labs.alert.id
+      ignore_missing: true
+      tag: rename_alert_id
+  - rename:
+      field: json.alert_unique_id
+      target_field: event.id
+      ignore_missing: true
+      tag: rename_alert_unique_id
+  - rename:
+      field: json.status
+      target_field: harfang_labs.alert.status
+      ignore_missing: true
+      tag: rename_alert_status
+  - rename:
+      field: json.alert_type
+      target_field: harfang_labs.alert.type
+      ignore_missing: true
+      tag: rename_alert_type
+  - set:
+      field: rule.category
+      tag: set_rule_category
+      copy_from: harfang_labs.alert.type
+      if: ctx.harfang_labs?.alert?.type != null
+  - rename:
+      field: json.alert_subtype
+      target_field: harfang_labs.alert.subtype
+      ignore_missing: true
+      tag: rename_alert_subtype
+  - rename:
+      field: json.rule_name
+      target_field: rule.name
+      ignore_missing: true
+      tag: rename_rule_name
+  - rename:
+      field: json.rule_id
+      target_field: rule.id
+      ignore_missing: true
+      tag: rename_rule_id
+  - rename:
+      field: json.rule_revision
+      target_field: rule.version
+      ignore_missing: true
+      tag: rename_rule_revision
+  - rename:
+      field: json.msg
+      target_field: message
+      ignore_missing: true
+      tag: rename_msg
+  - rename:
+      field: json.maturity
+      target_field: harfang_labs.alert.maturity
+      ignore_missing: true
+      tag: rename_maturity
+  - rename:
+      field: json.detection_origin
+      target_field: observer.type
+      ignore_missing: true
+      tag: rename_detection_origin
+  - rename:
+      field: json.threat_key
+      target_field: harfang_labs.alert.threat_key
+      ignore_missing: true
+      tag: rename_threat_key
+  - rename:
+      field: json.tenant
+      target_field: organization.id
+      ignore_missing: true
+      tag: rename_tenant
+  - rename:
+      field: json.execution
+      target_field: harfang_labs.alert.execution_mode
+      ignore_missing: true
+      tag: rename_execution
+  - rename:
+      field: json.aggregation_key
+      target_field: harfang_labs.alert.aggregation_key
+      ignore_missing: true
+      tag: rename_aggregation_key
+  - rename:
+      field: json.type
+      target_field: harfang_labs.alert.payload_type
+      ignore_missing: true
+      tag: rename_payload_type
+  - rename:
+      field: json.level
+      target_field: harfang_labs.alert.level
+      ignore_missing: true
+      tag: rename_level
+  - script:
+      lang: painless
+      tag: map_event_severity
+      description: Map HarfangLab severity level strings to numeric event.severity values.
+      if: ctx.harfang_labs?.alert?.level != null
+      params:
+        severity_map:
+          informational: 0
+          low: 25
+          medium: 50
+          high: 75
+          critical: 99
+      source: |-
+        def level = ctx.harfang_labs.alert.level;
+        if (level != null && params.severity_map.containsKey(level)) {
+          ctx.event = ctx.event ?: [:];
+          ctx.event.severity = params.severity_map.get(level);
+        }
+  - set:
+      field: agent.id
+      tag: set_agent_id
+      copy_from: json.agent.agentid
+      override: true
+      if: ctx.json?.agent?.agentid != null
+  - remove:
+      field: json.agent.agentid
+      tag: remove_json_agent_agentid
+      ignore_missing: true
+  - set:
+      field: host.hostname
+      tag: set_host_hostname
+      copy_from: json.agent.hostname
+      override: true
+      if: ctx.json?.agent?.hostname != null
+  - set:
+      field: host.name
+      tag: set_host_name
+      copy_from: host.hostname
+      if: ctx.host?.hostname != null
+  - rename:
+      field: json.agent.dnsdomainname
+      target_field: host.domain
+      ignore_missing: true
+      tag: rename_host_dns_domain
+  - set:
+      field: host.domain
+      tag: set_host_domain_fallback
+      copy_from: json.agent.domainname
+      if: ctx.host?.domain == null && ctx.json?.agent?.domainname != null
+  - rename:
+      field: json.agent.ostype
+      target_field: host.os.platform
+      ignore_missing: true
+      tag: rename_host_os_platform
+  - lowercase:
+      field: host.os.platform
+      tag: lowercase_host_os_platform
+      ignore_missing: true
+      if: ctx.host?.os?.platform != null
+  - rename:
+      field: json.agent.osproducttype
+      target_field: host.os.full
+      ignore_missing: true
+      tag: rename_host_os_full
+  - rename:
+      field: json.agent.osversion
+      target_field: host.os.version
+      ignore_missing: true
+      tag: rename_host_os_version
+  - rename:
+      field: json.agent.version
+      target_field: harfang_labs.agent.version
+      ignore_missing: true
+      tag: rename_harfang_agent_version
+  - append:
+      field: host.ip
+      tag: append_host_ip
+      value: '{{{json.agent.ipaddress}}}'
+      allow_duplicates: false
+      if: ctx.json?.agent?.ipaddress != null
+  - rename:
+      field: json.process.pid
+      target_field: process.pid
+      ignore_missing: true
+      tag: rename_process_pid
+  - rename:
+      field: json.process.ppid
+      target_field: process.parent.pid
+      ignore_missing: true
+      tag: rename_process_ppid
+  - rename:
+      field: json.process.process_unique_id
+      target_field: process.entity_id
+      ignore_missing: true
+      tag: rename_process_entity_id
+  - set:
+      field: process.name
+      tag: set_process_name
+      copy_from: json.process.process_name
+      override: true
+      if: ctx.json?.process?.process_name != null
+  - rename:
+      field: json.process.image_name
+      target_field: process.executable
+      ignore_missing: true
+      tag: rename_process_executable
+  - rename:
+      field: json.process.commandline
+      target_field: process.command_line
+      ignore_missing: true
+      tag: rename_process_command_line
+  - rename:
+      field: json.process.parent_image
+      target_field: process.parent.executable
+      ignore_missing: true
+      tag: rename_process_parent_executable
+  - rename:
+      field: json.process.parent_commandline
+      target_field: process.parent.command_line
+      ignore_missing: true
+      tag: rename_process_parent_command_line
+  - rename:
+      field: json.process.parent_unique_id
+      target_field: process.parent.entity_id
+      ignore_missing: true
+      tag: rename_process_parent_entity_id
+  - rename:
+      field: json.process.usersid
+      target_field: user.id
+      ignore_missing: true
+      tag: rename_user_id
+  - script:
+      lang: painless
+      tag: split_process_username
+      description: Split DOMAIN\user process username into user.domain and user.name.
+      if: ctx.json?.process?.username != null
+      source: |-
+        def username = ctx.json.process.username;
+        if (username == null) {
+          return;
+        }
+        ctx.user = ctx.user ?: [:];
+        int idx = username.indexOf('\\');
+        if (idx > 0) {
+          ctx.user.domain = username.substring(0, idx);
+          ctx.user.name = username.substring(idx + 1);
+        } else {
+          ctx.user.name = username;
+        }
+  - rename:
+      field: json.process.integrity_level
+      target_field: harfang_labs.alert.process.integrity_level
+      ignore_missing: true
+      tag: rename_process_integrity_level
+  - rename:
+      field: json.process.signed
+      target_field: process.code_signature.valid
+      ignore_missing: true
+      tag: rename_process_signed
+  - rename:
+      field: json.process.hashes.md5
+      target_field: process.hash.md5
+      ignore_missing: true
+      tag: rename_process_hash_md5
+  - rename:
+      field: json.process.hashes.sha1
+      target_field: process.hash.sha1
+      ignore_missing: true
+      tag: rename_process_hash_sha1
+  - rename:
+      field: json.process.hashes.sha256
+      target_field: process.hash.sha256
+      ignore_missing: true
+      tag: rename_process_hash_sha256
+  - rename:
+      field: json.process.score
+      target_field: harfang_labs.alert.score
+      ignore_missing: true
+      tag: rename_process_score
+  - rename:
+      field: json.process.session
+      target_field: harfang_labs.alert.session_id
+      ignore_missing: true
+      tag: rename_process_session
+  - rename:
+      field: json.process.logonid
+      target_field: harfang_labs.alert.logonid
+      ignore_missing: true
+      tag: rename_process_logonid
+  - rename:
+      field: json.process.current_directory
+      target_field: process.working_directory
+      ignore_missing: true
+      tag: rename_process_working_directory
+  - rename:
+      field: json.process.size
+      target_field: harfang_labs.alert.process.size
+      ignore_missing: true
+      tag: rename_process_size
+  - rename:
+      field: json.process.pe_imphash
+      target_field: process.pe.imphash
+      ignore_missing: true
+      tag: rename_process_pe_imphash
+  - rename:
+      field: json.process.pe_info.original_filename
+      target_field: process.pe.original_file_name
+      ignore_missing: true
+      tag: rename_process_pe_original_filename
+  - rename:
+      field: json.process.pe_info.product_name
+      target_field: process.pe.product
+      ignore_missing: true
+      tag: rename_process_pe_product
+  - rename:
+      field: json.process.pe_info.file_description
+      target_field: process.pe.description
+      ignore_missing: true
+      tag: rename_process_pe_description
+  - rename:
+      field: json.process.pe_info.company_name
+      target_field: process.pe.company
+      ignore_missing: true
+      tag: rename_process_pe_company
+  - rename:
+      field: json.process.pe_info.file_version
+      target_field: process.pe.file_version
+      ignore_missing: true
+      tag: rename_process_pe_file_version
+  - rename:
+      field: json.process.pe_info.product_version
+      target_field: harfang_labs.alert.process.product_version
+      ignore_missing: true
+      tag: rename_process_pe_product_version
+  - rename:
+      field: json.process.signature_info.signer_info.display_name
+      target_field: process.code_signature.subject_name
+      ignore_missing: true
+      tag: rename_process_code_signature_subject
+  - rename:
+      field: json.process.signature_info.signer_info.issuer_name
+      target_field: harfang_labs.alert.process.issuer_name
+      ignore_missing: true
+      tag: rename_process_code_signature_issuer
+  - set:
+      field: process.code_signature.exists
+      tag: set_process_code_signature_exists
+      value: true
+      if: ctx.json?.process?.signature_info?.signed_authenticode == true
+  - rename:
+      field: json.process.matched_rules
+      target_field: harfang_labs.alert.matched_rules
+      ignore_missing: true
+      tag: rename_process_matched_rules
+  - set:
+      field: error.message
+      tag: set_process_error_message
+      copy_from: json.process.error_msg
+      if: ctx.json?.process?.error_msg != null && ctx.json.process.error_msg != ''
+  - date:
+      field: json.process.create_time
+      target_field: process.start
+      formats:
+        - yyyy/MM/dd HH:mm:ss.SSSSSS
+        - ISO8601
+      tag: date_process_create_time
+      if: ctx.json?.process?.create_time != null
+  - rename:
+      field: json.eventlog.event_id
+      target_field: harfang_labs.alert.eventlog.event_id
+      ignore_missing: true
+      tag: rename_eventlog_event_id
+  - rename:
+      field: json.eventlog.source_name
+      target_field: harfang_labs.alert.eventlog.source_name
+      ignore_missing: true
+      tag: rename_eventlog_source_name
+  - rename:
+      field: json.eventlog.channel
+      target_field: harfang_labs.alert.eventlog.channel
+      ignore_missing: true
+      tag: rename_eventlog_channel
+  - rename:
+      field: json.eventlog.event_data
+      target_field: harfang_labs.alert.eventlog.event_data
+      ignore_missing: true
+      tag: rename_eventlog_event_data
+  - foreach:
+      field: json.tags
+      tag: append_alert_tags
+      if: ctx.json?.tags instanceof List
+      processor:
+        append:
+          field: tags
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - script:
+      lang: painless
+      tag: set_ecs_categorization
+      description: Map alert type and subtype to ECS categorization fields.
+      if: ctx.json != null
+      params:
+        default:
+          kind: alert
+          category:
+            - intrusion_detection
+          type:
+            - info
+          outcome: unknown
+        ransom:
+          kind: alert
+          category:
+            - malware
+            - intrusion_detection
+          type:
+            - info
+          outcome: unknown
+        hlai:
+          kind: alert
+          category:
+            - intrusion_detection
+          type:
+            - info
+          outcome: unknown
+        ioc:
+          kind: alert
+          category:
+            - intrusion_detection
+            - threat
+          type:
+            - indicator
+            - info
+          outcome: unknown
+        'yara:process':
+          kind: alert
+          category:
+            - malware
+            - intrusion_detection
+            - process
+          type:
+            - info
+            - start
+          outcome: unknown
+        'sigma:eventlog':
+          kind: alert
+          category:
+            - intrusion_detection
+          type:
+            - info
+          outcome: unknown
+        'sigma:process':
+          kind: alert
+          category:
+            - intrusion_detection
+          type:
+            - info
+          outcome: unknown
+        '*:driverload':
+          kind: alert
+          category:
+            - driver
+            - intrusion_detection
+          type:
+            - start
+            - info
+          outcome: unknown
+        '*:antivirus':
+          kind: alert
+          category:
+            - malware
+          type:
+            - info
+          outcome: unknown
+        '*:firewall_self_protection':
+          kind: alert
+          category:
+            - network
+            - intrusion_detection
+          type:
+            - denied
+          outcome: unknown
+      source: |-
+        String alertType = ctx.harfang_labs != null && ctx.harfang_labs.alert != null ? ctx.harfang_labs.alert.type : null;
+        String alertSubtype = ctx.harfang_labs != null && ctx.harfang_labs.alert != null ? ctx.harfang_labs.alert.subtype : null;
+        def mapping = null;
+        if (alertType != null && alertSubtype != null) {
+          mapping = params[alertType + ':' + alertSubtype];
+        }
+        if (mapping == null && alertSubtype != null) {
+          mapping = params['*:' + alertSubtype];
+        }
+        if (mapping == null && alertType != null) {
+          mapping = params[alertType];
+        }
+        if (mapping == null) {
+          mapping = params['default'];
+        }
+        ctx.event = ctx.event ?: [:];
+        ctx.event.kind = mapping.kind;
+        ctx.event.category = mapping.category;
+        ctx.event.type = mapping.type;
+        if (mapping.containsKey('outcome')) {
+          ctx.event.outcome = mapping.outcome;
+        }
+  - set:
+      field: event.kind
+      tag: set_default_event_kind
+      value: alert
+      if: ctx.event?.kind == null
+  - set:
+      field: event.outcome
+      tag: set_default_event_outcome
+      value: unknown
+      if: ctx.event?.outcome == null
+  - foreach:
+      field: host.ip
+      tag: append_host_ip_to_related
+      if: ctx.host?.ip instanceof List
+      processor:
+        append:
+          field: related.ip
+          value: '{{{_ingest._value}}}'
+          allow_duplicates: false
+  - append:
+      field: related.user
+      tag: append_user_name_to_related
+      value: '{{{user.name}}}'
+      allow_duplicates: false
+      if: ctx.user?.name != null
+  - append:
+      field: related.hosts
+      tag: append_host_hostname_to_related
+      value: '{{{host.hostname}}}'
+      allow_duplicates: false
+      if: ctx.host?.hostname != null
+  - append:
+      field: related.hosts
+      tag: append_host_name_to_related
+      value: '{{{host.name}}}'
+      allow_duplicates: false
+      if: ctx.host?.name != null
+  - append:
+      field: related.hash
+      tag: append_process_hash_md5_to_related
+      value: '{{{process.hash.md5}}}'
+      allow_duplicates: false
+      if: ctx.process?.hash?.md5 != null
+  - append:
+      field: related.hash
+      tag: append_process_hash_sha1_to_related
+      value: '{{{process.hash.sha1}}}'
+      allow_duplicates: false
+      if: ctx.process?.hash?.sha1 != null
+  - append:
+      field: related.hash
+      tag: append_process_hash_sha256_to_related
+      value: '{{{process.hash.sha256}}}'
+      allow_duplicates: false
+      if: ctx.process?.hash?.sha256 != null
+  - remove:
+      field:
+        - json
+        - _temp
+      ignore_missing: true
+      tag: remove_temp_fields
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
