@@ -2,13 +2,14 @@
 
 This section describes the CI pipelines available in this repository.
 
-Currently, there are six different pipelines:
+The following pipelines are available in this repository:
 - https://buildkite.com/elastic/integrations: pipeline in charge of testing all packages using a local Elastic stack. More info at [section](#pull-requests-and-pushes-to-specific-branches).
 - https://buildkite.com/elastic/integrations-serverless: pipeline in charge of testing all packages using an Elastic Serverless project. More info at [section](#serverless-pipeline).
 - https://buildkite.com/elastic/integrations-publish: pipeline to publish the new versions of packages. More info at [section](#publish-packages).
-- https://buildkite.com/elastic/integrations-schedule-daily/: pipeline running every night to test packages in different scenarios. More info at [section](#daily-job).
-- https://buildkite.com/elastic/integrations-schedule-weekly/: pipeline running once per week to test packages in different scenarios. More info at [section](#weekly-job).
-- https://buildkite.com/elastic/integrations-backport/: pipeline to create backport branches. Triggered automatically when a new entry is merged into `.backports.yml`, or manually from the UI by members of the `ecosystem` team. More info at [section](#backport-branches-pipeline).
+- https://buildkite.com/elastic/integrations-schedule-daily: pipeline running every night to test packages in different scenarios. More info at [section](#daily-job).
+- https://buildkite.com/elastic/integrations-schedule-weekly: pipeline running once per week to test packages in different scenarios. More info at [section](#weekly-job).
+- https://buildkite.com/elastic/integrations-backport: pipeline to create backport branches. Triggered automatically by the dispatch pipeline when a new entry is merged into `.backports.yml`, or manually from the UI by members of the `ecosystem` team. More info at [section](#backport-branch-creation-pipelines).
+- https://buildkite.com/elastic/integrations-backport-dispatch: pipeline that triggers `integrations-backport` on merges to `main` where `.backports.yml` changed. More info at [section](#backport-branch-creation-pipelines).
 
 ## Pull Requests and pushes to specific branches
 
@@ -26,6 +27,8 @@ Special comments that can be added in the Pull Request (by Elastic employees):
         - `/test stack 8.17.0`
         - `/test stack 8.18.0-SNAPSHOT`
         - `/test stack 9.0.0-SNAPSHOT`
+
+**Changelog link check (`check-changelog-pr-links`):** on pull requests that modify a `changelog.yml` file, a step validates that new or modified changelog entries link to the current PR rather than a different one (`soft_fail: true` on link mismatches — a failure posts an annotation but does not block merge, unless the entry still contains a `REPLACE_ME` placeholder). To skip this check on a PR, add the label `changelog-link-check:skip`. This label is added automatically by the `sync-backport-changelog` workflow on changelog sync PRs, because their entries intentionally link to the original backport PR rather than the sync PR itself.
 
 There are some environment variables that can be added into this pipeline to enable customizations:
 - **FORCE_CHECK_ALL**: If `true`, this forces the CI to check all packages even if those packages have no file updated/added/deleted. Default: `false`.
@@ -149,7 +152,7 @@ This environment variable can be defined at:
 
 **Note**: Available only to Elastic employees.
 
-Every night it is configured to run a daily job that will be in charge of testing all packages with different scenarios: https://buildkite.com/elastic/integrations-schedule-daily/
+Every night it is configured to run a daily job that will be in charge of testing all packages with different scenarios: https://buildkite.com/elastic/integrations-schedule-daily
 
 The schedules of this job can be checked [here](https://github.com/elastic/integrations/blob/27d5cd9bb5eee76ce4229312271ceddaba7ebc2c/catalog-info.yaml#L178-L204).
 
@@ -198,9 +201,11 @@ be used in each pipeline are detailed in the corresponding sections of each pipe
 
 ## Weekly job
 
-**Note**: Available only to Elastic employees.
+**Note**:
+- Available only to Elastic employees.
+- This pipeline is currently disabled.
 
-Every week it is configured to run a job that will be in charge of testing all packages with non-Wolfi Elastic Agent docker images: https://buildkite.com/elastic/integrations-schedule-weekly/
+Every week it is configured to run a job that will be in charge of testing all packages with non-Wolfi Elastic Agent docker images: https://buildkite.com/elastic/integrations-schedule-weekly
 
 The schedule of this job can be checked [here](https://github.com/elastic/integrations/blob/2e72e8524728daca2d47c814d8042031b8f5804f/catalog-info.yaml#L145).
 
@@ -218,24 +223,37 @@ The scenarios that are tested in this weekly job are:
 Each step triggering a new pipeline can be customized through environment variables. Environment variables that can
 be used in each pipeline are detailed in the corresponding sections of each pipeline.
 
-## Backport branches pipeline
+## Backport branch creation pipelines
 
 **Note**: Available only to Elastic employees.
 
 Releasing hotfixes from earlier versions of packages requires creating `backport-*` branches from specific commits in the `main` branch.
-The pipeline https://buildkite.com/elastic/integrations-backport/ handles this creation and can be triggered in two ways:
+The pipeline https://buildkite.com/elastic/integrations-backport handles this creation and can be triggered in two ways:
 
-- **Automatically (recommended)**: when a PR adding a new entry to `.backports.yml` is merged into `main`, the `integrations` pipeline detects the change and triggers the backport pipeline automatically. A comment is posted on the merged PR reporting success or failure of the branch creation.
+- **Automatically (recommended)**: when a PR adding a new entry to `.backports.yml` is merged into `main`, the `integrations-backport-dispatch` pipeline detects the change and triggers `integrations-backport` to create the branch. A comment is posted on the merged PR reporting success or failure of the branch creation.
 - **Manually from the UI**: restricted to members of the `ecosystem` Buildkite team.
 
+The `integrations-backport-dispatch` pipeline is responsible for triggering branch creation on pushes to `main`. This split from the main `integrations` pipeline exists because Buildkite restricts pipeline triggers in certain scenarios (e.g. a public pipeline triggering a private one) — a dedicated dispatch pipeline eliminates that failure mode. As a safeguard, `trigger_backport.sh` exits with an error if branch creation is attempted from any pipeline other than `integrations-backport-dispatch`.
+
 As part of the PR that modifies `.backports.yml`, CI automatically:
-- Validates the new inventory schema (`check-backports-inventory` step).
+- Validates the new inventory schema (`check-backports-inventory` step). In the public `integrations` pipeline this step runs on PRs targeting `main` only — it is skipped on PRs targeting `backport-*` branches, which carry only a subset of packages and would fail the validation unnecessarily. On pushes to `main`, the `integrations-backport-dispatch` pipeline runs its own validation before triggering branch creation.
 - Runs a **dry run** of the branch creation (`trigger-backport-dryrun` step), verifying the commit exists and the branch does not already exist, without pushing anything.
 
-By default, the created branch only contains the target package — all other packages in `packages/` are removed to keep the branch lean.
+When `remove_other_packages: true` is set in `.backports.yml`, the created branch contains the target package along with its `requires.*` dependencies and `.link` file source packages, transitively expanded — all unrelated packages in `packages/` are removed to keep the branch lean.
 
-The pipeline can also be triggered manually from the UI (restricted to members of the `ecosystem` team). The following parameters can be configured when triggering manually:
-- **REMOVE_OTHER_PACKAGES**: If `true`, only the target package is kept in the `packages/` directory; all others are removed. Default: `true`.
+On pull requests targeting a `backport-*` branch that modify a `changelog.yml` file, the `check-changelog-versions-in-main` step verifies that no changelog version introduced by the PR already exists on `main`, catching sync collisions before merge.
+
+The following parameters can be configured when triggering manually from the UI:
+
+| Parameter | Required | Default | Description |
+|-----------|----------|---------|-------------|
+| `DRY_RUN` | | `true` | Commit the backport branch locally but skip push to the remote; prints a diff of the changes instead. |
+| `BASE_COMMIT` | ✅ | | Commit SHA to branch from (the output of step 1 in the backport guide). |
+| `PACKAGE_NAME` | ✅ | | Package name as defined in `manifest.yml`. |
+| `PACKAGE_VERSION` | ✅ | | Package version to branch from (e.g. `1.5.7`, `1.0.0-beta1`). |
+| `REMOVE_OTHER_PACKAGES` | | `true` | If `true`, the target package and its `requires.*` dependencies and `.link` file source packages, transitively expanded, are kept; all unrelated packages are removed from `packages/`. |
+| `BACKPORT_BRANCH_NAME` | | auto | Override the generated branch name (default: `backport-<package>-<major>.<minor>`). |
+| `PR_NUMBER` | | | PR number to notify on completion (posts a comment with success or failure). |
 
 More information about this pipeline and how to create these hotfixes in:
 https://www.elastic.co/guide/en/integrations-developer/current/developer-workflow-support-old-package.html
