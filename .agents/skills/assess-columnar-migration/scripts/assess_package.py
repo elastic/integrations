@@ -1,579 +1,293 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S uv run --script
+# /// script
+# requires-python = ">=3.9"
+# dependencies = ["pyyaml>=6"]
+# ///
 """Static columnar-migration assessment for Elastic integration packages.
 
-Scans package field mappings (and stream manifests) for blockers, data-loss
-risks, and degraded patterns. Does not modify packages or run elastic-package.
+Reports mapping blockers and data-loss risks per data stream, the stack floor
+implied by `format_version`, columnar `_source` consumers (`JSON_EXTRACT` on
+`_source`, Painless `params._source`), and how many prebuilt detection rules
+query each stream. Does not modify packages or run elastic-package.
 """
 
 from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import sys
 from collections import Counter, defaultdict
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
-BLOCKER_PATTERNS: list[tuple[str, re.Pattern[str]]] = [
-    ("store: true", re.compile(r"^\s*store:\s*true\s*$")),
-    ("doc_values: false", re.compile(r"^\s*doc_values:\s*false\s*$")),
-    ("copy_to", re.compile(r"^\s*copy_to:\s*")),
-    ("type: runtime", re.compile(r"^\s*type:\s*runtime\s*$")),
-    ("type: search_as_you_type", re.compile(r"^\s*type:\s*search_as_you_type\s*$")),
-]
-
-DATA_LOSS_PATTERNS: list[tuple[str, re.Pattern[str]]] = [
-    ("dynamic: false", re.compile(r"^\s*dynamic:\s*false\s*$")),
-    ("enabled: false", re.compile(r"^\s*enabled:\s*false\s*$")),
-]
-
-INFO_PATTERNS: list[tuple[str, re.Pattern[str]]] = [
-    ("type: text", re.compile(r"^\s*type:\s*text\s*$")),
-    ("type: match_only_text", re.compile(r"^\s*type:\s*match_only_text\s*$")),
-]
-
-# ECS fields that commonly gain text / match_only_text subfields via the stack ECS template.
-ECS_TEXT_HINTS = re.compile(
-    r"(^message$|^error\.message$|\.name$|\.title$|\.description$|\.working_directory$)",
+from columnar_lib import (
+    Finding,
+    Package,
+    Rule,
+    Stream,
+    display_path,
+    index_patterns_from_query,
+    installs_on_8x,
+    iter_package_roots,
+    load_package,
+    load_prebuilt_rules,
+    pattern_streams,
+    rule_streams,
+    sde_root,
+    spec_min_stack,
 )
-
-NAME_RE = re.compile(r"^(\s*)- name:\s*(\S.*?)\s*$")
-EXTERNAL_ECS_RE = re.compile(r"^\s*-\s*external:\s*ecs\s*$")
-EXTERNAL_NAME_RE = re.compile(r"^\s*name:\s*(\S+)\s*$")
-TYPE_LINE_RE = re.compile(r"^type:\s*(\S+)", re.MULTILINE)
-# Match top-level or under elasticsearch: (indented).
-INDEX_MODE_RE = re.compile(r"^\s*index_mode:\s*[\"']?(\S+?)[\"']?\s*$", re.MULTILINE)
-PACKAGE_TYPE_RE = re.compile(r"^type:\s*(\S+)\s*$", re.MULTILINE)
-FORMAT_VERSION_RE = re.compile(
-    r"^format_version:\s*[\"']?(\d+\.\d+(?:\.\d+)?)[\"']?\s*$",
-    re.MULTILINE,
-)
-
-# Kibana saved-object field hints for index-sort seeds.
-KIBANA_FIELD_RE = re.compile(
-    r'"(?:fieldName|sourceField|field)"\s*:\s*"([^"]+)"',
-)
-SKIP_SORT_FIELDS = {
-    "@timestamp",
-    "_id",
-    "_index",
-    "event.ingested",
-    "agent.id",
-    "agent.version",
-    "data_stream.dataset",
-    "data_stream.namespace",
-    "data_stream.type",
-    "ecs.version",
-}
 
 MAX_LISTED_PER_KIND = 8
 
+# ES|QL JSON_EXTRACT(_source, "path") — case-insensitive, either quote style.
+JSON_EXTRACT_SOURCE_RE = re.compile(r"""json_extract\s*\(\s*_source\s*,\s*(['"])(.*?)\1""", re.IGNORECASE | re.DOTALL)
+PARAMS_SOURCE_RE = re.compile(r"""params\s*(?:\.\s*_source|\[\s*['"]_source['"]\s*\])""", re.IGNORECASE)
+JSON_QUERY_RE = re.compile(r'"(?:query|esql)"\s*:\s*"((?:\\.|[^"\\])*)"', re.DOTALL)
+JSON_NAME_RE = re.compile(r'"(?:name|title)"\s*:\s*"((?:\\.|[^"\\])*)"')
+# Rules use `query = '''…'''`; hunting queries use `query = ['''…''', …]`.
+TOML_QUERY_RE = re.compile(
+    r"""^query\s*=\s*(\[.*?^\]|'''.*?'''|\"\"\".*?\"\"\"|"(?:\\.|[^"\\])*")""",
+    re.DOTALL | re.MULTILINE,
+)
+TOML_STRING_RE = re.compile(r"""'''(.*?)'''|\"\"\"(.*?)\"\"\"|"((?:\\.|[^"\\])*)"|'([^'\n]*)'""", re.DOTALL)
+TOML_NAME_RE = re.compile(r"^name\s*=\s*['\"](.+?)['\"]", re.MULTILINE)
+SKIP_ASSET_DIRS = {"ingest_pipeline", "node_modules"}
+VERDICT_ORDER = (
+    "defer_or_exclude",
+    "migrate_with_changes",
+    "pending_platform",
+    "metrics_undecided",
+    "migrate_candidate",
+    "out_of_scope",
+)
+
 
 @dataclass
-class Finding:
-    severity: str  # blocker | data_loss | degraded | info
-    kind: str
+class SourceConsumer:
+    """A query or script that reads `_source` and can break under columnar."""
+
+    kind: str  # json_extract | params_source
+    origin: str  # package name, or "detection-rules"
     path: Path
+    name: str
     line_no: int
-    detail: str
-    field_path: str | None = None
+    extract_paths: list[str] = field(default_factory=list)
+    index_patterns: list[str] = field(default_factory=list)
 
 
 @dataclass
-class StreamAssessment:
-    name: str
-    stream_type: str | None
-    index_mode: str | None
-    in_scope: bool
-    skip_reason: str | None = None
-    findings: list[Finding] = field(default_factory=list)
-    ecs_imports: list[str] = field(default_factory=list)
-    ecs_text_candidates: list[str] = field(default_factory=list)
-    proposed_mode: str | None = None
-    metrics_undecided: bool = False
-    sort_seeds: list[tuple[str, int]] = field(default_factory=list)
-    stream_verdict: str | None = None
+class Report:
+    pkg: Package
+    consumers: list[SourceConsumer] = field(default_factory=list)
+    rules: dict[str, Counter[str]] = field(default_factory=dict)  # stream -> language counts
+    rule_count: int = 0
 
 
-@dataclass
-class PackageAssessment:
-    path: Path
-    name: str
-    package_type: str | None
-    in_scope: bool
-    format_version: str | None = None
-    skip_reason: str | None = None
-    streams: list[StreamAssessment] = field(default_factory=list)
-    kibana_sort_seeds: list[tuple[str, int]] = field(default_factory=list)
-
-
-def field_yaml_files(stream_dir: Path) -> list[Path]:
-    fields_dir = stream_dir / "fields"
-    if not fields_dir.is_dir():
-        return []
-    return sorted(fields_dir.glob("*.yml")) + sorted(fields_dir.glob("*.yaml"))
-
-
-def package_transform_field_files(package_root: Path) -> list[Path]:
-    root = package_root / "elasticsearch"
-    if not root.is_dir():
-        return []
-    return sorted(root.rglob("fields/*.yml")) + sorted(root.rglob("fields/*.yaml"))
-
-
-def read_simple_yaml_key(text: str, key_pattern: re.Pattern[str]) -> str | None:
-    match = key_pattern.search(text)
-    return match.group(1) if match else None
-
-
-def current_field_path(stack: list[tuple[int, str]]) -> str:
-    return ".".join(name for _, name in stack if name != "nested")
-
-
-def classify_doc_values_false(field_path: str | None) -> tuple[str, str]:
-    """Return (kind, detail_suffix) for a doc_values: false hit."""
-    if field_path in {"event.original", "original"} or (
-        field_path and field_path.endswith(".event.original")
-    ):
-        return (
-            "doc_values: false (event.original)",
-            "ECS-style integrity field — usually packaged override; remediations differ from secrets",
-        )
-    if field_path:
-        return ("doc_values: false", f"field `{field_path}`")
-    return ("doc_values: false", "mapped field")
-
-
-def scan_field_file(path: Path) -> list[Finding]:
-    """Scan a fields YAML file, tracking dotted paths for nested / doc_values."""
-    findings: list[Finding] = []
-    # stack entries: (indent, name) for fields; nested markers use name="nested"
-    stack: list[tuple[int, str]] = []
-    nested_ancestors: list[tuple[int, str]] = []  # (indent, dotted path of nested field)
-
-    lines = path.read_text(errors="replace").splitlines()
-    for line_no, line in enumerate(lines, 1):
-        name_match = NAME_RE.match(line)
-        if name_match:
-            indent = len(name_match.group(1))
-            name = name_match.group(2).strip()
-            while stack and stack[-1][0] >= indent:
-                stack.pop()
-            while nested_ancestors and nested_ancestors[-1][0] >= indent:
-                nested_ancestors.pop()
-            stack.append((indent, name))
-            continue
-
-        field_path = current_field_path(stack) or None
-
-        nested_match = re.match(r"^(\s*)type:\s*nested\s*$", line)
-        if nested_match:
-            indent = len(nested_match.group(1))
-            path_str = field_path or "(unknown)"
-            # Single-level nested is valid; only nested-in-nested is a blocker.
-            if nested_ancestors:
-                parent = nested_ancestors[-1][1]
-                findings.append(
-                    Finding(
-                        "blocker",
-                        "nested-in-nested",
-                        path,
-                        line_no,
-                        f"{parent} → {path_str}",
-                        field_path=path_str,
-                    ),
-                )
-            nested_ancestors.append((indent, path_str))
-            continue
-
-        for kind, pattern in BLOCKER_PATTERNS:
-            if not pattern.match(line):
-                continue
-            if kind == "doc_values: false":
-                kind, suffix = classify_doc_values_false(field_path)
-                detail = f"{line.strip()} ({suffix})"
-            else:
-                detail = line.strip()
-                if field_path:
-                    detail = f"{detail} on `{field_path}`"
-            findings.append(
-                Finding("blocker", kind, path, line_no, detail, field_path=field_path),
-            )
-
-        for kind, pattern in DATA_LOSS_PATTERNS:
-            if pattern.match(line):
-                detail = line.strip()
-                if field_path:
-                    detail = f"{detail} on `{field_path}`"
-                findings.append(
-                    Finding("data_loss", kind, path, line_no, detail, field_path=field_path),
-                )
-
-        for kind, pattern in INFO_PATTERNS:
-            if pattern.match(line):
-                detail = line.strip()
-                if field_path:
-                    detail = f"{detail} on `{field_path}`"
-                findings.append(
-                    Finding("info", kind, path, line_no, detail, field_path=field_path),
-                )
-
-    return findings
-
-
-def scan_manifest_data_loss(manifest_path: Path) -> list[Finding]:
-    """Find dynamic/enabled: false under the stream manifest `elasticsearch:` block.
-
-    Ignores Fleet stream `enabled: false` and other non-mapping keys.
-    """
-    if not manifest_path.is_file():
-        return []
-    findings: list[Finding] = []
-    in_elasticsearch = False
-    es_indent: int | None = None
-
-    for line_no, line in enumerate(manifest_path.read_text(errors="replace").splitlines(), 1):
-        es_header = re.match(r"^(\s*)elasticsearch:\s*$", line)
-        if es_header:
-            in_elasticsearch = True
-            es_indent = len(es_header.group(1))
-            continue
-
-        if not in_elasticsearch or es_indent is None:
-            continue
-
-        stripped = line.strip()
-        if stripped and not stripped.startswith("#"):
-            indent = len(line) - len(line.lstrip(" "))
-            if indent <= es_indent:
-                in_elasticsearch = False
-                es_indent = None
-                continue
-
-        for kind, pattern in DATA_LOSS_PATTERNS:
-            if pattern.match(line):
-                findings.append(
-                    Finding(
-                        "data_loss",
-                        f"manifest/{kind}",
-                        manifest_path,
-                        line_no,
-                        line.strip(),
-                    ),
-                )
-    return findings
-
-
-def parse_ecs_imports(path: Path) -> list[str]:
-    names: list[str] = []
-    expecting_name = False
-    for line in path.read_text(errors="replace").splitlines():
-        if EXTERNAL_ECS_RE.match(line):
-            expecting_name = True
-            continue
-        if expecting_name:
-            name_match = EXTERNAL_NAME_RE.match(line)
-            if name_match:
-                names.append(name_match.group(1))
-                expecting_name = False
-            elif line.strip() and not line.strip().startswith("#"):
-                expecting_name = False
-    return names
-
-
-def harvest_kibana_fields(package_root: Path, limit: int = 15) -> list[tuple[str, int]]:
-    kibana = package_root / "kibana"
-    if not kibana.is_dir():
-        return []
-    counts: Counter[str] = Counter()
-    for path in kibana.rglob("*.json"):
-        try:
-            text = path.read_text(errors="replace")
-        except OSError:
-            continue
-        # Prefer regex over full JSON parse — saved objects are large/nested.
-        for match in KIBANA_FIELD_RE.finditer(text):
-            name = match.group(1)
-            if not name or name in SKIP_SORT_FIELDS or name.startswith("kibana."):
-                continue
-            if "*" in name or name.startswith("_"):
-                continue
-            counts[name] += 1
-    return counts.most_common(limit)
-
-
-def stream_counts(stream: StreamAssessment) -> dict[str, int]:
-    counts: dict[str, int] = defaultdict(int)
-    for finding in stream.findings:
-        counts[finding.severity] += 1
-    return counts
-
-
-def verdict_for_stream(stream: StreamAssessment) -> str:
+def stream_verdict(stream: Stream) -> str:
     if not stream.in_scope:
         return "out_of_scope"
-    counts = stream_counts(stream)
-    if counts.get("blocker", 0):
+    severities = {f.severity for f in stream.findings}
+    if "blocker" in severities:
         return "defer_or_exclude"
-    if stream.metrics_undecided:
+    if stream.type == "metrics":
         return "metrics_undecided"
-    if counts.get("data_loss", 0) or counts.get("degraded", 0):
-        return "migrate_with_changes"
+    if "data_loss" in severities:
+        # Columnar drops unmapped fields today; whether it keeps them by GA is a platform decision.
+        return "pending_platform"
     return "migrate_candidate"
 
 
-def package_verdict_summary(pkg: PackageAssessment) -> str:
-    if not pkg.in_scope:
+def package_verdict(pkg: Package) -> str:
+    """Headline verdict plus stream counts, so one blocked stream never hides the rest."""
+    by_verdict: dict[str, list[Stream]] = defaultdict(list)
+    for stream in pkg.in_scope_streams:
+        by_verdict[stream_verdict(stream)].append(stream)
+    if not by_verdict:
         return "out_of_scope"
-    scoped = [s for s in pkg.streams if s.in_scope]
-    if not scoped:
-        return "out_of_scope"
+    blocked = [s.name for s in by_verdict["defer_or_exclude"]]
+    clean, pending = by_verdict["migrate_candidate"], by_verdict["pending_platform"]
+    undecided = by_verdict["metrics_undecided"]
 
-    by_verdict: dict[str, list[str]] = defaultdict(list)
-    for stream in scoped:
-        by_verdict[stream.stream_verdict or verdict_for_stream(stream)].append(stream.name)
-
-    blocked = by_verdict.get("defer_or_exclude", [])
-    undecided = by_verdict.get("metrics_undecided", [])
-    with_changes = by_verdict.get("migrate_with_changes", [])
-    candidates = by_verdict.get("migrate_candidate", [])
-    cleanish = with_changes + candidates  # migratable streams
-
-    if blocked and not cleanish and not undecided:
-        return "defer_or_exclude"
     if blocked:
-        blocked_list = ", ".join(blocked[:5])
-        more = f" +{len(blocked) - 5}" if len(blocked) > 5 else ""
-        return (
-            f"migrate_with_changes ({len(cleanish)} migratable, "
-            f"{len(blocked)} blocked: {blocked_list}{more}"
-            f"{f', {len(undecided)} metrics_undecided' if undecided else ''})"
-        )
-    if with_changes:
-        extra = f", {len(undecided)} metrics_undecided" if undecided else ""
-        if candidates:
-            return (
-                f"migrate_with_changes ({len(with_changes)} with changes, "
-                f"{len(candidates)} clean{extra})"
-            )
-        return f"migrate_with_changes{extra and ' (' + extra.lstrip(', ') + ')' or ''}"
-    loss_undecided = [
-        s.name
-        for s in scoped
-        if s.name in undecided and stream_counts(s).get("data_loss", 0)
-    ]
-    loss_note = f", {len(loss_undecided)} with data-loss" if loss_undecided else ""
-    if undecided and not candidates:
-        return f"metrics_undecided ({len(undecided)} streams{loss_note})"
-    if undecided:
-        return (
-            f"migrate_candidate ({len(candidates)} clean, "
-            f"{len(undecided)} metrics_undecided{loss_note})"
-        )
-    return "migrate_candidate"
-
-
-def verdict_sort_key(summary: str) -> int:
-    if summary.startswith("defer_or_exclude"):
-        return 0
-    if summary.startswith("migrate_with_changes"):
-        return 1
-    if summary.startswith("metrics_undecided"):
-        return 2
-    if summary.startswith("migrate_candidate"):
-        return 3
-    return 4
-
-
-def assess_stream(stream_dir: Path, package_sort_seeds: list[tuple[str, int]]) -> StreamAssessment:
-    name = stream_dir.name
-    manifest_path = stream_dir / "manifest.yml"
-    stream_type = None
-    index_mode = None
-    manifest_findings: list[Finding] = []
-    if manifest_path.is_file():
-        text = manifest_path.read_text(errors="replace")
-        stream_type = read_simple_yaml_key(text, TYPE_LINE_RE)
-        index_mode = read_simple_yaml_key(text, INDEX_MODE_RE)
-        manifest_findings = scan_manifest_data_loss(manifest_path)
-
-    if index_mode == "time_series":
-        stream = StreamAssessment(
-            name=name,
-            stream_type=stream_type,
-            index_mode=index_mode,
-            in_scope=False,
-            skip_reason="TSDB (index_mode: time_series) — not columnar",
-        )
-        stream.stream_verdict = "out_of_scope"
-        return stream
-
-    findings: list[Finding] = list(manifest_findings)
-    ecs_imports: list[str] = []
-    for field_file in field_yaml_files(stream_dir):
-        findings.extend(scan_field_file(field_file))
-        if field_file.name in {"ecs.yml", "ecs.yaml"}:
-            ecs_imports.extend(parse_ecs_imports(field_file))
-
-    ecs_text = sorted({n for n in ecs_imports if ECS_TEXT_HINTS.search(n)})
-    metrics_undecided = stream_type == "metrics"
-    if stream_type == "logs" or stream_type is None:
-        proposed_mode = "logsdb_columnar"
-    elif metrics_undecided:
-        proposed_mode = "columnar (or TSDB — undecided)"
+        headline = "migrate_with_changes" if clean or pending else "defer_or_exclude"
     else:
-        proposed_mode = "columnar"
+        headline = "migrate_candidate" if clean else "pending_platform" if pending else "metrics_undecided"
 
-    stream = StreamAssessment(
-        name=name,
-        stream_type=stream_type,
-        index_mode=index_mode,
-        in_scope=True,
-        findings=findings,
-        ecs_imports=sorted(set(ecs_imports)),
-        ecs_text_candidates=ecs_text,
-        proposed_mode=proposed_mode,
-        metrics_undecided=metrics_undecided,
-        sort_seeds=package_sort_seeds[:8],
-    )
-    stream.stream_verdict = verdict_for_stream(stream)
-    return stream
+    parts = []
+    if clean:
+        parts.append(f"{len(clean)} clean")
+    if pending:
+        parts.append(f"{len(pending)} pending_platform")
+    if blocked:
+        more = f" +{len(blocked) - 5}" if len(blocked) > 5 else ""
+        parts.append(f"{len(blocked)} blocked: {', '.join(blocked[:5])}{more}")
+    if undecided:
+        loss = sum(1 for s in undecided if any(f.severity == "data_loss" for f in s.findings))
+        parts.append(f"{len(undecided)} metrics_undecided" + (f", {loss} with data-loss" if loss else ""))
+    if len(parts) == 1 and "data-loss" not in parts[0]:
+        return headline
+    return f"{headline} ({', '.join(parts)})"
 
 
-def spec_minor(version: str | None) -> tuple[int, int] | None:
-    if not version:
-        return None
-    parts = version.split(".")
+def unescape_json_string(raw: str) -> str:
     try:
-        major = int(parts[0])
-        minor = int(parts[1]) if len(parts) > 1 else 0
-    except ValueError:
+        return json.loads(f'"{raw}"')
+    except json.JSONDecodeError:
+        return raw
+
+
+def asset_queries(path: Path, text: str) -> list[str]:
+    """ES|QL query bodies in a saved object or TOML rule; the whole file when none are found."""
+    if path.suffix == ".json":
+        queries = [unescape_json_string(m.group(1)) for m in JSON_QUERY_RE.finditer(text)]
+    else:
+        queries = []
+        for match in TOML_QUERY_RE.finditer(text):
+            for string in TOML_STRING_RE.finditer(match.group(1)):
+                triple_single, triple_double, basic, literal = string.groups()
+                if basic is not None:
+                    queries.append(unescape_json_string(basic))
+                else:
+                    queries.append(next(g for g in (triple_single, triple_double, literal) if g is not None))
+    return queries or [text]
+
+
+def json_extract_consumer(
+    queries: list[str],
+    *,
+    origin: str,
+    path: Path,
+    name: str,
+    line_no: int,
+    index_patterns: list[str] | None = None,
+) -> SourceConsumer | None:
+    extract_paths: list[str] = []
+    patterns = list(index_patterns or [])
+    for query in queries:
+        hits = [m.group(2) for m in JSON_EXTRACT_SOURCE_RE.finditer(query)]
+        if not hits:
+            continue
+        extract_paths.extend(p for p in hits if p not in extract_paths)
+        if index_patterns is None:
+            patterns.extend(p for p in index_patterns_from_query(query) if p not in patterns)
+    if not extract_paths:
         return None
-    return major, minor
+    return SourceConsumer("json_extract", origin, path, name, line_no, extract_paths, patterns)
 
 
-def spec_min_stack(version: str | None) -> str:
-    """Minimum stack that can install this format_version. Patch is ignored."""
-    parsed = spec_minor(version)
-    if parsed is None:
-        return "unknown"
-    major, minor = parsed
-    if (major, minor) < (2, 3):
-        return "stacks before 9.0"
-    if (major, minor) < (3, 0):
-        return "any stateful stack"
-    if (major, minor) == (3, 0):
-        return "8.11"
-    if (3, 1) <= (major, minor) <= (3, 3):
-        return "8.16"
-    if (major, minor) == (3, 4):
-        return "8.19"
-    if (major, minor) == (3, 5):
-        return "9.2"
-    if (major, minor) == (3, 6):
-        return "9.4"
-    return "above 9.4"
-
-
-def installs_on_8x(version: str | None) -> bool:
-    """True when this spec still installs on 8.x. Spec 3.5+ is 9.2+."""
-    parsed = spec_minor(version)
-    return parsed is not None and parsed < (3, 5)
-
-
-def format_version_migration_note(version: str | None) -> str:
-    """State the spec-implied stack floor and that columnar raises it."""
-    shown = f"`{version}`" if version else "unset"
-    floor = spec_min_stack(version)
-    note = (
-        f"- Minimum stack from spec is **{floor}** (`format_version` {shown}). "
-        "Columnar requires a `format_version` bump, which raises this to **9.5+**."
-    )
-    if spec_minor(version) == (3, 4):
-        note += " Spec 3.4 also installs on 9.1+; 9.0 stops at spec 3.3."
-    if installs_on_8x(version):
-        note += " This package would move from 8.x to 9.x."
-    return note
-
-
-def assess_package(package_root: Path) -> PackageAssessment:
-    package_root = package_root.resolve()
-    name = package_root.name
-    manifest_path = package_root / "manifest.yml"
-    package_type = None
-    format_version = None
-    if manifest_path.is_file():
-        manifest_text = manifest_path.read_text(errors="replace")
-        package_type = read_simple_yaml_key(manifest_text, PACKAGE_TYPE_RE)
-        format_version = read_simple_yaml_key(manifest_text, FORMAT_VERSION_RE)
-
-    if package_type == "content":
-        return PackageAssessment(
-            path=package_root,
-            name=name,
-            package_type=package_type,
-            format_version=format_version,
-            in_scope=False,
-            skip_reason="content package — no data-stream mappings here",
-        )
-
-    if package_type not in {None, "integration", "input"}:
-        return PackageAssessment(
-            path=package_root,
-            name=name,
-            package_type=package_type,
-            format_version=format_version,
-            in_scope=False,
-            skip_reason=f"package type {package_type!r} out of scope",
-        )
-
-    kibana_seeds = harvest_kibana_fields(package_root)
-
-    streams_root = package_root / "data_stream"
-    streams: list[StreamAssessment] = []
-    if streams_root.is_dir():
-        for stream_dir in sorted(p for p in streams_root.iterdir() if p.is_dir()):
-            streams.append(assess_stream(stream_dir, kibana_seeds))
-
-    transform_findings: list[Finding] = []
-    for field_file in package_transform_field_files(package_root):
-        for finding in scan_field_file(field_file):
-            finding.kind = f"transform/{finding.kind}"
-            finding.severity = "info"
-            transform_findings.append(finding)
-
-    if transform_findings:
-        transform_stream = StreamAssessment(
-            name="(elasticsearch/transform)",
-            stream_type=None,
-            index_mode=None,
-            in_scope=False,
-            skip_reason="transforms out of scope — findings for awareness only",
-            findings=transform_findings,
-        )
-        transform_stream.stream_verdict = "out_of_scope"
-        streams.append(transform_stream)
-
-    in_scope = any(s.in_scope for s in streams) if streams else False
-    skip_reason = None
-    if not streams:
-        skip_reason = "no data_stream/ directories found"
-        in_scope = False
-    elif not any(s.in_scope for s in streams):
-        skip_reason = "no in-scope data streams (all TSDB/content/empty)"
-        in_scope = False
-
-    return PackageAssessment(
-        path=package_root,
+def consumers_in_file(path: Path, origin: str) -> list[SourceConsumer]:
+    try:
+        text = path.read_text(errors="replace")
+    except OSError:
+        return []
+    if "_source" not in text:
+        return []
+    name_match = (JSON_NAME_RE if path.suffix == ".json" else TOML_NAME_RE).search(text)
+    name = unescape_json_string(name_match.group(1)) if name_match else path.stem
+    found: list[SourceConsumer] = []
+    extract_at = text.lower().find("json_extract")
+    consumer = json_extract_consumer(
+        asset_queries(path, text),
+        origin=origin,
+        path=path,
         name=name,
-        package_type=package_type,
-        format_version=format_version,
-        in_scope=in_scope,
-        skip_reason=skip_reason,
-        streams=streams,
-        kibana_sort_seeds=kibana_seeds,
+        line_no=text.count("\n", 0, max(extract_at, 0)) + 1,
     )
+    if consumer:
+        found.append(consumer)
+    params_match = PARAMS_SOURCE_RE.search(text)
+    if params_match:
+        found.append(
+            SourceConsumer("params_source", origin, path, name, text.count("\n", 0, params_match.start()) + 1),
+        )
+    return found
+
+
+def iter_asset_files(root: Path, suffixes: tuple[str, ...]) -> list[Path]:
+    files: list[Path] = []
+    for dirpath, dirnames, filenames in os.walk(root):
+        dirnames[:] = [d for d in dirnames if d not in SKIP_ASSET_DIRS]
+        files.extend(Path(dirpath) / n for n in filenames if n.endswith(suffixes))
+    return files
+
+
+def find_detection_rules_root(explicit: Path | None) -> tuple[Path | None, str]:
+    """The checkout to scan, plus a status line for the report."""
+    env = os.environ.get("DETECTION_RULES_PATH")
+    requested = [(explicit, "--detection-rules"), (Path(env) if env else None, "DETECTION_RULES_PATH")]
+    warnings: list[str] = []
+    for path, source in requested:
+        if path is None:
+            continue
+        path = path.expanduser().resolve()
+        if (path / "rules").is_dir():
+            return path, f"Scanned detection-rules checkout `{path}` (`rules/`, `hunting/`)."
+        warnings.append(f"{source} `{path}` has no `rules/` directory, ignored. ")
+    sibling = Path(__file__).resolve().parents[4].parent / "detection-rules"
+    if (sibling / "rules").is_dir():
+        return sibling, "".join(warnings) + f"Scanned detection-rules checkout `{sibling}` (`rules/`, `hunting/`)."
+    return None, "".join(warnings) + (
+        f"detection-rules checkout not found (also looked at `{sibling}`). "
+        "Hunting queries are not in this repo. Search `elastic/detection-rules` `rules/` and "
+        "`hunting/` for `JSON_EXTRACT(_source` and attach each hit by its `FROM` index pattern."
+    )
+
+
+def collect_consumers(
+    targets: list[Path],
+    rules: list[Rule],
+    detection_rules: Path | None,
+) -> tuple[list[SourceConsumer], str]:
+    """Package-owned assets, prebuilt rules, and a local detection-rules checkout."""
+    consumers: list[SourceConsumer] = []
+    for target in targets:
+        if target.name == "security_detection_engine":
+            continue
+        for sub in ("kibana", "elasticsearch"):
+            for path in iter_asset_files(target / sub, (".json", ".yml", ".yaml")):
+                consumers.extend(consumers_in_file(path, target.name))
+    for rule in rules:
+        consumer = json_extract_consumer(
+            [rule.query],
+            origin="security_detection_engine",
+            path=rule.path,
+            name=rule.name,
+            line_no=1,
+            index_patterns=rule.index_patterns,
+        )
+        if consumer:
+            consumers.append(consumer)
+    rules_root, note = find_detection_rules_root(detection_rules)
+    if rules_root is not None:
+        for sub in ("rules", "hunting"):
+            for path in iter_asset_files(rules_root / sub, (".toml",)):
+                consumers.extend(consumers_in_file(path, "detection-rules"))
+    return consumers, note
+
+
+def consumer_streams(consumer: SourceConsumer, pkg: Package) -> list[str]:
+    return list(dict.fromkeys(s for p in consumer.index_patterns for s in pattern_streams(p, pkg)))
+
+
+def build_report(pkg: Package, consumers: list[SourceConsumer], rules: list[Rule]) -> Report:
+    report = Report(pkg)
+    seen: set[tuple[str, str]] = set()
+    for consumer in consumers:
+        if consumer.origin != pkg.name and not consumer_streams(consumer, pkg):
+            continue
+        key = (consumer.kind, consumer.name.strip().lower())
+        if key not in seen:  # the same rule in the prebuilt snapshot and in detection-rules
+            seen.add(key)
+            report.consumers.append(consumer)
+    for rule in rules:
+        streams = rule_streams(rule, pkg)
+        if streams:
+            report.rule_count += 1
+        for name in streams:
+            report.rules.setdefault(name, Counter())[rule.language] += 1
+    return report
 
 
 def rel_path(path: Path, package_root: Path) -> Path:
@@ -583,358 +297,192 @@ def rel_path(path: Path, package_root: Path) -> Path:
         return path
 
 
-def format_findings_grouped(
-    findings: list[Finding],
-    package_root: Path,
-    *,
-    always_expand: bool = False,
-) -> list[str]:
+def format_findings(findings: list[Finding], package_root: Path, *, expand: bool) -> list[str]:
     """Group findings by kind; cap repetitive lists for mega-packages."""
-    lines: list[str] = []
     by_kind: dict[str, list[Finding]] = defaultdict(list)
     for finding in findings:
         by_kind[finding.kind].append(finding)
-
+    lines: list[str] = []
     for kind in sorted(by_kind):
         items = by_kind[kind]
         lines.append(f"- **{kind}** ×{len(items)}")
-        show = items if always_expand or len(items) <= MAX_LISTED_PER_KIND else items[:MAX_LISTED_PER_KIND]
-        for finding in show:
-            path = rel_path(finding.path, package_root)
-            extra = f" — `{finding.detail}`" if finding.detail else ""
-            lines.append(f"  - `{path}:{finding.line_no}`{extra}")
-        if not always_expand and len(items) > MAX_LISTED_PER_KIND:
-            lines.append(f"  - … +{len(items) - MAX_LISTED_PER_KIND} more")
+        shown = items if expand else items[:MAX_LISTED_PER_KIND]
+        lines.extend(f"  - `{rel_path(f.path, package_root)}:{f.line}` — {f.detail}" for f in shown)
+        if len(items) > len(shown):
+            lines.append(f"  - … +{len(items) - len(shown)} more")
     return lines
 
 
-def format_package_report(pkg: PackageAssessment) -> str:
-    lines: list[str] = []
-    summary = package_verdict_summary(pkg)
-    scoped = [s for s in pkg.streams if s.in_scope]
-    skipped = [s for s in pkg.streams if not s.in_scope]
-
-    lines.append(f"# Columnar assessment: {pkg.name}")
+def format_consumers(report: Report, note: str | None) -> list[str]:
+    lines = [
+        "## Columnar `_source` consumers",
+        "",
+        "These do not change stream verdicts. Rewrites are in the skill's `reference.md` "
+        "(Columnar `_source`).",
+        "",
+    ]
+    if not report.consumers:
+        lines.append("- None in this package or in rules whose `FROM` names its datasets.")
+    for consumer in report.consumers:
+        streams = consumer_streams(consumer, report.pkg)
+        stream_bit = f" — streams: {', '.join(f'`{s}`' for s in streams)}" if streams else ""
+        if consumer.kind == "json_extract":
+            patterns = ", ".join(f"`{p}`" for p in consumer.index_patterns) or "no `FROM` pattern"
+            what = f"{patterns} — {', '.join(f'`{p}`' for p in consumer.extract_paths)}"
+        else:
+            what = "Painless `params._source`"
+        lines.append(
+            f"- **{consumer.name}** (`{consumer.origin}`){stream_bit} — {what} — `{display_path(consumer.path)}`",
+        )
+    if note:
+        lines.append(f"- {note}")
     lines.append("")
-    lines.append(f"- Package path: `{pkg.path}`")
-    lines.append(f"- Package type: `{pkg.package_type or 'unknown'}`")
-    lines.append(f"- format_version: `{pkg.format_version or 'unset'}`")
-    lines.append(f"- Minimum stack from spec: {spec_min_stack(pkg.format_version)}")
-    lines.append(f"- Verdict: `{summary}`")
+    return lines
+
+
+def format_package_report(report: Report, note: str | None) -> str:
+    pkg = report.pkg
+    lines = [
+        f"# Columnar assessment: {pkg.name}",
+        "",
+        f"- Package type: `{pkg.type or 'unknown'}`",
+        f"- format_version: `{pkg.format_version or 'unset'}` (minimum stack from spec: {spec_min_stack(pkg.format_version)})",
+    ]
+    if pkg.kibana_constraint:
+        lines.append(f"- `conditions.kibana.version`: `{pkg.kibana_constraint}`")
+    lines.append(f"- Verdict: `{package_verdict(pkg)}`")
     if pkg.skip_reason:
         lines.append(f"- Skip reason: {pkg.skip_reason}")
-
-    if scoped:
-        by_v: dict[str, list[str]] = defaultdict(list)
-        for stream in scoped:
-            by_v[stream.stream_verdict or "unknown"].append(stream.name)
-        parts = [f"{v}={len(names)}" for v, names in sorted(by_v.items())]
-        lines.append(f"- Stream verdicts: {', '.join(parts)}")
-    if skipped:
-        tsdb = [s.name for s in skipped if s.index_mode == "time_series"]
-        other = [s.name for s in skipped if s.index_mode != "time_series"]
-        if tsdb:
-            lines.append(f"- Skipped TSDB: {len(tsdb)} stream(s)")
-        if other:
-            lines.append(f"- Skipped other: {', '.join(other)}")
-
-    if pkg.kibana_sort_seeds:
-        seeds = ", ".join(f"`{n}` ({c})" for n, c in pkg.kibana_sort_seeds[:10])
-        lines.append(f"- Kibana field seeds (sort hints): {seeds}")
+    if pkg.in_scope_streams:
+        lines.append(
+            f"- Prebuilt detection rules querying in-scope streams: {report.rule_count} "
+            "(latest version per rule in `security_detection_engine`)",
+        )
+    if pkg.transforms:
+        lines.append(f"- Transforms: {pkg.transforms} (out of scope)")
     lines.append("")
+    lines.extend(format_consumers(report, note))
 
-    if not pkg.streams:
-        lines.append("No data streams found.")
-        return "\n".join(lines) + "\n"
-
-    lines.append("## Data streams")
-    lines.append("")
+    if pkg.streams:
+        lines.extend(["## Data streams", ""])
+    skipped: dict[str, list[str]] = defaultdict(list)
     for stream in pkg.streams:
-        status = "in scope" if stream.in_scope else "skipped"
-        verdict = stream.stream_verdict or ("out_of_scope" if not stream.in_scope else "?")
-        lines.append(f"### `{stream.name}` ({status}) — `{verdict}`")
-        lines.append(f"- type: `{stream.stream_type or 'unknown'}`")
-        lines.append(f"- index_mode: `{stream.index_mode or 'default'}`")
         if stream.skip_reason:
-            lines.append(f"- reason: {stream.skip_reason}")
-        if stream.in_scope:
-            lines.append(f"- proposed mode: `{stream.proposed_mode}`")
-            if stream.metrics_undecided:
-                lines.append(
-                    "- note: metrics stream without `time_series` — "
-                    "prefer TSDB vs bare `columnar` is a product decision",
-                )
-        counts = stream_counts(stream)
-        if counts:
-            summary_counts = ", ".join(f"{k}={v}" for k, v in sorted(counts.items()))
-            lines.append(f"- findings: {summary_counts}")
+            skipped[stream.skip_reason].append(f"`{stream.name}`")
+    for reason, names in skipped.items():
+        lines.append(f"- `out_of_scope`, {reason}: {', '.join(names)}")
+    if skipped:
         lines.append("")
-
-        by_sev: dict[str, list[Finding]] = defaultdict(list)
-        for finding in stream.findings:
-            by_sev[finding.severity].append(finding)
-
+    for stream in pkg.in_scope_streams:
+        lines.append(f"### `{stream.name}` — `{stream_verdict(stream)}`")
+        lines.append(f"- type: `{stream.type}`, dataset: `{stream.dataset}`, index_mode: `{stream.index_mode or 'unset'}`")
+        lines.extend(f"- note: {note_}" for note_ in stream.notes)
+        languages = report.rules.get(stream.name)
+        if languages:
+            by_language = ", ".join(f"{k}={v}" for k, v in languages.most_common())
+            lines.append(f"- prebuilt detection rules: {sum(languages.values())} ({by_language})")
+        lines.append("")
         for severity, title, expand in (
             ("blocker", "Blockers", True),
-            ("data_loss", "Data-loss risks", True),
-            ("degraded", "Degraded / trade-offs", False),
+            ("data_loss", "Data-loss risks (pending platform decision)", True),
             ("info", "Info", False),
         ):
-            items = by_sev.get(severity, [])
-            if not items:
-                continue
-            lines.append(f"**{title}**")
-            lines.extend(format_findings_grouped(items, pkg.path, always_expand=expand))
-            lines.append("")
-
-        if stream.ecs_text_candidates:
-            lines.append(
-                f"**ECS text-subfield candidates (info)**: "
-                f"{len(stream.ecs_text_candidates)} of {len(stream.ecs_imports)} imports",
-            )
-            preview = ", ".join(f"`{n}`" for n in stream.ecs_text_candidates[:15])
-            more = ""
-            if len(stream.ecs_text_candidates) > 15:
-                more = f", … (+{len(stream.ecs_text_candidates) - 15} more)"
-            lines.append(f"- {preview}{more}")
-            lines.append("")
-
-    lines.append("## Proposed changes (not applied)")
-    lines.append("")
-    lines.append(propose_changes(pkg))
+            items = [f for f in stream.findings if f.severity == severity]
+            if items:
+                lines.append(f"**{title}**")
+                lines.extend(format_findings(items, pkg.path, expand=expand))
+                lines.append("")
     return "\n".join(lines) + "\n"
 
 
-def propose_changes(pkg: PackageAssessment) -> str:
-    if not pkg.in_scope:
-        return f"- None — {pkg.skip_reason or 'package out of scope'}."
-
-    bullets: list[str] = []
-    scoped = [s for s in pkg.streams if s.in_scope]
-    bullets.append(format_version_migration_note(pkg.format_version))
-
-    blocked = [s for s in scoped if s.stream_verdict == "defer_or_exclude"]
-    migratable = [
-        s
-        for s in scoped
-        if s.stream_verdict in {"migrate_candidate", "migrate_with_changes"}
-    ]
-    undecided = [s for s in scoped if s.stream_verdict == "metrics_undecided"]
-
-    if blocked:
-        bullets.append(
-            "- Resolve or **exclude** blocked streams (remaining streams can still migrate):",
-        )
-        for stream in blocked:
-            kinds = sorted({f.kind for f in stream.findings if f.severity == "blocker"})
-            bullets.append(f"  - `{stream.name}`: {', '.join(kinds)}")
-            for finding in stream.findings:
-                if finding.kind == "doc_values: false (event.original)":
-                    bullets.append(
-                        "    - `event.original`: ECS integrity packaging — drop "
-                        "`doc_values: false` override, rely on `_source`, or exclude field",
-                    )
-                elif finding.kind == "doc_values: false":
-                    bullets.append(
-                        f"    - sensitive/custom field"
-                        f"{f' `{finding.field_path}`' if finding.field_path else ''}: "
-                        "remap for columnar or keep stream excluded",
-                    )
-                elif finding.kind == "store: true":
-                    bullets.append(
-                        "    - common metrics pattern: drop `store: true` or map as "
-                        "`keyword` without store",
-                    )
-    else:
-        bullets.append("- No hard mapping blockers on in-scope streams.")
-
-    data_loss_streams = [
-        s for s in scoped if any(f.severity == "data_loss" for f in s.findings)
-    ]
-    if data_loss_streams:
-        names = ", ".join(f"`{s.name}`" for s in data_loss_streams)
-        bullets.append(
-            f"- Review **`dynamic: false` / `enabled: false`** on {names} "
-            "(fields YAML and stream manifests): under columnar unmapped data is dropped.",
-        )
-
-    if undecided:
-        names = ", ".join(f"`{s.name}`" for s in undecided)
-        bullets.append(
-            f"- Metrics without TSDB ({names}): decide **TSDB** vs bare **`columnar`** "
-            "before enabling; do not assume columnar is preferred.",
-        )
-
-    if any(
-        f.kind in {"type: text", "type: match_only_text"}
-        for s in scoped
-        for f in s.findings
-    ) or any(s.ecs_text_candidates for s in scoped):
-        bullets.append(
-            "- Text / ECS multi-fields are an **info** trade-off (storage / full-text); "
-            "they alone do not block migration. Optionally trim to `keyword` where "
-            "dashboards only need exact match.",
-        )
-
-    sort_hint = ""
-    if pkg.kibana_sort_seeds:
-        top = ", ".join(f"`{n}`" for n, _ in pkg.kibana_sort_seeds[:5])
-        sort_hint = f" Kibana seeds: {top}."
-
-    for stream in migratable:
-        mode = "logsdb_columnar" if stream.stream_type in {"logs", None} else "columnar"
-        bullets.append(
-            f"- `{stream.name}`: set `mode: {mode}` with **integration-specific index sort** "
-            f"(not cluster `logs-*-*` templates).{sort_hint}",
-        )
-        if mode == "logsdb_columnar":
-            bullets.append(
-                "  - Use `host.name` + `@timestamp` only if host-centric; otherwise pick a "
-                "low-cardinality dashboard filter dimension + `@timestamp`.",
-            )
-
-    bullets.append(
-        "- **Out of scope for this skill (TODO/TBC):** apply the package edits, "
-        "`elastic-package build`/system tests under columnar, dashboard/rule validation, "
-        "changelog entry.",
-    )
-    return "\n".join(bullets)
-
-
-def stack_bump_note(packages: list[PackageAssessment]) -> str:
-    """In-scope packages whose spec still installs on 8.x."""
-    count = sum(1 for p in packages if p.in_scope and installs_on_8x(p.format_version))
-    return (
-        f"{count} in-scope packages are still installable on 8.x. "
-        "Columnar would move them to 9.5+."
-    )
-
-
-def format_repo_summary(packages: list[PackageAssessment]) -> str:
+def format_repo_summary(reports: list[Report], note: str | None) -> str:
     lines = [
         "# Columnar assessment summary",
         "",
-        "| Package | Verdict | In-scope | Blocked streams | Data-loss |",
-        "| --- | --- | ---: | --- | ---: |",
+        "| Package | Verdict | In-scope | Blocked streams | Data-loss | `_source` consumers | Rules |",
+        "| --- | --- | ---: | --- | ---: | ---: | ---: |",
     ]
-    for pkg in sorted(packages, key=lambda p: (verdict_sort_key(package_verdict_summary(p)), p.name)):
-        summary = package_verdict_summary(pkg)
-        scoped = [s for s in pkg.streams if s.in_scope]
-        blocked = [s.name for s in scoped if s.stream_verdict == "defer_or_exclude"]
-        blocked_s = ", ".join(f"`{n}`" for n in blocked[:3])
-        if len(blocked) > 3:
-            blocked_s += f" +{len(blocked) - 3}"
-        if not blocked_s:
-            blocked_s = "—"
-        data_loss = sum(stream_counts(s).get("data_loss", 0) for s in scoped)
-        # Truncate long verdicts for table readability
-        verdict_cell = summary if len(summary) <= 80 else summary[:77] + "…"
+
+    def order(report: Report) -> tuple[int, str]:
+        verdict = package_verdict(report.pkg)
+        return next(i for i, v in enumerate(VERDICT_ORDER) if verdict.startswith(v)), report.pkg.name
+
+    for report in sorted(reports, key=order):
+        scoped = report.pkg.in_scope_streams
+        blocked = [s.name for s in scoped if stream_verdict(s) == "defer_or_exclude"]
+        blocked_cell = ", ".join(f"`{n}`" for n in blocked[:3]) + (f" +{len(blocked) - 3}" if len(blocked) > 3 else "")
+        data_loss = sum(1 for s in scoped for f in s.findings if f.severity == "data_loss")
+        verdict = package_verdict(report.pkg)
+        verdict = verdict if len(verdict) <= 80 else verdict[:77] + "…"
         lines.append(
-            f"| `{pkg.name}` | `{verdict_cell}` | {len(scoped)} | "
-            f"{blocked_s} | {data_loss} |",
+            f"| `{report.pkg.name}` | `{verdict}` | {len(scoped)} | {blocked_cell or '—'} | "
+            f"{data_loss} | {len(report.consumers)} | {report.rule_count} |",
         )
-    lines.append("")
-    lines.append(stack_bump_note(packages))
-    lines.append("")
-    return "\n".join(lines)
+    in_8x = sum(1 for r in reports if r.pkg.in_scope_streams and installs_on_8x(r.pkg.format_version))
+    lines += [
+        "",
+        f"{in_8x} in-scope packages are still installable on 8.x. Columnar would move them to 9.5+.",
+        "`_source` consumers do not change verdicts. Rules counts prebuilt detection rules "
+        "that query the package's in-scope streams.",
+    ]
+    if note:
+        lines.append(note)
+    return "\n".join(lines) + "\n"
 
 
-def iter_package_roots(path: Path) -> list[Path]:
-    path = path.resolve()
-    if path.name == "packages" and path.is_dir():
-        return sorted(
-            p for p in path.iterdir() if p.is_dir() and (p / "manifest.yml").is_file()
-        )
-    if (path / "manifest.yml").is_file():
-        return [path]
-    packages = path / "packages"
-    if packages.is_dir():
-        return iter_package_roots(packages)
-    raise FileNotFoundError(f"not a package or packages/ directory: {path}")
+def report_json(report: Report) -> dict:
+    data = asdict(report.pkg)
+    data["verdict"] = package_verdict(report.pkg)
+    data["spec_min_stack"] = spec_min_stack(report.pkg.format_version)
+    data["rule_count"] = report.rule_count
+    data["source_consumers"] = [asdict(c) for c in report.consumers]
+    for stream_data, stream in zip(data["streams"], report.pkg.streams):
+        del stream_data["declared_fields"]
+        stream_data["verdict"] = stream_verdict(stream)
+        stream_data["rule_languages"] = dict(report.rules.get(stream.name, {}))
+    return data
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(
-        description="Assess Elastic integration packages for columnar index mode migration.",
-    )
+    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument(
-        "path",
+        "paths",
         type=Path,
-        help="Package path (packages/foo), packages/, or repo root",
+        nargs="+",
+        help="Package paths (packages/foo) for full reports, or packages/ / the repo root for a summary table",
     )
+    parser.add_argument("--json", action="store_true", help="Emit machine-readable JSON instead of markdown")
     parser.add_argument(
-        "--summary-only",
-        action="store_true",
-        help="For multi-package scans, print only the summary table",
-    )
-    parser.add_argument(
-        "--json",
-        action="store_true",
-        help="Emit machine-readable JSON instead of markdown",
+        "--detection-rules",
+        type=Path,
+        help="Local elastic/detection-rules checkout. Defaults to DETECTION_RULES_PATH or a sibling of this repo.",
     )
     args = parser.parse_args()
 
-    try:
-        roots = iter_package_roots(args.path)
-    except FileNotFoundError as exc:
-        print(f"error: {exc}", file=sys.stderr)
-        return 2
+    roots: list[Path] = []
+    summary = False
+    for path in args.paths:
+        try:
+            found = iter_package_roots(path)
+        except FileNotFoundError as exc:
+            print(f"error: {exc}", file=sys.stderr)
+            return 2
+        summary |= found != [path.resolve()]
+        roots.extend(found)
 
-    assessments = [assess_package(root) for root in roots]
+    sde = sde_root(roots)
+    rules = load_prebuilt_rules(sde) if sde else []
+    consumers, note = collect_consumers(roots, rules, args.detection_rules)
+    reports = [build_report(load_package(root), consumers, rules) for root in roots]
 
     if args.json:
-        payload = []
-        for pkg in assessments:
-            payload.append(
-                {
-                    "name": pkg.name,
-                    "verdict": package_verdict_summary(pkg),
-                    "format_version": pkg.format_version,
-                    "spec_min_stack": spec_min_stack(pkg.format_version),
-                    "in_scope": pkg.in_scope,
-                    "kibana_sort_seeds": pkg.kibana_sort_seeds,
-                    "streams": [
-                        {
-                            "name": s.name,
-                            "in_scope": s.in_scope,
-                            "verdict": s.stream_verdict,
-                            "type": s.stream_type,
-                            "index_mode": s.index_mode,
-                            "proposed_mode": s.proposed_mode,
-                            "metrics_undecided": s.metrics_undecided,
-                            "findings": [
-                                {
-                                    "severity": f.severity,
-                                    "kind": f.kind,
-                                    "path": str(f.path),
-                                    "line": f.line_no,
-                                    "detail": f.detail,
-                                    "field_path": f.field_path,
-                                }
-                                for f in s.findings
-                            ],
-                        }
-                        for s in pkg.streams
-                    ],
-                },
-            )
-        json.dump(payload if len(payload) > 1 else payload[0], sys.stdout, indent=2)
+        payload = [report_json(r) for r in reports]
+        json.dump(payload if len(payload) > 1 else payload[0], sys.stdout, indent=2, default=str)
         print()
-        return 0
-
-    if len(assessments) > 1:
-        print(format_repo_summary(assessments), end="")
-        if args.summary_only:
-            return 0
-        print("---\n")
-        for pkg in assessments:
-            if not pkg.in_scope and not any(s.findings for s in pkg.streams):
-                continue
-            print(format_package_report(pkg), end="")
-            print("---\n")
-        return 0
-
-    print(format_package_report(assessments[0]), end="")
+    elif summary:
+        print(format_repo_summary(reports, note), end="")
+    else:
+        print("\n".join(format_package_report(r, note) for r in reports), end="")
     return 0
 
 
