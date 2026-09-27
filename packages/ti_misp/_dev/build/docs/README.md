@@ -39,7 +39,7 @@ This approach ensures that:
 - The destination indices stay aligned with MISP's current view of valid indicators
 - Attributes that become decayed in MISP are automatically removed in the next refetch cycle from destination indices
 
-**Note**: This mode will re-ingest all attributes within the `Initial Interval` window, which may result in higher data volume during the refetch period. Short refetch intervals amplify that volume. The transform handles deduplication via unique keys. Attributes already marked as decayed by MISP's decay models during ingestion will be removed immediately.
+**Note**: This mode will re-ingest all attributes within the `Initial Interval` window, which may result in higher data volume during the refetch period. Each refetch writes a new copy of every attribute to the source indices, so short refetch intervals amplify that volume. The transform handles deduplication via unique keys. Attributes already marked as decayed by MISP's decay models during ingestion will be removed immediately.
 
 #### Handling Orphaned IOCs
 Some IOCs may never get decayed/expired and will continue to stay in the latest destination indices `logs-ti_misp_latest.dest_threat_attributes-*`. To avoid any false positives from such orphaned IOCs, users are allowed to configure `IOC Expiration Duration` parameter while setting up the integration. This parameter deletes all data inside the destination indices `logs-ti_misp_latest.dest_threat_attributes-*` after this specified duration is reached, defaults to `90d` after attribute's `max(last_seen, timestamp)`. Note that `IOC Expiration Duration` parameter only exists to add a fail-safe default expiration in case IOCs never expire.

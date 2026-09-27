@@ -142,6 +142,15 @@ response.split:
   target: body.response.Attribute
   ignore_empty_value: true
   keep_parent: false
+{{#if daily_refetch}}
+  transforms:
+  - set:
+      # Stamp each attribute with the refetch cycle it was fetched in. The ingest pipeline includes
+      # this in the document _id, so each refetch writes new source documents carrying the current
+      # decay state instead of colliding with copies already in the write index.
+      target: body.daily_refetch_at
+      value: '[[.last_response.url.params.Get "daily_refetch_at"]]'
+{{/if}}
 response.request_body_on_pagination: true
 response.pagination:
 - set:
