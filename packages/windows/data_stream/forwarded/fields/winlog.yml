@@ -13,6 +13,126 @@
       description: >
         A globally unique identifier that identifies the current activity. The events that are published with this identifier are part of the same activity.
 
+    - name: adcs
+      type: group
+      description: >
+        Normalized data from Active Directory Certificate Services audit events. This group is rebuilt from native fields on each normalization; existing values in this group are replaced. Native event values remain available under `winlog.event_data`.
+
+      fields:
+        - name: request
+          type: group
+          description: >
+            Typed certificate request data derived from native audit fields.
+
+          fields:
+            - name: id
+              type: long
+              description: >
+                Strict signed-ASCII-decimal request identifier derived from `winlog.event_data.RequestId`.
+
+            - name: disposition
+              type: group
+              description: >
+                Certificate request disposition code and recognized Certificate Services disposition or error name.
+
+              fields:
+                - name: code
+                  type: long
+                  description: >
+                    Strict signed-ASCII-decimal disposition code derived from `winlog.event_data.Disposition`.
+
+                - name: name
+                  type: keyword
+                  description: >
+                    Canonical CR_DISP_* or CERTSRV_E_* name for a recognized Certificate Services disposition or HRESULT in `winlog.adcs.request.disposition.code`. Signed and unsigned decimal representations of an HRESULT resolve to the same name. Unknown codes have no derived name.
+
+            - name: requester
+              type: group
+              description: >
+                Certificate requester identity. Also populates ECS `user.name` and `user.domain` for events 4886–4889 when no ECS user identity is already present.
+
+              fields:
+                - name: domain
+                  type: keyword
+                  ignore_above: 8191
+                  description: >
+                    Exact requester domain component from `winlog.event_data.Requester`, with source case preserved.
+
+                - name: name
+                  type: keyword
+                  ignore_above: 1024
+                  description: >
+                    Exact requester name component from `winlog.event_data.Requester`, with source case preserved.
+
+            - name: extension
+              type: group
+              description: Neutral identifiers for an extension changed on a pending certificate request.
+              fields:
+                - name: name
+                  type: keyword
+                  ignore_above: 8191
+                  description: Exact nonblank event 4873 ExtensionName without value decoding.
+                - name: oid
+                  type: keyword
+                  ignore_above: 8191
+                  description: Conservative dotted-ASCII-decimal identifier derived from event 4873 ExtensionName.
+            - name: attributes
+              type: group
+              description: >
+                Bounded allowlisted values parsed from `winlog.event_data.Attributes` without changing the raw field.
+
+              fields:
+                - name: certificate_template
+                  type: keyword
+                  ignore_above: 4096
+                  description: >
+                    Ordered CertificateTemplate request values, kept separate from the native `winlog.event_data.CertificateTemplate` field.
+
+                - name: request_client_info
+                  type: keyword
+                  ignore_above: 4096
+                  description: Ordered RequestClientInfo request values.
+                - name: cdc
+                  type: keyword
+                  ignore_above: 4096
+                  description: >
+                    Active Directory server names supplied in the cdc enrollment attribute for the CA to use when requester information cannot be obtained from its working directory. Values are preserved in request order without hostname validation.
+                - name: rmd
+                  type: keyword
+                  ignore_above: 4096
+                  description: >
+                    Machine object FQDNs supplied in the rmd enrollment attribute for the certificate request. Values are preserved in request order without hostname validation.
+                - name: ccm
+                  type: keyword
+                  ignore_above: 4096
+                  description: >
+                    Values extracted from the ccm enrollment attribute in `winlog.event_data.Attributes`, preserved in request order.
+                - name: san
+                  type: keyword
+                  ignore_above: 4096
+                  description: Ordered, outer-trimmed SAN request values.
+            - name: subject_alt_name
+              type: group
+              description: Allowlisted subject alternative name request claims.
+              fields:
+                - name: upn
+                  type: keyword
+                  ignore_above: 4096
+                  description: Ordered UPN SAN request claims.
+                - name: dns
+                  type: keyword
+                  ignore_above: 4096
+                  description: Ordered DNS SAN request claims.
+                - name: uri
+                  type: keyword
+                  ignore_above: 4096
+                  description: Ordered URL or URI SAN request claims.
+                - name: sid
+                  type: keyword
+                  ignore_above: 4096
+                  description: >
+                    Exact unvalidated suffix from a recognized Microsoft SID URI.
+
     - name: computer_name
       type: keyword
       description: >
@@ -87,7 +207,19 @@
           type: keyword
         - name: AuditSourceName
           type: keyword
+        - name: Attributes
+          type: keyword
+        - name: AuthenticationLevel
+          type: keyword
+          description: >
+            Authentication level reported in the AD CS audit event.
         - name: AuthenticationPackageName
+          type: keyword
+        - name: AuthenticationService
+          type: keyword
+          description: >
+            Authentication service reported in the AD CS audit event.
+        - name: BackupType
           type: keyword
         - name: Binary
           type: keyword
@@ -99,13 +231,23 @@
           type: keyword
         - name: BuildVersion
           type: keyword
+        - name: CACertificateHash
+          type: keyword
         - name: CallerProcessId
           type: keyword
         - name: CallerProcessName
           type: keyword
+        - name: CAPublicKeyHash
+          type: keyword
         - name: Category
           type: keyword
         - name: CategoryId
+          type: keyword
+        - name: CertificateDatabaseHash
+          type: keyword
+        - name: CertificateSerialNumber
+          type: keyword
+        - name: CertificateTemplate
           type: keyword
         - name: ClientAddress
           type: keyword
@@ -127,6 +269,14 @@
           type: keyword
         - name: CreationUtcTime
           type: keyword
+        - name: CRLNumber
+          type: keyword
+        - name: DCDNSName
+          type: keyword
+        - name: DCOMorRPC
+          type: keyword
+          description: >
+            DCOM or RPC transport indicator reported for the AD CS certificate request.
         - name: Description
           type: keyword
         - name: Details
@@ -142,6 +292,8 @@
         - name: DeviceVersionMinor
           type: keyword
         - name: DisplayName
+          type: keyword
+        - name: Disposition
           type: keyword
         - name: DnsHostName
           type: keyword
@@ -169,11 +321,21 @@
           type: keyword
         - name: EnabledPrivilegeList
           type: keyword
+        - name: Entry
+          type: keyword
         - name: EntryCount
           type: keyword
         - name: EventSourceId
           type: keyword
         - name: EventType
+          type: keyword
+        - name: ExtensionData
+          type: keyword
+        - name: ExtensionDataType
+          type: keyword
+        - name: ExtensionName
+          type: keyword
+        - name: ExtensionPolicyFlags
           type: keyword
         - name: ExtraInfo
           type: keyword
@@ -209,7 +371,11 @@
           type: keyword
         - name: IpPort
           type: keyword
+        - name: IsBaseCRL
+          type: keyword
         - name: KerberosPolicyChange
+          type: keyword
+        - name: KeyContainer
           type: keyword
         - name: KeyLength
           type: keyword
@@ -279,6 +445,16 @@
           type: keyword
         - name: NewUacValue
           type: keyword
+        - name: NextPublish
+          type: keyword
+        - name: NextPublishForBaseCRL
+          type: keyword
+        - name: NextPublishForDeltaCRL
+          type: keyword
+        - name: NextUpdate
+          type: keyword
+        - name: Node
+          type: keyword
         - name: NominalFrequency
           type: keyword
         - name: Number
@@ -343,6 +519,8 @@
           type: keyword
         - name: PrimaryGroupId
           type: keyword
+        - name: PrivateKeyUsageCount
+          type: keyword
         - name: PrivilegeList
           type: keyword
         - name: ProcessId
@@ -357,13 +535,43 @@
           type: keyword
         - name: ProfilePath
           type: keyword
+        - name: PropertyIndex
+          type: keyword
+        - name: PropertyName
+          type: keyword
+        - name: PropertyType
+          type: keyword
+        - name: PropertyValue
+          type: keyword
         - name: PuaCount
           type: keyword
         - name: PuaPolicyId
           type: keyword
+        - name: PublishURLs
+          type: keyword
         - name: QfeVersion
           type: keyword
         - name: Reason
+          type: keyword
+        - name: RequestClientInfo
+          type: keyword
+          description: >
+            Native client information reported for the AD CS certificate request, separate from values parsed from request attributes.
+        - name: RequestCSPProvider
+          type: keyword
+          description: >
+            Cryptographic service provider reported for the AD CS certificate request.
+        - name: RequestOSVersion
+          type: keyword
+          description: >
+            Operating system version reported for the AD CS certificate request client.
+        - name: Requester
+          type: keyword
+        - name: RequestId
+          type: keyword
+        - name: RevocationReason
+          type: keyword
+        - name: RoleSeparationEnabled
           type: keyword
         - name: SamAccountName
           type: keyword
@@ -371,6 +579,12 @@
           type: keyword
         - name: ScriptPath
           type: keyword
+        - name: SecurityDescriptor
+          type: keyword
+        - name: SerialNumber
+          type: keyword
+          description: >
+            Serial number of the certificate issued by AD CS.
         - name: Session
           type: keyword
         - name: SidHistory
@@ -435,11 +649,31 @@
           type: keyword
         - name: SubjectLogonId
           type: keyword
+        - name: Subject
+          type: keyword
+        - name: SubjectAlternativeName
+          type: keyword
+          description: >
+            Native subject alternative name information reported by the AD CS audit event, separate from SAN values parsed from request attributes.
+        - name: SubjectKeyIdentifier
+          type: keyword
         - name: SubjectUserName
           type: keyword
         - name: SubjectUserSid
           type: keyword
         - name: SubStatus
+          type: keyword
+        - name: TemplateContent
+          type: keyword
+        - name: TemplateDSObjectFQDN
+          type: keyword
+        - name: TemplateInternalName
+          type: keyword
+        - name: TemplateOID
+          type: keyword
+        - name: TemplateSchemaVersion
+          type: keyword
+        - name: TemplateVersion
           type: keyword
         - name: TSId
           type: keyword
@@ -490,6 +724,8 @@
         - name: UserSid
           type: keyword
         - name: UserWorkstations
+          type: keyword
+        - name: Value
           type: keyword
         - name: Version
           type: keyword
