@@ -45,7 +45,9 @@ This approach ensures that:
 Some IOCs may never get decayed/expired and will continue to stay in the latest destination indices `logs-ti_misp_latest.dest_threat_attributes-*`. To avoid any false positives from such orphaned IOCs, users are allowed to configure `IOC Expiration Duration` parameter while setting up the integration. This parameter deletes all data inside the destination indices `logs-ti_misp_latest.dest_threat_attributes-*` after this specified duration is reached, defaults to `90d` after attribute's `max(last_seen, timestamp)`. Note that `IOC Expiration Duration` parameter only exists to add a fail-safe default expiration in case IOCs never expire.
 
 #### ILM Policy
-To facilitate IOC expiration, source datastream-backed indices `.ds-logs-ti_misp.threat_attributes-*` are allowed to contain duplicates from each polling interval. ILM policy is added to these source indices so it doesn't lead to unbounded growth. This means data in these source indices will be deleted after `5 days` from ingested date. 
+To facilitate IOC expiration, source datastream-backed indices `.ds-logs-ti_misp.threat_attributes-*` are allowed to contain duplicates from each polling interval. ILM policy is added to these source indices so it doesn't lead to unbounded growth. The policy rolls indices over after `2 days` and deletes them `3 days` after rollover, so data in these source indices is deleted at most `5 days` after ingestion.
+
+Versions before 1.48.2 installed this policy but did not apply it, so existing source indices use the default `logs` policy. After upgrading, the new policy applies from the next rollover. To apply it immediately, roll over the data stream with `POST logs-ti_misp.threat_attributes-<namespace>/_rollover`. Backing indices created before the upgrade keep their previous policy and can be deleted manually once they are older than 5 days.
 
 {{fields "threat_attributes"}}
 
