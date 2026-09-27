@@ -33,72 +33,34 @@ processors:
                 - IsMatch(body, "^\\d{4}/\\d{2}/\\d{2} \\d{2}:\\d{2}:\\d{2} \\[.+\\]")
               context: log
               statements:
-                - 'set(body, ExtractGrokPatterns(body, "%{DATA:nginx.error.time} \\[%{LOGLEVEL:log.level}\\] %{NUMBER:process.pid:long}#%{NUMBER:process.thread.id:long}: (\\*%{NUMBER:nginx.error.connection_id:long} )?%{GREEDYMULTILINE:message}", true, ["GREEDYMULTILINE=(.|\\n)*", "LOGLEVEL=[a-zA-Z]+"]))'
+                - 'set(cache, ExtractGrokPatterns(body, "%{DATA:nginx.error.time} \\[%{LOGLEVEL:log.level}\\] %{NUMBER:process.pid:long}#%{NUMBER:process.thread.id:long}: (\\*%{NUMBER:nginx.error.connection_id:long} )?%{GREEDYMULTILINE:message}", true, ["GREEDYMULTILINE=(.|\\n)*", "LOGLEVEL=[a-zA-Z]+"]))'
                 - set(event_name, "nginx.error")
-                - set(attributes["event.name"], "nginx.error")
-                - set(time, Time(body["nginx.error.time"], "%Y/%m/%d %H:%M:%S"))
-                - delete_key(body, "nginx.error.time")
-                - set(severity_text, body["log.level"])
-                - set(attributes["log.level"], body["log.level"])
-                - set(attributes["message"], body["message"])
-                - set(attributes["process.pid"], body["process.pid"])
-                - set(attributes["process.thread.id"], body["process.thread.id"])
-                - set(attributes["nginx.error.connection_id"], body["nginx.error.connection_id"]) where body["nginx.error.connection_id"] != nil
-            - conditions:
-                - body["log.level"] == "debug"
-              context: log
-              statements:
-                - set(severity_number, 5)
-            - conditions:
-                - body["log.level"] == "info"
-              context: log
-              statements:
-                - set(severity_number, 9)
-            - conditions:
-                - body["log.level"] == "notice"
-              context: log
-              statements:
-                - set(severity_number, 10)
-            - conditions:
-                - body["log.level"] == "warn"
-              context: log
-              statements:
-                - set(severity_number, 13)
-            - conditions:
-                - body["log.level"] == "error"
-              context: log
-              statements:
-                - set(severity_number, 17)
-            - conditions:
-                - body["log.level"] == "crit"
-              context: log
-              statements:
-                - set(severity_number, 21)
-            - conditions:
-                - body["log.level"] == "alert"
-              context: log
-              statements:
-                - set(severity_number, 22)
-            - conditions:
-                - body["log.level"] == "emerg"
-              context: log
-              statements:
-                - set(severity_number, 23)
-            - conditions:
-                - body["message"] != nil
-              context: log
-              statements:
-                - 'merge_maps(body, ExtractPatterns(body["message"], "client: (?P<client_address>[^,\\s]+)(?:, server: (?P<nginx_error_server>[^,\\s]+))?(?:, request: \"(?P<http_request_method>\\w+) (?P<url_original>\\S+) HTTP/(?P<http_version>[\\d.]+)\")?(?:, host: \"(?P<server_address>[^\"]+)\")?"), "upsert")'
-                - set(attributes["client.address"], body["client_address"]) where body["client_address"] != nil and body["client_address"] != ""
-                - set(attributes["server.address"], body["server_address"]) where body["server_address"] != nil and body["server_address"] != ""
-                - set(attributes["server.address"], body["nginx_error_server"]) where attributes["server.address"] == nil and body["nginx_error_server"] != nil and body["nginx_error_server"] != ""
-                - set(attributes["http.request.method"], body["http_request_method"]) where body["http_request_method"] != nil and body["http_request_method"] != ""
-                - set(attributes["url.original"], body["url_original"]) where body["url_original"] != nil and body["url_original"] != ""
-                - set(attributes["url.path"], Split(body["url_original"], "?")[0]) where body["url_original"] != nil and body["url_original"] != ""
-                - set(attributes["url.query"], Split(body["url_original"], "?")[1]) where body["url_original"] != nil and Len(Split(body["url_original"], "?")) > 1
-                - set(attributes["http.version"], body["http_version"]) where body["http_version"] != nil and body["http_version"] != ""
-                - set(attributes["network.protocol.name"], "http") where body["http_version"] != nil and body["http_version"] != ""
-                - set(attributes["network.protocol.version"], body["http_version"]) where body["http_version"] != nil and body["http_version"] != ""
+                - set(time, Time(cache["nginx.error.time"], "%Y/%m/%d %H:%M:%S"))
+                - delete_key(cache, "nginx.error.time")
+                - set(severity_text, cache["log.level"])
+                - set(attributes["log.level"], cache["log.level"])
+                - set(attributes["process.pid"], cache["process.pid"])
+                - set(attributes["process.thread.id"], cache["process.thread.id"])
+                - set(attributes["nginx.error.connection_id"], cache["nginx.error.connection_id"]) where cache["nginx.error.connection_id"] != nil
+                - set(severity_number, 5) where cache["log.level"] == "debug"
+                - set(severity_number, 9) where cache["log.level"] == "info"
+                - set(severity_number, 10) where cache["log.level"] == "notice"
+                - set(severity_number, 13) where cache["log.level"] == "warn"
+                - set(severity_number, 17) where cache["log.level"] == "error"
+                - set(severity_number, 21) where cache["log.level"] == "crit"
+                - set(severity_number, 22) where cache["log.level"] == "alert"
+                - set(severity_number, 23) where cache["log.level"] == "emerg"
+                - 'merge_maps(cache, ExtractPatterns(cache["message"], "client: (?P<client_address>[^,\\s]+)(?:, server: (?P<nginx_error_server>[^,\\s]+))?(?:, request: \"(?P<http_request_method>\\w+) (?P<url_original>\\S+) HTTP/(?P<http_version>[\\d.]+)\")?(?:, host: \"(?P<server_address>[^\"]+)\")?"), "upsert") where cache["message"] != nil'
+                - set(attributes["client.address"], cache["client_address"]) where cache["client_address"] != nil and cache["client_address"] != ""
+                - set(attributes["server.address"], cache["server_address"]) where cache["server_address"] != nil and cache["server_address"] != ""
+                - set(attributes["server.address"], cache["nginx_error_server"]) where attributes["server.address"] == nil and cache["nginx_error_server"] != nil and cache["nginx_error_server"] != ""
+                - set(attributes["http.request.method"], cache["http_request_method"]) where cache["http_request_method"] != nil and cache["http_request_method"] != ""
+                - set(attributes["url.original"], cache["url_original"]) where cache["url_original"] != nil and cache["url_original"] != ""
+                - set(attributes["url.path"], Split(cache["url_original"], "?")[0]) where cache["url_original"] != nil and cache["url_original"] != ""
+                - set(attributes["url.query"], Split(cache["url_original"], "?")[1]) where cache["url_original"] != nil and Len(Split(cache["url_original"], "?")) > 1
+                - set(attributes["http.version"], cache["http_version"]) where cache["http_version"] != nil and cache["http_version"] != ""
+                - set(attributes["network.protocol.name"], "http") where cache["http_version"] != nil and cache["http_version"] != ""
+                - set(attributes["network.protocol.version"], cache["http_version"]) where cache["http_version"] != nil and cache["http_version"] != ""
     transform/componentid-2:
         log_statements:
             - context: log
