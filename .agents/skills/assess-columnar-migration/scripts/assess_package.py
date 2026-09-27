@@ -33,11 +33,15 @@ from columnar_lib import (
     iter_package_roots,
     load_package,
     load_prebuilt_rules,
+    load_query_templates,
     pattern_streams,
     rule_streams,
     sde_root,
     spec_min_stack,
+    template_streams,
 )
+
+COLUMNAR_MIN_STACK = "9.6"
 
 MAX_LISTED_PER_KIND = 8
 
@@ -58,7 +62,6 @@ VERDICT_ORDER = (
     "defer_or_exclude",
     "migrate_with_changes",
     "pending_platform",
-    "metrics_undecided",
     "migrate_candidate",
     "out_of_scope",
 )
@@ -83,6 +86,8 @@ class Report:
     consumers: list[SourceConsumer] = field(default_factory=list)
     rules: dict[str, Counter[str]] = field(default_factory=dict)  # stream -> language counts
     rule_count: int = 0
+    templates: dict[str, Counter[str]] = field(default_factory=dict)  # stream -> template kind counts
+    template_count: int = 0
 
 
 def stream_verdict(stream: Stream) -> str:
@@ -91,8 +96,6 @@ def stream_verdict(stream: Stream) -> str:
     severities = {f.severity for f in stream.findings}
     if "blocker" in severities:
         return "defer_or_exclude"
-    if stream.type == "metrics":
-        return "metrics_undecided"
     if "data_loss" in severities:
         # Columnar drops unmapped fields today; whether it keeps them by GA is a platform decision.
         return "pending_platform"
@@ -108,12 +111,11 @@ def package_verdict(pkg: Package) -> str:
         return "out_of_scope"
     blocked = [s.name for s in by_verdict["defer_or_exclude"]]
     clean, pending = by_verdict["migrate_candidate"], by_verdict["pending_platform"]
-    undecided = by_verdict["metrics_undecided"]
 
     if blocked:
         headline = "migrate_with_changes" if clean or pending else "defer_or_exclude"
     else:
-        headline = "migrate_candidate" if clean else "pending_platform" if pending else "metrics_undecided"
+        headline = "migrate_candidate" if clean else "pending_platform"
 
     parts = []
     if clean:
@@ -123,10 +125,7 @@ def package_verdict(pkg: Package) -> str:
     if blocked:
         more = f" +{len(blocked) - 5}" if len(blocked) > 5 else ""
         parts.append(f"{len(blocked)} blocked: {', '.join(blocked[:5])}{more}")
-    if undecided:
-        loss = sum(1 for s in undecided if any(f.severity == "data_loss" for f in s.findings))
-        parts.append(f"{len(undecided)} metrics_undecided" + (f", {loss} with data-loss" if loss else ""))
-    if len(parts) == 1 and "data-loss" not in parts[0]:
+    if len(parts) == 1:
         return headline
     return f"{headline} ({', '.join(parts)})"
 
@@ -287,6 +286,12 @@ def build_report(pkg: Package, consumers: list[SourceConsumer], rules: list[Rule
             report.rule_count += 1
         for name in streams:
             report.rules.setdefault(name, Counter())[rule.language] += 1
+    for template in load_query_templates(pkg) if pkg.in_scope_streams else []:
+        streams = template_streams(template, pkg)
+        if streams:
+            report.template_count += 1
+        for name in streams:
+            report.templates.setdefault(name, Counter())[template.kind] += 1
     return report
 
 
@@ -358,6 +363,7 @@ def format_package_report(report: Report, note: str | None) -> str:
             f"- Prebuilt detection rules querying in-scope streams: {report.rule_count} "
             "(latest version per rule in `security_detection_engine`)",
         )
+        lines.append(f"- Alerting rule and SLO templates querying in-scope streams: {report.template_count}")
     if pkg.transforms:
         lines.append(f"- Transforms: {pkg.transforms} (out of scope)")
     lines.append("")
@@ -381,6 +387,10 @@ def format_package_report(report: Report, note: str | None) -> str:
         if languages:
             by_language = ", ".join(f"{k}={v}" for k, v in languages.most_common())
             lines.append(f"- prebuilt detection rules: {sum(languages.values())} ({by_language})")
+        kinds = report.templates.get(stream.name)
+        if kinds:
+            by_kind = ", ".join(f"{k}={v}" for k, v in kinds.most_common())
+            lines.append(f"- package templates: {sum(kinds.values())} ({by_kind})")
         lines.append("")
         for severity, title, expand in (
             ("blocker", "Blockers", True),
@@ -399,8 +409,8 @@ def format_repo_summary(reports: list[Report], note: str | None) -> str:
     lines = [
         "# Columnar assessment summary",
         "",
-        "| Package | Verdict | In-scope | Blocked streams | Data-loss | `_source` consumers | Rules |",
-        "| --- | --- | ---: | --- | ---: | ---: | ---: |",
+        "| Package | Verdict | In-scope | Blocked streams | Data-loss | `_source` consumers | Rules | Templates |",
+        "| --- | --- | ---: | --- | ---: | ---: | ---: | ---: |",
     ]
 
     def order(report: Report) -> tuple[int, str]:
@@ -416,14 +426,20 @@ def format_repo_summary(reports: list[Report], note: str | None) -> str:
         verdict = verdict if len(verdict) <= 80 else verdict[:77] + "…"
         lines.append(
             f"| `{report.pkg.name}` | `{verdict}` | {len(scoped)} | {blocked_cell or '—'} | "
-            f"{data_loss} | {len(report.consumers)} | {report.rule_count} |",
+            f"{data_loss} | {len(report.consumers)} | {report.rule_count} | {report.template_count} |",
         )
-    in_8x = sum(1 for r in reports if r.pkg.in_scope_streams and installs_on_8x(r.pkg.format_version))
+    in_8x = sum(
+        1
+        for r in reports
+        if r.pkg.in_scope_streams and installs_on_8x(r.pkg.format_version, r.pkg.kibana_constraint)
+    )
     lines += [
         "",
-        f"{in_8x} in-scope packages are still installable on 8.x. Columnar would move them to 9.5+.",
+        f"{in_8x} in-scope packages are still installable on 8.x (`format_version` and "
+        f"`conditions.kibana.version`). Columnar would move them to {COLUMNAR_MIN_STACK}+.",
         "`_source` consumers do not change verdicts. Rules counts prebuilt detection rules "
-        "that query the package's in-scope streams.",
+        "that query the package's in-scope streams; Templates counts the package's own "
+        "alerting rule and SLO templates that do.",
     ]
     if note:
         lines.append(note)
@@ -435,11 +451,13 @@ def report_json(report: Report) -> dict:
     data["verdict"] = package_verdict(report.pkg)
     data["spec_min_stack"] = spec_min_stack(report.pkg.format_version)
     data["rule_count"] = report.rule_count
+    data["template_count"] = report.template_count
     data["source_consumers"] = [asdict(c) for c in report.consumers]
     for stream_data, stream in zip(data["streams"], report.pkg.streams):
         del stream_data["declared_fields"]
         stream_data["verdict"] = stream_verdict(stream)
         stream_data["rule_languages"] = dict(report.rules.get(stream.name, {}))
+        stream_data["template_kinds"] = dict(report.templates.get(stream.name, {}))
     return data
 
 

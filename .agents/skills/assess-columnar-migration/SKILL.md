@@ -8,7 +8,7 @@ description: >-
   integrations can move to columnar storage. Also use when choosing the index
   sort for an integration that is being migrated to columnar. Assessment and
   change proposals only — does not apply migrations.
-compatibility: Requires Elasticsearch 9.5+ (columnar preview) for eventual migration. Designed for packages in elastic/integrations.
+compatibility: Columnar is in tech preview from Elasticsearch 9.5; columnar-ready packages need 9.6+. Designed for packages in elastic/integrations.
 license: Apache-2.0
 metadata:
   origin: elastic/integrations
@@ -42,17 +42,17 @@ there, or when a finding is unfamiliar.
 4. Integrations must **opt in per data stream** with an integration-specific
    index sort. Do not recommend cluster-wide `logs-*-*` component templates as
    the Fleet enablement path.
-5. Use `logsdb_columnar` for log data streams. For metrics without
-   `index_mode: time_series`, report **`metrics_undecided`** (TSDB vs bare
-   `columnar`) — do not assume columnar. Skip TSDB streams and `type: content`.
+5. Assess **log data streams only**, for `logsdb_columnar`. Metrics streams
+   (TSDB or not), other stream types such as `synthetics`, and `type: content`
+   are out of scope.
 6. **Report the stack floor.** The script prints the minimum implied by
    `format_version` (full table in
    [reference.md](reference.md#package-spec-version); patch is ignored). The
    effective floor is the higher of that and the lower bound of
    `conditions.kibana.version`. Columnar requires a `format_version` bump, which
-   raises the floor to 9.5+ (or keeps the constraint, if it is already higher).
-   Say which stacks lose upgrades, for example "drops 8.19 and 9.3–9.4". A
-   constraint already at 9.5+ does not remove the bump.
+   raises the floor to 9.6+ (or keeps the constraint, if it is already higher).
+   Say which stacks lose upgrades, for example "drops 8.19 and 9.3–9.5". A
+   constraint already at 9.6+ does not remove the bump.
 7. **Columnar `_source` consumers do not change stream verdicts.** Attach them
    by the `FROM` dataset (`logs-gcp.audit-*` → package `gcp`, stream `audit`).
    Do not decide this from an observability-versus-Security label. The same
@@ -65,8 +65,9 @@ there, or when a finding is unfamiliar.
 | `type: integration` with `data_stream/*/fields/` | Yes | Assess **per data stream** |
 | `type: input` (e.g. `winlog`, `filestream`, `cel`) | Per policy template | Root `fields/` and root `elasticsearch:`. Dataset is the template's `data_stream.dataset` var default, else `<package>.<template>`; users can override it, so rules and dashboards may target another name |
 | OTel input (`input: otelcol`) | No | Stack OTel template owns storage |
-| Mixed logs + metrics (e.g. `system`) | Per stream | `elasticsearch.index_mode: time_series` → skip (TSDB) |
-| Metrics without `time_series` | Yes, flagged | Verdict `metrics_undecided` |
+| Mixed logs + metrics (e.g. `system`) | Per stream | Log streams only |
+| Metrics streams, with or without `index_mode: time_series` | No | Not a logging workload |
+| Data stream `type` other than `logs` / `metrics` (e.g. `synthetics`) | No | Not a logging workload |
 | `type: content` (e.g. `vercel_otel`) | No | Stack/OTel template owns storage |
 | `elasticsearch/transform/` | No | Script reports the transform count only |
 
@@ -87,18 +88,16 @@ Do **not** report: `subobjects: false`, single-level `nested`, `flattened`. ECS 
 | `migrate_candidate` | No blockers or data-loss on the stream |
 | `pending_platform` | Only data-loss findings. Waits on the platform decision about unmapped fields; no package work yet |
 | `defer_or_exclude` | Has blockers |
-| `metrics_undecided` | Metrics stream, not TSDB — product choice |
-| `out_of_scope` | Content / TSDB / OTel / transforms |
+| `out_of_scope` | Content / metrics / OTel / transforms / non-logs stream types |
 
 **Package verdict is a summary of stream verdicts**, e.g.
-`migrate_with_changes (19 clean, 1 blocked: waf, 3 metrics_undecided)`. The
-headline is the first match:
+`migrate_with_changes (19 clean, 1 blocked: waf)`. The headline is the first
+match:
 
 1. Some streams blocked, others clean or pending → `migrate_with_changes`
 2. All in-scope streams blocked → `defer_or_exclude`
 3. Any clean stream → `migrate_candidate`
-4. Any pending stream → `pending_platform`
-5. Otherwise → `metrics_undecided`
+4. Otherwise → `pending_platform`
 
 The counts in parentheses carry the rest, so clean streams are never hidden.
 
@@ -132,14 +131,17 @@ uv run .agents/skills/assess-columnar-migration/scripts/assess_package.py packag
 Add `--json` for machine-readable output.
 
 After the table, the summary notes how many in-scope packages are still
-installable on 8.x. Columnar would move those to 9.5+. The `_source` consumers
+installable on 8.x. Columnar would move those to 9.6+. The `_source` consumers
 column counts `JSON_EXTRACT(_source` hits and Painless `params._source` hits.
 It does not change the verdict. The Rules column counts prebuilt detection
 rules that query the package's in-scope streams; it signals how much
 correctness and performance testing a migration needs. The count uses the
 latest version of each rule in `security_detection_engine`, including `logs-*`
 rules whose `related_integrations` names the package, so it differs from a grep
-of `detection-rules`. Hunting queries are not counted.
+of `detection-rules`. Hunting queries are not counted. The Templates column
+counts the package's own alerting rule and SLO templates
+(`kibana/alerting_rule_template/`, `kibana/slo_template/`) that query in-scope
+streams; they are part of the same testing workload.
 
 The script scans this repo (`kibana/` and `elasticsearch/`, skipping ingest
 pipelines) and `security_detection_engine`, then looks up the package's
@@ -186,9 +188,9 @@ that the columnar template has to follow the dataset they pick.
 ## Scope
 - Package type: …
 - `format_version`: …
-- Minimum stack: … from spec, … from `conditions.kibana.version` (columnar raises this to 9.5+; say which stacks lose upgrades)
-- Stream verdicts: migrate_candidate=N, pending_platform=N, defer_or_exclude=N, …
-- Skipped: <reason>: `stream`, … (TSDB / content / OTel / transforms)
+- Minimum stack: … from spec, … from `conditions.kibana.version` (columnar raises this to 9.6+; say which stacks lose upgrades)
+- Stream verdicts: migrate_candidate=N, pending_platform=N, defer_or_exclude=N
+- Skipped: <reason>: `stream`, … (metrics / content / OTel / transforms)
 
 ## Blockers (per stream)
 - `stream` — kind — field path (or “None”)
@@ -207,13 +209,14 @@ that the columnar template has to follow the dataset they pick.
 
 ## Testing workload
 - Prebuilt detection rules per stream, by language (or “None”)
+- Package alerting rule and SLO templates per stream (or “None”)
 
 ## Proposed changes (not applied)
-1. Minimum stack is … (`format_version` …, `conditions.kibana.version` …). Bump `format_version` for columnar; that raises the minimum to 9.5+
+1. Minimum stack is … (`format_version` …, `conditions.kibana.version` …). Bump `format_version` for columnar; that raises the minimum to 9.6+
 2. Fix or exclude blocker streams (others can proceed)
-3. metrics_undecided decisions; pending_platform streams wait on the unmapped-field decision
+3. pending_platform streams wait on the unmapped-field decision
 4. Rewrite `_source` consumers in `detection-rules` / `security_detection_engine` (not a mapping blocker)
-5. **Deferred to migration (columnar-ready PR):** per-stream index sort and indexed fields, apply edits, tests in both LogsDB and `logsdb_columnar`, verification that dashboards and rules (EQL/KQL too) still work, changelog
+5. **Deferred to migration (columnar-ready PR):** per-stream index sort and indexed fields, apply edits, tests in both LogsDB and `logsdb_columnar`, verification that dashboards, rules (EQL/KQL too), alerting rule and SLO templates return the same results as on LogsDB, changelog
 
 ## Verdict
 `<package summary from script>`
@@ -238,9 +241,10 @@ the fields dashboard controls/filters use, the fields dashboard panels use, and
 the fields prebuilt rules require (`required_fields`).
 
 1. `logsdb_columnar` sorts on `host.name` asc + `@timestamp` desc by default and
-   adds the `host.name` mapping if missing. Keep that default for host-centric
-   streams (one log source per host, such as web servers or system logs), whether
-   or not the stream declares `host.name`.
+   adds the `host.name` mapping if missing. If the stream maps `host.name` with a
+   type that cannot be sorted on, the default falls back to `@timestamp` only.
+   Keep that default for host-centric streams (one log source per host, such as
+   web servers or system logs), whether or not the stream declares `host.name`.
 2. Otherwise prefer a **low-cardinality dimension** users slice by, plus
    `@timestamp` desc. Dashboard controls/filters are the strongest signal. A
    field that is not declared can still be the sort; say the mapping has to be
@@ -254,8 +258,11 @@ the fields prebuilt rules require (`required_fields`).
    as candidates for an explicit inverted index (`index: true`). Leading-wildcard
    matches (`LIKE "*…"`) don't benefit from one. Indexing all fields for
    Security-heavy streams is a product option, not a per-package call.
-5. EQL, KQL, and Lucene rules run as Query DSL. Performance tests must cover
-   them, not only ES|QL.
+5. EQL, KQL, and Lucene rules run as Query DSL, and so do many dashboards.
+   Performance tests must cover them, not only ES|QL. Include the package's
+   alerting rule and SLO templates (the assess script counts them). These
+   tests are a separate workstream from the columnar-ready PR; their results
+   decide whether columnar becomes the default for new installs at GA.
 
 Answer with one row per stream:
 
@@ -270,7 +277,7 @@ Name the change; don't write the package YAML (Rule 1). See
 
 ## Open items (platform / follow-up)
 
-- **Package spec for columnar-ready integrations.** New minor (a stack-gated feature, so not a patch on 3.4 or 3.6). Define mode (`logsdb_columnar` / `columnar`) and a required index sort. Kibana 9.5 `REGISTRY_SPEC_MAX_VERSION` is still `3.6` and must include the new minor before any package bump. See [reference.md](reference.md#package-spec-version).
+- **Package spec for columnar-ready integrations.** New minor (a stack-gated feature, so not a patch on 3.4 or 3.6). Define mode (`logsdb_columnar` / `columnar`) and a required index sort. Kibana 9.5 shipped with `REGISTRY_SPEC_MAX_VERSION` `3.6`, so the new minor lands in 9.6 at the earliest, and packages can bump only after that. See [reference.md](reference.md#package-spec-version).
 - **Unmapped fields under columnar.** Tech preview drops data under `dynamic: false` / `enabled: false`. If columnar stores unmapped fields by GA, `pending_platform` streams become `migrate_candidate` with no package change.
 - ECS dynamic templates: skip text subfields under columnar (~10.0 breaking change)
 - Repo-wide nested-in-nested + compatibility CI (like LogsDB pass)

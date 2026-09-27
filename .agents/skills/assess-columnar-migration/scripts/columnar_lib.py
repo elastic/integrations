@@ -263,6 +263,10 @@ def build_stream(
 ) -> Stream:
     if index_mode == "time_series":
         return Stream(name, stream_type, dataset, index_mode, "TSDB (index_mode: time_series)")
+    if stream_type == "metrics":
+        return Stream(name, stream_type, dataset, index_mode, "metrics (not TSDB; not a logging workload)")
+    if stream_type != "logs":
+        return Stream(name, stream_type, dataset, index_mode, f"type: {stream_type} (not a logs data stream)")
     findings, declared = scan_fields(field_files)
     return Stream(
         name,
@@ -396,9 +400,20 @@ def spec_min_stack(version: str | None) -> str:
     return SPEC_MIN_STACK.get(parsed, "above 9.4")
 
 
-def installs_on_8x(version: str | None) -> bool:
+def kibana_allows_8x(constraint: str | None) -> bool:
+    """True when any `||` alternative of `conditions.kibana.version` starts below 9.0."""
+    if not constraint:
+        return True
+    for alternative in constraint.split("||"):
+        match = re.search(r"(\d+)\.", alternative)
+        if match and int(match.group(1)) <= 8:
+            return True
+    return False
+
+
+def installs_on_8x(version: str | None, kibana_constraint: str | None = None) -> bool:
     parsed = spec_minor(version)
-    return parsed is not None and parsed <= (3, 4)
+    return parsed is not None and parsed <= (3, 4) and kibana_allows_8x(kibana_constraint)
 
 
 def index_patterns_from_query(query: str) -> list[str]:
@@ -518,6 +533,62 @@ def rule_streams(rule: Rule, pkg: Package) -> list[str]:
         return by_dataset
     template_streams = {s for t in templates if t for s in pkg.policy_template_streams.get(t) or [t]}
     return [n for n in matched if n in template_streams] or matched
+
+
+QUERY_TEMPLATE_KINDS = ("alerting_rule_template", "slo_template")
+
+
+@dataclass
+class QueryTemplate:
+    """An alerting rule or SLO template shipped by the package."""
+
+    kind: str  # alerting_rule_template | slo_template
+    name: str
+    index_patterns: list[str]
+    query: str
+    path: Path
+
+
+def load_query_templates(pkg: Package) -> list[QueryTemplate]:
+    templates: list[QueryTemplate] = []
+    for kind in QUERY_TEMPLATE_KINDS:
+        for path in sorted((pkg.path / "kibana" / kind).glob("*.json")):
+            try:
+                attrs = json.loads(path.read_text(errors="replace")).get("attributes") or {}
+            except (OSError, json.JSONDecodeError, AttributeError):
+                continue
+            if kind == "slo_template":
+                params = (attrs.get("indicator") or {}).get("params") or {}
+            else:
+                params = attrs.get("params") or {}
+            esql = (params.get("esqlQuery") or {}).get("esql") if isinstance(params.get("esqlQuery"), dict) else None
+            if esql:
+                patterns = index_patterns_from_query(esql)
+            else:
+                index = params.get("index")
+                patterns = [str(p) for p in index] if isinstance(index, list) else [str(index)] if index else []
+                patterns = [p for part in patterns for p in part.split(",")]
+            templates.append(
+                QueryTemplate(kind, attrs.get("name") or path.stem, patterns, esql or json.dumps(params), path),
+            )
+    return templates
+
+
+def template_streams(template: QueryTemplate, pkg: Package) -> list[str]:
+    """In-scope streams a package-owned alerting rule or SLO template queries.
+
+    A broad pattern (`logs-*`) counts only for the datasets the query or filter names.
+    """
+    in_scope = {s.name: s for s in pkg.in_scope_streams}
+    matched = list(
+        dict.fromkeys(n for p in template.index_patterns for n in pattern_streams(p, pkg) if n in in_scope),
+    )
+    broad = not matched and any(is_broad_pattern(p) for p in template.index_patterns)
+    candidates = list(in_scope) if broad else matched
+    named = [n for n in candidates if names_dataset(template.query, in_scope[n].dataset)]
+    if broad or (len(matched) > 1 and named):
+        return named
+    return matched
 
 
 def sde_root(package_roots: list[Path]) -> Path | None:

@@ -4,7 +4,7 @@ Illustrative triage shapes. Re-run the script for current line numbers.
 
 Every in-scope proposal states the minimum stack implied by `format_version`
 and that columnar bumps it. Spec 3.0 means 8.11, spec 3.4 means 8.19, spec 3.6
-means 9.4. The bump raises that floor to 9.5+.
+means 9.4. The bump raises that floor to 9.6+.
 
 ## `checkpoint` — migrate candidate
 
@@ -40,13 +40,13 @@ uv run .agents/skills/assess-columnar-migration/scripts/assess_package.py packag
 Expected shape:
 
 ```text
-Verdict: migrate_with_changes (19 clean, 1 blocked: waf, 3 metrics_undecided)
-Stream verdicts: defer_or_exclude=1, metrics_undecided=3, migrate_candidate=19
-Skipped TSDB: … metrics streams
+Verdict: migrate_with_changes (19 clean, 1 blocked: waf)
+Stream verdicts: defer_or_exclude=1, migrate_candidate=19
+Skipped: TSDB metrics streams, and `awshealth`, `billing`, `s3_daily_storage` (metrics, not TSDB)
 ```
 
 Only `waf` needs nested-in-nested work; other log streams can be proposed independently.
-Metrics with `index_mode: time_series` are skipped, not proposed as columnar.
+Metrics streams are skipped, TSDB or not.
 
 All 213 prebuilt aws rules land on `cloudtrail` (rules on `logs-aws*` are
 narrowed by the dataset the query names), so that stream carries most of the
@@ -55,17 +55,18 @@ rule fields lead with `event.action`, `event.outcome`, `event.provider`:
 `event.provider` is a low-cardinality sort candidate next to `cloud.account.id`;
 `user_agent.original` and `source.ip` are inverted-index candidates.
 
-## `tanium` / `logstash` — dotted nested siblings
+## `tanium` — dotted nested siblings
 
 The inner nested field is declared as a sibling with a dotted name:
 
 ```text
 nested-in-nested — tanium.threat_response.match_details.finding.whats → …whats.intel_intra_ids
-nested-in-nested — logstash.node.stats.pipelines.vertices → …vertices.long_counters
 ```
 
 The check compares dotted paths across all field files of a stream, so this
-counts even though the YAML is not indented under the parent.
+counts even though the YAML is not indented under the parent. `logstash`
+`node_stats` has the same shape, but it is a metrics stream and out of scope,
+so `logstash` reads `migrate_candidate`.
 
 ## `withsecure_elements` — `event.original` doc_values
 
@@ -103,11 +104,11 @@ back to `<package>.<template>`. Users can
 override the dataset, so rules and dashboards may target another name. OTel
 input packages (`input: otelcol`) are skipped.
 
-## `panw_metrics` / `cisco_meraki_metrics` — TSDB, not columnar
+## `panw_metrics` / `cisco_meraki_metrics` — metrics, not columnar
 
-These packages previously looked like `store: true` blockers; with correct
-`elasticsearch.index_mode: time_series` detection they are **`out_of_scope`**
-(TSDB). Columnar assessment should skip them rather than propose `columnar`.
+These packages previously looked like `store: true` blockers. They are metrics
+packages, so they are **`out_of_scope`**. Columnar assessment skips them rather
+than proposing `columnar`.
 
 ## `vercel_otel` — out of scope
 
@@ -158,6 +159,11 @@ uv run .agents/skills/assess-columnar-migration/scripts/assess_package.py packag
 ```
 
 The table includes a **Blocked streams** column so mega-packages with one bad
-stream do not look globally blocked, and a **`_source` consumers** column that
-does not change the verdict. A line after the table counts in-scope packages
-columnar would move from 8.x to 9.x.
+stream do not look globally blocked, a **`_source` consumers** column that
+does not change the verdict, and **Rules** / **Templates** columns for the
+testing workload. A line after the table counts in-scope packages columnar
+would move from 8.x to 9.x, using both `format_version` and
+`conditions.kibana.version`.
+
+`synthetics` streams have `type: synthetics` and are `out_of_scope`, like any
+stream type other than `logs` / `metrics`.

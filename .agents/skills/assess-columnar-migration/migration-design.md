@@ -25,14 +25,19 @@ The bar, per log data stream:
    Deciding "none" is a valid outcome; it has to be an explicit decision.
 3. **Columnar tests pass.** The package's tests run in CI for both LogsDB and
    `logsdb_columnar` as regular activity, not a one-off.
-4. **Existing queries still work** with `logsdb_columnar`: dashboards and
-   prebuilt rules return results without errors. Automated tests where they
+4. **Existing queries still work** with `logsdb_columnar`: dashboards,
+   prebuilt rules, and the package's alerting rule and SLO templates return
+   the same results as on LogsDB, without errors. Automated tests where they
    exist; otherwise a documented manual check. Not a strict requirement to
    automate yet.
 
-Benchmark results are **not** part of the bar.
+Query performance results are **not** part of the bar. Performance testing
+(ES|QL and Query DSL, including EQL and KQL rules, on representative data) is
+a separate workstream. Its results decide whether columnar becomes the default
+for new installs of an integration at GA; the mark only makes the opt-in
+available.
 
-Metrics streams are not part of the mark. A `pending_platform` log stream
+Metrics streams are out of scope and not part of the mark. A `pending_platform` log stream
 blocks the mark until its dropped fields are mapped or the platform decision
 lands (see Gate A).
 
@@ -43,7 +48,7 @@ migration skill produces **one PR per package**. The PR sets the mark when it
 brings the last log stream over the bar; otherwise it prepares the streams it
 covers and leaves the package unmarked.
 
-Out of scope: repo-wide rollout, new test tooling, benchmarks, Fleet or
+Out of scope: repo-wide rollout, new test tooling, performance tests, Fleet or
 package-spec work, and `_source` consumer rewrites in `elastic/detection-rules`
 (the skill lists them; separate PRs fix them).
 
@@ -87,7 +92,6 @@ the bar, the PR is a preparation PR and does not set the mark.
   dashboards and rules for `nested` queries on those paths first.
 - `pending_platform`: map the dropped fields explicitly (then the stream is
   clean), or wait for the unmapped-field decision.
-- `metrics_undecided`: not part of the mark; leave as is.
 
 ### Gate B — Index sort (per stream)
 
@@ -163,12 +167,14 @@ Query verification (the fourth part of the bar), on the stack used for system
 tests with columnar enabled:
 
 - Run existing automated dashboard or rule tests, if any.
-- Otherwise: open each package dashboard and check every panel renders; run
-  each prebuilt rule for the stream through rule preview (KQL, EQL, ES|QL).
-  Record panels or rules that error or return nothing, and why (a remapped
-  field, `_source` access, a missing index).
+- Otherwise: ingest the same data into a LogsDB and a `logsdb_columnar` data
+  stream. Open each package dashboard against both and compare every panel;
+  run each prebuilt rule for the stream through rule preview (KQL, EQL,
+  ES|QL) and each alerting rule and SLO template query against both. Record
+  panels, rules, or templates that error or differ, and why (a remapped field,
+  `_source` access, a missing index).
 
-No benchmarks.
+No performance tests here; see the bar above.
 
 ## Phase 5 — PR
 

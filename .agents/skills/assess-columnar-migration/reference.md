@@ -15,19 +15,19 @@ explicitly per data stream** because:
 
 | Mode | Use for | Defaults |
 | --- | --- | --- |
-| `logsdb_columnar` | Log data streams | Sort on `host.name` asc + `@timestamp` desc unless a sort is configured; adds the `host.name` mapping if missing |
+| `logsdb_columnar` | Log data streams | Sort on `host.name` asc + `@timestamp` desc unless a sort is configured; adds the `host.name` mapping if missing, and sorts on `@timestamp` only if the existing `host.name` mapping cannot be sorted on |
 | `columnar` | Non-log indices | No default sort — you must set one |
 
 Setting: `settings.mode: logsdb_columnar` or `settings.mode: columnar`.
 Cannot be changed after index creation.
 
-### Metrics / TSDB
+### Metrics and other stream types
 
-- Streams with `elasticsearch.index_mode: time_series` (or top-level
-  `index_mode: time_series`) are **TSDB** — out of scope for columnar.
-- Metrics **without** `time_series` are assessed as `metrics_undecided`:
-  bare `columnar` is technically possible, but TSDB may still be the right
-  product choice. Do not auto-recommend columnar for metrics.
+The rollout covers logging integrations only. Metrics streams are out of
+scope, whether they are TSDB (`elasticsearch.index_mode: time_series`) or not;
+bare `columnar` is technically possible for them, but is not part of this
+rollout. Stream types other than `logs` and `metrics` (for example
+`synthetics`) are out of scope too.
 
 ## Storage and query model
 
@@ -35,8 +35,9 @@ Cannot be changed after index creation.
 - Query performance on non-indexed fields depends on **index sort + doc-value
   skippers**. Filters on unsorted high-cardinality fields are slow.
 - Text fields remain inverted-indexed by default.
-- Future migration success criterion: shipped dashboards and detection rules
-  still produce correct results on columnar-backed data.
+- Future migration success criterion: shipped dashboards, detection rules,
+  alerting rule templates, and SLO templates return the same results on
+  columnar-backed data as on LogsDB.
 
 ## Dynamic mapping
 
@@ -172,7 +173,8 @@ structures such as bloom filters are not planned for GA. So:
 - Indexing all fields by default for Security-heavy streams is a product-level
   option, not a per-package decision.
 - EQL, KQL, and Lucene rules run as Query DSL; performance tests must cover
-  them, not only ES|QL.
+  them, not only ES|QL. The same goes for Query DSL dashboards and the
+  package's alerting rule and SLO templates.
 
 ## Package spec version
 
@@ -187,27 +189,27 @@ Fleet installs a package only when its `format_version` **major.minor** is withi
 | 3.5.x | 9.2+ |
 | 3.6.x | 9.4+ |
 
-9.5's max is still **3.6**.
+9.5 shipped with max **3.6**, so the columnar spec minor needs Kibana 9.6+.
 
 `elasticsearch.index_mode` allows only `time_series`. Index sort (`index.sort.field` / `order`) is already in the spec. Nothing can declare `logsdb_columnar` or `columnar`. That is a new feature that needs stack support, so package-spec versioning makes it a **minor** bump, not a patch on 3.4 or 3.6.
 
 Order:
 
 1. Add the columnar-ready concept to package-spec (mode, required index sort, mapping rules that match this skill's blockers).
-2. Raise `REGISTRY_SPEC_MAX_VERSION` on the Kibana line that has columnar (9.5+).
-3. Bump the integration's `format_version` to that spec and set the stack constraint to 9.5+.
+2. Raise `REGISTRY_SPEC_MAX_VERSION` on the Kibana line that ships the columnar opt-in (9.6+).
+3. Bump the integration's `format_version` to that spec and set the stack constraint to 9.6+.
 
-Step 3 is what drops older stacks. A package left on 3.4.x stays installable on 8.19 and cannot express columnar. Many integrations stay on 3.4 for that reason. `conditions.kibana.version: ^9.5.0` is still required, and it does not make a new `index_mode` valid on an older spec.
+Step 3 is what drops older stacks. A package left on 3.4.x stays installable on 8.19 and cannot express columnar. Many integrations stay on 3.4 for that reason. `conditions.kibana.version: ^9.6.0` is still required, and it does not make a new `index_mode` valid on an older spec.
 
 ## What eventual migration would touch (TODO/TBC)
 
 Not performed by this skill; list in “Proposed changes” only:
 
-1. New package-spec minor for columnar-ready streams, shipped in Kibana 9.5 (`spec.max`)
-2. Bump `format_version`. State the current spec minimum first (3.4 → 8.19, 3.5 → 9.2, 3.6 → 9.4); the bump raises it to 9.5+
+1. New package-spec minor for columnar-ready streams, accepted by Kibana 9.6+ (`spec.max`)
+2. Bump `format_version`. State the current spec minimum first (3.4 → 8.19, 3.5 → 9.2, 3.6 → 9.4); the bump raises it to 9.6+
 3. Fix blockers or exclude data streams (others can proceed)
 4. Index sort per data stream
-5. Set `logsdb_columnar` or `columnar`
+5. Set `logsdb_columnar`
 6. Update tests under columnar mode (procedure lives in the follow-up migration skill)
 7. End-to-end tests + dashboard/rule checks
 8. Changelog noting opt-in and behavioral differences
