@@ -44,7 +44,7 @@ Please make sure to use the given response formats.
 4. Enable the **Alerts V2** and/or **Events V2** data streams. Under **Alert export types** or **Event export types**, add the iterator types your token can read (for example `policy`, `dlp` for alerts or `application`, `audit` for events).
 5. Do not collect aggregate `/events/dataexport/events/alert` on the Events V2 stream while typed `/alerts/*` endpoints are enabled on Alerts V2 — the same alert can appear in both feeds with the same `_id`.
 
-The collector uses server-side iterators: the first request for each export type uses `operation=<epoch>` from **Initial Interval**, then `operation=next`. A full page (10,000 events) triggers an immediate follow-up request in the same run; when caught up, the agent waits for **Interval** before the next poll.
+The collector uses server-side iterators: the first request for each export type uses `operation=<epoch>` from **Initial Interval**, then `operation=next`. Any non-empty page triggers an immediate follow-up request in the same run; once a type returns an empty page it is caught up, and the agent waits for **Interval** before the next poll.
 
 ### For receiving log from Netskope Log Streaming
 1. To configure Log streaming please refer to the [Log Streaming Configuration](https://docs.netskope.com/en/configuring-streams). Ensure that compression is set to GZIP when configuring the stream as other compression types are not supported.
@@ -918,7 +918,15 @@ An example event for `alerts` looks as following:
 | netskope.alert_v2.count | Number of raw log lines/events sessionized or suppressed during the suppressed interval. | long |
 | netskope.alert_v2.createdTime | Indicates the time when watchlist model is configured. | keyword |
 | netskope.alert_v2.created_date | Indicates the date in epoch time when watchlist model is configured. | date |
-| netskope.alert_v2.custom_attr | A map containing all the custom attributes added by customer using ADImporter returned as key-value pair. | flattened |
+| netskope.alert_v2.custom_attr.usr_display_name | User display name from custom attributes. | keyword |
+| netskope.alert_v2.custom_attr.usr_status | User status from custom attributes. | keyword |
+| netskope.alert_v2.custom_attr.usr_title | User title from custom attributes. | keyword |
+| netskope.alert_v2.custom_attr.usr_udf_businesssegmentlevel2 | Business segment level 2 from custom attributes. | keyword |
+| netskope.alert_v2.custom_attr.usr_udf_businesssegmentlevel3 | Business segment level 3 from custom attributes. | keyword |
+| netskope.alert_v2.custom_attr.usr_udf_companyname | Company name from custom attributes. | keyword |
+| netskope.alert_v2.custom_attr.usr_udf_employeeid | Employee ID from custom attributes. | keyword |
+| netskope.alert_v2.custom_attr.usr_udf_primarydomain | Primary domain from custom attributes. | keyword |
+| netskope.alert_v2.custom_attr.usr_udf_supervisorname | Supervisor name from custom attributes. | keyword |
 | netskope.alert_v2.custom_connector | Indicates whether a custom connector was used. | keyword |
 | netskope.alert_v2.data_type | The content type of a file or documents scanned. | keyword |
 | netskope.alert_v2.department | Custom attributes added by customer using ADImporter. | keyword |

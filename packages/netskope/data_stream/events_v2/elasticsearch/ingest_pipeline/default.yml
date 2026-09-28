@@ -21,6 +21,12 @@ processors:
             tag: append_error_message_events_v2_json
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - terminate:
+      tag: data_collection_error
+      description: error message set and no data to process.
+      if: >-
+        ctx.message == null && ctx.event?.original == null &&
+        (ctx.error?.message != null || ctx.error?.code != null)
   - set:
       field: ecs.version
       tag: set_ecs_version_dbf680ba
@@ -429,34 +435,6 @@ processors:
       tag: lowercase_network_application_66507228
       ignore_missing: true
   - convert:
-      field: netskope.events_v2.app_session_id
-      tag: convert_app_session_id_to_long_4930f284
-      type: long
-      ignore_missing: true
-      on_failure:
-        - remove:
-            tag: remove_netskope_events_v2_app_session_id_0318ca71
-            ignore_missing: true
-            field: netskope.events_v2.app_session_id
-        - append:
-            tag: append_error_message_2e9e5494
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - convert:
-      field: netskope.events_v2.browser_session_id
-      tag: convert_browser_session_id_to_long_1b0692b5
-      type: long
-      ignore_missing: true
-      on_failure:
-        - remove:
-            tag: remove_netskope_events_v2_browser_session_id_d4cbd11d
-            ignore_missing: true
-            field: netskope.events_v2.browser_session_id
-        - append:
-            tag: append_error_message_9014488d
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - convert:
       field: netskope.events_v2.cci
       tag: convert_cci_to_long_9730698a
       type: long
@@ -562,48 +540,6 @@ processors:
             field: netskope.events_v2.conn_starttime
         - append:
             tag: append_error_message_9870072b
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - convert:
-      field: netskope.events_v2.connection_id
-      tag: convert_connection_id_to_long_59f0840e
-      type: long
-      ignore_missing: true
-      on_failure:
-        - remove:
-            tag: remove_netskope_events_v2_connection_id_6835926f
-            ignore_missing: true
-            field: netskope.events_v2.connection_id
-        - append:
-            tag: append_error_message_cd166030
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - convert:
-      field: netskope.events_v2.dlp_incident_id
-      tag: convert_dlp_incident_id_to_long_7f1a7004
-      type: long
-      ignore_missing: true
-      on_failure:
-        - remove:
-            tag: remove_netskope_events_v2_dlp_incident_id_fd24c953
-            ignore_missing: true
-            field: netskope.events_v2.dlp_incident_id
-        - append:
-            tag: append_error_message_5fcfde6b
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - convert:
-      field: netskope.events_v2.dlp_parent_id
-      tag: convert_dlp_parent_id_to_long_6864ca4e
-      type: long
-      ignore_missing: true
-      on_failure:
-        - remove:
-            tag: remove_netskope_events_v2_dlp_parent_id_5b9fc457
-            ignore_missing: true
-            field: netskope.events_v2.dlp_parent_id
-        - append:
-            tag: append_error_message_77d2a241
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -869,19 +805,6 @@ processors:
       value: '{{{netskope.events_v2.hostname}}}'
       allow_duplicates: false
       if: ctx.netskope?.events_v2?.hostname != null
-  - convert:
-      field: netskope.events_v2.incident_id
-      tag: convert_incident_id_to_long_e80be78b
-      type: long
-      ignore_missing: true
-      on_failure:
-        - remove:
-           tag: remove_netskope_events_v2_incident_id_34e51a8f
-           field: netskope.events_v2.incident_id
-        - append:
-            tag: append_error_message_80b4b73a
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: network.transport
       tag: set_network_transport_from_events_v2_ip_protocol_f033a03c
@@ -891,20 +814,6 @@ processors:
       field: network.transport
       tag: lowercase_network_transport_f67defdb
       ignore_missing: true
-  - convert:
-      field: netskope.events_v2.latest_incident_id
-      tag: convert_latest_incident_id_to_long_77688767
-      type: long
-      ignore_missing: true
-      on_failure:
-        - remove:
-            tag: remove_netskope_events_v2_latest_incident_id_666949b1
-            ignore_missing: true
-            field: netskope.events_v2.latest_incident_id
-        - append:
-            tag: append_error_message_d2502412
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: file.hash.md5
       tag: set_file_hash_md5_from_events_v2_md5_9ab98de6
@@ -1008,20 +917,6 @@ processors:
             field: netskope.events_v2.req_cnt
         - append:
             tag: append_error_message_551c22e8
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - convert:
-      field: netskope.events_v2.request_id
-      tag: convert_request_id_to_long_d687a537
-      type: long
-      ignore_missing: true
-      on_failure:
-        - remove:
-            tag: remove_netskope_events_v2_request_id_98c7b471
-            ignore_missing: true
-            field: netskope.events_v2.request_id
-        - append:
-            tag: append_error_message_699146bf
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
@@ -1338,20 +1233,6 @@ processors:
       tag: set_network_packets_from_events_v2_total_packets_941c8def
       copy_from: netskope.events_v2.total_packets
       ignore_empty_value: true
-  - convert:
-      field: netskope.events_v2.transaction_id
-      tag: convert_transaction_id_to_long_78247a32
-      type: long
-      ignore_missing: true
-      on_failure:
-        - remove:
-            tag: remove_netskope_events_v2_transaction_id_6622f129
-            ignore_missing: true
-            field: netskope.events_v2.transaction_id
-        - append:
-            tag: append_error_message_3695b014
-            field: error.message
-            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: url.original
       tag: set_url_original_from_events_v2_url_a1165c7d
@@ -1460,6 +1341,12 @@ processors:
       target_field: netskope.events_v2.custom_attr
       ignore_failure: true
       if: ctx.netskope?.events_v2?.custom_attr instanceof String
+  - json:
+      tag: json_netskope_events_v2_supporting_data
+      field: netskope.events_v2.supporting_data
+      target_field: netskope.events_v2.supporting_data
+      ignore_failure: true
+      if: ctx.netskope?.events_v2?.supporting_data instanceof String
   - convert:
       field: netskope.events_v2.latest_incident_id
       tag: convert_latest_incident_id_27fc39b0

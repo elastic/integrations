@@ -21,6 +21,12 @@ processors:
             tag: append_error_message_alerts_v2_json
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - terminate:
+      tag: data_collection_error
+      description: error message set and no data to process.
+      if: >-
+        ctx.message == null && ctx.event?.original == null &&
+        (ctx.error?.message != null || ctx.error?.code != null)
   - set:
       field: ecs.version
       tag: set_ecs_version_dbf680ba
@@ -347,8 +353,8 @@ processors:
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
-      field: host.domain
-      tag: set_host_domain_from_alert_v2_domain_ade69954
+      field: url.domain
+      tag: set_url_domain_from_alert_v2_domain
       copy_from: netskope.alert_v2.domain
       ignore_empty_value: true
   - append:
@@ -547,12 +553,6 @@ processors:
             tag: append_error_message_a3d09699
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - append:
-      field: related.hosts
-      tag: append_alert_v2_file_exposure_into_related_hosts_82e0e4cb
-      value: '{{{netskope.alert_v2.file_exposure}}}'
-      allow_duplicates: false
-      if: ctx.netskope?.alert_v2?.file_exposure != null
   - set:
       field: file.path
       tag: set_file_path_from_alert_v2_file_path_ef39d8f7
@@ -840,6 +840,11 @@ processors:
             tag: append_error_message_05cbeb87
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: source.port
+      tag: set_source_port_from_alert_v2_srcport
+      copy_from: netskope.alert_v2.srcport
+      ignore_empty_value: true
   - script:
       lang: painless
       description: Script to set event.severity.
@@ -1062,6 +1067,20 @@ processors:
       tag: set_user_email_from_alert_v2_user_c971c106
       copy_from: netskope.alert_v2.user
       ignore_empty_value: true
+      if: ctx.netskope?.alert_v2?.user != null && ctx.netskope.alert_v2.user.indexOf('@') > -1
+  - set:
+      field: user.name
+      tag: set_user_name_from_alert_v2_user
+      copy_from: netskope.alert_v2.user
+      ignore_empty_value: true
+      if: ctx.netskope?.alert_v2?.user != null && ctx.netskope.alert_v2.user.indexOf('@') == -1
+  - dissect:
+      field: user.email
+      tag: create_user_name_and_user_domain_alerts_v2
+      pattern: "%{user.name}@%{user.domain}"
+      ignore_missing: true
+      ignore_failure: true
+      if: ctx.user?.email != null && ctx.user.email.indexOf('@') > -1
   - append:
       field: related.user
       tag: append_alert_v2_user_into_related_user_ddb6c359
