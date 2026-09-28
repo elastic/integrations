@@ -178,7 +178,17 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| azure-eventhub.consumer_group | Consumer group. | keyword |
+| azure-eventhub.enqueued_time | The enqueued time. | date |
+| azure-eventhub.eventhub | Event hub name. | keyword |
+| azure-eventhub.offset | Offset. | long |
+| azure-eventhub.partition_id | Partition ID. | keyword |
+| azure-eventhub.partition_key | Partition key. | keyword |
+| azure-eventhub.sequence_number | Sequence number. | long |
+| azure.consumer_group | Consumer group. | keyword |
 | azure.correlation_id | Correlation ID | keyword |
+| azure.enqueued_time | The enqueued time. | date |
+| azure.eventhub | Event hub name. | keyword |
 | azure.firewall.action | Action taken by the firewall following the match with the network rule. | keyword |
 | azure.firewall.action_reason | Reason for the action performed by the firewall. | keyword |
 | azure.firewall.category | Category | keyword |
@@ -206,12 +216,16 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | azure.firewall.rule_collection_group | Name of the rule collection group in which the triggered rule resides. | keyword |
 | azure.firewall.target_url | Request's target address URL. | keyword |
 | azure.firewall.web_category | Web Category identified for the requested FQDN (Azure Firewall Standard) or URL (Azure Firewall Premium). | keyword |
+| azure.offset | Offset. | long |
+| azure.partition_id | Partition ID. | keyword |
+| azure.partition_key | Partition key. | keyword |
 | azure.resource.authorization_rule | Authorization rule | keyword |
 | azure.resource.group | Resource group | keyword |
 | azure.resource.id | Resource ID | keyword |
 | azure.resource.name | Name | keyword |
 | azure.resource.namespace | Resource type/namespace | keyword |
 | azure.resource.provider | Resource type/namespace | keyword |
+| azure.sequence_number | Sequence number. | long |
 | azure.subscription_id | Azure subscription ID | keyword |
 | azure.tenant_id | tenant ID | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |

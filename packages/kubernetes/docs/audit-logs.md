@@ -97,10 +97,11 @@ An example event for `audit` looks as following:
 | agent.type | Type of the agent. The agent type always stays the same and should be given by the agent used. In case of Filebeat the agent would always be Filebeat also if two Filebeat instances are run on the same machine. | keyword |
 | agent.version | Version of the agent. | keyword |
 | azure.consumer_group | Consumer group. | keyword |
-| azure.enqueued_time | The enqueued time. | keyword |
+| azure.enqueued_time | The enqueued time. | date |
 | azure.eventhub | Event hub name. | keyword |
 | azure.offset | Offset. | long |
 | azure.partition_id | Partition ID. | keyword |
+| azure.partition_key | Partition key. | keyword |
 | azure.sequence_number | Sequence number. | long |
 | client.ip | IP address of the client (IPv4 or IPv6). | ip |
 | cloud.account.id | The cloud account or organization id used to identify different entities in a multi-tenant environment. Examples: AWS account id, Google Cloud ORG Id, or other unique identifier. | keyword |

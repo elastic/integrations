@@ -111,6 +111,13 @@ For more information on architectures that can be used for scaling this integrat
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| azure-eventhub.consumer_group | Consumer group. | keyword |
+| azure-eventhub.enqueued_time | The enqueued time. | date |
+| azure-eventhub.eventhub | Event hub name. | keyword |
+| azure-eventhub.offset | Offset. | long |
+| azure-eventhub.partition_id | Partition ID. | keyword |
+| azure-eventhub.partition_key | Partition key. | keyword |
+| azure-eventhub.sequence_number | Sequence number. | long |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |

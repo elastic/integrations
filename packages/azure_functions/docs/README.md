@@ -276,9 +276,12 @@ Check the [ECS field reference](https://www.elastic.co/guide/en/ecs/current/ecs-
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | azure.category | The log category name. | keyword |
+| azure.consumer_group | Consumer group. | keyword |
+| azure.enqueued_time | The enqueued time. | date |
 | azure.event_primary_stamp_name | The primary stamp name for the event | keyword |
 | azure.event_stamp_name | The stamp name for the event | keyword |
 | azure.event_stamp_type | The stamp type for the event | keyword |
+| azure.eventhub | Event hub name. | keyword |
 | azure.function.app_name | The Function application name. | keyword |
 | azure.function.category | The category of the operation. | keyword |
 | azure.function.event_id | The event ID. | long |
@@ -295,11 +298,15 @@ Check the [ECS field reference](https://www.elastic.co/guide/en/ecs/current/ecs-
 | azure.function.name | The name of the function that logged the message. | keyword |
 | azure.function.process_id | The process ID. | long |
 | azure.function.role_instance | The role instance ID. | keyword |
+| azure.offset | Offset. | long |
 | azure.operation_name | The operation name. | keyword |
+| azure.partition_id | Partition ID. | keyword |
+| azure.partition_key | Partition key. | keyword |
 | azure.resource.group | Azure Resource group | keyword |
 | azure.resource.id | Resource ID | keyword |
 | azure.resource.name | Name | keyword |
 | azure.resource.provider | Resource type/namespace | keyword |
+| azure.sequence_number | Sequence number. | long |
 | azure.subscription_id | Azure subscription ID | keyword |
 | azure.tenant_id | tenant ID | keyword |
 | data_stream.dataset | Data stream dataset name. | constant_keyword |
