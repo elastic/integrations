@@ -1436,7 +1436,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-temporal.cloud_metrics.otel-*-ecfcd820d1e4d4ac3fb6b9a55009af1f518cebf2f913c50ae073a0a7a6c4d6b6",
                                             "query": {
-                                                "esql": "TS metrics-temporal.cloud_metrics.otel-*\n| STATS success_rate = SUM(avg_over_time(metrics.temporal_cloud_v1_workflow_success_count)) BY namespace = attributes.temporal_namespace, time_bucket = TBUCKET(50, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                                                "esql": "TS metrics-temporal.cloud_metrics.otel-*\n| STATS success_rate = SUM(avg_over_time(metrics.temporal_cloud_v1_workflow_success_count)) BY namespace = attributes.temporal_namespace, time_bucket = TBUCKET(50, ?_tstart, ?_tend)\n| INLINE STATS ns_total = SUM(success_rate) BY namespace\n| INLINE STATS ns_totals = VALUES(ns_total)\n// Rank namespaces by their total over the selected time range and keep the ten highest.\n| WHERE ns_total >= COALESCE(MV_SLICE(MV_SORT(ns_totals, \"desc\"), 9, 9), 0.0)\n| KEEP time_bucket, namespace, success_rate\n| SORT time_bucket ASC"
                                             }
                                         }
                                     }
@@ -1451,7 +1451,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-temporal.cloud_metrics.otel-*\n| STATS success_rate = SUM(avg_over_time(metrics.temporal_cloud_v1_workflow_success_count)) BY namespace = attributes.temporal_namespace, time_bucket = TBUCKET(50, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                                "esql": "TS metrics-temporal.cloud_metrics.otel-*\n| STATS success_rate = SUM(avg_over_time(metrics.temporal_cloud_v1_workflow_success_count)) BY namespace = attributes.temporal_namespace, time_bucket = TBUCKET(50, ?_tstart, ?_tend)\n| INLINE STATS ns_total = SUM(success_rate) BY namespace\n| INLINE STATS ns_totals = VALUES(ns_total)\n// Rank namespaces by their total over the selected time range and keep the ten highest.\n| WHERE ns_total >= COALESCE(MV_SLICE(MV_SORT(ns_totals, \"desc\"), 9, 9), 0.0)\n| KEEP time_bucket, namespace, success_rate\n| SORT time_bucket ASC"
                             },
                             "visualization": {
                                 "areaFill": "gradient",
@@ -1537,12 +1537,12 @@
                                 "yLeftScale": "linear"
                             }
                         },
-                        "title": "Workflow Successes/sec by Namespace",
+                        "title": "Top 10 Namespaces by Workflow Successes/sec",
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "description": "Rate of workflow executions completing successfully per second, stacked by namespace. Stacking shows total throughput and each namespace's contribution to it. Use the Namespace control to isolate individual namespaces when cardinality is high.",
-                    "title": "Workflow Successes/sec by Namespace"
+                    "description": "Rate of workflow executions completing successfully per second, stacked by namespace. Stacking shows total throughput and each namespace's contribution to it. Limited to the ten namespaces with the highest total over the selected time range; use the Namespace control to isolate individual namespaces.",
+                    "title": "Top 10 Namespaces by Workflow Successes/sec"
                 },
                 "gridData": {
                     "h": 12,
@@ -1610,7 +1610,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-temporal.cloud_metrics.otel-*-5367acef2ec110937e905c32eda445171bed9544074544d932ee820355dfef3c",
                                             "query": {
-                                                "esql": "TS metrics-temporal.cloud_metrics.otel-*\n| STATS activity_rate = SUM(avg_over_time(metrics.temporal_cloud_v1_activity_success_count)) BY namespace = attributes.temporal_namespace, time_bucket = TBUCKET(50, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                                                "esql": "TS metrics-temporal.cloud_metrics.otel-*\n| STATS activity_rate = SUM(avg_over_time(metrics.temporal_cloud_v1_activity_success_count)) BY namespace = attributes.temporal_namespace, time_bucket = TBUCKET(50, ?_tstart, ?_tend)\n| INLINE STATS ns_total = SUM(activity_rate) BY namespace\n| INLINE STATS ns_totals = VALUES(ns_total)\n// Rank namespaces by their total over the selected time range and keep the ten highest.\n| WHERE ns_total >= COALESCE(MV_SLICE(MV_SORT(ns_totals, \"desc\"), 9, 9), 0.0)\n| KEEP time_bucket, namespace, activity_rate\n| SORT time_bucket ASC"
                                             }
                                         }
                                     }
@@ -1625,7 +1625,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-temporal.cloud_metrics.otel-*\n| STATS activity_rate = SUM(avg_over_time(metrics.temporal_cloud_v1_activity_success_count)) BY namespace = attributes.temporal_namespace, time_bucket = TBUCKET(50, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                                "esql": "TS metrics-temporal.cloud_metrics.otel-*\n| STATS activity_rate = SUM(avg_over_time(metrics.temporal_cloud_v1_activity_success_count)) BY namespace = attributes.temporal_namespace, time_bucket = TBUCKET(50, ?_tstart, ?_tend)\n| INLINE STATS ns_total = SUM(activity_rate) BY namespace\n| INLINE STATS ns_totals = VALUES(ns_total)\n// Rank namespaces by their total over the selected time range and keep the ten highest.\n| WHERE ns_total >= COALESCE(MV_SLICE(MV_SORT(ns_totals, \"desc\"), 9, 9), 0.0)\n| KEEP time_bucket, namespace, activity_rate\n| SORT time_bucket ASC"
                             },
                             "visualization": {
                                 "areaFill": "gradient",
@@ -1711,12 +1711,12 @@
                                 "yLeftScale": "linear"
                             }
                         },
-                        "title": "Activity Successes/sec by Namespace",
+                        "title": "Top 10 Namespaces by Activity Successes/sec",
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
                     "description": "Rate of activity task completions per second, stacked by namespace. Stacking shows total activity throughput and each namespace's contribution. A namespace dropping out of the stack indicates a worker or connectivity issue for that tenant.",
-                    "title": "Activity Successes/sec by Namespace"
+                    "title": "Top 10 Namespaces by Activity Successes/sec"
                 },
                 "gridData": {
                     "h": 12,
@@ -1940,7 +1940,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-temporal.cloud_metrics.otel-*-812a87f3377ff84e23f2e93687bea31a9620229f46c37079158bb582e75bf94f",
                                             "query": {
-                                                "esql": "TS metrics-temporal.cloud_metrics.otel-*\n| STATS `Workflow Timeout Rate` = SUM(AVG_OVER_TIME(metrics.temporal_cloud_v1_workflow_timeout_count)) BY namespace = attributes.temporal_namespace, `time_bucket` = TBUCKET(50, ?_tstart, ?_tend)\n| SORT `time_bucket` ASC"
+                                                "esql": "TS metrics-temporal.cloud_metrics.otel-*\n| STATS `Workflow Timeout Rate` = SUM(AVG_OVER_TIME(metrics.temporal_cloud_v1_workflow_timeout_count)) BY namespace = attributes.temporal_namespace, `time_bucket` = TBUCKET(50, ?_tstart, ?_tend)\n| INLINE STATS ns_total = SUM(`Workflow Timeout Rate`) BY namespace\n| INLINE STATS ns_totals = VALUES(ns_total)\n// Rank namespaces by their total over the selected time range and keep the ten highest.\n| WHERE ns_total >= COALESCE(MV_SLICE(MV_SORT(ns_totals, \"desc\"), 9, 9), 0.0)\n| KEEP `time_bucket`, namespace, `Workflow Timeout Rate`\n| SORT `time_bucket` ASC"
                                             }
                                         }
                                     }
@@ -1955,7 +1955,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-temporal.cloud_metrics.otel-*\n| STATS `Workflow Timeout Rate` = SUM(AVG_OVER_TIME(metrics.temporal_cloud_v1_workflow_timeout_count)) BY namespace = attributes.temporal_namespace, `time_bucket` = TBUCKET(50, ?_tstart, ?_tend)\n| SORT `time_bucket` ASC"
+                                "esql": "TS metrics-temporal.cloud_metrics.otel-*\n| STATS `Workflow Timeout Rate` = SUM(AVG_OVER_TIME(metrics.temporal_cloud_v1_workflow_timeout_count)) BY namespace = attributes.temporal_namespace, `time_bucket` = TBUCKET(50, ?_tstart, ?_tend)\n| INLINE STATS ns_total = SUM(`Workflow Timeout Rate`) BY namespace\n| INLINE STATS ns_totals = VALUES(ns_total)\n// Rank namespaces by their total over the selected time range and keep the ten highest.\n| WHERE ns_total >= COALESCE(MV_SLICE(MV_SORT(ns_totals, \"desc\"), 9, 9), 0.0)\n| KEEP `time_bucket`, namespace, `Workflow Timeout Rate`\n| SORT `time_bucket` ASC"
                             },
                             "visualization": {
                                 "areaFill": "gradient",
@@ -2041,12 +2041,12 @@
                                 "yLeftScale": "linear"
                             }
                         },
-                        "title": "Workflow Timeout Rate by Namespace",
+                        "title": "Top 10 Namespaces by Workflow Timeout Rate",
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
                     "description": "Rate of workflow executions timing out (exceeding their workflowExecutionTimeout), stacked by namespace. Workflow timeouts are distinct from failures: the workflow ran out of wall-clock time, not retry budget. Sustained timeouts indicate blocked workers or backlogged task queues.",
-                    "title": "Workflow Timeout Rate by Namespace"
+                    "title": "Top 10 Namespaces by Workflow Timeout Rate"
                 },
                 "gridData": {
                     "h": 12,
@@ -2106,7 +2106,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-temporal.cloud_metrics.otel-*-bc4ef50001a5a29405119da8acd9df94be136a26e4af13e225b1dfa7b5770c08",
                                             "query": {
-                                                "esql": "TS metrics-temporal.cloud_metrics.otel-*\n| STATS `Workflow Failures/sec` = SUM(AVG_OVER_TIME(metrics.temporal_cloud_v1_workflow_failed_count)) BY namespace = attributes.temporal_namespace, `time_bucket` = TBUCKET(50, ?_tstart, ?_tend)"
+                                                "esql": "TS metrics-temporal.cloud_metrics.otel-*\n| STATS `Workflow Failures/sec` = SUM(AVG_OVER_TIME(metrics.temporal_cloud_v1_workflow_failed_count)) BY namespace = attributes.temporal_namespace, `time_bucket` = TBUCKET(50, ?_tstart, ?_tend)\n| INLINE STATS ns_total = SUM(`Workflow Failures/sec`) BY namespace\n| INLINE STATS ns_totals = VALUES(ns_total)\n// Rank namespaces by their total over the selected time range and keep the ten highest.\n| WHERE ns_total >= COALESCE(MV_SLICE(MV_SORT(ns_totals, \"desc\"), 9, 9), 0.0)\n| KEEP `time_bucket`, namespace, `Workflow Failures/sec`\n| SORT `time_bucket` ASC"
                                             }
                                         }
                                     }
@@ -2121,7 +2121,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-temporal.cloud_metrics.otel-*\n| STATS `Workflow Failures/sec` = SUM(AVG_OVER_TIME(metrics.temporal_cloud_v1_workflow_failed_count)) BY namespace = attributes.temporal_namespace, `time_bucket` = TBUCKET(50, ?_tstart, ?_tend)"
+                                "esql": "TS metrics-temporal.cloud_metrics.otel-*\n| STATS `Workflow Failures/sec` = SUM(AVG_OVER_TIME(metrics.temporal_cloud_v1_workflow_failed_count)) BY namespace = attributes.temporal_namespace, `time_bucket` = TBUCKET(50, ?_tstart, ?_tend)\n| INLINE STATS ns_total = SUM(`Workflow Failures/sec`) BY namespace\n| INLINE STATS ns_totals = VALUES(ns_total)\n// Rank namespaces by their total over the selected time range and keep the ten highest.\n| WHERE ns_total >= COALESCE(MV_SLICE(MV_SORT(ns_totals, \"desc\"), 9, 9), 0.0)\n| KEEP `time_bucket`, namespace, `Workflow Failures/sec`\n| SORT `time_bucket` ASC"
                             },
                             "visualization": {
                                 "areaFill": "gradient",
@@ -2207,12 +2207,12 @@
                                 "yLeftScale": "linear"
                             }
                         },
-                        "title": "Workflow Failures/sec by Namespace",
+                        "title": "Top 10 Namespaces by Workflow Failures/sec",
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
                     "description": "Rate of workflow executions failing (exhausting retries or encountering non-retryable errors), stacked by namespace. Stacking shows total failure rate and which namespace is the primary source of failures.",
-                    "title": "Workflow Failures/sec by Namespace"
+                    "title": "Top 10 Namespaces by Workflow Failures/sec"
                 },
                 "gridData": {
                     "h": 12,
@@ -2665,7 +2665,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-temporal.cloud_metrics.otel-*-6c6c6c737533d959abe23ea71a26731ba346fd443d6018a4d961881757b18a80",
                                             "query": {
-                                                "esql": "TS metrics-temporal.cloud_metrics.otel-*\n| STATS fail_rate = SUM(avg_over_time(metrics.temporal_cloud_v1_activity_task_fail_count)) BY namespace = attributes.temporal_namespace, time_bucket = TBUCKET(50, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                                                "esql": "TS metrics-temporal.cloud_metrics.otel-*\n| STATS fail_rate = SUM(avg_over_time(metrics.temporal_cloud_v1_activity_task_fail_count)) BY namespace = attributes.temporal_namespace, time_bucket = TBUCKET(50, ?_tstart, ?_tend)\n| INLINE STATS ns_total = SUM(fail_rate) BY namespace\n| INLINE STATS ns_totals = VALUES(ns_total)\n// Rank namespaces by their total over the selected time range and keep the ten highest.\n| WHERE ns_total >= COALESCE(MV_SLICE(MV_SORT(ns_totals, \"desc\"), 9, 9), 0.0)\n| KEEP time_bucket, namespace, fail_rate\n| SORT time_bucket ASC"
                                             }
                                         }
                                     }
@@ -2680,7 +2680,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-temporal.cloud_metrics.otel-*\n| STATS fail_rate = SUM(avg_over_time(metrics.temporal_cloud_v1_activity_task_fail_count)) BY namespace = attributes.temporal_namespace, time_bucket = TBUCKET(50, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                                "esql": "TS metrics-temporal.cloud_metrics.otel-*\n| STATS fail_rate = SUM(avg_over_time(metrics.temporal_cloud_v1_activity_task_fail_count)) BY namespace = attributes.temporal_namespace, time_bucket = TBUCKET(50, ?_tstart, ?_tend)\n| INLINE STATS ns_total = SUM(fail_rate) BY namespace\n| INLINE STATS ns_totals = VALUES(ns_total)\n// Rank namespaces by their total over the selected time range and keep the ten highest.\n| WHERE ns_total >= COALESCE(MV_SLICE(MV_SORT(ns_totals, \"desc\"), 9, 9), 0.0)\n| KEEP time_bucket, namespace, fail_rate\n| SORT time_bucket ASC"
                             },
                             "visualization": {
                                 "areaFill": "gradient",
@@ -2766,12 +2766,12 @@
                                 "yLeftScale": "linear"
                             }
                         },
-                        "title": "Activity Task Failures/sec by Namespace",
+                        "title": "Top 10 Namespaces by Activity Task Failures/sec",
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
                     "description": "Rate of individual activity task attempt failures, stacked by namespace. Activity failures may be retried; sustained high rates exhaust retry budgets and lead to workflow failures. Stacking shows which namespace is the dominant failure source.",
-                    "title": "Activity Task Failures/sec by Namespace"
+                    "title": "Top 10 Namespaces by Activity Task Failures/sec"
                 },
                 "gridData": {
                     "h": 12,
@@ -3013,7 +3013,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-temporal.cloud_metrics.otel-*-0bf51ee4b15e14bfcfae67e095de177bde276157ac207fb2dce1b3c6206023b0",
                                             "query": {
-                                                "esql": "TS metrics-temporal.cloud_metrics.otel-*\n| STATS throttled = SUM(avg_over_time(metrics.temporal_cloud_v1_service_request_throttled_count)) BY namespace = attributes.temporal_namespace, time_bucket = TBUCKET(50, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                                                "esql": "TS metrics-temporal.cloud_metrics.otel-*\n| STATS throttled = SUM(avg_over_time(metrics.temporal_cloud_v1_service_request_throttled_count)) BY namespace = attributes.temporal_namespace, time_bucket = TBUCKET(50, ?_tstart, ?_tend)\n| INLINE STATS ns_total = SUM(throttled) BY namespace\n| INLINE STATS ns_totals = VALUES(ns_total)\n// Rank namespaces by their total over the selected time range and keep the ten highest.\n| WHERE ns_total >= COALESCE(MV_SLICE(MV_SORT(ns_totals, \"desc\"), 9, 9), 0.0)\n| KEEP time_bucket, namespace, throttled\n| SORT time_bucket ASC"
                                             }
                                         }
                                     }
@@ -3028,7 +3028,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-temporal.cloud_metrics.otel-*\n| STATS throttled = SUM(avg_over_time(metrics.temporal_cloud_v1_service_request_throttled_count)) BY namespace = attributes.temporal_namespace, time_bucket = TBUCKET(50, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                                "esql": "TS metrics-temporal.cloud_metrics.otel-*\n| STATS throttled = SUM(avg_over_time(metrics.temporal_cloud_v1_service_request_throttled_count)) BY namespace = attributes.temporal_namespace, time_bucket = TBUCKET(50, ?_tstart, ?_tend)\n| INLINE STATS ns_total = SUM(throttled) BY namespace\n| INLINE STATS ns_totals = VALUES(ns_total)\n// Rank namespaces by their total over the selected time range and keep the ten highest.\n| WHERE ns_total >= COALESCE(MV_SLICE(MV_SORT(ns_totals, \"desc\"), 9, 9), 0.0)\n| KEEP time_bucket, namespace, throttled\n| SORT time_bucket ASC"
                             },
                             "visualization": {
                                 "areaFill": "gradient",
@@ -3114,12 +3114,12 @@
                                 "yLeftScale": "linear"
                             }
                         },
-                        "title": "Throttled Requests/sec by Namespace",
+                        "title": "Top 10 Namespaces by Throttled Requests/sec",
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
                     "description": "Rate of throttled gRPC frontend requests, stacked by namespace. Throttling occurs when a namespace exceeds its rate limits. Sustained throttling causes task queue backlogs and workflow latency.",
-                    "title": "Throttled Requests/sec by Namespace"
+                    "title": "Top 10 Namespaces by Throttled Requests/sec"
                 },
                 "gridData": {
                     "h": 12,
@@ -3187,7 +3187,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-temporal.cloud_metrics.otel-*-2af3c10d7a4babb84d5de036e16d44ab550409dfb105b92eaa05e7223ba39276",
                                             "query": {
-                                                "esql": "TS metrics-temporal.cloud_metrics.otel-*\n| STATS exhausted = SUM(avg_over_time(metrics.temporal_cloud_v1_resource_exhausted_error_count)) BY namespace = attributes.temporal_namespace, time_bucket = TBUCKET(50, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                                                "esql": "TS metrics-temporal.cloud_metrics.otel-*\n| STATS exhausted = SUM(avg_over_time(metrics.temporal_cloud_v1_resource_exhausted_error_count)) BY namespace = attributes.temporal_namespace, time_bucket = TBUCKET(50, ?_tstart, ?_tend)\n| INLINE STATS ns_total = SUM(exhausted) BY namespace\n| INLINE STATS ns_totals = VALUES(ns_total)\n// Rank namespaces by their total over the selected time range and keep the ten highest.\n| WHERE ns_total >= COALESCE(MV_SLICE(MV_SORT(ns_totals, \"desc\"), 9, 9), 0.0)\n| KEEP time_bucket, namespace, exhausted\n| SORT time_bucket ASC"
                                             }
                                         }
                                     }
@@ -3202,7 +3202,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-temporal.cloud_metrics.otel-*\n| STATS exhausted = SUM(avg_over_time(metrics.temporal_cloud_v1_resource_exhausted_error_count)) BY namespace = attributes.temporal_namespace, time_bucket = TBUCKET(50, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                                "esql": "TS metrics-temporal.cloud_metrics.otel-*\n| STATS exhausted = SUM(avg_over_time(metrics.temporal_cloud_v1_resource_exhausted_error_count)) BY namespace = attributes.temporal_namespace, time_bucket = TBUCKET(50, ?_tstart, ?_tend)\n| INLINE STATS ns_total = SUM(exhausted) BY namespace\n| INLINE STATS ns_totals = VALUES(ns_total)\n// Rank namespaces by their total over the selected time range and keep the ten highest.\n| WHERE ns_total >= COALESCE(MV_SLICE(MV_SORT(ns_totals, \"desc\"), 9, 9), 0.0)\n| KEEP time_bucket, namespace, exhausted\n| SORT time_bucket ASC"
                             },
                             "visualization": {
                                 "areaFill": "gradient",
@@ -3288,12 +3288,12 @@
                                 "yLeftScale": "linear"
                             }
                         },
-                        "title": "Resource Exhausted Errors/sec by Namespace",
+                        "title": "Top 10 Namespaces by Resource Exhausted Errors/sec",
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
                     "description": "Rate of resource-exhausted gRPC errors, stacked by namespace. These occur when Temporal Cloud throttles requests due to rate limit or quota exhaustion \u2014 the leading indicator before action-rate-limit alerts fire.",
-                    "title": "Resource Exhausted Errors/sec by Namespace"
+                    "title": "Top 10 Namespaces by Resource Exhausted Errors/sec"
                 },
                 "gridData": {
                     "h": 12,
@@ -3796,7 +3796,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-temporal.cloud_metrics.otel-*-9c5ea84b096d37e1f5cb99fee74e2fd38daa89234ea79c340fecc1a2787bf9f7",
                                             "query": {
-                                                "esql": "TS metrics-temporal.cloud_metrics.otel-*\n| STATS open_workflows = MAX(avg_over_time(metrics.temporal_cloud_v1_namespace_open_workflows)) BY namespace = attributes.temporal_namespace, time_bucket = TBUCKET(50, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                                                "esql": "TS metrics-temporal.cloud_metrics.otel-*\n| STATS open_workflows = MAX(avg_over_time(metrics.temporal_cloud_v1_namespace_open_workflows)) BY namespace = attributes.temporal_namespace, time_bucket = TBUCKET(50, ?_tstart, ?_tend)\n| INLINE STATS ns_total = SUM(open_workflows) BY namespace\n| INLINE STATS ns_totals = VALUES(ns_total)\n// Rank namespaces by their total over the selected time range and keep the ten highest.\n| WHERE ns_total >= COALESCE(MV_SLICE(MV_SORT(ns_totals, \"desc\"), 9, 9), 0.0)\n| KEEP time_bucket, namespace, open_workflows\n| SORT time_bucket ASC"
                                             }
                                         }
                                     }
@@ -3811,7 +3811,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-temporal.cloud_metrics.otel-*\n| STATS open_workflows = MAX(avg_over_time(metrics.temporal_cloud_v1_namespace_open_workflows)) BY namespace = attributes.temporal_namespace, time_bucket = TBUCKET(50, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                                "esql": "TS metrics-temporal.cloud_metrics.otel-*\n| STATS open_workflows = MAX(avg_over_time(metrics.temporal_cloud_v1_namespace_open_workflows)) BY namespace = attributes.temporal_namespace, time_bucket = TBUCKET(50, ?_tstart, ?_tend)\n| INLINE STATS ns_total = SUM(open_workflows) BY namespace\n| INLINE STATS ns_totals = VALUES(ns_total)\n// Rank namespaces by their total over the selected time range and keep the ten highest.\n| WHERE ns_total >= COALESCE(MV_SLICE(MV_SORT(ns_totals, \"desc\"), 9, 9), 0.0)\n| KEEP time_bucket, namespace, open_workflows\n| SORT time_bucket ASC"
                             },
                             "visualization": {
                                 "areaFill": "gradient",
@@ -3897,12 +3897,12 @@
                                 "yLeftScale": "linear"
                             }
                         },
-                        "title": "Open Workflows by Namespace",
+                        "title": "Top 10 Namespaces by Open Workflows",
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
                     "description": "Number of in-flight workflow executions per namespace over time. Sustained growth without proportional throughput growth suggests workflows are not completing \u2014 blocked on tasks, stuck in retry loops, or running indefinitely.",
-                    "title": "Open Workflows by Namespace"
+                    "title": "Top 10 Namespaces by Open Workflows"
                 },
                 "gridData": {
                     "h": 12,
@@ -3989,7 +3989,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-temporal.cloud_metrics.otel-*-5e77dfd5ad9d00d1429d726a8671337526cc980ad89f64a0b769a2b63d264eb4",
                                             "query": {
-                                                "esql": "TS metrics-temporal.cloud_metrics.otel-*\n| STATS action_rate = SUM(AVG_OVER_TIME(metrics.temporal_cloud_v1_total_action_count)) WHERE attributes.is_background == \"false\", action_limit = MAX(MAX_OVER_TIME(metrics.temporal_cloud_v1_action_limit)), ops_rate = SUM(AVG_OVER_TIME(metrics.temporal_cloud_v1_operations_count)), ops_limit = MAX(MAX_OVER_TIME(metrics.temporal_cloud_v1_operations_limit)) BY namespace = attributes.temporal_namespace, time_bucket = TBUCKET(50, ?_tstart, ?_tend)\n| EVAL `Action Utilization %` = CASE(action_limit > 0, 100 * action_rate / action_limit, null), `Operations Utilization %` = CASE(ops_limit > 0, 100 * ops_rate / ops_limit, null)\n| KEEP time_bucket, namespace, `Action Utilization %`, `Operations Utilization %`\n| SORT time_bucket ASC"
+                                                "esql": "TS metrics-temporal.cloud_metrics.otel-*\n| STATS action_rate = SUM(AVG_OVER_TIME(metrics.temporal_cloud_v1_total_action_count)) WHERE attributes.is_background == \"false\", action_limit = MAX(MAX_OVER_TIME(metrics.temporal_cloud_v1_action_limit)), ops_rate = SUM(AVG_OVER_TIME(metrics.temporal_cloud_v1_operations_count)), ops_limit = MAX(MAX_OVER_TIME(metrics.temporal_cloud_v1_operations_limit)) BY namespace = attributes.temporal_namespace, time_bucket = TBUCKET(50, ?_tstart, ?_tend)\n| EVAL `Action Utilization %` = CASE(action_limit > 0, 100 * action_rate / action_limit, null), `Operations Utilization %` = CASE(ops_limit > 0, 100 * ops_rate / ops_limit, null)\n| EVAL util = GREATEST(COALESCE(`Action Utilization %`, 0.0), COALESCE(`Operations Utilization %`, 0.0))\n| INLINE STATS ns_total = SUM(util) BY namespace\n| INLINE STATS ns_totals = VALUES(ns_total)\n// Rank namespaces by their total over the selected time range and keep the ten highest.\n| WHERE ns_total >= COALESCE(MV_SLICE(MV_SORT(ns_totals, \"desc\"), 9, 9), 0.0)\n| KEEP time_bucket, namespace, `Action Utilization %`, `Operations Utilization %`\n| SORT time_bucket ASC"
                                             }
                                         }
                                     }
@@ -4004,7 +4004,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-temporal.cloud_metrics.otel-*\n| STATS action_rate = SUM(AVG_OVER_TIME(metrics.temporal_cloud_v1_total_action_count)) WHERE attributes.is_background == \"false\", action_limit = MAX(MAX_OVER_TIME(metrics.temporal_cloud_v1_action_limit)), ops_rate = SUM(AVG_OVER_TIME(metrics.temporal_cloud_v1_operations_count)), ops_limit = MAX(MAX_OVER_TIME(metrics.temporal_cloud_v1_operations_limit)) BY namespace = attributes.temporal_namespace, time_bucket = TBUCKET(50, ?_tstart, ?_tend)\n| EVAL `Action Utilization %` = CASE(action_limit > 0, 100 * action_rate / action_limit, null), `Operations Utilization %` = CASE(ops_limit > 0, 100 * ops_rate / ops_limit, null)\n| KEEP time_bucket, namespace, `Action Utilization %`, `Operations Utilization %`\n| SORT time_bucket ASC"
+                                "esql": "TS metrics-temporal.cloud_metrics.otel-*\n| STATS action_rate = SUM(AVG_OVER_TIME(metrics.temporal_cloud_v1_total_action_count)) WHERE attributes.is_background == \"false\", action_limit = MAX(MAX_OVER_TIME(metrics.temporal_cloud_v1_action_limit)), ops_rate = SUM(AVG_OVER_TIME(metrics.temporal_cloud_v1_operations_count)), ops_limit = MAX(MAX_OVER_TIME(metrics.temporal_cloud_v1_operations_limit)) BY namespace = attributes.temporal_namespace, time_bucket = TBUCKET(50, ?_tstart, ?_tend)\n| EVAL `Action Utilization %` = CASE(action_limit > 0, 100 * action_rate / action_limit, null), `Operations Utilization %` = CASE(ops_limit > 0, 100 * ops_rate / ops_limit, null)\n| EVAL util = GREATEST(COALESCE(`Action Utilization %`, 0.0), COALESCE(`Operations Utilization %`, 0.0))\n| INLINE STATS ns_total = SUM(util) BY namespace\n| INLINE STATS ns_totals = VALUES(ns_total)\n// Rank namespaces by their total over the selected time range and keep the ten highest.\n| WHERE ns_total >= COALESCE(MV_SLICE(MV_SORT(ns_totals, \"desc\"), 9, 9), 0.0)\n| KEEP time_bucket, namespace, `Action Utilization %`, `Operations Utilization %`\n| SORT time_bucket ASC"
                             },
                             "visualization": {
                                 "areaFill": "gradient",
@@ -4095,12 +4095,12 @@
                                 "yLeftScale": "linear"
                             }
                         },
-                        "title": "Action & Operations Quota Utilization by Namespace",
+                        "title": "Top 10 Namespaces by Action & Operations Quota Utilization",
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
                     "description": "Action and operations quota utilization percentage per namespace over time. At 80% utilization there is insufficient headroom to absorb traffic spikes \u2014 the shipped alert rule fires at this threshold. Separately tracks action-rate and operations-rate utilization because they have independent limits.",
-                    "title": "Action & Operations Quota Utilization by Namespace"
+                    "title": "Top 10 Namespaces by Action & Operations Quota Utilization"
                 },
                 "gridData": {
                     "h": 12,
@@ -4169,7 +4169,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-temporal.cloud_metrics.otel-*-28d3597c1cd651c59d0d1ceece167a7e7e70f7d854280245f7a9210c16c40386",
                                             "query": {
-                                                "esql": "TS metrics-temporal.cloud_metrics.otel-*\n| STATS pending = MAX(avg_over_time(metrics.temporal_cloud_v1_service_pending_requests)) BY namespace = attributes.temporal_namespace, time_bucket = TBUCKET(50, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                                                "esql": "TS metrics-temporal.cloud_metrics.otel-*\n| STATS pending = MAX(avg_over_time(metrics.temporal_cloud_v1_service_pending_requests)) BY namespace = attributes.temporal_namespace, time_bucket = TBUCKET(50, ?_tstart, ?_tend)\n| INLINE STATS ns_total = SUM(pending) BY namespace\n| INLINE STATS ns_totals = VALUES(ns_total)\n// Rank namespaces by their total over the selected time range and keep the ten highest.\n| WHERE ns_total >= COALESCE(MV_SLICE(MV_SORT(ns_totals, \"desc\"), 9, 9), 0.0)\n| KEEP time_bucket, namespace, pending\n| SORT time_bucket ASC"
                                             }
                                         }
                                     }
@@ -4184,7 +4184,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-temporal.cloud_metrics.otel-*\n| STATS pending = MAX(avg_over_time(metrics.temporal_cloud_v1_service_pending_requests)) BY namespace = attributes.temporal_namespace, time_bucket = TBUCKET(50, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                                "esql": "TS metrics-temporal.cloud_metrics.otel-*\n| STATS pending = MAX(avg_over_time(metrics.temporal_cloud_v1_service_pending_requests)) BY namespace = attributes.temporal_namespace, time_bucket = TBUCKET(50, ?_tstart, ?_tend)\n| INLINE STATS ns_total = SUM(pending) BY namespace\n| INLINE STATS ns_totals = VALUES(ns_total)\n// Rank namespaces by their total over the selected time range and keep the ten highest.\n| WHERE ns_total >= COALESCE(MV_SLICE(MV_SORT(ns_totals, \"desc\"), 9, 9), 0.0)\n| KEEP time_bucket, namespace, pending\n| SORT time_bucket ASC"
                             },
                             "visualization": {
                                 "areaFill": "gradient",
@@ -4270,12 +4270,12 @@
                                 "yLeftScale": "linear"
                             }
                         },
-                        "title": "Service Pending Requests by Namespace",
+                        "title": "Top 10 Namespaces by Service Pending Requests",
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
                     "description": "Number of gRPC frontend requests waiting to be processed (in-flight but not yet responded to) per namespace. A leading indicator of service saturation \u2014 rising pending requests precede latency increases.",
-                    "title": "Service Pending Requests by Namespace"
+                    "title": "Top 10 Namespaces by Service Pending Requests"
                 },
                 "gridData": {
                     "h": 12,
@@ -4343,7 +4343,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-temporal.cloud_metrics.otel-*-ea098515e8c6ae925d13076b50f8f682cf23008e0c0df42e6cd2f395ba68aa63",
                                             "query": {
-                                                "esql": "TS metrics-temporal.cloud_metrics.otel-*\n| STATS billable = SUM(avg_over_time(metrics.temporal_cloud_v1_billable_action_count)) BY namespace = attributes.temporal_namespace, time_bucket = TBUCKET(50, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                                                "esql": "TS metrics-temporal.cloud_metrics.otel-*\n| STATS billable = SUM(avg_over_time(metrics.temporal_cloud_v1_billable_action_count)) BY namespace = attributes.temporal_namespace, time_bucket = TBUCKET(50, ?_tstart, ?_tend)\n| INLINE STATS ns_total = SUM(billable) BY namespace\n| INLINE STATS ns_totals = VALUES(ns_total)\n// Rank namespaces by their total over the selected time range and keep the ten highest.\n| WHERE ns_total >= COALESCE(MV_SLICE(MV_SORT(ns_totals, \"desc\"), 9, 9), 0.0)\n| KEEP time_bucket, namespace, billable\n| SORT time_bucket ASC"
                                             }
                                         }
                                     }
@@ -4358,7 +4358,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-temporal.cloud_metrics.otel-*\n| STATS billable = SUM(avg_over_time(metrics.temporal_cloud_v1_billable_action_count)) BY namespace = attributes.temporal_namespace, time_bucket = TBUCKET(50, ?_tstart, ?_tend)\n| SORT time_bucket ASC"
+                                "esql": "TS metrics-temporal.cloud_metrics.otel-*\n| STATS billable = SUM(avg_over_time(metrics.temporal_cloud_v1_billable_action_count)) BY namespace = attributes.temporal_namespace, time_bucket = TBUCKET(50, ?_tstart, ?_tend)\n| INLINE STATS ns_total = SUM(billable) BY namespace\n| INLINE STATS ns_totals = VALUES(ns_total)\n// Rank namespaces by their total over the selected time range and keep the ten highest.\n| WHERE ns_total >= COALESCE(MV_SLICE(MV_SORT(ns_totals, \"desc\"), 9, 9), 0.0)\n| KEEP time_bucket, namespace, billable\n| SORT time_bucket ASC"
                             },
                             "visualization": {
                                 "areaFill": "gradient",
@@ -4444,12 +4444,12 @@
                                 "yLeftScale": "linear"
                             }
                         },
-                        "title": "Billable Actions by Namespace",
+                        "title": "Top 10 Namespaces by Billable Actions",
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
                     "description": "Rate of billable actions per second per namespace, stacked. Each workflow event (task dispatch, signal, timer fire, etc.) consumes one action against the namespace's provisioned action limit. Stacking shows total billing load and per-namespace contribution.",
-                    "title": "Billable Actions by Namespace"
+                    "title": "Top 10 Namespaces by Billable Actions"
                 },
                 "gridData": {
                     "h": 12,
