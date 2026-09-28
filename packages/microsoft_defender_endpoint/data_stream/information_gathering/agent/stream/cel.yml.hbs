@@ -43,7 +43,7 @@ program: |-
           size(resp.Body) == 0 ?
             {
               "events": [{"message": "retry"}],
-              "want_more": size(tail(state.work_list)) > 0,
+              "want_more": int(state.remaining_retries) > 0 || size(tail(state.work_list)) > 0,
               "work_list": int(state.remaining_retries) > 0 ? tail(state.work_list) + [state.work_list[0]] : tail(state.work_list),
               "remaining_retries": int(state.remaining_retries) - 1,
             }
@@ -54,7 +54,7 @@ program: |-
                   "events": {
                     "error": {
                       "code": string(resp.StatusCode),
-                      "id": string(resp.Status),
+                      "id": resp.Status,
                       "message": decoded_body.decode_error + ": Download URLs are likely expired. Try increasing the 'SAS Valid Hours' parameter to download more data.",
                     },
                   },
@@ -79,7 +79,7 @@ program: |-
             "events": {
               "error": {
                 "code": string(resp.StatusCode),
-                "id": string(resp.Status),
+                "id": resp.Status,
                 "message": "Cannot fetch more data as signatures are not valid anymore. Try increasing the 'SAS Valid Hours' parameter to download more data.",
               },
             },
@@ -91,7 +91,7 @@ program: |-
             "events": {
               "error": {
                 "code": string(resp.StatusCode),
-                "id": string(resp.Status),
+                "id": resp.Status,
                 "message": "GET " + state.work_list[0] + ":" + (
                   size(resp.Body) != 0 ?
                     string(resp.Body)
@@ -188,12 +188,9 @@ program: |-
               "events": {
                 "error": {
                   "code": string(resp.StatusCode),
-                  "id": string(resp.Status),
+                  "id": resp.Status,
                   "message": "GET /api/machines/InfoGatheringExport :" + (
-                    size(resp.Body) != 0 ?
-                      string(resp.Body)
-                    :
-                      string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                    resp.Status + " (" + string(resp.StatusCode) + ")"
                   ),
                 },
               },
@@ -213,7 +210,8 @@ tags:
 {{#contains "forwarded" tags}}
 publisher_pipeline.disable_host: true
 {{/contains}}
-{{#if processors}}
 processors:
+- drop_event.when.equals.message: retry
+{{#if processors}}
 {{processors}}
 {{/if}}

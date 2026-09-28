@@ -36,12 +36,9 @@ program: |
   ).do_request().as(resp, resp.StatusCode == 200 ?
     resp.Body.decode_json().as(body,
       {
-        "events": ("value" in body ? body.value : []).map(e, {"message": e.encode_json()}),
+        "events": body.?value.orValue([]).map(e, {"message": e.encode_json()}),
         "cursor": {
-          ?"next_link": ("@odata.nextLink" in body) ?
-            optional.of(body["@odata.nextLink"])
-          :
-            optional.none(),
+          ?"next_link": body[?"@odata.nextLink"],
         },
         "want_more": "@odata.nextLink" in body,
       }

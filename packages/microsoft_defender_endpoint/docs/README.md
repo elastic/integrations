@@ -1002,7 +1002,7 @@ An example event for `baseline` looks as following:
 
 ### Information Gathering
 
-This is the `Information Gathering` dataset.
+This is the `information_gathering` dataset.
 
 #### Example
 
@@ -1052,8 +1052,9 @@ An example event for `information_gathering` looks as following:
         "id": "cccccccccccccccccccccccccccccccccccccccc",
         "name": "sample-host-3",
         "os": {
-            "name": "Linux enterprise_linux_9.4",
-            "platform": "Linux",
+            "full": "Linux enterprise_linux_9.4",
+            "name": "Linux",
+            "platform": "linux",
             "type": "linux",
             "version": "enterprise_linux_9.4"
         }
@@ -1065,7 +1066,7 @@ An example event for `information_gathering` looks as following:
         "information_gathering": {
             "last_seen": "2026-08-31T18:45:00.000Z",
             "os_platform": "Linux",
-            "rbac_group_id": 42
+            "rbac_group_id": "42"
         }
     },
     "observer": {

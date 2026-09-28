@@ -188,7 +188,7 @@ This is the `baseline` dataset.
 
 ### Information Gathering
 
-This is the `Information Gathering` dataset.
+This is the `information_gathering` dataset.
 
 #### Example
 

@@ -9,9 +9,6 @@ processors:
       tag: data_collection_error
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
       description: error message set and no data to process.
-  - drop:
-      if: ctx.message == 'retry'
-      tag: drop_retry_events
 
   # parse the event JSON
   - rename:
@@ -109,6 +106,21 @@ processors:
       field: microsoft_defender_endpoint.information_gathering.device_gathered_info.ebpfstatus
       target_field: microsoft_defender_endpoint.information_gathering.device_gathered_info.ebpf_status
       tag: rename_ebpfstatus_to_ebpf_status
+      ignore_missing: true
+  - rename:
+      field: microsoft_defender_endpoint.information_gathering.device_gathered_info.av_is_engine_uptodate
+      target_field: microsoft_defender_endpoint.information_gathering.device_gathered_info.av_is_engine_up_to_date
+      tag: rename_av_is_engine_uptodate_to_av_is_engine_up_to_date
+      ignore_missing: true
+  - rename:
+      field: microsoft_defender_endpoint.information_gathering.device_gathered_info.av_is_platform_uptodate
+      target_field: microsoft_defender_endpoint.information_gathering.device_gathered_info.av_is_platform_up_to_date
+      tag: rename_av_is_platform_uptodate_to_av_is_platform_up_to_date
+      ignore_missing: true
+  - rename:
+      field: microsoft_defender_endpoint.information_gathering.device_gathered_info.av_is_signature_upto_date
+      target_field: microsoft_defender_endpoint.information_gathering.device_gathered_info.av_is_signature_up_to_date
+      tag: rename_av_is_signature_upto_date_to_av_is_signature_up_to_date
       ignore_missing: true
 
   # convert values
@@ -345,15 +357,21 @@ processors:
       copy_from: microsoft_defender_endpoint.information_gathering.os_version
       ignore_empty_value: true
   - set:
-      field: host.os.platform
-      tag: set_host_os_platform_from_os_platform
+      field: host.os.name
+      tag: set_host_os_name_from_os_platform
       copy_from: microsoft_defender_endpoint.information_gathering.os_platform
       ignore_empty_value: true
+  - set:
+      field: host.os.full
+      tag: set_host_os_full_from_os_platform_and_version
+      value: '{{{host.os.name}}} {{{host.os.version}}}'
+      ignore_failure: true
+      if: ctx.host?.os?.name != null && ctx.host?.os?.version != null
   - script:
-      description: Dynamically set host.os.type values.
-      tag: script_map_host_os_type
+      description: Set ECS host.os.platform and host.os.type from Defender OsPlatform.
+      tag: script_map_host_os_platform_and_type
       lang: painless
-      if: ctx.host?.os?.platform != null
+      if: ctx.microsoft_defender_endpoint?.information_gathering?.os_platform != null
       params:
         os_type:
           - linux
@@ -363,28 +381,24 @@ processors:
           - ios
           - android
       source: |
-        String os_platform = ctx.host.os.platform.toLowerCase();
+        String os_platform = ctx.microsoft_defender_endpoint.information_gathering.os_platform.toLowerCase();
+        if (ctx.host == null) {
+          ctx.host = new HashMap();
+        }
+        if (ctx.host.os == null) {
+          ctx.host.os = new HashMap();
+        }
         for (String os: params.os_type) {
           if (os_platform.contains(os)) {
-            if (ctx.host.os == null) {
-              ctx.host.os = new HashMap();
-            }
             ctx.host.os.put('type', os);
+            ctx.host.os.put('platform', os);
             return;
           }
         }
         if (os_platform.contains('centos') || os_platform.contains('ubuntu')) {
-          if (ctx.host.os == null) {
-            ctx.host.os = new HashMap();
-          }
           ctx.host.os.put('type', 'linux');
+          ctx.host.os.put('platform', 'linux');
         }
-  - set:
-      field: host.os.name
-      tag: set_host_os_name
-      value: '{{{host.os.platform}}} {{{host.os.version}}}'
-      ignore_failure: true
-      if: ctx.host?.os?.platform != null && ctx.host?.os?.version != null
 
   # related.*
   - append:
