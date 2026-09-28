@@ -82,9 +82,10 @@ jobs:
           # works for both same-repo and fork PRs.
           HEAD_OWNER="${HEAD_REPO%%/*}"
           PR_DATA=$(gh api \
+            --method GET \
             "repos/$REPOSITORY/pulls" \
-            -F state=open \
-            -F "head=${HEAD_OWNER}:${HEAD_BRANCH}" \
+            -f state=open \
+            -f "head=${HEAD_OWNER}:${HEAD_BRANCH}" \
             --jq "[.[] | select(.head.sha == env.HEAD_SHA)] | first // empty")
 
           if [[ -z "$PR_DATA" ]]; then
