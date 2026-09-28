@@ -1,9 +1,23 @@
 # Choosing an index sort key
 
-Index sorting is the **only per-integration performance lever** in the columnar
+Index sorting is the **first per-integration performance lever** in the columnar
 rollout. Fields in the sort key get effective doc-value skipper pruning without an
 inverted index; everything else is a scan. It is also the cheapest lever — one block
-of YAML in the data stream manifest, no mapping or pipeline changes.
+of YAML in the data stream manifest, no mapping or pipeline changes. The second lever,
+a per-stream decision on which lookup fields keep an inverted index, is in
+[`blockers.md`](blockers.md) C5.
+
+An explicit sort goes into the `@package` component template, so it applies to logsdb
+and standard installs of the package version too, not only to columnar opt-ins.
+
+## Contents
+
+- The default
+- Decide from the inputs, not from the field files
+- Three input classes (host-local, receivers, collectors; mixed inputs)
+- Proposing an explicit sort (candidate tiers, hard constraints, leaf vocabulary,
+  when nothing survives, soft guidance)
+- Verifying
 
 ## The default
 

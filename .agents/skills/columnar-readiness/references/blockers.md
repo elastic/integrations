@@ -3,6 +3,20 @@
 Every mapping feature that `logsdb_columnar` rejects or degrades, with the detection
 rule the audit uses and the remediation to apply.
 
+## Contents
+
+- Why these exist
+- The two package-spec 3.7.0 constructs (the `columnar:` block, the readiness flag)
+- Class A — rejected by Elasticsearch: A1 nested in nested, A2 `doc_values: false`
+  (A2b from ECS, A2c `store`, A2d invalid override, A2e misplaced override), A3
+  `copy_to`, A4 normalizer, A5 runtime fields (A5b `dynamic: runtime`), A6 stored
+  `_source`, A7 types without doc values
+- Class B — accepted but lossy: B1 `dynamic: false`, B2 `enabled: false`
+- Class C — behaviour changes: C1 no inverted index, C2 source shape, C3 dynamic
+  fields, C4 lowercase normalizer, C5 `columnar: {index: true}`
+- C6-C10 `_source` consumers: C6 transform scripts, C7 Kibana assets, C8 object
+  arrays, C9 shipped detection rules, C10 `latest` transforms
+
 ## Why these exist
 
 `logsdb_columnar` stores every field exactly once, as doc values. It drops inverted
@@ -55,7 +69,7 @@ Valid keys:
 | Key | Valid values | Who writes it |
 | --- | --- | --- |
 | `doc_values` | `true` only | the remediation for A2 / A2b |
-| `index` | `true` only | a human with a benchmark — see C5. **Never** proposed by this skill or by any static analysis |
+| `index` | `true` | a human, per stream, for a field that a named dashboard or rule query filters on by exact value — see C5. The audit lists candidates; it never writes one |
 
 `columnar: {doc_values: false}` is invalid — see A2d.
 
@@ -113,11 +127,13 @@ it (or that already declares a columnar `index_mode`).
 
 | Declaration | Effect |
 | --- | --- |
-| `elasticsearch.columnar.supported: true` | The stream is ready. Fleet shows the opt-in toggle. logsdb stays the default; nothing changes for existing or new installs until a user turns it on. |
-| `elasticsearch.index_mode: logsdb_columnar` | Columnar is the **default** for new installs of this package version. |
+| `elasticsearch.columnar.supported: true` | The stream is ready. Fleet shows the opt-in toggle. logsdb stays the default; nothing changes for existing or new installs until a user turns it on, and the user can turn it off again. |
+| `elasticsearch.index_mode: logsdb_columnar` | Columnar is **forced** for every install of this package version: Fleet shows the toggle locked on (the API cannot turn it off either), and streams that already hold data switch at the next rollover on upgrade. |
 
 For the tech-preview wave the answer is `supported: true` alone, with
-`index_mode` left unset: the rollout strategy is that users opt in.
+`index_mode` left unset: the rollout strategy is that users opt in and can opt out,
+and that an integration that already has data does not flip. Whether package-spec
+3.7.0 should allow a columnar `index_mode` at all is an open team decision.
 
 Both constructs are read by **Fleet**, not only by the spec validator, so both
 need a `conditions.kibana.version` of at least the first Kibana minor that ships
@@ -140,17 +156,9 @@ index template PUT.
 
 ### The cost of declaring readiness
 
-`conditions.kibana.version: "^9.6.0"` is not free. Enhancing the package spec and
-the opt-in mechanism **automatically raises the minimum stack version of a
-columnar-ready integration to 9.6**: Fleet will not offer the new package version
-to anything older, so every user still on 9.5 or below stops receiving *any*
-further update to this package — security fixes and unrelated bug fixes included,
-not just the columnar ones. Fixing a bug for those users then requires a
-**backport**: a separate release line off the last pre-9.6 version of the package.
-
-That is a permanent, per-package maintenance commitment, and it is the reason
-readiness is declared **deliberately, for the packages chosen as tech-preview
-targets**, and never swept across the catalog because the audit says `READY`.
+Declaring readiness raises the package's minimum stack version to 9.6, so older stacks
+need a backport line. The full explanation, and why readiness is declared only for the
+chosen tech-preview targets, is in [`migration.md`](migration.md#the-cost-of-declaring-readiness).
 `READY` means "no mapping blocker"; it does not mean "worth the 9.6 floor".
 
 ---
@@ -159,17 +167,43 @@ targets**, and never swept across the catalog because the audit says `READY`.
 
 ### A1. `nested` inside `nested` — `nested_in_nested`
 
-**Rule.** A field of `type: nested` that has a descendant (at any depth, through
-`fields:`) also of `type: nested`.
+**Rule.** A field of `type: nested` that has a `type: nested` ancestor. Ancestry is
+decided by full path over all of the stream's field files, because packages declare
+nested children two ways: through `fields:`, and as separate entries with dotted
+names (tanium declares `whats` as `nested`, then `whats.intel_intra_ids` as `nested`
+next to it). Fleet expands both into the same hierarchy.
+
+**Why.** Columnar supports one level of nesting: "columnar index modes support only
+a single level of nesting" (`NestedObjectMapper`). The index template PUT fails.
 
 Single-level `nested` is accepted, but it is reported separately as
-`nested_single_level` (severity *review*) because the synthetic-source shape changes.
+`nested_single_level` (severity *review*): `nested` queries still match within one
+element, but `_source` consumers see the columnar shape, and any `nested` field turns
+off columnar's batch indexing for the whole stream (`ShardBatchMapper`).
 
-**Remediation.** Flatten the inner level to leaf arrays (e.g. `a.b.c: [x, y]` instead
-of an array of objects), or remap the inner object as `type: flattened`. Both change
-the query surface, so this is never an automatic fix.
+**Remediation.** First check that no dashboard or detection rule runs a `nested`
+query on the inner path. Then, in order of preference:
 
-**Known in catalog:** `o365/audit`, `aws/waf`.
+1. Change the inner level to `type: group` (a plain object). Every value is kept; you
+   only lose matching within a single inner element. The report prints this change
+   for the field as a **Suggested change**.
+2. Map it as `type: flattened` when its keys are open-ended.
+3. If the pairing inside each inner element matters, build a single-level `nested`
+   array in the ingest pipeline, one entry per (outer, inner) pair carrying both sets
+   of keys.
+4. Or keep the stream on logsdb: the opt-in is per stream.
+
+All of 1–3 change the mapping for logsdb installs too, so this is never an automatic
+fix. On an existing data stream the type change applies at the next rollover: the
+write index rejects it ("can't merge a non-nested mapping ... with a nested mapping")
+and Fleet rolls the stream over at package upgrade.
+
+**Known in catalog:** `aws/waf` (`aws.waf.non_terminating_matching_rules` →
+`ruleMatchDetails`), `o365/audit` (`ExchangeAggregatedFolders` → `FolderItems`,
+`ExchangeAggregatedMessages` → `MessageItems`), `tanium/threat_response`
+(`…match_details.finding.whats` → `intel_intra_ids` and
+`artifact_activity.relevant_actions`). None of them is used by a dashboard or queried
+by a shipped detection rule, so option 1 unblocks all three.
 
 ### A2. `doc_values: false` — `doc_values_false`
 
@@ -432,16 +466,26 @@ attribute under `isStrictColumnar()` —
 block. (`FieldMapper#validate` separately refuses `copy_to` from or to a multi-field
 in every index mode.)
 
-**Remediation.** Do the copy in the ingest pipeline with a `set` processor (or `append`
-when the target is multi-valued), or drop the target field if nothing queries it.
+**Remediation.** Do the copy in the data stream's ingest pipeline, then delete
+`copy_to` from the field (in every index mode), or drop the target field if nothing
+queries it. The report prints the processor as a **Suggested change**: a `script`
+tagged `columnar_copy_<field>` that appends the field's values to every target, the
+way `copy_to` does — creating parent objects, keeping arrays and types, never
+overwriting (verified with `_ingest/pipeline/_simulate` on 9.6). A plain `set` with
+`copy_from` is enough only when the field is the target's single source:
 
 ```yaml
-# elasticsearch/ingest_pipeline/default.yml
+# data_stream/<ds>/elasticsearch/ingest_pipeline/default.yml
 - set:
+    tag: columnar_copy_my_source
     field: my.combined
     copy_from: my.source
     ignore_empty_value: true
 ```
+
+Place it after the processors that set the source and before any that read the
+target, then regenerate the pipeline test expectations with `-g`: the targets now
+appear in the documents.
 
 ### A4. `keyword` with a non-`lowercase` `normalizer` — `keyword_normalizer`
 
@@ -462,11 +506,13 @@ Two exemptions, both of them easy to get wrong:
 Anything else (a custom normalizer with `asciifolding`, a custom char filter, …)
 returns `FALLBACK` and is rejected on a top-level field.
 
-**Remediation.**
+**Remediation.** The report prints the multi-field version as a **Suggested change**
+(mapping-only, the documents do not change):
 
-- Apply the transformation in the ingest pipeline and map a plain `keyword`; or
 - move the normalized variant into `multi_fields:` — `field` stays raw and
-  `field.caseless` carries the normalizer.
+  `field.caseless` (or `.normalized`) carries the normalizer; or
+- apply the transformation in the ingest pipeline and map a plain `keyword`, when the
+  original value is not needed.
 
 ```yaml
 - name: user.name
@@ -491,7 +537,11 @@ containing a script.
 **Remediation.**
 
 - Materialise the value with a `script` processor in the ingest pipeline (best when the
-  field is queried often); or
+  field is queried often). The report prints a skeleton tagged
+  `columnar_compute_<field>` with the runtime script quoted in it; porting it is manual
+  (`ctx` instead of `doc[...]`, an assignment instead of `emit()`). A plain
+  `runtime: true` without a script needs no pipeline change: delete it and keep the
+  type. Or
 - move it to query time: ES|QL `EVAL`, or a runtime field defined in the search
   request rather than in the mapping. Both still work against a columnar index.
 
@@ -582,6 +632,8 @@ document view and can be recovered by reindexing. In columnar mode there is no
 4. `dynamic: strict` — documents with unknown fields are rejected into the failure
    store instead of being silently truncated. The safest option when the upstream
    schema is supposed to be stable and you want to be told when it isn't.
+5. `type: flattened` for an object whose keys are open-ended (a raw request or
+   response body): every key is kept as a keyword leaf, with no mapping explosion.
 
 **Known in catalog:** `beyondinsight_password_safe`, `cloud_asset_inventory`,
 `cloud_security_posture`, `elastic_agent`, `falco`, `fleet_server`, `kubernetes`,
@@ -616,16 +668,16 @@ Filters on non-sorted fields become doc-value scans pruned by skippers rather th
 posting-list lookups, so query cost goes up — most visibly for needle-in-a-haystack
 queries (a single user name or file hash over a long time range).
 
-The lever a package owner controls is **index sorting** — see
-[`sorting.md`](sorting.md). Do **not** add inverted-index overrides on keyword
-fields, in either spelling — the plain `index: true` attribute or the
-mode-scoped `columnar: {index: true}` block that 3.7.0 adds. The premise of the
-rollout is that columnar does not need inverted indexes, and per-field indexing
-decisions are made later from benchmark data, never from static analysis. If you
-meet one in an existing package, see C5.
+The first lever a package owner controls is **index sorting** — see
+[`sorting.md`](sorting.md): a field in the sort key needs no index. The second is a
+per-stream decision on which fields, if any, keep an inverted index (C5). "None" is a
+valid answer, and the audit never writes one itself: it lists **lookup candidates**,
+the `keyword`/`ip` fields the stream's shipped rules and dashboard filters reference
+outside the sort key, flagging the high-risk lookup fields from the mapping plan
+(`trace.id`, `source.ip`, `user.name`, hashes, …).
 
-Elasticsearch is closing the gap independently: keyword skippers land in 9.7, bloom
-filters after GA.
+Elasticsearch is closing the gap independently (keyword skippers, then bloom filters;
+see **Current status** in `SKILL.md` for where they stand).
 
 ### C2. Synthetic source shape
 
@@ -664,24 +716,28 @@ field raw and move the normalizer into `multi_fields:`.
 **Rule.** A field whose mode-scoped `columnar:` block sets `index: true`, keeping
 an inverted index for that one field under columnar modes.
 
-**Reported, never recommended.** The audit raises it as an informational finding
-worded *"benchmark-justified inverted index — confirm evidence exists"*, and that
-is the only thing it will ever do with it. Static analysis cannot justify the
-override: rollout rule 2 says per-field indexing is decided from benchmark data
-on the real workload, after the fact, and the premise of the whole exercise is
-that columnar does not need inverted indexes. The skill must never emit it, and
-neither should a migration PR.
+**A per-stream human decision.** The rollout strategy asks, for each data stream
+made columnar-ready, which fields (if any) keep an inverted index, decided from the
+queries its dashboards and detection rules run. The audit reports an existing override
+as an informational finding and lists lookup candidates per stream; it never writes
+one. A human adds one when a named query filters on the field by exact value and the
+field is not in the sort key, and records that query in the PR.
 
-**What to do when you find one.** Look for the benchmark linked from the PR that
-added it. If there is one, leave it and carry the link forward. If there is not,
-remove it and reach for index sorting instead ([`sorting.md`](sorting.md)) —
-that is the per-integration lever.
+**Which spelling.** Prefer the mode-scoped `columnar: {index: true}`: explicit, and a
+no-op on logsdb and standard installs. (A plain `index: true` is emitted by Fleet as
+is and is also the logsdb default for keyword fields, so it works too; which one the
+catalog standardizes on is an open team decision.) `index` is not valid on `wildcard`
+fields.
+
+**What to do when you find one.** Look for the query it serves. If there is one,
+keep it and carry the reference forward. If there is not, remove it and reach for
+index sorting instead ([`sorting.md`](sorting.md)).
 
 **Known in catalog:** none.
 
 ---
 
-## C6-C8: columnar `_source` consumers
+## C6-C10: columnar `_source` consumers
 
 Columnar `_source` **is not a faithful representation of the original source**. It
 is reconstructed from doc values, and:
@@ -720,8 +776,9 @@ reads doc values, not `_source`. The exception is a query that explicitly reques
 `METADATA _source` — and those normally go on to pick the document apart with
 `JSON_EXTRACT(_source, "...")`, which is exactly where the flattened shape shows up.
 
-**Ingest pipelines are NOT affected.** They run *before* indexing, on the real
-document, so nothing in this section applies to them and the audit never flags them.
+**Ingest pipelines on the data stream are NOT affected.** They run *before* indexing,
+on the real document. The exception is the destination pipeline of a `latest`
+transform, which runs on the rebuilt `_source` the transform copies (C10).
 
 So a data stream should not be declared `elasticsearch.columnar.supported: true`
 until this review is done. It is a per-integration question about *consumers*, which
@@ -729,30 +786,22 @@ no mapping check can answer.
 
 ### Reading a negative result
 
-The audit prints the C6-C8 outcome for every data stream **including when it is
-empty** — "`_source` consumers: none found in this package (no transforms reading
-`_source`, no scripted/runtime fields in `kibana/`, no ES|QL `METADATA _source`);
-object arrays: none in the sampled documents". Silence would be ambiguous: an absent
-Class C section looks identical to a check that never ran.
+The audit prints the C6-C10 outcome for every data stream **including when it is
+empty** — "`_source` consumers: none found (no transform script reading `_source`, no
+`latest` transform, no scripted/runtime fields or ES|QL `METADATA _source` in
+`kibana/`, no shipped detection rule reading `_source`); object arrays: none in the
+sampled documents". Silence would be ambiguous: an absent Class C section looks
+identical to a check that never ran. When the detection rules could not be scanned,
+the line says so.
 
 Fields of type `flattened` that *do* hold an object array in the sampled documents are
 listed on that same line as exempt (they keep their JSON verbatim under columnar, so
 the parallel-array reshaping does not apply to them) — `anthropic.audit.updates` is
 one. Naming them is the difference between "checked, exempt" and "not looked at".
 
-**The detection-rules check is manual and always outstanding.** Rules that query this
-package's data streams live in `elastic/detection-rules` and ship through
-`security_detection_engine`, so no audit of the package can see them:
-
-```bash
-git clone https://github.com/elastic/detection-rules
-cd detection-rules
-grep -rl 'logs-<pkg>\.' rules/ | xargs grep -l '_source'
-```
-
-A hit is a rule that walks the document source of one of this package's data streams.
-Rules that only query *fields* (KQL, EQL, ES|QL without `METADATA _source`) are
-unaffected.
+**Detection rules are scanned automatically** (C9): the prebuilt rules ship in this
+repo as `packages/security_detection_engine/kibana/security_rule/*.json`. Rules a user
+wrote, or installed from elsewhere, are not covered.
 
 ### C6. Transform reads `_source` — `source_consumer_transform`
 
@@ -800,15 +849,8 @@ would be noise, not signal.
 **Remediation.** Move the expression onto doc values or onto the mapped fields; or
 check it against a columnar index.
 
-**Known in catalog:** four detection rules in `security_detection_engine` use
-`FROM ... METADATA _source` with `JSON_EXTRACT(_source, ...)`:
-`1ca59146`, `4159bec9`, `8e78b1a5`, `e7bf9314`. They produce no data stream finding
-because `security_detection_engine` ships no data streams — but note **which indices
-they read**: `logs-network_traffic.sip-*`, `logs-network_traffic.nfs-*`,
-`logs-gcp.audit-*`. Detection rules live outside the packages they query (they are
-generated from `elastic/detection-rules`), so a `_source` consumer of the
-`network_traffic` or `gcp` package is invisible to an audit of that package. See
-[`correctness-and-performance.md`](correctness-and-performance.md).
+**Known in catalog:** none in the integrations' own `kibana/` assets. Detection
+rules are a separate consumer class, see C9.
 
 ### C8. Object arrays in the documents — `object_array_flattening`
 
@@ -830,3 +872,99 @@ dominate — `crowdstrike/alert` (7 fields, e.g. `crowdstrike.alert.ioc_context`
 `crowdstrike.alert.quarantined_files`), `okta/system` (`okta.target`), `o365/audit`
 (`o365.audit.Actor`, `o365.audit.Target`), `aws/securityhub_findings` — but so do
 plain ECS arrays such as `dns.answers` (`aws/route53_resolver_logs`).
+
+### C9. Shipped detection rule reads `_source` — `source_consumer_detection_rule`
+
+**Rule.** A prebuilt rule in `packages/security_detection_engine/kibana/security_rule/`
+(latest version of each `rule_id`) whose index patterns match the stream — `index`,
+the ES|QL `FROM` clause, or an indicator match rule's `threat_index` — and whose query
+reads `_source`: `METADATA _source`, `JSON_EXTRACT(_source, …)`, `params._source`.
+Severity `review`.
+
+**Why.** Columnar returns `_source` with dotted top-level keys, so
+`JSON_EXTRACT(_source, "a.b")` looks for an `a` object, finds none, and returns null.
+Rules filter on the extracted value, so they stop matching, with no error. Nothing
+fails at install either: this is silent detection loss.
+
+**Remediation.** Hold the stream back from the tech preview until the rule is fixed
+in `elastic/detection-rules` (the rules are generated there):
+
+- Reference the mapped fields as columns instead of `_source`. Cast with `TO_STRING`
+  where the index patterns disagree on a type.
+- Add `SET unmapped_fields = "nullify";` when a field may be missing from one of the
+  patterns (the usual reason the rule reached for `JSON_EXTRACT`).
+- Values inside a `flattened` field cannot be read as ES|QL columns (`LOAD` does not
+  support flattened subfields either): promote the value to its own field in the
+  ingest pipeline, or wait for elasticsearch#160300, a `JSON_EXTRACT` that resolves
+  dotted keys.
+
+The same scan feeds the **Detection rules** line of each stream: how many rules query
+it directly (by language), how many reach it through broad patterns such as `logs-*`,
+and how many read `_source`. The direct ones are the rule half of the performance
+workload; EQL and KQL run as Query DSL.
+
+**Known in catalog:** 4 rules on 3 streams — "Potential SIP Extension Enumeration" and
+"Potential SIP REGISTER Brute Force" (`network_traffic/sip`), "Potential NFS
+Destructive Operation Burst" (`network_traffic/nfs`), "GKE Certificate Signing
+Request for Privileged Identity" (`gcp/audit`, reads the `flattened`
+`gcp.audit.request`). The network_traffic package maps every field those rules
+extract, so the SIP and NFS ones only need the column rewrite.
+
+### C10. `latest` transform over the stream — `source_consumer_latest_transform`
+
+**Rule.** A transform with a `latest:` section whose `source.index` patterns match the
+stream, **whichever package owns it**. Severity `review`. Unlike C6, no script is
+needed: a `latest` transform copies the newest document's whole `_source` (per
+`unique_key`) into its destination index.
+
+**Cross-package transforms.** The audit reads every package's `latest` transforms,
+because the stream whose opt-in changes a transform's output can belong to another
+package. Such a finding names the owning package, points at its files, and says the
+fix belongs there. The owner's report lists its transforms that read none of its own
+streams, with the streams they are flagged on, or says they read no in-scope logs
+stream in this repo (metrics streams, `.alerts-security.alerts-*`). The catalog has no
+cross-package case today.
+
+**Why.** On a columnar source that `_source` is the rebuilt, flat one:
+
+- the destination documents get dotted keys, parallel arrays in place of object
+  arrays, and plain values in place of single-element arrays — permanently, because
+  the destination is a normal index that stores what it is given;
+- a destination pipeline addresses fields by path, so its processors do not find the
+  dotted keys: `rename`/`set`/`remove` with `ignore_missing` skip silently, and
+  scripts see `ctx.<object>` as null. The finding says whether the pipeline already
+  expands dotted keys.
+
+**Remediation.**
+
+1. Start the destination pipeline with a `dot_expander` using `field: "*"` (a no-op
+   on logsdb input), or set `field_access_pattern: flexible` on it. The report prints
+   the processor as a **Suggested change** for each destination pipeline file that
+   does not expand dotted keys yet:
+
+   ```yaml
+   processors:
+     - dot_expander:
+         tag: columnar_expand_dotted_keys
+         field: "*"
+   ```
+
+   Verified with `_ingest/pipeline/_simulate` on 9.6 against CrowdStrike's
+   `aidmaster_lookup_namespaced` pipeline: today a flat (columnar-shaped) document
+   comes out with its renames skipped; with the processor, the flat and the nested
+   document give the same output, and the nested output does not change.
+
+2. Check that no consumer of the destination index depends on object-array pairing,
+   or reads its `_source` (indicator match rules read threat intel indices).
+3. Run the transform on the stream in both modes and diff the destination documents.
+   `elastic-package test pipeline` only covers data stream pipelines, so test a
+   package-level destination pipeline with `_ingest/pipeline/_simulate`: send one
+   document nested and once with dotted keys; the outputs must match.
+
+Pivot transforms are unaffected: they aggregate from doc values.
+
+**Known in catalog:** 146 `latest` transforms in 61 packages, flagging 141 in-scope
+logs streams (every `ti_*` package, `crowdstrike/fdr`, `cloud_security_posture`, …).
+CrowdStrike's `latest_aidmaster` and `latest_userinfo` destination pipelines rename
+`crowdstrike` and `host.*` under `crowdstrike.info.host.*`, which silently does
+nothing on dotted keys.
