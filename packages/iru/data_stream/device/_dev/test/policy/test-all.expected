@@ -36,32 +36,41 @@ inputs:
                 }
               ).do_request().as(resp, resp.StatusCode == 200 ?
                 resp.Body.decode_json().as(body,
-                  {
-                    "events": body.map(e, {"message": e.encode_json()}),
-                    // Omit offset when the last page was partial so the next interval starts from zero.
-                    ?"offset": (size(body) > 0 && size(body) >= int(state.batch_size)) ?
-                      optional.of(int(state.?offset.orValue(0)) + int(state.batch_size))
-                    :
-                      optional.none(),
-                    "want_more": size(body) > 0 && size(body) >= int(state.batch_size),
-                  }
+                  (size(body) > 0 && size(body) >= int(state.batch_size)) ?
+                    state.with(
+                      {
+                        "events": body.map(e, {"message": e.encode_json()}),
+                        "offset": int(state.?offset.orValue(0)) + int(state.batch_size),
+                        "want_more": true,
+                      }
+                    )
+                  :
+                    // optional.none() does not remove offset from state; drop it when pagination ends.
+                    state.drop("offset").with(
+                      {
+                        "events": body.map(e, {"message": e.encode_json()}),
+                        "want_more": false,
+                      }
+                    )
                 )
               :
-                {
-                  "events": {
-                    "error": {
-                      "code": string(resp.StatusCode),
-                      "id": resp.Status,
-                      "message": "GET " + state.url.trim_right("/") + "/api/v1/devices: " + (
-                        (size(resp.Body) != 0) ?
-                          string(resp.Body)
-                        :
-                          resp.Status
-                      ),
+                state.drop("offset").with(
+                  {
+                    "events": {
+                      "error": {
+                        "code": string(resp.StatusCode),
+                        "id": resp.Status,
+                        "message": "GET " + state.url.trim_right("/") + "/api/v1/devices: " + (
+                          (size(resp.Body) != 0) ?
+                            string(resp.Body)
+                          :
+                            resp.Status
+                        ),
+                      },
                     },
-                  },
-                  "want_more": false,
-                }
+                    "want_more": false,
+                  }
+                )
               )
             )
           publisher_pipeline.disable_host: true

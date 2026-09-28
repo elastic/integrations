@@ -1,0 +1,33 @@
+# Use of "*" to use all namespaces defined.
+source:
+  index:
+    - "logs-iru.device-*"
+  query:
+    bool:
+      must:
+        - term:
+            event.kind: "asset"
+dest:
+  index: "logs-iru_latest.dest_device-1"
+  aliases:
+    - alias: "logs-iru_latest.device"
+      move_on_creation: true
+latest:
+  unique_key:
+    - host.id
+  sort: "event.ingested"
+description: >-
+  Latest managed device inventory from Iru. Each poll appends a full device list;
+  this transform keeps one document per device for dashboards and entity analytics.
+frequency: 30s
+settings:
+  deduce_mappings: false
+  unattended: true
+sync:
+  time:
+    field: "event.ingested"
+    delay: 120s
+_meta:
+  managed: true
+  fleet_transform_version: 1.0.0
+  run_as_kibana_system: false

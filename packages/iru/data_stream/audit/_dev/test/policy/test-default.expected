@@ -98,6 +98,9 @@ inputs:
                   has(state.next_url) && state.next_url != "" ?
                     state.next_url
                   :
+                    // occurred_at is microsecond-precision; the cursor uses max(occurred_at) per page.
+                    // Inclusive start_date can re-fetch events at the same timestamp — audit events are
+                    // immutable, so duplicates are deduplicated via ingest fingerprint on event.id.
                     state.url.trim_right("/") + "/api/v1/audit/events?" + {
                       "limit": [string(int(state.batch_size))],
                       "sort_by": ["occurred_at"],

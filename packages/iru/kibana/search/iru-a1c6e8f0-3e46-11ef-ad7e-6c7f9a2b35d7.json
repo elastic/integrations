@@ -47,7 +47,29 @@
                         "meta": {
                             "alias": null,
                             "disabled": false,
+                            "field": "labels.is_transform_source",
                             "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+                            "key": "labels.is_transform_source",
+                            "negate": false,
+                            "params": {
+                                "query": "false"
+                            },
+                            "type": "phrase"
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "labels.is_transform_source": "false"
+                            }
+                        }
+                    },
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "alias": null,
+                            "disabled": false,
+                            "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.filter[2].meta.index",
                             "negate": false,
                             "params": [
                                 {
@@ -96,7 +118,7 @@
                 "indexRefName": "kibanaSavedObjectMeta.searchSourceJSON.index",
                 "query": {
                     "language": "kuery",
-                    "query": "data_stream.dataset: \"iru.device\" and (iru.device.is_missing: true or iru.device.is_removed: true)"
+                    "query": "data_stream.dataset: \"iru.device\" and labels.is_transform_source: false and (iru.device.is_missing: true or iru.device.is_removed: true)"
                 }
             }
         },
@@ -127,6 +149,11 @@
         {
             "id": "logs-*",
             "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[1].meta.index",
+            "type": "index-pattern"
+        },
+        {
+            "id": "logs-*",
+            "name": "kibanaSavedObjectMeta.searchSourceJSON.filter[2].meta.index",
             "type": "index-pattern"
         }
     ],

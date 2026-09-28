@@ -40,6 +40,12 @@ processors:
       target_field: event.id
       ignore_missing: true
       tag: rename_id_to_event_id
+  - fingerprint:
+      fields:
+        - event.id
+      target_field: _id
+      ignore_missing: true
+      tag: fingerprint_event_id
   - rename:
       field: json.action
       target_field: event.action
@@ -170,16 +176,25 @@ processors:
           type:
             create: [change, creation]
             update: [change]
+            delete: [deletion]
         library_item:
           category: [configuration]
           type:
             create: [change, creation]
             update: [change]
+            delete: [deletion]
         api_token:
           category: [iam]
           type:
             create: [admin, creation]
             update: [admin, change]
+            delete: [admin, deletion]
+        device:
+          category: [configuration]
+          type:
+            create: [change, creation]
+            update: [change]
+            delete: [deletion]
       source: |-
         def mapping = params[ctx.iru.audit.target.type];
         if (mapping == null) {
