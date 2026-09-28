@@ -109,7 +109,15 @@ Ingest pipelines see the document before index time. Do not flag them.
   - **`event.original`**: classic ECS integrity packaging (`index: false` +
     `doc_values: false`, retrieve from `_source`). Under columnar `_source` is
     synthetic/columnar — treat as a dedicated remediation, not the same as
-    redacting secrets.
+    redacting secrets. Most packages get it from `external: ecs`: ECS defines
+    the field with `doc_values: false` and elastic-package copies that into the
+    built mapping, so the field file doesn't show it. The script flags these.
+    The stack's `ecs@mappings` uses `index: false` only, so packages that don't
+    declare `event.original` are unaffected. Remediation options are dropping
+    the ECS import for the field, or a columnar-only override
+    ([obs-integration-team#1252](https://github.com/elastic/obs-integration-team/issues/1252)).
+  - **ECS `*.x509.public_key_exponent`** (and `gen_ai.agent.description` in
+    newer ECS): same mechanism as `event.original` via `external: ecs`.
   - **Secrets / custom**: e.g. password fields — remap or exclude the stream
 - `copy_to`
 - Runtime fields declared in `fields/*.yml` (`runtime: true` or a script string)

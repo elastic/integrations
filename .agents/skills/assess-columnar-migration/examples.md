@@ -6,13 +6,15 @@ Every in-scope proposal states the minimum stack implied by `format_version`
 and that columnar bumps it. Spec 3.0 means 8.11, spec 3.4 means 8.19, spec 3.6
 means 9.4. The bump raises that floor to 9.6+.
 
-## `checkpoint` — migrate candidate
+## `checkpoint` — `event.original` from ECS
 
 ```bash
 uv run .agents/skills/assess-columnar-migration/scripts/assess_package.py packages/checkpoint
 ```
 
-- Verdict: typically `migrate_candidate` (single-level nested is fine; not reported)
+- Verdict: `defer_or_exclude`. The only blocker is `doc_values: false` on
+  `event.original`, which the field file imports with `external: ecs`
+  (single-level nested is fine; not reported)
 - At migration time: `observer.name` + `@timestamp` (firewall; override host default).
   Dashboard hints often surface `event.action` / network fields; use observer as the low-cardinality partition
 
@@ -66,7 +68,8 @@ nested-in-nested — tanium.threat_response.match_details.finding.whats → …w
 The check compares dotted paths across all field files of a stream, so this
 counts even though the YAML is not indented under the parent. `logstash`
 `node_stats` has the same shape, but it is a metrics stream and out of scope,
-so `logstash` reads `migrate_candidate`.
+so it doesn't count; `logstash` is blocked only by `event.original` on its log
+streams.
 
 ## `withsecure_elements` — `event.original` doc_values
 
@@ -76,6 +79,9 @@ uv run .agents/skills/assess-columnar-migration/scripts/assess_package.py packag
 
 Blocker kind is `doc_values: false (event.original)`, not a generic secret omit.
 Proposed change should mention ECS integrity packaging / `_source` semantics.
+Here the field file sets `doc_values: false` itself. In about 50 other packages
+it comes from `external: ecs` and the detail says so; the remediation is the
+same.
 
 Contrast with `doppel` (`cred_leaks_password`) — same severity, different remediation story.
 

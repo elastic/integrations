@@ -75,7 +75,7 @@ there, or when a finding is unfamiliar.
 
 | Severity | Meaning |
 | --- | --- |
-| **blocker** | Must fix or exclude stream (`store: true`, `doc_values: false`, `copy_to`, `runtime` fields, nested-in-nested, incompatible types, `_source` disabled). `doc_values: false (event.original)` is called out separately from secret-style fields. |
+| **blocker** | Must fix or exclude stream (`store: true`, `doc_values: false`, `copy_to`, `runtime` fields, nested-in-nested, incompatible types, `_source` disabled). `doc_values: false (event.original)` is called out separately from secret-style fields. `external: ecs` fields count too: ECS sets `doc_values: false` on `event.original` and `*.x509.public_key_exponent`, and elastic-package copies it. |
 | **data_loss** | `dynamic: false` / `enabled: false` in fields **or** stream manifest `index_template.mappings`. Columnar in tech preview drops that data; whether it keeps unmapped fields by GA is an open platform decision |
 | **info** | Soft signals: package `text` / `match_only_text` |
 

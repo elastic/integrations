@@ -46,6 +46,22 @@ FROM_CLAUSE_RE = re.compile(
 ESQL_LINE_COMMENT_RE = re.compile(r"//[^\n]*")
 RULE_FILE_RE = re.compile(r"^(?P<rule_id>.+)_(?P<version>\d+)\.json$")
 
+# ECS fields defined with `doc_values: false`. elastic-package copies `doc_values`
+# from ECS into `external: ecs` fields at build time unless the entry sets it.
+ECS_DOC_VALUES_FALSE = frozenset(
+    {
+        "event.original",
+        "file.x509.public_key_exponent",
+        "gen_ai.agent.description",
+        "threat.enrichments.indicator.file.x509.public_key_exponent",
+        "threat.enrichments.indicator.x509.public_key_exponent",
+        "threat.indicator.file.x509.public_key_exponent",
+        "threat.indicator.x509.public_key_exponent",
+        "tls.client.x509.public_key_exponent",
+        "tls.server.x509.public_key_exponent",
+    },
+)
+
 
 class LineDict(dict):
     """YAML mapping that remembers its own source line and the line of each key."""
@@ -155,28 +171,24 @@ def scan_fields(files: list[Path]) -> tuple[list[Finding], set[str]]:
     nested: dict[str, tuple[Path, int]] = {}
 
     def check(entry: LineDict, field_path: str, path: Path) -> None:
-        def add(severity: str, kind: str, key: str) -> None:
-            value = entry[key]
-            shown = str(value).lower() if isinstance(value, bool) else value
-            findings.append(
-                Finding(
-                    severity,
-                    kind,
-                    path,
-                    entry.line_of(key),
-                    f"`{key}: {shown}` on `{field_path}`",
-                    field_path,
-                ),
-            )
+        def add(severity: str, kind: str, key: str, detail: str | None = None) -> None:
+            if detail is None:
+                value = entry[key]
+                shown = str(value).lower() if isinstance(value, bool) else value
+                detail = f"`{key}: {shown}` on `{field_path}`"
+            findings.append(Finding(severity, kind, path, entry.line_of(key), detail, field_path))
 
         field_type = entry.get("type")
         if field_type == "nested":
             nested.setdefault(field_path, (path, entry.line_of("type")))
         if entry.get("store") is True:
             add("blocker", "store: true", "store")
+        integrity = field_path == "event.original" or field_path.endswith(".event.original")
+        doc_values_kind = "doc_values: false (event.original)" if integrity else "doc_values: false"
         if is_false(entry.get("doc_values")):
-            integrity = field_path == "event.original" or field_path.endswith(".event.original")
-            add("blocker", "doc_values: false (event.original)" if integrity else "doc_values: false", "doc_values")
+            add("blocker", doc_values_kind, "doc_values")
+        elif "doc_values" not in entry and entry.get("external") == "ecs" and field_path in ECS_DOC_VALUES_FALSE:
+            add("blocker", doc_values_kind, "external", f"`doc_values: false` on `{field_path}` (ECS, via `external: ecs`)")
         if "copy_to" in entry:
             add("blocker", "copy_to", "copy_to")
         # package-spec: `runtime: true` or a script string.
