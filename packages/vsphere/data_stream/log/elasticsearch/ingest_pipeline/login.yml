@@ -66,9 +66,10 @@ processors:
     pattern: "%{_tmp.status} from %{client.ip} port %{client.port} %{}"
     if: 'ctx.message?.startsWith(''Disconnected'') ?: false'
     description: Disconnect messages
-- dissect:
+- grok:
     field: message
-    pattern: Connection %{_tmp.status} by %{client.ip} port %{client.port} %{}
+    patterns:
+    - 'Connection %{DATA:_tmp.status} by %{IPORHOST:client.ip} port %{POSINT:client.port}( %{GREEDYDATA})?$'
     if: 'ctx.message?.startsWith(''Connection'') ?: false'
     description: Connection messages
 - dissect:

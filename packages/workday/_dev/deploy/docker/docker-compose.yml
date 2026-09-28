@@ -1,0 +1,17 @@
+version: '3.0'
+services:
+  workday:
+    image: docker.elastic.co/observability/stream:v0.20.0
+    hostname: workday
+    ports:
+      - 8090
+    volumes:
+      - ./files:/files:ro
+    environment:
+      PORT: '8090'
+    command:
+      - http-server
+      - --addr=:8090
+      - --config=/files/config.yml
+      - --tls-cert=/files/workday.crt
+      - --tls-key=/files/workday.key

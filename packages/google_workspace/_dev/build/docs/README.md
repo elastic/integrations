@@ -33,6 +33,8 @@ It is compatible with a subset of applications under the [Google Reports API v1]
 | [Vault](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/vault) | The Vault activity report returns information about various types of Vault Audit activity events. |
 | [Meet](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/meet) | The Meet activity report returns information about various aspects of call events. |
 | [Keep](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/keep) | The Keep activity report returns information about how your account's users manage and modify their notes. |
+| [Gmail Reports](https://developers.google.com/admin-sdk/reports/v1/appendix/activity/gmail) | The Gmail activity report returns information about message delivery, SMTP connections, spam classification and policy rule matches. |
+| [Gemini](https://developers.google.com/workspace/admin/reports/v1/appendix/activity/gemini-in-workspace-apps) | The Gemini in Workspace Apps activity report returns information about generative AI feature usage across Workspace applications. |
 
 ## Requirements
 
@@ -66,11 +68,35 @@ This integration will use the following *oauth2 scope*:
 
 Once you have downloaded your service account credentials as a JSON file, you are ready to set up your integration.
 
-Click the Advanced option of Google Workspace Audit Reports. The default value of "API Host" is `https://www.googleapis.com`. The API Host will be used for collecting `access_transparency`, `admin`, `calendar`, `chat`, `chrome`, `context_aware_access`, `data_studio`, `device`, `drive`, `gcp`, `groups`, `group_enterprise`, `keep`, `login`, `meet`, `rules`, `saml`, `token`, `user accounts` and `vault` logs.
+Click the Advanced option of Google Workspace Audit Reports. The default value of "API Host" is `https://www.googleapis.com`. The API Host will be used for collecting `access_transparency`, `admin`, `calendar`, `chat`, `chrome`, `context_aware_access`, `data_studio`, `device`, `drive`, `gcp`, `gemini`, `gmail_reports`, `groups`, `group_enterprise`, `keep`, `login`, `meet`, `rules`, `saml`, `token`, `user accounts` and `vault` logs.
 
 >  NOTE: The `Delegated Account` value in the configuration, is expected to be the email of the administrator account, and not the email of the ServiceAccount.
 
+### Collection window settings for Reports API data streams
+
+The `access_transparency`, `admin`, `context_aware_access`, `device`, `drive`, `gcp`, `groups`, `group_enterprise`, `login`, `rules`, `saml`, `token` and `user_accounts` data streams request activity from the Reports API in time windows. Three settings control those windows:
+
+- **Initial Interval** (package level, default `24h`): how far back the first collection reaches when a data stream starts with no saved position.
+- **Lag Time** (per data stream, default `2h`): how far behind the current time the end of every window stays. Google publishes activity with a delay that varies by report; see [Data retention and lag times](https://support.google.com/a/answer/7061566). Events newer than `now - Lag Time` are not requested yet, and are collected on a later interval once they have settled.
+- **Chunk Duration** (per data stream, under Advanced options, disabled by default): the maximum span of activity requested in one interval. When set, each interval requests a window of at most this duration starting from the last completed position, and the position only moves forward after the whole window has been collected. If collection is interrupted, for example by an agent restart or a policy update, only that one chunk is requested again.
+
+Without Chunk Duration, an interval requests everything from the last completed position up to `now - Lag Time` in a single window. For a data stream with a large backlog or a high event rate, such as `token` or `drive` on a busy domain, that window can take longer to page through than the time between interruptions. Each interruption then restarts the same window from the beginning, no progress is saved, and the data stream appears to stall while it re-sends events it has already sent.
+
+Recommended Chunk Duration values:
+
+| Data stream volume | Suggested value |
+|---|---|
+| High (for example `token`, `drive`, `login` on large domains) | `1h` |
+| Moderate | `6h` |
+| Low (for example `rules`, `saml`, `access_transparency`) | `24h` |
+
+A chunk should be small enough to be fully collected between the interruptions you expect, and must not exceed `720h` (30 days). Once the data stream has caught up, the window end is limited by `now - Lag Time`, so Chunk Duration has no effect on steady-state collection. Leaving the setting empty, or setting it to `0`, disables chunking. Existing saved positions are reused unchanged when the setting is turned on or off.
+
 # Google Workspace Gmail Logs
+
+:::{note}
+The integration provides two Gmail data streams. This section is for `gmail`, which queries logs exported to Google BigQuery. If you prefer the Google Reports API, enable `gmail_reports` instead — it shares the service account and `admin.reports.audit.readonly` scope used by the other Reports API streams and skips the BigQuery configuration steps below.
+:::
 
 The integration collects and parses Gmail audit logs data available for reporting in Google Workspace. You must first export Google Workspace logs to Google BigQuery. This involves exporting all activity log events and usage reports to Google BigQuery. Only certain Google Workspace editions support this feature. For more details see [About reporting logs and BigQuery](https://support.google.com/a/answer/9079364?hl=en). The integration uses the [BigQuery API](https://cloud.google.com/bigquery/docs/reference/rest) to query logs from BigQuery.
 
@@ -423,6 +449,21 @@ This is the `keep` dataset.
 {{event "keep"}}
 
 {{fields "keep"}}
+
+### Gmail Reports
+
+This is the `gmail_reports` dataset. It is collected from the Google Reports API and emits one document per event, so a single activity record containing several events produces several documents.
+
+{{event "gmail_reports"}}
+
+{{fields "gmail_reports"}}
+### Gemini
+
+This is the `gemini` dataset.
+
+{{event "gemini"}}
+
+{{fields "gemini"}}
 
 ### Gmail
 

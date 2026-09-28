@@ -1,0 +1,106 @@
+{
+    "attributes": {
+        "enabled": false,
+        "author": [
+            "Contrast Security"
+        ],
+        "description": "Correlates a Contrast ADR confirmed exploit (command injection, deserialization, JNDI injection, etc.) with an Endpoint Detection and Response (EDR) alert on the same host within 30 minutes. ADR observes the exploit succeed at the application code level; EDR confirms suspicious endpoint activity such as process spawning, persistence, or lateral movement. Together they provide high-confidence, multi-layer evidence of compromise. This rule is shipped disabled because the EDR index pattern varies per customer and must be configured before enabling.",
+        "false_positives": [
+            "Scheduled penetration testing or red-team exercises may trigger both ADR and EDR on the same host.",
+            "Aggressive EDR sensors may alert on developer or admin activity coincident with application attack traffic in non-production environments."
+        ],
+        "index": [
+            "logs-contrast_security.attack_event-*",
+            "logs-CUSTOMIZE_EDR_INDEX-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Contrast ADR: Exploited Attack Followed by EDR Alert on Same Host",
+        "note": "## Triage and analysis\n\n### Investigating Exploited Attack with EDR Corroboration\n\nThis rule fires when Contrast ADR confirms exploitation and an EDR product raises an alert on the same host within 30 minutes. Treat as high-confidence multi-layer compromise evidence.\n\n#### Possible investigation steps:\n\n- Review the ADR attack event: `rule.name` (e.g., cmd-injection, jndi-injection), `source.ip`, `url.path`, `http.request.body.content`, `error.stack_trace`.\n- Follow the `event.url` link on the ADR side to view full attack details in the Contrast Security console.\n- Pivot to the matched EDR alert to see process tree, file activity, network connections, and persistence indicators.\n- Determine whether the EDR detection (e.g., suspicious child process of the application runtime) is plausibly caused by the ADR-observed exploit.\n- Check for additional ADR exploits from the same `source.ip` and additional EDR alerts on the same host to scope the incident.\n\n### Response and remediation:\n\n- Visit the runbook for the specific ADR attack type at https://contrastsecurity.dev/adr-runbooks/runbooks/{rule.name}/\n- Isolate the affected host via your EDR product if compromise is confirmed.\n- Enable Contrast ADR Block Mode for the affected rule to prevent future exploitation.\n- Work with the development team to remediate the underlying vulnerability.",
+        "query": "sequence by host.hostname with maxspan=30m\n  [any where event.dataset == \"contrast_security.attack_event\" and event.outcome == \"success\"]\n  [any where event.kind == \"alert\" and not event.dataset like \"contrast_security.*\"]",
+        "references": [
+            "https://www.contrastsecurity.com/contrast-adr",
+            "https://contrastsecurity.dev/adr-runbooks/",
+            "https://attack.mitre.org/techniques/T1190/",
+            "https://attack.mitre.org/techniques/T1059/"
+        ],
+        "related_integrations": [
+            {
+                "package": "contrast_security",
+                "version": "^0.1.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.kind",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.hostname",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 95,
+        "rule_id": "2568e8c5-8ce5-4fd0-838d-c3add2e5d117",
+        "setup": "This rule is shipped disabled and requires per-customer configuration before it can be enabled.\n\n1. In the rule's `index` array, replace `logs-CUSTOMIZE_EDR_INDEX-*` with the index pattern for your EDR product. Common values:\n   - Elastic Defend: `logs-endpoint.alerts-*`\n   - CrowdStrike Falcon: `logs-crowdstrike.fdr-*` or `logs-crowdstrike.alert-*`\n   - SentinelOne: `logs-sentinel_one.alert-*`\n   - Microsoft Defender for Endpoint: `logs-microsoft_defender_endpoint.log-*`\n2. Tighten the second EQL pattern if needed to match only your EDR product's alert events.\n3. Confirm `host.hostname` is populated consistently across ADR and your EDR product. In Kubernetes environments, ADR's `host.hostname` is the pod hostname while EDR's may be the node hostname — align them or change the join key (e.g., to `host.name`) before enabling.\n4. Enable the rule.",
+        "severity": "critical",
+        "tags": [
+            "Data Source: Contrast Security",
+            "Use Case: Application Security",
+            "Use Case: Threat Detection",
+            "Use Case: Cross-Tool Correlation",
+            "Tactic: Initial Access",
+            "Tactic: Execution",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0001",
+                    "name": "Initial Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0001/"
+                },
+                "technique": [
+                    {
+                        "id": "T1190",
+                        "name": "Exploit Public-Facing Application",
+                        "reference": "https://attack.mitre.org/techniques/T1190/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1059",
+                        "name": "Command and Scripting Interpreter",
+                        "reference": "https://attack.mitre.org/techniques/T1059/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 1
+    },
+    "id": "2568e8c5-8ce5-4fd0-838d-c3add2e5d117",
+    "type": "security-rule"
+}

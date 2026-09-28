@@ -1,0 +1,88 @@
+title: Operation
+type: logs
+streams:
+  - input: cel
+    title: Operation
+    description: Collect operation logs report of admins and users under a Zoom account via the REST API.
+    template_path: cel.yml.hbs
+    enabled: false
+    vars:
+      - name: interval
+        type: text
+        title: Interval
+        description: Duration between requests to the Zoom API. Supported units for this parameter are h/m/s.
+        required: true
+        show_user: true
+        default: 24h
+      - name: initial_interval
+        type: text
+        title: Initial Interval
+        description: How far back to pull the Operation logs from Zoom API. Must not exceed six months of available report history. Supported units for this parameter are h/m/s.
+        required: true
+        show_user: true
+        default: 720h
+      - name: page_size
+        type: integer
+        title: Page Size
+        description: Page size for the response of the Zoom API.
+        required: true
+        show_user: false
+        default: 300
+      - name: enable_request_tracer
+        type: bool
+        title: Enable request tracing
+        default: false
+        multi: false
+        required: false
+        show_user: false
+        description: The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#_resource_tracer_enable) for details.
+      - name: http_client_timeout
+        type: text
+        title: HTTP Client Timeout
+        description: Duration before declaring that the HTTP client connection has timed out. Supported time units are ns, us, ms, s, m, h.
+        multi: false
+        required: true
+        show_user: false
+        default: 30s
+      - name: resource_rate_limit_limit
+        type: text
+        title: Rate Limit
+        description: >-
+          The maximum number of API requests allowed per second. Zoom's `/report/operationlogs` endpoint is a Heavy API, and the per-second and daily request quotas are shared across all Zoom Report data streams and apps on the account. Leave empty to disable client-side rate limiting.
+        multi: false
+        required: false
+        show_user: false
+        default: "0.1"
+      - name: resource_rate_limit_burst
+        type: integer
+        title: Rate Limit Burst
+        description: The maximum number of API requests that can be made in a burst following an idle period. Kept small so a simultaneous burst across the Report data streams stays within the account's per-second quota. Leave empty to disable client-side rate limiting.
+        multi: false
+        required: false
+        show_user: false
+        default: 3
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - zoom-operation
+      - name: preserve_original_event
+        required: false
+        show_user: true
+        title: Preserve original event
+        description: Preserves a raw copy of the original event, added to the field `event.original`.
+        type: bool
+        multi: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        multi: false
+        required: false
+        show_user: false
+        description: >-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed.

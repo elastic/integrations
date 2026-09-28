@@ -1,0 +1,124 @@
+# Scenario: domains succeeds; first securityAssessment (DOMAIN_A) returns HTTP 500;
+# DOMAIN_B succeeds.
+# Expect one error document and one assessment document for DOMAIN_B.
+
+[!external_stack] skip 'Skipping external stack test.'
+[!exec:jq] skip 'Skipping test requiring absent jq command'
+
+use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+
+install_agent -profile ${CONFIG_PROFILES}/${PROFILE} -network_name NETWORK_NAME
+
+docker_up -profile ${CONFIG_PROFILES}/${PROFILE} -network ${NETWORK_NAME} cs-mock
+
+add_package -profile ${CONFIG_PROFILES}/${PROFILE}
+
+add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config.yaml DATA_STREAM_NAME
+
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 2 -confirm 15s -timeout 5m ${DATA_STREAM_NAME}
+cp stdout got_docs.json
+
+exec jq '.hits.hits | length' got_docs.json
+stdout '^2$'
+
+exec jq -r '.hits.hits[]._source | select(.error.message != null) | .error.message' got_docs.json
+stdout 'assessment failed for DOMAIN_A'
+
+exec jq '[.hits.hits[]._source | select(.user.domain == "DOMAIN_B")] | length' got_docs.json
+stdout '^1$'
+
+exec jq '[.hits.hits[]._source | select(.crowdstrike.idp != null)] | length' got_docs.json
+stdout '^1$'
+
+remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_NAME}
+uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 1m
+docker_down cs-mock
+
+-- test_config.yaml --
+input: cel
+vars:
+  url: http://cs-mock:8080
+  client_id: test-client-id
+  client_secret: test-client-secret
+  token_url: http://cs-mock:8080/oauth2/token
+data_stream:
+  vars:
+    interval: 30s
+    initial_interval: 1h
+    preserve_original_event: true
+    enable_request_tracer: false
+-- cs-mock/docker-compose.yml --
+version: '2.3'
+services:
+  cs-mock:
+    image: docker.elastic.co/observability/stream:v0.20.0
+    hostname: cs-mock
+    ports:
+      - 8080
+    environment:
+      PORT: "8080"
+    volumes:
+      - ./config.yml:/config.yml
+    command:
+      - http-server
+      - --addr=:8080
+      - --config=/config.yml
+-- cs-mock/config.yml --
+rules:
+  - path: /oauth2/token
+    methods: [POST]
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"access_token":"test-token","expires_in":3600,"token_type":"Bearer"}
+
+  - path: /identity-protection/combined/graphql/v1
+    methods: [POST]
+    request_headers:
+      Authorization:
+        - "Bearer test-token"
+      Content-Type:
+        - "application/json"
+    request_body: '/\{ domains \}/'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"data":{"domains":["DOMAIN_A","DOMAIN_B"]},"extensions":{"remainingPoints":500000,"consumedPoints":0}}
+
+  - path: /identity-protection/combined/graphql/v1
+    methods: [POST]
+    request_headers:
+      Authorization:
+        - "Bearer test-token"
+      Content-Type:
+        - "application/json"
+    request_body: '/DOMAIN_A/'
+    responses:
+      - status_code: 500
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"errors":[{"message":"assessment failed for DOMAIN_A"}]}
+
+  - path: /identity-protection/combined/graphql/v1
+    methods: [POST]
+    request_headers:
+      Authorization:
+        - "Bearer test-token"
+      Content-Type:
+        - "application/json"
+    request_body: '/DOMAIN_B/'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"data":{"securityAssessment":{"overallScore":0.1,"overallScoreLevel":"LOW","assessmentFactors":[]}},"extensions":{"remainingPoints":499990,"consumedPoints":2}}

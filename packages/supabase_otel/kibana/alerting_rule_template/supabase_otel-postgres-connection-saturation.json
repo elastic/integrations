@@ -1,0 +1,56 @@
+{
+    "id": "supabase_otel-postgres-connection-saturation",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "description": "Fires when the backends PostgreSQL reports approach the max_connections ceiling set by the compute tier. Connection exhaustion is the single most common way a Supabase project fails: once the ceiling is reached, new clients are refused outright. Utilisation is measured from pg_stat_database_num_backends rather than the pooler-reported counts, because that is the number PostgreSQL enforces the ceiling against and it is the only one that also includes direct clients, the exporter and platform utilities.",
+        "name": "[Supabase OTel] PostgreSQL connection budget nearly exhausted",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "supabase",
+            "postgresql",
+            "saturation"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 2
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "artifacts": {
+            "dashboards": [
+                {
+                    "id": "supabase_otel-591c7a1f-6ac7-43cb-8ade-9c5684d47f5b"
+                },
+                {
+                    "id": "supabase_otel-0fedaab5-00a9-45ce-8340-fcf6e510d215"
+                }
+            ],
+            "investigation_guide": {
+                "blob": "## PostgreSQL Connection Budget Nearly Exhausted\n\n`max_connections` is a hard, small, tier-fixed budget. Supavisor, PgBouncer, PostgREST and GoTrue all draw from it, and clients can connect directly as well. When it runs out, new connections are refused rather than queued.\n\n### Interpreting the columns\n`Backends` drives the alert and is PostgreSQL's own count. `Pooled Connections` and `Direct Connections` are what the poolers report and will total slightly lower, because neither sees the exporter or the platform utilities. A large gap between `Backends` and the two together means something outside the poolers is holding connections.\n\n### Triage Steps\n1. Read the `Direct Connections` column on the alert. A high direct count means clients are bypassing the pooler and eating the budget the poolers need — that is an application anti-pattern, not a capacity problem.\n2. Identify which role holds the connections: `TS metrics-supabase.metrics.otel-* | STATS conns = MAX(LAST_OVER_TIME(connection_stats_connection_count)) BY attributes.username | SORT conns DESC`\n3. Do not reach for a larger pool first. The usual root cause is queries running slower than they should, so connections are held longer. Check disk IO utilisation, mean query time, and long-running transactions before resizing anything.\n4. Check for a long-running transaction pinning a backend: `pg_stat_activity_xact_runtime`.\n\n### Tuning\nSupabase guidance is to leave the poolers no more than ~40% of `max_connections` when the PostgREST API is in heavy use (up to ~80% otherwise), so the remainder stays free for Auth and platform utilities. Utilisation is therefore meaningful well before 100% — lower the 90% threshold to 70-80% if you want earlier warning.\n\n### Related content\nConnection headroom is deliberately not tracked as an SLO: a pool can sit fully checked out and still be healthy provided nothing queues behind it, so a headroom budget would burn without user impact. This rule is the only connection-budget signal. `pgbouncer_pools_client_waiting_connections` and `pgrst_db_pool_waiting` rise during the same incident and are left as dashboard context rather than duplicated as rules."
+            }
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "TS metrics-supabase.metrics.otel-*\n// pg_stat_database_num_backends is the count PostgreSQL enforces against max_connections, so\n// it is the numerator. The pooler-reported counts run lower because they see only their own\n// clients; they are carried for attribution.\n| STATS\n    `Backends` = SUM(LAST_OVER_TIME(pg_stat_database_num_backends)),\n    `Max Connections` = MAX(LAST_OVER_TIME(max_connections_connection_count)),\n    `Pooled Connections` = SUM(LAST_OVER_TIME(connection_stats_connection_count)),\n    `Direct Connections` = MAX(LAST_OVER_TIME(direct_connection_stats_connection_count))\n  BY resource.attributes.supabase_project_ref\n// Guard against a missing or zero ceiling producing a divide-by-zero percentage.\n| WHERE `Max Connections` > 0\n| EVAL `Connection Utilisation %` = ROUND(`Backends` / `Max Connections` * 100, 1)\n// 90% leaves almost no headroom before new clients are refused. Supabase guidance is to\n// keep the poolers under ~40% of max_connections when the REST API is busy, so lower this\n// to 70-80% if you want earlier warning.\n| WHERE `Connection Utilisation %` >= 90\n| SORT `Connection Utilisation %` DESC"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 10,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "resource.attributes.supabase_project_ref",
+            "termSize": 50
+        }
+    }
+}

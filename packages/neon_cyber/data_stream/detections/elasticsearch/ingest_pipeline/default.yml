@@ -4,35 +4,35 @@ processors:
     - set:
           field: ecs.version
           value: 8.17.0
-          tag: set_ecs_version
+          tag: set_ecs_version_dbf680ba
     - terminate:
           if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
           description: error message set and no data to process.
-          tag: data_collection_error
+          tag: data_collection_error_4bdbb3d0
     - set:
           field: event.kind
           value: alert
-          tag: set_event_kind
+          tag: set_event_kind_ab1166ce
     - append:
           field: event.category
           value: network
-          tag: append_event_category
+          tag: append_event_category_a9b06a9f
     - append:
           field: event.type
           value: info
-          tag: append_event_type
+          tag: append_event_type_5eab37e6
     - rename:
           field: message
           target_field: event.original
           ignore_missing: true
           if: ctx.event?.original == null
-          tag: rename_message_original
+          tag: rename_message_original_a7b1f822
     - remove:
           field: message
           ignore_missing: true
           if: 'ctx.event?.original != null'
           description: 'The `message` field is no longer required if the document has an `event.original` field.'
-          tag: remove_field_message
+          tag: remove_field_message_facc4822
     - remove:
           field:
               - organization
@@ -43,258 +43,260 @@ processors:
           description: >-
               Removes the fields added by Agentless as metadata,
               as they can collide with ECS fields.
-          tag: remove_agentless_fields
+          tag: remove_agentless_fields_e6856012
     - json:
           field: event.original
           target_field: json
-          tag: json_parse_original
+          tag: json_parse_original_74d23cc2
     - fingerprint:
           fields:
               - json.inserted_at
               - json.updated_at
               - json.id
           target_field: _id
-          tag: fingerprint_id_field
+          tag: fingerprint_id_field_39f71340
     - date:
           field: json.detection_timestamp
           target_field: neon_cyber.detections.detection_timestamp
-          tag: date_detection_timestamp
+          tag: date_detection_timestamp_fa3a6102
           formats:
               - ISO8601
           on_failure:
               - append:
+                    tag: append_error_message_72e33eae
                     field: error.message
                     value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
     - date:
           field: json.detection_timestamp
           target_field: '@timestamp'
-          tag: date_timestamp
+          tag: date_timestamp_1e7ff7dd
           formats:
               - ISO8601
           on_failure:
               - append:
+                    tag: append_error_message_2d9b2e57
                     field: error.message
                     value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
     - rename:
           field: json.id
           target_field: neon_cyber.detections.id
-          tag: rename_detection_id
+          tag: rename_detection_id_c071bd2f
     - rename:
           field: json.deployment_id
           target_field: neon_cyber.detections.deployment_id
-          tag: rename_deployment_id
+          tag: rename_deployment_id_59537413
     - rename:
           field: json.client_id
           target_field: neon_cyber.detections.client_id
-          tag: rename_client_id
+          tag: rename_client_id_7353b324
     - rename:
           field: json.registration_id
           target_field: neon_cyber.detections.registration_id
-          tag: rename_registration_id
+          tag: rename_registration_id_b0ca9a6a
     - rename:
           field: json.detection_type
           target_field: neon_cyber.detections.detection_type
-          tag: rename_detection_type
+          tag: rename_detection_type_cc0ba998
     - rename:
           field: json.detection_subtype
           target_field: neon_cyber.detections.detection_subtype
           ignore_missing: true
-          tag: rename_detection_subtype
+          tag: rename_detection_subtype_39586ddb
     - rename:
           field: json.source
           target_field: neon_cyber.detections.source
           ignore_missing: true
-          tag: rename_detection_source
+          tag: rename_detection_source_93547aca
     - rename:
           field: json.agent
           target_field: neon_cyber.detections.agent
           ignore_missing: true
-          tag: rename_neon_agent
+          tag: rename_neon_agent_48d98dec
     - rename:
           field: json.description
           target_field: neon_cyber.detections.description
           ignore_missing: true
-          tag: rename_detection_description
+          tag: rename_detection_description_ecf3843a
     - rename:
           field: json.url
           target_field: neon_cyber.detections.url
           ignore_missing: true
-          tag: rename_detection_url
+          tag: rename_detection_url_591b6c0e
     - uri_parts:
           field: neon_cyber.detections.url
           ignore_missing: true
-          tag: uri_parts_detections_url
+          tag: uri_parts_detections_url_d95462b6
     - rename:
           field: json.filename
           target_field: neon_cyber.detections.filename
           ignore_missing: true
-          tag: rename_detection_filename
+          tag: rename_detection_filename_2f9d0069
     - rename:
           field: json.mime
           target_field: neon_cyber.detections.mime
           ignore_missing: true
-          tag: rename_detection_mime
+          tag: rename_detection_mime_28c7bbf1
     - rename:
           field: json.incognito
           target_field: neon_cyber.detections.incognito
           ignore_missing: true
-          tag: rename_detection_incognito
+          tag: rename_detection_incognito_43b5d233
     - rename:
           field: json.referrer
           target_field: neon_cyber.detections.referrer
           ignore_missing: true
-          tag: rename_detection_referrer
+          tag: rename_detection_referrer_19a1f855
     - rename:
           field: json.danger
           target_field: neon_cyber.detections.danger
           ignore_missing: true
-          tag: rename_detection_danger
+          tag: rename_detection_danger_2008dc83
     - rename:
           field: json.total_bytes
           target_field: neon_cyber.detections.total_bytes
           ignore_missing: true
-          tag: rename_detection_total_bytes
+          tag: rename_detection_total_bytes_f307d999
     - rename:
           field: json.action
           target_field: neon_cyber.detections.action
           ignore_missing: true
-          tag: rename_detection_action
+          tag: rename_detection_action_a3ff23cd
     - rename:
           field: json.email
           target_field: neon_cyber.detections.email
           ignore_missing: true
-          tag: rename_detection_email
+          tag: rename_detection_email_25f2f0a8
     - rename:
           field: json.password
           target_field: neon_cyber.detections.password
           ignore_missing: true
-          tag: rename_detection_password
+          tag: rename_detection_password_fdfc5499
     - rename:
           field: json.pii
           target_field: neon_cyber.detections.pii
           ignore_missing: true
-          tag: rename_detection_pii
+          tag: rename_detection_pii_4833c2b5
     - rename:
           field: json.compromised
           target_field: neon_cyber.detections.compromised
           ignore_missing: true
-          tag: rename_detection_compromised
+          tag: rename_detection_compromised_fd12a5b6
     - rename:
           field: json.tab_id
           target_field: neon_cyber.detections.tab_id
           ignore_missing: true
-          tag: rename_detection_tab_id
+          tag: rename_detection_tab_id_96c87799
     - rename:
           field: json.autofill
           target_field: neon_cyber.detections.autofill
           ignore_missing: true
-          tag: rename_detection_autofill
+          tag: rename_detection_autofill_58c9382e
     - rename:
           field: json.catalog_id
           target_field: neon_cyber.detections.catalog_id
           ignore_missing: true
-          tag: rename_detection_catalog_id
+          tag: rename_detection_catalog_id_e80d9a1d
     - rename:
           field: json.arch
           target_field: host.architecture
           ignore_missing: true
-          tag: rename_host_architecture
+          tag: rename_host_architecture_613c2e0c
     - rename:
           field: json.os
           target_field: host.os.platform
           ignore_missing: true
-          tag: rename_host_os_platform
+          tag: rename_host_os_platform_1d19818f
     - rename:
           field: json.latitude
           target_field: host.geo.location.lat
           ignore_missing: true
-          tag: rename_host_geo_lat
+          tag: rename_host_geo_lat_39539031
     - rename:
           field: json.longitude
           target_field: host.geo.location.lon
           ignore_missing: true
-          tag: rename_host_geo_lon
+          tag: rename_host_geo_lon_6198d4e6
     - rename:
           field: json.ip
           target_field: client.nat.ip
           ignore_missing: true
-          tag: rename_client_nat_ip
+          tag: rename_client_nat_ip_ad6ebffb
     - rename:
           field: json.ip_latitude
           target_field: client.geo.location.lat
           ignore_missing: true
-          tag: rename_client_geo_lat
+          tag: rename_client_geo_lat_4e5d6ee3
     - rename:
           field: json.ip_longitude
           target_field: client.geo.location.lon
           ignore_missing: true
-          tag: rename_client_geo_lon
+          tag: rename_client_geo_lon_a65e3f8e
     - rename:
           field: json.city
           target_field: client.geo.city_name
           ignore_missing: true
-          tag: rename_client_city_name
+          tag: rename_client_city_name_c1ca9cba
     - rename:
           field: json.country
           target_field: client.geo.country_name
           ignore_missing: true
-          tag: rename_client_country
+          tag: rename_client_country_c75de64e
     - rename:
           field: json.postal_code
           target_field: client.geo.postal_code
           ignore_missing: true
-          tag: rename_client_postal_code
+          tag: rename_client_postal_code_0dd2c3ed
     - rename:
           field: json.region_code
           target_field: client.geo.region_iso_code
           ignore_missing: true
-          tag: rename_client_iso_code
+          tag: rename_client_iso_code_ab271217
     - rename:
           field: json.region_name
           target_field: client.geo.region_name
           ignore_missing: true
-          tag: rename_client_region_name
+          tag: rename_client_region_name_1652b0d3
     - rename:
           field: json.asn
           target_field: client.as.number
           ignore_missing: true
-          tag: rename_client_as_number
+          tag: rename_client_as_number_31c2b9e1
     - rename:
           field: json.asn_isp
           target_field: client.as.organization.name
           ignore_missing: true
-          tag: rename_client_as_organization
+          tag: rename_client_as_organization_48646f82
     - rename:
           field: json.name
           target_field: user_agent.name
           ignore_missing: true
-          tag: rename_user_agent_name
+          tag: rename_user_agent_name_d49131ac
     - rename:
           field: json.version
           target_field: user_agent.version
           ignore_missing: true
-          tag: rename_user_agent_version
+          tag: rename_user_agent_version_0630bbfa
     - rename:
           field: json.ua
           target_field: user_agent.original
           ignore_missing: true
-          tag: rename_user_agent_original
+          tag: rename_user_agent_original_399a53f4
     - rename:
           field: json.display
           target_field: neon_cyber.detections.display
           ignore_missing: true
-          tag: rename_detections_display
+          tag: rename_detections_display_d37623a1
     - remove:
           field: json.detection_timestamp
-          tag: remove_detection_timestamp
+          tag: remove_detection_timestamp_46bbabb3
     - remove:
           field: json.inserted_at
-          tag: remove_inserted_at
+          tag: remove_inserted_at_c7bba212
     - remove:
           field: json.updated_at
-          tag: remove_updated_at
+          tag: remove_updated_at_a8e3ca54
     - script:
-          tag: drop_nulls
+          tag: drop_nulls_6bfa31e7
           description: Drops null/empty values recursively.
           lang: painless
           source: |
@@ -315,13 +317,13 @@ on_failure:
     - append:
           field: error.message
           value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-          tag: append_error_message
+          tag: append_error_message_6906b116
     - set:
           field: event.kind
           value: pipeline_error
-          tag: set_pipeline_error_to_event_kind
+          tag: set_pipeline_error_to_event_kind_72b1902f
     - append:
           field: tags
           value: preserve_original_event
           allow_duplicates: false
-          tag: append_tags
+          tag: append_tags_279d5a5c

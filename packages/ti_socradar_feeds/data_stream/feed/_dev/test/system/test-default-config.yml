@@ -1,0 +1,23 @@
+input: cel
+service: ti_socradar_feeds
+vars:
+  api_key: "xxxx"
+  url: http://{{Hostname}}:{{Port}}
+  collections_config: |
+    - id: "4d7a69ce6e7c49ff8c916da5d7343916"
+      name: "SOCRadar-APT-Recommended-Block-IP"
+    - id: "0cb06558728b4dc296019c93b78360d1"
+      name: "SOCRadar-APT-Recommended-Block-Hash"
+    - id: "9079dcc2f96e4835bb807026d4cdcc86"
+      name: "SOCRadar-APT-Empty-Test"
+    - id: "8742cab86cc4414092217f87298e94a1"
+      name: "SOCRadar-Mixed-Old-And-New"
+data_stream:
+  vars:
+    interval: 10s
+    initial_interval: 8760h
+    preserve_original_event: true
+    enable_request_tracer: false
+assert:
+  # 2 from collection 1 (IP + domain) + 3 from collection 2 (hash + URL + email) + 0 from collection 3 (empty) + 1 from collection 4 (only the new one; old one filtered out by initial_interval) = 6.
+  hit_count: 6

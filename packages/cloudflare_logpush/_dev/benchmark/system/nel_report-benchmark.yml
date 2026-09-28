@@ -1,0 +1,26 @@
+---
+description: Benchmark 10000 nel_report events ingested
+input: http_endpoint
+vars:
+  listen_address: 0.0.0.0
+data_stream:
+  name: nel_report
+  vars:
+    listen_port: 9560
+    url: /cloudflare_logpush/nel_report
+    preserve_original_event: true
+    preserve_duplicate_custom_fields: true
+warmup_time_period: 10s
+corpora:
+  input_service:
+    name: cloudflare-logpush-nel_report
+    signal: SIGHUP
+  generator:
+    total_events: 10000
+    template:
+      path: ./nel_report-benchmark/template.ndjson
+      type: gotext
+    config:
+      path: ./nel_report-benchmark/config.yml
+    fields:
+      path: ./nel_report-benchmark/fields.yml

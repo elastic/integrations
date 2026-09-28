@@ -1,0 +1,48 @@
+{
+    "id": "aws_elb_metrics_otel-rejected-connections",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "description": "Alerts when the ALB rejects connections because it reached its connection ceiling. A hard capacity-class failure requiring immediate attention.",
+        "name": "[AWS ELB OTel] Application Load Balancer rejected connections detected",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "aws",
+            "aws_elb"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 2
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "artifacts": {
+            "investigation_guide": {
+                "blob": "## Rejected Connections Detected\n\nNon-zero `RejectedConnectionCount` means the ALB dropped incoming connections because it hit its connection limit. Clients experience connection failures.\n\n### Triage Steps\n1. Identify the affected load balancer and region.\n2. Check `ActiveConnectionCount` and `NewConnectionCount` for connection storm patterns.\n3. Review `ConsumedLCUs` — the LB may be approaching capacity limits.\n4. Look for connection leaks on clients (missing keep-alive, retry storms) or DDoS/abuse traffic.\n5. Consider requesting an ALB pre-warming or capacity review from AWS if sustained.\n\n### Escalation\nAny rejected connections on a production ALB warrant immediate investigation."
+            }
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "FROM metrics-aws.elb.otel-*\n| WHERE Namespace == \"AWS/ApplicationELB\"\n    AND MetricName == \"RejectedConnectionCount\"\n    AND stat == \"Sum\"\n| STATS rejected = SUM(`metrics.amazonaws.com/AWS/ApplicationELB/RejectedConnectionCount`)\n    BY LoadBalancer, cloud.region\n// Any rejected connection is notable — threshold intentionally 0\n| WHERE rejected > 0\n| SORT rejected DESC"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 5,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "LoadBalancer",
+            "termSize": 50,
+            "excludeHitsFromPreviousRun": true
+        }
+    }
+}

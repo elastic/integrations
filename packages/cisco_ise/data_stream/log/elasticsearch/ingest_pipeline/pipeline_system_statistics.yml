@@ -24,6 +24,7 @@ processors:
       if: ctx.cisco_ise?.log?.segment?.number != null && ctx.cisco_ise.log.segment.number > 0
       patterns:
         - "^%{GREEDYDATA:cisco_ise.log.log_details_raw},"
+        - "^$"
   - grok:
       tag: grok_cisco_ise_log_log_details_raw_cc6b4e5d
       field: cisco_ise.log.log_details_raw
@@ -43,7 +44,7 @@ processors:
       if: ctx.cisco_ise?.log?.message?.code != "70001"
       field: cisco_ise.log.log_details_raw
       target_field: cisco_ise.log.log_details
-      field_split: ', '
+      field_split: ', (?=[^,=]+=)'
       value_split: =
       ignore_failure: true
   - kv:

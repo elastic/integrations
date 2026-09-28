@@ -1,0 +1,116 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects successful Amazon EKS UpdateClusterConfig requests that disable control plane logging. Disabling EKS API server and control plane logs can reduce visibility into cluster activity and may indicate defense evasion following compromised AWS credentials or unauthorized administrative access. EKS control plane logging changes are typically rare and should align with approved maintenance or cost optimization workflows.",
+        "false_positives": [
+            "Legitimate changes to EKS logging configuration during cluster provisioning, troubleshooting, or cost optimization may match. Validate the caller identity and change records, and baseline expected automation roles."
+        ],
+        "from": "now-6m",
+        "index": [
+            "logs-aws.cloudtrail-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "user.name",
+                "user_agent.original",
+                "source.ip",
+                "aws.cloudtrail.user_identity.arn",
+                "aws.cloudtrail.user_identity.type",
+                "event.action",
+                "event.outcome",
+                "cloud.account.id",
+                "cloud.region",
+                "aws.cloudtrail.request_parameters",
+                "aws.cloudtrail.response_elements"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "AWS EKS Control Plane Logging Disabled",
+        "note": "## Triage and analysis\n\n### Investigating AWS EKS Control Plane Logging Disabled\n\nReview the caller (user.name, aws.cloudtrail.user_identity.arn, type), source.ip, user_agent.original, cloud.account.id, and cloud.region. Confirm which log types were disabled and whether the change aligns with a planned change window.\n\n### Possible investigation steps\n\n- Inspect aws.cloudtrail.request_parameters and response elements for cluster name and logging settings.\n- Correlate with adjacent EKS and IAM activity from the same principal (access entry changes, iam policy attachments, sts assume events) and with any Kubernetes audit telemetry available.\n- Check whether control plane logs stopped ingesting shortly after the change and scope potential visibility gaps.\n\n### Response and remediation\n\n- If unauthorized, re-enable EKS control plane logging and restrict IAM permissions that allow eks:UpdateClusterConfig.\n- Rotate or revoke compromised credentials and review for additional EKS or IAM persistence changes.\n",
+        "query": "data_stream.dataset:\"aws.cloudtrail\" and\nevent.provider:\"eks.amazonaws.com\" and\nevent.action:\"UpdateClusterConfig\" and\nevent.outcome:\"success\" and\naws.cloudtrail.request_parameters:*logging*enabled=false*\n",
+        "references": [
+            "https://docs.aws.amazon.com/eks/latest/userguide/control-plane-logs.html",
+            "https://docs.aws.amazon.com/eks/latest/APIReference/API_UpdateClusterConfig.html"
+        ],
+        "related_integrations": [
+            {
+                "integration": "cloudtrail",
+                "package": "aws",
+                "version": ">=6.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "aws.cloudtrail.request_parameters",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.provider",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "0f189343-dac7-4c1b-aca7-be8baa6bd02b",
+        "severity": "high",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: Kubernetes",
+            "Data Source: AWS",
+            "Data Source: Amazon Web Services",
+            "Data Source: AWS CloudTrail",
+            "Use Case: Threat Detection",
+            "Resources: Investigation Guide",
+            "Tactic: Defense Impairment"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0112",
+                    "name": "Defense Impairment",
+                    "reference": "https://attack.mitre.org/tactics/TA0112/"
+                },
+                "technique": [
+                    {
+                        "id": "T1685",
+                        "name": "Disable or Modify Tools",
+                        "reference": "https://attack.mitre.org/techniques/T1685/",
+                        "subtechnique": [
+                            {
+                                "id": "T1685.002",
+                                "name": "Disable or Modify Cloud Log",
+                                "reference": "https://attack.mitre.org/techniques/T1685/002/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 3
+    },
+    "id": "0f189343-dac7-4c1b-aca7-be8baa6bd02b_3",
+    "type": "security-rule"
+}

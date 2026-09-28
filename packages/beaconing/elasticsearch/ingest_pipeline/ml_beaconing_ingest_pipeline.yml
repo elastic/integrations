@@ -12,3 +12,50 @@ processors:
         - UNIX
         - ISO8601
       target_field: event.ingested
+  - script:
+      description: Casts flat underscore process fields in group-by to ECS nested types.
+      lang: painless
+      source: |
+        if (ctx.process_pid != null) {
+          String v = ctx.process_pid.toString();
+          if (!v.isEmpty()) {
+            if (ctx.process == null) { ctx.process = new HashMap(); }
+            ctx.process.pid = Long.parseLong(v);
+          }
+        }
+        if (ctx.process_parent_pid != null) {
+          String v = ctx.process_parent_pid.toString();
+          if (!v.isEmpty()) {
+            if (ctx.process == null) { ctx.process = new HashMap(); }
+            if (ctx.process.parent == null) { ctx.process.parent = new HashMap(); }
+            ctx.process.parent.pid = Long.parseLong(v);
+          }
+        }
+        if (ctx.process_code_signature_exists != null) {
+          String v = ctx.process_code_signature_exists.toString();
+          if (!v.isEmpty()) {
+            if (ctx.process == null) { ctx.process = new HashMap(); }
+            if (ctx.process.code_signature == null) { ctx.process.code_signature = new HashMap(); }
+            ctx.process.code_signature.exists = Boolean.parseBoolean(v);
+          }
+        }
+        if (ctx.process_code_signature_trusted != null) {
+          String v = ctx.process_code_signature_trusted.toString();
+          if (!v.isEmpty()) {
+            if (ctx.process == null) { ctx.process = new HashMap(); }
+            if (ctx.process.code_signature == null) { ctx.process.code_signature = new HashMap(); }
+            ctx.process.code_signature.trusted = Boolean.parseBoolean(v);
+          }
+        }
+  - remove:
+      field: process_pid
+      ignore_missing: true
+  - remove:
+      field: process_parent_pid
+      ignore_missing: true
+  - remove:
+      field: process_code_signature_exists
+      ignore_missing: true
+  - remove:
+      field: process_code_signature_trusted
+      ignore_missing: true

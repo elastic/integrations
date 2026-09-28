@@ -14,7 +14,7 @@ rules:
           Content-Type:
             - 'application/json'
         body: |-
-          {"campaigns":[{"campaignId":"fff51768-c446-34e1-97a8-9802c29c3ebd"}],"pageNumber":1,"nextPageNumber":2}
+          {"campaigns":[{"campaignId":"deleted-campaign-404"},{"campaignId":"fff51768-c446-34e1-97a8-9802c29c3ebd"}],"pageNumber":1,"nextPageNumber":2}
   - path: /v1/abusecampaigns
     methods: ['GET']
     query_params:
@@ -47,6 +47,17 @@ rules:
             - 'application/json'
         body: |-
           {"campaigns":[],"pageNumber":3,"nextPageNumber":4}
+  - path: /v1/abusecampaigns/deleted-campaign-404
+    methods: ['GET']
+    request_headers:
+      Authorization:
+        - "Bearer xxxx"
+    responses:
+      - status_code: 404
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: '{"message":"Campaign not found"}'
   - path: /v1/abusecampaigns/fff51768-c446-34e1-97a8-9802c29c3ebd
     methods: ['GET']
     request_headers:
@@ -268,7 +279,7 @@ rules:
           Content-Type:
             - 'application/json'
         body: |-
-          {"cases":[{"caseId":"1234","severity":"Potential Account Takeover"}],"pageNumber":1,"nextPageNumber":2}
+          {"cases":[{"caseId":"9999","severity":"Potential Account Takeover"},{"caseId":"1234","severity":"Potential Account Takeover"}],"pageNumber":1,"nextPageNumber":2}
   - path: /v1/cases
     methods: ['GET']
     query_params:
@@ -301,6 +312,17 @@ rules:
             - 'application/json'
         body: |-
           {"cases":[],"pageNumber":3,"nextPageNumber":4}
+  - path: /v1/cases/9999
+    methods: ['GET']
+    request_headers:
+      Authorization:
+        - "Bearer xxxx"
+    responses:
+      - status_code: 404
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: '{"message":"Case not found"}'
   - path: /v1/cases/1234
     methods: ['GET']
     request_headers:
@@ -366,7 +388,7 @@ rules:
           Content-Type:
             - 'application/json'
         body: |-
-          {"threats":[{"threatId":"184712ab-6d8b-47b3-89d3-a314efef79e2"}],"pageNumber":1,"nextPageNumber":2}
+          {"threats":[{"threatId":"deleted-threat-404"},{"threatId":"184712ab-6d8b-47b3-89d3-a314efef79e2"}],"pageNumber":1,"nextPageNumber":2}
   - path: /v1/threats
     methods: ['GET']
     query_params:
@@ -383,6 +405,20 @@ rules:
             - 'application/json'
         body: |-
           {"threats":[{"threatId":"284712ab-6d8b-47b3-89d3-a314efef79e2"}]}
+  - path: /v1/threats/deleted-threat-404
+    methods: ['GET']
+    query_params:
+      pageNumber: 1
+      pageSize: 1
+    request_headers:
+      Authorization:
+        - "Bearer xxxx"
+    responses:
+      - status_code: 404
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: '{"message":"Threat not found"}'
   - path: /v1/threats/184712ab-6d8b-47b3-89d3-a314efef79e2
     methods: ['GET']
     query_params:
@@ -629,7 +665,7 @@ rules:
           Content-Type:
             - 'application/json'
         body: |-
-          {"vendorCases":[{"vendorCaseId":"1234"}],"pageNumber":1,"nextPageNumber":2}
+          {"vendorCases":[{"vendorCaseId":"9999"},{"vendorCaseId":"1234"}],"pageNumber":1,"nextPageNumber":2}
   - path: /v1/vendor-cases
     methods: ['GET']
     query_params:
@@ -646,6 +682,17 @@ rules:
             - 'application/json'
         body: |-
           {"vendorCases":[{"vendorCaseId":"1235"}],"pageNumber":2}
+  - path: /v1/vendor-cases/9999
+    methods: ['GET']
+    request_headers:
+      Authorization:
+        - "Bearer xxxx"
+    responses:
+      - status_code: 404
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: '{"message":"Vendor case not found"}'
   - path: /v1/vendor-cases/1234
     methods: ['GET']
     request_headers:

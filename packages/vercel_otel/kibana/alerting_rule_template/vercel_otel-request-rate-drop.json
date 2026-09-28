@@ -1,0 +1,53 @@
+{
+    "id": "vercel_otel-request-rate-drop",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "description": "Alerts when server-side request volume (Logs) drops by more than 50% in the most recent 15 minutes compared to the preceding 15 minutes, per project. A sudden traffic collapse can indicate a broken deployment, DNS misconfiguration, or an authentication barrier blocking users.",
+        "name": "[Vercel OTel] Request rate drop (traffic collapse)",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "vercel",
+            "traffic"
+        ],
+        "schedule": {
+            "interval": "10m"
+        },
+        "alertDelay": {
+            "active": 2
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "artifacts": {
+            "dashboards": [
+                {
+                    "id": "vercel_otel-logs"
+                }
+            ],
+            "investigation_guide": {
+                "blob": "## Request Rate Drop\n\n### Triage Steps\n1. Confirm the drop is real and not a monitoring gap: `FROM logs-vercel.logs.otel-default | WHERE vercel.project.id == \"<project>\" | STATS count = COUNT(*) BY vercel.log.source | SORT count DESC`\n2. Check the most recent deployment for the affected project \u2014 a broken build, misconfigured redirect, or crashing middleware can prevent all requests from completing.\n3. Check DNS and domain configuration if the drop is total (near-zero requests) rather than partial.\n4. Cross-check the corresponding Web Analytics page view rate (see the page view rate drop rule) \u2014 if both have dropped together, this points to an issue reaching users (DNS, CDN, or a global outage) rather than a narrow backend defect.\n5. Check firewall deny volume \u2014 an overly aggressive new WAF rule can silently block all legitimate traffic.\n\n### Note\nThis rule compares the most recent half of the time window against the preceding half within a single query; it does not use `timeWindowSize` history beyond the configured 30-minute window.\n\n### Escalation\nA total traffic collapse (>90% drop) on a production project should page the on-call engineer immediately."
+            }
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "FROM logs-vercel.logs.otel-default\n| WHERE deployment.environment.name == \"production\"\n// Split the window in half: \"recent\" (last 15m) vs \"baseline\" (previous 15m) to detect a drop within a single evaluation\n| EVAL is_recent = CASE(@timestamp >= NOW() - 15 minutes, 1, 0)\n| STATS\n    recent = SUM(is_recent),\n    baseline = SUM(1 - is_recent)\n  BY vercel.project.id\n// Minimum baseline volume to avoid flagging naturally quiet/low-traffic projects\n| WHERE baseline > 5\n| EVAL drop_pct = ROUND(100.0 - (TO_DOUBLE(recent) / baseline * 100.0), 2)\n// Alert threshold: adjust based on expected traffic variance (e.g. lower for high-traffic apps with stable load,\n// higher for apps with legitimately spiky/diurnal traffic patterns)\n| WHERE drop_pct > 50.0\n| SORT drop_pct DESC\n| LIMIT 20"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 30,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "vercel.project.id",
+            "termSize": 20,
+            "excludeHitsFromPreviousRun": true
+        }
+    }
+}

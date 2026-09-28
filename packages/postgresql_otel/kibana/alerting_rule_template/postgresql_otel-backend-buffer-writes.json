@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when backend-sourced buffer writes exceed 100 in the window. Background writer cannot keep up \u2014 write pressure.",
     "name": "[PostgreSQL OTel] Backend buffer writes high",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -19,6 +20,19 @@
       "enabled": true,
       "lookBackWindow": 6,
       "statusChangeThreshold": 3
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "postgresql_otel-io-health"
+        },
+        {
+          "id": "postgresql_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## PostgreSQL backend buffer writes high\n\n### What fired\n`postgresql.bgwriter.buffers.writes` with `source=backend` summed > 100 in the window.\n\n### Why it matters\nWhen the bgwriter cannot keep up, backends must flush dirty buffers themselves \u2014 hurting query latency. Sustained backend writes predict I/O contention.\n\n### Triage\n1. Inspect `bgwriter.maxwritten` stops.\n2. Check checkpoint frequency.\n\n### Remediation\n- Tune bgwriter parameters.\n- Upgrade disk IOPS.\n\n### Tuning\n- Threshold 100; tune per scrape cadence.\n"
+      }
     },
     "params": {
       "searchType": "esqlQuery",

@@ -1,0 +1,100 @@
+---
+description: >-
+  Normalizes a Cursor audit event delivered via S3 (compliance streaming) into the
+  flat shape emitted by the Admin API `/teams/audit-logs` endpoint. All ECS
+  mapping lives in the default pipeline so it can run once regardless of source
+  format.
+processors:
+  - script:
+      lang: painless
+      tag: s3_extract_event_type_and_payload
+      description: >-
+        Locate the dynamic top-level key (for example, add_user, team_settings, protected_git_scope_access_check),
+        promote it to `json.event_type`, and move its payload to `json.event_data`.
+      if: ctx.json instanceof Map
+      source: |-
+        def doc = ctx.json;
+        Set reserved = new HashSet(['metadata', 'team_id', 'ip_address', 'user_email']);
+        String eventKey = null;
+        for (def k : doc.keySet()) {
+          if (!reserved.contains(k)) {
+            eventKey = k;
+            break;
+          }
+        }
+        if (eventKey == null) {
+          return;
+        }
+        def payload = doc.remove(eventKey);
+        doc.event_type = eventKey;
+        if (payload instanceof Map) {
+          doc.event_data = payload;
+        } else if (payload != null) {
+          def wrap = new HashMap();
+          wrap.put('value', payload);
+          doc.event_data = wrap;
+        } else {
+          doc.event_data = new HashMap();
+        }
+  - rename:
+      field: json.metadata.id
+      tag: rename_metadata_id_to_event_id
+      target_field: json.event_id
+      ignore_missing: true
+  - rename:
+      field: json.metadata.timestamp
+      tag: rename_metadata_timestamp_to_timestamp
+      target_field: json.timestamp
+      ignore_missing: true
+  - script:
+      lang: painless
+      tag: merge_metadata_context_into_envelope
+      description: >-
+        Lift the nested `metadata.context.*` fields (auth_id, ghost_mode, request_id,
+        privacy_mode, ...) into the top-level envelope. Never overwrite a field that
+        is already set there.
+      if: ctx.json?.metadata?.context instanceof Map
+      source: |-
+        def ctxMap = ctx.json.metadata.context;
+        for (def entry : ctxMap.entrySet()) {
+          if (!ctx.json.containsKey(entry.getKey())) {
+            ctx.json[entry.getKey()] = entry.getValue();
+          }
+        }
+  - json:
+      field: json.privacy_mode
+      target_field: _temp.privacy_json
+      tag: parse_privacy_mode_json_string
+      if: ctx.json?.privacy_mode instanceof String
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_privacy_mode_json_on_failure
+            value: '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: json.privacy_mode
+      tag: set_privacy_mode_from_parsed_json
+      copy_from: _temp.privacy_json.privacyMode
+      if: ctx._temp?.privacy_json?.privacyMode != null
+  - remove:
+      field: json.metadata
+      tag: remove_consumed_metadata_envelope
+      ignore_missing: true
+on_failure:
+  - append:
+      field: error.message
+      tag: append_s3_pipeline_on_failure_message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_s3_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      tag: append_preserve_original_on_s3_pipeline_failure
+      value: preserve_original_event
+      allow_duplicates: false

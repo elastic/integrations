@@ -191,7 +191,10 @@ program: |-
                 optional.of([state.project_id])
               :
                 optional.none(),
-              ?"events": state.?events_filter,
+              ?"events": has(state.event_filter) ?
+                optional.of([state.event_filter.join(",")])
+              :
+                optional.none(),
             }.format_query()
           )
         ).with(auth_header).do_request().as(resp,

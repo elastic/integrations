@@ -1,0 +1,97 @@
+title: "Doppler Activity Logs"
+type: logs
+dataset: doppler.activity
+streams:
+  - input: http_endpoint
+    title: "Doppler logs via webhook"
+    description: |-
+      Collect activity and secret-access logs from Doppler's Generic HTTPS log stream.
+    template_path: http_endpoint.yml.hbs
+    vars:
+      - name: listen_address
+        type: text
+        title: "Listen Address"
+        description: |-
+          Bind address for the HTTP listener. Defaults to `0.0.0.0` so the listener
+          accepts traffic forwarded from your public ingress/reverse proxy.
+        required: true
+        show_user: true
+        default: 0.0.0.0
+      - name: listen_port
+        type: integer
+        title: "Listen port"
+        description: |-
+          Bind port for the HTTPS listener Doppler posts to. Must match the port
+          exposed by your public ingress/reverse proxy and the Doppler Log Stream
+          endpoint.
+        required: true
+        show_user: true
+        default: 9080
+      - name: url
+        type: text
+        title: "URL"
+        description: |-
+          URL path the Agent accepts POST requests on. Must match the path component
+          of the endpoint configured in the Doppler Log Stream. Defaults to `/doppler`.
+        show_user: true
+        default: /doppler
+      - name: data_stream.dataset
+        type: text
+        title: "Dataset name"
+        description: |-
+          Dataset to write data to. All events initially land here; `security.secret_read` events are rerouted at ingest to the `doppler.secret_read` dataset. Changing the dataset will send the data to a different index. You can't use `-` in the name of a dataset and only valid characters for [Elasticsearch index names](https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-index_.html).
+        required: true
+        show_user: false
+        default: doppler.activity
+      - name: secret_value
+        type: password
+        title: "Authorization Token"
+        description: |-
+          The value Doppler sends in the `Authorization` header on every request, e.g. `Bearer <token>`. The listener fixes the header name to `Authorization`; requests whose header value does not match this are rejected. Leave empty only if the endpoint is otherwise restricted.
+        secret: true
+        show_user: true
+      - name: preserve_original_event
+        type: bool
+        title: "Preserve Original Event"
+        description: |-
+          This option copies the raw unmodified body of the incoming request to the event.original field as a string before sending the event to Elasticsearch.
+        show_user: true
+        default: false
+      - name: ssl
+        type: yaml
+        title: "TLS"
+        description: |-
+          Options for enabling TLS for the listening webhook endpoint. See the [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/configuration-ssl.html) for a list of all options.
+        default: |
+          enabled: false
+          certificate: "/etc/pki/client/cert.pem"
+          key: "/etc/pki/client/cert.key"
+      - name: processors
+        type: yaml
+        title: "Processors"
+        description: |-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+      - name: tags
+        type: text
+        title: "Tags"
+        description: |-
+          Tags to include in the published event
+        multi: true
+        show_user: true
+        default:
+          - forwarded
+      - name: enable_request_tracer
+        type: bool
+        title: "Enable request tracing"
+        default: false
+        multi: false
+        required: false
+        show_user: false
+        description: |-
+          The request tracer logs HTTP requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-http_endpoint.html#_request_tracing) for details.
+elasticsearch:
+  dynamic_dataset: true
+  dynamic_namespace: true
+  index_template:
+    mappings:
+      subobjects: false

@@ -148,6 +148,24 @@ program: |
             "next_page": int(state.next) + 1 < size(state.worklist.threats) || has(body.nextPageNumber) ? state.next_page : has(state.worklist.nextPageNumber) ? state.worklist.nextPageNumber : 1,
             "want_more": int(state.next) + 1 < size(state.worklist.threats) || has(body.nextPageNumber) || has(state.worklist.nextPageNumber),
           })
+        : resp.StatusCode == 404 ?
+          // Threat deleted before detail fetch: skip.
+          {
+            "events": [{"retry": true}],
+            "cursor": {
+              "last_timestamp": state.end_time
+            },
+            "worklist": int(state.next) + 1 < size(state.worklist.threats) ? state.worklist : {},
+            "child_next_page": 1,
+            "next": (
+              int(state.next) + 1 < size(state.worklist.threats) ?
+                int(state.next) + 1
+              :
+                0
+            ),
+            "next_page": int(state.next) + 1 < size(state.worklist.threats) ? state.next_page : has(state.worklist.nextPageNumber) ? state.worklist.nextPageNumber : 1,
+            "want_more": int(state.next) + 1 < size(state.worklist.threats) || has(state.worklist.nextPageNumber),
+          }
         :
           {
             "events": [{
@@ -198,7 +216,11 @@ tags:
 {{#contains "forwarded" tags}}
 publisher_pipeline.disable_host: true
 {{/contains}}
-{{#if processors}}
 processors:
+- drop_event:
+    when:
+      equals:
+        retry: true
+{{#if processors}}
 {{processors}}
 {{/if}}

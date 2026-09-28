@@ -13,11 +13,19 @@ streams:
         required: true
         show_user: true
         default: 2h
-        description: How far back to pull Ransomware events from the Google Threat Intelligence API. Must be at least 2h because the API has a 2-hour delay in data availability. Supported units are h.
+        description: How far back to pull events from the Google Threat Intelligence API. Requests newer than the availability delay are clamped to the latest available package. Supported units are h.
+      - name: availability_delay
+        type: text
+        title: Availability Delay
+        multi: false
+        required: true
+        show_user: false
+        default: 2h
+        description: Time between a threat list package hour and when Google makes that package available. Supported units are h, m and s.
       - name: interval
         type: text
         title: Interval
-        description: Duration between consecutive requests to the Google Threat Intelligence API. It must be set to a value greater than 1 hour as threat lists are generated hourly and the API returns errors when requesting data prematurely. Supported units are h.
+        description: Duration between consecutive scheduled requests to the Google Threat Intelligence API. The CEL program only requests threat list packages after the configured availability delay, so a 1h interval safely checks each hourly package once it is available. Supported units are h.
         default: 1h
         multi: false
         required: true

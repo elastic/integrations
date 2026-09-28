@@ -1,0 +1,122 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects an identity deleting Kubernetes events on AKS (Azure Kubernetes Service), excluding known AKS control-plane and platform identities. Adversaries delete events (individually or in bulk via deletecollection) to remove evidence of pod creation, exec, or scheduling activity and impair incident response after operating in the cluster. Coverage includes workload service accounts (system:serviceaccount:*), so a compromised in-cluster token wiping events is not excluded.",
+        "false_positives": [
+            "Event cleanup jobs or platform tooling may bulk-delete events. Baseline the responsible identities and exclude verified automation after review."
+        ],
+        "from": "now-9m",
+        "index": [
+            "logs-azure.platformlogs-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "event.action",
+                "azure.platformlogs.category",
+                "azure.platformlogs.properties.log.verb",
+                "azure.platformlogs.properties.log.user.username",
+                "azure.platformlogs.properties.log.user.groups",
+                "azure.platformlogs.properties.log.userAgent",
+                "azure.platformlogs.properties.log.sourceIPs",
+                "azure.platformlogs.properties.log.objectRef.namespace",
+                "azure.platformlogs.properties.log.objectRef.name",
+                "azure.platformlogs.properties.log.requestURI",
+                "azure.platformlogs.properties.log.responseStatus.code"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "Azure AKS Kubernetes Events Deleted",
+        "note": "## Triage and analysis\n\n### Investigating Azure AKS Kubernetes Events Deleted\n\nAKS kube-audit events are carried under the flattened `azure.platformlogs.properties.log.*` subtree and share the ARM\noperation `event.action: Microsoft.ContainerService/managedClusters/diagnosticLogs/Read`. Kubernetes events record pod\nscheduling, image pulls, and other cluster activity. Deleting them (individually with `delete`, or in bulk with\n`deletecollection`) outside of known AKS control-plane and platform identities is a defense-evasion step to erase\nevidence of prior actions.\n\n### Possible investigation steps\n\n- Identify the acting identity in `azure.platformlogs.properties.log.user.username` (and its groups in\n  `azure.platformlogs.properties.log.user.groups`) and whether it should delete events. A username of `masterclient`\n  (`system:masters`) is the AKS local cluster-admin certificate; workload service accounts\n  (`system:serviceaccount:<ns>:<sa>`) deleting events are the higher-concern case.\n- Determine the scale from `azure.platformlogs.properties.log.verb`: `deletecollection` is a bulk wipe (e.g.\n  `kubectl delete events --all`), while `delete` removes a single event. Review the target scope in\n  `azure.platformlogs.properties.log.objectRef.namespace` / `azure.platformlogs.properties.log.objectRef.name`.\n- Inspect `azure.platformlogs.properties.log.userAgent` to distinguish interactive tooling (`kubectl`) from automation\n  or custom clients, and pivot on `azure.platformlogs.properties.log.sourceIPs` for the activity the deletion may be\n  concealing (pod creation, exec, RBAC changes).\n- Reconstruct the timeline from surviving kube-audit records, which persist independently of the deleted Kubernetes\n  events.\n\n### False positive analysis\n\n- Event cleanup jobs or platform tooling may bulk-delete events; baseline the responsible identities and exclude\n  verified automation. If a platform control-plane identity (for example an event TTL/garbage-collection component)\n  surfaces, add that specific identity to the exclusion rather than re-broadening to all `system:*`, which would blind\n  the rule to compromised workload service accounts.\n\n### Response and remediation\n\n- If unauthorized, revoke the acting identity's tokens and review the RBAC that permitted event deletion.\n- Use kube-audit history to reconstruct the concealed activity and scope the incident.\n- Collect kube-audit and identity artifacts per incident response procedures.\n",
+        "query": "data_stream.dataset:azure.platformlogs and\n  event.action:\"Microsoft.ContainerService/managedClusters/diagnosticLogs/Read\" and\n  azure.platformlogs.category:(\"kube-audit\" or \"kube-audit-admin\") and\n  azure.platformlogs.properties.log.stage:\"ResponseComplete\" and\n  azure.platformlogs.properties.log.objectRef.resource:\"events\" and\n  azure.platformlogs.properties.log.verb:(\"delete\" or \"deletecollection\") and\n  not azure.platformlogs.properties.log.user.username:(\n    system\\:node\\:* or \"aksService\" or \"hcpService\" or \"readinessChecker\" or\n    system\\:serviceaccount\\:kube-system\\:*\n  )\n",
+        "references": [
+            "https://kubernetes.io/docs/reference/kubernetes-api/cluster-resources/event-v1/",
+            "https://microsoft.github.io/Threat-Matrix-for-Kubernetes/",
+            "https://learn.microsoft.com/en-us/azure/aks/monitor-aks",
+            "https://kubenomicon.com/Defense_evasion/Delete_events.html"
+        ],
+        "related_integrations": [
+            {
+                "integration": "platformlogs",
+                "package": "azure",
+                "version": ">=1.22.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "azure.platformlogs.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.platformlogs.properties.log.objectRef.resource",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "azure.platformlogs.properties.log.stage",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "azure.platformlogs.properties.log.user.username",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "azure.platformlogs.properties.log.verb",
+                "type": "unknown"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "9bc14983-fabc-4a3e-896d-3632a902f17c",
+        "setup": "The Azure Fleet integration collecting AKS diagnostic logs forwarded through Event Hub into the `azure.platformlogs`\ndata stream is required for this rule. Enable either the `kube-audit` or the `kube-audit-admin` log category (Microsoft\nrecommends `kube-audit-admin` alone to reduce volume, as it only drops read-only get/list events). Event deletions are\nmutating operations recorded in both categories with the same `auditID`, so clusters that enable both categories may\ngenerate two alerts per deletion.\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: Kubernetes",
+            "Data Source: Azure",
+            "Data Source: Azure Platform Logs",
+            "Data Source: Kubernetes",
+            "Use Case: Threat Detection",
+            "Resources: Investigation Guide",
+            "Tactic: Stealth"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Stealth",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1070",
+                        "name": "Indicator Removal",
+                        "reference": "https://attack.mitre.org/techniques/T1070/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 2
+    },
+    "id": "9bc14983-fabc-4a3e-896d-3632a902f17c_2",
+    "type": "security-rule"
+}

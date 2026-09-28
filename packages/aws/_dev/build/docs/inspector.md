@@ -49,6 +49,20 @@ For existing users of the AWS integration, before upgrading to `4.0.0` please en
    For more details on Transform Setup, refer to the link [here](https://www.elastic.co/docs/explore-analyze/transforms/transform-setup)
 3. Because the latest copy of vulnerabilities is now indexed in two places, that is, in both source and destination indices, users must anticipate storage requirements accordingly.
 
+## Vulnerability status
+
+The integration maps the Amazon Inspector finding status (`aws.inspector.status`) to the `vulnerability.status` field so the [Vulnerability Findings page](https://www.elastic.co/docs/solutions/security/cloud/findings-page-3) can distinguish active from remediated findings. `vulnerability.status` is a package-defined field that aligns with the ECS `vulnerability.status` field (added in ECS 9.5):
+
+| `aws.inspector.status` | `vulnerability.status` |
+|------------------------|------------------------|
+| `ACTIVE`               | `open`                 |
+| `SUPPRESSED`           | `open`                 |
+| `CLOSED`               | `fixed`                |
+
+`CLOSED` findings are mapped to `fixed`. `SUPPRESSED` findings are mapped to `open` because the vulnerability is still present on the resource; suppression in Amazon Inspector is a triage decision (for example, via a suppression rule) rather than a remediation.
+
+Note: the Vulnerability Findings page does not currently filter on `vulnerability.status`, so by default all findings are shown regardless of status. To exclude remediated findings, add a filter such as `NOT vulnerability.status: fixed`. To also hide suppressed findings, add `NOT aws.inspector.status: SUPPRESSED`.
+
 ## Logs
 
 ### Inspector

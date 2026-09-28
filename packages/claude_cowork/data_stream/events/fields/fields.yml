@@ -1,0 +1,207 @@
+# ECS gen_ai.* fields (not yet in the external ECS schema used by elastic-package).
+- name: gen_ai.provider.name
+  type: constant_keyword
+  value: anthropic
+  description: Generative AI provider name.
+- name: gen_ai.request.model
+  type: keyword
+  description: Model used for the generative AI request.
+- name: gen_ai.response.model
+  type: keyword
+  description: Model that generated the response.
+- name: gen_ai.response.id
+  type: keyword
+  description: Identifier for the generative AI response.
+- name: gen_ai.usage.input_tokens
+  type: long
+  description: Number of input tokens consumed.
+- name: gen_ai.usage.output_tokens
+  type: long
+  description: Number of output tokens generated.
+- name: gen_ai.usage.cache_read.input_tokens
+  type: long
+  description: Number of input tokens served from cache.
+- name: gen_ai.usage.cache_creation.input_tokens
+  type: long
+  description: Number of input tokens used for cache creation.
+- name: gen_ai.operation.name
+  type: keyword
+  description: Source or type of the generative AI operation.
+- name: gen_ai.tool.name
+  type: keyword
+  description: Name of the tool invoked by the model.
+- name: gen_ai.tool.call.id
+  type: keyword
+  description: Unique identifier for the tool call.
+# Claude Cowork namespaced fields
+- name: claude_cowork.events
+  type: group
+  fields:
+    # Session and identity
+    - name: session.id
+      type: keyword
+      description: Claude Cowork session identifier.
+    - name: prompt.id
+      type: keyword
+      description: Prompt turn identifier within a session.
+    - name: user.account_id
+      type: keyword
+      description: Anthropic account identifier.
+    - name: user.account_uuid
+      type: keyword
+      description: Anthropic account UUID.
+    - name: terminal.type
+      type: keyword
+      description: Terminal type (always "non-interactive" for Cowork).
+    # Cowork-specific
+    - name: claude.deployment_mode
+      type: keyword
+      description: Deployment mode for the Cowork instance (for example 1p).
+    - name: workspace.host_paths
+      type: keyword
+      description: Host filesystem paths mounted into the Cowork workspace.
+    # OTel event metadata
+    - name: event.name
+      type: keyword
+      description: Event name from OTel attributes.
+    - name: event.sequence
+      type: long
+      description: Event sequence number within a prompt turn.
+    - name: event.timestamp
+      type: date
+      description: Event timestamp from OTel attributes.
+    # Tool events
+    - name: tool_input_size_bytes
+      type: long
+      description: Size of tool input in bytes.
+    - name: tool_result_size_bytes
+      type: long
+      description: Size of tool result in bytes.
+    - name: success
+      type: keyword
+      description: Whether the tool call succeeded ("true" or "false").
+    # Tool decision events
+    - name: decision
+      type: keyword
+      description: Permission decision (accept, reject).
+    - name: source
+      type: keyword
+      description: >-
+        Source of the permission decision (config, user_temporary, user_permanent, user_reject).
+    # API request events
+    - name: cost_usd
+      type: double
+      description: Cost of the API request in USD.
+    - name: cost_usd_micros
+      type: long
+      description: Cost of the API request in millionths of a USD.
+    - name: speed
+      type: keyword
+      description: Request speed tier (normal, fast).
+    - name: effort
+      type: keyword
+      description: Thinking effort level (high, medium, low).
+    # User prompt events
+    - name: prompt_text
+      type: text
+      description: >-
+        User prompt text. Only present when prompt logging is enabled. Renamed from OTel attribute 'prompt' to avoid conflict with prompt.id path.
+    - name: prompt_length
+      type: long
+      description: Length of the user prompt in characters.
+    # Error events
+    - name: error
+      type: keyword
+      description: Error message from a failed operation.
+    # MCP events
+    - name: mcp_server.name
+      type: keyword
+      description: Name of the MCP server from tool events.
+    - name: mcp_server_scope
+      type: keyword
+      description: MCP server scope from tool events.
+    - name: server_name
+      type: keyword
+      description: MCP server name from connection events.
+    - name: server_scope
+      type: keyword
+      description: MCP server scope (for example project, user).
+    - name: transport_type
+      type: keyword
+      description: MCP transport type (for example stdio, sse).
+    - name: status
+      type: keyword
+      description: Connection status (for example connected, failed).
+    - name: is_plugin
+      type: boolean
+      description: Whether the MCP server is a plugin.
+    - name: managed_only
+      type: keyword
+      description: Whether the MCP server is managed-only ("true" or "false").
+    # Hook events
+    - name: hook_name
+      type: keyword
+      description: Name of the registered hook.
+    - name: hook_event
+      type: keyword
+      description: Hook event type (for example SessionStart, PreToolUse).
+    - name: hook_source
+      type: keyword
+      description: Source of the hook definition (for example settings.json).
+    - name: num_hooks
+      type: long
+      description: Number of hooks registered for this event.
+    - name: num_success
+      type: long
+      description: Number of hooks that completed successfully.
+    - name: num_blocking
+      type: long
+      description: Number of hooks that blocked execution.
+    - name: num_non_blocking_error
+      type: long
+      description: Number of hooks that failed without blocking.
+    - name: num_cancelled
+      type: long
+      description: Number of hooks that were cancelled.
+    - name: total_duration_ms
+      type: long
+      description: Total duration of all hook executions in milliseconds.
+    # Plugin events
+    - name: plugin.name
+      type: keyword
+      description: Plugin name.
+    - name: plugin.scope
+      type: keyword
+      description: Plugin scope (for example project, user).
+    - name: plugin_id_hash
+      type: keyword
+      description: Hash of the plugin identifier.
+    - name: enabled_via
+      type: keyword
+      description: How the plugin was enabled (for example user-install).
+    - name: agent_path_count
+      type: long
+      description: Number of agent paths in the plugin.
+    - name: command_path_count
+      type: long
+      description: Number of command paths in the plugin.
+    - name: skill_path_count
+      type: long
+      description: Number of skill paths in the plugin.
+    # Session-level flags
+    - name: has_hooks
+      type: boolean
+      description: Whether the session has registered hooks.
+    - name: has_mcp
+      type: boolean
+      description: Whether the session has MCP servers.
+    - name: host_owned_mcp
+      type: boolean
+      description: Whether MCP servers are host-owned.
+    - name: safe_mode
+      type: keyword
+      description: Whether safe mode is active ("true" or "false").
+    # Marketplace
+    - name: marketplace.name
+      type: keyword
+      description: Name of the marketplace entry.

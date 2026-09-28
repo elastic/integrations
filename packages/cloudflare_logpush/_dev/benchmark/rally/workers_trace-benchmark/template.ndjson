@@ -1,0 +1,37 @@
+{{- $event_timestamp_ms := generate "event_timestamp_ms" -}}
+{{- $event_type := generate "event_type" -}}
+{{- $outcome := generate "outcome" -}}
+{{- $script_name := generate "script_name" -}}
+{{- $dispatch_namespace := generate "dispatch_namespace" -}}
+{
+    "@timestamp": "{{ $event_timestamp_ms.Format "2006-01-02T15:04:05.999999Z07:00" }}",
+    "agent": {
+        "ephemeral_id": "cdaaaabb-be7e-432f-816b-bda019fd7c15",
+        "id": "da6cb4c8-c84c-4c5f-97c7-f8586a098af4",
+        "name": "docker-fleet-agent",
+        "type": "filebeat",
+        "version": "8.19.7"
+    },
+    "data_stream": {
+        "dataset": "cloudflare_logpush.workers_trace",
+        "namespace": "ep",
+        "type": "logs"
+    },
+    "elastic_agent": {
+        "id": "da6cb4c8-c84c-4c5f-97c7-f8586a098af4",
+        "snapshot": false,
+        "version": "8.19.7"
+    },
+    "message": "{\"Event\":{\"RayID\":\"7e9ae7157ac0c33a\",\"Request\":{\"URL\":\"http://example.workers.dev/\",\"Method\":\"GET\"},\"Response\":{\"Status\":200}},\"EventTimestampMs\":{{ $event_timestamp_ms.UnixMilli }},\"EventType\":\"{{ $event_type }}\",\"Exceptions\":[],\"Logs\":[],\"Outcome\":\"{{ $outcome }}\",\"ScriptName\":\"{{ $script_name }}\",\"ScriptTags\":[\"api\"],\"DispatchNamespace\":\"{{ $dispatch_namespace }}\"}",
+    "event": {
+        "dataset": "cloudflare_logpush.workers_trace"
+    },
+    "input": {
+        "type": "http_endpoint"
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "cloudflare_logpush-workers_trace"
+    ]
+}

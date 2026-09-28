@@ -4,7 +4,7 @@ description: Pipeline for triggering the grok processor and helper scripts to ef
 processors:
   - grok:
       field: _ingest._value
-      tag: grok_parse_x_forwarded_for_ipv4_and_ipv6_addresses
+      tag: grok_parse_x_forwarded_for_ipv4_and_ipv6_addresses_288f0931
       ignore_missing: true
       ignore_failure: true
       patterns:
@@ -16,18 +16,39 @@ processors:
         IPV6NOCOMPRESS: '([0-9A-Fa-f]{1,4}:){7}[0-9A-Fa-f]{1,4}'
       on_failure:
         - set:
+            tag: set__tmp_invalid_ip_bee79126
             field: _tmp.invalid_ip
             value: "{{_ingest._value}}"
         - append:
+            tag: append_error_message_5cc5cb03
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - append:
+      tag: append_network_forwarded_ip_aa3cb3ed
       field: network.forwarded_ip
       value: "{{_tmp.valid_ip}}"
       if: ctx._tmp.valid_ip != null && ctx._tmp.valid_ip != ""
       allow_duplicates: false
   - append:
+      tag: append__tmp_invalid_ips_86b45edc
       field: _tmp.invalid_ips
       value: "{{_tmp.invalid_ip}}"
       if: ctx._tmp.invalid_ip != null && ctx._tmp.invalid_ip != ""
+      allow_duplicates: false
+on_failure:
+  - set:
+      tag: set_event_kind_72b1902f
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_error_message_14080786
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}' failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      tag: append_tags_279d5a5c
+      field: tags
+      value: preserve_original_event
       allow_duplicates: false

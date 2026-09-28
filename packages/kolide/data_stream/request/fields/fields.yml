@@ -1,0 +1,41 @@
+- name: kolide.request
+  type: group
+  description: Custom fields for Kolide approval-workflow requests, collected from the REST API and request webhooks.
+  fields:
+    - name: id
+      type: keyword
+      description: Kolide request identifier.
+    - name: type
+      type: keyword
+      description: Type of request, either `exemption` or `registration`.
+    - name: state
+      type: keyword
+      description: Normalized request state, for example `pending`, `approved`, or `denied`.
+    - name: message
+      type: match_only_text
+      description: Human-entered request message or reason. From API `requester_message` or webhook `data.message`.
+    - name: internal_message
+      type: match_only_text
+      description: >-
+        Admin-internal note explaining the approval/denial decision, not shown to the requester. From API `internal_explanation` (exemption) or `internal_denial_note` / `internal_approval_note` (registration).
+    - name: created_at
+      type: date
+      description: Timestamp at which the request was created. From API `requested_at`.
+    - name: device
+      type: group
+      description: Device referenced by the request.
+      fields:
+        - name: url
+          type: keyword
+          description: API URL of the referenced device. From API `device_information.link` or webhook `data.device.url`.
+    - name: requester
+      type: group
+      description: Requester referenced by the request.
+      fields:
+        - name: url
+          type: keyword
+          description: API URL of the referenced requester. From API `requester_information.link` or webhook `data.requester.url`.
+    - name: issues
+      type: flattened
+      description: >-
+        Issues referenced by an exemption request. From API `issues` (array of `identifier`/`link` link-objects) or webhook `data.issues` (array of `issue_id`/`issue_url` objects); the shape varies by source.

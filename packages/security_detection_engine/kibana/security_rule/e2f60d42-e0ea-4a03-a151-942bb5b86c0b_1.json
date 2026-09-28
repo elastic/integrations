@@ -1,0 +1,135 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects a request to attach a built-in kube-controller-manager service account to a pod running in the kube-system namespace on GKE. These service accounts are admin-equivalent and are not normally assigned to arbitrary pods. An attacker who can create pods in kube-system can abuse these tokens for cluster-wide privilege escalation.",
+        "false_positives": [
+            "Built-in controller service accounts are rarely assigned to running pods. False positives should be rare; allowlist documented platform automation by actor when baselined."
+        ],
+        "from": "now-6m",
+        "index": [
+            "logs-gcp.audit-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "client.user.email",
+                "source.ip",
+                "user_agent.original",
+                "event.action",
+                "event.outcome",
+                "gcp.audit.resource_name",
+                "gcp.audit.request.spec.serviceAccountName",
+                "gcp.audit.request.spec.containers.image",
+                "data_stream.namespace"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "GKE Suspicious Assignment of Controller Service Account",
+        "note": "## Triage and analysis\n\n### Investigating GKE Suspicious Assignment of Controller Service Account\n\nThis rule flags pod create events in kube-system that assign a built-in kube-controller-manager service account.\n\n### Possible investigation steps\n\n- Review `client.user.email`, `gcp.audit.request.spec.serviceAccountName`, and container images.\n- Determine whether the pod aligns with expected platform operations.\n- Assess permissions of the assigned service account and hunt for follow-on secret or RBAC activity.\n\n### False positive analysis\n\n- Built-in controller service accounts should not be mounted on user-created pods. Allowlist known automation by actor if a documented exception exists.\n\n### Response and remediation\n\n- Delete suspicious pods, revoke the service account token, and restrict pod create permissions in kube-system.\n\n",
+        "query": "data_stream.dataset:gcp.audit and service.name:\"k8s.io\" and event.outcome:success and\nevent.action:\"io.k8s.core.v1.pods.create\" and gcp.audit.request.metadata.namespace:\"kube-system\" and\ngcp.audit.request.spec.serviceAccountName:(\n  attachdetach-controller or certificate-controller or cloud-provider or\n  clusterrole-aggregation-controller or cronjob-controller or daemon-set-controller or deployment-controller or\n  disruption-controller or endpoint-controller or expand-controller or generic-garbage-collector or\n  horizontal-pod-autoscaler or job-controller or namespace-controller or node-controller or\n  persistent-volume-binder or pod-garbage-collector or pv-protection-controller or pvc-protection-controller or\n  replicaset-controller or replication-controller or resourcequota-controller or root-ca-cert-publisher or\n  route-controller or service-account-controller or service-controller or statefulset-controller or ttl-controller\n)\n",
+        "references": [
+            "https://www.paloaltonetworks.com/apps/pan/public/downloadResource?pagePath=/content/pan/en_US/resources/whitepapers/kubernetes-privilege-escalation-excessive-permissions-in-popular-platforms",
+            "https://kubernetes.io/docs/reference/access-authn-authz/rbac/#controller-roles"
+        ],
+        "related_integrations": [
+            {
+                "integration": "audit",
+                "package": "gcp",
+                "version": ">=2.41.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "gcp.audit.request.metadata.namespace",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "gcp.audit.request.spec.serviceAccountName",
+                "type": "unknown"
+            },
+            {
+                "ecs": true,
+                "name": "service.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "e2f60d42-e0ea-4a03-a151-942bb5b86c0b",
+        "setup": "The GCP Fleet integration with GKE audit logs enabled is required to be compatible with this rule.",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: Kubernetes",
+            "Data Source: GCP",
+            "Data Source: Google Cloud Platform",
+            "Use Case: Threat Detection",
+            "Tactic: Execution",
+            "Tactic: Privilege Escalation",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0004",
+                    "name": "Privilege Escalation",
+                    "reference": "https://attack.mitre.org/tactics/TA0004/"
+                },
+                "technique": [
+                    {
+                        "id": "T1078",
+                        "name": "Valid Accounts",
+                        "reference": "https://attack.mitre.org/techniques/T1078/",
+                        "subtechnique": [
+                            {
+                                "id": "T1078.001",
+                                "name": "Default Accounts",
+                                "reference": "https://attack.mitre.org/techniques/T1078/001/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1610",
+                        "name": "Deploy Container",
+                        "reference": "https://attack.mitre.org/techniques/T1610/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 1
+    },
+    "id": "e2f60d42-e0ea-4a03-a151-942bb5b86c0b_1",
+    "type": "security-rule"
+}

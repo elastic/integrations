@@ -117,10 +117,13 @@ program: |
                 "message": offense.with({
                   ?"rules": (has(offense.rules) && offense.rules != null) ?
                     optional.of(offense.rules.map(rule,
-                      state.rules_dict[string(rule.id)].with({
-                        "rule_type": state.rules_dict[string(rule.id)].type,
-                        "type": rule.type
-                      })
+                      rule.id in state.rules_dict ?
+                        state.rules_dict[rule.id].with({
+                          "rule_type": state.rules_dict[rule.id].type,
+                          "type": rule.type
+                        })
+                      :
+                        {"id": rule.id, "type": rule.type}
                     ))
                   :
                     optional.none()

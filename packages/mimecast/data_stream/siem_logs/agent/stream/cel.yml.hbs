@@ -35,6 +35,12 @@ program: |
   // Memory optimization: This program processes ONE batch file per execution
   // cycle to avoid memory pressure. Batch URLs are stored in cursor.blobs
   // and processed one at a time.
+  // cursor.last_tokens persists the last @nextPage token returned by
+  // the batch API for each event type. When the work_list cycle
+  // completes and restarts on the next interval, these tokens seed
+  // the new requests so the API returns only data written since the
+  // previous download instead of replaying the full 7-day window.
+  state.?cursor.last_tokens.orValue({}).as(last_tokens,
   state.with(
     (
       (has(state.?token.expires) && now() < timestamp(state.token.expires)) ?
@@ -72,8 +78,16 @@ program: |
           }
         )
     ).as(token, !has(token.access_token) ? token :
-      state.?cursor.work_list.orValue(state.types.map(t, {"type": t})).as(work_list, size(work_list) == 0 ?
-        state.types.map(t, {"type": t})
+      state.?cursor.work_list.orValue(
+        // Seed a fresh work_list with saved tokens so each type
+        // resumes from its last position rather than the beginning.
+        state.types.map(t,
+          t in last_tokens ? {"type": t, "next": last_tokens[t]} : {"type": t}
+        )
+      ).as(work_list, size(work_list) == 0 ?
+        state.types.map(t,
+          t in last_tokens ? {"type": t, "next": last_tokens[t]} : {"type": t}
+        )
       :
         work_list
       ).as(work_list,
@@ -91,6 +105,7 @@ program: |
                 "cursor": {
                   "blobs": tail(blobs),
                   "work_list": work_list,
+                  "last_tokens": last_tokens,
                 },
                 "token": {
                   "access_token": token.access_token,
@@ -105,6 +120,7 @@ program: |
                 "cursor": {
                   "blobs": tail(blobs),
                   "work_list": work_list,
+                  "last_tokens": last_tokens,
                 },
                 "token": {
                   "access_token": token.access_token,
@@ -148,7 +164,11 @@ program: |
               }
             }).do_request().as(resp, (resp.StatusCode == 200) ?
               bytes(resp.Body).decode_json().as(body,
-                {
+                // Save the @nextPage token for this type whenever
+                // the API provides one, regardless of whether there
+                // are more pages in this cycle. This ensures the
+                // token survives into the next polling interval.
+                ("@nextPage" in body ? body["@nextPage"] : "").as(page_token, {
                   "events": [{"message": "want_more"}],
                   "cursor": {
                     "blobs": body.value.map(b, b.url),
@@ -159,13 +179,19 @@ program: |
                       :
                         []
                     ) + tail(work_list),
+                    "last_tokens": last_tokens.with(
+                      page_token != "" ?
+                        {work_list[0].type: page_token}
+                      :
+                        {}
+                    ),
                   },
                   "token": {
                     "access_token": token.access_token,
                     "expires": token.expires,
                   },
                   "want_more": size(body.value) != 0 || size(tail(work_list)) != 0,
-                }
+                })
               )
             :
               {
@@ -187,7 +213,7 @@ program: |
         )
       )
     )
-  )
+  ))
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event

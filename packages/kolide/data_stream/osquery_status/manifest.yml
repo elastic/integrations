@@ -1,0 +1,273 @@
+title: "Kolide osquery status logs"
+type: logs
+streams:
+  - input: aws-s3
+    title: "Kolide osquery status logs via AWS S3 (Log Pipeline)"
+    description: |-
+      Collect raw osquery Status Logs (the `status/` prefix) that the Kolide Log Pipeline writes to a customer-owned S3 bucket, via SQS notifications or direct bucket polling. Osquery daemon status/telemetry logs (GLOG-style), not host inventory data.
+    template_path: aws-s3.yml.hbs
+    enabled: false
+    vars:
+      - name: queue_url
+        type: text
+        title: "[SQS] Queue URL"
+        description: |-
+          URL of the AWS SQS queue that S3 object-created notifications are delivered to. Set this to collect via SQS notifications. Leave empty to poll the bucket directly. For SQS, configure the bucket notification to deliver only the `status/` prefix to this queue.
+        required: false
+        show_user: true
+      - name: bucket_arn
+        type: text
+        title: "[S3] Bucket ARN"
+        description: |-
+          ARN of the S3 bucket to poll directly (for example, `arn:aws:s3:::kolide-bucket`). Used when no Queue URL is set.
+        required: false
+        show_user: true
+      - name: access_point_arn
+        type: text
+        title: "[S3] Access Point ARN"
+        description: |-
+          ARN of the S3 Access Point to poll directly. Alternative to the Bucket ARN.
+        required: false
+        show_user: false
+      - name: non_aws_bucket_name
+        type: text
+        title: "[S3] Non-AWS Bucket Name"
+        description: |-
+          Name of the bucket to poll for 3rd-party S3-compatible services.
+        required: false
+        show_user: false
+      - name: region
+        type: text
+        title: "[S3] Region"
+        description: |-
+          Region of the non-AWS S3-compatible endpoint. Required when a non-AWS bucket name is configured.
+        required: false
+        show_user: false
+      - name: bucket_list_prefix
+        type: text
+        title: "[S3] Bucket List Prefix"
+        description: |-
+          Prefix used to list objects in the bucket (polling mode). Defaults to the Kolide Log Pipeline prefix for this data type. Kolide's full path template additionally nests `device-{{device_id}}/...` under this prefix; the default still matches all of it since this is a prefix match, not an exact path.
+        required: false
+        show_user: true
+        default: kolide/status/
+      - name: number_of_workers
+        type: integer
+        title: "[S3/SQS] Number of Workers"
+        description: |-
+          Number of workers that will process the S3 objects or SQS messages.
+        required: false
+        show_user: true
+        default: 5
+      - name: bucket_list_interval
+        type: text
+        title: "[S3] Bucket List Interval"
+        description: |-
+          Time interval for polling the listing of the S3 bucket.
+        required: false
+        show_user: false
+        default: 120s
+      - name: start_timestamp
+        type: text
+        title: "[S3] Start Timestamp"
+        description: |-
+          If set, only read S3 objects with a last-modified timestamp newer than the given timestamp. Accepts a timestamp in `YYYY-MM-DDTHH:MM:SSZ` format.
+        required: false
+        show_user: false
+      - name: ignore_older
+        type: text
+        title: "[S3] Ignore Older Timespan"
+        description: |-
+          If set, ignore S3 objects whose last-modified time is older than this timespan. Accepts a duration like `48h`, `2h30m`.
+        required: false
+        show_user: false
+      - name: visibility_timeout
+        type: text
+        title: "[SQS] Visibility Timeout"
+        description: |-
+          The duration that received messages are hidden from subsequent retrieve requests after being retrieved. The maximum is 12 hours.
+        required: false
+        show_user: false
+      - name: api_timeout
+        type: text
+        title: "[SQS] API Timeout"
+        description: |-
+          The maximum duration of an AWS API call. The maximum is half of the visibility timeout value.
+        required: false
+        show_user: false
+      - name: sqs.max_receive_count
+        type: integer
+        title: "[SQS] Maximum Receive Count"
+        description: |-
+          The maximum number of times an SQS message should be received (retried) before being deleted.
+        required: false
+        show_user: false
+        default: 5
+      - name: sqs.wait_time
+        type: text
+        title: "[SQS] Maximum Wait Time"
+        description: |-
+          The maximum duration an SQS `ReceiveMessage` call waits for a message before returning. The maximum is `20s`.
+        required: false
+        show_user: false
+        default: 20s
+      - name: max_number_of_messages
+        type: integer
+        title: "[SQS] Maximum Concurrent SQS Messages"
+        description: |-
+          The maximum number of SQS messages that can be inflight at any time.
+        required: false
+        show_user: false
+        default: 5
+      - name: file_selectors
+        type: yaml
+        title: "[S3] File Selectors"
+        description: |-
+          A list of selectors that limit which S3 objects are processed, matched against the object key. Useful in SQS mode when a single queue receives notifications for multiple prefixes.
+        required: false
+        show_user: false
+      - name: fips_enabled
+        type: bool
+        title: "Enable S3 FIPS"
+        description: |-
+          Enabling this option changes the service name from `s3` to `s3-fips` for connecting to the correct service endpoint.
+        required: false
+        show_user: false
+        default: false
+      - name: tags
+        type: text
+        title: "Tags"
+        description: |-
+          Tags to include in the published event.
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - kolide-osquery-status-s3
+      - name: preserve_original_event
+        type: bool
+        title: "Preserve original event"
+        description: |-
+          Preserves a raw copy of the original event, added to the field `event.original`.
+        required: true
+        show_user: true
+        default: false
+      - name: processors
+        type: yaml
+        title: "Processors"
+        description: |-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+        required: false
+        show_user: false
+      - name: custom
+        type: yaml
+        title: "Custom configurations"
+        description: |-
+          Additional settings to be added to the configuration. Be careful using this as it might break the input. See [`aws-s3` input settings docs](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-aws-s3.html) for details.
+        required: false
+        show_user: false
+        default: ""
+  - input: gcs
+    title: "Kolide osquery status logs via Google Cloud Storage (Log Pipeline)"
+    description: |-
+      Collect raw osquery Status Logs (the `kolide/status/` prefix) that the Kolide Log Pipeline writes to a customer-owned GCS bucket, via bucket polling. Osquery daemon status/telemetry logs (GLOG-style), not host inventory data.
+    template_path: gcs.yml.hbs
+    enabled: false
+    vars:
+      - name: buckets
+        type: yaml
+        title: "[GCS] Buckets"
+        description: |-
+          The list of GCS buckets to poll, as YAML. The attribute `name` is required; `number_of_workers` (as `max_workers`), `poll`, `poll_interval`, and `bucket_timeout` can also be set per bucket to override the global values. See the [`gcs` input settings docs](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-gcs.html#attrib-buckets) for details.
+        required: true
+        show_user: true
+        default: |
+          # The bucket name is the Kolide Log Pipeline destination bucket.
+          - name: kolide-log-pipeline
+      - name: file_selectors
+        type: yaml
+        title: "[GCS] File Selectors"
+        description: |-
+          A list of regex patterns that limit which GCS objects are processed, matched against the object key. Defaults to the Kolide Log Pipeline prefix for this data type; adjust it if you customized the object path template in the Kolide log destination.
+        required: false
+        show_user: true
+        default: |
+          - regex: '^kolide/status/'
+      - name: number_of_workers
+        type: integer
+        title: "[GCS] Number of Workers"
+        description: |-
+          Number of workers that will process the GCS objects, per bucket.
+        required: false
+        show_user: true
+        default: 3
+      - name: poll
+        type: bool
+        title: "[GCS] Polling"
+        description: |-
+          Determines if the bucket is continuously polled for new objects.
+        required: false
+        show_user: true
+        default: true
+      - name: poll_interval
+        type: text
+        title: "[GCS] Polling Interval"
+        description: |-
+          Time interval between polling operations.
+        required: false
+        show_user: true
+        default: 15s
+      - name: bucket_timeout
+        type: text
+        title: "[GCS] Bucket Timeout"
+        description: |-
+          Maximum time to wait for a bucket API response before timing out. Accepts a duration like `120s`, `2m`.
+        required: false
+        show_user: false
+        default: 120s
+      - name: timestamp_epoch
+        type: integer
+        title: "[GCS] Timestamp Epoch"
+        description: |-
+          If set, only process GCS objects whose last-modified time is newer than this Unix epoch time (in seconds).
+        required: false
+        show_user: false
+      - name: tags
+        type: text
+        title: "Tags"
+        description: |-
+          Tags to include in the published event.
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+          - kolide-osquery-status-gcs
+      - name: preserve_original_event
+        type: bool
+        title: "Preserve original event"
+        description: |-
+          Preserves a raw copy of the original event, added to the field `event.original`.
+        required: true
+        show_user: true
+        default: false
+      - name: processors
+        type: yaml
+        title: "Processors"
+        description: |-
+          Processors are used to reduce the number of fields in the exported event or to enhance the event with metadata. This executes in the agent before the logs are parsed. See [Processors](https://www.elastic.co/guide/en/beats/filebeat/current/filtering-and-enhancing-data.html) for details.
+        required: false
+        show_user: false
+      - name: custom
+        type: yaml
+        title: "Custom configurations"
+        description: |-
+          Additional settings to be added to the configuration. Be careful using this as it might break the input. See [`gcs` input settings docs](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-gcs.html) for details.
+        required: false
+        show_user: false
+        default: ""
+elasticsearch:
+  index_template:
+    mappings:
+      subobjects: false

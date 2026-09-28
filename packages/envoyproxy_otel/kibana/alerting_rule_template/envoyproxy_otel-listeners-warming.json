@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when `envoy.listener_manager.total_listeners_warming > 0`. Listeners stuck in the warming state cannot accept traffic.",
     "name": "[Envoy OTel] Listeners warming",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -20,13 +21,25 @@
       "lookBackWindow": 6,
       "statusChangeThreshold": 3
     },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "envoyproxy_otel-envoy-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## Envoy listeners warming\n\n### What fired\n`envoy.listener_manager.total_listeners_warming` remained above 0 during the window.\n\n### Why it matters\nListeners warm when Envoy is waiting for secrets or initial discovery responses. Listeners stuck warming are effectively unreachable.\n\n### Triage\n1. Check the admin `/config_dump` or `/listeners` to see which listener is stuck.\n2. Inspect xDS / SDS connectivity to the control plane.\n3. Look for secrets (TLS certs) that have not been delivered.\n\n### Remediation\n- Fix the upstream discovery or secret source.\n- Restart the pod as last resort.\n\n### Tuning\n- Warming should be milliseconds. Any sustained value warrants investigation.\n"
+      }
+    },
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
         "esql": "FROM metrics-statsdreceiver-default\n| WHERE data_stream.dataset == \"statsdreceiver\"\n| WHERE envoy.listener_manager.total_listeners_warming IS NOT NULL\n// Listeners warming should drop to 0 after config load\n| STATS max_warming = MAX(envoy.listener_manager.total_listeners_warming)\n| WHERE max_warming > 0"
       },
       "size": 0,
-      "threshold": [0],
+      "threshold": [
+        0
+      ],
       "thresholdComparator": ">",
       "timeField": "@timestamp",
       "timeWindowSize": 15,

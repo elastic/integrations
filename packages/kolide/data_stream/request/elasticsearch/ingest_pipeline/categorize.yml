@@ -1,0 +1,58 @@
+---
+description: >-
+  Pipeline for categorizing ECS event fields for Kolide request records. Maps the
+  resolved event.action to event.kind/category/type using an exact lookup table.
+  Exemption and registration requests are approval-workflow records: event.kind:
+  event with the configuration and iam categories and event.type creation.
+  event.action is set upstream: default.yml sets the `request` placeholder for the
+  API path, then refines it in its "Extended field extraction" section to
+  `<type>_request_<state>` (e.g. exemption_request_approved) once type/state are
+  known, and webhook.yml sets the Kolide webhook event name for webhook
+  deliveries. event.outcome is derived from request state in default.yml's
+  "Extended field extraction" section and is left untouched here.
+processors:
+  - script:
+      lang: painless
+      tag: set_ecs_categorization
+      description: Map Kolide request event.action to ECS categorization fields using exact lookups.
+      if: ctx.event?.action != null
+      params:
+        exact:
+          request: { kind: event, category: ['configuration', 'iam'], type: ['creation'] }
+          requests.issue_exemption: { kind: event, category: ['configuration', 'iam'], type: ['creation'] }
+          requests.registration: { kind: event, category: ['configuration', 'iam'], type: ['creation'] }
+          exemption_request_open: { kind: event, category: ['configuration', 'iam'], type: ['creation'] }
+          exemption_request_withdrawn: { kind: event, category: ['configuration', 'iam'], type: ['change'] }
+          exemption_request_approved: { kind: event, category: ['configuration', 'iam'], type: ['change'] }
+          exemption_request_denied: { kind: event, category: ['configuration', 'iam'], type: ['change'] }
+          registration_request_pending: { kind: event, category: ['configuration', 'iam'], type: ['creation'] }
+          registration_request_approved: { kind: event, category: ['configuration', 'iam'], type: ['change'] }
+          registration_request_denied: { kind: event, category: ['configuration', 'iam'], type: ['change'] }
+      source: |-
+        def action = ctx.event.action;
+        def m = params.exact.get(action);
+        if (m != null) {
+          ctx.event.kind = m.kind;
+          ctx.event.category = new ArrayList(m.category);
+          ctx.event.type = new ArrayList(m.type);
+        } else {
+          ctx.event.kind = 'event';
+          ctx.event.category = ['configuration', 'iam'];
+          ctx.event.type = ['creation'];
+        }
+
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

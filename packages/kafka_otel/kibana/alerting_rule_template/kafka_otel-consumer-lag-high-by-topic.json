@@ -1,42 +1,56 @@
 {
-    "id": "kafka_otel-consumer-lag-high-by-topic",
-    "type": "alerting_rule_template",
-    "managed": true,
-    "attributes": {
-        "name": "[Kafka OTel] High consumer lag by topic",
-        "ruleTypeId": ".es-query",
-        "tags": [
-            "observability",
-            "kafka"
-        ],
-        "schedule": {
-            "interval": "5m"
+  "id": "kafka_otel-consumer-lag-high-by-topic",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when `kafka.consumer_group.lag_sum > 50000` for a group+topic. Aggregate lag indicates consumer processing delay.",
+    "name": "[Kafka OTel] High consumer lag by topic",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "kafka"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "enabled": true,
+      "lookBackWindow": 6,
+      "statusChangeThreshold": 3
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "kafka_otel-consumer-groups"
         },
-        "alertDelay": {
-            "active": 2
-        },
-        "flapping": {
-            "enabled": true,
-            "lookBackWindow": 6,
-            "statusChangeThreshold": 3
-        },
-        "params": {
-            "searchType": "esqlQuery",
-            "esqlQuery": {
-                "esql": "FROM metrics-kafkametricsreceiver.otel-*\n// Topic-level lag sum (aggregate across partitions for a consumer group)\n| WHERE kafka.consumer_group.lag_sum IS NOT NULL\n| STATS lag_sum = MAX(kafka.consumer_group.lag_sum)\n  BY attributes.group, attributes.topic\n// Threshold: total lag for group on topic. Adjust for expected throughput\n| WHERE lag_sum > 50000\n| SORT lag_sum DESC"
-            },
-            "size": 0,
-            "threshold": [
-                0
-            ],
-            "thresholdComparator": ">",
-            "timeField": "@timestamp",
-            "timeWindowSize": 15,
-            "timeWindowUnit": "m",
-            "groupBy": "row",
-            "termField": "attributes.group",
-            "termSize": 20,
-            "excludeHitsFromPreviousRun": false
+        {
+          "id": "kafka_otel-overview"
         }
+      ],
+      "investigation_guide": {
+        "blob": "## Kafka high consumer lag by topic\n\n### What fired\n`kafka.consumer_group.lag_sum` exceeded 50,000 messages on a group+topic.\n\n### Why it matters\nAggregate lag across partitions is the canonical latency proxy. Sustained growth means consumption cannot keep up with production; downstream SLAs will miss.\n\n### Triage\n1. Check if lag is concentrated on specific partitions.\n2. Inspect consumer instance count and member stability.\n3. Look for consumer restarts or pod evictions.\n\n### Remediation\n- Scale the consumer group.\n- Fix slow consumer code paths.\n\n### Tuning\n- 50,000 is a generic starting point; tune to your throughput.\n"
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-kafkametricsreceiver.otel-*\n// Topic-level lag sum (aggregate across partitions for a consumer group)\n| WHERE kafka.consumer_group.lag_sum IS NOT NULL\n| STATS lag_sum = MAX(kafka.consumer_group.lag_sum)\n  BY attributes.group, attributes.topic\n// Threshold: total lag for group on topic. Adjust for expected throughput\n| WHERE lag_sum > 50000\n| SORT lag_sum DESC"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "attributes.group",
+      "termSize": 20,
+      "excludeHitsFromPreviousRun": false
     }
+  }
 }

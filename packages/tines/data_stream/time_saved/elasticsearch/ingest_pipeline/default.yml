@@ -2,46 +2,63 @@
 description: Pipeline for Tines Time Saved data
 processors:
   - json:
+      tag: json_message_to_json_8f635f34
       field: message
       target_field: json
   - fail:
+      tag: fail_missing_json_object_input_document_0e5eff89
       if: ctx.json == null || !(ctx.json instanceof Map)
       message: missing json object in input document
   - rename:
+      tag: rename_message_to_event_original_a7b1f822
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message_facc4822
+      ignore_missing: true
+      if: ctx.event?.original != null
+      description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - rename:
+      tag: rename_json_to_tines_time_saved_84032f0a
       field: json
       target_field: tines.time_saved
       ignore_missing: true
   - rename:
+      tag: rename__tmp_tenant_url_to_tines_tenant_url_01a0baed
       field: _tmp.tenant_url
       target_field: tines.tenant_url
       ignore_missing: true
   - rename:
+      tag: rename__tmp_team_id_to_tines_time_saved_team_id_ec728657
       field: _tmp.team_id
       target_field: tines.time_saved.team_id
       ignore_missing: true
   - rename:
+      tag: rename__tmp_story_id_to_tines_time_saved_story_id_fb56ef3b
       field: _tmp.story_id
       target_field: tines.time_saved.story_id
       ignore_missing: true
   - date:
+      tag: date_tines_time_saved_date_to_timestamp_e045be18
       if: ctx.tines?.time_saved?.date != null && ctx.tines?.time_saved?.date != ""
       field: tines.time_saved.date
       target_field: "@timestamp"
       formats: ["ISO8601"]
   - remove:
+      tag: remove_tines_time_saved_meta_next_page_07061c4d
       if: ctx.tines?.time_saved?.meta?.next_page == null || ctx.tines?.time_saved?.meta?.next_page == ""
       field: tines.time_saved.meta.next_page
       ignore_missing: true
   - remove:
+      tag: remove_tines_time_saved_meta_previous_page_01bc3fcc
       if: ctx.tines?.time_saved?.meta?.previous_page == null || ctx.tines?.time_saved?.meta?.previous_page == ""
       field: tines.time_saved.meta.previous_page
       ignore_missing: true
   - remove:
+      tag: remove_cleanup_temporary_other_garbage_fields_4690272d
       description: "Cleanup temporary and other garbage fields"
       field:
         - _tmp
@@ -49,6 +66,7 @@ processors:
         - json
       ignore_missing: true
   - remove:
+      tag: remove_ecs_mapped_field_original_duplicates_f67a26ff
       description: "Remove ECS mapped field original duplicates unless tags indicate not to"
       field:
         - tines.time_saved.date
@@ -56,12 +74,15 @@ processors:
       ignore_missing: true
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message_206bb8ac
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'

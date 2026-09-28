@@ -1,39 +1,52 @@
 {
-    "id": "cassandra_otel-request-errors",
-    "type": "alerting_rule_template",
-    "managed": true,
-    "attributes": {
-        "name": "[Cassandra OTel] Request errors (Timeout, Unavailable, Failure)",
-        "ruleTypeId": ".es-query",
-        "tags": [
-            "observability",
-            "cassandra"
-        ],
-        "schedule": {
-            "interval": "5m"
-        },
-        "alertDelay": {
-            "active": 2
-        },
-        "flapping": {
-            "lookBackWindow": 10,
-            "statusChangeThreshold": 4
-        },
-        "params": {
-            "searchType": "esqlQuery",
-            "esqlQuery": {
-                "esql": "TS metrics-cassandra.otel-default\n// Counter metric: use INCREASE for absolute error count in window\n| WHERE cassandra.client.request.error.count IS NOT NULL\n| STATS error_count = SUM(INCREASE(cassandra.client.request.error.count)) BY server.address, attributes.operation, attributes.status\n| WHERE error_count > 0\n| SORT error_count DESC"
-            },
-            "size": 0,
-            "threshold": [0],
-            "thresholdComparator": ">",
-            "timeField": "@timestamp",
-            "timeWindowSize": 5,
-            "timeWindowUnit": "m",
-            "groupBy": "row",
-            "termField": "server.address",
-            "termSize": 20,
-            "excludeHitsFromPreviousRun": true
+  "id": "cassandra_otel-request-errors",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when any increase in client request errors is observed (`cassandra.client.request.error.count > 0`), broken down by operation and status (Timeout, Unavailable, Failure).",
+    "name": "[Cassandra OTel] Request errors (Timeout, Unavailable, Failure)",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "cassandra"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "cassandra_otel-overview"
         }
+      ],
+      "investigation_guide": {
+        "blob": "## Cassandra request errors\n\n### What fired\n`cassandra.client.request.error.count` increased during the evaluation window, dimensioned by `attributes.operation` and `attributes.status`.\n\n### Why it matters\nCassandra distinguishes three error types:\n\n- **Timeout**: the coordinator did not hear back from enough replicas within the timeout.\n- **Unavailable**: not enough replicas were alive at query time to satisfy the consistency level.\n- **Failure**: an explicit non-timeout error (e.g. corruption, read failure) occurred on a replica.\n\nEach points to a different class of issue and the breakdown by `operation` (read / write / range-slice) narrows the triage further.\n\n### Triage\n1. Overview dashboard: look at the error type distribution first.\n2. For **Unavailable** \u2192 check gossip state / replica liveness.\n3. For **Timeout** \u2192 check latency p99 for the same operation, compaction pending, and GC pauses.\n4. For **Failure** \u2192 inspect node logs for explicit tracebacks (possible corruption / disk errors).\n\n### Remediation\n- Restore liveness or address latency root cause based on the dominant error type.\n- Consider lowering consistency level temporarily if Unavailable errors dominate and replicas cannot be restored quickly.\n\n### Tuning\n- Fires on any error. For a noisy environment where occasional errors are expected, require `error_count > N` in the query.\n"
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "TS metrics-cassandra.otel-default\n// Counter metric: use INCREASE for absolute error count in window\n| WHERE cassandra.client.request.error.count IS NOT NULL\n| STATS error_count = SUM(INCREASE(cassandra.client.request.error.count)) BY server.address, attributes.operation, attributes.status\n| WHERE error_count > 0\n| SORT error_count DESC"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 5,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "server.address",
+      "termSize": 20,
+      "excludeHitsFromPreviousRun": true
     }
+  }
 }

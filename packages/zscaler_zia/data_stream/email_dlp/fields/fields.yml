@@ -1,0 +1,161 @@
+- name: zscaler_zia.email_dlp
+  type: group
+  fields:
+    - name: actions
+      type: keyword
+      description: The action taken (i.e., Allow, Block, Custom Header Insertion).
+    - name: application
+      type: group
+      fields:
+        - name: name
+          type: keyword
+          description: The name of the email application.
+    - name: company
+      type: group
+      fields:
+        - name: name
+          type: keyword
+          description: The name of the company.
+    - name: datacenter
+      type: group
+      fields:
+        - name: city
+          type: keyword
+          description: The city where the data center is located.
+        - name: country
+          type: keyword
+          description: The country where the data center is located.
+        - name: name
+          type: keyword
+          description: The name of the data center.
+    - name: department
+      type: keyword
+      description: The name of the department.
+    - name: dlp
+      type: group
+      fields:
+        - name: dict_counts
+          type: long
+          description: The number of hits for each dictionary.
+        - name: dict_names
+          type: keyword
+          description: The name of the DLP dictionary.
+        - name: dictionaries
+          type: nested
+          fields:
+            - name: name
+              type: keyword
+              description: The name of the DLP dictionary.
+            - name: count
+              type: long
+              description: The number of hits for this DLP dictionary.
+        - name: engine_names
+          type: keyword
+          description: The name of the DLP engine.
+        - name: identifier
+          type: keyword
+          description: The unique DLP identifier.
+        - name: scan_time
+          type: long
+          unit: ms
+          description: DLP engine scan time, from when Zscaler received the email until policy evaluation completed, in milliseconds.
+    - name: email
+      type: group
+      fields:
+        - name: attachments
+          type: group
+          fields:
+            - name: doc_subtypes
+              type: keyword
+              description: The document subtype of each email attachment.
+            - name: doc_types
+              type: keyword
+              description: The document type of each email attachment.
+            - name: file_names
+              type: keyword
+              description: The file name of each email attachment.
+            - name: file_types
+              type: keyword
+              description: The file type of each email attachment.
+            - name: md5s
+              type: keyword
+              description: The MD5 hash of each email attachment.
+            - name: sizes
+              type: long
+              unit: byte
+              description: The size of each email attachment in bytes.
+        - name: mail_sent_epoch
+          type: keyword
+          description: The date and time at which the email was sent in epoch format.
+        - name: mail_sent_time
+          type: date
+          description: The date and time at which the user sent the email.
+        - name: message_id
+          type: keyword
+          description: The unique email message identifier.
+        - name: other_recipient_domains
+          type: keyword
+          description: Domains for the recipients where no DLP rule triggered.
+        - name: other_recipients
+          type: keyword
+          description: Recipients where no DLP rule triggered.
+        - name: subject
+          type: keyword
+          description: The subject of the email.
+        - name: triggered_recipient_domains
+          type: keyword
+          description: Domains for the recipients where a DLP rule triggered.
+        - name: triggered_recipients
+          type: keyword
+          description: Recipients where a DLP rule triggered (action taken).
+        - name: zs_rcv_time
+          type: date
+          description: The date and time at which Zscaler received the email.
+        - name: zs_sent_time
+          type: date
+          description: The date and time at which Zscaler sent the email.
+    - name: external_user_name
+      type: keyword
+      description: The user who sent the email but is not provisioned to Internet & SaaS.
+    - name: feed_time
+      type: date
+      description: The feed time (i.e., when a transaction is received by the NSS from the Nanolog).
+    - name: log_type
+      type: keyword
+      description: The type of record (i.e., DLP Incident, Sensitive Activity, or Scan).
+    - name: owner
+      type: keyword
+      description: The username or email address of the user who sent the email.
+    - name: record_id
+      type: keyword
+      description: The unique record identifier.
+    - name: rule
+      type: group
+      fields:
+        - name: labels
+          type: keyword
+          description: The name of the DLP rule.
+    - name: sender
+      type: keyword
+      description: The username or email address of the user who sent the email.
+    - name: severity
+      type: keyword
+      description: The severity. A DLP incident violates a DLP rule and the severity (i.e., High, Medium, Low, Information) is based on the rule that was violated. A sensitive activity does not violate a rule but is reported for visibility (i.e., Information). A scan does not violate a rule and the field displays NA.
+    - name: sourcetype
+      type: keyword
+      description: NSS feed sourcetype identifier for Email DLP.
+    - name: tenant
+      type: keyword
+      description: The name of the email tenant.
+    - name: time
+      type: date
+      description: The log time (i.e., when a transaction is logged by the Zscaler Nanolog).
+    - name: tz
+      type: keyword
+      description: The time zone. This is the same as the time zone you specified when you configured the NSS feed.
+    - name: user_name
+      type: keyword
+      description: The user who sent the email and is provisioned to Internet & SaaS (ZIA).
+    - name: version
+      type: keyword
+      description: Feed Output Format template version expected by this integration.

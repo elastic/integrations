@@ -1,38 +1,54 @@
 {
-    "id": "traefik_otel-high-memory-usage",
-    "type": "alerting_rule_template",
-    "managed": true,
-    "attributes": {
-        "name": "[Traefik OTel] High memory usage",
-        "ruleTypeId": ".es-query",
-        "tags": [
-            "observability",
-            "traefik",
-            "saturation"
-        ],
-        "schedule": {
-            "interval": "5m"
+  "id": "traefik_otel-high-memory-usage",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when process RSS exceeds 2 GB. Traefik is usually memory-light; elevated RSS indicates workload growth or a leak.",
+    "name": "[Traefik OTel] High memory usage",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "traefik",
+      "saturation"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "lookBackWindow": 8,
+      "statusChangeThreshold": 4
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "traefik_otel-process"
         },
-        "alertDelay": {
-            "active": 2
-        },
-        "flapping": {
-            "lookBackWindow": 8,
-            "statusChangeThreshold": 4
-        },
-        "params": {
-            "searchType": "esqlQuery",
-            "esqlQuery": {
-                "esql": "FROM metrics-traefik.otel-*\n// Limit to process resident memory gauge (RSS)\n| WHERE process_resident_memory_bytes IS NOT NULL\n// Take max RSS in window\n| STATS memory_bytes = MAX(process_resident_memory_bytes)\n// Convert to GB; alert when > 2GB (tune based on expected workload)\n| EVAL memory_gb = ROUND(memory_bytes / 1073741824.0, 2)\n| WHERE memory_gb > 2.0"
-            },
-            "size": 0,
-            "threshold": [0],
-            "thresholdComparator": ">",
-            "timeField": "@timestamp",
-            "timeWindowSize": 5,
-            "timeWindowUnit": "m",
-            "groupBy": "all",
-            "excludeHitsFromPreviousRun": false
+        {
+          "id": "traefik_otel-overview"
         }
+      ],
+      "investigation_guide": {
+        "blob": "## Traefik high memory usage\n\n### What fired\n`process_resident_memory_bytes > 2 GB` during the window.\n\n### Why it matters\nTypical Traefik footprint is 100\u2013500 MB. Multi-GB usage suggests a leak or very large config.\n\n### Triage\n1. Check config size and active connection count.\n\n### Remediation\n- Restart / scale Traefik.\n\n### Tuning\n- 2 GB threshold; tune per workload.\n"
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-traefik.otel-*\n// Limit to process resident memory gauge (RSS)\n| WHERE process_resident_memory_bytes IS NOT NULL\n// Take max RSS in window\n| STATS memory_bytes = MAX(process_resident_memory_bytes)\n// Convert to GB; alert when > 2GB (tune based on expected workload)\n| EVAL memory_gb = ROUND(memory_bytes / 1073741824.0, 2)\n| WHERE memory_gb > 2.0"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 5,
+      "timeWindowUnit": "m",
+      "groupBy": "all",
+      "excludeHitsFromPreviousRun": false
     }
+  }
 }

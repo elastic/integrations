@@ -1,0 +1,74 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: windows
+      name: test-custom-processors-windows
+      streams:
+        - batch_read_size: 50
+          condition: ${host.platform} == 'windows'
+          data_stream:
+            dataset: windows.forwarded
+          ignore_older: 72h
+          name: ForwardedEvents
+          processors:
+            - translate_sid:
+                account_name_target: winlog.event_data._MemberUserName
+                account_type_target: winlog.event_data._MemberAccountType
+                domain_target: winlog.event_data._MemberDomain
+                field: winlog.event_data.MemberSid
+                ignore_failure: true
+                ignore_missing: true
+            - decode_xml:
+                field: winlog.event_data.TaskContent
+                ignore_failure: true
+                ignore_missing: true
+                target_field: winlog._tmp.scheduled_task.task_content
+                to_lower: true
+                when:
+                    and:
+                        - has_fields:
+                            - winlog.event_data.TaskContent
+                        - equals:
+                            winlog.provider_name: Microsoft-Windows-Security-Auditing
+                        - regexp:
+                            winlog.channel: ^[Ss][Ee][Cc][Uu][Rr][Ii][Tt][Yy]$
+            - decode_xml:
+                field: winlog.event_data.TaskContentNew
+                ignore_failure: true
+                ignore_missing: true
+                target_field: winlog._tmp.scheduled_task.task_content_new
+                to_lower: true
+                when:
+                    and:
+                        - has_fields:
+                            - winlog.event_data.TaskContentNew
+                        - equals:
+                            winlog.provider_name: Microsoft-Windows-Security-Auditing
+                        - regexp:
+                            winlog.channel: ^[Ss][Ee][Cc][Uu][Rr][Ii][Tt][Yy]$
+            - add_fields:
+                fields:
+                    processors: preserved
+                target: winlog._tmp.policy_test
+          publisher_pipeline.disable_host: true
+          tags:
+            - forwarded
+      type: winlog
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-windows.forwarded-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references: []

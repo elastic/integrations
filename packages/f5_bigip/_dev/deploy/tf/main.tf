@@ -7,6 +7,11 @@ provider "aws" {
       branch       = var.BRANCH
       build        = var.BUILD_ID
       created_date = var.CREATED_DATE
+
+      division = "engineering"
+      org      = "obs"
+      team     = "integration-experience"       # owner.github in manifest.yml
+      project  = "integrations-f5_bigip-package" # name in manifest.yml
     }
   }
 }

@@ -1,0 +1,2913 @@
+---
+description: Pipeline for processing audit logs.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 9.3.0
+  - terminate:
+      tag: data_collection_error
+      description: error message set and no data to process.
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+  - remove:
+      description: Removes the fields added by Agentless as metadata, as they can collide with ECS fields.
+      tag: remove_agentless_tags_44eed408
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+  # event.original is chosen over natural identity fields to avoid data loss from fingerprinting.
+  - fingerprint:
+      fields:
+        - event.original
+      tag: fingerprint_event_original
+      target_field: _id
+      ignore_missing: true
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: cato_networks.audit
+  - append:
+      field: event.category
+      tag: append_event_category
+      value: configuration
+      allow_duplicates: false
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+  - append:
+      field: event.type
+      tag: append_event_type_info
+      value: info
+      allow_duplicates: false
+  - dot_expander:
+      tag: dot_expander_cato_networks_audit
+      field: '*'
+      path: cato_networks.audit
+
+  # Type Conflicting fields
+  - rename:
+      field: cato_networks.audit.change.After.adminRoles
+      tag: rename_change_After_adminRoles
+      target_field: cato_networks.audit.change.After.adminRolesKeyword
+      if: ctx.cato_networks?.audit?.change?.After?.adminRoles instanceof String
+  - rename:
+      field: cato_networks.audit.change.After.allowedItems
+      tag: rename_change_After_allowedItems
+      target_field: cato_networks.audit.change.After.allowedItemsKeyword
+      if: ctx.cato_networks?.audit?.change?.After?.allowedItems instanceof String
+  - rename:
+      field: cato_networks.audit.change.After.allowedUpdatableItems
+      tag: rename_change_After_allowedUpdatableItems
+      target_field: cato_networks.audit.change.After.allowedUpdatableItemsKeyword
+      if: ctx.cato_networks?.audit?.change?.After?.allowedUpdatableItems instanceof String
+  - rename:
+      field: cato_networks.audit.change.After.destType
+      tag: rename_change_After_destType
+      target_field: cato_networks.audit.change.After.destTypeKeyword
+      if: ctx.cato_networks?.audit?.change?.After?.destType instanceof String
+  - date:
+      field: cato_networks.audit.change.After.from
+      tag: date_change_After_from
+      if: ctx.cato_networks?.audit?.change?.After?.from instanceof String && ctx.cato_networks.audit.change.After.from != ''
+      target_field: cato_networks.audit.change.After.fromDate
+      formats:
+        - UNIX_MS
+        - MMM d, yyyy h:mm:ss a
+        - ISO8601
+      ignore_failure: true
+  - rename:
+      field: cato_networks.audit.change.After.from
+      tag: rename_change_After_from
+      target_field: cato_networks.audit.change.After.fromKeyword
+      if: ctx.cato_networks?.audit?.change?.After?.from instanceof String && ctx.cato_networks.audit.change.After.fromDate == null
+  - remove:
+      field: cato_networks.audit.change.After.from
+      tag: remove_change_After_from
+      if: ctx.cato_networks?.audit?.change?.After?.from instanceof String && (ctx.cato_networks?.audit?.change?.After?.fromDate != null  || ctx.cato_networks?.audit?.change?.After?.fromKeyword != null)
+      ignore_missing: true
+  - rename:
+      field: cato_networks.audit.change.After.permissions
+      tag: rename_change_After_permissions
+      target_field: cato_networks.audit.change.After.permissionsKeyword
+      if: ctx.cato_networks?.audit?.change?.After?.permissions instanceof String
+  - rename:
+      field: cato_networks.audit.change.After.role
+      tag: rename_change_After_role
+      target_field: cato_networks.audit.change.After.roleKeyword
+      if: ctx.cato_networks?.audit?.change?.After?.role instanceof String
+  - rename:
+      field: cato_networks.audit.change.After.siteUsage
+      tag: rename_change_After_siteUsage
+      target_field: cato_networks.audit.change.After.siteUsageKeyword
+      if: ctx.cato_networks?.audit?.change?.After?.siteUsage instanceof String
+  - rename:
+      field: cato_networks.audit.change.After.socketConnectionConfiguration
+      tag: rename_change_After_socketConnectionConfiguration
+      target_field: cato_networks.audit.change.After.socketConnectionConfigurationKeyword
+      if: ctx.cato_networks?.audit?.change?.After?.socketConnectionConfiguration instanceof String
+  - convert:
+      field: cato_networks.audit.change.After.socketInterfaces
+      tag: convert_change_After_socketInterfaces_to_double
+      type: double
+      target_field: cato_networks.audit.change.After.socketInterfacesDouble
+      if: ctx.cato_networks?.audit?.change?.After?.socketInterfaces instanceof String
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: cato_networks.audit.change.After.socketInterfaces
+            ignore_missing: true
+  - remove:
+      field: cato_networks.audit.change.After.socketInterfaces
+      tag: remove_change_After_socketInterfaces
+      if: ctx.cato_networks?.audit?.change?.After?.socketInterfacesDouble != null
+      ignore_missing: true
+
+  - set:
+      field: user.name
+      tag: set_user_name_from_admin
+      copy_from: cato_networks.audit.admin
+      ignore_empty_value: true
+  - set:
+      field: user.id
+      tag: set_user_id_from_admin_id
+      copy_from: cato_networks.audit.admin_id
+      ignore_empty_value: true
+  - append:
+      field: related.user
+      tag: append_audit_admin_id_into_related_user
+      value: '{{{cato_networks.audit.admin_id}}}'
+      allow_duplicates: false
+      if: ctx.cato_networks?.audit?.admin_id != null
+  - append:
+      field: related.user
+      tag: append_audit_admin_into_related_user
+      value: '{{{cato_networks.audit.admin}}}'
+      allow_duplicates: false
+      if: ctx.cato_networks?.audit?.admin != null
+  - convert:
+      field: cato_networks.audit.change.After.backhaulingEnabled
+      tag: convert_change_After_backhaulingEnabled_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: cato_networks.audit.change.After.backhaulingEnabled
+            ignore_missing: true
+  - convert:
+      field: cato_networks.audit.change.After.disableAclForSip
+      tag: convert_change_After_disableAclForSip_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: cato_networks.audit.change.After.disableAclForSip
+            ignore_missing: true
+  - convert:
+      field: cato_networks.audit.change.After.downstreamBandwidth
+      tag: convert_change_After_downstreamBandwidth_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: cato_networks.audit.change.After.downstreamBandwidth
+            ignore_missing: true
+  - convert:
+      field: cato_networks.audit.change.After.downstreamBandwidthMbpsPrecision
+      tag: convert_change_After_downstreamBandwidthMbpsPrecision_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: cato_networks.audit.change.After.downstreamBandwidthMbpsPrecision
+            ignore_missing: true
+  - convert:
+      field: cato_networks.audit.change.After.exceededThresholdsDurationEnabled
+      tag: convert_change_After_exceededThresholdsDurationEnabled_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: cato_networks.audit.change.After.exceededThresholdsDurationEnabled
+            ignore_missing: true
+  - convert:
+      field: cato_networks.audit.change.After.expireInDaysAlert
+      tag: convert_change_After_expireInDaysAlert_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: cato_networks.audit.change.After.expireInDaysAlert
+            ignore_missing: true
+  - convert:
+      field: cato_networks.audit.change.After.forceSelectedLocations
+      tag: convert_change_After_forceSelectedLocations_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: cato_networks.audit.change.After.forceSelectedLocations
+            ignore_missing: true
+  - convert:
+      field: cato_networks.audit.change.After.isMacAuthOverride
+      tag: convert_change_After_isMacAuthOverride_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: cato_networks.audit.change.After.isMacAuthOverride
+            ignore_missing: true
+  - convert:
+      field: cato_networks.audit.change.After.isNatPolicyEnabled
+      tag: convert_change_After_isNatPolicyEnabled_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: cato_networks.audit.change.After.isNatPolicyEnabled
+            ignore_missing: true
+  - convert:
+      field: cato_networks.audit.change.After.isPrimary
+      tag: convert_change_After_isPrimary_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: cato_networks.audit.change.After.isPrimary
+            ignore_missing: true
+  - convert:
+      field: cato_networks.audit.change.After.keepAliveEnabled
+      tag: convert_change_After_keepAliveEnabled_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: cato_networks.audit.change.After.keepAliveEnabled
+            ignore_missing: true
+  - convert:
+      field: cato_networks.audit.change.After.l7LanFwEnforcement
+      tag: convert_change_After_l7LanFwEnforcement_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: cato_networks.audit.change.After.l7LanFwEnforcement
+            ignore_missing: true
+  - convert:
+      field: cato_networks.audit.change.After.lanFirewallRulesEnabled
+      tag: convert_change_After_lanFirewallRulesEnabled_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: cato_networks.audit.change.After.lanFirewallRulesEnabled
+            ignore_missing: true
+  - convert:
+      field: cato_networks.audit.change.After.latitude
+      tag: convert_change_After_latitude_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: cato_networks.audit.change.After.latitude
+            ignore_missing: true
+  - convert:
+      field: cato_networks.audit.change.After.longitude
+      tag: convert_change_After_longitude_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: cato_networks.audit.change.After.longitude
+            ignore_missing: true
+  - convert:
+      field: cato_networks.audit.change.After.maxBandwidth
+      tag: convert_change_After_maxBandwidth_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: cato_networks.audit.change.After.maxBandwidth
+            ignore_missing: true
+  - convert:
+      field: cato_networks.audit.change.After.model.automaticallyManaged
+      tag: convert_change_After_model_automaticallyManaged_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: cato_networks.audit.change.After.model.automaticallyManaged
+            ignore_missing: true
+  - convert:
+      field: cato_networks.audit.change.After.naturalOrder
+      tag: convert_change_After_naturalOrder_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: cato_networks.audit.change.After.naturalOrder
+            ignore_missing: true
+  - convert:
+      field: cato_networks.audit.change.After.offCloudTransportEnabled
+      tag: convert_change_After_offCloudTransportEnabled_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: cato_networks.audit.change.After.offCloudTransportEnabled
+            ignore_missing: true
+  - convert:
+      field: cato_networks.audit.change.After.overridePrimarySettings
+      tag: convert_change_After_overridePrimarySettings_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: cato_networks.audit.change.After.overridePrimarySettings
+            ignore_missing: true
+  - convert:
+      field: cato_networks.audit.change.After.physicalPort
+      tag: convert_change_After_physicalPort_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: cato_networks.audit.change.After.physicalPort
+            ignore_missing: true
+  - convert:
+      field: cato_networks.audit.change.After.preferHigherNaturalOrder
+      tag: convert_change_After_preferHigherNaturalOrder_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: cato_networks.audit.change.After.preferHigherNaturalOrder
+            ignore_missing: true
+  - convert:
+      field: cato_networks.audit.change.After.preferPrimaryWAN
+      tag: convert_change_After_preferPrimaryWAN_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: cato_networks.audit.change.After.preferPrimaryWAN
+            ignore_missing: true
+  - convert:
+      field: cato_networks.audit.change.After.primaryBWDownstream
+      tag: convert_change_After_primaryBWDownstream_to_double
+      type: double
+      target_field: cato_networks.audit.change.After.primary_bw_downstream
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: cato_networks.audit.change.After.primaryBWDownstream
+            ignore_missing: true
+  - convert:
+      field: cato_networks.audit.change.After.primaryBWDownstreamMbpsPrecision
+      tag: convert_change_After_primaryBWDownstreamMbpsPrecision_to_double
+      type: double
+      target_field: cato_networks.audit.change.After.primary_bw_downstream_mbps_precision
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: cato_networks.audit.change.After.primaryBWDownstreamMbpsPrecision
+            ignore_missing: true
+  - convert:
+      field: cato_networks.audit.change.After.primaryBWUpstream
+      tag: convert_change_After_primaryBWUpstream_to_double
+      type: double
+      target_field: cato_networks.audit.change.After.primary_bw_upstream
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: cato_networks.audit.change.After.primaryBWUpstream
+            ignore_missing: true
+  - convert:
+      field: cato_networks.audit.change.After.primaryBWUpstreamMbpsPrecision
+      tag: convert_change_After_primaryBWUpstreamMbpsPrecision_to_double
+      type: double
+      ignore_missing: true
+      target_field: cato_networks.audit.change.After.primary_bw_upstream_mbps_precision
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: cato_networks.audit.change.After.primaryBWUpstreamMbpsPrecision
+            ignore_missing: true
+  - convert:
+      field: cato_networks.audit.change.After.publish
+      tag: convert_change_After_publish_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: cato_networks.audit.change.After.publish
+            ignore_missing: true
+  - convert:
+      field: cato_networks.audit.change.After.pwK
+      tag: convert_change_After_pwK_to_double
+      type: double
+      target_field: cato_networks.audit.change.After.pwk
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: cato_networks.audit.change.After.pwK
+            ignore_missing: true
+  - convert:
+      field: cato_networks.audit.change.After.regionalBandwidth
+      tag: convert_change_After_regionalBandwidth_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: cato_networks.audit.change.After.regionalBandwidth
+            ignore_missing: true
+  - date:
+      field: cato_networks.audit.change.After.role.creationDateMilliseconds
+      tag: date_change_After_role_creationDateMilliseconds
+      if: ctx.cato_networks?.audit?.change?.After?.role?.creationDateMilliseconds != null && ctx.cato_networks.audit.change.After.role.creationDateMilliseconds != ''
+      target_field: cato_networks.audit.change.After.role.creationDateMilliseconds
+      formats:
+        - UNIX_MS
+        - MMM d, yyyy h:mm:ss a
+        - ISO8601
+      on_failure:
+        - remove:
+            field: cato_networks.audit.change.After.role.creationDateMilliseconds
+            ignore_missing: true
+  - convert:
+      field: cato_networks.audit.change.After.role.isForToken
+      tag: convert_change_After_role_isForToken_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: cato_networks.audit.change.After.role.isForToken
+            ignore_missing: true
+  - convert:
+      field: cato_networks.audit.change.After.role.isPredefined
+      tag: convert_change_After_role_isPredefined_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: cato_networks.audit.change.After.role.isPredefined
+            ignore_missing: true
+  - convert:
+      field: cato_networks.audit.change.After.role.isUsedOnExternalAccess
+      tag: convert_change_After_role_isUsedOnExternalAccess_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: cato_networks.audit.change.After.role.isUsedOnExternalAccess
+            ignore_missing: true
+  - convert:
+      field: cato_networks.audit.change.After.role.newSaveMethod
+      tag: convert_change_After_role_newSaveMethod_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: cato_networks.audit.change.After.role.newSaveMethod
+            ignore_missing: true
+  - convert:
+      field: cato_networks.audit.change.After.role.visible
+      tag: convert_change_After_role_visible_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: cato_networks.audit.change.After.role.visible
+            ignore_missing: true
+  - convert:
+      field: cato_networks.audit.change.After.s2sEnabled
+      tag: convert_change_After_s2sEnabled_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: cato_networks.audit.change.After.s2sEnabled
+            ignore_missing: true
+  - convert:
+      field: cato_networks.audit.change.After.secPwK
+      tag: convert_change_After_secPwK_to_double
+      type: double
+      target_field: cato_networks.audit.change.After.sec_pwk
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: cato_networks.audit.change.After.secPwK
+            ignore_missing: true
+  - convert:
+      field: cato_networks.audit.change.After.secondaryBWDownstream
+      tag: convert_change_After_secondaryBWDownstream_to_double
+      type: double
+      target_field: cato_networks.audit.change.After.secondary_bw_downstream
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: cato_networks.audit.change.After.secondaryBWDownstream
+            ignore_missing: true
+  - convert:
+      field: cato_networks.audit.change.After.secondaryBWDownstreamMbpsPrecision
+      tag: convert_change_After_secondaryBWDownstreamMbpsPrecision_to_double
+      type: double
+      target_field: cato_networks.audit.change.After.secondary_bw_downstream_mbps_precision
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: cato_networks.audit.change.After.secondaryBWDownstreamMbpsPrecision
+            ignore_missing: true
+  - convert:
+      field: cato_networks.audit.change.After.secondaryBWUpstream
+      tag: convert_change_After_secondaryBWUpstream_to_double
+      type: double
+      ignore_missing: true
+      target_field: cato_networks.audit.change.After.secondary_bw_upstream
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: cato_networks.audit.change.After.secondaryBWUpstream
+            ignore_missing: true
+  - convert:
+      field: cato_networks.audit.change.After.secondaryBWUpstreamMbpsPrecision
+      tag: convert_change_After_secondaryBWUpstreamMbpsPrecision_to_double
+      type: double
+      ignore_missing: true
+      target_field: cato_networks.audit.change.After.secondary_bw_upstream_mbps_precision
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: cato_networks.audit.change.After.secondaryBWUpstreamMbpsPrecision
+            ignore_missing: true
+  - remove:
+      field:
+        - cato_networks.audit.change.After.primaryBWDownstream
+        - cato_networks.audit.change.After.primaryBWDownstreamMbpsPrecision
+        - cato_networks.audit.change.After.primaryBWUpstream
+        - cato_networks.audit.change.After.primaryBWUpstreamMbpsPrecision
+        - cato_networks.audit.change.After.pwK
+        - cato_networks.audit.change.After.secPwK
+        - cato_networks.audit.change.After.secondaryBWDownstream
+        - cato_networks.audit.change.After.secondaryBWDownstreamMbpsPrecision
+        - cato_networks.audit.change.After.secondaryBWUpstream
+        - cato_networks.audit.change.After.secondaryBWUpstreamMbpsPrecision
+      tag: remove_change_After_primary_secondary_field_converted_to_different_target_fields
+      ignore_missing: true
+  - convert:
+      field: cato_networks.audit.change.After.singleWanQosPolicy
+      tag: convert_change_After_singleWanQosPolicy_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: cato_networks.audit.change.After.singleWanQosPolicy
+            ignore_missing: true
+  - convert:
+      field: cato_networks.audit.change.After.siteConnType.requirePassword
+      tag: convert_change_After_siteConnType_requirePassword_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: cato_networks.audit.change.After.siteConnType.requirePassword
+            ignore_missing: true
+  - convert:
+      field: cato_networks.audit.change.After.siteConnType.requirePrimaryBandwidth
+      tag: convert_change_After_siteConnType_requirePrimaryBandwidth_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: cato_networks.audit.change.After.siteConnType.requirePrimaryBandwidth
+            ignore_missing: true
+  - convert:
+      field: cato_networks.audit.change.After.siteConnType.socketModelTypeConfiguration.automaticallyManaged
+      tag: convert_change_After_siteConnType_socketModelTypeConfiguration_automaticallyManaged_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: cato_networks.audit.change.After.siteConnType.socketModelTypeConfiguration.automaticallyManaged
+            ignore_missing: true
+  - convert:
+      field: cato_networks.audit.change.After.siteConnType.supportBGP
+      tag: convert_change_After_siteConnType_supportBGP_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: cato_networks.audit.change.After.siteConnType.supportBGP
+            ignore_missing: true
+  - convert:
+      field: cato_networks.audit.change.After.siteConnType.supportKeepAlive
+      tag: convert_change_After_siteConnType_supportKeepAlive_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: cato_networks.audit.change.After.siteConnType.supportKeepAlive
+            ignore_missing: true
+  - convert:
+      field: cato_networks.audit.change.After.siteConnType.supportMultiTunnelMode
+      tag: convert_change_After_siteConnType_supportMultiTunnelMode_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: cato_networks.audit.change.After.siteConnType.supportMultiTunnelMode
+            ignore_missing: true
+  - convert:
+      field: cato_networks.audit.change.After.siteConnType.supportSiteRecovery
+      tag: convert_change_After_siteConnType_supportSiteRecovery_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: cato_networks.audit.change.After.siteConnType.supportSiteRecovery
+            ignore_missing: true
+  - date:
+      field: cato_networks.audit.change.After.siteProfile.creationDateMilliseconds
+      tag: date_change_After_siteProfile_creationDateMilliseconds
+      if: ctx.cato_networks?.audit?.change?.After?.siteProfile?.creationDateMilliseconds != null && ctx.cato_networks.audit.change.After.siteProfile.creationDateMilliseconds != ''
+      target_field: cato_networks.audit.change.After.siteProfile.creationDateMilliseconds
+      formats:
+        - UNIX_MS
+        - MMM d, yyyy h:mm:ss a
+        - ISO8601
+      on_failure:
+        - remove:
+            field: cato_networks.audit.change.After.siteProfile.creationDateMilliseconds
+            ignore_missing: true
+  - convert:
+      field: cato_networks.audit.change.After.siteProfile.newSaveMethod
+      tag: convert_change_After_siteProfile_newSaveMethod_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: cato_networks.audit.change.After.siteProfile.newSaveMethod
+            ignore_missing: true
+  - date:
+      field: cato_networks.audit.change.After.siteUsage.creationDateMilliseconds
+      tag: date_change_After_siteUsage_creationDateMilliseconds
+      if: ctx.cato_networks?.audit?.change?.After?.siteUsage?.creationDateMilliseconds != null && ctx.cato_networks.audit.change.After.siteUsage.creationDateMilliseconds != ''
+      target_field: cato_networks.audit.change.After.siteUsage.creationDateMilliseconds
+      formats:
+        - UNIX_MS
+        - MMM d, yyyy h:mm:ss a
+        - ISO8601
+      on_failure:
+        - remove:
+            field: cato_networks.audit.change.After.siteUsage.creationDateMilliseconds
+            ignore_missing: true
+  - convert:
+      field: cato_networks.audit.change.After.siteUsage.maxBandwidth
+      tag: convert_change_After_siteUsage_maxBandwidth_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: cato_networks.audit.change.After.siteUsage.maxBandwidth
+            ignore_missing: true
+  - convert:
+      field: cato_networks.audit.change.After.siteUsage.newSaveMethod
+      tag: convert_change_After_siteUsage_newSaveMethod_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: cato_networks.audit.change.After.siteUsage.newSaveMethod
+            ignore_missing: true
+  - convert:
+      field: cato_networks.audit.change.After.siteUsage.regionalBandwidth
+      tag: convert_change_After_siteUsage_regionalBandwidth_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: cato_networks.audit.change.After.siteUsage.regionalBandwidth
+            ignore_missing: true
+  - script:
+      tag: truncate_fractional_part_from_non_array_date_fields
+      lang: painless
+      description: Removes fractional value from date type field that is not an array to parse successfully in date processor later.
+      source: |
+        def removeFractional(def value) {
+          if (value instanceof Number) {
+            return ((Number)value).longValue();
+          }
+          if (value == '') {
+            return value;
+          }
+          return (long)Double.parseDouble(String.valueOf(value));
+        }
+        if (ctx.cato_networks?.audit?.change?.After?.startDate != null) {
+          ctx.cato_networks.audit.change.After.startDate = removeFractional(ctx.cato_networks.audit.change.After.startDate);
+        }
+        if (ctx.cato_networks?.audit?.change?.After?.siteUsage?.startDate != null) {
+          ctx.cato_networks.audit.change.After.siteUsage.startDate = removeFractional(ctx.cato_networks.audit.change.After.siteUsage.startDate);
+        }
+        if (ctx.cato_networks?.audit?.change?.After?.socketInterface?.lastModified != null) {
+          ctx.cato_networks.audit.change.After.socketInterface.lastModified = removeFractional(ctx.cato_networks.audit.change.After.socketInterface.lastModified);
+        }
+        if (ctx.cato_networks?.audit?.change?.After?.socketConnectionConfiguration?.lastModified != null) {
+          ctx.cato_networks.audit.change.After.socketConnectionConfiguration.lastModified = removeFractional(ctx.cato_networks.audit.change.After.socketConnectionConfiguration.lastModified);
+        }
+  - date:
+      field: cato_networks.audit.change.After.siteUsage.startDate
+      tag: date_change_After_siteUsage_startDate
+      if: ctx.cato_networks?.audit?.change?.After?.siteUsage?.startDate != null && ctx.cato_networks.audit.change.After.siteUsage.startDate != ''
+      target_field: cato_networks.audit.change.After.siteUsage.startDate
+      formats:
+        - UNIX_MS
+        - MMM d, yyyy h:mm:ss a
+        - ISO8601
+      on_failure:
+        - remove:
+            field: cato_networks.audit.change.After.siteUsage.startDate
+            ignore_missing: true
+  - convert:
+      field: cato_networks.audit.change.After.socketsSettings.primary.isPrimary
+      tag: convert_change_After_socketsSettings_primary_isPrimary_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: cato_networks.audit.change.After.socketsSettings.primary.isPrimary
+            ignore_missing: true
+  - script:
+      tag: convert_object_to_array
+      lang: painless
+      description: Converts an object into an array.
+      source: |-
+        def convert_to_array(def o){
+          if (o instanceof Map) {
+            def output = [];
+            for (entry in o.entrySet()) {
+              output.add(entry.getValue());
+            }
+            return output;
+          }
+          return o;
+        }
+        if(ctx.cato_networks?.audit?.change?.After?.adminRoles != null){
+          ctx.cato_networks.audit.change.After.adminRoles = convert_to_array(ctx.cato_networks.audit.change.After.adminRoles);
+        }
+        if(ctx.cato_networks?.audit?.change?.After?.allowedItems != null){
+          ctx.cato_networks.audit.change.After.allowedItems = convert_to_array(ctx.cato_networks.audit.change.After.allowedItems);
+        }
+        if(ctx.cato_networks?.audit?.change?.After?.allowedUpdatableItems != null){
+          ctx.cato_networks.audit.change.After.allowedUpdatableItems = convert_to_array(ctx.cato_networks.audit.change.After.allowedUpdatableItems);
+        }
+        if(ctx.cato_networks?.audit?.change?.After?.from != null){
+          ctx.cato_networks.audit.change.After.from = convert_to_array(ctx.cato_networks.audit.change.After.from);
+        }
+        if(ctx.cato_networks?.audit?.change?.After?.model?.links != null){
+          ctx.cato_networks.audit.change.After.model.links = convert_to_array(ctx.cato_networks.audit.change.After.model.links);
+        }
+        if(ctx.cato_networks?.audit?.change?.After?.model?.possiblePlatform != null){
+          ctx.cato_networks.audit.change.After.model.possiblePlatform = convert_to_array(ctx.cato_networks.audit.change.After.model.possiblePlatform);
+        }
+         if(ctx.cato_networks?.audit?.change?.After?.socketInterface?.metadata?.supportedDestinations != null){
+          ctx.cato_networks.audit.change.After.socketInterface.metadata.supportedDestinations = convert_to_array(ctx.cato_networks.audit.change.After.socketInterface.metadata.supportedDestinations);
+        }
+        if(ctx.cato_networks?.audit?.change?.After?.siteConnType?.connectionTypeFamilies != null){
+          ctx.cato_networks.audit.change.After.siteConnType.connectionTypeFamilies = convert_to_array(ctx.cato_networks.audit.change.After.siteConnType.connectionTypeFamilies);
+        }
+        if(ctx.cato_networks?.audit?.change?.After?.siteConnType?.socketModelTypeConfiguration?.links != null){
+          ctx.cato_networks.audit.change.After.siteConnType.socketModelTypeConfiguration.links = convert_to_array(ctx.cato_networks.audit.change.After.siteConnType.socketModelTypeConfiguration.links);
+        }
+        if(ctx.cato_networks?.audit?.change?.After?.siteConnType?.socketModelTypeConfiguration?.possiblePlatform != null){
+          ctx.cato_networks.audit.change.After.siteConnType.socketModelTypeConfiguration.possiblePlatform = convert_to_array(ctx.cato_networks.audit.change.After.siteConnType.socketModelTypeConfiguration.possiblePlatform);
+        }
+
+        // permissions.* converted to array
+        if(ctx.cato_networks?.audit?.change?.After?.permissions != null){
+          ctx.cato_networks.audit.change.After.permissions = convert_to_array(ctx.cato_networks.audit.change.After.permissions);
+          for(o in ctx.cato_networks.audit.change.After.permissions){
+            if(o.actions != null){
+              o.actions = convert_to_array(o.actions);
+            }
+          }
+        }
+
+        // socketsSettings.* converted to array
+        if(ctx.cato_networks?.audit?.change?.After?.socketsSettings?.primary?.links != null){
+          ctx.cato_networks.audit.change.After.socketsSettings.primary.links = convert_to_array(ctx.cato_networks.audit.change.After.socketsSettings.primary.links);
+          for(o in ctx.cato_networks.audit.change.After.socketsSettings.primary.links){
+            if(o.metadata?.supportedDestinations != null){
+              o.metadata.supportedDestinations = convert_to_array(o.metadata.supportedDestinations);
+            }
+          }
+        }
+        if(ctx.cato_networks?.audit?.change?.After?.socketsSettings?.primary?.supportedAddOns != null){
+          ctx.cato_networks.audit.change.After.socketsSettings.primary.supportedAddOns = convert_to_array(ctx.cato_networks.audit.change.After.socketsSettings.primary.supportedAddOns);
+        }
+        if(ctx.cato_networks?.audit?.change?.After?.socketsSettings?.primary?.supportedMigrations != null){
+          ctx.cato_networks.audit.change.After.socketsSettings.primary.supportedMigrations = convert_to_array(ctx.cato_networks.audit.change.After.socketsSettings.primary.supportedMigrations);
+          for(o in ctx.cato_networks.audit.change.After.socketsSettings.primary.supportedMigrations){
+            if(o.links != null){
+              o.links = convert_to_array(o.links);
+            }
+            if(o.possibleAddOns != null){
+              o.possibleAddOns = convert_to_array(o.possibleAddOns);
+            }
+            if(o.possiblePlatform != null){
+              o.possiblePlatform = convert_to_array(o.possiblePlatform);
+            }
+          }
+        }
+        if(ctx.cato_networks?.audit?.change?.After?.socketsSettings?.primary?.type?.links != null){
+          ctx.cato_networks.audit.change.After.socketsSettings.primary.type.links = convert_to_array(ctx.cato_networks.audit.change.After.socketsSettings.primary.type.links);
+        }
+        if(ctx.cato_networks?.audit?.change?.After?.socketsSettings?.primary?.type?.possiblePlatform != null){
+          ctx.cato_networks.audit.change.After.socketsSettings.primary.type.possiblePlatform = convert_to_array(ctx.cato_networks.audit.change.After.socketsSettings.primary.type.possiblePlatform);
+        }
+
+        // socketConnectionConfiguration.* converted to array
+        if(ctx.cato_networks?.audit?.change?.After?.socketConnectionConfiguration?.socketInterfaces != null){
+          ctx.cato_networks.audit.change.After.socketConnectionConfiguration.socketInterfaces = convert_to_array(ctx.cato_networks.audit.change.After.socketConnectionConfiguration.socketInterfaces);
+          for(o in ctx.cato_networks.audit.change.After.socketConnectionConfiguration.socketInterfaces){
+            if(o.metadata?.supportedDestinations != null){
+              o.metadata.supportedDestinations = convert_to_array(o.metadata.supportedDestinations);
+            }
+          }
+        }
+        if(ctx.cato_networks?.audit?.change?.After?.socketConnectionConfiguration?.socketsSettings?.primary?.links != null){
+          ctx.cato_networks.audit.change.After.socketConnectionConfiguration.socketsSettings.primary.links = convert_to_array(ctx.cato_networks.audit.change.After.socketConnectionConfiguration.socketsSettings.primary.links);
+          for(o in ctx.cato_networks.audit.change.After.socketConnectionConfiguration.socketsSettings.primary.links){
+            if(o.metadata?.supportedDestinations != null){
+              o.metadata.supportedDestinations = convert_to_array(o.metadata.supportedDestinations);
+            }
+          }
+        }
+        if(ctx.cato_networks?.audit?.change?.After?.socketConnectionConfiguration?.socketsSettings?.primary?.supportedAddOns != null){
+          ctx.cato_networks.audit.change.After.socketConnectionConfiguration.socketsSettings.primary.supportedAddOns = convert_to_array(ctx.cato_networks.audit.change.After.socketConnectionConfiguration.socketsSettings.primary.supportedAddOns);
+        }
+        if(ctx.cato_networks?.audit?.change?.After?.socketConnectionConfiguration?.socketsSettings?.primary?.supportedMigrations != null){
+          ctx.cato_networks.audit.change.After.socketConnectionConfiguration.socketsSettings.primary.supportedMigrations = convert_to_array(ctx.cato_networks.audit.change.After.socketConnectionConfiguration.socketsSettings.primary.supportedMigrations);
+          for(o in ctx.cato_networks.audit.change.After.socketConnectionConfiguration.socketsSettings.primary.supportedMigrations){
+            if(o.links != null){
+              o.links = convert_to_array(o.links);
+            }
+            if(o.possibleAddOns != null){
+              o.possibleAddOns = convert_to_array(o.possibleAddOns);
+            }
+            if(o.possiblePlatform != null){
+              o.possiblePlatform = convert_to_array(o.possiblePlatform);
+            }
+          }
+        }
+        if(ctx.cato_networks?.audit?.change?.After?.socketConnectionConfiguration?.socketsSettings?.primary?.type?.links != null){
+          ctx.cato_networks.audit.change.After.socketConnectionConfiguration.socketsSettings.primary.type.links = convert_to_array(ctx.cato_networks.audit.change.After.socketConnectionConfiguration.socketsSettings.primary.type.links);
+        }
+        if(ctx.cato_networks?.audit?.change?.After?.socketConnectionConfiguration?.socketsSettings?.primary?.type?.possiblePlatform != null){
+          ctx.cato_networks.audit.change.After.socketConnectionConfiguration.socketsSettings.primary.type.possiblePlatform = convert_to_array(ctx.cato_networks.audit.change.After.socketConnectionConfiguration.socketsSettings.primary.type.possiblePlatform);
+        }
+  - script:
+      tag: truncate_fractional_part_from_array_date_fields
+      description: Removes fractional value from date type field that is an array to parse successfully in date processor later.
+      lang: painless
+      source: |
+        def removeFractional(def value) {
+          if (value instanceof Number) {
+            return ((Number)value).longValue();
+          }
+          if (value == '') {
+            return value;
+          }
+          return (long)Double.parseDouble(String.valueOf(value));
+        }
+        if (ctx.cato_networks?.audit?.change?.After?.allowedUpdatableItems instanceof List) {
+          for(def item : ctx.cato_networks.audit.change.After.allowedUpdatableItems){
+            if(item?.creationDateMilliseconds != null){
+              item.creationDateMilliseconds = removeFractional(item.creationDateMilliseconds);
+            }
+          }
+        }
+        if (ctx.cato_networks?.audit?.change?.After?.permissions instanceof List) {
+          for(def item : ctx.cato_networks.audit.change.After.permissions){
+            if(item?.creationDateMilliseconds != null){
+              item.creationDateMilliseconds = removeFractional(item.creationDateMilliseconds);
+            }
+          }
+        }
+        if (ctx.cato_networks?.audit?.change?.After?.socketConnectionConfiguration?.socketInterfaces instanceof List) {
+          for(def item : ctx.cato_networks.audit.change.After.socketConnectionConfiguration.socketInterfaces){
+            if(item?.lastModified != null){
+              item.lastModified = removeFractional(item.lastModified);
+            }
+            if(item?.creationDateMilliseconds != null){
+              item.creationDateMilliseconds = removeFractional(item.creationDateMilliseconds);
+            }
+          }
+        }
+        if (ctx.cato_networks?.audit?.change?.After?.socketsSettings?.primary?.links instanceof List) {
+          for(def item : ctx.cato_networks.audit.change.After.socketsSettings.primary.links){
+            if(item?.lastModified != null){
+              item.lastModified = removeFractional(item.lastModified);
+            }
+          }
+        }
+        if (ctx.cato_networks?.audit?.change?.After?.adminRoles instanceof List) {
+          for(def item : ctx.cato_networks.audit.change.After.adminRoles){
+            if(item?.creationDateMilliseconds != null){
+              item.creationDateMilliseconds = removeFractional(item.creationDateMilliseconds);
+            }
+            if(item?.role?.creationDateMilliseconds != null){
+              item.role.creationDateMilliseconds = removeFractional(item.role.creationDateMilliseconds);
+            }
+          }
+        }
+        if (ctx.cato_networks?.audit?.change?.After?.allowedItems instanceof List) {
+          for(def item : ctx.cato_networks.audit.change.After.allowedItems){
+            if(item?.creationDateMilliseconds != null){
+              item.creationDateMilliseconds = removeFractional(item.creationDateMilliseconds);
+            }
+          }
+        }
+        if (ctx.cato_networks?.audit?.change?.After?.from instanceof List) {
+          for(def item : ctx.cato_networks.audit.change.After.from){
+            if(item?.creationDateMilliseconds != null){
+              item.creationDateMilliseconds = removeFractional(item.creationDateMilliseconds);
+            }
+          }
+        }
+  - convert:
+      field: cato_networks.audit.change.After.socketsSettings.primary.overridePrimarySettings
+      tag: convert_change_After_socketsSettings_primary_overridePrimarySettings_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: cato_networks.audit.change.After.socketsSettings.primary.overridePrimarySettings
+            ignore_missing: true
+  - convert:
+      field: cato_networks.audit.change.After.socketsSettings.primary.type.automaticallyManaged
+      tag: convert_change_After_socketsSettings_primary_type_automaticallyManaged_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: cato_networks.audit.change.After.socketsSettings.primary.type.automaticallyManaged
+            ignore_missing: true
+  - convert:
+      field: cato_networks.audit.change.After.socketsSettings.primary.upgradesPaused
+      tag: convert_change_After_socketsSettings_primary_upgradesPaused_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: cato_networks.audit.change.After.socketsSettings.primary.upgradesPaused
+            ignore_missing: true
+  - date:
+      field: cato_networks.audit.change.After.socketConnectionConfiguration.creationDate
+      tag: date_change_After_socketConnectionConfiguration_creationDate
+      if: ctx.cato_networks?.audit?.change?.After?.socketConnectionConfiguration?.creationDate != null && ctx.cato_networks.audit.change.After.socketConnectionConfiguration.creationDate != ''
+      target_field: cato_networks.audit.change.After.socketConnectionConfiguration.creationDate
+      formats:
+        - UNIX_MS
+        - MMM d, yyyy h:mm:ss a
+        - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: cato_networks.audit.change.After.socketConnectionConfiguration.creationDate
+            ignore_missing: true
+  - date:
+      field: cato_networks.audit.change.After.socketConnectionConfiguration.creationDateMilliseconds
+      tag: date_change_After_socketConnectionConfiguration_creationDateMilliseconds
+      if: ctx.cato_networks?.audit?.change?.After?.socketConnectionConfiguration?.creationDateMilliseconds != null && ctx.cato_networks.audit.change.After.socketConnectionConfiguration.creationDateMilliseconds != ''
+      target_field: cato_networks.audit.change.After.socketConnectionConfiguration.creationDateMilliseconds
+      formats:
+        - UNIX_MS
+        - MMM d, yyyy h:mm:ss a
+        - ISO8601
+      on_failure:
+        - remove:
+            field: cato_networks.audit.change.After.socketConnectionConfiguration.creationDateMilliseconds
+            ignore_missing: true
+  - convert:
+      field: cato_networks.audit.change.After.socketConnectionConfiguration.isMacAuthOverride
+      tag: convert_change_After_socketConnectionConfiguration_isMacAuthOverride_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: cato_networks.audit.change.After.socketConnectionConfiguration.isMacAuthOverride
+            ignore_missing: true
+  - date:
+      field: cato_networks.audit.change.After.socketConnectionConfiguration.lastModified
+      tag: date_change_After_socketConnectionConfiguration_lastModified
+      if: ctx.cato_networks?.audit?.change?.After?.socketConnectionConfiguration?.lastModified != null && ctx.cato_networks.audit.change.After.socketConnectionConfiguration.lastModified != ''
+      target_field: cato_networks.audit.change.After.socketConnectionConfiguration.lastModified
+      formats:
+        - UNIX_MS
+        - MMM d, yyyy h:mm:ss a
+        - ISO8601
+      on_failure:
+        - remove:
+            field: cato_networks.audit.change.After.socketConnectionConfiguration.lastModified
+            ignore_missing: true
+  - convert:
+      field: cato_networks.audit.change.After.socketConnectionConfiguration.macAddressAuthenticationEnabledOnAccount
+      tag: convert_change_After_socketConnectionConfiguration_macAddressAuthenticationEnabledOnAccount_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: cato_networks.audit.change.After.socketConnectionConfiguration.macAddressAuthenticationEnabledOnAccount
+            ignore_missing: true
+  - convert:
+      field: cato_networks.audit.change.After.socketConnectionConfiguration.newSaveMethod
+      tag: convert_change_After_socketConnectionConfiguration_newSaveMethod_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: cato_networks.audit.change.After.socketConnectionConfiguration.newSaveMethod
+            ignore_missing: true
+  - convert:
+      field: cato_networks.audit.change.After.socketConnectionConfiguration.offCloudTransportEnabled
+      tag: convert_change_After_socketConnectionConfiguration_offCloudTransportEnabled_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: cato_networks.audit.change.After.socketConnectionConfiguration.offCloudTransportEnabled
+            ignore_missing: true
+  - convert:
+      field: cato_networks.audit.change.After.socketConnectionConfiguration.preferHigherNaturalOrder
+      tag: convert_change_After_socketConnectionConfiguration_preferHigherNaturalOrder_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: cato_networks.audit.change.After.socketConnectionConfiguration.preferHigherNaturalOrder
+            ignore_missing: true
+  - convert:
+      field: cato_networks.audit.change.After.socketConnectionConfiguration.socketsSettings.primary.isPrimary
+      tag: convert_change_After_socketConnectionConfiguration_socketsSettings_primary_isPrimary_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: cato_networks.audit.change.After.socketConnectionConfiguration.socketsSettings.primary.isPrimary
+            ignore_missing: true
+  - convert:
+      field: cato_networks.audit.change.After.socketConnectionConfiguration.socketsSettings.primary.type.automaticallyManaged
+      tag: convert_change_After_socketConnectionConfiguration_socketsSettings_primary_type_automaticallyManaged_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: cato_networks.audit.change.After.socketConnectionConfiguration.socketsSettings.primary.type.automaticallyManaged
+            ignore_missing: true
+  - convert:
+      field: cato_networks.audit.change.After.socketConnectionConfiguration.socketsSettings.primary.upgradesPaused
+      tag: convert_change_After_socketConnectionConfiguration_socketsSettings_primary_upgradesPaused_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: cato_networks.audit.change.After.socketConnectionConfiguration.socketsSettings.primary.upgradesPaused
+            ignore_missing: true
+  - date:
+      field: cato_networks.audit.change.After.socketInterface.creationDate
+      tag: date_change_After_socketInterface_creationDate
+      if: ctx.cato_networks?.audit?.change?.After?.socketInterface?.creationDate != null && ctx.cato_networks.audit.change.After.socketInterface.creationDate != ''
+      target_field: cato_networks.audit.change.After.socketInterface.creationDate
+      formats:
+        - UNIX_MS
+        - MMM d, yyyy h:mm:ss a
+        - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: cato_networks.audit.change.After.socketInterface.creationDate
+            ignore_missing: true
+  - date:
+      field: cato_networks.audit.change.After.socketInterface.creationDateMilliseconds
+      tag: date_change_After_socketInterface_creationDateMilliseconds
+      if: ctx.cato_networks?.audit?.change?.After?.socketInterface?.creationDateMilliseconds != null && ctx.cato_networks.audit.change.After.socketInterface.creationDateMilliseconds != ''
+      target_field: cato_networks.audit.change.After.socketInterface.creationDateMilliseconds
+      formats:
+        - UNIX_MS
+        - MMM d, yyyy h:mm:ss a
+        - ISO8601
+      on_failure:
+        - remove:
+            field: cato_networks.audit.change.After.socketInterface.creationDateMilliseconds
+            ignore_missing: true
+  - convert:
+      field: cato_networks.audit.change.After.socketInterface.downstreamBandwidth
+      tag: convert_change_After_socketInterface_downstreamBandwidth_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: cato_networks.audit.change.After.socketInterface.downstreamBandwidth
+            ignore_missing: true
+  - convert:
+      field: cato_networks.audit.change.After.socketInterface.downstreamBandwidthMbpsPrecision
+      tag: convert_change_After_socketInterface_downstreamBandwidthMbpsPrecision_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: cato_networks.audit.change.After.socketInterface.downstreamBandwidthMbpsPrecision
+            ignore_missing: true
+  - date:
+      field: cato_networks.audit.change.After.socketInterface.lastModified
+      tag: date_change_After_socketInterface_lastModified
+      if: ctx.cato_networks?.audit?.change?.After?.socketInterface?.lastModified != null && ctx.cato_networks.audit.change.After.socketInterface.lastModified != ''
+      target_field: cato_networks.audit.change.After.socketInterface.lastModified
+      formats:
+        - UNIX_MS
+        - MMM d, yyyy h:mm:ss a
+        - ISO8601
+      on_failure:
+        - remove:
+            field: cato_networks.audit.change.After.socketInterface.lastModified
+            ignore_missing: true
+  - convert:
+      field: cato_networks.audit.change.After.socketInterface.metadata.disabledDestType
+      tag: convert_change_After_socketInterface_metadata_disabledDestType_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: cato_networks.audit.change.After.socketInterface.metadata.disabledDestType
+            ignore_missing: true
+  - convert:
+      field: cato_networks.audit.change.After.socketInterface.metadata.linkOrder
+      tag: convert_change_After_socketInterface_metadata_linkOrder_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: cato_networks.audit.change.After.socketInterface.metadata.linkOrder
+            ignore_missing: true
+  - convert:
+      field: cato_networks.audit.change.After.socketInterface.naturalOrder
+      tag: convert_change_After_socketInterface_naturalOrder_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: cato_networks.audit.change.After.socketInterface.naturalOrder
+            ignore_missing: true
+  - convert:
+      field: cato_networks.audit.change.After.socketInterface.newSaveMethod
+      tag: convert_change_After_socketInterface_newSaveMethod_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: cato_networks.audit.change.After.socketInterface.newSaveMethod
+            ignore_missing: true
+  - convert:
+      field: cato_networks.audit.change.After.socketInterface.offCloudTransportEnabled
+      tag: convert_change_After_socketInterface_offCloudTransportEnabled_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: cato_networks.audit.change.After.socketInterface.offCloudTransportEnabled
+            ignore_missing: true
+  - convert:
+      field: cato_networks.audit.change.After.socketInterface.physicalPort
+      tag: convert_change_After_socketInterface_physicalPort_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: cato_networks.audit.change.After.socketInterface.physicalPort
+            ignore_missing: true
+  - convert:
+      field: cato_networks.audit.change.After.socketInterface.s2sEnabled
+      tag: convert_change_After_socketInterface_s2sEnabled_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: cato_networks.audit.change.After.socketInterface.s2sEnabled
+            ignore_missing: true
+  - convert:
+      field: cato_networks.audit.change.After.socketInterface.upstreamBandwidth
+      tag: convert_change_After_socketInterface_upstreamBandwidth_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: cato_networks.audit.change.After.socketInterface.upstreamBandwidth
+            ignore_missing: true
+  - convert:
+      field: cato_networks.audit.change.After.socketInterface.upstreamBandwidthMbpsPrecision
+      tag: convert_change_After_socketInterface_upstreamBandwidthMbpsPrecision_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: cato_networks.audit.change.After.socketInterface.upstreamBandwidthMbpsPrecision
+            ignore_missing: true
+  - date:
+      field: cato_networks.audit.change.After.startDate
+      tag: date_change_After_startDate
+      if: ctx.cato_networks?.audit?.change?.After?.startDate != null && ctx.cato_networks.audit.change.After.startDate != ''
+      target_field: cato_networks.audit.change.After.startDate
+      formats:
+        - UNIX_MS
+        - MMM d, yyyy h:mm:ss a
+        - ISO8601
+      on_failure:
+        - remove:
+            field: cato_networks.audit.change.After.startDate
+            ignore_missing: true
+  - convert:
+      field: cato_networks.audit.change.After.trialBandwidth
+      tag: convert_change_After_trialBandwidth_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: cato_networks.audit.change.After.trialBandwidth
+            ignore_missing: true
+  - convert:
+      field: cato_networks.audit.change.After.upstreamBandwidth
+      tag: convert_change_After_upstreamBandwidth_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: cato_networks.audit.change.After.upstreamBandwidth
+            ignore_missing: true
+  - convert:
+      field: cato_networks.audit.change.After.upstreamBandwidthMbpsPrecision
+      tag: convert_change_After_upstreamBandwidthMbpsPrecision_to_double
+      type: double
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: cato_networks.audit.change.After.upstreamBandwidthMbpsPrecision
+            ignore_missing: true
+  - set:
+      field: event.action
+      tag: set_event_action_from_audit_change_type
+      copy_from: cato_networks.audit.change_type
+      ignore_empty_value: true
+  - lowercase:
+      field: event.action
+      tag: lowercase_event_action
+      ignore_missing: true
+  - append:
+      field: event.type
+      tag: append_event_type_creation
+      value: creation
+      allow_duplicates: false
+      if: ctx.event?.action == 'created'
+  - append:
+      field: event.type
+      tag: append_event_type_change
+      value: change
+      allow_duplicates: false
+      if: ctx.event?.action == 'modified'
+  - append:
+      field: event.type
+      tag: append_event_type_deletion
+      value: deletion
+      allow_duplicates: false
+      if: ctx.event?.action == 'deleted'
+  - date:
+      field: cato_networks.audit.creation_date
+      tag: date_creation_date
+      if: ctx.cato_networks?.audit?.creation_date != null && ctx.cato_networks.audit.creation_date != ''
+      target_field: cato_networks.audit.creation_date
+      formats:
+        - UNIX_MS
+        - MMM d, yyyy h:mm:ss a
+        - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: cato_networks.audit.creation_date
+            ignore_missing: true
+  - set:
+      field: '@timestamp'
+      tag: set_@timestamp_from_audit_creation_date
+      copy_from: cato_networks.audit.creation_date
+      ignore_empty_value: true
+  - date:
+      field: cato_networks.audit.insertion_date
+      tag: date_insertion_date
+      if: ctx.cato_networks?.audit?.insertion_date != null && ctx.cato_networks.audit.insertion_date != ''
+      target_field: cato_networks.audit.insertion_date
+      formats:
+        - UNIX_MS
+        - MMM d, yyyy h:mm:ss a
+        - ISO8601
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+        - remove:
+            field: cato_networks.audit.insertion_date
+            ignore_missing: true
+  - set:
+      field: event.created
+      tag: set_event_created_from_audit_insertion_date
+      copy_from: cato_networks.audit.insertion_date
+      ignore_empty_value: true
+  - set:
+      field: '@timestamp'
+      tag: set_@timestamp_from_audit_insertion_date
+      copy_from: cato_networks.audit.insertion_date
+      ignore_empty_value: true
+      if: ctx.cato_networks?.audit?.creation_date == null
+
+  # change.After.allowedUpdatableItems[].* fields conversion
+  - foreach:
+      field: cato_networks.audit.change.After.allowedUpdatableItems
+      tag: foreach_change_After_allowedUpdatableItems_creationDateMilliseconds
+      if: ctx.cato_networks?.audit?.change?.After?.allowedUpdatableItems instanceof List
+      processor:
+        date:
+          field: _ingest._value.creationDateMilliseconds
+          tag: convert_change_After_allowedUpdatableItems_creationDateMilliseconds_to_date
+          target_field: _ingest._value.creationDateMilliseconds
+          formats:
+            - UNIX_MS
+            - MMM d, yyyy h:mm:ss a
+            - ISO8601
+          on_failure:
+            - remove:
+                field: _ingest._value.creationDateMilliseconds
+                ignore_missing: true
+  - foreach:
+      field: cato_networks.audit.change.After.allowedUpdatableItems
+      tag: foreach_change_After_allowedUpdatableItems_newSaveMethod
+      if: ctx.cato_networks?.audit?.change?.After?.allowedUpdatableItems instanceof List
+      processor:
+        convert:
+          field: _ingest._value.newSaveMethod
+          tag: convert_change_After_allowedUpdatableItems_newSaveMethod_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            - remove:
+                field: _ingest._value.newSaveMethod
+                ignore_missing: true
+
+  # change.After.[].* fields conversion
+  - foreach:
+      field: cato_networks.audit.change.After.adminRoles
+      tag: foreach_change_After_adminRoles_creationDateMilliseconds
+      if: ctx.cato_networks?.audit?.change?.After?.adminRoles instanceof List
+      processor:
+        date:
+          field: _ingest._value.creationDateMilliseconds
+          tag: convert_change_After_adminRoles_creationDateMilliseconds_to_date
+          target_field: _ingest._value.creationDateMilliseconds
+          formats:
+            - UNIX_MS
+            - MMM d, yyyy h:mm:ss a
+            - ISO8601
+          on_failure:
+            - remove:
+                field: _ingest._value.creationDateMilliseconds
+                ignore_missing: true
+  - foreach:
+      field: cato_networks.audit.change.After.adminRoles
+      tag: foreach_change_After_adminRoles_newSaveMethod
+      if: ctx.cato_networks?.audit?.change?.After?.adminRoles instanceof List
+      processor:
+        convert:
+          field: _ingest._value.newSaveMethod
+          tag: convert_change_After_adminRoles_newSaveMethod_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            - remove:
+                field: _ingest._value.newSaveMethod
+                ignore_missing: true
+
+  # change.After.adminRoles[].role.* fields conversion
+  - foreach:
+      field: cato_networks.audit.change.After.adminRoles
+      tag: foreach_change_After_adminRoles_role_creationDateMilliseconds
+      if: ctx.cato_networks?.audit?.change?.After?.adminRoles instanceof List
+      processor:
+        date:
+          field: _ingest._value.role.creationDateMilliseconds
+          tag: convert_change_After_adminRoles_role_creationDateMilliseconds_to_date
+          target_field: _ingest._value.role.creationDateMilliseconds
+          formats:
+            - UNIX_MS
+            - MMM d, yyyy h:mm:ss a
+            - ISO8601
+          on_failure:
+            - remove:
+                field: _ingest._value.role.creationDateMilliseconds
+                ignore_missing: true
+  - foreach:
+      field: cato_networks.audit.change.After.adminRoles
+      tag: foreach_change_After_adminRoles_role_isForToken
+      if: ctx.cato_networks?.audit?.change?.After?.adminRoles instanceof List
+      processor:
+        convert:
+          field: _ingest._value.role.isForToken
+          tag: convert_change_After_adminRoles_role_isForToken_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            - remove:
+                field: _ingest._value.role.isForToken
+                ignore_missing: true
+  - foreach:
+      field: cato_networks.audit.change.After.adminRoles
+      tag: foreach_change_After_adminRoles_role_isPredefined
+      if: ctx.cato_networks?.audit?.change?.After?.adminRoles instanceof List
+      processor:
+        convert:
+          field: _ingest._value.role.isPredefined
+          tag: convert_change_After_adminRoles_role_isPredefined_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            - remove:
+                field: _ingest._value.role.isPredefined
+                ignore_missing: true
+  - foreach:
+      field: cato_networks.audit.change.After.adminRoles
+      tag: foreach_change_After_adminRoles_role_isUsedOnExternalAccess
+      if: ctx.cato_networks?.audit?.change?.After?.adminRoles instanceof List
+      processor:
+        convert:
+          field: _ingest._value.role.isUsedOnExternalAccess
+          tag: convert_change_After_adminRoles_role_isUsedOnExternalAccess_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            - remove:
+                field: _ingest._value.role.isUsedOnExternalAccess
+                ignore_missing: true
+  - foreach:
+      field: cato_networks.audit.change.After.adminRoles
+      tag: foreach_change_After_adminRoles_role_newSaveMethod
+      if: ctx.cato_networks?.audit?.change?.After?.adminRoles instanceof List
+      processor:
+        convert:
+          field: _ingest._value.role.newSaveMethod
+          tag: convert_change_After_adminRoles_role_newSaveMethod_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            - remove:
+                field: _ingest._value.role.newSaveMethod
+                ignore_missing: true
+  - foreach:
+      field: cato_networks.audit.change.After.adminRoles
+      tag: foreach_change_After_adminRoles_role_visible
+      if: ctx.cato_networks?.audit?.change?.After?.adminRoles instanceof List
+      processor:
+        convert:
+          field: _ingest._value.role.visible
+          tag: convert_change_After_adminRoles_role_visible_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            - remove:
+                field: _ingest._value.role.visible
+                ignore_missing: true
+
+  # change.After.allowedItems[].* fields conversion
+  - foreach:
+      field: cato_networks.audit.change.After.allowedItems
+      tag: foreach_change_After_allowedItems_creationDateMilliseconds
+      if: ctx.cato_networks?.audit?.change?.After?.allowedItems instanceof List
+      processor:
+        date:
+          field: _ingest._value.creationDateMilliseconds
+          tag: date_change_After_allowedItems_creationDateMilliseconds
+          target_field: _ingest._value.creationDateMilliseconds
+          formats:
+            - UNIX_MS
+            - MMM d, yyyy h:mm:ss a
+            - ISO8601
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.creationDateMilliseconds
+                ignore_missing: true
+  - foreach:
+      field: cato_networks.audit.change.After.allowedItems
+      tag: foreach_change_After_allowedItems_newSaveMethod
+      if: ctx.cato_networks?.audit?.change?.After?.allowedItems instanceof List
+      processor:
+        convert:
+          field: _ingest._value.newSaveMethod
+          tag: convert_change_After_allowedItems_newSaveMethod_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.newSaveMethod
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # change.After.from[].* field conversion
+  - foreach:
+      field: cato_networks.audit.change.After.from
+      tag: foreach_change_After_from_creationDateMilliseconds
+      if: ctx.cato_networks?.audit?.change?.After?.from instanceof List
+      processor:
+        date:
+          field: _ingest._value.creationDateMilliseconds
+          tag: date_change_After_from_creationDateMilliseconds
+          target_field: _ingest._value.creationDateMilliseconds
+          formats:
+            - UNIX_MS
+            - MMM d, yyyy h:mm:ss a
+            - ISO8601
+          on_failure:
+            - remove:
+                field: _ingest._value.creationDateMilliseconds
+                ignore_missing: true
+  - foreach:
+      field: cato_networks.audit.change.After.from
+      tag: foreach_change_After_from
+      if: ctx.cato_networks?.audit?.change?.After?.from instanceof List
+      processor:
+        convert:
+          field: _ingest._value.newSaveMethod
+          tag: convert_change_After_from_newSaveMethod_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            - remove:
+                field: _ingest._value.newSaveMethod
+                ignore_missing: true
+
+  # change.After.permissions.* field conversion
+  - foreach:
+      field: cato_networks.audit.change.After.permissions
+      tag: foreach_change_After_permissions_creationDateMilliseconds
+      if: ctx.cato_networks?.audit?.change?.After?.permissions instanceof List
+      processor:
+        date:
+          field: _ingest._value.creationDateMilliseconds
+          tag: date_change_After_creationDateMilliseconds
+          target_field: _ingest._value.creationDateMilliseconds
+          formats:
+            - UNIX_MS
+            - MMM d, yyyy h:mm:ss a
+            - ISO8601
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.creationDateMilliseconds
+                ignore_missing: true
+  - foreach:
+      field: cato_networks.audit.change.After.permissions
+      tag: foreach_change_After_permissions
+      if: ctx.cato_networks?.audit?.change?.After?.permissions instanceof List
+      processor:
+        convert:
+          field: _ingest._value.newSaveMethod
+          tag: convert_change_After_permissions_newSaveMethod_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+            - remove:
+                field: _ingest._value.newSaveMethod
+                ignore_missing: true
+
+  # change.After.socketConnectionConfiguration.socketInterfaces[].* fields conversion
+  - foreach:
+      field: cato_networks.audit.change.After.socketConnectionConfiguration.socketInterfaces
+      tag: foreach_change_After_socketConnectionConfiguration_socketInterfaces_creationDate
+      if: ctx.cato_networks?.audit?.change?.After?.socketConnectionConfiguration?.socketInterfaces instanceof List
+      processor:
+        date:
+          field: _ingest._value.creationDate
+          tag: date_change_After_socketConnectionConfiguration_socketInterfaces_creationDate
+          target_field: _ingest._value.creationDate
+          formats:
+            - UNIX_MS
+            - MMM d, yyyy h:mm:ss a
+            - ISO8601
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.creationDate
+                ignore_missing: true
+  - foreach:
+      field: cato_networks.audit.change.After.socketConnectionConfiguration.socketInterfaces
+      tag: foreach_change_After_socketConnectionConfiguration_socketInterfaces_creationDateMilliseconds
+      if: ctx.cato_networks?.audit?.change?.After?.socketConnectionConfiguration?.socketInterfaces instanceof List
+      processor:
+        date:
+          field: _ingest._value.creationDateMilliseconds
+          tag: date_change_After_socketConnectionConfiguration_socketInterfaces_creationDateMilliseconds
+          target_field: _ingest._value.creationDateMilliseconds
+          formats:
+            - UNIX_MS
+            - MMM d, yyyy h:mm:ss a
+            - ISO8601
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.creationDateMilliseconds
+                ignore_missing: true
+  - foreach:
+      field: cato_networks.audit.change.After.socketConnectionConfiguration.socketInterfaces
+      tag: foreach_change_After_socketConnectionConfiguration_socketInterfaces_downstreamBandwidth
+      if: ctx.cato_networks?.audit?.change?.After?.socketConnectionConfiguration?.socketInterfaces instanceof List
+      processor:
+        convert:
+          field: _ingest._value.downstreamBandwidth
+          tag: convert_change_After_socketConnectionConfiguration_socketInterfaces_downstreamBandwidth_to_double
+          type: double
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.downstreamBandwidth
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: cato_networks.audit.change.After.socketConnectionConfiguration.socketInterfaces
+      tag: foreach_change_After_socketConnectionConfiguration_socketInterfaces_downstreamBandwidthMbpsPrecision
+      if: ctx.cato_networks?.audit?.change?.After?.socketConnectionConfiguration?.socketInterfaces instanceof List
+      processor:
+        convert:
+          field: _ingest._value.downstreamBandwidthMbpsPrecision
+          tag: convert_change_After_socketConnectionConfiguration_socketInterfaces_downstreamBandwidthMbpsPrecision_to_double
+          type: double
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.downstreamBandwidthMbpsPrecision
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: cato_networks.audit.change.After.socketConnectionConfiguration.socketInterfaces
+      tag: foreach_change_After_socketConnectionConfiguration_socketInterfaces_lastModified
+      if: ctx.cato_networks?.audit?.change?.After?.socketConnectionConfiguration?.socketInterfaces instanceof List
+      processor:
+        date:
+          field: _ingest._value.lastModified
+          tag: date_change_After_socketConnectionConfiguration_socketInterfaces_lastModified
+          target_field: _ingest._value.lastModified
+          formats:
+            - UNIX_MS
+            - MMM d, yyyy h:mm:ss a
+            - ISO8601
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.lastModified
+                ignore_missing: true
+  - foreach:
+      field: cato_networks.audit.change.After.socketConnectionConfiguration.socketInterfaces
+      tag: foreach_change_After_socketConnectionConfiguration_socketInterfaces_metadata_disabledDestType
+      if: ctx.cato_networks?.audit?.change?.After?.socketConnectionConfiguration?.socketInterfaces instanceof List
+      processor:
+        convert:
+          field: _ingest._value.metadata.disabledDestType
+          tag: convert_change_After_socketConnectionConfiguration_socketInterfaces_metadata_disabledDestType_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.metadata.disabledDestType
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: cato_networks.audit.change.After.socketConnectionConfiguration.socketInterfaces
+      tag: foreach_change_After_socketConnectionConfiguration_socketInterfaces_metadata_linkOrder
+      if: ctx.cato_networks?.audit?.change?.After?.socketConnectionConfiguration?.socketInterfaces instanceof List
+      processor:
+        convert:
+          field: _ingest._value.metadata.linkOrder
+          tag: convert_change_After_socketConnectionConfiguration_socketInterfaces_metadata_linkOrder_to_double
+          type: double
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.metadata.linkOrder
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: cato_networks.audit.change.After.socketConnectionConfiguration.socketInterfaces
+      tag: foreach_change_After_socketConnectionConfiguration_socketInterfaces_naturalOrder
+      if: ctx.cato_networks?.audit?.change?.After?.socketConnectionConfiguration?.socketInterfaces instanceof List
+      processor:
+        convert:
+          field: _ingest._value.naturalOrder
+          tag: convert_change_After_socketConnectionConfiguration_socketInterfaces_naturalOrder_to_double
+          type: double
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.naturalOrder
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: cato_networks.audit.change.After.socketConnectionConfiguration.socketInterfaces
+      tag: foreach_change_After_socketConnectionConfiguration_socketInterfaces_meta_data_speed
+      if: ctx.cato_networks?.audit?.change?.After?.socketConnectionConfiguration?.socketInterfaces instanceof List
+      processor:
+        dissect:
+          field: _ingest._value.metadata.speed
+          tag: dissect_change_After_socketConnectionConfiguration_socketInterfaces_metadata_speed
+          pattern: '_%{_ingest._value.metadata.speed}'
+          ignore_missing: true
+          ignore_failure: true
+  - foreach:
+      field: cato_networks.audit.change.After.socketConnectionConfiguration.socketInterfaces
+      tag: foreach_change_After_socketConnectionConfiguration_socketInterfaces_newSaveMethod
+      if: ctx.cato_networks?.audit?.change?.After?.socketConnectionConfiguration?.socketInterfaces instanceof List
+      processor:
+        convert:
+          field: _ingest._value.newSaveMethod
+          tag: convert_change_After_socketConnectionConfiguration_socketInterfaces_newSaveMethod_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.newSaveMethod
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: cato_networks.audit.change.After.socketConnectionConfiguration.socketInterfaces
+      tag: foreach_change_After_socketConnectionConfiguration_socketInterfaces_offCloudTransportEnabled
+      if: ctx.cato_networks?.audit?.change?.After?.socketConnectionConfiguration?.socketInterfaces instanceof List
+      processor:
+        convert:
+          field: _ingest._value.offCloudTransportEnabled
+          tag: convert_change_After_socketConnectionConfiguration_socketInterfaces_offCloudTransportEnabled_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.offCloudTransportEnabled
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: cato_networks.audit.change.After.socketConnectionConfiguration.socketInterfaces
+      tag: foreach_change_After_socketConnectionConfiguration_socketInterfaces_physicalPort
+      if: ctx.cato_networks?.audit?.change?.After?.socketConnectionConfiguration?.socketInterfaces instanceof List
+      processor:
+        convert:
+          field: _ingest._value.physicalPort
+          tag: convert_change_After_socketConnectionConfiguration_socketInterfaces_physicalPort_to_double
+          type: double
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.physicalPort
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: cato_networks.audit.change.After.socketConnectionConfiguration.socketInterfaces
+      tag: foreach_change_After_socketConnectionConfiguration_socketInterfaces_s2sEnabled
+      if: ctx.cato_networks?.audit?.change?.After?.socketConnectionConfiguration?.socketInterfaces instanceof List
+      processor:
+        convert:
+          field: _ingest._value.s2sEnabled
+          tag: convert_change_After_socketConnectionConfiguration_socketInterfaces_s2sEnabled_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.s2sEnabled
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: cato_networks.audit.change.After.socketConnectionConfiguration.socketInterfaces
+      tag: foreach_change_After_socketConnectionConfiguration_socketInterfaces_upstreamBandwidth
+      if: ctx.cato_networks?.audit?.change?.After?.socketConnectionConfiguration?.socketInterfaces instanceof List
+      processor:
+        convert:
+          field: _ingest._value.upstreamBandwidth
+          tag: convert_change_After_socketConnectionConfiguration_socketInterfaces_upstreamBandwidth_to_double
+          type: double
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.upstreamBandwidth
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: cato_networks.audit.change.After.socketConnectionConfiguration.socketInterfaces
+      tag: foreach_change_After_socketConnectionConfiguration_socketInterfaces_upstreamBandwidthMbpsPrecision
+      if: ctx.cato_networks?.audit?.change?.After?.socketConnectionConfiguration?.socketInterfaces instanceof List
+      processor:
+        convert:
+          field: _ingest._value.upstreamBandwidthMbpsPrecision
+          tag: convert_change_After_socketConnectionConfiguration_socketInterfaces_upstreamBandwidthMbpsPrecision_to_double
+          type: double
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.upstreamBandwidthMbpsPrecision
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # socketConnectionConfiguration.socketsSettings.primary.links[].* fields conversion
+  - foreach:
+      field: cato_networks.audit.change.After.socketConnectionConfiguration.socketsSettings.primary.links
+      tag: foreach_change_After_socketConnectionConfiguration_socketsSettings_primary_links_creationDate
+      if: ctx.cato_networks?.audit?.change?.After?.socketConnectionConfiguration?.socketsSettings?.primary?.links instanceof List
+      processor:
+        date:
+          field: _ingest._value.creationDate
+          tag: date_change_After_socketConnectionConfiguration_socketsSettings_primary_links_creationDate
+          target_field: _ingest._value.creationDate
+          formats:
+            - UNIX_MS
+            - MMM d, yyyy h:mm:ss a
+            - ISO8601
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.creationDate
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: cato_networks.audit.change.After.socketConnectionConfiguration.socketsSettings.primary.links
+      tag: foreach_change_After_socketConnectionConfiguration_socketsSettings_primary_links_creationDateMilliseconds
+      if: ctx.cato_networks?.audit?.change?.After?.socketConnectionConfiguration?.socketsSettings?.primary?.links instanceof List
+      processor:
+        date:
+          field: _ingest._value.creationDateMilliseconds
+          tag: date_change_After_socketConnectionConfiguration_socketsSettings_primary_links_creationDateMilliseconds
+          target_field: _ingest._value.creationDateMilliseconds
+          formats:
+            - UNIX_MS
+            - MMM d, yyyy h:mm:ss a
+            - ISO8601
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.creationDateMilliseconds
+                ignore_missing: true
+  - foreach:
+      field: cato_networks.audit.change.After.socketConnectionConfiguration.socketsSettings.primary.links
+      tag: foreach_change_After_socketConnectionConfiguration_socketsSettings_primary_links_downstreamBandwidth
+      if: ctx.cato_networks?.audit?.change?.After?.socketConnectionConfiguration?.socketsSettings?.primary?.links instanceof List
+      processor:
+        convert:
+          field: _ingest._value.downstreamBandwidth
+          tag: convert_change_After_socketConnectionConfiguration_socketsSettings_primary_links_downstreamBandwidth_to_double
+          type: double
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.downstreamBandwidth
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: cato_networks.audit.change.After.socketConnectionConfiguration.socketsSettings.primary.links
+      tag: foreach_change_After_socketConnectionConfiguration_socketsSettings_primary_links_downstreamBandwidthMbpsPrecision
+      if: ctx.cato_networks?.audit?.change?.After?.socketConnectionConfiguration?.socketsSettings?.primary?.links instanceof List
+      processor:
+        convert:
+          field: _ingest._value.downstreamBandwidthMbpsPrecision
+          tag: convert_change_After_socketConnectionConfiguration_socketsSettings_primary_links_downstreamBandwidthMbpsPrecision_to_double
+          type: double
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.downstreamBandwidthMbpsPrecision
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: cato_networks.audit.change.After.socketConnectionConfiguration.socketsSettings.primary.links
+      tag: foreach_change_After_socketConnectionConfiguration_socketsSettings_primary_links_lastModified
+      if: ctx.cato_networks?.audit?.change?.After?.socketConnectionConfiguration?.socketsSettings?.primary?.links instanceof List
+      processor:
+        date:
+          field: _ingest._value.lastModified
+          tag: date_change_After_socketConnectionConfiguration_socketsSettings_primary_links_lastModified
+          target_field: _ingest._value.lastModified
+          formats:
+            - UNIX_MS
+            - MMM d, yyyy h:mm:ss a
+            - ISO8601
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.lastModified
+                ignore_missing: true
+  - foreach:
+      field: cato_networks.audit.change.After.socketConnectionConfiguration.socketsSettings.primary.links
+      tag: foreach_change_After_socketConnectionConfiguration_socketsSettings_primary_links_metadata_disabledDestType
+      if: ctx.cato_networks?.audit?.change?.After?.socketConnectionConfiguration?.socketsSettings?.primary?.links instanceof List
+      processor:
+        convert:
+          field: _ingest._value.metadata.disabledDestType
+          tag: convert_change_After_socketConnectionConfiguration_socketsSettings_primary_links_metadata_disabledDestType_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.metadata.disabledDestType
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: cato_networks.audit.change.After.socketConnectionConfiguration.socketsSettings.primary.links
+      tag: foreach_change_After_socketConnectionConfiguration_socketsSettings_primary_links_metadata_linkOrder
+      if: ctx.cato_networks?.audit?.change?.After?.socketConnectionConfiguration?.socketsSettings?.primary?.links instanceof List
+      processor:
+        convert:
+          field: _ingest._value.metadata.linkOrder
+          tag: convert_change_After_socketConnectionConfiguration_socketsSettings_primary_links_metadata_linkOrder_to_double
+          type: double
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.metadata.linkOrder
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: cato_networks.audit.change.After.socketConnectionConfiguration.socketsSettings.primary.links
+      tag: foreach_change_After_socketConnectionConfiguration_socketsSettings_primary_links_metadata_speed
+      if: ctx.cato_networks?.audit?.change?.After?.socketConnectionConfiguration?.socketsSettings?.primary?.links instanceof List
+      processor:
+        dissect:
+          field: _ingest._value.metadata.speed
+          tag: dissect_change_After_socketConnectionConfiguration_socketsSettings_primary_links_metadata_speed
+          pattern: '_%{_ingest._value.metadata.speed}'
+          ignore_missing: true
+          ignore_failure: true
+  - foreach:
+      field: cato_networks.audit.change.After.socketConnectionConfiguration.socketsSettings.primary.links
+      tag: foreach_change_After_socketConnectionConfiguration_socketsSettings_primary_links_naturalOrder
+      if: ctx.cato_networks?.audit?.change?.After?.socketConnectionConfiguration?.socketsSettings?.primary?.links instanceof List
+      processor:
+        convert:
+          field: _ingest._value.naturalOrder
+          tag: convert_change_After_socketConnectionConfiguration_socketsSettings_primary_links_naturalOrder_to_double
+          type: double
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.naturalOrder
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: cato_networks.audit.change.After.socketConnectionConfiguration.socketsSettings.primary.links
+      tag: foreach_change_After_socketConnectionConfiguration_socketsSettings_primary_links_newSaveMethod
+      if: ctx.cato_networks?.audit?.change?.After?.socketConnectionConfiguration?.socketsSettings?.primary?.links instanceof List
+      processor:
+        convert:
+          field: _ingest._value.newSaveMethod
+          tag: convert_change_After_socketConnectionConfiguration_socketsSettings_primary_links_newSaveMethod_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.newSaveMethod
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: cato_networks.audit.change.After.socketConnectionConfiguration.socketsSettings.primary.links
+      tag: foreach_change_After_socketConnectionConfiguration_socketsSettings_primary_links_offCloudTransportEnabled
+      if: ctx.cato_networks?.audit?.change?.After?.socketConnectionConfiguration?.socketsSettings?.primary?.links instanceof List
+      processor:
+        convert:
+          field: _ingest._value.offCloudTransportEnabled
+          tag: convert_change_After_socketConnectionConfiguration_socketsSettings_primary_links_offCloudTransportEnabled_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.offCloudTransportEnabled
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: cato_networks.audit.change.After.socketConnectionConfiguration.socketsSettings.primary.links
+      tag: foreach_change_After_socketConnectionConfiguration_socketsSettings_primary_links_physicalPort
+      if: ctx.cato_networks?.audit?.change?.After?.socketConnectionConfiguration?.socketsSettings?.primary?.links instanceof List
+      processor:
+        convert:
+          field: _ingest._value.physicalPort
+          tag: convert_change_After_socketConnectionConfiguration_socketsSettings_primary_links_physicalPort_to_double
+          type: double
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.physicalPort
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: cato_networks.audit.change.After.socketConnectionConfiguration.socketsSettings.primary.links
+      tag: foreach_change_After_socketConnectionConfiguration_socketsSettings_primary_links_s2sEnabled
+      if: ctx.cato_networks?.audit?.change?.After?.socketConnectionConfiguration?.socketsSettings?.primary?.links instanceof List
+      processor:
+        convert:
+          field: _ingest._value.s2sEnabled
+          tag: convert_change_After_socketConnectionConfiguration_socketsSettings_primary_links_s2sEnabled_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.s2sEnabled
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: cato_networks.audit.change.After.socketConnectionConfiguration.socketsSettings.primary.links
+      tag: foreach_change_After_socketConnectionConfiguration_socketsSettings_primary_links_upstreamBandwidthMbpsPrecision
+      if: ctx.cato_networks?.audit?.change?.After?.socketConnectionConfiguration?.socketsSettings?.primary?.links instanceof List
+      processor:
+        convert:
+          field: _ingest._value.upstreamBandwidthMbpsPrecision
+          tag: convert_change_After_socketConnectionConfiguration_socketsSettings_primary_links_upstreamBandwidthMbpsPrecision_to_double
+          type: double
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.upstreamBandwidthMbpsPrecision
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: cato_networks.audit.change.After.socketConnectionConfiguration.socketsSettings.primary.links
+      tag: foreach_change_After_socketConnectionConfiguration_socketsSettings_primary_links_upstreamBandwidth
+      if: ctx.cato_networks?.audit?.change?.After?.socketConnectionConfiguration?.socketsSettings?.primary?.links instanceof List
+      processor:
+        convert:
+          field: _ingest._value.upstreamBandwidth
+          tag: convert_change_After_socketConnectionConfiguration_socketsSettings_primary_links_upstreamBandwidth_to_double
+          type: double
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.upstreamBandwidth
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # change.After.socketConnectionConfiguration.socketsSettings.primary.supportedAddOns[].* fields conversion
+  - foreach:
+      field: cato_networks.audit.change.After.socketConnectionConfiguration.socketsSettings.primary.supportedAddOns
+      tag: foreach_change_After_socketConnectionConfiguration_socketsSettings_primary_supportedAddOns_numberOfPorts
+      if: ctx.cato_networks?.audit?.change?.After?.socketConnectionConfiguration?.socketsSettings?.primary?.supportedAddOns instanceof List
+      processor:
+        convert:
+          field: _ingest._value.numberOfPorts
+          tag: convert_change_After_socketConnectionConfiguration_socketsSettings_primary_supportedAddOns_numberOfPorts_to_double
+          type: double
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.numberOfPorts
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # change.After.socketConnectionConfiguration.socketsSettings.primary.supportedMigrations[].* fields conversion
+  - foreach:
+      field: cato_networks.audit.change.After.socketConnectionConfiguration.socketsSettings.primary.supportedMigrations
+      tag: foreach_change_After_socketConnectionConfiguration_socketsSettings_primary_supportedMigrations_automaticallyManaged
+      if: ctx.cato_networks?.audit?.change?.After?.socketConnectionConfiguration?.socketsSettings?.primary?.supportedMigrations instanceof List
+      processor:
+        convert:
+          field: _ingest._value.automaticallyManaged
+          tag: convert_change_After_socketConnectionConfiguration_socketsSettings_primary_supportedMigrations_automaticallyManaged_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.automaticallyManaged
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: cato_networks.audit.change.After.socketConnectionConfiguration.socketsSettings.primary.supportedMigrations
+      tag: foreach_change_After_socketConnectionConfiguration_socketsSettings_primary_supportedMigrations_possibleAddOns
+      if: ctx.cato_networks?.audit?.change?.After?.socketConnectionConfiguration?.socketsSettings?.primary?.supportedMigrations instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.possibleAddOns
+          tag: foreach_change_After_socketConnectionConfiguration_socketsSettings_primary_supportedMigrations_possibleAddOns_numberOfPorts
+          ignore_missing: true
+          processor:
+            convert:
+              field: _ingest._value.numberOfPorts
+              tag: convert_change_After_socketConnectionConfiguration_socketsSettings_primary_supportedMigrations_possibleAddOns_numberOfPorts_to_double
+              type: double
+              ignore_missing: true
+              on_failure:
+                - remove:
+                    field:
+                      - _ingest._value.numberOfPorts
+                    ignore_missing: true
+                - append:
+                    field: error.message
+                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  #   # change.After.socketsSettings.primary.links[].* fields conversion
+  - foreach:
+      field: cato_networks.audit.change.After.socketsSettings.primary.links
+      tag: foreach_change_After_socketsSettings_primary_links_creationDate
+      if: ctx.cato_networks?.audit?.change?.After?.socketsSettings?.primary?.links instanceof List
+      processor:
+        date:
+          field: _ingest._value.creationDate
+          tag: date_change_After_socketsSettings_primary_links_creationDate
+          target_field: _ingest._value.creationDate
+          formats:
+            - UNIX_MS
+            - MMM d, yyyy h:mm:ss a
+            - ISO8601
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.creationDate
+                ignore_missing: true
+  - foreach:
+      field: cato_networks.audit.change.After.socketsSettings.primary.links
+      tag: foreach_change_After_socketsSettings_primary_links_creationDateMilliseconds
+      if: ctx.cato_networks?.audit?.change?.After?.socketsSettings?.primary?.links instanceof List
+      processor:
+        date:
+          field: _ingest._value.creationDateMilliseconds
+          tag: date_change_After_socketsSettings_primary_links_creationDateMilliseconds
+          target_field: _ingest._value.creationDateMilliseconds
+          formats:
+            - UNIX_MS
+            - MMM d, yyyy h:mm:ss a
+            - ISO8601
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.creationDateMilliseconds
+                ignore_missing: true
+  - foreach:
+      field: cato_networks.audit.change.After.socketsSettings.primary.links
+      tag: foreach_change_After_socketsSettings_primary_links_downstreamBandwidth
+      if: ctx.cato_networks?.audit?.change?.After?.socketsSettings?.primary?.links instanceof List
+      processor:
+        convert:
+          field: _ingest._value.downstreamBandwidth
+          tag: convert_change_After_socketsSettings_primary_links_downstreamBandwidth_to_double
+          type: double
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.downstreamBandwidth
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: cato_networks.audit.change.After.socketsSettings.primary.links
+      tag: foreach_change_After_socketsSettings_primary_links_downstreamBandwidthMbpsPrecision
+      if: ctx.cato_networks?.audit?.change?.After?.socketsSettings?.primary?.links instanceof List
+      processor:
+        convert:
+          field: _ingest._value.downstreamBandwidthMbpsPrecision
+          tag: convert_change_After_socketsSettings_primary_links_downstreamBandwidthMbpsPrecision_to_double
+          type: double
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.downstreamBandwidthMbpsPrecision
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: cato_networks.audit.change.After.socketsSettings.primary.links
+      tag: foreach_change_After_socketsSettings_primary_links_lastModified
+      if: ctx.cato_networks?.audit?.change?.After?.socketsSettings?.primary?.links instanceof List
+      processor:
+        date:
+          field: _ingest._value.lastModified
+          tag: date_change_After_socketsSettings_primary_links_lastModified
+          target_field: _ingest._value.lastModified
+          formats:
+            - UNIX_MS
+            - MMM d, yyyy h:mm:ss a
+            - ISO8601
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.lastModified
+                ignore_missing: true
+  - foreach:
+      field: cato_networks.audit.change.After.socketsSettings.primary.links
+      tag: foreach_change_After_socketsSettings_primary_links_metadata_disabledDestType
+      if: ctx.cato_networks?.audit?.change?.After?.socketsSettings?.primary?.links instanceof List
+      processor:
+        convert:
+          field: _ingest._value.metadata.disabledDestType
+          tag: convert_change_After_socketsSettings_primary_links_metadata_disabledDestType_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.metadata.disabledDestType
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: cato_networks.audit.change.After.socketsSettings.primary.links
+      tag: foreach_change_After_socketsSettings_primary_links_metadata_linkOrder
+      if: ctx.cato_networks?.audit?.change?.After?.socketsSettings?.primary?.links instanceof List
+      processor:
+        convert:
+          field: _ingest._value.metadata.linkOrder
+          tag: convert_change_After_socketsSettings_primary_links_metadata_linkOrder_to_double
+          type: double
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.metadata.linkOrder
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: cato_networks.audit.change.After.socketsSettings.primary.links
+      tag: foreach_change_After_socketsSettings_primary_links_metadata_speed
+      if: ctx.cato_networks?.audit?.change?.After?.socketsSettings?.primary?.links instanceof List
+      processor:
+        dissect:
+          field: _ingest._value.metadata.speed
+          tag: dissect_change_After_socketsSettings_primary_links_metadata_speed
+          pattern: '_%{_ingest._value.metadata.speed}'
+          ignore_missing: true
+          ignore_failure: true
+  - foreach:
+      field: cato_networks.audit.change.After.socketsSettings.primary.links
+      tag: foreach_change_After_socketsSettings_primary_links_naturalOrder
+      if: ctx.cato_networks?.audit?.change?.After?.socketsSettings?.primary?.links instanceof List
+      processor:
+        convert:
+          field: _ingest._value.naturalOrder
+          tag: convert_change_After_socketsSettings_primary_links_naturalOrder_to_double
+          type: double
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.naturalOrder
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: cato_networks.audit.change.After.socketsSettings.primary.links
+      tag: foreach_change_After_socketsSettings_primary_links_newSaveMethod
+      if: ctx.cato_networks?.audit?.change?.After?.socketsSettings?.primary?.links instanceof List
+      processor:
+        convert:
+          field: _ingest._value.newSaveMethod
+          tag: convert_change_After_socketsSettings_primary_links_newSaveMethod_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.newSaveMethod
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: cato_networks.audit.change.After.socketsSettings.primary.links
+      tag: foreach_change_After_socketsSettings_primary_links_offCloudTransportEnabled
+      if: ctx.cato_networks?.audit?.change?.After?.socketsSettings?.primary?.links instanceof List
+      processor:
+        convert:
+          field: _ingest._value.offCloudTransportEnabled
+          tag: convert_change_After_socketsSettings_primary_links_offCloudTransportEnabled_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.offCloudTransportEnabled
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: cato_networks.audit.change.After.socketsSettings.primary.links
+      tag: foreach_change_After_socketsSettings_primary_links_physicalPort
+      if: ctx.cato_networks?.audit?.change?.After?.socketsSettings?.primary?.links instanceof List
+      processor:
+        convert:
+          field: _ingest._value.physicalPort
+          tag: convert_change_After_socketsSettings_primary_links_physicalPort_to_double
+          type: double
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.physicalPort
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: cato_networks.audit.change.After.socketsSettings.primary.links
+      tag: foreach_change_After_socketsSettings_primary_links_s2sEnabled
+      if: ctx.cato_networks?.audit?.change?.After?.socketsSettings?.primary?.links instanceof List
+      processor:
+        convert:
+          field: _ingest._value.s2sEnabled
+          tag: convert_change_After_socketsSettings_primary_links_s2sEnabled_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.s2sEnabled
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: cato_networks.audit.change.After.socketsSettings.primary.links
+      tag: foreach_change_After_socketsSettings_primary_links_upstreamBandwidth
+      if: ctx.cato_networks?.audit?.change?.After?.socketsSettings?.primary?.links instanceof List
+      processor:
+        convert:
+          field: _ingest._value.upstreamBandwidth
+          tag: convert_change_After_socketsSettings_primary_links_upstreamBandwidth_to_double
+          type: double
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.upstreamBandwidth
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: cato_networks.audit.change.After.socketsSettings.primary.links
+      tag: foreach_change_After_socketsSettings_primary_links_upstreamBandwidthMbpsPrecision
+      if: ctx.cato_networks?.audit?.change?.After?.socketsSettings?.primary?.links instanceof List
+      processor:
+        convert:
+          field: _ingest._value.upstreamBandwidthMbpsPrecision
+          tag: convert_change_After_socketsSettings_primary_links_upstreamBandwidthMbpsPrecision_to_double
+          type: double
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.upstreamBandwidthMbpsPrecision
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # change.After.socketsSettings.primary.supportedAddOns[].* fields conversion
+  - foreach:
+      field: cato_networks.audit.change.After.socketsSettings.primary.supportedAddOns
+      tag: foreach_change_After_socketsSettings_primary_supportedAddOns_numberOfPorts
+      if: ctx.cato_networks?.audit?.change?.After?.socketsSettings?.primary?.supportedAddOns instanceof List
+      processor:
+        convert:
+          field: _ingest._value.numberOfPorts
+          tag: convert_change_After_socketsSettings_primary_supportedAddOns_numberOfPorts_to_double
+          type: double
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.numberOfPorts
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # change.After.socketsSettings.primary.supportedMigrations[].* fields conversion
+  - foreach:
+      field: cato_networks.audit.change.After.socketsSettings.primary.supportedMigrations
+      tag: foreach_change_After_socketsSettings_primary_supportedMigrations_automaticallyManaged
+      if: ctx.cato_networks?.audit?.change?.After?.socketsSettings?.primary?.supportedMigrations instanceof List
+      processor:
+        convert:
+          field: _ingest._value.automaticallyManaged
+          tag: convert_change_After_socketsSettings_primary_supportedMigrations_automaticallyManaged_to_boolean
+          type: boolean
+          ignore_missing: true
+          on_failure:
+            - remove:
+                field:
+                  - _ingest._value.automaticallyManaged
+                ignore_missing: true
+            - append:
+                field: error.message
+                value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: cato_networks.audit.change.After.socketsSettings.primary.supportedMigrations
+      tag: foreach_change_After_socketsSettings_primary_supportedMigrations_possible_add_ons_numberOfPorts
+      if: ctx.cato_networks?.audit?.change?.After?.socketsSettings?.primary?.supportedMigrations instanceof List
+      processor:
+        foreach:
+          field: _ingest._value.possibleAddOns
+          tag: foreach_change_After_socketsSettings_primary_supportedMigrations_possibleAddOns_numberOfPorts
+          ignore_missing: true
+          processor:
+            convert:
+              field: _ingest._value.numberOfPorts
+              tag: convert_change_After_socketsSettings_primary_supportedMigrations_possible_add_ons_numberOfPorts_to_double
+              type: double
+              ignore_missing: true
+              on_failure:
+                - remove:
+                    field:
+                      - _ingest._value.numberOfPorts
+                    ignore_missing: true
+                - append:
+                    field: error.message
+                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # rename all fields name to snake case
+  - script:
+      tag: script_convert_camelcase_to_snake_case
+      lang: painless
+      description: Convert camelCase to snake_case.
+      source: |
+        // Helper function to convert camelCase to snake_case
+        String camelToSnake(String str) {
+          def result = "";
+          def lastCharWasUpperCase = false;
+          for (int i = 0; i < str.length(); i++) {
+            char c = str.charAt(i);
+            if (Character.isUpperCase(c)) {
+              if (i > 0 && !lastCharWasUpperCase) {
+                result += "_";
+              }
+              result += Character.toLowerCase(c);
+              lastCharWasUpperCase = true;
+            } else {
+              result += c;
+              lastCharWasUpperCase = false;
+            }
+          }
+          return result;
+        }
+        // Recursive function to handle nested fields
+        def convertToSnakeCase(def obj) {
+          if (obj instanceof Map) {
+            // Convert each key in the map
+            def newObj = [:];
+            for (entry in obj.entrySet()) {
+              // Skip fields that contain '@' in their name
+              if (!entry.getKey().contains("@")) {
+                String newKey = camelToSnake(entry.getKey());
+                newObj[newKey] = convertToSnakeCase(entry.getValue());
+              }
+            }
+            return newObj;
+          } else if (obj instanceof List) {
+            // If it's a list, process each item recursively
+            def newList = [];
+            for (item in obj) {
+              newList.add(convertToSnakeCase(item));
+            }
+            return newList;
+          } else {
+            return obj;
+          }
+        }
+        if (ctx.cato_networks.audit != null) {
+          ctx.cato_networks.audit = convertToSnakeCase(ctx.cato_networks.audit);
+        }
+  - remove:
+      field:
+        - cato_networks.audit.admin
+        - cato_networks.audit.admin_id
+        - cato_networks.audit.change_type
+        - cato_networks.audit.creation_date
+        - cato_networks.audit.insertion_date
+      tag: remove_custom_duplicate_fields
+      ignore_missing: true
+  - script:
+      tag: remove_null_values
+      lang: painless
+      description: Remove null or empty values from the document.
+      source: |-
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      tag: append_tags_preserve_original_event_on_error
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor {{{_ingest.on_failure_processor_type}}}
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{_ingest.on_failure_processor_tag}}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message
+        '{{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      tag: append_tags_preserve_original_event_on_failure
+      value: preserve_original_event
+      allow_duplicates: false

@@ -1,10 +1,10 @@
 config_version: "2"
 interval: {{interval}}
 request.method: "POST"
-{{#if enable_request_tracer}}
-request.tracer.filename: "../../logs/httpjson/http-request-trace-*.ndjson"
-request.tracer.maxbackups: 5
-{{/if}}
+request.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/httpjson/http-request-trace-*.ndjson"
+  maxbackups: 5
 {{#if url}}
 request.url: {{url}}/events/restSearch
 {{/if}}
@@ -14,8 +14,10 @@ request.ssl: {{ssl}}
 {{#if http_client_timeout}}
 request.timeout: {{http_client_timeout}}
 {{/if}}
-{{#if http_request_rate_limit}}
-request.rate_limit.limit: "{{http_request_rate_limit}}"
+{{#if enable_rate_limit_headers}}
+request.rate_limit.limit: '[[ .last_response.header.Get "X-Rate-Limit-Limit" ]]'
+request.rate_limit.remaining: '[[ .last_response.header.Get "X-Rate-Limit-Remaining" ]]'
+request.rate_limit.reset: '[[ add (toInt (.last_response.header.Get "X-Rate-Limit-Reset")) ((now).Unix) ]]'
 {{/if}}
 {{#if proxy_url}}
 request.proxy_url: {{proxy_url}}

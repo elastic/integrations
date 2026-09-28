@@ -3,65 +3,75 @@ description: Pipeline for processing entity logs.
 processors:
   - set:
       field: event.kind
-      tag: set_event_kind
+      tag: set_event_kind_50075a0b
       value: asset
   - set:
       field: event.category
-      tag: set_event_category
+      tag: set_event_category_5b3c8dc9
       value: ['iam']
   - set:
       field: event.type
-      tag: set_event_type
-      value: ['user','info']
+      tag: set_event_type_8957b990
+      value: ['user', 'info']
   - set:
       field: asset.category
-      tag: set_asset_category
+      tag: set_asset_category_3ebede69
       value: entity
   - set:
       field: asset.type
-      tag: set_asset_type
+      tag: set_asset_type_51e16ab9
       value: activedirectory_entity
 
   - pipeline:
       name: '{{ IngestPipeline "common" }}'
-      tag: pipeline_entity
+      tag: pipeline_entity_e2cc926a
       ignore_missing_pipeline: true
 
   - append:
       field: related.user
       value: "{{{activedirectory.user.sam_account_name}}}"
-      tag: append_name_into_related_user
+      tag: append_name_into_related_user_1be19527
       allow_duplicates: false
       if: ctx.activedirectory?.user?.sam_account_name != null
   - append:
       field: related.user
       value: "{{{activedirectory.id}}}"
-      tag: append_id_into_related_user
+      tag: append_id_into_related_user_0252a58e
       allow_duplicates: false
       if: ctx.activedirectory?.id != null
   - append:
       field: related.user
       value: "{{{activedirectory.user.object_guid}}}"
-      tag: append_object_guid_into_related_user
+      tag: append_object_guid_into_related_user_45eabcbd
       allow_duplicates: false
       if: ctx.activedirectory?.user?.object_guid != null
 
   - rename:
+      tag: rename_activedirectory_id_to_entity_object_dn_f4ac08e1
       field: activedirectory.id
       target_field: activedirectory.user.object_dn
 
   - rename:
+      tag: rename_activedirectory_user_to_entity_d166af50
       field: activedirectory.user
       target_field: activedirectory.entity
 
   - rename:
+      tag: rename_activedirectory_to_entityanalytics_ad_3c2c8fd4
       field: activedirectory
       target_field: entityanalytics_ad
 
 on_failure:
   - append:
+      tag: pipeline_error_0841b325
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
+      tag: pipeline_error_kind_72b1902f
       field: event.kind
       value: pipeline_error
+  - append:
+      tag: pipeline_error_preserve_original_event_279d5a5c
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

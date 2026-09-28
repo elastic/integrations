@@ -1,6 +1,6 @@
 # Mimecast Integration
 
-The Mimecast integration collects events from the [Mimecast API](https://integrations.mimecast.com/documentation/).
+The Mimecast integration collects events from the [Mimecast API](https://developer.services.mimecast.com/apis).
 
 ## Agentless Enabled Integration
 
@@ -9,22 +9,28 @@ Agentless deployments are only supported in Elastic Serverless and Elastic Cloud
 
 ## Configuration
 
-### v1 API Endpoints
+### v2 API Endpoints
 
-Authorization parameters for the Mimecast API (`Application Key`, `Application
-ID`, `Access Key`, and `Secret Key`) should be provided by a Mimecast
-representative for this integration. Under `Advanced options` you can set the
-time interval between two API requests as well as the API URL. A Mimecast
+Authorization parameters for the Mimecast API (`Client ID` and `Client Secret`) should
+be provided by a Mimecast representative for this integration. Under `Advanced options`
+you can set the time interval between two API requests as well as the API URL. A Mimecast
 representative should also be able to give you this information in case you need
 to change the defaults.
 
 > Note: Rate limit quotas may require you to set up different credentials for the different available log types.
 
-### v2 API Endpoints
+### v1 API Endpoints (deprecated)
 
-Authorization parameters for the Mimecast API (`Client ID` and `Client Key`) should
-be provided by a Mimecast representative for this integration. Under `Advanced options`
-you can set the time interval between two API requests as well as the API URL. A Mimecast
+> **Deprecated:** Mimecast API 1.0 is [end-of-life](https://mimecastsupport.zendesk.com/hc/en-us/articles/43572890309651-API-Integrations-API-1-0-End-of-Life-Project-Extension-Aug-2025).
+> New installations should use the v2 API. Existing v1 configurations continue
+> to work but will stop functioning when Mimecast retires API 1.0 application
+> credentials. See the [API 1.0 to 2.0 Migration Guide](https://developer.services.mimecast.com/api-1-0-to-2-0-migration-guide)
+> for details on provisioning v2 API credentials.
+
+Authorization parameters for the Mimecast API (`Application Key`, `Application
+ID`, `Access Key`, and `Secret Key`) should be provided by a Mimecast
+representative for this integration. Under `Advanced options` you can set the
+time interval between two API requests as well as the API URL. A Mimecast
 representative should also be able to give you this information in case you need
 to change the defaults.
 
@@ -37,7 +43,7 @@ to change the defaults.
 This is the `mimecast.archive_search_logs` dataset. These logs contain Mimecast archive
 search logs with the following details: search source, description and detailed
 information about the search performed. More information about these logs is available [here](
-https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-statistics/get-archive-search-logs/).
+https://developer.services.mimecast.com/docs/auditevents/1/routes/api/archive/get-archive-search-logs/post).
 
 {{event "archive_search_logs"}}
 
@@ -48,7 +54,7 @@ https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-stat
 This is the `mimecast.audit_events` dataset. These logs contain Mimecast audit
 events with the following details: audit type, event category and detailed
 information about the event. More information about [these logs](
-https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-statistics/get-audit-events/).
+https://developer.services.mimecast.com/docs/auditevents/1/routes/api/audit/get-audit-events/post).
 
 {{event "audit_events"}}
 
@@ -70,7 +76,7 @@ https://developer.services.mimecast.com/docs/threatssecurityeventsanddataforci/1
 This is the `mimecast.dlp_logs` dataset. These logs contain information about
 messages that triggered a DLP or Content Examination policy. More information
 about [these logs](
-https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-statistics/get-dlp-logs/). 
+https://developer.services.mimecast.com/docs/securityevents/1/routes/api/dlp/get-logs/post). 
 
 {{event "dlp_logs"}}
 
@@ -81,7 +87,7 @@ https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-stat
 This is the `mimecast.message_release_logs` dataset. These logs contain information about
 messages that were either released to the recipient, with details about the user that
 processed the release. More information about [these logs](
-https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-statistics/get-message-release-logs/). 
+https://developer.services.mimecast.com/docs/auditevents/1/routes/api/gateway/get-held-release-logs/post). 
 
 {{event "message_release_logs"}}
 
@@ -92,7 +98,7 @@ https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-stat
 This is the `mimecast.siem_logs` dataset. These logs contain information about
 messages that contains MTA (message transfer agent) log – all inbound,
 outbound, and internal messages. More about [these logs](
-https://integrations.mimecast.com/documentation/tutorials/understanding-siem-logs/).
+https://developer.services.mimecast.com/docs/threatssecurityeventsanddataforcg/1/routes/siem/v1/batch/events/cg/get).
 
 {{event "siem_logs"}}
 
@@ -103,7 +109,7 @@ https://integrations.mimecast.com/documentation/tutorials/understanding-siem-log
 This is the `mimecast.threat_intel_malware_customer` dataset. These logs contain
 information about messages that return identified malware threats at a customer
 level.  Learn more about [these logs](
-https://integrations.mimecast.com/documentation/endpoint-reference/threat-intel/get-feed/).
+https://developer.services.mimecast.com/docs/threatmanagement/1/routes/api/ttp/threat-intel/get-feed/post).
 
 {{event "threat_intel_malware_customer"}}
 
@@ -114,7 +120,7 @@ https://integrations.mimecast.com/documentation/endpoint-reference/threat-intel/
 This is the `mimecast.threat_intel_malware_grid` dataset. These logs contain
 information about messages that return identified malware threats at a regional 
 grid level. More about [these logs](
-https://integrations.mimecast.com/documentation/endpoint-reference/threat-intel/get-feed/).
+https://developer.services.mimecast.com/docs/threatmanagement/1/routes/api/ttp/threat-intel/get-feed/post).
 
 {{event "threat_intel_malware_grid"}}
 
@@ -128,7 +134,7 @@ analysis (if it is malicious or not etc.), date when file is released, sender
 and recipient address, filename and type, action triggered for the attachment, 
 the route of the original email containing the attachment and details. 
 Learn more about [these logs](
-https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-statistics/get-ttp-attachment-protection-logs/).
+https://developer.services.mimecast.com/docs/securityevents/1/routes/api/ttp/attachment/get-logs/post).
 
 {{event "ttp_ap_logs"}}
 
@@ -139,7 +145,7 @@ https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-stat
 This is the `mimecast.ttp_ip_logs` dataset. These logs contain information about
 messages containing information flagged by an Impersonation Protection
 configuration. Learn more about [these logs]
-(https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-statistics/get-ttp-impersonation-protect-logs/).
+(https://developer.services.mimecast.com/docs/securityevents/1/routes/api/ttp/impersonation/get-logs/post).
 
 {{event "ttp_ip_logs"}}
 
@@ -156,7 +162,7 @@ URL, the date that the URL was clicked, url scan result, the action that was
 taken for the click, the description of the definition that triggered the URL to
 be rewritten by Mimecast, the action requested by the user, an array of
 components of the message where the URL was found. More about [these logs](
-https://integrations.mimecast.com/documentation/endpoint-reference/logs-and-statistics/get-ttp-url-logs/).
+https://developer.services.mimecast.com/docs/securityevents/1/routes/api/ttp/url/get-logs/post).
 
 {{event "ttp_url_logs"}}
 

@@ -1,0 +1,138 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects PowerShell scripts that reference Antimalware Scan Interface (AMSI) bypass classes, methods, or known bypass strings. Attackers attempt AMSI bypass to disable scanning and run malicious PowerShell content undetected.",
+        "from": "now-9m",
+        "index": [
+            "logs-windows.powershell*",
+            "winlogbeat-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "user.name",
+                "user.id",
+                "user.domain",
+                "powershell.file.script_block_text",
+                "powershell.file.script_block_id",
+                "powershell.sequence",
+                "powershell.total",
+                "file.path",
+                "file.directory",
+                "file.name",
+                "process.pid",
+                "host.name",
+                "host.id",
+                "powershell.file.script_block_length"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "Potential Antimalware Scan Interface Bypass via PowerShell",
+        "note": "## Triage and analysis\n\n### Investigating Potential Antimalware Scan Interface Bypass via PowerShell\n#### Possible investigation steps\n\n- Does the preserved script block show active AMSI bypass behavior or reference-only content?\n  - Focus: `powershell.file.script_block_text`, source in `file.path` or `file.name`, and whether bypass helpers execute or are only mentioned.\n  - Hint: treat AmsiUtils, amsiInitFailed, AmsiScanBuffer/AmsiOpenSession patching, ScriptBlockAst smuggling, VirtualProtect/Marshal.Copy, and logging suppression as active-behavior anchors.\n  - Implication: escalate when content flips AMSI state, patches scan routines, smuggles script blocks, or invokes decoded content; lower suspicion only for inert research text or bounded training with no execution path.\n\n- Does reconstruction add payload execution, download logic, or extra evasion?\n  - Why: Script Block Logging can split helper functions, decoded strings, and later stages across multiple fragments.\n  - Focus: reconstruct fragments scoped by `host.id` and `powershell.file.script_block_id`; order with `powershell.sequence`, confirm `powershell.total`, then read `powershell.file.script_block_text`. !{investigate{\"description\":\"\",\"label\":\"Script block fragments for the same script\",\"providers\":[[{\"excluded\":false,\"field\":\"powershell.file.script_block_id\",\"queryType\":\"phrase\",\"value\":\"{{powershell.file.script_block_id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Hint: review surrounding 4104 blocks for the same `host.id` and `process.pid` with different `powershell.file.script_block_id`; keep timestamp comparison tight to avoid PID reuse. !{investigate{\"description\":\"\",\"label\":\"PowerShell script blocks for the same process\",\"providers\":[[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.pid\",\"queryType\":\"phrase\",\"value\":\"{{process.pid}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.code\",\"queryType\":\"phrase\",\"value\":\"4104\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Hint: if fragments are missing, score visible bypass logic and record the missing sequence range as unresolved, not benign.\n  - Implication: escalate when reconstruction adds download, decode, in-memory execution, credential access, persistence, Disable Script Logging, or unloadobfuscated/unloadsilent evasion; lower suspicion only when complete fragments remain bounded to authorized lab or training content.\n\n- Can endpoint process telemetry recover how PowerShell was launched?\n  - Focus: if available, recover the process via `host.id` and `process.pid` before interpreting `process.*` or `process.parent.*`; read `process.command_line`, `process.parent.command_line`, and `process.Ext.session_info.logon_type`, expanding the window if PowerShell started earlier. !{investigate{\"description\":\"\",\"label\":\"Process events for the PowerShell instance\",\"providers\":[[{\"excluded\":false,\"field\":\"process.pid\",\"queryType\":\"phrase\",\"value\":\"{{process.pid}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"process\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Implication: escalate for encoded commands, PowerShell v2 downgrade, Office/browser parents, remote-administration launchers, or service/network logon that does not fit the user; missing endpoint telemetry leaves launch context unresolved, not benign.\n\n- Do the user, host, and source context fit an authorized test workflow?\n  - Focus: `user.id`, `host.id`, `host.name`, preserved `file.path` or `file.name`, and recovered launch context.\n  - Hint: if no source path is preserved, treat the block as interactive, pasted, in-memory, or remotely delivered and require stronger corroboration before benign closure.\n  - Implication: escalate when standard-user, shared-workstation, production-server, user-writable-source, or fileless-delivery context cannot be tied to one authorized lab, red-team, detection-engineering, or training case; lower suspicion only when all context supports that exact workflow.\n\n- If local evidence remains suspicious or unresolved, does the pattern recur for the same user or host?\n  - Focus: last-48h related alerts for the same `user.id`, looking for repeated AMSI bypass, delivery, credential access, persistence, or defense evasion. !{investigate{\"description\":\"\",\"label\":\"Alerts associated with the user\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"user.id\",\"queryType\":\"phrase\",\"value\":\"{{user.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n  - Hint: check the same `host.id` before expanding beyond the affected host or user. !{investigate{\"description\":\"\",\"label\":\"Alerts associated with the host\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n  - Implication: broaden scope when related alerts show repeated evasion or follow-on abuse; quiet pivots lower scope only and never close active bypass without local evidence proving one exact authorized workflow.\n\n- Escalate on active bypass logic, suspicious provenance, launch abuse, operational follow-on evidence, or partial/mixed visibility; close only when script content, reconstruction, launch, source, and related-alert evidence bind activity to one exact authorized lab, training, or red-team workflow; preserve artifacts and escalate when outside confirmation is needed.\n\n### False positive analysis\n\n- Authorized detection-engineering, red-team, malware-analysis, training, or reference-only course/research use can trigger this rule. Confirm that `powershell.file.script_block_text`, reconstruction, `user.id`, `host.id`, source/session context, and recovered launch context all stay inside the same test case and add no second stage. If records are unavailable, recurrence supports assessment only when the same telemetry pattern proves the exact exercise; do not close on recurrence alone.\n- Before creating an exception, validate that the same `user.id`, `host.id`, stable source path, launch context, and reconstructed fragment pattern recur across prior alerts from this rule. Build the exception from that confirmed workflow pattern. Avoid exceptions on AMSI strings alone, on `user.name` alone, or on a host alone.\n\n### Response and remediation\n\n- If confirmed benign, reverse temporary containment and document which evidence proved the authorized workflow: script content, reconstruction, `user.id`, `host.id`, preserved source path, and recovered launch context. Create an exception only if the same workflow pattern recurs and the telemetry still proves the exact exercise.\n- If suspicious but unconfirmed, preserve the script block content, fragment IDs and sequence numbers, `process.pid`, recovered launch details, script-named URLs or paths, source files, and related-alert exports before containment. Apply reversible containment first, such as tighter monitoring on the affected `host.id` or `user.id`, temporary restrictions for script-named URLs, or suspend-process actions when the host role can tolerate them. Escalate to isolation only if reconstructed content or recovered launch evidence confirms operational follow-on activity.\n- If confirmed malicious, contain the host or account based on the script content, recovered launch chain, source path, script-named indicators, or related-alert evidence that established unauthorized operational use. Record the recovered PowerShell process details, parent chain, script content, downstream commands, and affected `user.id` / `host.id` before terminating processes, deleting files, or purging sessions.\n- Block confirmed malicious script-named URLs or hashes, collect referenced source files, and eradicate only the unauthorized scripts, payloads, startup artifacts, scheduled tasks, and security-control changes expressed in reconstruction or recovered launch context.\n- Before destructive cleanup, review related hosts and users for the same script fragments, launch chain, downgrade pattern, script-named indicators, or already-running PowerShell reuse so scope is understood before evidence is removed.\n- After the incident, retain Script Block Logging plus required endpoint process telemetry, and document PowerShell version 2 downgrade, logging-suppression, or script-block smuggling variants in the case record.\n",
+        "query": "event.category:\"process\" and host.os.type:windows and\n  (\n    powershell.file.script_block_text : (\n      \"System.Management.Automation.AmsiUtils\" or\n      amsiInitFailed or\n      \"Invoke-AmsiBypass\" or\n      \"Bypass.AMSI\" or\n      \"amsi.dll\" or\n      AntimalwareProvider or\n      amsiSession or\n      amsiContext or\n      AmsiInitialize or\n      unloadobfuscated or\n      unloadsilent or\n      AmsiX64 or\n      AmsiX32 or\n      FindAmsiFun or\n      \"AllocHGlobal((9076\" or\n      \"[cHAr](65)+[cHaR]([byTe]0x6d)+[ChaR]([ByTe]0x73)+[CHaR]([BYte]0x69\"\n    ) or\n    powershell.file.script_block_text:(\"[Ref].Assembly.GetType(('System.Management.Automation\" and \".SetValue(\") or\n    powershell.file.script_block_text:(\"::AllocHGlobal((\" and \".SetValue(\" and \"-replace\" and \".NoRMALiZe(\")\n  ) and\n  not powershell.file.script_block_text : (\n    \"sentinelbreakpoints\" and \"Set-PSBreakpoint\"\n  )\n",
+        "references": [
+            "https://github.com/S3cur3Th1sSh1t/Amsi-Bypass-Powershell"
+        ],
+        "related_integrations": [
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "powershell.file.script_block_text",
+                "type": "unknown"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "1f0a69c0-3392-4adf-b7d5-6012fd292da8",
+        "setup": "## Setup\n\nPowerShell Script Block Logging must be enabled to generate the events used by this rule (e.g., 4104).\nSetup instructions: https://ela.st/powershell-logging-setup\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Defense Evasion",
+            "Data Source: PowerShell Logs",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1027",
+                        "name": "Obfuscated Files or Information",
+                        "reference": "https://attack.mitre.org/techniques/T1027/",
+                        "subtechnique": [
+                            {
+                                "id": "T1027.010",
+                                "name": "Command Obfuscation",
+                                "reference": "https://attack.mitre.org/techniques/T1027/010/"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "T1562",
+                        "name": "Impair Defenses",
+                        "reference": "https://attack.mitre.org/techniques/T1562/",
+                        "subtechnique": [
+                            {
+                                "id": "T1562.001",
+                                "name": "Disable or Modify Tools",
+                                "reference": "https://attack.mitre.org/techniques/T1562/001/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1059",
+                        "name": "Command and Scripting Interpreter",
+                        "reference": "https://attack.mitre.org/techniques/T1059/",
+                        "subtechnique": [
+                            {
+                                "id": "T1059.001",
+                                "name": "PowerShell",
+                                "reference": "https://attack.mitre.org/techniques/T1059/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 118
+    },
+    "id": "1f0a69c0-3392-4adf-b7d5-6012fd292da8_118",
+    "type": "security-rule"
+}

@@ -2,19 +2,24 @@
 description: Pipeline for Jamf Protect Telemetry aue_exit audit logs.
 processors:
   - pipeline:
+      tag: pipeline_identity_object_8cb224f5
       name: '{{ IngestPipeline "pipeline_identity_object" }}'
   - pipeline:
+      tag: pipeline_exec_chain_child_object_75de012d
       name: '{{ IngestPipeline "pipeline_exec_chain_child_object" }}'
   - convert:
+      tag: convert_json_exit_return_value_to_jamf_protect_telemetry_exit_return_value_3a3ebf30
       field: json.exit.return_value
       target_field: jamf_protect.telemetry.exit.return.value
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_9a60d6c7
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_exit_status_to_jamf_protect_telemetry_exit_status_aa731c18
       field: json.exit.status
       target_field: jamf_protect.telemetry.exit.status
       type: string

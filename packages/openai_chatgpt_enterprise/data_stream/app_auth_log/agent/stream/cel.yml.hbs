@@ -1,0 +1,165 @@
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+resource.url: {{url}}
+state:
+  admin_token: {{admin_token}}
+  scope: {{scope}}
+  resource_id: {{escape_string resource_id}}
+  initial_interval: {{initial_interval}}
+  batch_size: {{batch_size}}
+redact:
+  fields:
+    - admin_token
+program: |-
+  (
+    // PHASE 1 — list files (only when the worklist is empty). This is the only
+    // paginated call: it pages forward with `after` = last_end_time (ascending).
+    (size(state.?cursor.worklist.orValue([])) > 0) ?
+      state
+    :
+      state.?cursor.last_end_time.orValue(string(now - duration(state.initial_interval))).as(after,
+        state.with(
+          request(
+            "GET",
+            state.url.trim_right("/") + "/v1/compliance/" + ((state.scope == "organization") ? "organizations" : "workspaces") + "/" + state.resource_id + "/logs?" + {
+              "event_type": ["APP_AUTH_LOG"],
+              "after": [after],
+              "limit": [string(int(state.batch_size))],
+            }.format_query()
+          ).with(
+            {
+              "Header": {
+                "Authorization": ["Bearer " + state.admin_token],
+              },
+            }
+          ).do_request().as(resp, (resp.StatusCode == 200) ?
+            resp.Body.decode_json().as(body,
+              {
+                // worklist and list_has_more live under cursor so that a restart
+                // mid-page resumes the queue instead of losing it while
+                // last_end_time has already advanced past those files.
+                "cursor": {
+                  // Empty pages return last_end_time: null; keep the current
+                  // `after` in that case so the cursor never becomes null.
+                  "last_end_time": (has(body.last_end_time) && body.last_end_time != null) ?
+                    body.last_end_time
+                  :
+                    after,
+                  "worklist": body.?data.orValue([]),
+                  // Termination is driven by has_more, not by an empty page: this
+                  // API re-returns the boundary record when re-queried with the same
+                  // `after`, so an empty response is never observed on has_more=false.
+                  "list_has_more": body.?has_more.orValue(false),
+                },
+                "want_more": size(body.?data.orValue([])) > 0,
+              }
+            )
+          :
+            {
+              "events": {
+                "error": {
+                  "code": string(resp.StatusCode),
+                  "id": resp.Status,
+                  "message": "GET " + state.url.trim_right("/") + "/v1/compliance/logs: " + (
+                    (size(resp.Body) != 0) ?
+                      string(resp.Body)
+                    :
+                      resp.Status + " (" + string(resp.StatusCode) + ")"
+                  ),
+                },
+              },
+              "want_more": false,
+            }
+          )
+        )
+      )
+  ).as(state,
+    // PHASE 2 — download the first queued file, then drop it from the worklist.
+    // This endpoint 307-redirects to a signed URL serving the JSON Lines body
+    // (redirect auto-followed). It has no pagination of its own.
+    (size(state.?cursor.worklist.orValue([])) > 0) ?
+      state.with(
+        request(
+          "GET",
+          state.url.trim_right("/") + "/v1/compliance/" + ((state.scope == "organization") ? "organizations" : "workspaces") + "/" + state.resource_id + "/logs/" + state.cursor.worklist[0].id
+        ).with(
+          {
+            "Header": {
+              "Authorization": ["Bearer " + state.admin_token],
+            },
+          }
+        ).do_request().as(resp, (resp.StatusCode == 200) ?
+          {
+            "events": string(resp.Body).split("\n").map(l, l.trim_space() != "",
+              {
+                "message": l.trim_space(),
+              }
+            ),
+            // Shallow-merge into the existing cursor so last_end_time and
+            // list_has_more survive the worklist update.
+            "cursor": state.cursor.with({"worklist": tail(state.cursor.worklist)}),
+            // Keep going while files remain in this page, or the list reported
+            // more pages. Stops right after the last file of the last page.
+            "want_more": size(state.cursor.worklist) > 1 || state.?cursor.list_has_more.orValue(false),
+          }
+        :
+          {
+            "events": {
+              "error": {
+                "code": string(resp.StatusCode),
+                "id": resp.Status,
+                "message": "GET " + state.url.trim_right("/") + "/v1/compliance/logs/" + state.cursor.worklist[0].id + ": " + (
+                  (size(resp.Body) != 0) ?
+                    string(resp.Body)
+                  :
+                    resp.Status + " (" + string(resp.StatusCode) + ")"
+                ),
+              },
+            },
+            // Leave the worklist untouched and stop: the single-object error form
+            // drops the cursor, so the next evaluation retries this same file
+            // instead of silently skipping it.
+            "want_more": false,
+          }
+        )
+      )
+    : state.?events.hasValue() ?
+      // A listing error from PHASE 1 must survive: without this guard the empty
+      // batch below overwrites it on every run after the first, because the
+      // worklist key already exists (empty) from the previous evaluation.
+      state
+    :
+      state.with(
+        {
+          "events": [],
+          "want_more": false,
+        }
+      )
+  )
+
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

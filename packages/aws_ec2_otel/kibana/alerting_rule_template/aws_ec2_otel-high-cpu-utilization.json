@@ -1,0 +1,43 @@
+{
+  "id": "aws_ec2_otel-high-cpu-utilization",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when sustained average CPU utilization exceeds a threshold, indicating compute saturation and potential scheduling latency.",
+    "name": "[AWS EC2 OTel] High CPU utilization",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "aws_ec2",
+      "otel"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 3
+    },
+    "flapping": {
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-aws.ec2.otel-*\n| WHERE Namespace == \"AWS/EC2\"\n    AND MetricName == \"CPUUtilization\"\n    AND stat == \"Average\"\n| EVAL ec2_instance = CONCAT(InstanceId, \" (\", cloud.region, \")\")\n| STATS avg_cpu_pct = AVG(`metrics.amazonaws.com/AWS/EC2/CPUUtilization`) BY ec2_instance\n// Alert threshold (%): tune per workload — 90 is a common saturation starting point\n| WHERE avg_cpu_pct > 90.0\n| SORT avg_cpu_pct DESC\n| LIMIT 100"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "ec2_instance",
+      "termSize": 100,
+      "excludeHitsFromPreviousRun": true
+    }
+  }
+}

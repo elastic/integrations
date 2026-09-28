@@ -3,34 +3,35 @@ description: Pipeline for processing policy audit raw events.
 processors:
   - set:
       field: ecs.version
-      tag: set_ecs_version
+      tag: set_ecs_version_6b2cef5e
       value: 8.11.0
   - terminate:
-      tag: data_collection_error
+      tag: data_collection_error_4bdbb3d0
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
       description: error message set and no data to process.
   - drop:
-      tag: drop_retry_events
+      tag: drop_retry_events_4d6261d9
       if: ctx.message != null && ctx.message == 'retry'
   - rename:
       field: message
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_176375fd
       target_field: event.original
       ignore_missing: true
       description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_9ecc8509
       ignore_missing: true
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - json:
       field: event.original
-      tag: json_event_original
+      tag: json_event_original_a68ecd77
       target_field: json
       on_failure:
         - append:
+            tag: append_error_message_cea45f41
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - fingerprint:
@@ -42,17 +43,17 @@ processors:
         - json.eventType
         - json.displayName
         - json.hash
-      tag: fingerprint_policyaudit_raw_event
+      tag: fingerprint_policyaudit_raw_event_37baa088
       target_field: _id
       ignore_missing: true
   - rename:
       field: json.eventType
-      tag: rename_eventType
+      tag: rename_eventType_2436effb
       target_field: cyberark_epm.policyaudit_raw_event.type
       ignore_missing: true
   - set:
       field: event.kind
-      tag: set_event_kind_to_alert
+      tag: set_event_kind_to_alert_e668e21a
       value: alert
       if: >-
         ctx.cyberark_epm?.policyaudit_raw_event?.type != null && (
@@ -63,12 +64,12 @@ processors:
         )
   - set:
       field: event.kind
-      tag: set_event_kind_to_event
+      tag: set_event_kind_to_event_bbdb2453
       value: event
       if: ctx.event?.kind == null
   - append:
       field: event.category
-      tag: append_intrusion_detection_into_event_category
+      tag: append_intrusion_detection_into_event_category_49b0d8d1
       value: intrusion_detection
       if: >-
         ctx.cyberark_epm?.policyaudit_raw_event?.type != null && (
@@ -79,7 +80,7 @@ processors:
         )
   - append:
       field: event.category
-      tag: append_package_into_event_category
+      tag: append_package_into_event_category_d6433ed5
       value: package
       if: >-
         ctx.cyberark_epm?.policyaudit_raw_event?.type != null && (
@@ -87,7 +88,7 @@ processors:
         )
   - append:
       field: event.category
-      tag: append_process_into_event_category
+      tag: append_process_into_event_category_456879b7
       value: process
       if: >-
         ctx.cyberark_epm?.policyaudit_raw_event?.type != null && (
@@ -95,7 +96,7 @@ processors:
         )
   - append:
       field: event.category
-      tag: append_malware_into_event_category
+      tag: append_malware_into_event_category_fbe1f9bc
       value: malware
       if: >-
         ctx.cyberark_epm?.policyaudit_raw_event?.type != null && (
@@ -103,7 +104,7 @@ processors:
         )
   - append:
       field: event.category
-      tag: append_iam_into_event_category
+      tag: append_iam_into_event_category_56a358ab
       value: iam
       if: >-
         ctx.cyberark_epm?.policyaudit_raw_event?.type != null && (
@@ -118,39 +119,40 @@ processors:
         )
   - append:
       field: event.type
-      tag: append_event_type
+      tag: append_event_type_5eab37e6
       value: info
   - set:
       field: observer.vendor
-      tag: set_observer_vendor
+      tag: set_observer_vendor_8efd457a
       value: CyberArk
   - set:
       field: observer.product
-      tag: set_observer_product
+      tag: set_observer_product_c009535a
       value: Endpoint Privilege Manager
   - rename:
       field: json.accessTargetName
-      tag: rename_accessTargetName
+      tag: rename_accessTargetName_f01f0b47
       target_field: cyberark_epm.policyaudit_raw_event.access_target_name
       ignore_missing: true
   - rename:
       field: json.accessTargetType
-      tag: rename_accessTargetType
+      tag: rename_accessTargetType_09a75ed0
       target_field: cyberark_epm.policyaudit_raw_event.access_target_type
       ignore_missing: true
   - convert:
       field: json.agentEventCount
-      tag: convert_agentEventCount_to_long
+      tag: convert_agentEventCount_to_long_d3ac89f1
       target_field: cyberark_epm.policyaudit_raw_event.agent_event_count
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_3a039635
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: threat.indicator.sightings
-      tag: set_threat_indicator_sightings_from_policyaudit_raw_event_agent_event_count
+      tag: set_threat_indicator_sightings_from_policyaudit_raw_event_agent_event_count_762d8313
       copy_from: cyberark_epm.policyaudit_raw_event.agent_event_count
       if: >-
         ctx.cyberark_epm?.policyaudit_raw_event?.type != null && (
@@ -162,115 +164,117 @@ processors:
       ignore_empty_value: true
   - rename:
       field: json.agentId
-      tag: rename_agentId
+      tag: rename_agentId_d0d4532c
       target_field: cyberark_epm.policyaudit_raw_event.agent_id
       ignore_missing: true
   - rename:
       field: json.applicationSubType
-      tag: rename_applicationSubType
+      tag: rename_applicationSubType_d7d5218d
       target_field: cyberark_epm.policyaudit_raw_event.application_sub_type
       ignore_missing: true
   - rename:
       field: json.arguments
-      tag: rename_arguments
+      tag: rename_arguments_e6421937
       target_field: cyberark_epm.policyaudit_raw_event.arguments
       ignore_missing: true
   - date:
       field: json.arrivalTime
-      tag: date_arrivalTime
+      tag: date_arrivalTime_b2a386b9
       target_field: cyberark_epm.policyaudit_raw_event.arrival_time
       formats:
         - ISO8601
       if: ctx.json?.arrivalTime != null && ctx.json.arrivalTime != ''
       on_failure:
         - append:
+            tag: append_error_message_0c04d1d9
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: '@timestamp'
-      tag: set_@timestamp_from_policyaudit_raw_event_arrival_time
+      tag: set_@timestamp_from_policyaudit_raw_event_arrival_time_01379cbb
       copy_from: cyberark_epm.policyaudit_raw_event.arrival_time
       ignore_empty_value: true
   - rename:
       field: json.authorizationRight
-      tag: rename_authorizationRight
+      tag: rename_authorizationRight_27413e0a
       target_field: cyberark_epm.policyaudit_raw_event.authorization_right
       ignore_missing: true
   - rename:
       field: json.authorizationRights
-      tag: rename_authorizationRights
+      tag: rename_authorizationRights_6c8e8220
       target_field: cyberark_epm.policyaudit_raw_event.authorization_rights
       ignore_missing: true
   - rename:
       field: json.bundleName
-      tag: rename_bundleName
+      tag: rename_bundleName_2f5bf5eb
       target_field: cyberark_epm.policyaudit_raw_event.bundle_name
       ignore_missing: true
   - rename:
       field: json.bundleVersion
-      tag: rename_bundleVersion
+      tag: rename_bundleVersion_20c97483
       target_field: cyberark_epm.policyaudit_raw_event.bundle_version
       ignore_missing: true
   - rename:
       field: json.codeURL
-      tag: rename_codeURL
+      tag: rename_codeURL_d0f37fef
       target_field: cyberark_epm.policyaudit_raw_event.code_url
       ignore_missing: true
   - rename:
       field: json.commandInfo
-      tag: rename_commandInfo
+      tag: rename_commandInfo_434c9d6c
       target_field: cyberark_epm.policyaudit_raw_event.command_info
       ignore_missing: true
   - rename:
       field: json.company
-      tag: rename_company
+      tag: rename_company_11f5f1c3
       target_field: cyberark_epm.policyaudit_raw_event.company
       ignore_missing: true
   - set:
       field: organization.name
-      tag: set_organization_name_from_policyaudit_raw_event_company
+      tag: set_organization_name_from_policyaudit_raw_event_company_9b83439f
       copy_from: cyberark_epm.policyaudit_raw_event.company
       ignore_empty_value: true
   - rename:
       field: json.computerName
-      tag: rename_computerName
+      tag: rename_computerName_cc27a605
       target_field: cyberark_epm.policyaudit_raw_event.computer_name
       ignore_missing: true
   - set:
       field: host.name
-      tag: set_host_name_from_policyaudit_raw_event_computer_name
+      tag: set_host_name_from_policyaudit_raw_event_computer_name_ce9bba9e
       copy_from: cyberark_epm.policyaudit_raw_event.computer_name
       ignore_empty_value: true
   - append:
       field: related.hosts
-      tag: append_policyaudit_raw_event_computer_name_to_related_hosts
+      tag: append_policyaudit_raw_event_computer_name_to_related_hosts_8cdf0419
       value: '{{{cyberark_epm.policyaudit_raw_event.computer_name}}}'
       allow_duplicates: false
   - convert:
       field: json.eventCount
-      tag: convert_eventCount_to_long
+      tag: convert_eventCount_to_long_83bcb7c4
       target_field: cyberark_epm.policyaudit_raw_event.count
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_4902a80e
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.displayName
-      tag: rename_displayName
+      tag: rename_displayName_b9bc964c
       target_field: cyberark_epm.policyaudit_raw_event.display_name
       ignore_missing: true
   - rename:
       field: json.fileAccessPermission
-      tag: rename_fileAccessPermission
+      tag: rename_fileAccessPermission_3af09e96
       target_field: cyberark_epm.policyaudit_raw_event.file_access_permission
       ignore_missing: true
   - script:
       lang: painless
       if: ctx.cyberark_epm?.policyaudit_raw_event?.file_access_permission != null
       description: Convert access permissions into octal representation.
-      tag: set_file_mode
+      tag: set_file_mode_a2de6fc1
       source: |-
         def getOctalValue(String permissions) {
           def value = 0;
@@ -292,87 +296,90 @@ processors:
         ctx.file.put('mode', Integer.toString(owner) + Integer.toString(group) + Integer.toString(other));
       on_failure:
         - append:
+            tag: append_error_message_e2168888
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.fileDescription
-      tag: rename_fileDescription
+      tag: rename_fileDescription_5988e7bc
       target_field: cyberark_epm.policyaudit_raw_event.file_description
       ignore_missing: true
   - rename:
       field: json.fileName
-      tag: rename_fileName
+      tag: rename_fileName_b2abc36b
       target_field: cyberark_epm.policyaudit_raw_event.file_name
       ignore_missing: true
   - set:
       field: file.name
-      tag: set_file_name_from_policyaudit_raw_event_file_name
+      tag: set_file_name_from_policyaudit_raw_event_file_name_8b17b53a
       copy_from: cyberark_epm.policyaudit_raw_event.file_name
       ignore_empty_value: true
   - rename:
       field: json.filePath
-      tag: rename_filePath
+      tag: rename_filePath_0bc419e3
       target_field: cyberark_epm.policyaudit_raw_event.file_path
       ignore_missing: true
   - set:
       field: file.path
-      tag: set_file_path_from_policyaudit_raw_event_file_path
+      tag: set_file_path_from_policyaudit_raw_event_file_path_49ddd137
       copy_from: cyberark_epm.policyaudit_raw_event.file_path
       ignore_empty_value: true
   - rename:
       field: json.fileQualifier
-      tag: rename_fileQualifier
+      tag: rename_fileQualifier_da70fa4f
       target_field: cyberark_epm.policyaudit_raw_event.file_qualifier
       ignore_missing: true
   - convert:
       field: json.fileSize
-      tag: convert_fileSize_to_long
+      tag: convert_fileSize_to_long_259dd155
       target_field: cyberark_epm.policyaudit_raw_event.file_size
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_ff5d47b9
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: file.size
-      tag: set_file_size_from_policyaudit_raw_event_file_size
+      tag: set_file_size_from_policyaudit_raw_event_file_size_48d6f0ba
       copy_from: cyberark_epm.policyaudit_raw_event.file_size
       ignore_empty_value: true
   - set:
       field: package.size
-      tag: set_package_size_from_policyaudit_raw_event_file_size
+      tag: set_package_size_from_policyaudit_raw_event_file_size_58ca2a72
       copy_from: cyberark_epm.policyaudit_raw_event.file_size
       ignore_empty_value: true
   - rename:
       field: json.fileVersion
-      tag: rename_fileVersion
+      tag: rename_fileVersion_727e2474
       target_field: cyberark_epm.policyaudit_raw_event.file_version
       ignore_missing: true
   - set:
       field: package.version
-      tag: set_package_version_from_policyaudit_raw_event_file_version
+      tag: set_package_version_from_policyaudit_raw_event_file_version_32470d1c
       copy_from: cyberark_epm.policyaudit_raw_event.file_version
       ignore_empty_value: true
   - date:
       field: json.firstEventDate
-      tag: date_firstEventDate
+      tag: date_firstEventDate_3d006977
       target_field: cyberark_epm.policyaudit_raw_event.first_event_date
       formats:
         - ISO8601
       if: ctx.json?.firstEventDate != null && ctx.json.firstEventDate != ''
       on_failure:
         - append:
+            tag: append_error_message_fe72f2fe
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.start
-      tag: set_event_start_from_policyaudit_raw_event_first_event_date
+      tag: set_event_start_from_policyaudit_raw_event_first_event_date_e3cef71b
       copy_from: cyberark_epm.policyaudit_raw_event.first_event_date
       ignore_empty_value: true
   - set:
       field: threat.indicator.first_seen
-      tag: set_threat_indicator_first_seen_from_policyaudit_raw_event_first_event_date
+      tag: set_threat_indicator_first_seen_from_policyaudit_raw_event_first_event_date_cae7b9cf
       copy_from: cyberark_epm.policyaudit_raw_event.first_event_date
       if: >-
         ctx.cyberark_epm?.policyaudit_raw_event?.type != null && (
@@ -384,11 +391,11 @@ processors:
       ignore_empty_value: true
   - rename:
       field: json.hash
-      tag: rename_hash
+      tag: rename_hash_05360055
       target_field: cyberark_epm.policyaudit_raw_event.hash
       ignore_missing: true
   - script:
-      tag: script_to_map_file_hash_sha1_field
+      tag: script_to_map_file_hash_sha1_field_caa3d4c8
       lang: painless
       description: Map file.hash.sha1 field.
       if: ctx.cyberark_epm?.policyaudit_raw_event?.hash != null
@@ -407,16 +414,17 @@ processors:
         }
       on_failure:
         - append:
+            tag: append_error_message_a0ae0237
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: package.checksum
-      tag: set_package_checksum_from_file_hash_sha1
+      tag: set_package_checksum_from_file_hash_sha1_5ebad661
       copy_from: file.hash.sha1
       ignore_empty_value: true
   - set:
       field: threat.indicator.name
-      tag: set_threat_indicator_name_from_file_hash_sha1
+      tag: set_threat_indicator_name_from_file_hash_sha1_c2c115da
       copy_from: file.hash.sha1
       if: >-
         ctx.cyberark_epm?.policyaudit_raw_event?.type != null && (
@@ -428,7 +436,7 @@ processors:
       ignore_empty_value: true
   - set:
       field: threat.indicator.type
-      tag: set_threat_indicator_type
+      tag: set_threat_indicator_type_82b4f0ea
       value: file
       if: >-
         ctx.cyberark_epm?.policyaudit_raw_event?.type != null && (
@@ -439,48 +447,49 @@ processors:
         )
   - append:
       field: related.hash
-      tag: append_file_hash_sha1_to_related_hash
+      tag: append_file_hash_sha1_to_related_hash_cee1239c
       value: '{{{file.hash.sha1}}}'
       allow_duplicates: false
   - rename:
       field: json.interpreter
-      tag: rename_interpreter
+      tag: rename_interpreter_2a5ec6dc
       target_field: cyberark_epm.policyaudit_raw_event.interpreter
       ignore_missing: true
   - rename:
       field: json.justification
-      tag: rename_justification
+      tag: rename_justification_84c162ef
       target_field: cyberark_epm.policyaudit_raw_event.justification
       ignore_missing: true
   - rename:
       field: json.justificationEmail
-      tag: rename_justificationEmail
+      tag: rename_justificationEmail_1a43b0a8
       target_field: cyberark_epm.policyaudit_raw_event.justification_email
       ignore_missing: true
   - append:
       field: related.user
-      tag: append_policyaudit_raw_event_justification_email_to_related_user
+      tag: append_policyaudit_raw_event_justification_email_to_related_user_0957bdbb
       value: '{{{cyberark_epm.policyaudit_raw_event.justification_email}}}'
       allow_duplicates: false
   - date:
       field: json.lastEventDate
-      tag: date_lastEventDate
+      tag: date_lastEventDate_f23e50ec
       target_field: cyberark_epm.policyaudit_raw_event.last_event_date
       formats:
         - ISO8601
       if: ctx.json?.lastEventDate != null && ctx.json.lastEventDate != ''
       on_failure:
         - append:
+            tag: append_error_message_6d7c7780
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.end
-      tag: set_event_end_from_policyaudit_raw_event_last_event_date
+      tag: set_event_end_from_policyaudit_raw_event_last_event_date_00486722
       copy_from: cyberark_epm.policyaudit_raw_event.last_event_date
       ignore_empty_value: true
   - set:
       field: threat.indicator.last_seen
-      tag: set_threat_indicator_last_seen_from_policyaudit_raw_event_last_event_date
+      tag: set_threat_indicator_last_seen_from_policyaudit_raw_event_last_event_date_1c03b3aa
       copy_from: cyberark_epm.policyaudit_raw_event.last_event_date
       if: >-
         ctx.cyberark_epm?.policyaudit_raw_event?.type != null && (
@@ -492,38 +501,39 @@ processors:
       ignore_empty_value: true
   - rename:
       field: json.mimeType
-      tag: rename_mimeType
+      tag: rename_mimeType_e3fb8fe5
       target_field: cyberark_epm.policyaudit_raw_event.mime_type
       ignore_missing: true
   - set:
       field: file.mime_type
-      tag: set_file_mime_type_from_policyaudit_raw_event_mime_type
+      tag: set_file_mime_type_from_policyaudit_raw_event_mime_type_839b9006
       copy_from: cyberark_epm.policyaudit_raw_event.mime_type
       ignore_empty_value: true
   - date:
       field: json.modificationTime
-      tag: date_modificationTime
+      tag: date_modificationTime_2dd699e6
       target_field: cyberark_epm.policyaudit_raw_event.modification_time
       formats:
         - ISO8601
       if: ctx.json?.modificationTime != null && ctx.json.modificationTime != ''
       on_failure:
         - append:
+            tag: append_error_message_0cfaa8dc
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: file.mtime
-      tag: set_file_mtime_from_policyaudit_raw_event_modification_time
+      tag: set_file_mtime_from_policyaudit_raw_event_modification_time_740168f8
       copy_from: cyberark_epm.policyaudit_raw_event.modification_time
       ignore_empty_value: true
   - rename:
       field: json.operatingSystemType
-      tag: rename_operatingSystemType
+      tag: rename_operatingSystemType_3f7d4058
       target_field: cyberark_epm.policyaudit_raw_event.operating_system_type
       ignore_missing: true
   - set:
       field: host.os.type
-      tag: set_host_os_type_from_policyaudit_raw_event_operating_system_type
+      tag: set_host_os_type_from_policyaudit_raw_event_operating_system_type_1b7f2964
       copy_from: cyberark_epm.policyaudit_raw_event.operating_system_type
       if: >-
         ctx.cyberark_epm?.policyaudit_raw_event?.operating_system_type != null && (
@@ -534,31 +544,31 @@ processors:
       ignore_empty_value: true
   - lowercase:
       field: host.os.type
-      tag: lowercase_host_os_type
+      tag: lowercase_host_os_type_b90026f8
       ignore_missing: true
   - rename:
       field: json.originUserUID
-      tag: rename_originUserUID
+      tag: rename_originUserUID_5c8949e4
       target_field: cyberark_epm.policyaudit_raw_event.origin_user_uid
       ignore_missing: true
   - set:
       field: user.id
-      tag: set_user_id_from_policyaudit_raw_event_origin_user_uid
+      tag: set_user_id_from_policyaudit_raw_event_origin_user_uid_8a25feb3
       copy_from: cyberark_epm.policyaudit_raw_event.origin_user_uid
       ignore_empty_value: true
   - append:
       field: related.user
-      tag: append_policyaudit_raw_event_origin_user_uid_to_related_user
+      tag: append_policyaudit_raw_event_origin_user_uid_to_related_user_cc5e5ecb
       value: '{{{cyberark_epm.policyaudit_raw_event.origin_user_uid}}}'
       allow_duplicates: false
   - rename:
       field: json.originalFileName
-      tag: rename_originalFileName
+      tag: rename_originalFileName_f2b7d86b
       target_field: cyberark_epm.policyaudit_raw_event.original_file_name
       ignore_missing: true
   - grok:
       field: json.owner
-      tag: grok_parse_file_owner_name_and_file_owner_domain
+      tag: grok_parse_file_owner_name_and_file_owner_domain_64c8e7dd
       patterns:
         - '^%{DATA:cyberark_epm.policyaudit_raw_event.file_owner_domain}\\%{DATA:cyberark_epm.policyaudit_raw_event.file_owner_name}$'
         - '^%{DATA:cyberark_epm.policyaudit_raw_event.file_owner_domain}\\\\%{DATA:cyberark_epm.policyaudit_raw_event.file_owner_name}$'
@@ -567,57 +577,57 @@ processors:
       ignore_failure: true
   - set:
       field: file.owner
-      tag: set_file_owner_from_policyaudit_raw_event_file_owner_name
+      tag: set_file_owner_from_policyaudit_raw_event_file_owner_name_ec09177d
       copy_from: cyberark_epm.policyaudit_raw_event.file_owner_name
       ignore_empty_value: true
   - append:
       field: related.user
-      tag: append_policyaudit_raw_event_file_owner_name_to_related_user
+      tag: append_policyaudit_raw_event_file_owner_name_to_related_user_88dd1f48
       value: '{{{cyberark_epm.policyaudit_raw_event.file_owner_name}}}'
       allow_duplicates: false
   - rename:
       field: json.packageName
-      tag: rename_packageName
+      tag: rename_packageName_93e1a245
       target_field: cyberark_epm.policyaudit_raw_event.package_name
       ignore_missing: true
   - set:
       field: package.name
-      tag: set_package_name_from_policyaudit_raw_event_package_name
+      tag: set_package_name_from_policyaudit_raw_event_package_name_39c6a0a3
       copy_from: cyberark_epm.policyaudit_raw_event.package_name
       ignore_empty_value: true
   - rename:
       field: json.parentProcess
-      tag: rename_parentProcess
+      tag: rename_parentProcess_5a40d8be
       target_field: cyberark_epm.policyaudit_raw_event.parent_process
       ignore_missing: true
   - rename:
       field: json.policyAction
-      tag: rename_policyAction
+      tag: rename_policyAction_3f0d39cd
       target_field: cyberark_epm.policyaudit_raw_event.policy_action
       ignore_missing: true
   - rename:
       field: json.policyName
-      tag: rename_policyName
+      tag: rename_policyName_29138d39
       target_field: cyberark_epm.policyaudit_raw_event.policy_name
       ignore_missing: true
   - set:
       field: rule.name
-      tag: set_rule_name_from_policyaudit_raw_event_policy_name
+      tag: set_rule_name_from_policyaudit_raw_event_policy_name_5e766086
       copy_from: cyberark_epm.policyaudit_raw_event.policy_name
       ignore_empty_value: true
   - rename:
       field: json.productCode
-      tag: rename_productCode
+      tag: rename_productCode_788348ca
       target_field: cyberark_epm.policyaudit_raw_event.product_code
       ignore_missing: true
   - rename:
       field: json.productName
-      tag: rename_productName
+      tag: rename_productName_dde6f6ea
       target_field: cyberark_epm.policyaudit_raw_event.product_name
       ignore_missing: true
   - set:
       field: threat.software.name
-      tag: set_threat_software_name_from_policyaudit_raw_event_product_name
+      tag: set_threat_software_name_from_policyaudit_raw_event_product_name_521e6859
       copy_from: cyberark_epm.policyaudit_raw_event.product_name
       if: >-
         ctx.cyberark_epm?.policyaudit_raw_event?.type != null && (
@@ -629,77 +639,79 @@ processors:
       ignore_empty_value: true
   - rename:
       field: json.productVersion
-      tag: rename_productVersion
+      tag: rename_productVersion_ceb7fa94
       target_field: cyberark_epm.policyaudit_raw_event.product_version
       ignore_missing: true
   - rename:
       field: json.publisher
-      tag: rename_publisher
+      tag: rename_publisher_f5ede197
       target_field: cyberark_epm.policyaudit_raw_event.publisher
       ignore_missing: true
   - rename:
       field: json.runAsUsername
-      tag: rename_runAsUsername
+      tag: rename_runAsUsername_0eaa7d86
       target_field: cyberark_epm.policyaudit_raw_event.run_as_username
       ignore_missing: true
   - append:
       field: related.user
-      tag: append_policyaudit_raw_event_run_as_username_to_related_user
+      tag: append_policyaudit_raw_event_run_as_username_to_related_user_fcd49b52
       value: '{{{cyberark_epm.policyaudit_raw_event.run_as_username}}}'
       allow_duplicates: false
   - rename:
       field: json.setId
-      tag: rename_setId
+      tag: rename_setId_2023b142
       target_field: cyberark_epm.policyaudit_raw_event.set_id
       ignore_missing: true
   - convert:
       field: json.skippedCount
-      tag: convert_skippedCount_to_long
+      tag: convert_skippedCount_to_long_3cb369e3
       target_field: cyberark_epm.policyaudit_raw_event.skipped_count
       type: long
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_212fe473
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - rename:
       field: json.sourceName
-      tag: rename_sourceName
+      tag: rename_sourceName_34df0826
       target_field: cyberark_epm.policyaudit_raw_event.source_name
       ignore_missing: true
   - rename:
       field: json.sourceType
-      tag: rename_sourceType
+      tag: rename_sourceType_65dce8bd
       target_field: cyberark_epm.policyaudit_raw_event.source_type
       ignore_missing: true
   - rename:
       field: json.symLink
-      tag: rename_symLink
+      tag: rename_symLink_440b95b0
       target_field: cyberark_epm.policyaudit_raw_event.sym_link
       ignore_missing: true
   - set:
       field: file.target_path
-      tag: set_file_target_path_from_policyaudit_raw_event_sym_link
+      tag: set_file_target_path_from_policyaudit_raw_event_sym_link_8b21c80d
       copy_from: cyberark_epm.policyaudit_raw_event.sym_link
       ignore_empty_value: true
   - rename:
       field: json.upgradeCode
-      tag: rename_upgradeCode
+      tag: rename_upgradeCode_2efd58a7
       target_field: cyberark_epm.policyaudit_raw_event.upgrade_code
       ignore_missing: true
   - convert:
       field: json.userIsAdmin
-      tag: convert_userIsAdmin_to_boolean
+      tag: convert_userIsAdmin_to_boolean_a88d9cd4
       target_field: cyberark_epm.policyaudit_raw_event.user_is_admin
       type: boolean
       ignore_missing: true
       on_failure:
         - append:
+            tag: append_error_message_f61d55e5
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - grok:
       field: json.userName
-      tag: grok_parse_user_name_and_user_domain
+      tag: grok_parse_user_name_and_user_domain_d2299640
       patterns:
         - '^%{DATA:cyberark_epm.policyaudit_raw_event.user_domain}\\%{DATA:cyberark_epm.policyaudit_raw_event.user_name}$'
         - '^%{DATA:cyberark_epm.policyaudit_raw_event.user_domain}\\\\%{DATA:cyberark_epm.policyaudit_raw_event.user_name}$'
@@ -708,27 +720,27 @@ processors:
       ignore_failure: true
   - set:
       field: user.name
-      tag: set_user_name_from_policyaudit_raw_event_user_name
+      tag: set_user_name_from_policyaudit_raw_event_user_name_b10624b6
       copy_from: cyberark_epm.policyaudit_raw_event.user_name
       ignore_empty_value: true
   - set:
       field: user.domain
-      tag: set_user_domain_from_policyaudit_raw_event_user_domain
+      tag: set_user_domain_from_policyaudit_raw_event_user_domain_e197e93f
       copy_from: cyberark_epm.policyaudit_raw_event.user_domain
       ignore_empty_value: true
   - append:
       field: related.user
-      tag: append_policyaudit_raw_event_user_name_to_related_user
+      tag: append_policyaudit_raw_event_user_name_to_related_user_d18c504d
       value: '{{{cyberark_epm.policyaudit_raw_event.user_name}}}'
       allow_duplicates: false
   - rename:
       field: json.workingDirectory
-      tag: rename_workingDirectory
+      tag: rename_workingDirectory_426970bf
       target_field: cyberark_epm.policyaudit_raw_event.working_directory
       ignore_missing: true
   - set:
       field: process.working_directory
-      tag: set_process_working_directory_from_policyaudit_raw_event_working_directory
+      tag: set_process_working_directory_from_policyaudit_raw_event_working_directory_a2339097
       copy_from: cyberark_epm.policyaudit_raw_event.working_directory
       ignore_empty_value: true
   - remove:
@@ -751,15 +763,15 @@ processors:
         - cyberark_epm.policyaudit_raw_event.sym_link
         - cyberark_epm.policyaudit_raw_event.user_name
         - cyberark_epm.policyaudit_raw_event.working_directory
-      tag: remove_custom_duplicate_fields
+      tag: remove_custom_duplicate_fields_36a61adc
       ignore_missing: true
       if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
   - remove:
       field: json
-      tag: remove_json
+      tag: remove_json_94dc55cd
       ignore_missing: true
   - script:
-      tag: script_to_drop_null_values
+      tag: script_to_drop_null_values_f6a89620
       lang: painless
       description: Drops null/empty values recursively.
       source: |-
@@ -778,23 +790,26 @@ processors:
         drop(ctx);
   - set:
       field: event.kind
-      tag: set_pipeline_error_into_event_kind
+      tag: set_pipeline_error_into_event_kind_4fd8ffa8
       value: pipeline_error
       if: ctx.error?.message != null
   - append:
+      tag: append_tags_9fe66b2c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
 on_failure:
   - append:
+      tag: append_error_message_6906b116
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false

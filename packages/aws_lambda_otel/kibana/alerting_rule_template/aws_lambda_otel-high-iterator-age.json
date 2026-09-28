@@ -1,0 +1,48 @@
+{
+    "id": "aws_lambda_otel-high-iterator-age",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "description": "Alerts when stream-based Lambda consumers show high IteratorAge, indicating the function is falling behind the record arrival rate.",
+        "name": "[AWS Lambda OTel] High iterator age",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "aws_lambda",
+            "otel"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 3
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "artifacts": {
+            "investigation_guide": {
+                "blob": "## High Iterator Age\n\n### Triage Steps\n1. IteratorAge applies to stream/poll-based sources (Kinesis, DynamoDB Streams, Kafka).\n2. Check whether invocation errors or throttling are slowing processing.\n3. Review function duration — slow handlers reduce throughput per shard.\n4. Evaluate batch size and parallelization factor configuration.\n5. Compare incoming record rate (`Invocations`) with processing capacity.\n\n### Escalation\nGrowing iterator age means data freshness is degrading — prioritize before backlog becomes unrecoverable."
+            }
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "FROM metrics-aws.lambda.otel-*\n| WHERE Namespace == \"AWS/Lambda\"\n    AND MetricName == \"IteratorAge\"\n    AND stat == \"Maximum\"\n| STATS max_iterator_age_ms = MAX(`metrics.amazonaws.com/AWS/Lambda/IteratorAge`)\n  BY FunctionName, cloud.region\n// Backlog age threshold (ms): stream consumer falling behind\n| WHERE max_iterator_age_ms > 60000\n| EVAL function_id = CONCAT(FunctionName, \"/\", cloud.region)\n| SORT max_iterator_age_ms DESC\n| LIMIT 10"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 15,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "function_id",
+            "termSize": 10,
+            "excludeHitsFromPreviousRun": true
+        }
+    }
+}

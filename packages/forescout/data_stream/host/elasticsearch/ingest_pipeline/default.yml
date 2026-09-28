@@ -1,0 +1,268 @@
+---
+description: Pipeline for processing host logs.
+processors:
+  - set:
+      tag: set_ecs_version_to_9_3_0_b777da29
+      field: ecs.version
+      value: 9.3.0
+
+  # parse the event JSON
+  - rename:
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      tag: rename_message_to_event_original_c74b1d7e
+      if: ctx.event?.original == null
+      field: message
+      target_field: event.original
+      ignore_missing: true
+  - remove:
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      tag: remove_message_84808ee4
+      if: ctx.event?.original != null
+      field:
+        - message
+      ignore_missing: true
+  - json:
+      tag: json_event_original_into_forescout_host_482387c8
+      field: event.original
+      target_field: forescout.host
+
+  # Set event.* fields
+  - set:
+      tag: set_event_kind_to_event_de80643c
+      field: event.kind
+      value: event
+  - append:
+      tag: Append_event_type_to_info_8a66ccaa
+      field: event.type
+      value: info
+  - append:
+      tag: Append_event_category_to_host_3fa422a0
+      field: event.category
+      value: host
+
+  # Remove null/Unknown/Empty/`n/a` values from the document
+  - script:
+      description: This script processor iterates over the whole document to remove fields with null, empty, 'n/a', or 'unknown' values.
+      tag: remove_null_unknown_empty_n_a_values
+      lang: painless
+      source: |-
+        void handleMap(Map map) {
+        map.values().removeIf(v -> {
+        	if (v instanceof Map) {
+        	handleMap(v);
+        	} else if (v instanceof List) {
+        	handleList(v);
+        	}
+        	return v == null || v == ''|| v.toString().toLowerCase() == "n/a" || v.toString().toLowerCase() == "unknown" || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+        });
+        }
+        void handleList(List list) {
+        list.removeIf(v -> {
+        	if (v instanceof Map) {
+        	handleMap(v);
+        	} else if (v instanceof List) {
+        	handleList(v);
+        	}
+        	return v == null || v == '' || v.toString().toLowerCase() == "n/a" || v.toString().toLowerCase() == "unknown" || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+        });
+        }
+        handleMap(ctx);
+
+  # Date processors
+  - date:
+      tag: date_forescout_host_timestamp_into_forescout_host_timestamp_2227c7a3
+      if: ctx.forescout?.host?.timestamp != null && ctx.forescout.host.timestamp != ''
+      field: forescout.host.timestamp
+      target_field: forescout.host.timestamp
+      formats:
+        - ISO8601
+      on_failure:
+        - remove:
+            tag: remove_forescout_host_timestamp_9d6204e9
+            field:
+              - forescout.host.timestamp
+        - append:
+            tag: append_error_message_35bf28d1
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # Convert to IP
+  - convert:
+      tag: convert_forescout_host_access_ip_to_ip_81caf7ca
+      if: ctx.forescout?.host?.access_ip != ''
+      field: forescout.host.access_ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_forescout_host_access_ip_5ef51382
+            field:
+              - forescout.host.access_ip
+        - append:
+            tag: append_error_message_1e30c6aa
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_forescout_host_ip_to_ip_6aa9d628
+      if: ctx.forescout?.host?.ip != ''
+      field: forescout.host.ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_forescout_host_ip_532469c5
+            field:
+              - forescout.host.ip
+        - append:
+            tag: append_error_message_dd72bf88
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      tag: convert_forescout_host_nested_device_parent_ip_to_ip_0ed74c96
+      if: ctx.forescout?.host?.nested_device_parent_ip != ''
+      field: forescout.host.nested_device_parent_ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_forescout_host_nested_device_parent_ip_2f3f3251
+            field:
+              - forescout.host.nested_device_parent_ip
+        - append:
+            tag: append_error_message_a20fd3d6
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # Convert mac addresses to proper format
+  - gsub:
+      tag: Gsub_Mac_1801ec84
+      if: ctx.forescout?.host?.mac != null && ctx.forescout.host.mac != ''
+      field: forescout.host.mac
+      pattern: (..)(?!$)
+      replacement: $1-
+      ignore_missing: true
+  - uppercase:
+      tag: Uppercase_Mac_3a5dcee1
+      if: ctx.forescout?.host?.mac != null && ctx.forescout.host.mac != ''
+      field: forescout.host.mac
+      ignore_missing: true
+
+  # Map custom fields to corresponding ECS and related fields.
+  - set:
+      tag: set_@timestamp_from_forescout_host_timestamp_c949e90d
+      field: '@timestamp'
+      copy_from: forescout.host.timestamp
+      ignore_empty_value: true
+  - set:
+      tag: set_user_name_from_forescout_host_user_ef4bebdc
+      field: user.name
+      copy_from: forescout.host.user
+      ignore_empty_value: true
+  - append:
+      tag: append_host_mac_from_forescout_host_mac_66c303ed
+      if: ctx.forescout?.host?.mac != null
+      field: host.mac
+      value: '{{{forescout.host.mac}}}'
+      allow_duplicates: false
+  - append:
+      tag: append_host_ip_from_forescout_host_ip_b317703f
+      if: ctx.forescout?.host?.ip != null
+      field: host.ip
+      value: '{{{forescout.host.ip}}}'
+      allow_duplicates: false
+  - append:
+      tag: append_related_ip_from_forescout_host_access_ip_4beb64bc
+      if: ctx.forescout?.host?.access_ip != null
+      field: related.ip
+      value: '{{{forescout.host.access_ip}}}'
+      allow_duplicates: false
+  - append:
+      tag: append_related_ip_from_forescout_host_ip_c902b2a0
+      if: ctx.forescout?.host?.ip != null
+      field: related.ip
+      value: '{{{forescout.host.ip}}}'
+      allow_duplicates: false
+  - append:
+      tag: append_related_ip_from_forescout_host_nested_device_parent_ip_e341d2e0
+      if: ctx.forescout?.host?.nested_device_parent_ip != null
+      field: related.ip
+      value: '{{{forescout.host.nested_device_parent_ip}}}'
+      allow_duplicates: false
+  - append:
+      tag: append_related_user_from_forescout_host_user_d2a81d92
+      if: ctx.forescout?.host?.user != null
+      field: related.user
+      value: '{{{forescout.host.user}}}'
+      allow_duplicates: false
+
+  # Remove duplicate custom fields if preserve_duplicate_custom_fields are not enabled
+  - remove:
+      tag: remove_custom_duplicate_fields_e5e0519a
+      if: ctx.tags == null || !ctx.tags.contains('preserve_duplicate_custom_fields')
+      field:
+        - forescout.host.ip
+        - forescout.host.mac
+        - forescout.host.user
+        - forescout.host.timestamp
+      ignore_missing: true
+
+  # Remove `event.original` if `preserve_original_event` is not enabled
+  - remove:
+      tag: remove_original_event_3c7f05eb
+      if: ctx.error?.message != null || ctx.tags == null || !ctx.tags.contains('preserve_original_event')
+      field:
+        - event.original
+      ignore_missing: true
+
+  # Cleanup
+  - script:
+      description: This script processor iterates over the whole document to remove fields with null values.
+      tag: script_to_drop_null_values_8360f3de
+      lang: painless
+      source: |-
+        void handleMap(Map map) {
+        map.values().removeIf(v -> {
+        	if (v instanceof Map) {
+        	handleMap(v);
+        	} else if (v instanceof List) {
+        	handleList(v);
+        	}
+        	return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+        });
+        }
+        void handleList(List list) {
+        list.removeIf(v -> {
+        	if (v instanceof Map) {
+        	handleMap(v);
+        	} else if (v instanceof List) {
+        	handleList(v);
+        	}
+        	return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+        });
+        }
+        handleMap(ctx);
+  - set:
+      tag: set_event_kind_to_pipeline_error_92954dfa
+      if: ctx.error?.message != null
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_tags_9fe66b2c
+      if: ctx.error?.message != null
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
+on_failure:
+  - append:
+      tag: append_error_message_e0c9bd63
+      field: error.message
+      value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      tag: set_event_kind_to_pipeline_error_f51b77ad
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: append_tags_d762b9c5
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

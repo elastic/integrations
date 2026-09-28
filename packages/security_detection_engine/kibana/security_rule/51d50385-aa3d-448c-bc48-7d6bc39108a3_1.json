@@ -1,0 +1,131 @@
+{
+    "attributes": {
+        "alert_suppression": {
+            "duration": {
+                "unit": "h",
+                "value": 1
+            },
+            "group_by": [
+                "user.id",
+                "cloud.account.id"
+            ],
+            "missing_fields_strategy": "suppress"
+        },
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects when a Bedrock model is prompted to invoke high-risk tools associated with shell execution, filesystem operations, or process spawning. Adversaries may use compromised AI agent pipelines or manipulated prompts to instruct the model to execute arbitrary system commands, read or write sensitive files, or spawn subprocesses \u2014 extending the blast radius of a credential compromise or prompt injection attack.",
+        "false_positives": [
+            "Authorized AI agent workflows that include shell or filesystem tools may trigger this rule. Validate that the user identity and tool usage pattern are consistent with expected application behavior."
+        ],
+        "from": "now-60m",
+        "interval": "10m",
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "user.id",
+                "cloud.account.id",
+                "gen_ai.request.model.id",
+                "gen_ai.prompt",
+                "gen_ai.completion"
+            ]
+        },
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "AWS Bedrock High Risk Filesystem or Execution Tool Invocation",
+        "note": "## Triage and analysis\n\n### Investigating AWS Bedrock High Risk Filesystem or Execution Tool Invocation\n\nThis rule detects Bedrock model invocations where the prompt contains patterns associated with shell execution, filesystem access, or process spawning. These patterns may indicate a prompt injection attack, a compromised AI agent pipeline, or an insider attempting to use a Bedrock-backed application to execute unauthorized system operations.\n\n### Possible investigation steps\n\n- Review `gen_ai.prompt` to identify the specific tool invocation pattern that triggered the rule and determine whether it represents a legitimate tool call or a malicious instruction.\n- Identify the user (`user.id`) and determine whether they are expected to interact with tools that perform filesystem or shell operations.\n- Review the model ID (`gen_ai.request.model.id`) and the application context to understand whether shell or filesystem tools are part of the intended agent architecture.\n- Correlate with other Bedrock invocation events from the same user in the preceding hour to assess whether this is an isolated event or part of a pattern.\n- If the application uses Bedrock Agents, review the agent's configured action groups and Lambda functions to determine whether the tool invocation could have resulted in actual execution.\n- Check for downstream evidence of execution: CloudTrail Lambda invocation events, SSM RunCommand, or EC2 activity correlated with the same time window.\n\n### False positive analysis\n\n- AI coding assistants and developer tools built on Bedrock may legitimately reference shell commands or file operations in their prompt templates.\n- Security tooling that uses Bedrock to analyze shell scripts or code may produce prompts containing these patterns.\n\n### Response and remediation\n\n- If a prompt injection is confirmed, identify the injection source and remediate the input validation gap in the application layer.\n- Review and restrict the tools available to the Bedrock Agent to the minimum required for its function.\n- Apply Bedrock Guardrails to block or flag prompts containing high-risk tool invocation patterns.\n- If credentials were compromised, rotate them immediately and audit all Bedrock and downstream API activity.\n",
+        "query": "from logs-aws_bedrock.invocation-* metadata _id, _version, _index\n\n| eval Esql.lowercase_prompt = TO_LOWER(gen_ai.prompt)\n\n| where\n    Esql.lowercase_prompt like \"*/bin/sh*\" or\n    Esql.lowercase_prompt like \"*/bin/bash*\" or\n    Esql.lowercase_prompt like \"*sh -c*\" or\n    Esql.lowercase_prompt like \"*cmd.exe*\" or\n    Esql.lowercase_prompt like \"*powershell*\" or\n    Esql.lowercase_prompt like \"*exec(*\" or\n    Esql.lowercase_prompt like \"*os.system*\" or\n    Esql.lowercase_prompt like \"*subprocess*\" or\n    Esql.lowercase_prompt like \"*python -c*\" or\n    Esql.lowercase_prompt like \"*python3 -c*\" or\n    Esql.lowercase_prompt like \"*curl *\" or\n    Esql.lowercase_prompt like \"*wget *\" or\n    Esql.lowercase_prompt like \"*/dev/tcp/*\" or\n    Esql.lowercase_prompt like \"*nc -e*\" or\n    Esql.lowercase_prompt like \"*ncat *\" or\n    Esql.lowercase_prompt like \"*socat *\" or\n    Esql.lowercase_prompt like \"*openssl s_client*\" or\n    Esql.lowercase_prompt like \"*perl -e*\" or\n    Esql.lowercase_prompt like \"*ruby -e*\" or\n    Esql.lowercase_prompt like \"*php -r*\" or\n    Esql.lowercase_prompt like \"*node -e*\" or\n    Esql.lowercase_prompt like \"*base64 -d*\" or\n    Esql.lowercase_prompt like \"*bash -i*\"\n\n| keep _id, _version, _index, @timestamp, user.id, cloud.account.id, gen_ai.request.model.id, gen_ai.prompt, gen_ai.completion\n",
+        "references": [
+            "https://docs.aws.amazon.com/bedrock/latest/userguide/agents-action-groups.html",
+            "https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails.html",
+            "https://owasp.org/www-project-top-10-for-large-language-model-applications/"
+        ],
+        "related_integrations": [
+            {
+                "package": "aws_bedrock",
+                "version": ">=1.1.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "@timestamp",
+                "type": "date"
+            },
+            {
+                "ecs": false,
+                "name": "_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "_index",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "_version",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.account.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "gen_ai.completion",
+                "type": "text"
+            },
+            {
+                "ecs": false,
+                "name": "gen_ai.prompt",
+                "type": "text"
+            },
+            {
+                "ecs": false,
+                "name": "gen_ai.request.model.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.id",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "51d50385-aa3d-448c-bc48-7d6bc39108a3",
+        "setup": "The AWS Bedrock integration must be enabled with model invocation logging configured to capture prompt\nand completion content. Ensure `logs-aws_bedrock.invocation-*` is ingested into Elasticsearch.",
+        "severity": "high",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: LLM",
+            "Data Source: AWS Bedrock",
+            "Use Case: Threat Detection",
+            "Tactic: Execution",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1059",
+                        "name": "Command and Scripting Interpreter",
+                        "reference": "https://attack.mitre.org/techniques/T1059/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "51d50385-aa3d-448c-bc48-7d6bc39108a3_1",
+    "type": "security-rule"
+}

@@ -1,0 +1,1417 @@
+{
+    "attributes": {
+        "description": "Inventory Shadow AI tools on macOS endpoints \u2014 local LLM runtimes, AI coding agents, AI desktop applications, MCP servers (MCP config file presence, metadata only), Homebrew and Python/npm AI packages, browser (Chrome, Firefox, Safari) and editor extensions, Docker containers, launchd services, AI API key variable names, credential-adjacent file access by AI processes, and AI tool configuration files and directories.",
+        "name": "ai-asset-discovery-macos",
+        "version": 1,
+        "queries": [
+            {
+                "id": "ai_processes_macos",
+                "query": "SELECT\n    name,\n    path,\n    cmdline,\n    pid,\n    username,\n    cwd,\n    start_time,\n    ppid,\n    category\nFROM (\n    SELECT\n        p.name,\n        p.path,\n        p.cmdline,\n        p.pid,\n        u.username,\n        p.cwd,\n        strftime('%Y-%m-%dT%H:%M:%SZ', p.start_time, 'unixepoch') AS start_time,\n        p.parent AS ppid,\n        CASE\n            WHEN (p.cmdline LIKE '%@modelcontextprotocol/%'\n    OR p.cmdline LIKE '%mcp-server-%'\n    OR p.cmdline LIKE '%fastmcp%'\n    OR p.cmdline LIKE '%modelcontextprotocol%'\n    OR p.cmdline LIKE '%smithery%'\n    OR p.cmdline LIKE '%mcpx%'\n    OR p.cmdline LIKE '%mcp-run%'\n    OR p.cmdline LIKE '%glama%mcp%'\n    OR p.cmdline LIKE '%mcp-proxy%'\n    OR p.cmdline LIKE '%mcp-gateway%'\n    OR p.cmdline LIKE '%supergateway%'\n    OR p.cmdline LIKE '%github-mcp-server%'\n    OR p.cmdline LIKE '%@modelcontextprotocol/server-%'\n    OR p.cmdline LIKE '%mcp-remote%'\n    OR LOWER(p.name) IN('github-mcp-server', 'mcp-server-github', 'gptme-mcp-server', 'mcp-inspector', 'playwright-mcp')\n    OR p.cmdline LIKE '%@playwright/mcp%') THEN 'mcp'\n            WHEN (LOWER(p.name) IN('claude', 'cursor', 'windsurf', 'warp', 'zed', 'tabnine', 'wasmtabnine', 'codeium_language_server', 'supermaven', 'amazon-q', 'pieces-os', 'pieces os', 'codex', 'aider', 'sgpt', 'augment', 'goose', 'devin', 'gemini-cli', 'genaiscript', 'opencode', 'kiro', 'kilocode', 'chatgpt', 'perplexity', 'acli', 'antigravity', 'antigravity helper', 'antigravity-cli', 'askai', 'auggie', 'blackbox', 'blackboxapp.blackboxagent', 'browser use', 'browser use helper', 'chatgpt helper', 'claude helper', 'cline', 'cmdc', 'code-tunnel', 'codebuff', 'codegpt', 'codex-exec', 'codex-linux-sandbox', 'codium', 'command-code', 'commandcode', 'cursor-tunnel', 'elevenlabs', 'fabric-ai', 'goose helper', 'gpterm', 'gptme', 'huggingface-cli', 'jules', 'junie', 'kilo', 'kimi', 'kimi-cli', 'llmster', 'nemo-deepagents', 'nemoclaw', 'nemohermes', 'pearai', 'pearai helper', 'perplexity-cli', 'plandex', 'pochi', 'qchat', 'qodo', 'repoprompt', 'repoprompt_cli', 'rp-cli', 'tgpt', 'trae', 'trae helper', 'trae solo', 'trae solo helper', 'trae-solo', 'void helper', 'warp-terminal', 'zed-editor', 'zencoder')\n    OR p.cmdline LIKE '%claude-code%'\n    OR p.cmdline LIKE '%@anthropic/claude-code%'\n    OR p.cmdline LIKE '%@anthropic-ai/claude-code%'\n    OR p.cmdline LIKE '%claude_desktop%'\n    OR p.cmdline LIKE '%com.anthropic.claudedesktop%'\n    OR p.cmdline LIKE '%Cursor.app%'\n    OR p.cmdline LIKE '%Cursor Helper%'\n    OR p.cmdline LIKE '%cursor-retrieval%'\n    OR p.cmdline LIKE '%Windsurf%'\n    OR p.cmdline LIKE '%codeium_language_server%'\n    OR p.cmdline LIKE '%codeium%enterprise%'\n    OR p.cmdline LIKE '%github.copilot%'\n    OR p.cmdline LIKE '%copilot-agent%'\n    OR p.cmdline LIKE '%copilot-language-server%'\n    OR p.cmdline LIKE '%@openai/codex%'\n    OR p.cmdline LIKE '%aider-chat%'\n    OR p.cmdline LIKE '%aider%--model%'\n    OR p.cmdline LIKE '%saoudrizwan.claude-dev%'\n    OR p.cmdline LIKE '%rooveterinaryinc.roo-cline%'\n    OR p.cmdline LIKE '%continue.continue%'\n    OR p.cmdline LIKE '%continuedev%'\n    OR p.cmdline LIKE '%amazon-q%'\n    OR p.cmdline LIKE '%codewhisperer%'\n    OR p.cmdline LIKE '%AmazonWebServices.amazon-q%'\n    OR p.cmdline LIKE '%sourcegraph.cody%'\n    OR p.cmdline LIKE '%tabnine%'\n    OR p.cmdline LIKE '%dev.warp.Warp%'\n    OR p.cmdline LIKE '%dev.zed.Zed%'\n    OR p.cmdline LIKE '%shell-gpt%'\n    OR p.cmdline LIKE '%openhands%'\n    OR p.cmdline LIKE '%swe-agent%'\n    OR p.cmdline LIKE '%pieces-os%'\n    OR p.cmdline LIKE '%supermaven%'\n    OR p.cmdline LIKE '%augment%code%'\n    OR p.cmdline LIKE '%openai/codex%'\n    OR p.cmdline LIKE '%goose%session%'\n\n    OR p.cmdline LIKE '%openclaw%'\n    OR p.cmdline LIKE '%moltbot%'\n    OR p.cmdline LIKE '%clawdbot%'\n    OR p.cmdline LIKE '%autogpt%'\n    OR p.cmdline LIKE '%auto-gpt%'\n    OR p.cmdline LIKE '%babyagi%'\n    OR p.cmdline LIKE '%agentgpt%'\n    OR p.cmdline LIKE '%crewai%'\n    OR p.cmdline LIKE '%semantic-kernel%'\n    OR p.cmdline LIKE '%llama-index%'\n    \n    OR p.cmdline LIKE '%opencode%'\n    OR p.cmdline LIKE '%kilocode%'\n    OR p.cmdline LIKE '%vscodium%'\n    OR p.cmdline LIKE '%kiro%'\n    OR p.cmdline LIKE '%cursor agent%'\n    OR p.cmdline LIKE '%@cursor/agent%'\n    OR p.cmdline LIKE '%cursor-cli%'\n    OR p.cmdline LIKE '%@elevenlabs/cli%'\n    OR p.cmdline LIKE '%@getpochi/cli%'\n    OR p.cmdline LIKE '%gptshell.gptsh%'\n    OR p.cmdline LIKE '%jules remote new%'\n    OR p.cmdline LIKE '%kilo run%'\n    OR p.cmdline LIKE '%perplexity-cli query%'\n    OR p.cmdline LIKE '%replicate.run%'\n    OR p.cmdline LIKE '%Replit.app/Contents/MacOS/Replit%') THEN 'agent'\n            WHEN (LOWER(p.name) IN('ollama', 'lms', 'gpt4all', 'jan', 'msty', 'local-ai', 'koboldcpp', 'llama-server', 'llama-cli', 'vllm', 'mlc_llm', 'mlc_chat', 'anythingllm', 'anything-llm', 'litellm', 'open-webui', 'llamafile', 'text-generation-launcher', 'text-generation-router', 'comfyui', 'invokeai', 'exo', 'tabby', 'qwen', 'grok', 'bentoml', 'exllama', 'kokoro', 'llama-bench', 'llama-perplexity', 'llama-quantize', 'llama-swap', 'llama-tokenize', 'llama-tts', 'lm studio helper', 'lmstudio', 'whisper-cli', 'whisperx', 'xinference', 'xinference-local')\n    OR p.cmdline LIKE '%ollama serve%'\n    OR p.cmdline LIKE '%vllm.entrypoints%'\n    OR p.cmdline LIKE '%text-generation-launcher%'\n    OR p.cmdline LIKE '%koboldcpp%'\n    OR p.cmdline LIKE '%llama-server%'\n    OR p.cmdline LIKE '%llama.cpp%server%'\n    OR p.cmdline LIKE '%llamafile%'\n    OR p.cmdline LIKE '%mlc_llm%'\n    OR p.cmdline LIKE '%litellm%'\n    OR p.cmdline LIKE '%open-webui%'\n    OR p.cmdline LIKE '%anythingllm%'\n    OR p.cmdline LIKE '%localai%'\n    OR p.cmdline LIKE '%text-generation-webui%'\n    OR p.cmdline LIKE '%oobabooga%'\n    OR p.cmdline LIKE '%comfyui%'\n    OR p.cmdline LIKE '%invokeai%'\n    OR p.cmdline LIKE '%stable-diffusion-webui%'\n    OR p.cmdline LIKE '%whisper%server%'\n    OR p.cmdline LIKE '%msty%serve%'\n    OR p.cmdline LIKE '%tabby%serve%'\n    OR p.cmdline LIKE '%exo serve%'\n    OR p.cmdline LIKE '%exo-launcher%'\n\n    OR p.cmdline LIKE '%cohere serve%'\n    OR p.cmdline LIKE '%mistral serve%'\n    OR p.cmdline LIKE '%open_webui.main:app%'\n    OR p.cmdline LIKE '%webui/app.py%') THEN 'llm_runtime'\n        END AS category\n    FROM processes p\n    LEFT JOIN users u ON p.uid = u.uid\n) AS ai_procs\nWHERE category IS NOT NULL;",
+                "interval": 3600,
+                "platform": "darwin",
+                "timeout": 180,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "process"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "process.name",
+                        "value": {
+                            "field": "name"
+                        }
+                    },
+                    {
+                        "key": "process.executable",
+                        "value": {
+                            "field": "path"
+                        }
+                    },
+                    {
+                        "key": "process.command_line",
+                        "value": {
+                            "field": "cmdline"
+                        }
+                    },
+                    {
+                        "key": "process.pid",
+                        "value": {
+                            "field": "pid"
+                        }
+                    },
+                    {
+                        "key": "user.name",
+                        "value": {
+                            "field": "username"
+                        }
+                    },
+                    {
+                        "key": "process.start",
+                        "value": {
+                            "field": "start_time"
+                        }
+                    },
+                    {
+                        "key": "process.parent.pid",
+                        "value": {
+                            "field": "ppid"
+                        }
+                    },
+                    {
+                        "key": "labels.process_category",
+                        "value": {
+                            "field": "category"
+                        }
+                    },
+                    {
+                        "key": "process.working_directory",
+                        "value": {
+                            "field": "cwd"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "ai_discovery",
+                                "ai_processes",
+                                "shadow_ai",
+                                "darwin"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.ai_processes"
+                        }
+                    }
+                ],
+                "snapshot": false
+            },
+            {
+                "id": "ai_listening_ports_macos",
+                "query": "WITH ai AS (\nSELECT\n        p.pid,\n        CASE\n            WHEN (p.cmdline LIKE '%@modelcontextprotocol/%'\n    OR p.cmdline LIKE '%mcp-server-%'\n    OR p.cmdline LIKE '%fastmcp%'\n    OR p.cmdline LIKE '%modelcontextprotocol%'\n    OR p.cmdline LIKE '%smithery%'\n    OR p.cmdline LIKE '%mcpx%'\n    OR p.cmdline LIKE '%mcp-run%'\n    OR p.cmdline LIKE '%glama%mcp%'\n    OR p.cmdline LIKE '%mcp-proxy%'\n    OR p.cmdline LIKE '%mcp-gateway%'\n    OR p.cmdline LIKE '%supergateway%'\n    OR p.cmdline LIKE '%github-mcp-server%'\n    OR p.cmdline LIKE '%@modelcontextprotocol/server-%'\n    OR p.cmdline LIKE '%mcp-remote%'\n    OR LOWER(p.name) IN('github-mcp-server', 'mcp-server-github', 'gptme-mcp-server', 'mcp-inspector', 'playwright-mcp')\n    OR p.cmdline LIKE '%@playwright/mcp%') THEN 'mcp'\n            WHEN (LOWER(p.name) IN('claude', 'cursor', 'windsurf', 'warp', 'zed', 'tabnine', 'wasmtabnine', 'codeium_language_server', 'supermaven', 'amazon-q', 'pieces-os', 'pieces os', 'codex', 'aider', 'sgpt', 'augment', 'goose', 'devin', 'gemini-cli', 'genaiscript', 'opencode', 'kiro', 'kilocode', 'chatgpt', 'perplexity', 'acli', 'antigravity', 'antigravity helper', 'antigravity-cli', 'askai', 'auggie', 'blackbox', 'blackboxapp.blackboxagent', 'browser use', 'browser use helper', 'chatgpt helper', 'claude helper', 'cline', 'cmdc', 'code-tunnel', 'codebuff', 'codegpt', 'codex-exec', 'codex-linux-sandbox', 'codium', 'command-code', 'commandcode', 'cursor-tunnel', 'elevenlabs', 'fabric-ai', 'goose helper', 'gpterm', 'gptme', 'huggingface-cli', 'jules', 'junie', 'kilo', 'kimi', 'kimi-cli', 'llmster', 'nemo-deepagents', 'nemoclaw', 'nemohermes', 'pearai', 'pearai helper', 'perplexity-cli', 'plandex', 'pochi', 'qchat', 'qodo', 'repoprompt', 'repoprompt_cli', 'rp-cli', 'tgpt', 'trae', 'trae helper', 'trae solo', 'trae solo helper', 'trae-solo', 'void helper', 'warp-terminal', 'zed-editor', 'zencoder')\n    OR p.cmdline LIKE '%claude-code%'\n    OR p.cmdline LIKE '%@anthropic/claude-code%'\n    OR p.cmdline LIKE '%@anthropic-ai/claude-code%'\n    OR p.cmdline LIKE '%claude_desktop%'\n    OR p.cmdline LIKE '%com.anthropic.claudedesktop%'\n    OR p.cmdline LIKE '%Cursor.app%'\n    OR p.cmdline LIKE '%Cursor Helper%'\n    OR p.cmdline LIKE '%cursor-retrieval%'\n    OR p.cmdline LIKE '%Windsurf%'\n    OR p.cmdline LIKE '%codeium_language_server%'\n    OR p.cmdline LIKE '%codeium%enterprise%'\n    OR p.cmdline LIKE '%github.copilot%'\n    OR p.cmdline LIKE '%copilot-agent%'\n    OR p.cmdline LIKE '%copilot-language-server%'\n    OR p.cmdline LIKE '%@openai/codex%'\n    OR p.cmdline LIKE '%aider-chat%'\n    OR p.cmdline LIKE '%aider%--model%'\n    OR p.cmdline LIKE '%saoudrizwan.claude-dev%'\n    OR p.cmdline LIKE '%rooveterinaryinc.roo-cline%'\n    OR p.cmdline LIKE '%continue.continue%'\n    OR p.cmdline LIKE '%continuedev%'\n    OR p.cmdline LIKE '%amazon-q%'\n    OR p.cmdline LIKE '%codewhisperer%'\n    OR p.cmdline LIKE '%AmazonWebServices.amazon-q%'\n    OR p.cmdline LIKE '%sourcegraph.cody%'\n    OR p.cmdline LIKE '%tabnine%'\n    OR p.cmdline LIKE '%dev.warp.Warp%'\n    OR p.cmdline LIKE '%dev.zed.Zed%'\n    OR p.cmdline LIKE '%shell-gpt%'\n    OR p.cmdline LIKE '%openhands%'\n    OR p.cmdline LIKE '%swe-agent%'\n    OR p.cmdline LIKE '%pieces-os%'\n    OR p.cmdline LIKE '%supermaven%'\n    OR p.cmdline LIKE '%augment%code%'\n    OR p.cmdline LIKE '%openai/codex%'\n    OR p.cmdline LIKE '%goose%session%'\n\n    OR p.cmdline LIKE '%openclaw%'\n    OR p.cmdline LIKE '%moltbot%'\n    OR p.cmdline LIKE '%clawdbot%'\n    OR p.cmdline LIKE '%autogpt%'\n    OR p.cmdline LIKE '%auto-gpt%'\n    OR p.cmdline LIKE '%babyagi%'\n    OR p.cmdline LIKE '%agentgpt%'\n    OR p.cmdline LIKE '%crewai%'\n    OR p.cmdline LIKE '%semantic-kernel%'\n    OR p.cmdline LIKE '%llama-index%'\n    \n    OR p.cmdline LIKE '%opencode%'\n    OR p.cmdline LIKE '%kilocode%'\n    OR p.cmdline LIKE '%vscodium%'\n    OR p.cmdline LIKE '%kiro%'\n    OR p.cmdline LIKE '%cursor agent%'\n    OR p.cmdline LIKE '%@cursor/agent%'\n    OR p.cmdline LIKE '%cursor-cli%'\n    OR p.cmdline LIKE '%@elevenlabs/cli%'\n    OR p.cmdline LIKE '%@getpochi/cli%'\n    OR p.cmdline LIKE '%gptshell.gptsh%'\n    OR p.cmdline LIKE '%jules remote new%'\n    OR p.cmdline LIKE '%kilo run%'\n    OR p.cmdline LIKE '%perplexity-cli query%'\n    OR p.cmdline LIKE '%replicate.run%'\n    OR p.cmdline LIKE '%Replit.app/Contents/MacOS/Replit%') THEN 'agent'\n            WHEN (LOWER(p.name) IN('ollama', 'lms', 'gpt4all', 'jan', 'msty', 'local-ai', 'koboldcpp', 'llama-server', 'llama-cli', 'vllm', 'mlc_llm', 'mlc_chat', 'anythingllm', 'anything-llm', 'litellm', 'open-webui', 'llamafile', 'text-generation-launcher', 'text-generation-router', 'comfyui', 'invokeai', 'exo', 'tabby', 'qwen', 'grok', 'bentoml', 'exllama', 'kokoro', 'llama-bench', 'llama-perplexity', 'llama-quantize', 'llama-swap', 'llama-tokenize', 'llama-tts', 'lm studio helper', 'lmstudio', 'whisper-cli', 'whisperx', 'xinference', 'xinference-local')\n    OR p.cmdline LIKE '%ollama serve%'\n    OR p.cmdline LIKE '%vllm.entrypoints%'\n    OR p.cmdline LIKE '%text-generation-launcher%'\n    OR p.cmdline LIKE '%koboldcpp%'\n    OR p.cmdline LIKE '%llama-server%'\n    OR p.cmdline LIKE '%llama.cpp%server%'\n    OR p.cmdline LIKE '%llamafile%'\n    OR p.cmdline LIKE '%mlc_llm%'\n    OR p.cmdline LIKE '%litellm%'\n    OR p.cmdline LIKE '%open-webui%'\n    OR p.cmdline LIKE '%anythingllm%'\n    OR p.cmdline LIKE '%localai%'\n    OR p.cmdline LIKE '%text-generation-webui%'\n    OR p.cmdline LIKE '%oobabooga%'\n    OR p.cmdline LIKE '%comfyui%'\n    OR p.cmdline LIKE '%invokeai%'\n    OR p.cmdline LIKE '%stable-diffusion-webui%'\n    OR p.cmdline LIKE '%whisper%server%'\n    OR p.cmdline LIKE '%msty%serve%'\n    OR p.cmdline LIKE '%tabby%serve%'\n    OR p.cmdline LIKE '%exo serve%'\n    OR p.cmdline LIKE '%exo-launcher%'\n\n    OR p.cmdline LIKE '%cohere serve%'\n    OR p.cmdline LIKE '%mistral serve%'\n    OR p.cmdline LIKE '%open_webui.main:app%'\n    OR p.cmdline LIKE '%webui/app.py%') THEN 'llm_runtime'\n        END AS process_category\n    FROM processes p\n)\nSELECT\n    l.port,\n    l.address,\n    CASE l.protocol\n        WHEN 6 THEN 'tcp'\n        WHEN 17 THEN 'udp'\n        ELSE CAST(l.protocol AS TEXT)\n    END AS transport_protocol,\n    p.name,\n    p.path,\n    p.cmdline,\n    p.pid,\n    ai.process_category\nFROM listening_ports l\nJOIN processes p ON l.pid = p.pid\nLEFT JOIN ai ON ai.pid = p.pid\nWHERE (\n    l.port IN (11434, 1234, 7860)\n    OR (\n        l.port IN (43411, 4891, 1337, 5001, 8080, 8000, 4000, 3000, 3001, 8188, 9090, 1000, 8501, 8265, 9099, 5678, 8888, 3080, 5000, 6274, 6767, 8003, 9997)\n        AND ai.process_category IS NOT NULL\n    )\n    OR (\n        l.port = 18789\n        AND (\n            p.cmdline LIKE '%openclaw%'\n            OR p.cmdline LIKE '%moltbot%'\n            OR p.cmdline LIKE '%clawdbot%'\n            OR p.name LIKE '%openclaw%'\n        )\n    )\n)\nAND l.address != '127.0.0.1'\nAND l.address != '::1';",
+                "interval": 3600,
+                "platform": "darwin",
+                "timeout": 180,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "network"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "server.port",
+                        "value": {
+                            "field": "port"
+                        }
+                    },
+                    {
+                        "key": "server.address",
+                        "value": {
+                            "field": "address"
+                        }
+                    },
+                    {
+                        "key": "network.transport",
+                        "value": {
+                            "field": "transport_protocol"
+                        }
+                    },
+                    {
+                        "key": "process.name",
+                        "value": {
+                            "field": "name"
+                        }
+                    },
+                    {
+                        "key": "process.executable",
+                        "value": {
+                            "field": "path"
+                        }
+                    },
+                    {
+                        "key": "process.command_line",
+                        "value": {
+                            "field": "cmdline"
+                        }
+                    },
+                    {
+                        "key": "process.pid",
+                        "value": {
+                            "field": "pid"
+                        }
+                    },
+                    {
+                        "key": "labels.process_category",
+                        "value": {
+                            "field": "process_category"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "ai_discovery",
+                                "network_exposure",
+                                "shadow_ai",
+                                "darwin"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.ai_listening_ports"
+                        }
+                    }
+                ],
+                "snapshot": false
+            },
+            {
+                "id": "ai_apps_macos",
+                "query": "SELECT\n    name,\n    path,\n    bundle_identifier,\n    bundle_short_version AS version,\n    strftime('%Y-%m-%dT%H:%M:%SZ', last_opened_time, 'unixepoch') AS last_opened_time\nFROM apps\nWHERE name IN (\n    'Ollama', 'LM Studio', 'GPT4All', 'Jan', 'Msty', 'AnythingLLM',\n    'ChatGPT', 'Claude', 'Perplexity', 'DeepSeek', 'Poe',\n    'Google Gemini', 'Microsoft Copilot',\n    'Cursor', 'Windsurf', 'Zed', 'Warp', 'Void',\n    'Pieces OS', 'Replit',\n    'DiffusionBee', 'Draw Things',\n    'Otter', 'Granola', 'Krisp', 'TypingMind',\n    'Grammarly Desktop',\n    'Trae',\n    'Zenflow'\n)\n    OR bundle_identifier IN (\n    'com.openai.chat',\n    'com.anthropic.claudedesktop',\n    'ai.perplexity.app',\n    'com.todesktop.230313mzl4w4u92',\n    'com.ollama.ollama',\n    'com.quora.poe',\n    'dev.zed.Zed',\n    'dev.warp.Warp-Stable',\n    'ai.krisp.krispMac',\n    'com.lmstudio.app',\n    'com.codeium.windsurf',\n    'io.gpt4all.gpt4all',\n    'jan.ai',\n    'com.diffusionbee.diffusionbee',\n    'com.liuliu.draw-things',\n    'com.pieces.os',\n    'com.msty.app',\n    'com.grammarly.ProjectLlama',\n    'ai.elementlabs.lmstudio',\n    'com.anthropic.claude-code',\n    'com.anthropic.claudefordesktop',\n    'com.exafunction.windsurf',\n    'com.google.antigravity',\n    'com.openai.codex',\n    'com.trae.app',\n    'com.trae.solo.app',\n    'com.void',\n    'com.vscodium',\n    'jan.ai.app'\n)\n    OR name LIKE '%Qwen%'\n    OR name LIKE '%Grok%'\n    OR name LIKE '%Replit%'\n    OR name LIKE '%Ghostwriter%'\n    OR name LIKE '%Bito%'\n;",
+                "interval": 86400,
+                "platform": "darwin",
+                "timeout": 180,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "package"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "package.name",
+                        "value": {
+                            "field": "name"
+                        }
+                    },
+                    {
+                        "key": "package.path",
+                        "value": {
+                            "field": "path"
+                        }
+                    },
+                    {
+                        "key": "package.version",
+                        "value": {
+                            "field": "version"
+                        }
+                    },
+                    {
+                        "key": "event.id",
+                        "value": {
+                            "field": "bundle_identifier"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "ai_discovery",
+                                "installed_apps",
+                                "shadow_ai",
+                                "darwin"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.ai_apps"
+                        }
+                    }
+                ],
+                "snapshot": true
+            },
+            {
+                "id": "ai_config_files_macos",
+                "query": "SELECT\n    path,\n    size,\n    type,\n    username,\n    modified_time,\n    accessed_time,\n    config_kind\nFROM (\n    SELECT\n        f.path,\n        f.size,\n        f.type,\n        u.username,\n        strftime('%Y-%m-%dT%H:%M:%SZ', f.mtime, 'unixepoch') AS modified_time,\n        strftime('%Y-%m-%dT%H:%M:%SZ', f.atime, 'unixepoch') AS accessed_time,\n        CASE\n            WHEN (f.path LIKE '/Users/%/Library/Application Support/Claude/claude_desktop_config.json'\n    OR f.path LIKE '/Users/%/.claude.json'\n    OR f.path LIKE '/Users/%/.claude/settings.json'\n    OR f.path LIKE '/Users/%/.cursor/mcp.json'\n    OR f.path LIKE '/Users/%/.vscode/mcp.json'\n    OR f.path LIKE '/Users/%/.mcp.json'\nOR f.path LIKE '/Users/%/.kiro/settings/mcp.json'\n    OR f.path LIKE '/Users/%/.codeium/windsurf/mcp_config.json'\n    OR f.path LIKE '/Users/%/.gemini/settings.json'\n    OR f.path LIKE '/Users/%/.codex/config.toml'\n    OR f.path LIKE '/Users/%/.config/opencode/opencode.json'\n\n    OR f.path LIKE '/Library/Application Support/ClaudeCode/managed-mcp.json'\n    OR f.path LIKE '/Users/%/.atlassian/rovodev/mcp.json'\n    OR f.path LIKE '/Users/%/.copilot/mcp-config.json'\n    OR f.path LIKE '/Users/%/.kimi/mcp.json'\n    OR f.path LIKE '/Users/%/Library/Application Support/Code/User/globalStorage/saoudrizwan.claude-dev/settings/cline_mcp_settings.json'\n    OR f.path LIKE '/Users/%/Library/Application Support/TRAE SOLO/User/mcp.json'\n    OR f.path LIKE '/Users/%/Library/Application Support/Trae/mcp.json'\n    OR f.path LIKE '/Users/%/Library/Application Support/VSCodium/User/mcp.json') THEN 'mcp_config'\n            WHEN ((f.type = 'directory' AND (f.path LIKE '/Users/%/.ollama/'\n    OR f.path LIKE '/Users/%/.cursor/'\n    OR f.path LIKE '/Users/%/.claude/'\n    OR f.path LIKE '/Users/%/.continue/'\n    OR f.path LIKE '/Users/%/.codeium/'\n    OR f.path LIKE '/Users/%/.tabnine/'\n    OR f.path LIKE '/Users/%/.supermaven/'\n    OR f.path LIKE '/Users/%/.anythingllm/'\n    OR f.path LIKE '/Users/%/.invokeai/'\n    OR f.path LIKE '/Users/%/jan/'\n    OR f.path LIKE '/Users/%/.cache/lm-studio/'\n    OR f.path LIKE '/Users/%/.cache/huggingface/'\n    OR f.path LIKE '/Users/%/.cache/gpt4all/'\n    OR f.path LIKE '/Users/%/.cache/llama.cpp/'\n    OR f.path LIKE '/Users/%/.config/github-copilot/'\n    OR f.path LIKE '/Users/%/.config/shell_gpt/'\n    OR f.path LIKE '/Users/%/.gemini/'\n    OR f.path LIKE '/Users/%/.codex/'\n    OR f.path LIKE '/Users/%/.kiro/'\n    OR f.path LIKE '/Users/%/.config/opencode/'\n    OR f.path LIKE '/Users/%/.openclaw/'\n    OR f.path LIKE '/Users/%/.lmstudio/'\n    OR f.path LIKE '/Users/%/.hermes/'\n    OR f.path LIKE '/Users/%/.kilocode/'\n    OR f.path LIKE '/Users/%/.cursor/skills/'\n    OR f.path LIKE '/Users/%/.cursor/skills-cursor/'\n    OR f.path LIKE '/Users/%/.cursor/plugins/'\n    OR f.path LIKE '/Users/%/.cursor/hooks/'\n    OR f.path LIKE '/Users/%/.claude/skills/'\n    OR f.path LIKE '/Users/%/.claude/plugins/'\n    OR f.path LIKE '/Users/%/.claude/hooks/'\n    OR f.path LIKE '/Users/%/.codex/skills/'\n    OR f.path LIKE '/Users/%/.openclaw/skills/'\n    OR f.path LIKE '/Users/%/.openclaw/hooks/'\n    OR f.path LIKE '/Users/%/.kilocode/skills/'\n    OR f.path LIKE '/Users/%/.continue/skills/'))) THEN 'tool_directory'\n            WHEN (f.path LIKE '/Users/%/.aider.conf.yml'\n    OR f.path LIKE '/Library/Application Support/ClaudeCode/managed-settings.d/%.json'\n    OR f.path LIKE '/Library/Application Support/Windsurf/hooks.json'\n    OR f.path LIKE '/Users/%/.augment/settings.json'\n    OR f.path LIKE '/Users/%/.copilot/hooks.json'\n    OR f.path LIKE '/Users/%/.factory/config.json'\n    OR f.path LIKE '/Users/%/.gitlab/storage.json'\n    OR f.path LIKE '/Users/%/.junie/allowlist.json'\n    OR f.path LIKE '/Users/%/.junie/config.json'\n    OR f.path LIKE '/Users/%/.kimi/config.toml'\n    OR f.path LIKE '/Users/%/.kimi/kimi.json'\n    OR f.path LIKE '/Users/%/.modal.toml'\n    OR f.path LIKE '/Users/%/.n8n/config'\n    OR f.path LIKE '/Users/%/.n8n/database.sqlite'\n    OR f.path LIKE '/Users/%/.openai-api-key'\n    OR f.path LIKE '/Users/%/.openhands/config.toml'\n    OR f.path LIKE '/Users/%/.openrouter-cli/config.json'\n    OR f.path LIKE '/Users/%/.openrouter-cli/templates.json'\n    OR f.path LIKE '/Users/%/.perplexity-cli/config.json'\n    OR f.path LIKE '/Users/%/.pi/agent/keybindings.json'\n    OR f.path LIKE '/Users/%/.pi/agent/models.json'\n    OR f.path LIKE '/Users/%/.pi/agent/settings.json'\n    OR f.path LIKE '/Users/%/.pochi/config.jsonc'\n    OR f.path LIKE '/Users/%/.qodo/agents.toml'\n    OR f.path LIKE '/Users/%/.qwen/settings.json'\n    OR f.path LIKE '/Users/%/.zencoder/config.json'\n    OR f.path LIKE '/Users/%/Library/Application Support/Antigravity/User/settings.json'\n    OR f.path LIKE '/Users/%/Library/Application Support/Browser Use/local-task-server.json'\n    OR f.path LIKE '/Users/%/Library/Application Support/Browser Use/sessions.db'\n    OR f.path LIKE '/Users/%/Library/Application Support/Jan/data'\n    OR f.path LIKE '/Users/%/Library/Application Support/PearAI/User/settings.json'\n    OR f.path LIKE '/Users/%/Library/Application Support/Windsurf/User/settings.json'\n    OR f.path LIKE '/Users/%/Library/Application Support/Zed/settings.json'\n    OR f.path LIKE '/Users/%/Library/Preferences/chatgpt-nodejs/config.json') THEN 'tool_config'\n        END AS config_kind\n    FROM file f\n    LEFT JOIN users u ON f.uid = u.uid\n    WHERE (\n    f.path LIKE '/Users/%/Library/Application Support/Claude/claude_desktop_config.json'\n    OR     f.path LIKE '/Users/%/.claude.json'\n    OR     f.path LIKE '/Users/%/.claude/settings.json'\n    OR     f.path LIKE '/Users/%/.cursor/mcp.json'\n    OR     f.path LIKE '/Users/%/.vscode/mcp.json'\n    OR     f.path LIKE '/Users/%/.mcp.json'\n    OR     f.path LIKE '/Users/%/.kiro/settings/mcp.json'\n    OR     f.path LIKE '/Users/%/.codeium/windsurf/mcp_config.json'\n    OR     f.path LIKE '/Users/%/.gemini/settings.json'\n    OR     f.path LIKE '/Users/%/.codex/config.toml'\n    OR     f.path LIKE '/Users/%/.config/opencode/opencode.json'\n    OR     f.path LIKE '/Users/%/.ollama/'\n    OR     f.path LIKE '/Users/%/.cursor/'\n    OR     f.path LIKE '/Users/%/.claude/'\n    OR     f.path LIKE '/Users/%/.continue/'\n    OR     f.path LIKE '/Users/%/.codeium/'\n    OR     f.path LIKE '/Users/%/.tabnine/'\n    OR     f.path LIKE '/Users/%/.supermaven/'\n    OR     f.path LIKE '/Users/%/.anythingllm/'\n    OR     f.path LIKE '/Users/%/.invokeai/'\n    OR     f.path LIKE '/Users/%/jan/'\n    OR     f.path LIKE '/Users/%/.cache/lm-studio/'\n    OR     f.path LIKE '/Users/%/.cache/huggingface/'\n    OR     f.path LIKE '/Users/%/.cache/gpt4all/'\n    OR     f.path LIKE '/Users/%/.cache/llama.cpp/'\n    OR     f.path LIKE '/Users/%/.config/github-copilot/'\n    OR     f.path LIKE '/Users/%/.config/shell_gpt/'\n    OR     f.path LIKE '/Users/%/.gemini/'\n    OR     f.path LIKE '/Users/%/.codex/'\n    OR     f.path LIKE '/Users/%/.kiro/'\n    OR     f.path LIKE '/Users/%/.config/opencode/'\n    OR     f.path LIKE '/Users/%/.openclaw/'\n    OR     f.path LIKE '/Users/%/.lmstudio/'\n    OR     f.path LIKE '/Users/%/.hermes/'\n    OR     f.path LIKE '/Users/%/.kilocode/'\n    OR     f.path LIKE '/Users/%/.cursor/skills/'\n    OR     f.path LIKE '/Users/%/.cursor/skills-cursor/'\n    OR     f.path LIKE '/Users/%/.cursor/plugins/'\n    OR     f.path LIKE '/Users/%/.cursor/hooks/'\n    OR     f.path LIKE '/Users/%/.claude/skills/'\n    OR     f.path LIKE '/Users/%/.claude/plugins/'\n    OR     f.path LIKE '/Users/%/.claude/hooks/'\n    OR     f.path LIKE '/Users/%/.codex/skills/'\n    OR     f.path LIKE '/Users/%/.openclaw/skills/'\n    OR     f.path LIKE '/Users/%/.openclaw/hooks/'\n    OR     f.path LIKE '/Users/%/.kilocode/skills/'\n    OR     f.path LIKE '/Users/%/.continue/skills/'\n    OR     f.path LIKE '/Users/%/.aider.conf.yml'\n    OR     f.path LIKE '/Library/Application Support/ClaudeCode/managed-mcp.json'\n    OR     f.path LIKE '/Library/Application Support/ClaudeCode/managed-settings.d/%.json'\n    OR     f.path LIKE '/Library/Application Support/Windsurf/hooks.json'\n    OR     f.path LIKE '/Users/%/.atlassian/rovodev/mcp.json'\n    OR     f.path LIKE '/Users/%/.augment/settings.json'\n    OR     f.path LIKE '/Users/%/.copilot/hooks.json'\n    OR     f.path LIKE '/Users/%/.copilot/mcp-config.json'\n    OR     f.path LIKE '/Users/%/.factory/config.json'\n    OR     f.path LIKE '/Users/%/.gitlab/storage.json'\n    OR     f.path LIKE '/Users/%/.junie/allowlist.json'\n    OR     f.path LIKE '/Users/%/.junie/config.json'\n    OR     f.path LIKE '/Users/%/.kimi/config.toml'\n    OR     f.path LIKE '/Users/%/.kimi/kimi.json'\n    OR     f.path LIKE '/Users/%/.kimi/mcp.json'\n    OR     f.path LIKE '/Users/%/.modal.toml'\n    OR     f.path LIKE '/Users/%/.n8n/config'\n    OR     f.path LIKE '/Users/%/.n8n/database.sqlite'\n    OR     f.path LIKE '/Users/%/.openai-api-key'\n    OR     f.path LIKE '/Users/%/.openhands/config.toml'\n    OR     f.path LIKE '/Users/%/.openrouter-cli/config.json'\n    OR     f.path LIKE '/Users/%/.openrouter-cli/templates.json'\n    OR     f.path LIKE '/Users/%/.perplexity-cli/config.json'\n    OR     f.path LIKE '/Users/%/.pi/agent/keybindings.json'\n    OR     f.path LIKE '/Users/%/.pi/agent/models.json'\n    OR     f.path LIKE '/Users/%/.pi/agent/settings.json'\n    OR     f.path LIKE '/Users/%/.pochi/config.jsonc'\n    OR     f.path LIKE '/Users/%/.qodo/agents.toml'\n    OR     f.path LIKE '/Users/%/.qwen/settings.json'\n    OR     f.path LIKE '/Users/%/.zencoder/config.json'\n    OR     f.path LIKE '/Users/%/Library/Application Support/Antigravity/User/settings.json'\n    OR     f.path LIKE '/Users/%/Library/Application Support/Browser Use/local-task-server.json'\n    OR     f.path LIKE '/Users/%/Library/Application Support/Browser Use/sessions.db'\n    OR     f.path LIKE '/Users/%/Library/Application Support/Code/User/globalStorage/saoudrizwan.claude-dev/settings/cline_mcp_settings.json'\n    OR     f.path LIKE '/Users/%/Library/Application Support/Jan/data'\n    OR     f.path LIKE '/Users/%/Library/Application Support/PearAI/User/settings.json'\n    OR     f.path LIKE '/Users/%/Library/Application Support/TRAE SOLO/User/mcp.json'\n    OR     f.path LIKE '/Users/%/Library/Application Support/Trae/mcp.json'\n    OR     f.path LIKE '/Users/%/Library/Application Support/VSCodium/User/mcp.json'\n    OR     f.path LIKE '/Users/%/Library/Application Support/Windsurf/User/settings.json'\n    OR     f.path LIKE '/Users/%/Library/Application Support/Zed/settings.json'\n    OR     f.path LIKE '/Users/%/Library/Preferences/chatgpt-nodejs/config.json'\n)\n) AS ai_config\nWHERE config_kind IS NOT NULL;",
+                "interval": 86400,
+                "platform": "darwin",
+                "timeout": 180,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "file"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "file.path",
+                        "value": {
+                            "field": "path"
+                        }
+                    },
+                    {
+                        "key": "file.size",
+                        "value": {
+                            "field": "size"
+                        }
+                    },
+                    {
+                        "key": "file.mtime",
+                        "value": {
+                            "field": "modified_time"
+                        }
+                    },
+                    {
+                        "key": "file.accessed",
+                        "value": {
+                            "field": "accessed_time"
+                        }
+                    },
+                    {
+                        "key": "user.name",
+                        "value": {
+                            "field": "username"
+                        }
+                    },
+                    {
+                        "key": "labels.config_kind",
+                        "value": {
+                            "field": "config_kind"
+                        }
+                    },
+                    {
+                        "key": "file.type",
+                        "value": {
+                            "field": "type"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "ai_discovery",
+                                "ai_config_files",
+                                "shadow_ai",
+                                "darwin"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.ai_config_files"
+                        }
+                    }
+                ],
+                "snapshot": true
+            },
+            {
+                "id": "ai_python_packages_macos",
+                "query": "SELECT\n    p.name,\n    p.version,\n    p.directory,\n    p.summary\nFROM users u\nJOIN python_packages p USING (uid)\nWHERE p.name IN (\n    'torch', 'tensorflow', 'onnxruntime', 'jax', 'flax',\n    'transformers', 'diffusers', 'accelerate', 'peft', 'trl',\n    'huggingface-hub', 'tokenizers', 'datasets', 'sentence-transformers',\n    'safetensors',\n    'openai', 'anthropic', 'google-generativeai', 'cohere', 'replicate',\n    'groq', 'mistralai', 'together', 'fireworks-ai', 'deepseek-sdk',\n    'langchain', 'langchain-core', 'langchain-community',\n    'llama-index', 'llama-index-core',\n    'autogen', 'crewai', 'semantic-kernel', 'haystack-ai', 'dspy-ai',\n    'instructor', 'guidance', 'outlines',\n    'llama-cpp-python', 'ollama', 'vllm', 'ctransformers',\n    'bitsandbytes', 'auto-gptq', 'exllama',\n    'fastmcp', 'mcp',\n    'chromadb', 'qdrant-client', 'weaviate-client', 'pinecone-client',\n    'pymilvus', 'faiss-cpu', 'faiss-gpu',\n    'aider-chat', 'shell-gpt', 'mentat',\n    'gradio', 'streamlit',\n    'openai-whisper', 'elevenlabs', 'bark',\n    'litellm',\n    'llm',\n    'askai',\n    'bentoml',\n    'comfy-cli',\n    'dify-client',\n    'faster-whisper',\n    'gpterm',\n    'gptme',\n    'gptshell',\n    'invokeai',\n    'kimi-cli',\n    'kokoro',\n    'mcp-server-fetch',\n    'mcp-server-sqlite',\n    'modal',\n    'open-interpreter',\n    'open-webui',\n    'openhands-ai',\n    'piper-tts',\n    'suno-bark',\n    'whisperx',\n    'xinference'\n);",
+                "interval": 86400,
+                "platform": "darwin",
+                "timeout": 180,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "package"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "package.name",
+                        "value": {
+                            "field": "name"
+                        }
+                    },
+                    {
+                        "key": "package.version",
+                        "value": {
+                            "field": "version"
+                        }
+                    },
+                    {
+                        "key": "package.path",
+                        "value": {
+                            "field": "directory"
+                        }
+                    },
+                    {
+                        "key": "package.description",
+                        "value": {
+                            "field": "summary"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "ai_discovery",
+                                "python_packages",
+                                "shadow_ai",
+                                "darwin"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.ai_python_packages"
+                        }
+                    }
+                ],
+                "snapshot": true
+            },
+            {
+                "id": "ai_chrome_extensions_macos",
+                "query": "SELECT\n    ce.name,\n    ce.identifier,\n    ce.version,\n    ce.description,\n    ce.path,\n    ce.state,\n    u.username\nFROM users u CROSS JOIN chrome_extensions ce USING(uid)\nWHERE ce.state = 1 AND (\n    ce.name LIKE '%Copilot%' OR ce.name LIKE '%ChatGPT%'\n    OR ce.name LIKE '%Claude%' OR ce.name LIKE '%Gemini%'\n    OR ce.name LIKE '%Perplexity%' OR ce.name LIKE '%DeepSeek%'\n    OR ce.name LIKE '%Monica%' OR ce.name LIKE '%Merlin%'\n    OR ce.name LIKE 'Sider%' OR ce.name LIKE '%MaxAI%'\n    OR ce.name LIKE '%UseChatGPT%' OR ce.name LIKE 'Poe%'\n    OR ce.name LIKE '%Cody%' OR ce.name LIKE '%Codeium%'\n    OR ce.name LIKE '%Tabnine%' OR ce.name LIKE '%Blackbox%'\n    OR ce.name LIKE '%Phind%' OR ce.name LIKE '%Bito%'\n    OR ce.name LIKE '%Grammarly%' OR ce.name LIKE '%Jasper%'\n    OR ce.name LIKE '%Wordtune%' OR ce.name LIKE '%Quillbot%'\n    OR ce.name LIKE '%QuillBot%' OR ce.name LIKE '%Compose AI%'\n    OR ce.name LIKE '%Writesonic%' OR ce.name LIKE '%Copy.ai%'\n    OR ce.name LIKE '%You.com%' OR ce.name LIKE '%AIPRM%'\n    OR ce.name LIKE '%WebChatGPT%'\n    OR ce.name LIKE '%Glasp%' OR ce.name LIKE '%Eightify%'\n    OR ce.name LIKE '%NoteGPT%' OR ce.name LIKE '%tl;dv%'\n    OR ce.name LIKE '%DeepL%' OR ce.name LIKE '%Immersive Translate%'\n    OR ce.identifier IN (\n        'blillmbchncajnhkjfdnincfndboieik',\n        'bpoadfkcbjbfhfodiogcnhhhpibjhbnh',\n        'camppjleccjaphfdbohjdohecfnoikec',\n        'cdcpabkolgalpgeingbdcebojebfelgb',\n        'cofdbpoegempjloogbagkncekinflcnj',\n        'ddlbpiadoechcolndfeaonajmngmhblj',\n        'difoiogjjojoaoomphldepapgpbgkhkb',\n        'hlgbcneanomplepojfcnclggenpcoldo',\n        'hobjkcpmjhlegmobgonaagepfckjkceh',\n        'iidnbdjijdkbmajdffnidomddglmieko',\n        'kbfnbcaeplbcioakkpcpgfkobkghlhen',\n        'mcgbeeipkmelnpldkobichboakdfaeon',\n        'mhnlakgilnojmhinhkckjpncpbhabphi',\n        'nllcnknpjnininklegdoijpljgdjkijc',\n        'ofpnmcalabcbjgholdjcjblkibolbppb',\n        'ojnbohmppadfgpejeebfnmnknjdlckgj'\n    )\n);",
+                "interval": 86400,
+                "platform": "darwin",
+                "timeout": 180,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "package"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "package.name",
+                        "value": {
+                            "field": "name"
+                        }
+                    },
+                    {
+                        "key": "package.version",
+                        "value": {
+                            "field": "version"
+                        }
+                    },
+                    {
+                        "key": "package.description",
+                        "value": {
+                            "field": "description"
+                        }
+                    },
+                    {
+                        "key": "user.name",
+                        "value": {
+                            "field": "username"
+                        }
+                    },
+                    {
+                        "key": "event.id",
+                        "value": {
+                            "field": "identifier"
+                        }
+                    },
+                    {
+                        "key": "package.path",
+                        "value": {
+                            "field": "path"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "ai_discovery",
+                                "browser_extensions",
+                                "chrome",
+                                "shadow_ai",
+                                "darwin"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.ai_chrome_extensions"
+                        }
+                    }
+                ],
+                "snapshot": true
+            },
+            {
+                "id": "ai_docker_containers_macos",
+                "query": "SELECT\n    id,\n    name,\n    image,\n    command,\n    CASE WHEN started_at IS NOT NULL AND started_at != '' THEN substr(started_at, 1, 19) || 'Z' END AS started_at\nFROM docker_containers\nWHERE\n    image LIKE '%ollama%' OR image LIKE '%vllm%'\n    OR image LIKE '%text-generation%' OR image LIKE '%localai%'\n    OR image LIKE '%llama.cpp%' OR image LIKE '%litellm%'\n    OR image LIKE '%pytorch%' OR image LIKE '%tensorflow%'\n    OR image LIKE '%triton%' OR image LIKE '%huggingface%'\n    OR image LIKE '%modelcontextprotocol%' OR image LIKE '%mcp-server%' OR image LIKE '%fastmcp%'\n    OR image LIKE '%open-webui%' OR image LIKE '%anythingllm%'\n    OR image LIKE '%flowise%' OR image LIKE '%langflow%'\n    OR image LIKE '%chromadb%' OR image LIKE '%chroma%'\n    OR image LIKE '%qdrant%' OR image LIKE '%weaviate%'\n    OR image LIKE '%milvus%' OR image LIKE '%pinecone%'\n    OR image LIKE '%comfyui%' OR image LIKE '%stable-diffusion%'\n    OR image LIKE '%invokeai%' OR image LIKE '%automatic1111%'\n    OR image LIKE '%n8n%' OR image LIKE '%openhands%'\n    OR image LIKE '%sweepai%' OR image LIKE '%pr-agent%'\n    OR image LIKE '%qwen%'\n    OR image LIKE '%grok%'\n    OR image LIKE '%cohere%'\n    OR image LIKE '%mistral%';",
+                "interval": 3600,
+                "platform": "darwin",
+                "timeout": 180,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "host"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "container.id",
+                        "value": {
+                            "field": "id"
+                        }
+                    },
+                    {
+                        "key": "container.name",
+                        "value": {
+                            "field": "name"
+                        }
+                    },
+                    {
+                        "key": "container.image.name",
+                        "value": {
+                            "field": "image"
+                        }
+                    },
+                    {
+                        "key": "process.start",
+                        "value": {
+                            "field": "started_at"
+                        }
+                    },
+                    {
+                        "key": "process.command_line",
+                        "value": {
+                            "field": "command"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "ai_discovery",
+                                "docker_containers",
+                                "shadow_ai",
+                                "darwin"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.ai_docker_containers"
+                        }
+                    }
+                ],
+                "snapshot": false
+            },
+            {
+                "id": "ai_launchd_services",
+                "query": "SELECT\n    label,\n    path,\n    program_arguments,\n    run_at_load\nFROM launchd\nWHERE label LIKE '%ollama%' OR label LIKE '%lmstudio%'\n    OR label LIKE '%gpt4all%' OR label LIKE '%jan.ai%'\n    OR label LIKE '%anythingllm%' OR label LIKE 'com.pieces%'\n    OR label LIKE '%open-webui%' OR label LIKE '%litellm%'\n    OR label LIKE '%comfyui%' OR label LIKE '%invokeai%'\n    OR program_arguments LIKE '%ollama%'\n    OR program_arguments LIKE '%llama-server%'\n    OR program_arguments LIKE '%litellm%'\n    OR program_arguments LIKE '%mcp-server%';",
+                "interval": 86400,
+                "platform": "darwin",
+                "timeout": 180,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "configuration"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "service.name",
+                        "value": {
+                            "field": "label"
+                        }
+                    },
+                    {
+                        "key": "file.path",
+                        "value": {
+                            "field": "path"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "ai_discovery",
+                                "auto_start",
+                                "shadow_ai",
+                                "darwin"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.ai_launchd_services"
+                        }
+                    }
+                ],
+                "snapshot": true
+            },
+            {
+                "id": "ai_npm_packages_macos",
+                "query": "SELECT\n    name,\n    version,\n    description,\n    path,\n    directory\nFROM npm_packages\nWHERE (\n    name LIKE '@modelcontextprotocol/%'\n    OR name LIKE 'mcp-server-%'\n    OR name LIKE '@anthropic-ai/%'\n    OR name LIKE '@elastic/mcp%'\n    OR name LIKE '@github/mcp-server%'\n    OR name LIKE 'mcp-remote%'\n    OR name LIKE '@openai/%'\n    OR name LIKE '@google/gemini-cli%'\n    OR name LIKE '@google/generative-ai%'\n    OR name LIKE '@google-cloud/vertexai%'\n    OR name LIKE '@langchain/%'\n    OR name LIKE 'langchain%'\n    OR name LIKE '@continuedev/%'\n    OR name LIKE '@mistralai/%'\n    OR name LIKE '@cohere/%'\n    OR name LIKE '@githubnext/%copilot%'\n    OR name LIKE '@github/copilot%'\n    OR name LIKE 'gemini-cli%'\n    OR name LIKE '@augmentcode/%'\n    OR name LIKE '@blackbox_ai/%'\n    OR name LIKE '@earendil-works/%'\n    OR name LIKE '@elevenlabs/%'\n    OR name LIKE '@gitlab/duo-cli%'\n    OR name LIKE '@google/jules%'\n    OR name LIKE '@jetbrains/junie%'\n    OR name LIKE '@playwright/mcp%'\n    OR name LIKE '@qodo/command%'\n    OR name LIKE '@qwen-code/%'\n    OR name LIKE '@sourcegraph/amp%'\n    OR name LIKE 'cline%'\n    OR name LIKE 'codebuff%'\n    OR name LIKE 'codegpt%'\n    OR name LIKE 'command-code%'\n    OR name LIKE 'droid%'\n    OR name LIKE 'genaiscript%'\n    OR name LIKE 'grok-agent%'\n    OR name LIKE 'pochi%'\n    OR name LIKE '@charmland/crush%'\n    OR name LIKE '@getpochi/cli%'\n    OR name LIKE '@kilocode/cli%'\n    OR name LIKE '@vibe-kit/grok-cli%'\n    OR name LIKE 'chatgpt%'\n    OR name LIKE 'deepseek-cli%'\n    OR name LIKE 'grok-cli%'\n    OR name LIKE 'mistral-cli%'\n    OR name LIKE 'n8n%'\n    OR name LIKE 'openclaw%'\n    OR name LIKE 'opencode-ai%'\n    OR name LIKE 'openrouter-cli%'\n    OR name LIKE 'perplexity-cli%'\n    OR name LIKE 'tabnine%'\n    OR name LIKE 'tgpt%'\n    OR name LIKE 'vibe-ai-teammate%'\n)\nAND depth = 0;",
+                "interval": 86400,
+                "platform": "darwin",
+                "timeout": 180,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "package"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "package.path",
+                        "value": {
+                            "field": "path"
+                        }
+                    },
+                    {
+                        "key": "package.name",
+                        "value": {
+                            "field": "name"
+                        }
+                    },
+                    {
+                        "key": "package.version",
+                        "value": {
+                            "field": "version"
+                        }
+                    },
+                    {
+                        "key": "package.description",
+                        "value": {
+                            "field": "description"
+                        }
+                    },
+                    {
+                        "key": "file.directory",
+                        "value": {
+                            "field": "directory"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "ai_discovery",
+                                "npm_packages",
+                                "shadow_ai",
+                                "darwin"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.ai_npm_packages"
+                        }
+                    }
+                ],
+                "snapshot": true
+            },
+            {
+                "id": "ai_firefox_extensions_macos",
+                "query": "SELECT\n    fa.name,\n    fa.identifier,\n    fa.version,\n    fa.description,\n    fa.path,\n    fa.active,\n    u.username\nFROM users u CROSS JOIN firefox_addons fa USING(uid)\nWHERE fa.active = 1 AND (\n    fa.name LIKE '%Copilot%' OR fa.name LIKE '%ChatGPT%'\n    OR fa.name LIKE '%Claude%' OR fa.name LIKE '%Gemini%'\n    OR fa.name LIKE '%Perplexity%' OR fa.name LIKE '%DeepSeek%'\n    OR fa.name LIKE '%Monica%' OR fa.name LIKE '%Merlin%'\n    OR fa.name LIKE 'Sider%' OR fa.name LIKE '%MaxAI%'\n    OR fa.name LIKE '%UseChatGPT%' OR fa.name LIKE 'Poe%'\n    OR fa.name LIKE '%Cody%' OR fa.name LIKE '%Codeium%'\n    OR fa.name LIKE '%Tabnine%' OR fa.name LIKE '%Blackbox%'\n    OR fa.name LIKE '%Phind%' OR fa.name LIKE '%Bito%'\n    OR fa.name LIKE '%Grammarly%' OR fa.name LIKE '%Jasper%'\n    OR fa.name LIKE '%Wordtune%' OR fa.name LIKE '%Quillbot%'\n    OR fa.name LIKE '%QuillBot%' OR fa.name LIKE '%Compose AI%'\n    OR fa.name LIKE '%Writesonic%' OR fa.name LIKE '%Copy.ai%'\n    OR fa.name LIKE '%You.com%' OR fa.name LIKE '%AIPRM%'\n    OR fa.name LIKE '%WebChatGPT%'\n    OR fa.name LIKE '%Glasp%' OR fa.name LIKE '%Eightify%'\n    OR fa.name LIKE '%NoteGPT%' OR fa.name LIKE '%tl;dv%'\n    OR fa.name LIKE '%DeepL%' OR fa.name LIKE '%Immersive Translate%'\n    OR fa.identifier LIKE '%chatgpt%'\n    OR fa.identifier LIKE '%copilot%'\n    OR fa.identifier LIKE '%claude%'\n    OR fa.identifier LIKE '%perplexity%'\n    OR fa.identifier LIKE '%deepseek%'\n    OR fa.identifier LIKE '%openai%'\n    OR fa.identifier LIKE '%anthropic%'\n    OR fa.identifier LIKE '%codeium%'\n    OR fa.identifier LIKE '%tabnine%'\n    OR fa.identifier LIKE '%grammarly%'\n    OR fa.identifier LIKE '%deepl%'\n    OR fa.identifier LIKE '%monica%'\n    OR fa.identifier LIKE '%sider%');",
+                "interval": 86400,
+                "platform": "darwin",
+                "timeout": 120,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "package"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "package.name",
+                        "value": {
+                            "field": "name"
+                        }
+                    },
+                    {
+                        "key": "package.version",
+                        "value": {
+                            "field": "version"
+                        }
+                    },
+                    {
+                        "key": "package.description",
+                        "value": {
+                            "field": "description"
+                        }
+                    },
+                    {
+                        "key": "user.name",
+                        "value": {
+                            "field": "username"
+                        }
+                    },
+                    {
+                        "key": "event.id",
+                        "value": {
+                            "field": "identifier"
+                        }
+                    },
+                    {
+                        "key": "package.path",
+                        "value": {
+                            "field": "path"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "ai_discovery",
+                                "browser_extensions",
+                                "firefox",
+                                "shadow_ai",
+                                "darwin"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.ai_firefox_extensions"
+                        }
+                    }
+                ],
+                "snapshot": true
+            },
+            {
+                "id": "ai_safari_extensions",
+                "query": "SELECT\n    se.name,\n    se.identifier,\n    se.version,\n    se.description,\n    se.path,\n    u.username\nFROM users u\nCROSS JOIN safari_extensions se USING(uid)\nWHERE\n    se.name LIKE '%Copilot%' OR se.name LIKE '%ChatGPT%'\n    OR se.name LIKE '%Claude%' OR se.name LIKE '%Gemini%'\n    OR se.name LIKE '%Perplexity%' OR se.name LIKE '%DeepSeek%'\n    OR se.name LIKE '%Monica%' OR se.name LIKE '%Grammarly%'\n    OR se.name LIKE '%Quillbot%' OR se.name LIKE '%QuillBot%'\n    OR se.name LIKE '%DeepL%' OR se.name LIKE '%Immersive Translate%'\n    OR se.name LIKE 'Poe%' OR se.name LIKE '%MaxAI%'\n    OR se.name LIKE 'Sider%';",
+                "interval": 86400,
+                "platform": "darwin",
+                "timeout": 120,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "package"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "package.name",
+                        "value": {
+                            "field": "name"
+                        }
+                    },
+                    {
+                        "key": "package.version",
+                        "value": {
+                            "field": "version"
+                        }
+                    },
+                    {
+                        "key": "package.description",
+                        "value": {
+                            "field": "description"
+                        }
+                    },
+                    {
+                        "key": "user.name",
+                        "value": {
+                            "field": "username"
+                        }
+                    },
+                    {
+                        "key": "event.id",
+                        "value": {
+                            "field": "identifier"
+                        }
+                    },
+                    {
+                        "key": "package.path",
+                        "value": {
+                            "field": "path"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "ai_discovery",
+                                "browser_extensions",
+                                "safari",
+                                "shadow_ai",
+                                "darwin"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.ai_safari_extensions"
+                        }
+                    }
+                ],
+                "snapshot": true
+            },
+            {
+                "id": "ai_vscode_extensions_macos",
+                "query": "SELECT\n    ve.name,\n    ve.version,\n    ve.path,\n    ve.publisher,\n    ve.vscode_edition,\n    u.username,\n    strftime('%Y-%m-%dT%H:%M:%SZ', ve.installed_at, 'unixepoch') AS installed_at\nFROM users u\nCROSS JOIN vscode_extensions ve USING(uid)\nWHERE ve.name IN (\n    'github.copilot',\n    'github.copilot-chat',\n    'saoudrizwan.claude-dev',\n    'rooveterinaryinc.roo-cline',\n    'continue.continue',\n    'sourcegraph.cody-ai',\n    'codeium.codeium',\n    'tabnine.tabnine-vscode',\n    'amazonwebservices.amazon-q-vscode',\n    'supermaven.supermaven',\n    'blackboxapp.blackbox',\n    'meshintelligenttechnologiesinc.pieces-vscode',\n    'phind.phind',\n    'bito.bito',\n    'kilocode.kilo-code',\n    'sourcegraph.amp',\n    'anthropic.claude-code',\n    'google.geminicodeassist',\n    'augment.vscode-augment',\n    'cognition.devin',\n    'genaiscript.genaiscript-vscode',\n    'google.gemini-cli-vscode-ide-companion',\n    'codium.qodogen'\n)\n    OR ve.name LIKE 'github.copilot%'\n    OR ve.name LIKE 'saoudrizwan.claude-dev%'\n    OR ve.name LIKE 'rooveterinaryinc.roo-cline%'\n    OR ve.name LIKE 'continue.continue%'\n    OR ve.name LIKE 'sourcegraph.cody%'\n    OR ve.name LIKE 'codeium.codeium%'\n    OR ve.name LIKE 'tabnine.tabnine%'\n    OR ve.name LIKE 'amazonwebservices.amazon-q%'\n    OR ve.name LIKE 'supermaven.supermaven%'\n    OR ve.name LIKE 'blackboxapp.blackbox%'\n    OR ve.name LIKE 'meshintelligenttechnologiesinc.pieces-vscode%'\n    OR ve.name LIKE 'phind.phind%'\n    OR ve.name LIKE 'bito.bito%'\n    OR ve.name LIKE 'anthropic.claude-code%'\n    OR ve.name LIKE 'google.geminicodeassist%'\n    OR ve.name LIKE 'augment.vscode-augment%';",
+                "interval": 86400,
+                "platform": "darwin",
+                "timeout": 120,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "package"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "package.path",
+                        "value": {
+                            "field": "path"
+                        }
+                    },
+                    {
+                        "key": "package.name",
+                        "value": {
+                            "field": "name"
+                        }
+                    },
+                    {
+                        "key": "package.version",
+                        "value": {
+                            "field": "version"
+                        }
+                    },
+                    {
+                        "key": "user.name",
+                        "value": {
+                            "field": "username"
+                        }
+                    },
+                    {
+                        "key": "file.mtime",
+                        "value": {
+                            "field": "installed_at"
+                        }
+                    },
+                    {
+                        "key": "event.id",
+                        "value": {
+                            "field": "name"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "ai_discovery",
+                                "vscode_extensions",
+                                "shadow_ai",
+                                "darwin"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.ai_vscode_extensions"
+                        }
+                    }
+                ],
+                "snapshot": true
+            },
+            {
+                "id": "ai_homebrew_packages",
+                "query": "SELECT\n    name,\n    version,\n    path,\n    type\nFROM homebrew_packages\nWHERE name IN (\n    'ollama', 'llama.cpp', 'llamafile', 'gpt4all',\n    'vllm', 'litellm', 'localai',\n    'huggingface-cli', 'transformers',\n    'pytorch', 'tensorflow',\n    'cursor', 'zed', 'warp',\n    'aider', 'shell-gpt', 'llm',\n    'chromadb', 'qdrant',\n    'comfyui', 'whisper', 'whisper-cpp',\n    'amp',\n    'bito-cli',\n    'block-goose-cli',\n    'claude',\n    'crush',\n    'fabric-ai',\n    'factory',\n    'gemini-cli',\n    'mods',\n    'opencode',\n    'repoprompt',\n    'tabby',\n    'tgpt',\n    'antigravity',\n    'anythingllm',\n    'block-goose',\n    'codex',\n    'jan',\n    'lm-studio',\n    'trae',\n    'trae-solo',\n    'void',\n    'vscodium',\n    'windsurf'\n)\n    OR name LIKE '%ollama%'\n    OR name LIKE '%llama%'\n    OR name LIKE '%whisper%'\n    OR name LIKE '%mcp-server%';",
+                "interval": 86400,
+                "platform": "darwin",
+                "timeout": 120,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "package"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "package.name",
+                        "value": {
+                            "field": "name"
+                        }
+                    },
+                    {
+                        "key": "package.version",
+                        "value": {
+                            "field": "version"
+                        }
+                    },
+                    {
+                        "key": "package.path",
+                        "value": {
+                            "field": "path"
+                        }
+                    },
+                    {
+                        "key": "package.type",
+                        "value": {
+                            "field": "type"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "ai_discovery",
+                                "homebrew",
+                                "shadow_ai",
+                                "darwin"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.ai_homebrew_packages"
+                        }
+                    }
+                ],
+                "snapshot": true
+            },
+            {
+                "id": "ai_config_file_changes_macos",
+                "query": "SELECT\n    f.path,\n    f.filename,\n    f.size,\n    strftime('%Y-%m-%dT%H:%M:%SZ', f.mtime, 'unixepoch') AS modified_time,\n    strftime('%Y-%m-%dT%H:%M:%SZ', f.ctime, 'unixepoch') AS changed_time,\n    u.username\nFROM file f\nLEFT JOIN users u ON f.uid = u.uid\nWHERE (\n    f.path LIKE '/Users/%/Library/Application Support/Claude/claude_desktop_config.json'\n    OR f.path LIKE '/Users/%/.claude.json'\n    OR f.path LIKE '/Users/%/.claude/settings.json'\n    OR f.path LIKE '/Users/%/.cursor/mcp.json'\n    OR f.path LIKE '/Users/%/.vscode/mcp.json'\n    OR f.path LIKE '/Users/%/.mcp.json'\nOR f.path LIKE '/Users/%/.kiro/settings/mcp.json'\n    OR f.path LIKE '/Users/%/.codeium/windsurf/mcp_config.json'\n    OR f.path LIKE '/Users/%/.gemini/settings.json'\n    OR f.path LIKE '/Users/%/.codex/config.toml'\n    OR f.path LIKE '/Users/%/.config/opencode/opencode.json'\n\n    OR f.path LIKE '/Users/%/.aider.conf.yml'\n    OR f.path LIKE '/Users/%/Library/Application Support/Ollama/config'\n    OR f.path LIKE '/Users/%/.config/ollama/config'\n    OR f.path LIKE '/Users/%/.continue/config.json'\n    OR f.path LIKE '/Users/%/.codeium/config.json'\n    OR f.path LIKE '/Library/Application Support/ClaudeCode/managed-mcp.json'\n    OR f.path LIKE '/Users/%/.atlassian/rovodev/mcp.json'\n    OR f.path LIKE '/Users/%/.copilot/mcp-config.json'\n    OR f.path LIKE '/Users/%/.kimi/mcp.json'\n    OR f.path LIKE '/Users/%/Library/Application Support/Code/User/globalStorage/saoudrizwan.claude-dev/settings/cline_mcp_settings.json'\n    OR f.path LIKE '/Users/%/Library/Application Support/TRAE SOLO/User/mcp.json'\n    OR f.path LIKE '/Users/%/Library/Application Support/Trae/mcp.json'\n    OR f.path LIKE '/Users/%/Library/Application Support/VSCodium/User/mcp.json'\n);",
+                "interval": 3600,
+                "platform": "darwin",
+                "timeout": 180,
+                "snapshot": false,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "file"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "change"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "file.path",
+                        "value": {
+                            "field": "path"
+                        }
+                    },
+                    {
+                        "key": "file.size",
+                        "value": {
+                            "field": "size"
+                        }
+                    },
+                    {
+                        "key": "file.mtime",
+                        "value": {
+                            "field": "modified_time"
+                        }
+                    },
+                    {
+                        "key": "file.ctime",
+                        "value": {
+                            "field": "changed_time"
+                        }
+                    },
+                    {
+                        "key": "user.name",
+                        "value": {
+                            "field": "username"
+                        }
+                    },
+                    {
+                        "key": "file.name",
+                        "value": {
+                            "field": "filename"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "ai_discovery",
+                                "config_change",
+                                "shadow_ai",
+                                "risk_context",
+                                "darwin"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.ai_config_file_changes"
+                        }
+                    }
+                ],
+                "description": "Risk-context feed of AI/MCP configuration files added or changed since the previous run (differential mode, metadata only). No file content collected."
+            },
+            {
+                "id": "ai_process_envs_macos",
+                "query": "SELECT\n    pe.key AS env_key,\n    p.name AS process_name,\n    p.path AS process_path,\n    p.pid,\n    p.parent AS ppid,\n    u.username\nFROM process_envs pe\nJOIN processes p ON pe.pid = p.pid\nLEFT JOIN users u ON p.uid = u.uid\nWHERE pe.key IN (\n    'ANTHROPIC_API_KEY',\n    'OPENAI_API_KEY',\n    'GEMINI_API_KEY',\n    'GOOGLE_API_KEY',\n    'DEEPSEEK_API_KEY',\n    'GROQ_API_KEY',\n    'MISTRAL_API_KEY',\n    'COHERE_API_KEY',\n    'XAI_API_KEY',\n    'PERPLEXITY_API_KEY',\n    'MOONSHOT_API_KEY',\n    'ZHIPU_API_KEY',\n    'DASHSCOPE_API_KEY',\n    'MINIMAX_API_KEY',\n    'TOGETHER_API_KEY',\n    'FIREWORKS_API_KEY',\n    'CEREBRAS_API_KEY',\n    'OPENROUTER_API_KEY',\n    'HF_TOKEN',\n    'POE_API_KEY',\n    'OLLAMA_API_KEY',\n    'LMSTUDIO_API_KEY',\n    'OPENCODE_API_KEY',\n    'KIMI_API_KEY',\n    'KILO_API_KEY',\n    'IFLOW_API_KEY',\n    'NVIDIA_API_KEY',\n    'CURSOR_API_KEY',\n    'AWS_BEARER_TOKEN_BEDROCK',\n    'AZURE_OPENAI_API_KEY',\n    'HELICONE_API_KEY',\n    'WANDB_API_KEY',\n    'NEBIUS_API_KEY',\n    'NOVITA_API_KEY',\n    'BASETEN_API_KEY',\n    'REPLICATE_API_TOKEN',\n    'BRAINTRUST_API_KEY',\n    'LANGSMITH_API_KEY',\n    'LANGCHAIN_API_KEY',\n    'LITELLM_MASTER_KEY',\n    'LITELLM_SALT_KEY',\n    'GOOGLE_GENAI_USE_VERTEXAI',\n    'AZURE_OPENAI_ENDPOINT',\n    'AZURE_AI_PROJECT_ENDPOINT',\n    'FOUNDRY_PROJECT_ENDPOINT',\n    'ANTHROPIC_AUTH_TOKEN',\n    'BRAVE_API_KEY',\n    'CO_API_KEY',\n    'CODEIUM_API_KEY',\n    'ELEVENLABS_API_KEY',\n    'MODAL_TOKEN_ID',\n    'MODAL_TOKEN_SECRET'\n);",
+                "interval": 3600,
+                "platform": "darwin",
+                "timeout": 180,
+                "snapshot": false,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "process"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "process.name",
+                        "value": {
+                            "field": "process_name"
+                        }
+                    },
+                    {
+                        "key": "process.executable",
+                        "value": {
+                            "field": "process_path"
+                        }
+                    },
+                    {
+                        "key": "process.pid",
+                        "value": {
+                            "field": "pid"
+                        }
+                    },
+                    {
+                        "key": "user.name",
+                        "value": {
+                            "field": "username"
+                        }
+                    },
+                    {
+                        "key": "process.env_vars",
+                        "value": {
+                            "field": "env_key"
+                        }
+                    },
+                    {
+                        "key": "process.parent.pid",
+                        "value": {
+                            "field": "ppid"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "ai_discovery",
+                                "ai_process_envs",
+                                "shadow_ai",
+                                "darwin"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.ai_process_envs"
+                        }
+                    }
+                ],
+                "description": "Processes whose environment exposes known AI/LLM provider API key variable names (metadata only \u2014 values are never collected). Detection is by curated env key name only; no process-name filter."
+            },
+            {
+                "id": "ai_sensitive_file_proximity_macos",
+                "query": "WITH ai AS (\nSELECT\n        p.pid,\n        p.name,\n        p.path,\n        p.uid,\n        CASE\n            WHEN (p.cmdline LIKE '%@modelcontextprotocol/%'\n    OR p.cmdline LIKE '%mcp-server-%'\n    OR p.cmdline LIKE '%fastmcp%'\n    OR p.cmdline LIKE '%modelcontextprotocol%'\n    OR p.cmdline LIKE '%smithery%'\n    OR p.cmdline LIKE '%mcpx%'\n    OR p.cmdline LIKE '%mcp-run%'\n    OR p.cmdline LIKE '%glama%mcp%'\n    OR p.cmdline LIKE '%mcp-proxy%'\n    OR p.cmdline LIKE '%mcp-gateway%'\n    OR p.cmdline LIKE '%supergateway%'\n    OR p.cmdline LIKE '%github-mcp-server%'\n    OR p.cmdline LIKE '%@modelcontextprotocol/server-%'\n    OR p.cmdline LIKE '%mcp-remote%'\n    OR LOWER(p.name) IN('github-mcp-server', 'mcp-server-github', 'gptme-mcp-server', 'mcp-inspector', 'playwright-mcp')\n    OR p.cmdline LIKE '%@playwright/mcp%') THEN 'mcp'\n            WHEN (LOWER(p.name) IN('claude', 'cursor', 'windsurf', 'warp', 'zed', 'tabnine', 'wasmtabnine', 'codeium_language_server', 'supermaven', 'amazon-q', 'pieces-os', 'pieces os', 'codex', 'aider', 'sgpt', 'augment', 'goose', 'devin', 'gemini-cli', 'genaiscript', 'opencode', 'kiro', 'kilocode', 'chatgpt', 'perplexity', 'acli', 'antigravity', 'antigravity helper', 'antigravity-cli', 'askai', 'auggie', 'blackbox', 'blackboxapp.blackboxagent', 'browser use', 'browser use helper', 'chatgpt helper', 'claude helper', 'cline', 'cmdc', 'code-tunnel', 'codebuff', 'codegpt', 'codex-exec', 'codex-linux-sandbox', 'codium', 'command-code', 'commandcode', 'cursor-tunnel', 'elevenlabs', 'fabric-ai', 'goose helper', 'gpterm', 'gptme', 'huggingface-cli', 'jules', 'junie', 'kilo', 'kimi', 'kimi-cli', 'llmster', 'nemo-deepagents', 'nemoclaw', 'nemohermes', 'pearai', 'pearai helper', 'perplexity-cli', 'plandex', 'pochi', 'qchat', 'qodo', 'repoprompt', 'repoprompt_cli', 'rp-cli', 'tgpt', 'trae', 'trae helper', 'trae solo', 'trae solo helper', 'trae-solo', 'void helper', 'warp-terminal', 'zed-editor', 'zencoder')\n    OR p.cmdline LIKE '%claude-code%'\n    OR p.cmdline LIKE '%@anthropic/claude-code%'\n    OR p.cmdline LIKE '%@anthropic-ai/claude-code%'\n    OR p.cmdline LIKE '%claude_desktop%'\n    OR p.cmdline LIKE '%com.anthropic.claudedesktop%'\n    OR p.cmdline LIKE '%Cursor.app%'\n    OR p.cmdline LIKE '%Cursor Helper%'\n    OR p.cmdline LIKE '%cursor-retrieval%'\n    OR p.cmdline LIKE '%Windsurf%'\n    OR p.cmdline LIKE '%codeium_language_server%'\n    OR p.cmdline LIKE '%codeium%enterprise%'\n    OR p.cmdline LIKE '%github.copilot%'\n    OR p.cmdline LIKE '%copilot-agent%'\n    OR p.cmdline LIKE '%copilot-language-server%'\n    OR p.cmdline LIKE '%@openai/codex%'\n    OR p.cmdline LIKE '%aider-chat%'\n    OR p.cmdline LIKE '%aider%--model%'\n    OR p.cmdline LIKE '%saoudrizwan.claude-dev%'\n    OR p.cmdline LIKE '%rooveterinaryinc.roo-cline%'\n    OR p.cmdline LIKE '%continue.continue%'\n    OR p.cmdline LIKE '%continuedev%'\n    OR p.cmdline LIKE '%amazon-q%'\n    OR p.cmdline LIKE '%codewhisperer%'\n    OR p.cmdline LIKE '%AmazonWebServices.amazon-q%'\n    OR p.cmdline LIKE '%sourcegraph.cody%'\n    OR p.cmdline LIKE '%tabnine%'\n    OR p.cmdline LIKE '%dev.warp.Warp%'\n    OR p.cmdline LIKE '%dev.zed.Zed%'\n    OR p.cmdline LIKE '%shell-gpt%'\n    OR p.cmdline LIKE '%openhands%'\n    OR p.cmdline LIKE '%swe-agent%'\n    OR p.cmdline LIKE '%pieces-os%'\n    OR p.cmdline LIKE '%supermaven%'\n    OR p.cmdline LIKE '%augment%code%'\n    OR p.cmdline LIKE '%openai/codex%'\n    OR p.cmdline LIKE '%goose%session%'\n\n    OR p.cmdline LIKE '%openclaw%'\n    OR p.cmdline LIKE '%moltbot%'\n    OR p.cmdline LIKE '%clawdbot%'\n    OR p.cmdline LIKE '%autogpt%'\n    OR p.cmdline LIKE '%auto-gpt%'\n    OR p.cmdline LIKE '%babyagi%'\n    OR p.cmdline LIKE '%agentgpt%'\n    OR p.cmdline LIKE '%crewai%'\n    OR p.cmdline LIKE '%semantic-kernel%'\n    OR p.cmdline LIKE '%llama-index%'\n    \n    OR p.cmdline LIKE '%opencode%'\n    OR p.cmdline LIKE '%kilocode%'\n    OR p.cmdline LIKE '%vscodium%'\n    OR p.cmdline LIKE '%kiro%'\n    OR p.cmdline LIKE '%cursor agent%'\n    OR p.cmdline LIKE '%@cursor/agent%'\n    OR p.cmdline LIKE '%cursor-cli%'\n    OR p.cmdline LIKE '%@elevenlabs/cli%'\n    OR p.cmdline LIKE '%@getpochi/cli%'\n    OR p.cmdline LIKE '%gptshell.gptsh%'\n    OR p.cmdline LIKE '%jules remote new%'\n    OR p.cmdline LIKE '%kilo run%'\n    OR p.cmdline LIKE '%perplexity-cli query%'\n    OR p.cmdline LIKE '%replicate.run%'\n    OR p.cmdline LIKE '%Replit.app/Contents/MacOS/Replit%') THEN 'agent'\n            WHEN (LOWER(p.name) IN('ollama', 'lms', 'gpt4all', 'jan', 'msty', 'local-ai', 'koboldcpp', 'llama-server', 'llama-cli', 'vllm', 'mlc_llm', 'mlc_chat', 'anythingllm', 'anything-llm', 'litellm', 'open-webui', 'llamafile', 'text-generation-launcher', 'text-generation-router', 'comfyui', 'invokeai', 'exo', 'tabby', 'qwen', 'grok', 'bentoml', 'exllama', 'kokoro', 'llama-bench', 'llama-perplexity', 'llama-quantize', 'llama-swap', 'llama-tokenize', 'llama-tts', 'lm studio helper', 'lmstudio', 'whisper-cli', 'whisperx', 'xinference', 'xinference-local')\n    OR p.cmdline LIKE '%ollama serve%'\n    OR p.cmdline LIKE '%vllm.entrypoints%'\n    OR p.cmdline LIKE '%text-generation-launcher%'\n    OR p.cmdline LIKE '%koboldcpp%'\n    OR p.cmdline LIKE '%llama-server%'\n    OR p.cmdline LIKE '%llama.cpp%server%'\n    OR p.cmdline LIKE '%llamafile%'\n    OR p.cmdline LIKE '%mlc_llm%'\n    OR p.cmdline LIKE '%litellm%'\n    OR p.cmdline LIKE '%open-webui%'\n    OR p.cmdline LIKE '%anythingllm%'\n    OR p.cmdline LIKE '%localai%'\n    OR p.cmdline LIKE '%text-generation-webui%'\n    OR p.cmdline LIKE '%oobabooga%'\n    OR p.cmdline LIKE '%comfyui%'\n    OR p.cmdline LIKE '%invokeai%'\n    OR p.cmdline LIKE '%stable-diffusion-webui%'\n    OR p.cmdline LIKE '%whisper%server%'\n    OR p.cmdline LIKE '%msty%serve%'\n    OR p.cmdline LIKE '%tabby%serve%'\n    OR p.cmdline LIKE '%exo serve%'\n    OR p.cmdline LIKE '%exo-launcher%'\n\n    OR p.cmdline LIKE '%cohere serve%'\n    OR p.cmdline LIKE '%mistral serve%'\n    OR p.cmdline LIKE '%open_webui.main:app%'\n    OR p.cmdline LIKE '%webui/app.py%') THEN 'llm_runtime'\n        END AS process_category\n    FROM processes p\n)\nSELECT\n    ai.name AS process_name,\n    ai.path AS process_path,\n    ai.pid,\n    u.username,\n    pof.path AS sensitive_file_path,\n    f.size AS sensitive_file_size,\n    strftime('%Y-%m-%dT%H:%M:%SZ', f.atime, 'unixepoch') AS accessed_time,\n    strftime('%Y-%m-%dT%H:%M:%SZ', f.mtime, 'unixepoch') AS modified_time,\n    ai.process_category\nFROM ai\nJOIN process_open_files pof ON pof.pid = ai.pid\nLEFT JOIN file f ON f.path = pof.path\nLEFT JOIN users u ON u.uid = ai.uid\nWHERE ai.process_category IS NOT NULL\n    AND (\n        pof.path LIKE '/Users/%/.aws/credentials'\n        OR pof.path LIKE '/Users/%/.aws/config'\n        OR pof.path LIKE '/Users/%/.ssh/id_rsa'\n        OR pof.path LIKE '/Users/%/.ssh/id_ed25519'\n        OR pof.path LIKE '/Users/%/.ssh/id_ecdsa'\n        OR pof.path LIKE '/Users/%/Library/Application Support/Google/Chrome/Default/Login Data'\n        OR pof.path LIKE '/Users/%/Library/Keychains/login.keychain-db'\n        OR pof.path LIKE '/Users/%/.config/gcloud/credentials.db'\n        OR pof.path LIKE '/Users/%/.config/gcloud/application_default_credentials.json'\n        OR pof.path LIKE '/Users/%/.azure/accessTokens.json'\n        OR pof.path LIKE '/Users/%/.azure/msal_token_cache.json'\n        OR pof.path LIKE '/Users/%/.askai/key'\n        OR pof.path LIKE '/Users/%/.aws/amazonq/%'\n        OR pof.path LIKE '/Users/%/.bitoai/etc/%'\n        OR pof.path LIKE '/Users/%/.copilot/credentials'\n        OR pof.path LIKE '/Users/%/.kimi/credentials/%'\n        OR pof.path LIKE '/Users/%/.modal.toml'\n        OR pof.path LIKE '/Users/%/.n8n/config'\n        OR pof.path LIKE '/Users/%/.pi/agent/auth.json'\n    );\n",
+                "interval": 3600,
+                "platform": "darwin",
+                "timeout": 180,
+                "snapshot": true,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "process",
+                                "file"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "info"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "process.name",
+                        "value": {
+                            "field": "process_name"
+                        }
+                    },
+                    {
+                        "key": "process.executable",
+                        "value": {
+                            "field": "process_path"
+                        }
+                    },
+                    {
+                        "key": "process.pid",
+                        "value": {
+                            "field": "pid"
+                        }
+                    },
+                    {
+                        "key": "user.name",
+                        "value": {
+                            "field": "username"
+                        }
+                    },
+                    {
+                        "key": "file.path",
+                        "value": {
+                            "field": "sensitive_file_path"
+                        }
+                    },
+                    {
+                        "key": "file.size",
+                        "value": {
+                            "field": "sensitive_file_size"
+                        }
+                    },
+                    {
+                        "key": "file.accessed",
+                        "value": {
+                            "field": "accessed_time"
+                        }
+                    },
+                    {
+                        "key": "file.mtime",
+                        "value": {
+                            "field": "modified_time"
+                        }
+                    },
+                    {
+                        "key": "labels.process_category",
+                        "value": {
+                            "field": "process_category"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "ai_discovery",
+                                "credential_access",
+                                "shadow_ai",
+                                "darwin",
+                                "sensitive_file_access"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.ai_sensitive_file_proximity"
+                        }
+                    }
+                ],
+                "description": "AI process sensitive-file access evidence via process_open_files. Reports credential-adjacent path metadata only; no file content."
+            },
+            {
+                "id": "ai_process_network_summary_macos",
+                "query": "WITH ai AS (\nSELECT\n        p.pid,\n        CASE\n            WHEN (p.cmdline LIKE '%@modelcontextprotocol/%'\n    OR p.cmdline LIKE '%mcp-server-%'\n    OR p.cmdline LIKE '%fastmcp%'\n    OR p.cmdline LIKE '%modelcontextprotocol%'\n    OR p.cmdline LIKE '%smithery%'\n    OR p.cmdline LIKE '%mcpx%'\n    OR p.cmdline LIKE '%mcp-run%'\n    OR p.cmdline LIKE '%glama%mcp%'\n    OR p.cmdline LIKE '%mcp-proxy%'\n    OR p.cmdline LIKE '%mcp-gateway%'\n    OR p.cmdline LIKE '%supergateway%'\n    OR p.cmdline LIKE '%github-mcp-server%'\n    OR p.cmdline LIKE '%@modelcontextprotocol/server-%'\n    OR p.cmdline LIKE '%mcp-remote%'\n    OR LOWER(p.name) IN('github-mcp-server', 'mcp-server-github')) THEN 'mcp'\n            WHEN (LOWER(p.name) IN('claude', 'cursor', 'windsurf', 'warp', 'zed', 'tabnine', 'wasmtabnine', 'codeium_language_server', 'supermaven', 'amazon-q', 'pieces-os', 'pieces os', 'codex', 'aider', 'sgpt', 'augment', 'goose', 'devin', 'gemini-cli', 'genaiscript', 'opencode', 'kiro', 'kilocode', 'chatgpt', 'perplexity')\n    OR p.cmdline LIKE '%claude-code%'\n    OR p.cmdline LIKE '%@anthropic/claude-code%'\n    OR p.cmdline LIKE '%@anthropic-ai/claude-code%'\n    OR p.cmdline LIKE '%claude_desktop%'\n    OR p.cmdline LIKE '%com.anthropic.claudedesktop%'\n    OR p.cmdline LIKE '%Cursor.app%'\n    OR p.cmdline LIKE '%Cursor Helper%'\n    OR p.cmdline LIKE '%cursor-retrieval%'\n    OR p.cmdline LIKE '%Windsurf%'\n    OR p.cmdline LIKE '%codeium_language_server%'\n    OR p.cmdline LIKE '%codeium%enterprise%'\n    OR p.cmdline LIKE '%github.copilot%'\n    OR p.cmdline LIKE '%copilot-agent%'\n    OR p.cmdline LIKE '%copilot-language-server%'\n    OR p.cmdline LIKE '%@openai/codex%'\n    OR p.cmdline LIKE '%aider-chat%'\n    OR p.cmdline LIKE '%aider%--model%'\n    OR p.cmdline LIKE '%saoudrizwan.claude-dev%'\n    OR p.cmdline LIKE '%rooveterinaryinc.roo-cline%'\n    OR p.cmdline LIKE '%continue.continue%'\n    OR p.cmdline LIKE '%continuedev%'\n    OR p.cmdline LIKE '%amazon-q%'\n    OR p.cmdline LIKE '%codewhisperer%'\n    OR p.cmdline LIKE '%AmazonWebServices.amazon-q%'\n    OR p.cmdline LIKE '%sourcegraph.cody%'\n    OR p.cmdline LIKE '%tabnine%'\n    OR p.cmdline LIKE '%dev.warp.Warp%'\n    OR p.cmdline LIKE '%dev.zed.Zed%'\n    OR p.cmdline LIKE '%shell-gpt%'\n    OR p.cmdline LIKE '%openhands%'\n    OR p.cmdline LIKE '%swe-agent%'\n    OR p.cmdline LIKE '%pieces-os%'\n    OR p.cmdline LIKE '%supermaven%'\n    OR p.cmdline LIKE '%augment%code%'\n    OR p.cmdline LIKE '%openai/codex%'\n    OR p.cmdline LIKE '%goose%session%'\n\n    OR p.cmdline LIKE '%openclaw%'\n    OR p.cmdline LIKE '%moltbot%'\n    OR p.cmdline LIKE '%clawdbot%'\n    OR p.cmdline LIKE '%autogpt%'\n    OR p.cmdline LIKE '%auto-gpt%'\n    OR p.cmdline LIKE '%babyagi%'\n    OR p.cmdline LIKE '%agentgpt%'\n    OR p.cmdline LIKE '%crewai%'\n    OR p.cmdline LIKE '%semantic-kernel%'\n    OR p.cmdline LIKE '%llama-index%'\n    \n    OR p.cmdline LIKE '%opencode%'\n    OR p.cmdline LIKE '%kilocode%'\n    OR p.cmdline LIKE '%vscodium%'\n    OR p.cmdline LIKE '%kiro%'\n    OR p.cmdline LIKE '%cursor agent%'\n    OR p.cmdline LIKE '%@cursor/agent%'\n    OR p.cmdline LIKE '%cursor-cli%') THEN 'agent'\n            WHEN (LOWER(p.name) IN('ollama', 'lms', 'gpt4all', 'jan', 'msty', 'local-ai', 'koboldcpp', 'llama-server', 'llama-cli', 'vllm', 'mlc_llm', 'mlc_chat', 'anythingllm', 'anything-llm', 'litellm', 'open-webui', 'llamafile', 'text-generation-launcher', 'text-generation-router', 'comfyui', 'invokeai', 'exo', 'tabby', 'qwen', 'grok')\n    OR p.cmdline LIKE '%ollama serve%'\n    OR p.cmdline LIKE '%vllm.entrypoints%'\n    OR p.cmdline LIKE '%text-generation-launcher%'\n    OR p.cmdline LIKE '%koboldcpp%'\n    OR p.cmdline LIKE '%llama-server%'\n    OR p.cmdline LIKE '%llama.cpp%server%'\n    OR p.cmdline LIKE '%llamafile%'\n    OR p.cmdline LIKE '%mlc_llm%'\n    OR p.cmdline LIKE '%litellm%'\n    OR p.cmdline LIKE '%open-webui%'\n    OR p.cmdline LIKE '%anythingllm%'\n    OR p.cmdline LIKE '%localai%'\n    OR p.cmdline LIKE '%text-generation-webui%'\n    OR p.cmdline LIKE '%oobabooga%'\n    OR p.cmdline LIKE '%comfyui%'\n    OR p.cmdline LIKE '%invokeai%'\n    OR p.cmdline LIKE '%stable-diffusion-webui%'\n    OR p.cmdline LIKE '%whisper%server%'\n    OR p.cmdline LIKE '%msty%serve%'\n    OR p.cmdline LIKE '%tabby%serve%'\n    OR p.cmdline LIKE '%exo serve%'\n    OR p.cmdline LIKE '%exo-launcher%'\n\n    OR p.cmdline LIKE '%cohere serve%'\n    OR p.cmdline LIKE '%mistral serve%') THEN 'llm_runtime'\n        END AS process_category\n    FROM processes p\n)\nSELECT\n    p.name AS process_name,\n    p.path AS process_path,\n    p.cmdline,\n    p.pid,\n    u.username,\n    pos.remote_address,\n    pos.remote_port,\n    pos.local_port,\n    pos.local_address,\n    CASE pos.family\n        WHEN 2 THEN 'ipv4'\n        WHEN 30 THEN 'ipv6'\n        ELSE 'unknown'\n    END AS address_family,\n    CASE pos.protocol\n        WHEN 6 THEN 'tcp'\n        WHEN 17 THEN 'udp'\n        ELSE CAST(pos.protocol AS TEXT)\n    END AS transport_protocol,\n    CASE\n        WHEN pos.remote_address LIKE '10.%'\n            OR pos.remote_address LIKE '192.168.%'\n            OR pos.remote_address LIKE '172.1[6-9].%'\n            OR pos.remote_address LIKE '172.2[0-9].%'\n            OR pos.remote_address LIKE '172.3[0-1].%'\n            THEN 'internal'\n        ELSE 'egress'\n    END AS network_direction,\n    ai.process_category,\n    strftime('%Y-%m-%dT%H:%M:%SZ', p.start_time, 'unixepoch') AS start_time\nFROM (\n    SELECT *\n    FROM process_open_sockets\n    WHERE remote_address NOT IN ('127.0.0.1', '::1', '0.0.0.0', '::')\n        AND remote_address != ''\n        AND (state IN ('ESTABLISHED', 'CLOSE_WAIT', 'SYN_SENT') OR state IS NULL)\n) pos\nJOIN processes p ON pos.pid = p.pid\nLEFT JOIN users u ON p.uid = u.uid\nJOIN ai ON ai.pid = p.pid AND ai.process_category IS NOT NULL;",
+                "interval": 3600,
+                "platform": "darwin",
+                "timeout": 180,
+                "snapshot": false,
+                "ecs_mapping": [
+                    {
+                        "key": "event.category",
+                        "value": {
+                            "value": [
+                                "network",
+                                "process"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.type",
+                        "value": {
+                            "value": [
+                                "connection"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "process.name",
+                        "value": {
+                            "field": "process_name"
+                        }
+                    },
+                    {
+                        "key": "process.executable",
+                        "value": {
+                            "field": "process_path"
+                        }
+                    },
+                    {
+                        "key": "process.command_line",
+                        "value": {
+                            "field": "cmdline"
+                        }
+                    },
+                    {
+                        "key": "process.pid",
+                        "value": {
+                            "field": "pid"
+                        }
+                    },
+                    {
+                        "key": "user.name",
+                        "value": {
+                            "field": "username"
+                        }
+                    },
+                    {
+                        "key": "destination.ip",
+                        "value": {
+                            "field": "remote_address"
+                        }
+                    },
+                    {
+                        "key": "destination.port",
+                        "value": {
+                            "field": "remote_port"
+                        }
+                    },
+                    {
+                        "key": "source.port",
+                        "value": {
+                            "field": "local_port"
+                        }
+                    },
+                    {
+                        "key": "source.ip",
+                        "value": {
+                            "field": "local_address"
+                        }
+                    },
+                    {
+                        "key": "network.transport",
+                        "value": {
+                            "field": "transport_protocol"
+                        }
+                    },
+                    {
+                        "key": "network.type",
+                        "value": {
+                            "field": "address_family"
+                        }
+                    },
+                    {
+                        "key": "process.start",
+                        "value": {
+                            "field": "start_time"
+                        }
+                    },
+                    {
+                        "key": "labels.process_category",
+                        "value": {
+                            "field": "process_category"
+                        }
+                    },
+                    {
+                        "key": "network.direction",
+                        "value": {
+                            "field": "network_direction"
+                        }
+                    },
+                    {
+                        "key": "tags",
+                        "value": {
+                            "value": [
+                                "osquery",
+                                "ai_discovery",
+                                "process_network_summary",
+                                "shadow_ai",
+                                "risk_context",
+                                "darwin"
+                            ]
+                        }
+                    },
+                    {
+                        "key": "event.action",
+                        "value": {
+                            "value": "osquery.ai_process_network_summary"
+                        }
+                    }
+                ],
+                "description": "Risk-context network connection summary for AI-related processes. Inventory signal only; not GenAI operation telemetry."
+            }
+        ]
+    },
+    "coreMigrationVersion": "9.3.0",
+    "created_at": "2025-06-01T00:00:00.000Z",
+    "id": "osquery_manager-e7a1b2c3-mac0-4f6a-8b9c-0d1e2f3a4b5c",
+    "type": "osquery-pack-asset",
+    "updated_at": "2025-06-01T00:00:00.000Z",
+    "version": "WzEsMV0="
+}

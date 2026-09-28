@@ -2,141 +2,154 @@
 description: Pipeline for Netskope alerts.
 processors:
   - set:
-      tag: set_ecs_version
+      tag: set_ecs_version_6b2cef5e
       field: ecs.version
       value: '8.11.0'
   - json:
-      tag: json_message
+      tag: json_message_9e00ac02
       field: message
       add_to_root: true
       add_to_root_conflict_strategy: replace
       on_failure:
         - append:
+            tag: append_error_message_e5154119
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - rename:
-      tag: rename_message
+      tag: rename_message_a7b1f822
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
   - json:
-      tag: json_netskope_alerts_policy_actions
+      tag: json_netskope_alerts_policy_actions_84883d03
       field: netskope.alerts.policy.actions
       ignore_failure: true
   - convert:
-      tag: convert_source_geo_location_lat
+      tag: convert_source_geo_location_lat_ff7acc17
       field: source.geo.location.lat
       type: double
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_source_geo_location_lat_2ceab886
             field: source.geo.location.lat
             ignore_missing: true
         - append:
+            tag: append_error_message_b4ad3654
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - convert:
-      tag: convert_source_geo_location_lon
+      tag: convert_source_geo_location_lon_786b15f4
       field: source.geo.location.lon
       type: double
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_source_geo_location_lon_2a70ef56
             field: source.geo.location.lon
             ignore_missing: true
         - append:
+            tag: append_error_message_9953f288
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - remove:
-      tag: remove_source_geo_location
+      tag: remove_source_geo_location_fc8294f7
       field: source.geo.location
       if: ctx.source?.geo?.location?.lat == null || ctx.source?.geo?.location?.lon == null || ctx.source?.geo?.location?.lat < -90.0 || ctx.source?.geo?.location?.lat > 90.0 || ctx.source?.geo?.location?.lon < -180.0 || ctx.source?.geo?.location?.lon > 180.0
       ignore_failure: true
       ignore_missing: true
   - convert:
-      tag: convert_destination_geo_location_lat
+      tag: convert_destination_geo_location_lat_b245104b
       field: destination.geo.location.lat
       type: double
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_destination_geo_location_lat_204268e4
             field: destination.geo.location.lat
             ignore_missing: true
         - append:
+            tag: append_error_message_c864af81
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - convert:
-      tag: convert_destination_geo_location_lon
+      tag: convert_destination_geo_location_lon_130f273c
       field: destination.geo.location.lon
       type: double
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_destination_geo_location_lon_9a53596c
             field: destination.geo.location.lon
             ignore_missing: true
         - append:
+            tag: append_error_message_847e9e7d
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - remove:
-      tag: remove_destination_geo_location
+      tag: remove_destination_geo_location_d22f439e
       field: destination.geo.location
       if: ctx.destination?.geo?.location?.lat == null || ctx.destination?.geo?.location?.lon == null || ctx.destination?.geo?.location?.lat < -90.0 || ctx.destination?.geo?.location?.lat > 90.0 || ctx.destination?.geo?.location?.lon < -180.0 || ctx.destination?.geo?.location?.lon > 180.0
       ignore_failure: true
       ignore_missing: true
   - convert:
-      tag: convert_netskope_alerts_user_geo_location_lat
+      tag: convert_netskope_alerts_user_geo_location_lat_748223fc
       field: netskope.alerts.user.geo.location.lat
       type: double
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_alerts_user_geo_location_lat_ff7385ec
             field: netskope.alerts.user.geo.location.lat
             ignore_missing: true
         - append:
+            tag: append_error_message_3d2d0f78
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - convert:
-      tag: convert_netskope_alerts_user_geo_location_lon
+      tag: convert_netskope_alerts_user_geo_location_lon_1df06766
       field: netskope.alerts.user.geo.location.lon
       type: double
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_alerts_user_geo_location_lon_8c1c8eac
             field: netskope.alerts.user.geo.location.lon
             ignore_missing: true
         - append:
+            tag: append_error_message_cdecaeb4
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - remove:
-      tag: remove_netskope_alerts_user_geo_location
+      tag: remove_netskope_alerts_user_geo_location_8907a0e7
       field: netskope.alerts.user.geo.location
       if: ctx.netskope?.alerts?.user?.geo?.location?.lat == null || ctx.netskope?.alerts?.user?.geo?.location?.lon == null || ctx.netskope?.alerts?.user?.geo?.location?.lat < -90.0 || ctx.netskope?.alerts?.user?.geo?.location?.lat > 90.0 || ctx.netskope?.alerts?.user?.geo?.location?.lon < -180.0 || ctx.netskope?.alerts?.user?.geo?.location?.lon > 180.0
       ignore_failure: true
       ignore_missing: true
   - date:
-      tag: date_timestamp
+      tag: date_timestamp_98eccac8
       field: '@timestamp'
       if: ctx['@timestamp'] != null && ctx['@timestamp'] != ''
       formats:
@@ -144,1427 +157,1582 @@ processors:
         - UNIX
       on_failure:
         - set:
+            tag: set_timestamp_18055d85
             field: '@timestamp'
             value: "{{{_ingest.timestamp}}}"
         - append:
+            tag: append_error_message_b4f64810
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - convert:
-      tag: convert_destination_ip
+      tag: convert_destination_ip_edfc1f3f
       field: destination.ip
       if: ctx.destination?.ip != null && ctx.destination.ip != ''
       type: ip
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_destination_ip_00d24f79
             field: destination.ip
             ignore_missing: true
         - append:
+            tag: append_error_message_1f6112a2
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - convert:
-      tag: convert_netskope_alerts_user_ip
+      tag: convert_netskope_alerts_user_ip_380739c2
       field: netskope.alerts.user.ip
       if: ctx.netskope?.alerts?.user?.ip != null && ctx.netskope.alerts.user.ip != ''
       type: ip
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_alerts_user_ip_aa565553
             field: netskope.alerts.user.ip
             ignore_missing: true
         - append:
+            tag: append_error_message_d4ab6a93
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - convert:
-      tag: convert_source_ip
+      tag: convert_source_ip_622a1a06
       field: source.ip
       if: ctx.source?.ip != null && ctx.source.ip != ''
       type: ip
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_source_ip_fd76d527
             field: source.ip
             ignore_missing: true
         - append:
+            tag: append_error_message_6d53d405
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - append:
-      tag: append_related_ip
+      tag: append_related_ip_05c5f34f
       field: related.ip
       value: '{{{destination.ip}}}'
       if: ctx.destination?.ip != null
       allow_duplicates: false
       ignore_failure: true
   - append:
-      tag: append_related_ip_2
+      tag: append_related_ip_2_0ad8cb23
       field: related.ip
       value: '{{{netskope.alerts.user.ip}}}'
       if: ctx.netskope?.alerts?.user?.ip != null
       allow_duplicates: false
       ignore_failure: true
   - append:
-      tag: append_related_ip_3
+      tag: append_related_ip_3_041f5355
       field: related.ip
       value: '{{{source.ip}}}'
       if: ctx.source?.ip != null
       allow_duplicates: false
       ignore_failure: true
   - append:
-      tag: append_related_hosts
+      tag: append_related_hosts_427dd4f2
       field: related.hosts
       value: '{{{destination.domain}}}'
       if: ctx.destination?.domain != null
       allow_duplicates: false
       ignore_failure: true
   - append:
-      tag: append_related_hosts_2
+      tag: append_related_hosts_2_812d8424
       field: related.hosts
       value: '{{{netskope.alerts.domain}}}'
       if: ctx.netskope?.alerts?.domain != null
       allow_duplicates: false
       ignore_failure: true
   - append:
-      tag: append_related_hosts_3
+      tag: append_related_hosts_3_7fb139d5
       field: related.hosts
       value: '{{{host.hostname}}}'
       if: ctx.host?.hostname != null
       allow_duplicates: false
       ignore_failure: true
   - user_agent:
-      tag: user_agent_user_agent_original
+      tag: user_agent_user_agent_original_10108afd
       field: user_agent.original
       ignore_missing: true
   - geoip:
-      tag: geoip_source_ip
+      tag: geoip_source_ip_16eb28ab
       field: source.ip
       if: ctx.source?.ip != null && ctx.source.ip != ''
       target_field: source.geo
       ignore_missing: true
   - geoip:
-      tag: geoip_destination_ip
+      tag: geoip_destination_ip_a62ca7fa
       field: destination.ip
       if: ctx.destination?.ip != null && ctx.destination.ip != ''
       target_field: destination.geo
       ignore_missing: true
   - geoip:
-      tag: geoip_netskope_alerts_user_ip
+      tag: geoip_netskope_alerts_user_ip_d04df194
       field: netskope.alerts.user.ip
       if: ctx.netskope?.alerts?.user?.ip != null && ctx.netskope.alerts.user.ip != ''
       target_field: netskope.alerts.user.geo
       ignore_missing: true
   - uri_parts:
-      tag: uri_parts_netskope_alerts_url
+      tag: uri_parts_netskope_alerts_url_7bc28c56
       field: netskope.alerts.url
       target_field: netskope.alerts.url
       keep_original: true
       remove_if_successful: false
       on_failure:
         - rename:
+            tag: rename_netskope_alerts_url_to_netskope_alerts_url_original_90035e18
             field: netskope.alerts.url
             target_field: netskope.alerts.url.original
             ignore_missing: true
   - uri_parts:
-      tag: uri_parts_netskope_alerts_web_url
+      tag: uri_parts_netskope_alerts_web_url_b1bddfc6
       field: netskope.alerts.web.url
       target_field: netskope.alerts.web.url
       keep_original: true
       remove_if_successful: false
       on_failure:
         - rename:
+            tag: rename_netskope_alerts_web_url_to_netskope_alerts_web_url_original_4d3108b5
             field: netskope.alerts.web.url
             target_field: netskope.alerts.web.url.original
             ignore_missing: true
   - remove:
-      tag: remove_netskope_alerts_page_url
+      tag: remove_netskope_alerts_page_url_4a04a06d
       field: netskope.alerts.page.url
       if: ctx.netskope?.alerts?.page?.url == ' '
   - uri_parts:
-      tag: uri_parts_netskope_alerts_page_url
+      tag: uri_parts_netskope_alerts_page_url_c267915a
       field: netskope.alerts.page.url
       target_field: netskope.alerts.page.url
       keep_original: true
       remove_if_successful: false
       on_failure:
         - rename:
+            tag: rename_netskope_alerts_page_url_to_netskope_alerts_page_url_original_3f848ae0
             field: netskope.alerts.page.url
             target_field: netskope.alerts.page.url.original
             ignore_missing: true
   - uri_parts:
-      tag: uri_parts_netskope_alerts_login_url
+      tag: uri_parts_netskope_alerts_login_url_42f9579d
       field: netskope.alerts.login.url
       target_field: netskope.alerts.login.url
       keep_original: true
       remove_if_successful: false
       on_failure:
         - rename:
+            tag: rename_netskope_alerts_login_url_to_netskope_alerts_login_url_original_8782b50c
             field: netskope.alerts.login.url
             target_field: netskope.alerts.login.url.original
             ignore_missing: true
   - uri_parts:
-      tag: uri_parts_netskope_alerts_referer
+      tag: uri_parts_netskope_alerts_referer_b25c33e7
       field: netskope.alerts.referer
       target_field: netskope.alerts.referer
       keep_original: true
       remove_if_successful: false
       on_failure:
         - rename:
+            tag: rename_netskope_alerts_referer_to_netskope_alerts_referer_original_ce2f609c
             field: netskope.alerts.referer
             target_field: netskope.alerts.referer.original
             ignore_missing: true
   - set:
-      tag: set_netskope_alerts_managed_app
+      tag: set_netskope_alerts_managed_app_0e74e186
       field: netskope.alerts.managed.app
       value: true
       if: "['yes', 'true'].contains(ctx.netskope?.alerts?.managed?.app?.toString()?.toLowerCase())"
       ignore_failure: true
   - set:
-      tag: set_netskope_alerts_managed_app_2
+      tag: set_netskope_alerts_managed_app_2_14ff5d6e
       field: netskope.alerts.managed.app
       value: false
       if: "['no', 'false'].contains(ctx.netskope?.alerts?.managed?.app?.toString()?.toLowerCase())"
       ignore_failure: true
   - convert:
-      tag: convert_netskope_alerts_managed_app
+      tag: convert_netskope_alerts_managed_app_db725adf
       field: netskope.alerts.managed.app
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_alerts_managed_app_df0071a1
             field: netskope.alerts.managed.app
             ignore_missing: true
         - append:
+            tag: append_error_message_0dde89fb
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
-      tag: set_netskope_alerts_is_alert
+      tag: set_netskope_alerts_is_alert_eaec8621
       field: netskope.alerts.is_alert
       value: true
       if: "['yes', 'true'].contains(ctx.netskope?.alerts?.is_alert?.toString()?.toLowerCase())"
       ignore_failure: true
   - set:
-      tag: set_netskope_alerts_is_alert_2
+      tag: set_netskope_alerts_is_alert_2_6e67d946
       field: netskope.alerts.is_alert
       value: false
       if: "['no', 'false'].contains(ctx.netskope?.alerts?.is_alert?.toString()?.toLowerCase())"
       ignore_failure: true
   - convert:
-      tag: convert_netskope_alerts_is_alert
+      tag: convert_netskope_alerts_is_alert_683614c6
       field: netskope.alerts.is_alert
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_alerts_is_alert_15678b42
             field: netskope.alerts.is_alert
             ignore_missing: true
         - append:
+            tag: append_error_message_43b2b137
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
-      tag: set_event_kind_to_alert
+      tag: set_event_kind_to_alert_49415ac4
       field: event.kind
       value: alert
       if: ctx.netskope?.alerts?.is_alert == true
   - set:
-      tag: set_netskope_alerts_is_malicious
+      tag: set_netskope_alerts_is_malicious_f6968aba
       field: netskope.alerts.is_malicious
       value: true
       if: "['yes', 'true'].contains(ctx.netskope?.alerts?.is_malicious?.toString()?.toLowerCase())"
       ignore_failure: true
   - set:
-      tag: set_netskope_alerts_is_malicious_2
+      tag: set_netskope_alerts_is_malicious_2_6113c555
       field: netskope.alerts.is_malicious
       value: false
       if: "['no', 'false'].contains(ctx.netskope?.alerts?.is_malicious?.toString()?.toLowerCase())"
       ignore_failure: true
   - convert:
-      tag: convert_netskope_alerts_is_malicious
+      tag: convert_netskope_alerts_is_malicious_edbe424b
       field: netskope.alerts.is_malicious
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_alerts_is_malicious_834a8cbe
             field: netskope.alerts.is_malicious
             ignore_missing: true
         - append:
+            tag: append_error_message_d8ef486f
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
-      tag: set_netskope_alerts_aggregated_user
+      tag: set_netskope_alerts_aggregated_user_ccba72aa
       field: netskope.alerts.aggregated.user
       value: true
       if: "['yes', 'true'].contains(ctx.netskope?.alerts?.aggregated?.user?.toString()?.toLowerCase())"
       ignore_failure: true
   - set:
-      tag: set_netskope_alerts_aggregated_user_2
+      tag: set_netskope_alerts_aggregated_user_2_0ea32903
       field: netskope.alerts.aggregated.user
       value: false
       if: "['no', 'false'].contains(ctx.netskope?.alerts?.aggregated?.user?.toString()?.toLowerCase())"
       ignore_failure: true
   - convert:
-      tag: convert_netskope_alerts_aggregated_user
+      tag: convert_netskope_alerts_aggregated_user_cd48f19e
       field: netskope.alerts.aggregated.user
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_alerts_aggregated_user_2305ce4b
             field: netskope.alerts.aggregated.user
             ignore_missing: true
         - append:
+            tag: append_error_message_cda236d7
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
-      tag: set_netskope_alerts_bypass_traffic
+      tag: set_netskope_alerts_bypass_traffic_12a93940
       field: netskope.alerts.bypass.traffic
       value: true
       if: "['yes', 'true'].contains(ctx.netskope?.alerts?.bypass?.traffic?.toString()?.toLowerCase())"
       ignore_failure: true
   - set:
-      tag: set_netskope_alerts_bypass_traffic_2
+      tag: set_netskope_alerts_bypass_traffic_2_3f1465aa
       field: netskope.alerts.bypass.traffic
       value: false
       if: "['no', 'false'].contains(ctx.netskope?.alerts?.bypass?.traffic?.toString()?.toLowerCase())"
       ignore_failure: true
   - convert:
-      tag: convert_netskope_alerts_bypass_traffic
+      tag: convert_netskope_alerts_bypass_traffic_59786d11
       field: netskope.alerts.bypass.traffic
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_alerts_bypass_traffic_ebde337f
             field: netskope.alerts.bypass.traffic
             ignore_missing: true
         - append:
+            tag: append_error_message_02757338
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
-      tag: set_netskope_alerts_is_user_generated
+      tag: set_netskope_alerts_is_user_generated_9257539e
       field: netskope.alerts.is_user_generated
       value: true
       if: "['yes', 'true'].contains(ctx.netskope?.alerts?.is_user_generated?.toString()?.toLowerCase())"
       ignore_failure: true
   - set:
-      tag: set_netskope_alerts_is_user_generated_2
+      tag: set_netskope_alerts_is_user_generated_2_7bbb0760
       field: netskope.alerts.is_user_generated
       value: false
       if: "['no', 'false'].contains(ctx.netskope?.alerts?.is_user_generated?.toString()?.toLowerCase())"
       ignore_failure: true
   - convert:
-      tag: convert_netskope_alerts_is_user_generated
+      tag: convert_netskope_alerts_is_user_generated_520903fd
       field: netskope.alerts.is_user_generated
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_alerts_is_user_generated_d85155b8
             field: netskope.alerts.is_user_generated
             ignore_missing: true
         - append:
+            tag: append_error_message_f157228a
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
-      tag: set_netskope_alerts_dlp_is_unique_count
+      tag: set_netskope_alerts_dlp_is_unique_count_34e8b3fd
       field: netskope.alerts.dlp.is_unique_count
       value: true
       if: "['yes', 'true'].contains(ctx.netskope?.alerts?.dlp?.is_unique_count?.toString()?.toLowerCase())"
       ignore_failure: true
   - set:
-      tag: set_netskope_alerts_dlp_is_unique_count_2
+      tag: set_netskope_alerts_dlp_is_unique_count_2_b875c724
       field: netskope.alerts.dlp.is_unique_count
       value: false
       if: "['no', 'false'].contains(ctx.netskope?.alerts?.dlp?.is_unique_count?.toString()?.toLowerCase())"
       ignore_failure: true
   - convert:
-      tag: convert_netskope_alerts_dlp_is_unique_count
+      tag: convert_netskope_alerts_dlp_is_unique_count_2bece885
       field: netskope.alerts.dlp.is_unique_count
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_alerts_dlp_is_unique_count_7e682f3d
             field: netskope.alerts.dlp.is_unique_count
             ignore_missing: true
         - append:
+            tag: append_error_message_8305adb3
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
-      tag: set_netskope_alerts_is_file_passwd_protected
+      tag: set_netskope_alerts_is_file_passwd_protected_33efae13
       field: netskope.alerts.is_file_passwd_protected
       value: true
       if: "['yes', 'true'].contains(ctx.netskope?.alerts?.is_file_passwd_protected?.toString()?.toLowerCase())"
       ignore_failure: true
   - set:
-      tag: set_netskope_alerts_is_file_passwd_protected_2
+      tag: set_netskope_alerts_is_file_passwd_protected_2_ab134a31
       field: netskope.alerts.is_file_passwd_protected
       value: false
       if: "['no', 'false'].contains(ctx.netskope?.alerts?.is_file_passwd_protected?.toString()?.toLowerCase())"
       ignore_failure: true
   - convert:
-      tag: convert_netskope_alerts_is_file_passwd_protected
+      tag: convert_netskope_alerts_is_file_passwd_protected_a3f7fd84
       field: netskope.alerts.is_file_passwd_protected
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_alerts_is_file_passwd_protected_bb90b00e
             field: netskope.alerts.is_file_passwd_protected
             ignore_missing: true
         - append:
+            tag: append_error_message_f0c0f035
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - remove:
-      tag: remove_empty_netskope_alerts_is_web_universal_connector
+      tag: remove_empty_netskope_alerts_is_web_universal_connector_2e0a5b9e
       field:
         - netskope.alerts.is_web_universal_connector
       if: ctx.netskope?.alerts?.is_web_universal_connector == ''
   - set:
-      tag: set_netskope_alerts_is_web_universal_connector
+      tag: set_netskope_alerts_is_web_universal_connector_c8b54c40
       field: netskope.alerts.is_web_universal_connector
       value: true
       if: "['yes', 'true'].contains(ctx.netskope?.alerts?.is_web_universal_connector?.toString()?.toLowerCase())"
       ignore_failure: true
   - set:
-      tag: set_netskope_alerts_is_web_universal_connector_2
+      tag: set_netskope_alerts_is_web_universal_connector_2_82356dc3
       field: netskope.alerts.is_web_universal_connector
       value: false
       if: "['no', 'false'].contains(ctx.netskope?.alerts?.is_web_universal_connector?.toString()?.toLowerCase())"
       ignore_failure: true
   - convert:
-      tag: convert_netskope_alerts_is_web_universal_connector
+      tag: convert_netskope_alerts_is_web_universal_connector_d2241e55
       field: netskope.alerts.is_web_universal_connector
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_alerts_is_web_universal_connector_4d6ced06
             field: netskope.alerts.is_web_universal_connector
             ignore_missing: true
         - append:
+            tag: append_error_message_35181f75
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
-      tag: set_netskope_alerts_acked
+      tag: set_netskope_alerts_acked_5b23180e
       field: netskope.alerts.acked
       value: true
       if: "['yes', 'true'].contains(ctx.netskope?.alerts?.acked?.toString()?.toLowerCase())"
       ignore_failure: true
   - set:
-      tag: set_netskope_alerts_acked_2
+      tag: set_netskope_alerts_acked_2_3717944b
       field: netskope.alerts.acked
       value: false
       if: "['no', 'false'].contains(ctx.netskope?.alerts?.acked?.toString()?.toLowerCase())"
       ignore_failure: true
   - convert:
-      tag: convert_netskope_alerts_acked
+      tag: convert_netskope_alerts_acked_ab608e6a
       field: netskope.alerts.acked
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_alerts_acked_cf3f4084
             field: netskope.alerts.acked
             ignore_missing: true
         - append:
+            tag: append_error_message_0a2b138e
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
-      tag: set_netskope_alerts_obfuscate
+      tag: set_netskope_alerts_obfuscate_ef6d42c8
       field: netskope.alerts.obfuscate
       value: true
       if: "['yes', 'true'].contains(ctx.netskope?.alerts?.obfuscate?.toString()?.toLowerCase())"
       ignore_failure: true
   - set:
-      tag: set_netskope_alerts_obfuscate_2
+      tag: set_netskope_alerts_obfuscate_2_a1d75d56
       field: netskope.alerts.obfuscate
       value: false
       if: "['no', 'false'].contains(ctx.netskope?.alerts?.obfuscate?.toString()?.toLowerCase())"
       ignore_failure: true
   - convert:
-      tag: convert_netskope_alerts_obfuscate
+      tag: convert_netskope_alerts_obfuscate_c91a7df2
       field: netskope.alerts.obfuscate
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_alerts_obfuscate_d5804928
             field: netskope.alerts.obfuscate
             ignore_missing: true
         - append:
+            tag: append_error_message_7f853f18
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - remove:
-      tag: remove_empty_netskope_alerts_ml_detection
+      tag: remove_empty_netskope_alerts_ml_detection_7e37af00
       field:
         - netskope.alerts.ml_detection
       if: ctx.netskope?.alerts?.ml_detection == ''
   - set:
-      tag: set_netskope_alerts_ml_detection
+      tag: set_netskope_alerts_ml_detection_10ac9d15
       field: netskope.alerts.ml_detection
       value: true
       if: "['yes', 'true'].contains(ctx.netskope?.alerts?.ml_detection?.toString()?.toLowerCase())"
       ignore_failure: true
   - set:
-      tag: set_netskope_alerts_ml_detection_2
+      tag: set_netskope_alerts_ml_detection_2_7e4f8a92
       field: netskope.alerts.ml_detection
       value: false
       if: "['no', 'false'].contains(ctx.netskope?.alerts?.ml_detection?.toString()?.toLowerCase())"
       ignore_failure: true
   - convert:
-      tag: convert_netskope_alerts_ml_detection
+      tag: convert_netskope_alerts_ml_detection_00eb5d11
       field: netskope.alerts.ml_detection
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_alerts_ml_detection_beb28582
             field: netskope.alerts.ml_detection
             ignore_missing: true
         - append:
+            tag: append_error_message_fa62d447
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
-      tag: set_netskope_alerts_shared_is_shared
+      tag: set_netskope_alerts_shared_is_shared_bd403310
       field: netskope.alerts.shared.is_shared
       value: true
       if: "['yes', 'true'].contains(ctx.netskope?.alerts?.shared?.is_shared?.toString()?.toLowerCase())"
       ignore_failure: true
   - set:
-      tag: set_netskope_alerts_shared_is_shared_2
+      tag: set_netskope_alerts_shared_is_shared_2_70300d8a
       field: netskope.alerts.shared.is_shared
       value: false
       if: "['no', 'false'].contains(ctx.netskope?.alerts?.shared?.is_shared?.toString()?.toLowerCase())"
       ignore_failure: true
   - convert:
-      tag: convert_netskope_alerts_shared_is_shared
+      tag: convert_netskope_alerts_shared_is_shared_f0f75b7e
       field: netskope.alerts.shared.is_shared
       type: boolean
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_alerts_shared_is_shared_c8c877db
             field: netskope.alerts.shared.is_shared
             ignore_missing: true
         - append:
+            tag: append_error_message_53b31674
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - lowercase:
-      tag: lowercase_network_protocol
+      tag: lowercase_network_protocol_17388c1b
       ignore_failure: true
       field: network.protocol
   - convert:
-      tag: convert_netskope_alerts_agg_window
+      tag: convert_netskope_alerts_agg_window_eeb06ac2
       field: netskope.alerts.agg.window
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_alerts_agg_window_ba610c49
             field: netskope.alerts.agg.window
             ignore_missing: true
         - append:
+            tag: append_error_message_5b324af2
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - convert:
-      tag: convert_netskope_alerts_alert_score
+      tag: convert_netskope_alerts_alert_score_480580ca
       field: netskope.alerts.alert.score
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_alerts_alert_score_4728dd31
             field: netskope.alerts.alert.score
             ignore_missing: true
         - append:
+            tag: append_error_message_f362b0a5
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - convert:
-      tag: convert_netskope_alerts_alert_window
+      tag: convert_netskope_alerts_alert_window_4280be39
       field: netskope.alerts.alert.window
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_alerts_alert_window_92c1f0ad
             field: netskope.alerts.alert.window
             ignore_missing: true
         - append:
+            tag: append_error_message_dba484c5
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - convert:
-      tag: convert_netskope_alerts_asn
+      tag: convert_netskope_alerts_asn_c4fcbdb8
       field: netskope.alerts.asn
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_alerts_asn_474af042
             field: netskope.alerts.asn
             ignore_missing: true
         - append:
+            tag: append_error_message_fbe171da
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - convert:
-      tag: convert_netskope_alerts_bin_timestamp
+      tag: convert_netskope_alerts_bin_timestamp_a85b3b57
       field: netskope.alerts.bin.timestamp
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_alerts_bin_timestamp_0256601d
             field: netskope.alerts.bin.timestamp
             ignore_missing: true
         - append:
+            tag: append_error_message_8db8e49c
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - convert:
-      tag: convert_netskope_alerts_breach_score
+      tag: convert_netskope_alerts_breach_score_1003ebf3
       field: netskope.alerts.breach.score
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_alerts_breach_score_e950273b
             field: netskope.alerts.breach.score
             ignore_missing: true
         - append:
+            tag: append_error_message_cb728848
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - convert:
-      tag: convert_netskope_alerts_connection_duration
+      tag: convert_netskope_alerts_connection_duration_5a517fa8
       field: netskope.alerts.connection.duration
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_alerts_connection_duration_602ad467
             field: netskope.alerts.connection.duration
             ignore_missing: true
         - append:
+            tag: append_error_message_468c721f
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - convert:
-      tag: convert_netskope_alerts_connection_endtime
+      tag: convert_netskope_alerts_connection_endtime_6d44e2ed
       field: netskope.alerts.connection.endtime
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_alerts_connection_endtime_414a91e7
             field: netskope.alerts.connection.endtime
             ignore_missing: true
         - append:
+            tag: append_error_message_8bfe4881
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - convert:
-      tag: convert_netskope_alerts_connection_starttime
+      tag: convert_netskope_alerts_connection_starttime_6fe19f00
       field: netskope.alerts.connection.starttime
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_alerts_connection_starttime_40de448f
             field: netskope.alerts.connection.starttime
             ignore_missing: true
         - append:
+            tag: append_error_message_d964d2da
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - convert:
-      tag: convert_netskope_alerts_count
+      tag: convert_netskope_alerts_count_a1def2c7
       field: netskope.alerts.count
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_alerts_count_83333036
             field: netskope.alerts.count
             ignore_missing: true
         - append:
+            tag: append_error_message_2646bb8f
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - convert:
-      tag: convert_netskope_alerts_data_version
+      tag: convert_netskope_alerts_data_version_bdd04b9c
       field: netskope.alerts.data.version
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_alerts_data_version_95ac9e33
             field: netskope.alerts.data.version
             ignore_missing: true
         - append:
+            tag: append_error_message_bea16175
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - convert:
-      tag: convert_netskope_alerts_destination_geoip_src
+      tag: convert_netskope_alerts_destination_geoip_src_6e2c3865
       field: netskope.alerts.destination.geoip_src
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_alerts_destination_geoip_src_62b7e549
             field: netskope.alerts.destination.geoip_src
             ignore_missing: true
         - append:
+            tag: append_error_message_4ee672d8
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - convert:
-      tag: convert_netskope_alerts_dlp_fingerprint_score
+      tag: convert_netskope_alerts_dlp_fingerprint_score_05149efb
       field: netskope.alerts.dlp.fingerprint.score
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_alerts_dlp_fingerprint_score_2faddc86
             field: netskope.alerts.dlp.fingerprint.score
             ignore_missing: true
         - append:
+            tag: append_error_message_9b44ede6
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - convert:
-      tag: convert_netskope_alerts_dlp_fv
+      tag: convert_netskope_alerts_dlp_fv_f0ef7a1c
       field: netskope.alerts.dlp.fv
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_alerts_dlp_fv_ef60d7a1
             field: netskope.alerts.dlp.fv
             ignore_missing: true
         - append:
+            tag: append_error_message_18459573
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - convert:
-      tag: convert_netskope_alerts_dlp_rule_count
+      tag: convert_netskope_alerts_dlp_rule_count_6f30b674
       field: netskope.alerts.dlp.rule.count
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_alerts_dlp_rule_count_e7828b2e
             field: netskope.alerts.dlp.rule.count
             ignore_missing: true
         - append:
+            tag: append_error_message_eda64001
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - convert:
-      tag: convert_netskope_alerts_dlp_rule_score
+      tag: convert_netskope_alerts_dlp_rule_score_555be674
       field: netskope.alerts.dlp.rule.score
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_alerts_dlp_rule_score_36cc4216
             field: netskope.alerts.dlp.rule.score
             ignore_missing: true
         - append:
+            tag: append_error_message_e369bafe
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - convert:
-      tag: convert_netskope_alerts_dlp_unique_count
+      tag: convert_netskope_alerts_dlp_unique_count_4b9de249
       field: netskope.alerts.dlp.unique_count
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_alerts_dlp_unique_count_af59a119
             field: netskope.alerts.dlp.unique_count
             ignore_missing: true
         - append:
+            tag: append_error_message_c5962b16
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - convert:
-      tag: convert_netskope_alerts_doc_count
+      tag: convert_netskope_alerts_doc_count_c4a591af
       field: netskope.alerts.doc.count
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_alerts_doc_count_29408bc5
             field: netskope.alerts.doc.count
             ignore_missing: true
         - append:
+            tag: append_error_message_036cd110
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - convert:
-      tag: convert_netskope_alerts_external_collaborator_count
+      tag: convert_netskope_alerts_external_collaborator_count_ba597150
       field: netskope.alerts.external.collaborator.count
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_alerts_external_collaborator_count_b670d048
             field: netskope.alerts.external.collaborator.count
             ignore_missing: true
         - append:
+            tag: append_error_message_d477e760
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - convert:
-      tag: convert_netskope_alerts_external_email
+      tag: convert_netskope_alerts_external_email_91353e26
       field: netskope.alerts.external.email
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_alerts_external_email_73817f53
             field: netskope.alerts.external.email
             ignore_missing: true
         - append:
+            tag: append_error_message_b1b328dc
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - convert:
-      tag: convert_netskope_alerts_file_size
+      tag: convert_netskope_alerts_file_size_4d218586
       field: netskope.alerts.file.size
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_alerts_file_size_b7152563
             field: netskope.alerts.file.size
             ignore_missing: true
         - append:
+            tag: append_error_message_a315498c
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - convert:
-      tag: convert_netskope_alerts_http_transaction_count
+      tag: convert_netskope_alerts_http_transaction_count_fe365c92
       field: netskope.alerts.http_transaction_count
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_alerts_http_transaction_count_594ad9bc
             field: netskope.alerts.http_transaction_count
             ignore_missing: true
         - append:
+            tag: append_error_message_bfaa3aed
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - convert:
-      tag: convert_netskope_alerts_insertion_epoch_timestamp
+      tag: convert_netskope_alerts_insertion_epoch_timestamp_92d7b452
       field: netskope.alerts.insertion_epoch_timestamp
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_alerts_insertion_epoch_timestamp_35015ace
             field: netskope.alerts.insertion_epoch_timestamp
             ignore_missing: true
         - append:
+            tag: append_error_message_6855d638
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - convert:
-      tag: convert_netskope_alerts_internal_collaborator_count
+      tag: convert_netskope_alerts_internal_collaborator_count_c851593f
       field: netskope.alerts.internal.collaborator.count
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_alerts_internal_collaborator_count_91915724
             field: netskope.alerts.internal.collaborator.count
             ignore_missing: true
         - append:
+            tag: append_error_message_c5d2bbfe
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - convert:
-      tag: convert_netskope_alerts_last_modified_timestamp
+      tag: convert_netskope_alerts_last_modified_timestamp_92a11884
       field: netskope.alerts.last.modified_timestamp
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_alerts_last_modified_timestamp_ded04cb7
             field: netskope.alerts.last.modified_timestamp
             ignore_missing: true
         - append:
+            tag: append_error_message_899ea0bb
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - convert:
-      tag: convert_netskope_alerts_last_timestamp
+      tag: convert_netskope_alerts_last_timestamp_0d15177d
       field: netskope.alerts.last.timestamp
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_alerts_last_timestamp_1632cf1f
             field: netskope.alerts.last.timestamp
             ignore_missing: true
         - append:
+            tag: append_error_message_bb70b491
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - convert:
-      tag: convert_netskope_alerts_latency_max
+      tag: convert_netskope_alerts_latency_max_9d4ceed6
       field: netskope.alerts.latency.max
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_alerts_latency_max_526d9035
             field: netskope.alerts.latency.max
             ignore_missing: true
         - append:
+            tag: append_error_message_36d776b9
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - convert:
-      tag: convert_netskope_alerts_latency_min
+      tag: convert_netskope_alerts_latency_min_5b1ad1bd
       field: netskope.alerts.latency.min
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_alerts_latency_min_ee071811
             field: netskope.alerts.latency.min
             ignore_missing: true
         - append:
+            tag: append_error_message_883eff07
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - convert:
-      tag: convert_netskope_alerts_latency_total
+      tag: convert_netskope_alerts_latency_total_9552bc1e
       field: netskope.alerts.latency.total
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_alerts_latency_total_38cd6da1
             field: netskope.alerts.latency.total
             ignore_missing: true
         - append:
+            tag: append_error_message_b2d7ed0d
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - convert:
-      tag: convert_netskope_alerts_malsite_active
+      tag: convert_netskope_alerts_malsite_active_72c5539e
       field: netskope.alerts.malsite.active
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_alerts_malsite_active_2382a8b5
             field: netskope.alerts.malsite.active
             ignore_missing: true
         - append:
+            tag: append_error_message_1f9c5ee8
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - convert:
-      tag: convert_netskope_alerts_malsite_confidence
+      tag: convert_netskope_alerts_malsite_confidence_8392e278
       field: netskope.alerts.malsite.confidence
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_alerts_malsite_confidence_f5aaca1d
             field: netskope.alerts.malsite.confidence
             ignore_missing: true
         - append:
+            tag: append_error_message_816438f6
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - convert:
-      tag: convert_netskope_alerts_malsite_consecutive
+      tag: convert_netskope_alerts_malsite_consecutive_4662d9c5
       field: netskope.alerts.malsite.consecutive
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_alerts_malsite_consecutive_be607f19
             field: netskope.alerts.malsite.consecutive
             ignore_missing: true
         - append:
+            tag: append_error_message_e81a0c26
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - convert:
-      tag: convert_netskope_alerts_malsite_first_seen
+      tag: convert_netskope_alerts_malsite_first_seen_66a132c8
       field: netskope.alerts.malsite.first_seen
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_alerts_malsite_first_seen_72612865
             field: netskope.alerts.malsite.first_seen
             ignore_missing: true
         - append:
+            tag: append_error_message_a2f0a3d6
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - convert:
-      tag: convert_netskope_alerts_malsite_hostility
+      tag: convert_netskope_alerts_malsite_hostility_9d2aa896
       field: netskope.alerts.malsite.hostility
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_alerts_malsite_hostility_d6f3ed45
             field: netskope.alerts.malsite.hostility
             ignore_missing: true
         - append:
+            tag: append_error_message_34c742f5
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - convert:
-      tag: convert_netskope_alerts_malsite_last_seen
+      tag: convert_netskope_alerts_malsite_last_seen_e10252e5
       field: netskope.alerts.malsite.last.seen
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_alerts_malsite_last_seen_201f2078
             field: netskope.alerts.malsite.last.seen
             ignore_missing: true
         - append:
+            tag: append_error_message_c211ef48
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - convert:
-      tag: convert_netskope_alerts_modified_timestamp
+      tag: convert_netskope_alerts_modified_timestamp_d0c86b16
       field: netskope.alerts.modified.timestamp
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_alerts_modified_timestamp_56c2f573
             field: netskope.alerts.modified.timestamp
             ignore_missing: true
         - append:
+            tag: append_error_message_2dadbce0
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - convert:
-      tag: convert_netskope_alerts_modified_date
+      tag: convert_netskope_alerts_modified_date_5d4c3153
       field: netskope.alerts.modified.date
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_alerts_modified_date_c918b9a3
             field: netskope.alerts.modified.date
             ignore_missing: true
         - append:
+            tag: append_error_message_ff64434a
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - convert:
-      tag: convert_netskope_alerts_nonzero_entries
+      tag: convert_netskope_alerts_nonzero_entries_1d940d15
       field: netskope.alerts.nonzero.entries
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_alerts_nonzero_entries_e3e16c11
             field: netskope.alerts.nonzero.entries
             ignore_missing: true
         - append:
+            tag: append_error_message_0a69637c
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - convert:
-      tag: convert_netskope_alerts_numbytes
+      tag: convert_netskope_alerts_numbytes_871dae4e
       field: netskope.alerts.numbytes
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_alerts_numbytes_f94cb13c
             field: netskope.alerts.numbytes
             ignore_missing: true
         - append:
+            tag: append_error_message_f28659ed
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - convert:
-      tag: convert_netskope_alerts_object_count
+      tag: convert_netskope_alerts_object_count_7ab763f4
       field: netskope.alerts.object.count
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_alerts_object_count_de4dd8cb
             field: netskope.alerts.object.count
             ignore_missing: true
         - append:
+            tag: append_error_message_76c15e4d
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - convert:
-      tag: convert_netskope_alerts_processing_time
+      tag: convert_netskope_alerts_processing_time_ab9982a1
       field: netskope.alerts.processing.time
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_alerts_processing_time_2b3fe29b
             field: netskope.alerts.processing.time
             ignore_missing: true
         - append:
+            tag: append_error_message_0e61d5eb
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - convert:
-      tag: convert_netskope_alerts_request_cnt
+      tag: convert_netskope_alerts_request_cnt_8a41bc9a
       field: netskope.alerts.request.cnt
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_alerts_request_cnt_ac706419
             field: netskope.alerts.request.cnt
             ignore_missing: true
         - append:
+            tag: append_error_message_a8349567
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - convert:
-      tag: convert_netskope_alerts_response_cnt
+      tag: convert_netskope_alerts_response_cnt_efd63a9c
       field: netskope.alerts.response.cnt
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_alerts_response_cnt_599dd187
             field: netskope.alerts.response.cnt
             ignore_missing: true
         - append:
+            tag: append_error_message_8e010f11
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - convert:
-      tag: convert_netskope_alerts_response_content_length
+      tag: convert_netskope_alerts_response_content_length_748cfe92
       field: netskope.alerts.response.content.length
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_alerts_response_content_length_88cdb60a
             field: netskope.alerts.response.content.length
             ignore_missing: true
         - append:
+            tag: append_error_message_b81d12d6
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - convert:
-      tag: convert_netskope_alerts_scan_time
+      tag: convert_netskope_alerts_scan_time_11d2b1d5
       field: netskope.alerts.scan.time
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_alerts_scan_time_681d6c37
             field: netskope.alerts.scan.time
             ignore_missing: true
         - append:
+            tag: append_error_message_d891faf9
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - convert:
-      tag: convert_netskope_alerts_server_bytes
+      tag: convert_netskope_alerts_server_bytes_e7b06693
       field: netskope.alerts.server.bytes
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_alerts_server_bytes_470f8427
             field: netskope.alerts.server.bytes
             ignore_missing: true
         - append:
+            tag: append_error_message_edab1655
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - convert:
-      tag: convert_netskope_alerts_severity_level_id
+      tag: convert_netskope_alerts_severity_level_id_73c6cd5b
       field: netskope.alerts.severity.level_id
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_alerts_severity_level_id_38ddf60b
             field: netskope.alerts.severity.level_id
             ignore_missing: true
         - append:
+            tag: append_error_message_e7cb2e24
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - convert:
-      tag: convert_netskope_alerts_source_geoip_src
+      tag: convert_netskope_alerts_source_geoip_src_7b13f1a5
       field: netskope.alerts.source.geoip_src
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_alerts_source_geoip_src_214968f3
             field: netskope.alerts.source.geoip_src
             ignore_missing: true
         - append:
+            tag: append_error_message_70fbf61d
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - convert:
-      tag: convert_netskope_alerts_start_time
+      tag: convert_netskope_alerts_start_time_29bcb5c2
       field: netskope.alerts.start_time
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_alerts_start_time_61cf5390
             field: netskope.alerts.start_time
             ignore_missing: true
         - append:
+            tag: append_error_message_ebe83a50
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - convert:
-      tag: convert_netskope_alerts_statistics
+      tag: convert_netskope_alerts_statistics_625379f9
       field: netskope.alerts.statistics
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_alerts_statistics_e0ec2198
             field: netskope.alerts.statistics
             ignore_missing: true
         - append:
+            tag: append_error_message_665cef41
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - convert:
-      tag: convert_netskope_alerts_suppression_end_time
+      tag: convert_netskope_alerts_suppression_end_time_b5668a4d
       field: netskope.alerts.suppression.end.time
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_alerts_suppression_end_time_1712c89c
             field: netskope.alerts.suppression.end.time
             ignore_missing: true
         - append:
+            tag: append_error_message_59836115
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - convert:
-      tag: convert_netskope_alerts_suppression_start_time
+      tag: convert_netskope_alerts_suppression_start_time_34f0fbb8
       field: netskope.alerts.suppression.start.time
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_alerts_suppression_start_time_da6430f4
             field: netskope.alerts.suppression.start.time
             ignore_missing: true
         - append:
+            tag: append_error_message_7c716a54
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - convert:
-      tag: convert_netskope_alerts_threshold_time
+      tag: convert_netskope_alerts_threshold_time_c5ce6f46
       field: netskope.alerts.threshold.time
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_alerts_threshold_time_46a77131
             field: netskope.alerts.threshold.time
             ignore_missing: true
         - append:
+            tag: append_error_message_8858bb53
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - convert:
-      tag: convert_netskope_alerts_threshold_value
+      tag: convert_netskope_alerts_threshold_value_abff7ed3
       field: netskope.alerts.threshold.value
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_alerts_threshold_value_e337f541
             field: netskope.alerts.threshold.value
             ignore_missing: true
         - append:
+            tag: append_error_message_657c6abb
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - convert:
-      tag: convert_netskope_alerts_total_collaborator_count
+      tag: convert_netskope_alerts_total_collaborator_count_eb129a79
       field: netskope.alerts.total.collaborator.count
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_alerts_total_collaborator_count_cfe208ba
             field: netskope.alerts.total.collaborator.count
             ignore_missing: true
         - append:
+            tag: append_error_message_5aa1ab75
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - convert:
-      tag: convert_netskope_alerts_tss_version
+      tag: convert_netskope_alerts_tss_version_73804723
       field: netskope.alerts.tss.version
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_alerts_tss_version_c3fbd281
             field: netskope.alerts.tss.version
             ignore_missing: true
         - append:
+            tag: append_error_message_9cde0797
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - convert:
-      tag: convert_netskope_alerts_updated
+      tag: convert_netskope_alerts_updated_1a663400
       field: netskope.alerts.updated
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_alerts_updated_46e77032
             field: netskope.alerts.updated
             ignore_missing: true
         - append:
+            tag: append_error_message_82afa293
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - convert:
-      tag: convert_netskope_alerts_anomaly_magnitude
+      tag: convert_netskope_alerts_anomaly_magnitude_8d15f792
       field: netskope.alerts.anomaly.magnitude
       type: double
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_alerts_anomaly_magnitude_e4591f64
             field: netskope.alerts.anomaly.magnitude
             ignore_missing: true
         - append:
+            tag: append_error_message_e0842c77
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - date:
-      tag: date_netskope_alerts_breach_date
+      tag: date_netskope_alerts_breach_date_28d72c24
       field: netskope.alerts.breach.date
       if: ctx.netskope?.alerts?.breach?.date != null && ctx.netskope.alerts.breach.date != ''
       formats:
@@ -1573,166 +1741,188 @@ processors:
       ignore_failure: true
       on_failure:
         - remove:
+            tag: remove_netskope_alerts_breach_date_8a22074f
             field: netskope.alerts.breach.date
             ignore_missing: true
         - append:
+            tag: append_error_message_85bed746
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - convert:
-      tag: convert_netskope_alerts_malsite_latitude
+      tag: convert_netskope_alerts_malsite_latitude_38986f45
       field: netskope.alerts.malsite.latitude
       type: double
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_alerts_malsite_latitude_05c5f08c
             field: netskope.alerts.malsite.latitude
             ignore_missing: true
         - append:
+            tag: append_error_message_3bc03c97
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - convert:
-      tag: convert_netskope_alerts_malsite_longitude
+      tag: convert_netskope_alerts_malsite_longitude_4f15a790
       field: netskope.alerts.malsite.longitude
       type: double
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_alerts_malsite_longitude_b531d478
             field: netskope.alerts.malsite.longitude
             ignore_missing: true
         - append:
+            tag: append_error_message_82892370
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - convert:
-      tag: convert_netskope_alerts_malsite_reputation
+      tag: convert_netskope_alerts_malsite_reputation_1fec1b1f
       field: netskope.alerts.malsite.reputation
       type: double
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_alerts_malsite_reputation_d342690c
             field: netskope.alerts.malsite.reputation
             ignore_missing: true
         - append:
+            tag: append_error_message_9f458e8a
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - convert:
-      tag: convert_netskope_alerts_nonzero_percentage
+      tag: convert_netskope_alerts_nonzero_percentage_a4041645
       field: netskope.alerts.nonzero.percentage
       type: double
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_alerts_nonzero_percentage_3ac997c8
             field: netskope.alerts.nonzero.percentage
             ignore_missing: true
         - append:
+            tag: append_error_message_240c282b
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - convert:
-      tag: convert_netskope_alerts_value
+      tag: convert_netskope_alerts_value_24d94f1e
       field: netskope.alerts.value
       type: double
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_netskope_alerts_value_3ecaaec7
             field: netskope.alerts.value
             ignore_missing: true
         - append:
+            tag: append_error_message_37efeb28
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - convert:
-      tag: convert_client_bytes
+      tag: convert_client_bytes_490c0a44
       field: client.bytes
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_client_bytes_3560a015
             field: client.bytes
             ignore_missing: true
         - append:
+            tag: append_error_message_fc875cb3
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - convert:
-      tag: convert_client_port
+      tag: convert_client_port_f215beef
       field: client.port
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_client_port_d0f4bd69
             field: client.port
             ignore_missing: true
         - append:
+            tag: append_error_message_9be71537
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - convert:
-      tag: convert_destination_port
+      tag: convert_destination_port_a160b18a
       field: destination.port
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_destination_port_e4afbc97
             field: destination.port
             ignore_missing: true
         - append:
+            tag: append_error_message_066d2314
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - convert:
-      tag: convert_file_size
+      tag: convert_file_size_43d2b779
       field: file.size
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_file_size_421a91d5
             field: file.size
             ignore_missing: true
         - append:
+            tag: append_error_message_6ffb123a
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - convert:
-      tag: convert_source_port
+      tag: convert_source_port_c68f28e6
       field: source.port
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_source_port_9f1b9acd
             field: source.port
             ignore_missing: true
         - append:
+            tag: append_error_message_b93b6099
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - script:
-      tag: script
+      tag: script_5aefdb18
       if: ctx.file?.mime_type != null
       lang: painless
       source: >-
@@ -1747,7 +1937,7 @@ processors:
           ctx.file.mime_type = setList;
         }
   - script:
-      tag: script_transform_user_email_field_into_a_list_and_parse_it_into_user_name_and_related_user_fields
+      tag: script_transform_user_email_field_into_a_list_and_parse_it_into_user_name_and_related_user_fields_0182f402
       if: ctx.user?.email != null
       description: transform user.email field into a list and parse it into user.name and related.user fields
       lang: painless
@@ -1779,13 +1969,14 @@ processors:
         }
       on_failure:
         - append:
+            tag: append_error_message_02818d35
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
   - script:
-      tag: script_2
+      tag: script_2_667a0d5f
       if: ctx.netskope?.alerts?.quarantine?.app != null
       lang: painless
       source: >-
@@ -1800,7 +1991,7 @@ processors:
           ctx.netskope.alerts.quarantine.app = setList;
         }
   - script:
-      tag: script_drops_null_empty_values_recursively
+      tag: script_drops_null_empty_values_recursively_57642353
       description: Drops null/empty values recursively
       lang: painless
       source: |
@@ -1819,16 +2010,16 @@ processors:
         dropEmptyFields(ctx);
 on_failure:
   - set:
-      tag: set_event_kind
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
-      tag: append_tags
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
-      tag: append_error_message
+      tag: append_error_message_d916120d
       field: error.message
       value: >-
         Processor '{{{ _ingest.on_failure_processor_type }}}'

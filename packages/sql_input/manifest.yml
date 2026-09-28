@@ -1,7 +1,7 @@
 format_version: 3.3.2
 name: sql
 title: "SQL Input"
-version: "1.1.0"
+version: "1.2.0"
 description: "Collects Metrics by querying SQL Databases"
 type: input
 categories:
@@ -53,6 +53,30 @@ policy_templates:
         required: true
         show_user: true
         default: "- query: SHOW GLOBAL STATUS LIKE 'Innodb_system%'\n  response_format: variables\n        \n"
+        description: >-
+          One or more SQL queries to run each collection period, each with its own response_format (variables or table). This is the standard collection mode. Ignored when a Cursor Query is set.
+      - name: cursor
+        type: yaml
+        title: Cursor Configuration
+        multi: false
+        required: false
+        show_user: true
+        description: >-
+          Configuration for incremental data collection. Supported keys: enabled, column, type, default, direction. See the SQL Input documentation for details.
+        default: |
+          enabled: false
+          column: id
+          type: integer
+          default: "0"
+      - name: sql_query
+        type: text
+        title: Cursor Query
+        multi: false
+        required: false
+        show_user: true
+        default: ""
+        description: >-
+          A single SQL query for cursor-based incremental fetching, used together with Cursor Configuration (enabled: true). When set, it replaces SQL Queries and always runs with "table" response format. Include exactly one :cursor placeholder in the WHERE clause and an ORDER BY on the cursor column.
       - name: merge_results
         type: bool
         title: Merge Results

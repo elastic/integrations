@@ -1,0 +1,58 @@
+{
+  "attributes": {
+    "name": "[AWS Lambda OTel] Invocation success rate 99.5% rolling 30 days",
+    "description": "Tracks per-function invocation reliability from CloudWatch Errors and Invocations (Sum statistics). Each 1-minute window is good when the error rate is below 0.5%; 99.5% of windows must be good over a rolling 30-day period. Rising error rates indicate function code failures that directly break synchronous and asynchronous workloads.",
+    "indicator": {
+      "type": "sli.metric.timeslice",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset: \"aws.lambda.otel\" AND Namespace: \"AWS/Lambda\"",
+        "metric": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "sum",
+              "field": "metrics.amazonaws.com/AWS/Lambda/Errors",
+              "filter": "MetricName: \"Errors\" AND stat: \"Sum\""
+            },
+            {
+              "name": "B",
+              "aggregation": "sum",
+              "field": "metrics.amazonaws.com/AWS/Lambda/Invocations",
+              "filter": "MetricName: \"Invocations\" AND stat: \"Sum\" AND metrics.amazonaws.com/AWS/Lambda/Invocations > 0"
+            }
+          ],
+          "equation": "A/B",
+          "comparator": "LT",
+          "threshold": 0.005
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "timeslices",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.995,
+      "timesliceTarget": 0.95,
+      "timesliceWindow": "1m"
+    },
+    "tags": [
+      "aws_lambda",
+      "otel"
+    ],
+    "groupBy": [
+      "cloud.region",
+      "FunctionName"
+    ],
+    "artifacts": {
+      "dashboards": [
+        { "id": "aws_lambda_otel-8715a1a7-f43d-41a5-8b2e-d800fd6b8420" }
+      ]
+    }
+  },
+  "id": "aws_lambda_otel-invocation-success-rate-99.5-Rolling30Days",
+  "type": "slo_template"
+}

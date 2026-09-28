@@ -2,25 +2,37 @@
 description: Pipeline for Tines Audit Logs
 processors:
   - json:
+      tag: json_message_to_json_8f635f34
       field: message
       target_field: json
   - fail:
+      tag: fail_missing_json_object_input_document_0e5eff89
       if: ctx.json == null || !(ctx.json instanceof Map)
       message: missing json object in input document
   - rename:
+      tag: rename_message_to_event_original_a7b1f822
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message_facc4822
+      ignore_missing: true
+      if: ctx.event?.original != null
+      description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - rename:
+      tag: rename_json_to_tines_audit_log_5df9b916
       field: json
       target_field: tines.audit_log
       ignore_missing: true
   - rename:
+      tag: rename__tmp_tenant_url_to_tines_tenant_url_01a0baed
       field: _tmp.tenant_url
       target_field: tines.tenant_url
       ignore_missing: true
   - fingerprint:
+      tag: fingerprint_to_id_cac1b059
       description: "Generate a unique document ID using the unique Tines audit log ID and created/updated timestamps"
       fields:
         - tines.audit_log.id
@@ -30,64 +42,77 @@ processors:
       method: MurmurHash3
       ignore_missing: true
   - date:
+      tag: date_tines_audit_log_created_at_73f1b957
       description: Use date/time from created_at field first
       field: tines.audit_log.created_at
       formats:
         - ISO8601
       if: ctx.tines?.audit_log?.created_at != null && ctx.tines?.event?.created_at != ""
   - date:
+      tag: date_tines_audit_log_updated_at_3c0a8693
       description: Override date/time using updated_at if it exists
       field: tines.audit_log.updated_at
       formats:
         - ISO8601
       if: ctx.tines?.audit_log?.updated_at != null && ctx.tines?.event?.updated_at != ""
   - convert:
+      tag: convert_tines_audit_log_id_to_event_id_b7175753
       field: tines.audit_log.id
       type: string
       target_field: event.id
       ignore_missing: true
   - append:
+      tag: append_event_category_18c91e46
       field: event.category
       value:
         - configuration
       allow_duplicates: false
   - append:
+      tag: append_event_type_634aadf3
       field: event.type
       value:
         - info
       allow_duplicates: false
   - set:
+      tag: set_event_action_1ee0a484
       copy_from: tines.audit_log.operation_name
       field: event.action
       ignore_empty_value: true
   - convert:
+      tag: convert_tines_audit_log_user_id_to_user_id_b6954a84
       field: tines.audit_log.user_id
       type: string
       target_field: user.id
       ignore_missing: true
   - set:
+      tag: set_user_email_614295a5
       copy_from: tines.audit_log.user_email
       field: user.email
       ignore_empty_value: true
   - set:
+      tag: set_user_name_7fa0a117
       copy_from: tines.audit_log.user_name
       field: user.name
       ignore_empty_value: true
   - append:
+      tag: append_related_user_c32fb91b
       field: related.user
       value: "{{{user.name}}}"
       if: ctx.user?.name != null
       allow_duplicates: false
   - convert:
+      tag: convert_tines_audit_log_request_ip_to_source_ip_b0c3f935
       field: tines.audit_log.request_ip
       type: ip
       target_field: source.ip
       ignore_missing: true
   - geoip:
+      tag: geoip_source_ip_to_source_geo_9a2d4d31
       field: source.ip
       target_field: source.geo
       ignore_missing: true
   - geoip:
+      tag: geoip_source_ip_to_source_as_58199963
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
       target_field: source.as
@@ -96,71 +121,82 @@ processors:
         - organization_name
       ignore_missing: true
   - rename:
+      tag: rename_source_as_asn_to_source_as_number_168bbbaf
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
   - rename:
+      tag: rename_source_as_organization_name_to_source_as_organization_name_aa06a00b
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
   - append:
+      tag: append_related_ip_d8a5d55e
       field: related.ip
       value:
         - "{{{source.ip}}}"
       if: ctx.source?.ip != null
       allow_duplicates: false
   - user_agent:
+      tag: user_agent_tines_audit_log_request_user_agent_6c44ab37
       field: tines.audit_log.request_user_agent
       ignore_missing: true
       ignore_failure: true
   ### extraneous type assertions
   - convert:
-      tag: convert_field_id_long
+      tag: convert_field_id_long_457583aa
       field: tines.audit_log.inputs.fieldId
       type: long
       if: ctx.tines?.audit_log?.inputs?.fieldId != null
       on_failure:
         - append:
+            tag: append_error_message_ce773567
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
         - remove:
+            tag: remove_tines_audit_log_inputs_fieldId_3c66f965
             field: tines.audit_log.inputs.fieldId
             ignore_failure: true
   - convert:
-      tag: convert_field_id_long
+      tag: convert_field_id_long_bcccc41c
       field: tines.audit_log.inputs.inputs.multiSelect
       type: boolean
       if: ctx.tines?.audit_log?.inputs?.inputs?.multiSelect != null
       on_failure:
         - append:
+            tag: append_error_message_857ad2f2
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
         - remove:
+            tag: remove_tines_audit_log_inputs_inputs_multiSelect_67d24258
             field: tines.audit_log.inputs.inputs.multiSelect
             ignore_failure: true
   - convert:
-      tag: convert_field_id_long
+      tag: convert_field_id_long_1b956864
       field: tines.audit_log.inputs.inputs.required
       type: boolean
       if: ctx.tines?.audit_log?.inputs?.inputs?.required != null
       on_failure:
         - append:
+            tag: append_error_message_b1db2b2f
             field: error.message
             value: >-
               Processor '{{{ _ingest.on_failure_processor_type }}}'
               {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
               {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
         - remove:
+            tag: remove_tines_audit_log_inputs_inputs_required_5b0ba886
             field: tines.audit_log.inputs.inputs.required
             ignore_failure: true
   ### cleanup
   - script:
+      tag: script_drops_null_empty_values_recursively_853d4e94
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -178,6 +214,7 @@ processors:
         }
         dropEmptyFields(ctx);
   - remove:
+      tag: remove_cleanup_temporary_other_garbage_fields_4690272d
       description: "Cleanup temporary and other garbage fields"
       field:
         - _tmp
@@ -185,6 +222,7 @@ processors:
         - json
       ignore_missing: true
   - remove:
+      tag: remove_ecs_mapped_field_original_duplicates_59830dc6
       description: "Remove ECS mapped field original duplicates unless tags indicate not to"
       field:
         - tines.audit_log.id
@@ -198,12 +236,15 @@ processors:
       ignore_missing: true
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message_206bb8ac
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'

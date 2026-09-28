@@ -97,6 +97,19 @@ A sample JSON Credentials file looks as follows:
 3. To configure event notifications for an S3 bucket, check [this guide](https://docs.aws.amazon.com/AmazonS3/latest/userguide/enable-event-notifications.html).
    - While creating `event notification` select the event type as `s3:ObjectCreated:*`, destination type `SQS Queue`, and select the queue name created in Step 2.
 
+### Collect data from an S3-compatible service (MinIO, Ceph, ...)
+
+1. Enable the **Collect logs via S3 Bucket** toggle. The S3-compatible options below only
+   take effect in bucket-polling mode; with the toggle off the agent runs in SQS mode and
+   ignores the Non-AWS Bucket Name.
+2. Under **Advanced options**, instead of a Bucket ARN or Access Point ARN, set:
+   - **[S3] Non-AWS Bucket Name** — the bucket name on the S3-compatible service.
+   - **Endpoint** — the full service URI, including the scheme, for example `https://s3.example.com:9000`.
+   - **Region** — required whenever a Non-AWS Bucket Name is set.
+   - **Path Style** — enable this; S3-compatible services generally require path-style access.
+
+Authentication must use **Access Key ID** and **Secret Access Key**; IAM roles and shared credential profiles are AWS-only.
+
 ### Collect data from an Azure Blob Storage
 
 - Considering you already have an Blob Storage setup, to configure it with SentinelOne Cloud Funnel, follow the steps mentioned here: `[Your Login URL]/docs/en/how-to-configure-your-amazon-s3-bucket.html`.

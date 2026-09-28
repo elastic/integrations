@@ -1,0 +1,74 @@
+receivers:
+  akamai_siem:
+    endpoint: "{{api_host}}"
+    config_ids: "{{config_ids}}"
+    authentication:
+      client_token: "{{client_token}}"
+      client_secret: "{{client_secret}}"
+      access_token: "{{access_token}}"
+    poll_interval: "{{interval}}"
+    initial_lookback: "{{initial_interval}}"
+{{#if event_limit}}
+    event_limit: {{event_limit}}
+{{/if}}
+{{#if http_client_timeout}}
+    timeout: "{{http_client_timeout}}"
+{{/if}}
+{{#if proxy_url}}
+    proxy_url: "{{proxy_url}}"
+{{/if}}
+{{#if ssl}}
+    tls: {{ssl}}
+{{/if}}
+    # Receiver-level routing: events are written to the existing akamai.siem
+    # dataset (see the data_stream.dataset var) so they reuse the siem data
+    # stream's index template, ingest pipeline, and dashboards. Fleet still
+    # installs a .otel-suffixed index template for this siem_otel data stream
+    # (logs-akamai.siem_otel.otel-*) because its input type is otelcol, but
+    # nothing ever writes to it.
+    data_stream:
+      type: logs
+      dataset: "{{data_stream.dataset}}"
+      namespace: "{{namespace}}"
+{{#if persist_cursor}}
+    storage: file_storage
+{{/if}}
+processors:
+  # Mirrors the CEL/Beats input `tags:` setting. The receiver emits bodymap-mode
+  # logs, so tags must be written into the body map: in bodymap mode the
+  # Elasticsearch exporter serializes only the body into the document (resource
+  # and log-record attributes are dropped), so a top-level `tags` array on the
+  # document must live under body["tags"].
+  transform/tags:
+    error_mode: ignore
+    log_statements:
+      - context: log
+        statements:
+          # Bodymap documents carry no @timestamp, and the ingest pipeline only
+          # sets one when httpMessage.start is present (Akamai internal 500s
+          # omit it), so those events would be rejected by the data stream.
+          # Seed @timestamp from the record (poll) time as a fallback; the
+          # pipeline overwrites it with the real event time when available.
+          - set(log.body["@timestamp"], UnixMilli(log.time)) where log.body["@timestamp"] == nil
+          - set(log.body["tags"], [
+              {{~#if preserve_original_event~}}
+                "preserve_original_event"{{#if tags}}, {{/if}}
+              {{~/if~}}
+              {{~#each tags~}}
+                "{{this}}"{{#unless @last}}, {{/unless}}
+              {{~/each~}}
+            ])
+{{#if persist_cursor}}
+extensions:
+  file_storage:
+    directory: "${env:STATE_PATH:-/usr/share/elastic-agent/state}"
+    create_directory: true
+{{/if}}
+service:
+{{#if persist_cursor}}
+  extensions: [file_storage]
+{{/if}}
+  pipelines:
+    logs:
+      receivers: [akamai_siem]
+      processors: [transform/tags]

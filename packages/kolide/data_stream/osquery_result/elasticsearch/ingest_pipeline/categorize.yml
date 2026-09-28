@@ -1,0 +1,81 @@
+---
+description: >-
+  Pipeline for categorizing ECS event fields for Kolide osquery Result Logs.
+  Maps the resolved event.action to event.kind/category/type using an exact
+  lookup table. Real Kolide Log Pipeline objects only ever set two values:
+  "snapshot" (derived from osquery's own `action` field, present only on
+  snapshot-type objects) and "differential" (derived from the presence of
+  `diffResults`, which has no `action` field of its own and batches
+  added/removed rows together in one object, so add vs remove cannot be
+  distinguished at the object level). A snapshot row is a point-in-time state
+  read (event.kind: state); a differential object is a discrete change event
+  (event.kind: event) since it represents state appearing or disappearing
+  between two scheduled runs of the same query. event.type is "change" (ECS's
+  allowed event.type values for category "host" are access/change/end/info/
+  start - there is no dedicated creation/deletion value for this category).
+  There is no native success/failure concept for result rows, so
+  event.outcome is left unset.
+processors:
+  - set:
+      field: event.kind
+      tag: set_event_kind_snapshot
+      value: state
+      if: ctx.event?.action == 'snapshot'
+  - append:
+      field: event.category
+      tag: append_event_category_snapshot
+      value: host
+      if: ctx.event?.action == 'snapshot'
+  - append:
+      field: event.type
+      tag: append_event_type_snapshot
+      value: info
+      if: ctx.event?.action == 'snapshot'
+
+  - set:
+      field: event.kind
+      tag: set_event_kind_differential
+      value: event
+      if: ctx.event?.action == 'differential'
+  - append:
+      field: event.category
+      tag: append_event_category_differential
+      value: host
+      if: ctx.event?.action == 'differential'
+  - append:
+      field: event.type
+      tag: append_event_type_differential
+      value: change
+      if: ctx.event?.action == 'differential'
+
+  - set:
+      field: event.kind
+      tag: set_event_kind_default
+      value: state
+      if: ctx.event?.action != 'snapshot' && ctx.event?.action != 'differential'
+  - append:
+      field: event.category
+      tag: append_event_category_default
+      value: host
+      if: ctx.event?.action != 'snapshot' && ctx.event?.action != 'differential'
+  - append:
+      field: event.type
+      tag: append_event_type_default
+      value: info
+      if: ctx.event?.action != 'snapshot' && ctx.event?.action != 'differential'
+
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

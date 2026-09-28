@@ -15,6 +15,11 @@ provider "aws" {
       branch       = var.BRANCH
       build        = var.BUILD_ID
       created_date = var.CREATED_DATE
+
+      division = "engineering"
+      org      = "obs"
+      team     = "obs-infraobs-integrations" # owner.github in manifest.yml
+      project  = "integrations-aws_mq-package" # name in manifest.yml
     }
   }
 }

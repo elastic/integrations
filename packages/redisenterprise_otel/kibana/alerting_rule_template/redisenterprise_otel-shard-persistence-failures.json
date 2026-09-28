@@ -1,40 +1,54 @@
 {
-    "id": "redisenterprise_otel-shard-persistence-failures",
-    "type": "alerting_rule_template",
-    "managed": true,
-    "attributes": {
-        "name": "[Redis Enterprise OTel] Shard persistence failures",
-        "ruleTypeId": ".es-query",
-        "tags": [
-            "observability",
-            "redisenterprise"
-        ],
-        "schedule": {
-            "interval": "5m"
+  "id": "redisenterprise_otel-shard-persistence-failures",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when consecutive RDB / AOF rewrite failures are detected. Durability is at risk.",
+    "name": "[Redis Enterprise OTel] Shard persistence failures",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "redisenterprise"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 2
+    },
+    "flapping": {
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "redisenterprise_otel-shard-diagnostics"
         },
-        "alertDelay": {
-            "active": 2
-        },
-        "flapping": {
-            "lookBackWindow": 10,
-            "statusChangeThreshold": 4
-        },
-        "params": {
-            "searchType": "esqlQuery",
-            "esqlQuery": {
-                "esql": "FROM metrics-redisenterprise.otel-default\n| WHERE redis_rdb_saves_consecutive_failures IS NOT NULL\n    OR redis_aof_rewrites_consecutive_failures IS NOT NULL\n| STATS\n    max_rdb_failures = MAX(redis_rdb_saves_consecutive_failures),\n    max_aof_failures = MAX(redis_aof_rewrites_consecutive_failures)\n  BY redis, bdb, node, cluster\n// Alert when consecutive RDB or AOF persistence failures are detected\n// Persistence failures risk data loss during shard restarts or failovers\n// Investigate disk space, I/O throughput, and memory for copy-on-write overhead\n| WHERE COALESCE(max_rdb_failures, 0) > 0\n    OR COALESCE(max_aof_failures, 0) > 0\n| SORT COALESCE(max_rdb_failures, 0) DESC"
-            },
-            "size": 0,
-            "threshold": [
-                0
-            ],
-            "thresholdComparator": ">",
-            "timeField": "@timestamp",
-            "timeWindowSize": 15,
-            "timeWindowUnit": "m",
-            "groupBy": "row",
-            "termField": "redis",
-            "termSize": 100
+        {
+          "id": "redisenterprise_otel-overview"
         }
+      ],
+      "investigation_guide": {
+        "blob": "## Redis Enterprise shard persistence failures\n\n### What fired\nMax of RDB or AOF consecutive failures > 0.\n\n### Why it matters\nPersistence failures risk data loss during shard restarts or failovers. Usually caused by disk space, IOPS, or COW overhead.\n\n### Triage\n1. Check disk space and I/O on the node.\n2. Inspect fork memory headroom.\n\n### Remediation\n- Free disk or grow node memory.\n\n### Tuning\n- Fires on any non-zero failure count.\n"
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-redisenterprise.otel-default\n| WHERE redis_rdb_saves_consecutive_failures IS NOT NULL\n    OR redis_aof_rewrites_consecutive_failures IS NOT NULL\n| STATS\n    max_rdb_failures = MAX(redis_rdb_saves_consecutive_failures),\n    max_aof_failures = MAX(redis_aof_rewrites_consecutive_failures)\n  BY redis, bdb, node, cluster\n// Alert when consecutive RDB or AOF persistence failures are detected\n// Persistence failures risk data loss during shard restarts or failovers\n// Investigate disk space, I/O throughput, and memory for copy-on-write overhead\n| WHERE COALESCE(max_rdb_failures, 0) > 0\n    OR COALESCE(max_aof_failures, 0) > 0\n| SORT COALESCE(max_rdb_failures, 0) DESC"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "redis",
+      "termSize": 100
     }
+  }
 }

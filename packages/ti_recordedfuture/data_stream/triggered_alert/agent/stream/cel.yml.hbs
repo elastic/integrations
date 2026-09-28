@@ -30,7 +30,7 @@ program: |
         state.url.trim_right("/") + "/v3/alerts?" + {
           "direction": ["desc"],
           "limit": [string(state.batch_size)],
-          "triggered": [string(state.start_time) + " to now"],
+          "triggered": ["[" + string(state.start_time) + ",]"],
         }.format_query()
       ).with({
         "Header":{
@@ -53,7 +53,7 @@ program: |
             :
               state.?cursor.last_timestamp
           },
-          "want_more": has(body.data) && body.data.size() > 0,
+          "want_more": has(body.data) && body.data.size() >= int(state.batch_size),
         })
       :
         {

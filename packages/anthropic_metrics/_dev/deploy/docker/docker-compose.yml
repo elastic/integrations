@@ -1,0 +1,41 @@
+version: '2.3'
+services:
+  anthropic-metrics-usage:
+    image: docker.elastic.co/observability/stream:v0.18.0
+    hostname: anthropic-metrics-usage
+    ports:
+      - 8090
+    volumes:
+      - ./files:/files:ro
+    environment:
+      PORT: '8090'
+    command:
+      - http-server
+      - --addr=:8090
+      - --config=/files/config-usage.yml
+  anthropic-metrics-cost:
+    image: docker.elastic.co/observability/stream:v0.18.0
+    hostname: anthropic-metrics-cost
+    ports:
+      - 8091
+    volumes:
+      - ./files:/files:ro
+    environment:
+      PORT: '8091'
+    command:
+      - http-server
+      - --addr=:8091
+      - --config=/files/config-cost.yml
+  anthropic-metrics-rate-limit:
+    image: docker.elastic.co/observability/stream:v0.18.0
+    hostname: anthropic-metrics-rate-limit
+    ports:
+      - 8092
+    volumes:
+      - ./files:/files:ro
+    environment:
+      PORT: '8092'
+    command:
+      - http-server
+      - --addr=:8092
+      - --config=/files/config-rate_limit.yml

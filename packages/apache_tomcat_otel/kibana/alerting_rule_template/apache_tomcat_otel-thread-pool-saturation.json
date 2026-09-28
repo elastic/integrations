@@ -1,37 +1,51 @@
 {
-    "id": "apache_tomcat_otel-thread-pool-saturation",
-    "type": "alerting_rule_template",
-    "managed": true,
-    "attributes": {
-        "name": "[Tomcat OTel] Thread pool saturation",
-        "ruleTypeId": ".es-query",
-        "tags": [
-            "observability",
-            "tomcat"
-        ],
-        "schedule": {
-            "interval": "1m"
+  "id": "apache_tomcat_otel-thread-pool-saturation",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when thread pool utilisation exceeds 80% (`currentThreadsBusy / maxThreads > 0.80`). This is the primary saturation signal for Tomcat; requests begin queuing and refusing here.",
+    "name": "[Tomcat OTel] Thread pool saturation",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "tomcat"
+    ],
+    "schedule": {
+      "interval": "1m"
+    },
+    "alertDelay": {
+      "active": 3
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "apache_tomcat_otel-thread-pool-connections"
         },
-        "alertDelay": {
-            "active": 3
-        },
-        "params": {
-            "searchType": "esqlQuery",
-            "esqlQuery": {
-                "esql": "FROM metrics-tomcat.otel-*\n| WHERE Catalina_ThreadPool_currentThreadsBusy IS NOT NULL\n    AND Catalina_ThreadPool_maxThreads IS NOT NULL\n| STATS\n    busy = MAX(Catalina_ThreadPool_currentThreadsBusy),\n    max_threads = MAX(Catalina_ThreadPool_maxThreads)\n  BY host.name, attributes.name\n| WHERE max_threads > 0\n| EVAL utilization_pct = ROUND(busy / max_threads * 100.0, 2)\n// Thread pool saturation threshold \u2014 adjust based on your capacity requirements\n// Above 80% the risk of request queuing and rejection increases rapidly\n| WHERE utilization_pct > 80.0\n| SORT utilization_pct DESC"
-            },
-            "size": 0,
-            "threshold": [
-                0
-            ],
-            "thresholdComparator": ">",
-            "timeField": "@timestamp",
-            "timeWindowSize": 5,
-            "timeWindowUnit": "m",
-            "groupBy": "row",
-            "termField": "host.name",
-            "termSize": 100,
-            "excludeHitsFromPreviousRun": true
+        {
+          "id": "apache_tomcat_otel-overview"
         }
+      ],
+      "investigation_guide": {
+        "blob": "## Tomcat thread pool saturation\n\n### What fired\n`currentThreadsBusy / maxThreads` on a connector exceeded 80% during the evaluation window.\n\n### Why it matters\nThread pool utilisation is the single most important saturation indicator in Tomcat. Above 80%, bursts begin to queue; at 100% the accept queue (`acceptCount`) absorbs further connections until it too is full, after which new connections are refused at the TCP level.\n\n### Triage\n1. Thread Pool & Connections dashboard: confirm per-connector utilisation trend.\n2. Check request latency (`processingTime / requestCount`) \u2014 slow requests pin threads longer.\n3. Inspect downstream dependency health (DB, HTTP clients) to find the source of the slowness.\n4. Look at connection count and keep-alive count \u2014 unhealthy keep-alive patterns inflate usage.\n\n### Remediation\n- Fix the slow downstream so threads are released faster.\n- Raise `maxThreads` (verify heap and CPU can support it).\n- Scale Tomcat horizontally behind a load balancer.\n\n### Tuning\n- `> 80%` matches documented guidance. Tighten to 70% for latency-sensitive tiers; 85% is the absolute ceiling before the rule becomes late to warn.\n"
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-tomcat.otel-*\n| WHERE Catalina_ThreadPool_currentThreadsBusy IS NOT NULL\n    AND Catalina_ThreadPool_maxThreads IS NOT NULL\n| STATS\n    busy = MAX(Catalina_ThreadPool_currentThreadsBusy),\n    max_threads = MAX(Catalina_ThreadPool_maxThreads)\n  BY host.name, attributes.name\n| WHERE max_threads > 0\n| EVAL utilization_pct = ROUND(busy / max_threads * 100.0, 2)\n// Thread pool saturation threshold \u2014 adjust based on your capacity requirements\n// Above 80% the risk of request queuing and rejection increases rapidly\n| WHERE utilization_pct > 80.0\n| SORT utilization_pct DESC"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 5,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "host.name",
+      "termSize": 100,
+      "excludeHitsFromPreviousRun": true
     }
+  }
 }

@@ -1,0 +1,127 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies queries for a DNS name containing a base64-encoded blob matching the pattern \"UWhRCA...BAAAA\". This pattern corresponds to a marshaled CREDENTIAL_TARGET_INFORMATION structure, commonly used in Kerberos coercion attacks. It is associated with tools and techniques that exploit SPN spoofing via DNS. Adversaries may abuse such names to coerce victim systems into authenticating to attacker-controlled hosts while requesting Kerberos tickets for legitimate services (often the victim's own identity). Depending on the coerced service and negotiated authentication, this can support Kerberos relay or NTLM reflection/relay paths without relying on normal NTLM fallback behavior.",
+        "from": "now-9m",
+        "index": [
+            "endgame-*",
+            "logs-crowdstrike.fdr*",
+            "logs-endpoint.events.network-*",
+            "logs-sentinel_one_cloud_funnel.*",
+            "logs-windows.sysmon_operational-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "host.id",
+                "user.name",
+                "process.entity_id",
+                "process.executable",
+                "process.command_line",
+                "process.pe.original_file_name",
+                "process.code_signature.subject_name",
+                "process.parent.executable",
+                "dns.question.name",
+                "dns.Ext.status",
+                "dns.resolved_ip",
+                "destination.ip",
+                "destination.port",
+                "network.direction"
+            ]
+        },
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Potential Kerberos SPN Spoofing via Suspicious DNS Query",
+        "note": "## Triage and analysis\n\n### Investigating Potential Kerberos SPN Spoofing via Suspicious DNS Query\n\n#### Possible investigation steps\n\n- What exact marshaled-target DNS name did the host query, and did it resolve?\n  - Focus: DNS event subtype and status: `event.action`, `dns.question.name`, `dns.question.type`, `dns.Ext.status`, and `dns.resolved_ip`.\n  - Hint: record the full case-preserved `dns.question.name`; the UWhRC...BAAAA marker is the marshaled CREDENTIAL_TARGET_INFORMATION SPN-spoofing anchor.\n  - Implication: escalate when the marker is intact and a successful result returns one or more `dns.resolved_ip` values; treat failed or request-only lookups as unresolved, not benign. Lower suspicion only after FP criteria confirm authorized testing for the exact name and host.\n\n- Which local process or Windows component generated the DNS lookup?\n  - Focus: alert event and same-process start event for `host.id` and `process.entity_id`: `process.executable`, `process.command_line`, `process.pe.original_file_name`, `process.code_signature.subject_name`, and `process.parent.executable`.\n  - Hint: if these fields are sparse on the DNS event, query process events for the same `host.id` and `process.entity_id` around `@timestamp` before judging lineage. !{investigate{\"description\":\"\",\"label\":\"Process events for the DNS lookup process\",\"providers\":[[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"process\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Implication: escalate when a normal Windows service, browser, RPC client, SMB client, or WebDAV component resolves the marker without test context because it may be a coerced victim; also escalate when `process.command_line` exposes relay or coercion tooling such as RemoteKrbRelay, PetitPotam, krbrelayx, dnstool, Pretender, or wspcoerce. Lower suspicion only when identity and lineage match the same recognized test workflow.\n\n- Which host and principal anchors define containment and scope?\n  - Focus: alert host and principal anchors: `host.id`, `host.name`, `user.id`, `user.name`, and `user.domain`.\n  - Implication: use these anchors to scope related alerts, connection events, containment, and testing confirmation; do not lower suspicion on a familiar host or user without DNS, process, and destination alignment. Escalate priority when later connection or related-alert evidence uses the same anchors.\n\n- Did the host connect to an IP returned by the suspicious DNS lookup?\n  - Focus: process-scoped network events for `host.id` and `process.entity_id`, correlating `dns.resolved_ip` from DNS results to connection-event `destination.ip`, `destination.port`, and `network.direction`. !{investigate{\"description\":\"\",\"label\":\"Network events for the same process\",\"providers\":[[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"network\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Hint: if a resolver helper, proxy, or service split separates lookup and connection, widen to same-host connections for the recovered IPs after the DNS result.\n  - Implication: escalate when the same process or host reaches a recovered IP, especially on relay-relevant services such as SMB, LDAP/LDAPS, HTTP/ADCS, RPC, or WinRM. Missing network telemetry is unresolved, not benign; DNS-only evidence still requires process and host explanation.\n\n- Does the resolved destination fit a relay path rather than recognized test infrastructure?\n  - Focus: connection-event `destination.ip`, `destination.port`, `destination.as.organization.name`, and `destination.geo.country_iso_code` for IPs recovered from the prior DNS result.\n  - Hint: ASN and geo enrichment are expected mainly for public destinations; missing enrichment on private or loopback IPs is unresolved, not benign.\n  - Implication: escalate when the recovered IP is public or paired with relay-relevant ports that do not match confirmed testing evidence; if enrichment points to private, internal, or familiar infrastructure, carry it into FP validation instead of closing on ownership alone.\n\n- If local evidence remains suspicious or unresolved, where else does the same activity appear?\n  - Focus: related alerts for `host.id` covering credential access, forced authentication, relay, lateral movement, or staging. !{investigate{\"description\":\"\",\"label\":\"Alerts associated with the host\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n  - Hint: then check whether the same `dns.question.name` appears on other hosts to separate one-host testing from shared relay infrastructure. !{investigate{\"description\":\"\",\"label\":\"DNS and network events involving the same DNS name\",\"providers\":[[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"network\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"dns.question.name\",\"queryType\":\"phrase\",\"value\":\"{{dns.question.name}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n  - Implication: broaden scope when the same host shows coercion or staging alerts, or when the exact encoded hostname appears on unrelated hosts; keep the case bounded when recurrence stays inside one confirmed test cohort.\n\n- Escalate when the marshaled DNS marker plus process, host, destination, connection, or related-alert evidence indicates unauthorized relay or coercion; close only when DNS, process, host, destination, and scope evidence all align with one confirmed authorized security-testing workflow; preserve evidence and escalate when evidence is mixed or incomplete.\n\n### False positive analysis\n\n- Authorized red-team, purple-team, relay-lab validation, or security-research harnesses can generate this marker. Confirm only when the exact `dns.question.name`, process identity, parent context, `host.id`, user context, resolved destination, and related-alert scope all align with the same exercise. Use exercise records or owner confirmation as corroboration when telemetry alone cannot prove authorization; do not close solely on recurrence unless it stays inside a confirmed test cohort.\n- Build exceptions from the minimum confirmed workflow pattern: `process.executable`, `process.pe.original_file_name`, `process.parent.executable`, `host.id`, user or test cohort, and recognized destination pattern. Avoid exceptions on `dns.question.name` alone, host alone, destination ownership alone, or broad tool names.\n\n### Response and remediation\n\n- If confirmed benign, reverse temporary containment and document the exact DNS marker, tool identity, parent context, host scope, user or test cohort, and destination pattern. Create an exception only after the same confirmed workflow proves stable across prior alerts.\n- If suspicious but unconfirmed, preserve the alert and DNS events, exact `dns.question.name`, recovered `dns.resolved_ip` values, process tree, host and user context, connection events, and linked alert IDs before containment. Apply reversible containment tied to the findings, such as temporarily blocking the encoded hostname or recovered IPs, tightening outbound access from the affected host, or increasing monitoring; escalate to host isolation only when follow-on connectivity, relay evidence, or privileged-host exposure makes the risk unacceptable.\n- If confirmed malicious, capture volatile endpoint state and process details before termination or cleanup, then isolate the host when identity, destination, or follow-on connection evidence confirms relay or coercion. Block or sinkhole the malicious hostname and recovered IPs, and remove malicious AD DNS records only after confirming record ownership or tampering evidence.\n- If separate asset or incident context confirms the affected host or principal is identity infrastructure or privileged administration scope, activate the identity or Active Directory compromise response plan, scope machine-account or service-account exposure tied to the preserved host, user, destination, and related-alert evidence, and review related relay or forced-authentication activity on surrounding systems.\n- Eradicate only the unauthorized tooling, scripts, scheduled tasks, service changes, or DNS records uncovered during the investigation, then remediate the access path or permissions that allowed the coercion record or tool to be introduced.\n- After containment, hunt for the same encoded hostname pattern, recovered IPs, and process lineage across other hosts.\n",
+        "query": "network where host.os.type == \"windows\" and dns.question.name : \"*UWhRC*BAAAA*\"\n",
+        "references": [
+            "https://www.synacktiv.com/en/publications/ntlm-reflection-is-dead-long-live-ntlm-reflection-an-in-depth-analysis-of-cve-2025.html",
+            "https://blog.redteam-pentesting.de/2025/reflective-kerberos-relay-attack/",
+            "https://googleprojectzero.blogspot.com/2021/10/using-kerberos-for-authentication-relay.html",
+            "https://github.com/CICADA8-Research/RemoteKrbRelay/blob/main/README.md",
+            "https://github.com/Orange-Cyberdefense/ocd-mindmaps/blob/main/excalimap/mindmap/ad/authenticated.md"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.9.0"
+            },
+            {
+                "package": "crowdstrike",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "dns.question.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "99ac5005-8a9e-4625-a0af-5f7bb447204b",
+        "setup": "## Setup\n\nThis rule is designed for data generated by [Elastic Defend](https://www.elastic.co/security/endpoint-security), which provides native endpoint detection and response, along with event enrichments designed to work with our detection rules.\n\nSetup instructions: https://ela.st/install-elastic-defend\n\n### Additional data sources\n\nThis rule also supports the following third-party data sources. For setup instructions, refer to the links below:\n\n- [CrowdStrike](https://ela.st/crowdstrike-integration)\n- [SentinelOne Cloud Funnel](https://ela.st/sentinel-one-cloud-funnel)\n- [Sysmon Event ID 22 - DNS Query](https://ela.st/sysmon-event-22-setup)\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Data Source: Elastic Defend",
+            "Data Source: Elastic Endgame",
+            "Data Source: Crowdstrike",
+            "Data Source: SentinelOne",
+            "Data Source: Sysmon",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1557",
+                        "name": "Adversary-in-the-Middle",
+                        "reference": "https://attack.mitre.org/techniques/T1557/",
+                        "subtechnique": [
+                            {
+                                "id": "T1557.001",
+                                "name": "LLMNR/NBT-NS Poisoning and SMB Relay",
+                                "reference": "https://attack.mitre.org/techniques/T1557/001/"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "T1187",
+                        "name": "Forced Authentication",
+                        "reference": "https://attack.mitre.org/techniques/T1187/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 3
+    },
+    "id": "99ac5005-8a9e-4625-a0af-5f7bb447204b_3",
+    "type": "security-rule"
+}

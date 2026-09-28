@@ -2,16 +2,19 @@
 description: Pipeline for Jamf Compliance Reporter license info event logs.
 processors:
   - rename:
+      tag: rename_json_ComplianceReporter_license_info_email_to_user_email_f040c868
       field: json.ComplianceReporter_license_info.email
       target_field: user.email
       ignore_missing: true
   - append:
+      tag: append_related_user_36d4b55a
       field: related.user
       value: '{{{user.email}}}'
       if: ctx.user?.email != null
       allow_duplicates: false
       ignore_failure: true
   - date:
+      tag: date_json_ComplianceReporter_license_info_expiration_date_to_jamf_compliance_reporter_log_compliancereporter_license_info_expiration_date_920484de
       field: json.ComplianceReporter_license_info.expiration_date
       target_field: jamf_compliance_reporter.log.compliancereporter_license_info.expiration_date
       if: ctx.json?.ComplianceReporter_license_info?.expiration_date != null && ctx.json.ComplianceReporter_license_info.expiration_date != 0
@@ -19,13 +22,16 @@ processors:
         - dd/MM/yyyy
       on_failure:
         - append:
+            tag: append_error_message_77b9a54b
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_ComplianceReporter_license_info_status_to_jamf_compliance_reporter_log_compliancereporter_license_info_status_3d065462
       field: json.ComplianceReporter_license_info.status
       target_field: jamf_compliance_reporter.log.compliancereporter_license_info.status
       ignore_missing: true
   - date:
+      tag: date_json_ComplianceReporter_license_info_time_seconds_epoch_to_jamf_compliance_reporter_log_compliancereporter_license_info_time_89cd2f48
       field: json.ComplianceReporter_license_info.time_seconds_epoch
       target_field: jamf_compliance_reporter.log.compliancereporter_license_info.time
       if: ctx.json?.ComplianceReporter_license_info?.time_seconds_epoch != null && ctx.json.ComplianceReporter_license_info.time_seconds_epoch != '0'
@@ -33,20 +39,33 @@ processors:
         - UNIX
       on_failure:
         - append:
+            tag: append_error_message_99611759
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_ComplianceReporter_license_info_type_to_jamf_compliance_reporter_log_compliancereporter_license_info_type_759c18be
       field: json.ComplianceReporter_license_info.type
       target_field: jamf_compliance_reporter.log.compliancereporter_license_info.type
       ignore_missing: true
   - rename:
+      tag: rename_json_ComplianceReporter_license_info_version_to_jamf_compliance_reporter_log_compliancereporter_license_info_version_34b4ddce
       field: json.ComplianceReporter_license_info.version
       target_field: jamf_compliance_reporter.log.compliancereporter_license_info.version
       ignore_missing: true
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_error_message_206bb8ac
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      tag: append_tags_279d5a5c
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

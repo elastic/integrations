@@ -1,59 +1,2056 @@
 {
-  "attributes": {
-    "title": "[IIS OTel] Sites & Pools",
-    "description": "Per-site and per-application-pool breakdown of request rate, network throughput, connections, queue metrics, and rejections. Supports capacity planning and per-tenant analysis.",
-    "panelsJSON": "[{\"panelIndex\": \"5ec9d4e9-3f1c-8f1e-41f0-eb022308081d\", \"gridData\": {\"x\": 0, \"y\": 0, \"w\": 48, \"h\": 2, \"i\": \"5ec9d4e9-3f1c-8f1e-41f0-eb022308081d\"}, \"type\": \"links\", \"embeddableConfig\": {\"enhancements\": {}, \"attributes\": {\"layout\": \"horizontal\", \"links\": [{\"id\": \"3af4ba12-6f83-488a-bdc9-0c7216a22d73\", \"order\": 0, \"label\": \"Overview\", \"type\": \"dashboardLink\", \"destinationRefName\": \"link_3af4ba12-6f83-488a-bdc9-0c7216a22d73_dashboard\"}, {\"id\": \"311e2098-d3cb-e8f4-bf13-b097739154c3\", \"order\": 1, \"label\": \"Sites & Pools\", \"type\": \"dashboardLink\", \"destinationRefName\": \"link_311e2098-d3cb-e8f4-bf13-b097739154c3_dashboard\"}]}}}, {\"panelIndex\": \"0563dba8-e018-01bf-7e3c-91932750954e\", \"gridData\": {\"x\": 0, \"y\": 2, \"w\": 16, \"h\": 12, \"i\": \"0563dba8-e018-01bf-7e3c-91932750954e\"}, \"type\": \"visualization\", \"embeddableConfig\": {\"enhancements\": {\"dynamicActions\": {\"events\": []}}, \"savedVis\": {\"type\": \"markdown\", \"id\": \"\", \"title\": \"\", \"description\": \"\", \"params\": {\"fontSize\": 12, \"openLinksInNewTab\": false, \"markdown\": \"## [IIS OTel] Sites & Pools\\n\\nThis dashboard provides per-site and per-application-pool breakdowns:\\n\\n- **Per-site** \\u2014 Request rate, network throughput, active connections\\n- **Per-pool** \\u2014 Queue depth, rejection rate, queue age, active threads\\n- **Detail tables** \\u2014 Top sites and pools by traffic and health\\n\\nUse the Host, Site, and Application Pool filters to narrow the view.\\n\"}, \"uiState\": {}, \"data\": {\"aggs\": [], \"searchSource\": {\"query\": {\"query\": \"\", \"language\": \"kuery\"}, \"filter\": []}}}}}, {\"panelIndex\": \"1c7012df-5cc7-34a1-5597-5373fcecbff6\", \"gridData\": {\"x\": 16, \"y\": 2, \"w\": 32, \"h\": 12, \"i\": \"1c7012df-5cc7-34a1-5597-5373fcecbff6\"}, \"type\": \"lens\", \"embeddableConfig\": {\"enhancements\": {\"dynamicActions\": {\"events\": []}}, \"attributes\": {\"title\": \"Request Rate by Site\", \"visualizationType\": \"lnsXY\", \"type\": \"lens\", \"references\": [], \"state\": {\"visualization\": {\"layers\": [{\"layerId\": \"0c465483-dfd4-e2d3-507f-67f1b821efaa\", \"accessors\": [\"3fe83a4c-3cba-c2cb-0f7d-79bb2b6d09af\"], \"layerType\": \"data\", \"seriesType\": \"area\", \"xAccessor\": \"44714e97-119f-dc33-b7f7-4ce49cc5463f\", \"position\": \"top\", \"showGridlines\": false, \"splitAccessor\": \"0e985310-7abc-5c01-8e04-de1541d1d5b6\", \"colorMapping\": {\"assignments\": [], \"specialAssignments\": [{\"rule\": {\"type\": \"other\"}, \"color\": {\"type\": \"loop\"}, \"touched\": false}], \"paletteId\": \"eui_amsterdam_color_blind\", \"colorMode\": {\"type\": \"categorical\"}}}], \"preferredSeriesType\": \"area\", \"legend\": {\"position\": \"right\"}, \"valueLabels\": \"hide\"}, \"query\": {\"esql\": \"TS metrics-iisreceiver.otel-*\\n| WHERE data_stream.dataset == \\\"iisreceiver.otel\\\" AND `iis.request.count` IS NOT NULL AND iis.site IS NOT NULL\\n| STATS request_rate = SUM(RATE(`iis.request.count`)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), iis.site\\n| SORT time_bucket ASC\\n\"}, \"filters\": [], \"datasourceStates\": {\"textBased\": {\"layers\": {\"0c465483-dfd4-e2d3-507f-67f1b821efaa\": {\"query\": {\"esql\": \"TS metrics-iisreceiver.otel-*\\n| WHERE data_stream.dataset == \\\"iisreceiver.otel\\\" AND `iis.request.count` IS NOT NULL AND iis.site IS NOT NULL\\n| STATS request_rate = SUM(RATE(`iis.request.count`)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), iis.site\\n| SORT time_bucket ASC\\n\"}, \"columns\": [{\"fieldName\": \"request_rate\", \"columnId\": \"3fe83a4c-3cba-c2cb-0f7d-79bb2b6d09af\", \"label\": \"request_rate\", \"customLabel\": false, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true}, {\"fieldName\": \"time_bucket\", \"columnId\": \"44714e97-119f-dc33-b7f7-4ce49cc5463f\", \"label\": \"time_bucket\", \"customLabel\": false, \"meta\": {\"type\": \"date\", \"esType\": \"date\"}}, {\"fieldName\": \"iis.site\", \"columnId\": \"0e985310-7abc-5c01-8e04-de1541d1d5b6\", \"label\": \"iis.site\", \"customLabel\": false}], \"allColumns\": [{\"fieldName\": \"request_rate\", \"columnId\": \"3fe83a4c-3cba-c2cb-0f7d-79bb2b6d09af\", \"label\": \"request_rate\", \"customLabel\": false, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true}, {\"fieldName\": \"time_bucket\", \"columnId\": \"44714e97-119f-dc33-b7f7-4ce49cc5463f\", \"label\": \"time_bucket\", \"customLabel\": false, \"meta\": {\"type\": \"date\", \"esType\": \"date\"}}, {\"fieldName\": \"iis.site\", \"columnId\": \"0e985310-7abc-5c01-8e04-de1541d1d5b6\", \"label\": \"iis.site\", \"customLabel\": false}], \"timeField\": \"@timestamp\"}}}}, \"internalReferences\": [], \"adHocDataViews\": {}}}, \"syncTooltips\": false, \"syncColors\": false, \"syncCursor\": true, \"filters\": [], \"query\": {\"query\": \"\", \"language\": \"kuery\"}}}, {\"panelIndex\": \"6fbdbb87-fb45-c3da-aed7-bea514676e1f\", \"gridData\": {\"x\": 0, \"y\": 14, \"w\": 24, \"h\": 12, \"i\": \"6fbdbb87-fb45-c3da-aed7-bea514676e1f\"}, \"type\": \"lens\", \"embeddableConfig\": {\"enhancements\": {\"dynamicActions\": {\"events\": []}}, \"attributes\": {\"title\": \"Network Throughput by Site\", \"visualizationType\": \"lnsXY\", \"type\": \"lens\", \"references\": [], \"state\": {\"visualization\": {\"layers\": [{\"layerId\": \"6ea955e7-32d8-1231-d0d9-a5040c1dd5f0\", \"accessors\": [\"d17d0e31-7edb-b976-81cb-d9a16f07f2a2\"], \"layerType\": \"data\", \"seriesType\": \"area\", \"xAccessor\": \"44714e97-119f-dc33-b7f7-4ce49cc5463f\", \"position\": \"top\", \"showGridlines\": false, \"splitAccessor\": \"0e985310-7abc-5c01-8e04-de1541d1d5b6\", \"colorMapping\": {\"assignments\": [], \"specialAssignments\": [{\"rule\": {\"type\": \"other\"}, \"color\": {\"type\": \"loop\"}, \"touched\": false}], \"paletteId\": \"eui_amsterdam_color_blind\", \"colorMode\": {\"type\": \"categorical\"}}}], \"preferredSeriesType\": \"area\", \"legend\": {\"position\": \"right\"}, \"valueLabels\": \"hide\"}, \"query\": {\"esql\": \"TS metrics-iisreceiver.otel-*\\n| WHERE data_stream.dataset == \\\"iisreceiver.otel\\\" AND `iis.network.io` IS NOT NULL AND iis.site IS NOT NULL\\n| STATS throughput = SUM(RATE(`iis.network.io`)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), iis.site\\n| SORT time_bucket ASC\\n\"}, \"filters\": [], \"datasourceStates\": {\"textBased\": {\"layers\": {\"6ea955e7-32d8-1231-d0d9-a5040c1dd5f0\": {\"query\": {\"esql\": \"TS metrics-iisreceiver.otel-*\\n| WHERE data_stream.dataset == \\\"iisreceiver.otel\\\" AND `iis.network.io` IS NOT NULL AND iis.site IS NOT NULL\\n| STATS throughput = SUM(RATE(`iis.network.io`)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), iis.site\\n| SORT time_bucket ASC\\n\"}, \"columns\": [{\"fieldName\": \"throughput\", \"columnId\": \"d17d0e31-7edb-b976-81cb-d9a16f07f2a2\", \"label\": \"throughput\", \"customLabel\": false, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true}, {\"fieldName\": \"time_bucket\", \"columnId\": \"44714e97-119f-dc33-b7f7-4ce49cc5463f\", \"label\": \"time_bucket\", \"customLabel\": false, \"meta\": {\"type\": \"date\", \"esType\": \"date\"}}, {\"fieldName\": \"iis.site\", \"columnId\": \"0e985310-7abc-5c01-8e04-de1541d1d5b6\", \"label\": \"iis.site\", \"customLabel\": false}], \"allColumns\": [{\"fieldName\": \"throughput\", \"columnId\": \"d17d0e31-7edb-b976-81cb-d9a16f07f2a2\", \"label\": \"throughput\", \"customLabel\": false, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true}, {\"fieldName\": \"time_bucket\", \"columnId\": \"44714e97-119f-dc33-b7f7-4ce49cc5463f\", \"label\": \"time_bucket\", \"customLabel\": false, \"meta\": {\"type\": \"date\", \"esType\": \"date\"}}, {\"fieldName\": \"iis.site\", \"columnId\": \"0e985310-7abc-5c01-8e04-de1541d1d5b6\", \"label\": \"iis.site\", \"customLabel\": false}], \"timeField\": \"@timestamp\"}}}}, \"internalReferences\": [], \"adHocDataViews\": {}}}, \"syncTooltips\": false, \"syncColors\": false, \"syncCursor\": true, \"filters\": [], \"query\": {\"query\": \"\", \"language\": \"kuery\"}}}, {\"panelIndex\": \"b9979009-5578-7141-2933-4fa0583cd882\", \"gridData\": {\"x\": 24, \"y\": 14, \"w\": 24, \"h\": 12, \"i\": \"b9979009-5578-7141-2933-4fa0583cd882\"}, \"type\": \"lens\", \"embeddableConfig\": {\"enhancements\": {\"dynamicActions\": {\"events\": []}}, \"attributes\": {\"title\": \"Active Connections by Site\", \"visualizationType\": \"lnsXY\", \"type\": \"lens\", \"references\": [], \"state\": {\"visualization\": {\"layers\": [{\"layerId\": \"72f89635-d20b-efff-66a2-17c249116451\", \"accessors\": [\"e69a4803-c22b-cba0-e508-01c3fe86ec24\"], \"layerType\": \"data\", \"seriesType\": \"line\", \"xAccessor\": \"44714e97-119f-dc33-b7f7-4ce49cc5463f\", \"position\": \"top\", \"showGridlines\": false, \"splitAccessor\": \"0e985310-7abc-5c01-8e04-de1541d1d5b6\", \"colorMapping\": {\"assignments\": [], \"specialAssignments\": [{\"rule\": {\"type\": \"other\"}, \"color\": {\"type\": \"loop\"}, \"touched\": false}], \"paletteId\": \"eui_amsterdam_color_blind\", \"colorMode\": {\"type\": \"categorical\"}}}], \"preferredSeriesType\": \"line\", \"legend\": {\"position\": \"right\"}, \"valueLabels\": \"hide\"}, \"query\": {\"esql\": \"FROM metrics-iisreceiver.otel-*\\n| WHERE data_stream.dataset == \\\"iisreceiver.otel\\\" AND `iis.connection.active` IS NOT NULL AND iis.site IS NOT NULL\\n| STATS connections = SUM(`iis.connection.active`) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), iis.site\\n| SORT time_bucket ASC\\n\"}, \"filters\": [], \"datasourceStates\": {\"textBased\": {\"layers\": {\"72f89635-d20b-efff-66a2-17c249116451\": {\"query\": {\"esql\": \"FROM metrics-iisreceiver.otel-*\\n| WHERE data_stream.dataset == \\\"iisreceiver.otel\\\" AND `iis.connection.active` IS NOT NULL AND iis.site IS NOT NULL\\n| STATS connections = SUM(`iis.connection.active`) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), iis.site\\n| SORT time_bucket ASC\\n\"}, \"columns\": [{\"fieldName\": \"connections\", \"columnId\": \"e69a4803-c22b-cba0-e508-01c3fe86ec24\", \"label\": \"connections\", \"customLabel\": false, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true}, {\"fieldName\": \"time_bucket\", \"columnId\": \"44714e97-119f-dc33-b7f7-4ce49cc5463f\", \"label\": \"time_bucket\", \"customLabel\": false, \"meta\": {\"type\": \"date\", \"esType\": \"date\"}}, {\"fieldName\": \"iis.site\", \"columnId\": \"0e985310-7abc-5c01-8e04-de1541d1d5b6\", \"label\": \"iis.site\", \"customLabel\": false}], \"allColumns\": [{\"fieldName\": \"connections\", \"columnId\": \"e69a4803-c22b-cba0-e508-01c3fe86ec24\", \"label\": \"connections\", \"customLabel\": false, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true}, {\"fieldName\": \"time_bucket\", \"columnId\": \"44714e97-119f-dc33-b7f7-4ce49cc5463f\", \"label\": \"time_bucket\", \"customLabel\": false, \"meta\": {\"type\": \"date\", \"esType\": \"date\"}}, {\"fieldName\": \"iis.site\", \"columnId\": \"0e985310-7abc-5c01-8e04-de1541d1d5b6\", \"label\": \"iis.site\", \"customLabel\": false}], \"timeField\": \"@timestamp\"}}}}, \"internalReferences\": [], \"adHocDataViews\": {}}}, \"syncTooltips\": false, \"syncColors\": false, \"syncCursor\": true, \"filters\": [], \"query\": {\"query\": \"\", \"language\": \"kuery\"}}}, {\"panelIndex\": \"2c63b4bb-844a-bad3-6fff-536f2d1f4b6e\", \"gridData\": {\"x\": 0, \"y\": 26, \"w\": 48, \"h\": 3, \"i\": \"2c63b4bb-844a-bad3-6fff-536f2d1f4b6e\"}, \"type\": \"visualization\", \"embeddableConfig\": {\"enhancements\": {\"dynamicActions\": {\"events\": []}}, \"savedVis\": {\"type\": \"markdown\", \"id\": \"\", \"title\": \"\", \"description\": \"\", \"params\": {\"fontSize\": 12, \"openLinksInNewTab\": false, \"markdown\": \"## Per-Application-Pool Metrics\\n\"}, \"uiState\": {}, \"data\": {\"aggs\": [], \"searchSource\": {\"query\": {\"query\": \"\", \"language\": \"kuery\"}, \"filter\": []}}}}}, {\"panelIndex\": \"ce3ef6aa-8bd3-f6bc-9314-b44e31080fb9\", \"gridData\": {\"x\": 0, \"y\": 29, \"w\": 24, \"h\": 12, \"i\": \"ce3ef6aa-8bd3-f6bc-9314-b44e31080fb9\"}, \"type\": \"lens\", \"embeddableConfig\": {\"enhancements\": {\"dynamicActions\": {\"events\": []}}, \"attributes\": {\"title\": \"Queue Depth by Pool\", \"visualizationType\": \"lnsXY\", \"type\": \"lens\", \"references\": [], \"state\": {\"visualization\": {\"layers\": [{\"layerId\": \"e30e9523-c233-3c51-155a-4582b0abed2d\", \"accessors\": [\"e976855b-f978-6e5c-9596-70700fbfefb7\"], \"layerType\": \"data\", \"seriesType\": \"line\", \"xAccessor\": \"44714e97-119f-dc33-b7f7-4ce49cc5463f\", \"position\": \"top\", \"showGridlines\": false, \"splitAccessor\": \"52595828-5c38-4c1e-0add-e337fff6d573\", \"colorMapping\": {\"assignments\": [], \"specialAssignments\": [{\"rule\": {\"type\": \"other\"}, \"color\": {\"type\": \"loop\"}, \"touched\": false}], \"paletteId\": \"eui_amsterdam_color_blind\", \"colorMode\": {\"type\": \"categorical\"}}}], \"preferredSeriesType\": \"line\", \"legend\": {\"position\": \"right\"}, \"valueLabels\": \"hide\"}, \"query\": {\"esql\": \"FROM metrics-iisreceiver.otel-*\\n| WHERE data_stream.dataset == \\\"iisreceiver.otel\\\" AND `iis.request.queue.count` IS NOT NULL AND iis.application_pool IS NOT NULL\\n| STATS queue_depth = SUM(`iis.request.queue.count`) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), iis.application_pool\\n| SORT time_bucket ASC\\n\"}, \"filters\": [], \"datasourceStates\": {\"textBased\": {\"layers\": {\"e30e9523-c233-3c51-155a-4582b0abed2d\": {\"query\": {\"esql\": \"FROM metrics-iisreceiver.otel-*\\n| WHERE data_stream.dataset == \\\"iisreceiver.otel\\\" AND `iis.request.queue.count` IS NOT NULL AND iis.application_pool IS NOT NULL\\n| STATS queue_depth = SUM(`iis.request.queue.count`) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), iis.application_pool\\n| SORT time_bucket ASC\\n\"}, \"columns\": [{\"fieldName\": \"queue_depth\", \"columnId\": \"e976855b-f978-6e5c-9596-70700fbfefb7\", \"label\": \"queue_depth\", \"customLabel\": false, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true}, {\"fieldName\": \"time_bucket\", \"columnId\": \"44714e97-119f-dc33-b7f7-4ce49cc5463f\", \"label\": \"time_bucket\", \"customLabel\": false, \"meta\": {\"type\": \"date\", \"esType\": \"date\"}}, {\"fieldName\": \"iis.application_pool\", \"columnId\": \"52595828-5c38-4c1e-0add-e337fff6d573\", \"label\": \"iis.application_pool\", \"customLabel\": false}], \"allColumns\": [{\"fieldName\": \"queue_depth\", \"columnId\": \"e976855b-f978-6e5c-9596-70700fbfefb7\", \"label\": \"queue_depth\", \"customLabel\": false, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true}, {\"fieldName\": \"time_bucket\", \"columnId\": \"44714e97-119f-dc33-b7f7-4ce49cc5463f\", \"label\": \"time_bucket\", \"customLabel\": false, \"meta\": {\"type\": \"date\", \"esType\": \"date\"}}, {\"fieldName\": \"iis.application_pool\", \"columnId\": \"52595828-5c38-4c1e-0add-e337fff6d573\", \"label\": \"iis.application_pool\", \"customLabel\": false}], \"timeField\": \"@timestamp\"}}}}, \"internalReferences\": [], \"adHocDataViews\": {}}}, \"syncTooltips\": false, \"syncColors\": false, \"syncCursor\": true, \"filters\": [], \"query\": {\"query\": \"\", \"language\": \"kuery\"}}}, {\"panelIndex\": \"05b2f9df-5188-db1e-2796-18cb493beef6\", \"gridData\": {\"x\": 24, \"y\": 29, \"w\": 24, \"h\": 12, \"i\": \"05b2f9df-5188-db1e-2796-18cb493beef6\"}, \"type\": \"lens\", \"embeddableConfig\": {\"enhancements\": {\"dynamicActions\": {\"events\": []}}, \"attributes\": {\"title\": \"Rejection Rate by Pool\", \"visualizationType\": \"lnsXY\", \"type\": \"lens\", \"references\": [], \"state\": {\"visualization\": {\"layers\": [{\"layerId\": \"ff033aca-ef68-7e0f-4374-669704a4af74\", \"accessors\": [\"94c16f55-bfe3-3609-6bad-10f1b6d92e7c\"], \"layerType\": \"data\", \"seriesType\": \"line\", \"xAccessor\": \"44714e97-119f-dc33-b7f7-4ce49cc5463f\", \"position\": \"top\", \"showGridlines\": false, \"splitAccessor\": \"52595828-5c38-4c1e-0add-e337fff6d573\", \"colorMapping\": {\"assignments\": [], \"specialAssignments\": [{\"rule\": {\"type\": \"other\"}, \"color\": {\"type\": \"loop\"}, \"touched\": false}], \"paletteId\": \"eui_amsterdam_color_blind\", \"colorMode\": {\"type\": \"categorical\"}}}], \"preferredSeriesType\": \"line\", \"legend\": {\"position\": \"right\"}, \"valueLabels\": \"hide\"}, \"query\": {\"esql\": \"TS metrics-iisreceiver.otel-*\\n| WHERE data_stream.dataset == \\\"iisreceiver.otel\\\" AND `iis.request.rejected` IS NOT NULL AND iis.application_pool IS NOT NULL\\n| STATS rejection_rate = SUM(RATE(`iis.request.rejected`)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), iis.application_pool\\n| SORT time_bucket ASC\\n\"}, \"filters\": [], \"datasourceStates\": {\"textBased\": {\"layers\": {\"ff033aca-ef68-7e0f-4374-669704a4af74\": {\"query\": {\"esql\": \"TS metrics-iisreceiver.otel-*\\n| WHERE data_stream.dataset == \\\"iisreceiver.otel\\\" AND `iis.request.rejected` IS NOT NULL AND iis.application_pool IS NOT NULL\\n| STATS rejection_rate = SUM(RATE(`iis.request.rejected`)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), iis.application_pool\\n| SORT time_bucket ASC\\n\"}, \"columns\": [{\"fieldName\": \"rejection_rate\", \"columnId\": \"94c16f55-bfe3-3609-6bad-10f1b6d92e7c\", \"label\": \"rejection_rate\", \"customLabel\": false, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true}, {\"fieldName\": \"time_bucket\", \"columnId\": \"44714e97-119f-dc33-b7f7-4ce49cc5463f\", \"label\": \"time_bucket\", \"customLabel\": false, \"meta\": {\"type\": \"date\", \"esType\": \"date\"}}, {\"fieldName\": \"iis.application_pool\", \"columnId\": \"52595828-5c38-4c1e-0add-e337fff6d573\", \"label\": \"iis.application_pool\", \"customLabel\": false}], \"allColumns\": [{\"fieldName\": \"rejection_rate\", \"columnId\": \"94c16f55-bfe3-3609-6bad-10f1b6d92e7c\", \"label\": \"rejection_rate\", \"customLabel\": false, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true}, {\"fieldName\": \"time_bucket\", \"columnId\": \"44714e97-119f-dc33-b7f7-4ce49cc5463f\", \"label\": \"time_bucket\", \"customLabel\": false, \"meta\": {\"type\": \"date\", \"esType\": \"date\"}}, {\"fieldName\": \"iis.application_pool\", \"columnId\": \"52595828-5c38-4c1e-0add-e337fff6d573\", \"label\": \"iis.application_pool\", \"customLabel\": false}], \"timeField\": \"@timestamp\"}}}}, \"internalReferences\": [], \"adHocDataViews\": {}}}, \"syncTooltips\": false, \"syncColors\": false, \"syncCursor\": true, \"filters\": [], \"query\": {\"query\": \"\", \"language\": \"kuery\"}}}, {\"panelIndex\": \"7c4344c7-425f-c9c2-aa97-4009ea1b4b5d\", \"gridData\": {\"x\": 0, \"y\": 41, \"w\": 24, \"h\": 12, \"i\": \"7c4344c7-425f-c9c2-aa97-4009ea1b4b5d\"}, \"type\": \"lens\", \"embeddableConfig\": {\"enhancements\": {\"dynamicActions\": {\"events\": []}}, \"attributes\": {\"title\": \"Queue Age by Pool\", \"visualizationType\": \"lnsXY\", \"type\": \"lens\", \"references\": [], \"state\": {\"visualization\": {\"layers\": [{\"layerId\": \"869b4ddf-26c4-1055-1214-36de11156f9e\", \"accessors\": [\"034b560f-b710-abfb-87aa-04700d0fac5e\"], \"layerType\": \"data\", \"seriesType\": \"line\", \"xAccessor\": \"44714e97-119f-dc33-b7f7-4ce49cc5463f\", \"position\": \"top\", \"showGridlines\": false, \"splitAccessor\": \"52595828-5c38-4c1e-0add-e337fff6d573\", \"colorMapping\": {\"assignments\": [], \"specialAssignments\": [{\"rule\": {\"type\": \"other\"}, \"color\": {\"type\": \"loop\"}, \"touched\": false}], \"paletteId\": \"eui_amsterdam_color_blind\", \"colorMode\": {\"type\": \"categorical\"}}}], \"preferredSeriesType\": \"line\", \"legend\": {\"position\": \"right\"}, \"valueLabels\": \"hide\"}, \"query\": {\"esql\": \"FROM metrics-iisreceiver.otel-*\\n| WHERE data_stream.dataset == \\\"iisreceiver.otel\\\" AND `iis.request.queue.age.max` IS NOT NULL AND iis.application_pool IS NOT NULL\\n| STATS queue_age_ms = MAX(`iis.request.queue.age.max`) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), iis.application_pool\\n| SORT time_bucket ASC\\n\"}, \"filters\": [], \"datasourceStates\": {\"textBased\": {\"layers\": {\"869b4ddf-26c4-1055-1214-36de11156f9e\": {\"query\": {\"esql\": \"FROM metrics-iisreceiver.otel-*\\n| WHERE data_stream.dataset == \\\"iisreceiver.otel\\\" AND `iis.request.queue.age.max` IS NOT NULL AND iis.application_pool IS NOT NULL\\n| STATS queue_age_ms = MAX(`iis.request.queue.age.max`) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), iis.application_pool\\n| SORT time_bucket ASC\\n\"}, \"columns\": [{\"fieldName\": \"queue_age_ms\", \"columnId\": \"034b560f-b710-abfb-87aa-04700d0fac5e\", \"label\": \"queue_age_ms\", \"customLabel\": false, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true}, {\"fieldName\": \"time_bucket\", \"columnId\": \"44714e97-119f-dc33-b7f7-4ce49cc5463f\", \"label\": \"time_bucket\", \"customLabel\": false, \"meta\": {\"type\": \"date\", \"esType\": \"date\"}}, {\"fieldName\": \"iis.application_pool\", \"columnId\": \"52595828-5c38-4c1e-0add-e337fff6d573\", \"label\": \"iis.application_pool\", \"customLabel\": false}], \"allColumns\": [{\"fieldName\": \"queue_age_ms\", \"columnId\": \"034b560f-b710-abfb-87aa-04700d0fac5e\", \"label\": \"queue_age_ms\", \"customLabel\": false, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true}, {\"fieldName\": \"time_bucket\", \"columnId\": \"44714e97-119f-dc33-b7f7-4ce49cc5463f\", \"label\": \"time_bucket\", \"customLabel\": false, \"meta\": {\"type\": \"date\", \"esType\": \"date\"}}, {\"fieldName\": \"iis.application_pool\", \"columnId\": \"52595828-5c38-4c1e-0add-e337fff6d573\", \"label\": \"iis.application_pool\", \"customLabel\": false}], \"timeField\": \"@timestamp\"}}}}, \"internalReferences\": [], \"adHocDataViews\": {}}}, \"syncTooltips\": false, \"syncColors\": false, \"syncCursor\": true, \"filters\": [], \"query\": {\"query\": \"\", \"language\": \"kuery\"}}}, {\"panelIndex\": \"dd819480-c9aa-d638-ee8e-ff0aa6b3d934\", \"gridData\": {\"x\": 24, \"y\": 41, \"w\": 24, \"h\": 12, \"i\": \"dd819480-c9aa-d638-ee8e-ff0aa6b3d934\"}, \"type\": \"lens\", \"embeddableConfig\": {\"enhancements\": {\"dynamicActions\": {\"events\": []}}, \"attributes\": {\"title\": \"Active Threads Over Time\", \"visualizationType\": \"lnsXY\", \"type\": \"lens\", \"references\": [], \"state\": {\"visualization\": {\"layers\": [{\"layerId\": \"cd2de242-0e52-9c46-5093-3fe9b7f25a2d\", \"accessors\": [\"9285a34b-2f64-b4a4-a660-df6762b1a5ef\"], \"layerType\": \"data\", \"seriesType\": \"line\", \"xAccessor\": \"44714e97-119f-dc33-b7f7-4ce49cc5463f\", \"position\": \"top\", \"showGridlines\": false, \"colorMapping\": {\"assignments\": [], \"specialAssignments\": [{\"rule\": {\"type\": \"other\"}, \"color\": {\"type\": \"loop\"}, \"touched\": false}], \"paletteId\": \"eui_amsterdam_color_blind\", \"colorMode\": {\"type\": \"categorical\"}}}], \"preferredSeriesType\": \"line\", \"legend\": {\"position\": \"right\"}, \"valueLabels\": \"hide\"}, \"query\": {\"esql\": \"FROM metrics-iisreceiver.otel-*\\n| WHERE data_stream.dataset == \\\"iisreceiver.otel\\\" AND `iis.thread.active` IS NOT NULL\\n| STATS threads = SUM(`iis.thread.active`) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\\n| SORT time_bucket ASC\\n\"}, \"filters\": [], \"datasourceStates\": {\"textBased\": {\"layers\": {\"cd2de242-0e52-9c46-5093-3fe9b7f25a2d\": {\"query\": {\"esql\": \"FROM metrics-iisreceiver.otel-*\\n| WHERE data_stream.dataset == \\\"iisreceiver.otel\\\" AND `iis.thread.active` IS NOT NULL\\n| STATS threads = SUM(`iis.thread.active`) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\\n| SORT time_bucket ASC\\n\"}, \"columns\": [{\"fieldName\": \"threads\", \"columnId\": \"9285a34b-2f64-b4a4-a660-df6762b1a5ef\", \"label\": \"threads\", \"customLabel\": false, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true}, {\"fieldName\": \"time_bucket\", \"columnId\": \"44714e97-119f-dc33-b7f7-4ce49cc5463f\", \"label\": \"time_bucket\", \"customLabel\": false, \"meta\": {\"type\": \"date\", \"esType\": \"date\"}}], \"allColumns\": [{\"fieldName\": \"threads\", \"columnId\": \"9285a34b-2f64-b4a4-a660-df6762b1a5ef\", \"label\": \"threads\", \"customLabel\": false, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true}, {\"fieldName\": \"time_bucket\", \"columnId\": \"44714e97-119f-dc33-b7f7-4ce49cc5463f\", \"label\": \"time_bucket\", \"customLabel\": false, \"meta\": {\"type\": \"date\", \"esType\": \"date\"}}], \"timeField\": \"@timestamp\"}}}}, \"internalReferences\": [], \"adHocDataViews\": {}}}, \"syncTooltips\": false, \"syncColors\": false, \"syncCursor\": true, \"filters\": [], \"query\": {\"query\": \"\", \"language\": \"kuery\"}}}, {\"panelIndex\": \"25facd50-b4a8-7a8c-60c5-d653f5f8b3e9\", \"gridData\": {\"x\": 0, \"y\": 53, \"w\": 48, \"h\": 3, \"i\": \"25facd50-b4a8-7a8c-60c5-d653f5f8b3e9\"}, \"type\": \"visualization\", \"embeddableConfig\": {\"enhancements\": {\"dynamicActions\": {\"events\": []}}, \"savedVis\": {\"type\": \"markdown\", \"id\": \"\", \"title\": \"\", \"description\": \"\", \"params\": {\"fontSize\": 12, \"openLinksInNewTab\": false, \"markdown\": \"## Top Sites & Application Pools\\n\"}, \"uiState\": {}, \"data\": {\"aggs\": [], \"searchSource\": {\"query\": {\"query\": \"\", \"language\": \"kuery\"}, \"filter\": []}}}}}, {\"panelIndex\": \"0fffa92b-02c5-f0c4-d098-ba89a3915abb\", \"gridData\": {\"x\": 0, \"y\": 56, \"w\": 24, \"h\": 15, \"i\": \"0fffa92b-02c5-f0c4-d098-ba89a3915abb\"}, \"type\": \"lens\", \"embeddableConfig\": {\"enhancements\": {\"dynamicActions\": {\"events\": []}}, \"attributes\": {\"title\": \"Top Sites by Request Count\", \"visualizationType\": \"lnsDatatable\", \"type\": \"lens\", \"references\": [], \"state\": {\"visualization\": {\"columns\": [{\"columnId\": \"b01c5d5f-975d-a4bf-903a-a5409cd71b3b\", \"isTransposed\": false, \"isMetric\": false}, {\"columnId\": \"be420b5c-0eaa-3390-b377-822f4d268b24\", \"isTransposed\": false, \"isMetric\": true}], \"layerId\": \"6afb878c-1dc6-f565-27b8-7b350df39dd1\", \"layerType\": \"data\"}, \"query\": {\"esql\": \"TS metrics-iisreceiver.otel-*\\n| WHERE data_stream.dataset == \\\"iisreceiver.otel\\\" AND `iis.request.count` IS NOT NULL AND iis.site IS NOT NULL\\n| STATS total_requests = SUM(INCREASE(`iis.request.count`)) BY iis.site\\n| SORT total_requests DESC\\n| LIMIT 50\"}, \"filters\": [], \"datasourceStates\": {\"textBased\": {\"layers\": {\"6afb878c-1dc6-f565-27b8-7b350df39dd1\": {\"query\": {\"esql\": \"TS metrics-iisreceiver.otel-*\\n| WHERE data_stream.dataset == \\\"iisreceiver.otel\\\" AND `iis.request.count` IS NOT NULL AND iis.site IS NOT NULL\\n| STATS total_requests = SUM(INCREASE(`iis.request.count`)) BY iis.site\\n| SORT total_requests DESC\\n| LIMIT 50\"}, \"columns\": [{\"fieldName\": \"iis.site\", \"columnId\": \"b01c5d5f-975d-a4bf-903a-a5409cd71b3b\", \"label\": \"Site\", \"customLabel\": true}, {\"fieldName\": \"total_requests\", \"columnId\": \"be420b5c-0eaa-3390-b377-822f4d268b24\", \"label\": \"Total Requests\", \"customLabel\": true, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true, \"params\": {\"format\": {\"id\": \"number\", \"params\": {\"decimals\": 0}}}}], \"allColumns\": [{\"fieldName\": \"iis.site\", \"columnId\": \"b01c5d5f-975d-a4bf-903a-a5409cd71b3b\", \"label\": \"Site\", \"customLabel\": true}, {\"fieldName\": \"total_requests\", \"columnId\": \"be420b5c-0eaa-3390-b377-822f4d268b24\", \"label\": \"Total Requests\", \"customLabel\": true, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true, \"params\": {\"format\": {\"id\": \"number\", \"params\": {\"decimals\": 0}}}}], \"timeField\": \"@timestamp\"}}}}, \"internalReferences\": [], \"adHocDataViews\": {}}}, \"syncTooltips\": false, \"syncColors\": false, \"syncCursor\": true, \"filters\": [], \"query\": {\"query\": \"\", \"language\": \"kuery\"}}}, {\"panelIndex\": \"8e745e07-81c8-1aaf-6552-35e44b95ff33\", \"gridData\": {\"x\": 24, \"y\": 56, \"w\": 24, \"h\": 15, \"i\": \"8e745e07-81c8-1aaf-6552-35e44b95ff33\"}, \"type\": \"lens\", \"embeddableConfig\": {\"enhancements\": {\"dynamicActions\": {\"events\": []}}, \"attributes\": {\"title\": \"Top Pools by Rejection Rate\", \"visualizationType\": \"lnsDatatable\", \"type\": \"lens\", \"references\": [], \"state\": {\"visualization\": {\"columns\": [{\"columnId\": \"9da88212-7b99-6af6-4b0e-060c74a32bba\", \"isTransposed\": false, \"isMetric\": false}, {\"columnId\": \"b4734893-eb5f-7f5d-b4fc-ebe59c5c1f9c\", \"isTransposed\": false, \"isMetric\": true}], \"layerId\": \"4b4146c2-44db-ccfd-b6a0-33eb34faa0b0\", \"layerType\": \"data\"}, \"query\": {\"esql\": \"TS metrics-iisreceiver.otel-*\\n| WHERE data_stream.dataset == \\\"iisreceiver.otel\\\" AND `iis.request.rejected` IS NOT NULL AND iis.application_pool IS NOT NULL\\n| STATS rejection_rate = SUM(RATE(`iis.request.rejected`)) BY iis.application_pool\\n| SORT rejection_rate DESC\\n| LIMIT 50\"}, \"filters\": [], \"datasourceStates\": {\"textBased\": {\"layers\": {\"4b4146c2-44db-ccfd-b6a0-33eb34faa0b0\": {\"query\": {\"esql\": \"TS metrics-iisreceiver.otel-*\\n| WHERE data_stream.dataset == \\\"iisreceiver.otel\\\" AND `iis.request.rejected` IS NOT NULL AND iis.application_pool IS NOT NULL\\n| STATS rejection_rate = SUM(RATE(`iis.request.rejected`)) BY iis.application_pool\\n| SORT rejection_rate DESC\\n| LIMIT 50\"}, \"columns\": [{\"fieldName\": \"iis.application_pool\", \"columnId\": \"9da88212-7b99-6af6-4b0e-060c74a32bba\", \"label\": \"Application Pool\", \"customLabel\": true}, {\"fieldName\": \"rejection_rate\", \"columnId\": \"b4734893-eb5f-7f5d-b4fc-ebe59c5c1f9c\", \"label\": \"Rejections/sec\", \"customLabel\": true, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true, \"params\": {\"format\": {\"id\": \"number\", \"params\": {\"decimals\": 2}}}}], \"allColumns\": [{\"fieldName\": \"iis.application_pool\", \"columnId\": \"9da88212-7b99-6af6-4b0e-060c74a32bba\", \"label\": \"Application Pool\", \"customLabel\": true}, {\"fieldName\": \"rejection_rate\", \"columnId\": \"b4734893-eb5f-7f5d-b4fc-ebe59c5c1f9c\", \"label\": \"Rejections/sec\", \"customLabel\": true, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true, \"params\": {\"format\": {\"id\": \"number\", \"params\": {\"decimals\": 2}}}}], \"timeField\": \"@timestamp\"}}}}, \"internalReferences\": [], \"adHocDataViews\": {}}}, \"syncTooltips\": false, \"syncColors\": false, \"syncCursor\": true, \"filters\": [], \"query\": {\"query\": \"\", \"language\": \"kuery\"}}}, {\"panelIndex\": \"e5bc9ecd-4d83-a600-8a4a-3667f9a37642\", \"gridData\": {\"x\": 0, \"y\": 71, \"w\": 24, \"h\": 15, \"i\": \"e5bc9ecd-4d83-a600-8a4a-3667f9a37642\"}, \"type\": \"lens\", \"embeddableConfig\": {\"enhancements\": {\"dynamicActions\": {\"events\": []}}, \"attributes\": {\"title\": \"Top Sites by Request Rate\", \"visualizationType\": \"lnsDatatable\", \"type\": \"lens\", \"references\": [], \"state\": {\"visualization\": {\"columns\": [{\"columnId\": \"b01c5d5f-975d-a4bf-903a-a5409cd71b3b\", \"isTransposed\": false, \"isMetric\": false}, {\"columnId\": \"9d9e8e9c-05ff-d7b4-37f4-67269da539f8\", \"isTransposed\": false, \"isMetric\": true}], \"layerId\": \"907abc74-5aaa-8841-ac4d-e2e37c13de57\", \"layerType\": \"data\"}, \"query\": {\"esql\": \"TS metrics-iisreceiver.otel-*\\n| WHERE data_stream.dataset == \\\"iisreceiver.otel\\\" AND `iis.request.count` IS NOT NULL AND iis.site IS NOT NULL\\n| STATS req_rate = SUM(RATE(`iis.request.count`)) BY iis.site\\n| SORT req_rate DESC\\n| LIMIT 50\"}, \"filters\": [], \"datasourceStates\": {\"textBased\": {\"layers\": {\"907abc74-5aaa-8841-ac4d-e2e37c13de57\": {\"query\": {\"esql\": \"TS metrics-iisreceiver.otel-*\\n| WHERE data_stream.dataset == \\\"iisreceiver.otel\\\" AND `iis.request.count` IS NOT NULL AND iis.site IS NOT NULL\\n| STATS req_rate = SUM(RATE(`iis.request.count`)) BY iis.site\\n| SORT req_rate DESC\\n| LIMIT 50\"}, \"columns\": [{\"fieldName\": \"iis.site\", \"columnId\": \"b01c5d5f-975d-a4bf-903a-a5409cd71b3b\", \"label\": \"Site\", \"customLabel\": true}, {\"fieldName\": \"req_rate\", \"columnId\": \"9d9e8e9c-05ff-d7b4-37f4-67269da539f8\", \"label\": \"Requests/sec\", \"customLabel\": true, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true, \"params\": {\"format\": {\"id\": \"number\", \"params\": {\"decimals\": 1}}}}], \"allColumns\": [{\"fieldName\": \"iis.site\", \"columnId\": \"b01c5d5f-975d-a4bf-903a-a5409cd71b3b\", \"label\": \"Site\", \"customLabel\": true}, {\"fieldName\": \"req_rate\", \"columnId\": \"9d9e8e9c-05ff-d7b4-37f4-67269da539f8\", \"label\": \"Requests/sec\", \"customLabel\": true, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true, \"params\": {\"format\": {\"id\": \"number\", \"params\": {\"decimals\": 1}}}}], \"timeField\": \"@timestamp\"}}}}, \"internalReferences\": [], \"adHocDataViews\": {}}}, \"syncTooltips\": false, \"syncColors\": false, \"syncCursor\": true, \"filters\": [], \"query\": {\"query\": \"\", \"language\": \"kuery\"}}}, {\"panelIndex\": \"3df009d1-4950-6747-bfa1-958aac238cbd\", \"gridData\": {\"x\": 24, \"y\": 71, \"w\": 24, \"h\": 15, \"i\": \"3df009d1-4950-6747-bfa1-958aac238cbd\"}, \"type\": \"lens\", \"embeddableConfig\": {\"enhancements\": {\"dynamicActions\": {\"events\": []}}, \"attributes\": {\"title\": \"Top Pools by Queue Depth\", \"visualizationType\": \"lnsDatatable\", \"type\": \"lens\", \"references\": [], \"state\": {\"visualization\": {\"columns\": [{\"columnId\": \"d87e9d4f-7643-94be-d3a1-f766ec373f31\", \"isTransposed\": false, \"isMetric\": false}, {\"columnId\": \"679f83c2-0608-6f7b-366c-d6be08613c7e\", \"isTransposed\": false, \"isMetric\": true}], \"layerId\": \"1372e37d-1581-a2d4-ee1e-0b9385a98a54\", \"layerType\": \"data\"}, \"query\": {\"esql\": \"FROM metrics-iisreceiver.otel-*\\n| WHERE data_stream.dataset == \\\"iisreceiver.otel\\\" AND `iis.request.queue.count` IS NOT NULL AND iis.application_pool IS NOT NULL\\n| STATS max_queue = MAX(`iis.request.queue.count`) BY pool = iis.application_pool\\n| SORT max_queue DESC\\n| LIMIT 50\"}, \"filters\": [], \"datasourceStates\": {\"textBased\": {\"layers\": {\"1372e37d-1581-a2d4-ee1e-0b9385a98a54\": {\"query\": {\"esql\": \"FROM metrics-iisreceiver.otel-*\\n| WHERE data_stream.dataset == \\\"iisreceiver.otel\\\" AND `iis.request.queue.count` IS NOT NULL AND iis.application_pool IS NOT NULL\\n| STATS max_queue = MAX(`iis.request.queue.count`) BY pool = iis.application_pool\\n| SORT max_queue DESC\\n| LIMIT 50\"}, \"columns\": [{\"fieldName\": \"pool\", \"columnId\": \"d87e9d4f-7643-94be-d3a1-f766ec373f31\", \"label\": \"Application Pool\", \"customLabel\": true}, {\"fieldName\": \"max_queue\", \"columnId\": \"679f83c2-0608-6f7b-366c-d6be08613c7e\", \"label\": \"Max Queue Depth\", \"customLabel\": true, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true, \"params\": {\"format\": {\"id\": \"number\", \"params\": {\"decimals\": 0}}}}], \"allColumns\": [{\"fieldName\": \"pool\", \"columnId\": \"d87e9d4f-7643-94be-d3a1-f766ec373f31\", \"label\": \"Application Pool\", \"customLabel\": true}, {\"fieldName\": \"max_queue\", \"columnId\": \"679f83c2-0608-6f7b-366c-d6be08613c7e\", \"label\": \"Max Queue Depth\", \"customLabel\": true, \"meta\": {\"type\": \"number\", \"esType\": \"long\"}, \"inMetricDimension\": true, \"params\": {\"format\": {\"id\": \"number\", \"params\": {\"decimals\": 0}}}}], \"timeField\": \"@timestamp\"}}}}, \"internalReferences\": [], \"adHocDataViews\": {}}}, \"syncTooltips\": false, \"syncColors\": false, \"syncCursor\": true, \"filters\": [], \"query\": {\"query\": \"\", \"language\": \"kuery\"}}}]",
-    "optionsJSON": "{\"useMargins\":true,\"syncColors\":false,\"syncCursor\":true,\"syncTooltips\":false,\"hidePanelTitles\":false}",
-    "kibanaSavedObjectMeta": {
-      "searchSourceJSON": "{\"filter\":[{\"$state\":{\"store\":\"appState\"},\"meta\":{\"disabled\":false,\"negate\":false,\"alias\":null,\"type\":\"phrase\",\"key\":\"data_stream.dataset\",\"field\":\"data_stream.dataset\",\"params\":{\"query\":\"iisreceiver.otel\"}},\"query\":{\"match_phrase\":{\"data_stream.dataset\":\"iisreceiver.otel\"}}}],\"query\":{\"query\":\"\",\"language\":\"kuery\"}}"
+    "attributes": {
+        "title": "[IIS OTel] Sites & Pools",
+        "description": "Per-site and per-application-pool breakdown of request rate, network throughput, connections, queue metrics, and rejections. Supports capacity planning and per-tenant analysis.",
+        "panelsJSON": [
+            {
+                "panelIndex": "5ec9d4e9-3f1c-8f1e-41f0-eb022308081d",
+                "gridData": {
+                    "x": 0,
+                    "y": 0,
+                    "w": 48,
+                    "h": 2,
+                    "i": "5ec9d4e9-3f1c-8f1e-41f0-eb022308081d"
+                },
+                "type": "links",
+                "embeddableConfig": {
+                    "enhancements": {},
+                    "attributes": {
+                        "layout": "horizontal",
+                        "links": [
+                            {
+                                "id": "3af4ba12-6f83-488a-bdc9-0c7216a22d73",
+                                "order": 0,
+                                "label": "Overview",
+                                "type": "dashboardLink",
+                                "destinationRefName": "link_3af4ba12-6f83-488a-bdc9-0c7216a22d73_dashboard"
+                            },
+                            {
+                                "id": "311e2098-d3cb-e8f4-bf13-b097739154c3",
+                                "order": 1,
+                                "label": "Sites & Pools",
+                                "type": "dashboardLink",
+                                "destinationRefName": "link_311e2098-d3cb-e8f4-bf13-b097739154c3_dashboard"
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "panelIndex": "0563dba8-e018-01bf-7e3c-91932750954e",
+                "gridData": {
+                    "x": 0,
+                    "y": 2,
+                    "w": 16,
+                    "h": 12,
+                    "i": "0563dba8-e018-01bf-7e3c-91932750954e"
+                },
+                "type": "visualization",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "savedVis": {
+                        "type": "markdown",
+                        "id": "",
+                        "title": "",
+                        "description": "",
+                        "params": {
+                            "fontSize": 12,
+                            "openLinksInNewTab": false,
+                            "markdown": "## [IIS OTel] Sites & Pools\n\nThis dashboard provides per-site and per-application-pool breakdowns:\n\n- **Per-site** — Request rate, network throughput, active connections\n- **Per-pool** — Queue depth, rejection rate, queue age, active threads\n- **Detail tables** — Top sites and pools by traffic and health\n\nUse the Host, Site, and Application Pool filters to narrow the view.\n"
+                        },
+                        "uiState": {},
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "query": {
+                                    "query": "",
+                                    "language": "kuery"
+                                },
+                                "filter": []
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "panelIndex": "1c7012df-5cc7-34a1-5597-5373fcecbff6",
+                "gridData": {
+                    "x": 16,
+                    "y": 2,
+                    "w": 32,
+                    "h": 12,
+                    "i": "1c7012df-5cc7-34a1-5597-5373fcecbff6"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Request Rate by Site",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "9585d56f-e865-438a-6da8-dfcf4f735705",
+                                        "accessors": [
+                                            "3fe83a4c-3cba-c2cb-0f7d-79bb2b6d09af"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "area",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "splitAccessor": "4e138b02-ec44-26d1-ddf1-4da997743461",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "area",
+                                "legend": {
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "TS metrics-iisreceiver.otel-*\n| WHERE data_stream.dataset == \"iisreceiver.otel\" AND `iis.request.count` IS NOT NULL AND iis.site IS NOT NULL\n| STATS request_rate = SUM(RATE(`iis.request.count`)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), iis.site\n| SORT time_bucket ASC\n"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "9585d56f-e865-438a-6da8-dfcf4f735705": {
+                                            "query": {
+                                                "esql": "TS metrics-iisreceiver.otel-*\n| WHERE data_stream.dataset == \"iisreceiver.otel\" AND `iis.request.count` IS NOT NULL AND iis.site IS NOT NULL\n| STATS request_rate = SUM(RATE(`iis.request.count`)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), iis.site\n| SORT time_bucket ASC\n"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "request_rate",
+                                                    "columnId": "3fe83a4c-3cba-c2cb-0f7d-79bb2b6d09af",
+                                                    "label": "request_rate",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "iis.site",
+                                                    "columnId": "4e138b02-ec44-26d1-ddf1-4da997743461",
+                                                    "label": "iis.site",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "request_rate",
+                                                    "columnId": "3fe83a4c-3cba-c2cb-0f7d-79bb2b6d09af",
+                                                    "label": "request_rate",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "iis.site",
+                                                    "columnId": "4e138b02-ec44-26d1-ddf1-4da997743461",
+                                                    "label": "iis.site",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "timeField": "@timestamp",
+                                            "index": "e6129498-befd-dcd9-96a4-7288c0be098f"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [
+                                {
+                                    "type": "index-pattern",
+                                    "id": "e6129498-befd-dcd9-96a4-7288c0be098f",
+                                    "name": "indexpattern-datasource-layer-9585d56f-e865-438a-6da8-dfcf4f735705"
+                                }
+                            ],
+                            "adHocDataViews": {
+                                "e6129498-befd-dcd9-96a4-7288c0be098f": {
+                                    "id": "e6129498-befd-dcd9-96a4-7288c0be098f",
+                                    "type": "esql",
+                                    "name": "metrics-iisreceiver.otel-*",
+                                    "title": "metrics-iisreceiver.otel-*",
+                                    "timeFieldName": "@timestamp",
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldAttrs": {},
+                                    "fieldFormats": {},
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": []
+                                }
+                            }
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "6fbdbb87-fb45-c3da-aed7-bea514676e1f",
+                "gridData": {
+                    "x": 0,
+                    "y": 14,
+                    "w": 24,
+                    "h": 12,
+                    "i": "6fbdbb87-fb45-c3da-aed7-bea514676e1f"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Network Throughput by Site",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "df752061-9b83-548b-65c2-bcd89d8f7789",
+                                        "accessors": [
+                                            "d17d0e31-7edb-b976-81cb-d9a16f07f2a2"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "area",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "splitAccessor": "4e138b02-ec44-26d1-ddf1-4da997743461",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "area",
+                                "legend": {
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "TS metrics-iisreceiver.otel-*\n| WHERE data_stream.dataset == \"iisreceiver.otel\" AND `iis.network.io` IS NOT NULL AND iis.site IS NOT NULL\n| STATS throughput = SUM(RATE(`iis.network.io`)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), iis.site\n| SORT time_bucket ASC\n"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "df752061-9b83-548b-65c2-bcd89d8f7789": {
+                                            "query": {
+                                                "esql": "TS metrics-iisreceiver.otel-*\n| WHERE data_stream.dataset == \"iisreceiver.otel\" AND `iis.network.io` IS NOT NULL AND iis.site IS NOT NULL\n| STATS throughput = SUM(RATE(`iis.network.io`)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), iis.site\n| SORT time_bucket ASC\n"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "throughput",
+                                                    "columnId": "d17d0e31-7edb-b976-81cb-d9a16f07f2a2",
+                                                    "label": "throughput",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "iis.site",
+                                                    "columnId": "4e138b02-ec44-26d1-ddf1-4da997743461",
+                                                    "label": "iis.site",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "throughput",
+                                                    "columnId": "d17d0e31-7edb-b976-81cb-d9a16f07f2a2",
+                                                    "label": "throughput",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "iis.site",
+                                                    "columnId": "4e138b02-ec44-26d1-ddf1-4da997743461",
+                                                    "label": "iis.site",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "timeField": "@timestamp",
+                                            "index": "648ee4e0-bd12-641d-1b0d-e44183878ddd"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [
+                                {
+                                    "type": "index-pattern",
+                                    "id": "648ee4e0-bd12-641d-1b0d-e44183878ddd",
+                                    "name": "indexpattern-datasource-layer-df752061-9b83-548b-65c2-bcd89d8f7789"
+                                }
+                            ],
+                            "adHocDataViews": {
+                                "648ee4e0-bd12-641d-1b0d-e44183878ddd": {
+                                    "id": "648ee4e0-bd12-641d-1b0d-e44183878ddd",
+                                    "type": "esql",
+                                    "name": "metrics-iisreceiver.otel-*",
+                                    "title": "metrics-iisreceiver.otel-*",
+                                    "timeFieldName": "@timestamp",
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldAttrs": {},
+                                    "fieldFormats": {},
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": []
+                                }
+                            }
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "b9979009-5578-7141-2933-4fa0583cd882",
+                "gridData": {
+                    "x": 24,
+                    "y": 14,
+                    "w": 24,
+                    "h": 12,
+                    "i": "b9979009-5578-7141-2933-4fa0583cd882"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Active Connections by Site",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "d5104778-f143-d87b-13f1-e0a56b595156",
+                                        "accessors": [
+                                            "e69a4803-c22b-cba0-e508-01c3fe86ec24"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "splitAccessor": "4e138b02-ec44-26d1-ddf1-4da997743461",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "line",
+                                "legend": {
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "FROM metrics-iisreceiver.otel-*\n| WHERE data_stream.dataset == \"iisreceiver.otel\" AND `iis.connection.active` IS NOT NULL AND iis.site IS NOT NULL\n| STATS connections = SUM(`iis.connection.active`) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), iis.site\n| SORT time_bucket ASC\n"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "d5104778-f143-d87b-13f1-e0a56b595156": {
+                                            "query": {
+                                                "esql": "FROM metrics-iisreceiver.otel-*\n| WHERE data_stream.dataset == \"iisreceiver.otel\" AND `iis.connection.active` IS NOT NULL AND iis.site IS NOT NULL\n| STATS connections = SUM(`iis.connection.active`) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), iis.site\n| SORT time_bucket ASC\n"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "connections",
+                                                    "columnId": "e69a4803-c22b-cba0-e508-01c3fe86ec24",
+                                                    "label": "connections",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "iis.site",
+                                                    "columnId": "4e138b02-ec44-26d1-ddf1-4da997743461",
+                                                    "label": "iis.site",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "connections",
+                                                    "columnId": "e69a4803-c22b-cba0-e508-01c3fe86ec24",
+                                                    "label": "connections",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "iis.site",
+                                                    "columnId": "4e138b02-ec44-26d1-ddf1-4da997743461",
+                                                    "label": "iis.site",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "timeField": "@timestamp",
+                                            "index": "81709912-7c58-563c-f5c7-4848184b2aa7"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [
+                                {
+                                    "type": "index-pattern",
+                                    "id": "81709912-7c58-563c-f5c7-4848184b2aa7",
+                                    "name": "indexpattern-datasource-layer-d5104778-f143-d87b-13f1-e0a56b595156"
+                                }
+                            ],
+                            "adHocDataViews": {
+                                "81709912-7c58-563c-f5c7-4848184b2aa7": {
+                                    "id": "81709912-7c58-563c-f5c7-4848184b2aa7",
+                                    "type": "esql",
+                                    "name": "metrics-iisreceiver.otel-*",
+                                    "title": "metrics-iisreceiver.otel-*",
+                                    "timeFieldName": "@timestamp",
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldAttrs": {},
+                                    "fieldFormats": {},
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": []
+                                }
+                            }
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "2c63b4bb-844a-bad3-6fff-536f2d1f4b6e",
+                "gridData": {
+                    "x": 0,
+                    "y": 26,
+                    "w": 48,
+                    "h": 3,
+                    "i": "2c63b4bb-844a-bad3-6fff-536f2d1f4b6e"
+                },
+                "type": "visualization",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "savedVis": {
+                        "type": "markdown",
+                        "id": "",
+                        "title": "",
+                        "description": "",
+                        "params": {
+                            "fontSize": 12,
+                            "openLinksInNewTab": false,
+                            "markdown": "## Per-Application-Pool Metrics\n"
+                        },
+                        "uiState": {},
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "query": {
+                                    "query": "",
+                                    "language": "kuery"
+                                },
+                                "filter": []
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "panelIndex": "ce3ef6aa-8bd3-f6bc-9314-b44e31080fb9",
+                "gridData": {
+                    "x": 0,
+                    "y": 29,
+                    "w": 24,
+                    "h": 12,
+                    "i": "ce3ef6aa-8bd3-f6bc-9314-b44e31080fb9"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Queue Depth by Pool",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "a6dc9826-8a54-91d9-f6ac-765d864a82b0",
+                                        "accessors": [
+                                            "e976855b-f978-6e5c-9596-70700fbfefb7"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "splitAccessor": "755bdb96-330e-cb72-5ec3-c28e2c587ddb",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "line",
+                                "legend": {
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "FROM metrics-iisreceiver.otel-*\n| WHERE data_stream.dataset == \"iisreceiver.otel\" AND `iis.request.queue.count` IS NOT NULL AND iis.application_pool IS NOT NULL\n| STATS queue_depth = SUM(`iis.request.queue.count`) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), iis.application_pool\n| SORT time_bucket ASC\n"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "a6dc9826-8a54-91d9-f6ac-765d864a82b0": {
+                                            "query": {
+                                                "esql": "FROM metrics-iisreceiver.otel-*\n| WHERE data_stream.dataset == \"iisreceiver.otel\" AND `iis.request.queue.count` IS NOT NULL AND iis.application_pool IS NOT NULL\n| STATS queue_depth = SUM(`iis.request.queue.count`) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), iis.application_pool\n| SORT time_bucket ASC\n"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "queue_depth",
+                                                    "columnId": "e976855b-f978-6e5c-9596-70700fbfefb7",
+                                                    "label": "queue_depth",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "iis.application_pool",
+                                                    "columnId": "755bdb96-330e-cb72-5ec3-c28e2c587ddb",
+                                                    "label": "iis.application_pool",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "queue_depth",
+                                                    "columnId": "e976855b-f978-6e5c-9596-70700fbfefb7",
+                                                    "label": "queue_depth",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "iis.application_pool",
+                                                    "columnId": "755bdb96-330e-cb72-5ec3-c28e2c587ddb",
+                                                    "label": "iis.application_pool",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "timeField": "@timestamp",
+                                            "index": "2d3b5318-aea9-2193-1f62-7e95aa66d4ee"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [
+                                {
+                                    "type": "index-pattern",
+                                    "id": "2d3b5318-aea9-2193-1f62-7e95aa66d4ee",
+                                    "name": "indexpattern-datasource-layer-a6dc9826-8a54-91d9-f6ac-765d864a82b0"
+                                }
+                            ],
+                            "adHocDataViews": {
+                                "2d3b5318-aea9-2193-1f62-7e95aa66d4ee": {
+                                    "id": "2d3b5318-aea9-2193-1f62-7e95aa66d4ee",
+                                    "type": "esql",
+                                    "name": "metrics-iisreceiver.otel-*",
+                                    "title": "metrics-iisreceiver.otel-*",
+                                    "timeFieldName": "@timestamp",
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldAttrs": {},
+                                    "fieldFormats": {},
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": []
+                                }
+                            }
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "05b2f9df-5188-db1e-2796-18cb493beef6",
+                "gridData": {
+                    "x": 24,
+                    "y": 29,
+                    "w": 24,
+                    "h": 12,
+                    "i": "05b2f9df-5188-db1e-2796-18cb493beef6"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Rejection Rate by Pool",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "e770efa8-36b3-eb0e-bcb9-f5d95c602d28",
+                                        "accessors": [
+                                            "94c16f55-bfe3-3609-6bad-10f1b6d92e7c"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "splitAccessor": "755bdb96-330e-cb72-5ec3-c28e2c587ddb",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "line",
+                                "legend": {
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "TS metrics-iisreceiver.otel-*\n| WHERE data_stream.dataset == \"iisreceiver.otel\" AND `iis.request.rejected` IS NOT NULL AND iis.application_pool IS NOT NULL\n| STATS rejection_rate = SUM(RATE(`iis.request.rejected`)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), iis.application_pool\n| SORT time_bucket ASC\n"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "e770efa8-36b3-eb0e-bcb9-f5d95c602d28": {
+                                            "query": {
+                                                "esql": "TS metrics-iisreceiver.otel-*\n| WHERE data_stream.dataset == \"iisreceiver.otel\" AND `iis.request.rejected` IS NOT NULL AND iis.application_pool IS NOT NULL\n| STATS rejection_rate = SUM(RATE(`iis.request.rejected`)) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), iis.application_pool\n| SORT time_bucket ASC\n"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "rejection_rate",
+                                                    "columnId": "94c16f55-bfe3-3609-6bad-10f1b6d92e7c",
+                                                    "label": "rejection_rate",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "iis.application_pool",
+                                                    "columnId": "755bdb96-330e-cb72-5ec3-c28e2c587ddb",
+                                                    "label": "iis.application_pool",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "rejection_rate",
+                                                    "columnId": "94c16f55-bfe3-3609-6bad-10f1b6d92e7c",
+                                                    "label": "rejection_rate",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "iis.application_pool",
+                                                    "columnId": "755bdb96-330e-cb72-5ec3-c28e2c587ddb",
+                                                    "label": "iis.application_pool",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "timeField": "@timestamp",
+                                            "index": "33dcf534-ca1c-4678-4b52-8dff377c14b8"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [
+                                {
+                                    "type": "index-pattern",
+                                    "id": "33dcf534-ca1c-4678-4b52-8dff377c14b8",
+                                    "name": "indexpattern-datasource-layer-e770efa8-36b3-eb0e-bcb9-f5d95c602d28"
+                                }
+                            ],
+                            "adHocDataViews": {
+                                "33dcf534-ca1c-4678-4b52-8dff377c14b8": {
+                                    "id": "33dcf534-ca1c-4678-4b52-8dff377c14b8",
+                                    "type": "esql",
+                                    "name": "metrics-iisreceiver.otel-*",
+                                    "title": "metrics-iisreceiver.otel-*",
+                                    "timeFieldName": "@timestamp",
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldAttrs": {},
+                                    "fieldFormats": {},
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": []
+                                }
+                            }
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "7c4344c7-425f-c9c2-aa97-4009ea1b4b5d",
+                "gridData": {
+                    "x": 0,
+                    "y": 41,
+                    "w": 24,
+                    "h": 12,
+                    "i": "7c4344c7-425f-c9c2-aa97-4009ea1b4b5d"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Queue Age by Pool",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "f903b0b9-47c2-ec63-cb28-199228fce9b6",
+                                        "accessors": [
+                                            "034b560f-b710-abfb-87aa-04700d0fac5e"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "splitAccessor": "755bdb96-330e-cb72-5ec3-c28e2c587ddb",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "line",
+                                "legend": {
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "FROM metrics-iisreceiver.otel-*\n| WHERE data_stream.dataset == \"iisreceiver.otel\" AND `iis.request.queue.age.max` IS NOT NULL AND iis.application_pool IS NOT NULL\n| STATS queue_age_ms = MAX(`iis.request.queue.age.max`) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), iis.application_pool\n| SORT time_bucket ASC\n"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "f903b0b9-47c2-ec63-cb28-199228fce9b6": {
+                                            "query": {
+                                                "esql": "FROM metrics-iisreceiver.otel-*\n| WHERE data_stream.dataset == \"iisreceiver.otel\" AND `iis.request.queue.age.max` IS NOT NULL AND iis.application_pool IS NOT NULL\n| STATS queue_age_ms = MAX(`iis.request.queue.age.max`) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), iis.application_pool\n| SORT time_bucket ASC\n"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "queue_age_ms",
+                                                    "columnId": "034b560f-b710-abfb-87aa-04700d0fac5e",
+                                                    "label": "queue_age_ms",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "iis.application_pool",
+                                                    "columnId": "755bdb96-330e-cb72-5ec3-c28e2c587ddb",
+                                                    "label": "iis.application_pool",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "queue_age_ms",
+                                                    "columnId": "034b560f-b710-abfb-87aa-04700d0fac5e",
+                                                    "label": "queue_age_ms",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "fieldName": "iis.application_pool",
+                                                    "columnId": "755bdb96-330e-cb72-5ec3-c28e2c587ddb",
+                                                    "label": "iis.application_pool",
+                                                    "customLabel": false
+                                                }
+                                            ],
+                                            "timeField": "@timestamp",
+                                            "index": "619cd8f7-b797-27c9-ad73-c52626ef8268"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [
+                                {
+                                    "type": "index-pattern",
+                                    "id": "619cd8f7-b797-27c9-ad73-c52626ef8268",
+                                    "name": "indexpattern-datasource-layer-f903b0b9-47c2-ec63-cb28-199228fce9b6"
+                                }
+                            ],
+                            "adHocDataViews": {
+                                "619cd8f7-b797-27c9-ad73-c52626ef8268": {
+                                    "id": "619cd8f7-b797-27c9-ad73-c52626ef8268",
+                                    "type": "esql",
+                                    "name": "metrics-iisreceiver.otel-*",
+                                    "title": "metrics-iisreceiver.otel-*",
+                                    "timeFieldName": "@timestamp",
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldAttrs": {},
+                                    "fieldFormats": {},
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": []
+                                }
+                            }
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "dd819480-c9aa-d638-ee8e-ff0aa6b3d934",
+                "gridData": {
+                    "x": 24,
+                    "y": 41,
+                    "w": 24,
+                    "h": 12,
+                    "i": "dd819480-c9aa-d638-ee8e-ff0aa6b3d934"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Active Threads Over Time",
+                        "visualizationType": "lnsXY",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "layerId": "f3b0db06-7131-2aa2-674e-5b90e4b68a07",
+                                        "accessors": [
+                                            "9285a34b-2f64-b4a4-a660-df6762b1a5ef"
+                                        ],
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                        "position": "top",
+                                        "showGridlines": false,
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "specialAssignments": [
+                                                {
+                                                    "rule": {
+                                                        "type": "other"
+                                                    },
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "touched": false
+                                                }
+                                            ],
+                                            "paletteId": "eui_amsterdam_color_blind",
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            }
+                                        }
+                                    }
+                                ],
+                                "preferredSeriesType": "line",
+                                "legend": {
+                                    "position": "right"
+                                },
+                                "valueLabels": "hide"
+                            },
+                            "query": {
+                                "esql": "FROM metrics-iisreceiver.otel-*\n| WHERE data_stream.dataset == \"iisreceiver.otel\" AND `iis.thread.active` IS NOT NULL\n| STATS threads = SUM(`iis.thread.active`) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC\n"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "f3b0db06-7131-2aa2-674e-5b90e4b68a07": {
+                                            "query": {
+                                                "esql": "FROM metrics-iisreceiver.otel-*\n| WHERE data_stream.dataset == \"iisreceiver.otel\" AND `iis.thread.active` IS NOT NULL\n| STATS threads = SUM(`iis.thread.active`) BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)\n| SORT time_bucket ASC\n"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "threads",
+                                                    "columnId": "9285a34b-2f64-b4a4-a660-df6762b1a5ef",
+                                                    "label": "threads",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "threads",
+                                                    "columnId": "9285a34b-2f64-b4a4-a660-df6762b1a5ef",
+                                                    "label": "threads",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true
+                                                },
+                                                {
+                                                    "fieldName": "time_bucket",
+                                                    "columnId": "42a876a0-15e3-395a-0a00-b1577942ad2f",
+                                                    "label": "time_bucket",
+                                                    "customLabel": false,
+                                                    "meta": {
+                                                        "type": "date",
+                                                        "esType": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp",
+                                            "index": "5c57d522-f506-a1f3-8bba-1ff5290fe912"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [
+                                {
+                                    "type": "index-pattern",
+                                    "id": "5c57d522-f506-a1f3-8bba-1ff5290fe912",
+                                    "name": "indexpattern-datasource-layer-f3b0db06-7131-2aa2-674e-5b90e4b68a07"
+                                }
+                            ],
+                            "adHocDataViews": {
+                                "5c57d522-f506-a1f3-8bba-1ff5290fe912": {
+                                    "id": "5c57d522-f506-a1f3-8bba-1ff5290fe912",
+                                    "type": "esql",
+                                    "name": "metrics-iisreceiver.otel-*",
+                                    "title": "metrics-iisreceiver.otel-*",
+                                    "timeFieldName": "@timestamp",
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldAttrs": {},
+                                    "fieldFormats": {},
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": []
+                                }
+                            }
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "25facd50-b4a8-7a8c-60c5-d653f5f8b3e9",
+                "gridData": {
+                    "x": 0,
+                    "y": 53,
+                    "w": 48,
+                    "h": 3,
+                    "i": "25facd50-b4a8-7a8c-60c5-d653f5f8b3e9"
+                },
+                "type": "visualization",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "savedVis": {
+                        "type": "markdown",
+                        "id": "",
+                        "title": "",
+                        "description": "",
+                        "params": {
+                            "fontSize": 12,
+                            "openLinksInNewTab": false,
+                            "markdown": "## Top Sites & Application Pools\n"
+                        },
+                        "uiState": {},
+                        "data": {
+                            "aggs": [],
+                            "searchSource": {
+                                "query": {
+                                    "query": "",
+                                    "language": "kuery"
+                                },
+                                "filter": []
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                "panelIndex": "0fffa92b-02c5-f0c4-d098-ba89a3915abb",
+                "gridData": {
+                    "x": 0,
+                    "y": 56,
+                    "w": 24,
+                    "h": 15,
+                    "i": "0fffa92b-02c5-f0c4-d098-ba89a3915abb"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Top Sites by Request Count",
+                        "visualizationType": "lnsDatatable",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "f7f02f2e-d94a-68c8-a0fa-7f16845672e2",
+                                        "isTransposed": false,
+                                        "isMetric": false
+                                    },
+                                    {
+                                        "columnId": "ddb966a4-abf6-3127-74aa-09fc61093e9e",
+                                        "isTransposed": false,
+                                        "isMetric": true
+                                    }
+                                ],
+                                "layerId": "bf652d74-8b2d-9767-1e48-b21858b0c4f1",
+                                "layerType": "data"
+                            },
+                            "query": {
+                                "esql": "TS metrics-iisreceiver.otel-*\n| WHERE data_stream.dataset == \"iisreceiver.otel\" AND `iis.request.count` IS NOT NULL AND iis.site IS NOT NULL\n| STATS total_requests = SUM(INCREASE(`iis.request.count`)) BY iis.site\n| SORT total_requests DESC\n| LIMIT 50"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "bf652d74-8b2d-9767-1e48-b21858b0c4f1": {
+                                            "query": {
+                                                "esql": "TS metrics-iisreceiver.otel-*\n| WHERE data_stream.dataset == \"iisreceiver.otel\" AND `iis.request.count` IS NOT NULL AND iis.site IS NOT NULL\n| STATS total_requests = SUM(INCREASE(`iis.request.count`)) BY iis.site\n| SORT total_requests DESC\n| LIMIT 50"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "iis.site",
+                                                    "columnId": "f7f02f2e-d94a-68c8-a0fa-7f16845672e2",
+                                                    "label": "Site",
+                                                    "customLabel": true
+                                                },
+                                                {
+                                                    "fieldName": "total_requests",
+                                                    "columnId": "ddb966a4-abf6-3127-74aa-09fc61093e9e",
+                                                    "label": "Total Requests",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "iis.site",
+                                                    "columnId": "f7f02f2e-d94a-68c8-a0fa-7f16845672e2",
+                                                    "label": "Site",
+                                                    "customLabel": true
+                                                },
+                                                {
+                                                    "fieldName": "total_requests",
+                                                    "columnId": "ddb966a4-abf6-3127-74aa-09fc61093e9e",
+                                                    "label": "Total Requests",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp",
+                                            "index": "0e61d09b-11a3-ca35-a51a-faf43674cd7b"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [
+                                {
+                                    "type": "index-pattern",
+                                    "id": "0e61d09b-11a3-ca35-a51a-faf43674cd7b",
+                                    "name": "indexpattern-datasource-layer-bf652d74-8b2d-9767-1e48-b21858b0c4f1"
+                                }
+                            ],
+                            "adHocDataViews": {
+                                "0e61d09b-11a3-ca35-a51a-faf43674cd7b": {
+                                    "id": "0e61d09b-11a3-ca35-a51a-faf43674cd7b",
+                                    "type": "esql",
+                                    "name": "metrics-iisreceiver.otel-*",
+                                    "title": "metrics-iisreceiver.otel-*",
+                                    "timeFieldName": "@timestamp",
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldAttrs": {},
+                                    "fieldFormats": {},
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": []
+                                }
+                            }
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "8e745e07-81c8-1aaf-6552-35e44b95ff33",
+                "gridData": {
+                    "x": 24,
+                    "y": 56,
+                    "w": 24,
+                    "h": 15,
+                    "i": "8e745e07-81c8-1aaf-6552-35e44b95ff33"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Top Pools by Rejection Rate",
+                        "visualizationType": "lnsDatatable",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "68fca49c-69d3-dcc4-79fa-9583c2fff60c",
+                                        "isTransposed": false,
+                                        "isMetric": false
+                                    },
+                                    {
+                                        "columnId": "c0dc0136-8e08-5b17-9613-ed1c44a6d74c",
+                                        "isTransposed": false,
+                                        "isMetric": true
+                                    }
+                                ],
+                                "layerId": "9f67b687-d93d-1699-2970-33f5fa309ebd",
+                                "layerType": "data"
+                            },
+                            "query": {
+                                "esql": "TS metrics-iisreceiver.otel-*\n| WHERE data_stream.dataset == \"iisreceiver.otel\" AND `iis.request.rejected` IS NOT NULL AND iis.application_pool IS NOT NULL\n| STATS rejection_rate = SUM(RATE(`iis.request.rejected`)) BY iis.application_pool\n| SORT rejection_rate DESC\n| LIMIT 50"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "9f67b687-d93d-1699-2970-33f5fa309ebd": {
+                                            "query": {
+                                                "esql": "TS metrics-iisreceiver.otel-*\n| WHERE data_stream.dataset == \"iisreceiver.otel\" AND `iis.request.rejected` IS NOT NULL AND iis.application_pool IS NOT NULL\n| STATS rejection_rate = SUM(RATE(`iis.request.rejected`)) BY iis.application_pool\n| SORT rejection_rate DESC\n| LIMIT 50"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "iis.application_pool",
+                                                    "columnId": "68fca49c-69d3-dcc4-79fa-9583c2fff60c",
+                                                    "label": "Application Pool",
+                                                    "customLabel": true
+                                                },
+                                                {
+                                                    "fieldName": "rejection_rate",
+                                                    "columnId": "c0dc0136-8e08-5b17-9613-ed1c44a6d74c",
+                                                    "label": "Rejections/sec",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "iis.application_pool",
+                                                    "columnId": "68fca49c-69d3-dcc4-79fa-9583c2fff60c",
+                                                    "label": "Application Pool",
+                                                    "customLabel": true
+                                                },
+                                                {
+                                                    "fieldName": "rejection_rate",
+                                                    "columnId": "c0dc0136-8e08-5b17-9613-ed1c44a6d74c",
+                                                    "label": "Rejections/sec",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp",
+                                            "index": "17f56d66-fd4f-3a97-974e-9209ce8749b3"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [
+                                {
+                                    "type": "index-pattern",
+                                    "id": "17f56d66-fd4f-3a97-974e-9209ce8749b3",
+                                    "name": "indexpattern-datasource-layer-9f67b687-d93d-1699-2970-33f5fa309ebd"
+                                }
+                            ],
+                            "adHocDataViews": {
+                                "17f56d66-fd4f-3a97-974e-9209ce8749b3": {
+                                    "id": "17f56d66-fd4f-3a97-974e-9209ce8749b3",
+                                    "type": "esql",
+                                    "name": "metrics-iisreceiver.otel-*",
+                                    "title": "metrics-iisreceiver.otel-*",
+                                    "timeFieldName": "@timestamp",
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldAttrs": {},
+                                    "fieldFormats": {},
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": []
+                                }
+                            }
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "e5bc9ecd-4d83-a600-8a4a-3667f9a37642",
+                "gridData": {
+                    "x": 0,
+                    "y": 71,
+                    "w": 24,
+                    "h": 15,
+                    "i": "e5bc9ecd-4d83-a600-8a4a-3667f9a37642"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Top Sites by Request Rate",
+                        "visualizationType": "lnsDatatable",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "f7f02f2e-d94a-68c8-a0fa-7f16845672e2",
+                                        "isTransposed": false,
+                                        "isMetric": false
+                                    },
+                                    {
+                                        "columnId": "7c03b6e0-7fef-84a4-b979-70d4bded8a9f",
+                                        "isTransposed": false,
+                                        "isMetric": true
+                                    }
+                                ],
+                                "layerId": "bf980fca-db78-946e-b9b7-b50095ca8f7d",
+                                "layerType": "data"
+                            },
+                            "query": {
+                                "esql": "TS metrics-iisreceiver.otel-*\n| WHERE data_stream.dataset == \"iisreceiver.otel\" AND `iis.request.count` IS NOT NULL AND iis.site IS NOT NULL\n| STATS req_rate = SUM(RATE(`iis.request.count`)) BY iis.site\n| SORT req_rate DESC\n| LIMIT 50"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "bf980fca-db78-946e-b9b7-b50095ca8f7d": {
+                                            "query": {
+                                                "esql": "TS metrics-iisreceiver.otel-*\n| WHERE data_stream.dataset == \"iisreceiver.otel\" AND `iis.request.count` IS NOT NULL AND iis.site IS NOT NULL\n| STATS req_rate = SUM(RATE(`iis.request.count`)) BY iis.site\n| SORT req_rate DESC\n| LIMIT 50"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "iis.site",
+                                                    "columnId": "f7f02f2e-d94a-68c8-a0fa-7f16845672e2",
+                                                    "label": "Site",
+                                                    "customLabel": true
+                                                },
+                                                {
+                                                    "fieldName": "req_rate",
+                                                    "columnId": "7c03b6e0-7fef-84a4-b979-70d4bded8a9f",
+                                                    "label": "Requests/sec",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 1
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "iis.site",
+                                                    "columnId": "f7f02f2e-d94a-68c8-a0fa-7f16845672e2",
+                                                    "label": "Site",
+                                                    "customLabel": true
+                                                },
+                                                {
+                                                    "fieldName": "req_rate",
+                                                    "columnId": "7c03b6e0-7fef-84a4-b979-70d4bded8a9f",
+                                                    "label": "Requests/sec",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 1
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp",
+                                            "index": "e21290aa-77d3-87b6-f4ea-783769e8a335"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [
+                                {
+                                    "type": "index-pattern",
+                                    "id": "e21290aa-77d3-87b6-f4ea-783769e8a335",
+                                    "name": "indexpattern-datasource-layer-bf980fca-db78-946e-b9b7-b50095ca8f7d"
+                                }
+                            ],
+                            "adHocDataViews": {
+                                "e21290aa-77d3-87b6-f4ea-783769e8a335": {
+                                    "id": "e21290aa-77d3-87b6-f4ea-783769e8a335",
+                                    "type": "esql",
+                                    "name": "metrics-iisreceiver.otel-*",
+                                    "title": "metrics-iisreceiver.otel-*",
+                                    "timeFieldName": "@timestamp",
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldAttrs": {},
+                                    "fieldFormats": {},
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": []
+                                }
+                            }
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            },
+            {
+                "panelIndex": "3df009d1-4950-6747-bfa1-958aac238cbd",
+                "gridData": {
+                    "x": 24,
+                    "y": 71,
+                    "w": 24,
+                    "h": 15,
+                    "i": "3df009d1-4950-6747-bfa1-958aac238cbd"
+                },
+                "type": "lens",
+                "embeddableConfig": {
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "attributes": {
+                        "title": "Top Pools by Queue Depth",
+                        "visualizationType": "lnsDatatable",
+                        "type": "lens",
+                        "references": [],
+                        "state": {
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "d8fa6443-2959-c180-e407-58f1aca51b33",
+                                        "isTransposed": false,
+                                        "isMetric": false
+                                    },
+                                    {
+                                        "columnId": "f0a76a36-4c7b-52d5-03d7-0b1ecfbadea9",
+                                        "isTransposed": false,
+                                        "isMetric": true
+                                    }
+                                ],
+                                "layerId": "482791ee-ca97-f037-f5c4-e6252cc90734",
+                                "layerType": "data"
+                            },
+                            "query": {
+                                "esql": "FROM metrics-iisreceiver.otel-*\n| WHERE data_stream.dataset == \"iisreceiver.otel\" AND `iis.request.queue.count` IS NOT NULL AND iis.application_pool IS NOT NULL\n| STATS max_queue = MAX(`iis.request.queue.count`) BY pool = iis.application_pool\n| SORT max_queue DESC\n| LIMIT 50"
+                            },
+                            "filters": [],
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "482791ee-ca97-f037-f5c4-e6252cc90734": {
+                                            "query": {
+                                                "esql": "FROM metrics-iisreceiver.otel-*\n| WHERE data_stream.dataset == \"iisreceiver.otel\" AND `iis.request.queue.count` IS NOT NULL AND iis.application_pool IS NOT NULL\n| STATS max_queue = MAX(`iis.request.queue.count`) BY pool = iis.application_pool\n| SORT max_queue DESC\n| LIMIT 50"
+                                            },
+                                            "columns": [
+                                                {
+                                                    "fieldName": "pool",
+                                                    "columnId": "d8fa6443-2959-c180-e407-58f1aca51b33",
+                                                    "label": "Application Pool",
+                                                    "customLabel": true
+                                                },
+                                                {
+                                                    "fieldName": "max_queue",
+                                                    "columnId": "f0a76a36-4c7b-52d5-03d7-0b1ecfbadea9",
+                                                    "label": "Max Queue Depth",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "allColumns": [
+                                                {
+                                                    "fieldName": "pool",
+                                                    "columnId": "d8fa6443-2959-c180-e407-58f1aca51b33",
+                                                    "label": "Application Pool",
+                                                    "customLabel": true
+                                                },
+                                                {
+                                                    "fieldName": "max_queue",
+                                                    "columnId": "f0a76a36-4c7b-52d5-03d7-0b1ecfbadea9",
+                                                    "label": "Max Queue Depth",
+                                                    "customLabel": true,
+                                                    "meta": {
+                                                        "type": "number",
+                                                        "esType": "long"
+                                                    },
+                                                    "inMetricDimension": true,
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "timeField": "@timestamp",
+                                            "index": "ddbb9aa0-cddc-58b6-4d69-785de0bfd985"
+                                        }
+                                    }
+                                }
+                            },
+                            "internalReferences": [
+                                {
+                                    "type": "index-pattern",
+                                    "id": "ddbb9aa0-cddc-58b6-4d69-785de0bfd985",
+                                    "name": "indexpattern-datasource-layer-482791ee-ca97-f037-f5c4-e6252cc90734"
+                                }
+                            ],
+                            "adHocDataViews": {
+                                "ddbb9aa0-cddc-58b6-4d69-785de0bfd985": {
+                                    "id": "ddbb9aa0-cddc-58b6-4d69-785de0bfd985",
+                                    "type": "esql",
+                                    "name": "metrics-iisreceiver.otel-*",
+                                    "title": "metrics-iisreceiver.otel-*",
+                                    "timeFieldName": "@timestamp",
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldAttrs": {},
+                                    "fieldFormats": {},
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": []
+                                }
+                            }
+                        }
+                    },
+                    "syncTooltips": false,
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "filters": [],
+                    "query": {
+                        "query": "",
+                        "language": "kuery"
+                    }
+                }
+            }
+        ],
+        "optionsJSON": {
+            "useMargins": true,
+            "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
+            "hidePanelTitles": false
+        },
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "filter": [
+                    {
+                        "$state": {
+                            "store": "appState"
+                        },
+                        "meta": {
+                            "disabled": false,
+                            "negate": false,
+                            "alias": null,
+                            "type": "phrase",
+                            "key": "data_stream.dataset",
+                            "field": "data_stream.dataset",
+                            "params": {
+                                "query": "iisreceiver.otel"
+                            }
+                        },
+                        "query": {
+                            "match_phrase": {
+                                "data_stream.dataset": "iisreceiver.otel"
+                            }
+                        }
+                    }
+                ],
+                "query": {
+                    "query": "",
+                    "language": "kuery"
+                }
+            }
+        },
+        "timeRestore": true,
+        "timeFrom": "now-1h",
+        "timeTo": "now",
+        "version": 1,
+        "controlGroupInput": {
+            "chainingSystem": "HIERARCHICAL",
+            "controlStyle": "oneLine",
+            "ignoreParentSettingsJSON": {
+                "ignoreFilters": false,
+                "ignoreQuery": false,
+                "ignoreTimerange": false,
+                "ignoreValidations": false
+            },
+            "panelsJSON": {
+                "ba14dd38-3256-313e-2eb9-8a73fea4ed25": {
+                    "grow": false,
+                    "order": 0,
+                    "width": "medium",
+                    "type": "optionsListControl",
+                    "explicitInput": {
+                        "id": "ba14dd38-3256-313e-2eb9-8a73fea4ed25",
+                        "dataViewId": "metrics-*",
+                        "fieldName": "resource.attributes.host.name",
+                        "title": "Host",
+                        "searchTechnique": "prefix",
+                        "selectedOptions": [],
+                        "sort": {
+                            "by": "_count",
+                            "direction": "desc"
+                        }
+                    }
+                },
+                "a710b1ce-97f3-66d6-b2c5-09c5b73a4568": {
+                    "grow": false,
+                    "order": 1,
+                    "width": "medium",
+                    "type": "optionsListControl",
+                    "explicitInput": {
+                        "id": "a710b1ce-97f3-66d6-b2c5-09c5b73a4568",
+                        "dataViewId": "metrics-*",
+                        "fieldName": "iis.site",
+                        "title": "Site",
+                        "searchTechnique": "prefix",
+                        "selectedOptions": [],
+                        "sort": {
+                            "by": "_count",
+                            "direction": "desc"
+                        }
+                    }
+                },
+                "2aa79284-fddb-46b6-64a3-983d23b2dd43": {
+                    "grow": false,
+                    "order": 2,
+                    "width": "medium",
+                    "type": "optionsListControl",
+                    "explicitInput": {
+                        "id": "2aa79284-fddb-46b6-64a3-983d23b2dd43",
+                        "dataViewId": "metrics-*",
+                        "fieldName": "iis.application_pool",
+                        "title": "Application Pool",
+                        "searchTechnique": "prefix",
+                        "selectedOptions": [],
+                        "sort": {
+                            "by": "_count",
+                            "direction": "desc"
+                        }
+                    }
+                }
+            },
+            "showApplySelections": false
+        }
     },
-    "timeRestore": true,
-    "timeFrom": "now-1h",
-    "timeTo": "now",
-    "version": 1,
-    "controlGroupInput": {
-      "chainingSystem": "HIERARCHICAL",
-      "controlStyle": "oneLine",
-      "ignoreParentSettingsJSON": "{\"ignoreFilters\":false,\"ignoreQuery\":false,\"ignoreTimerange\":false,\"ignoreValidations\":false}",
-      "panelsJSON": "{\"ba14dd38-3256-313e-2eb9-8a73fea4ed25\":{\"grow\":false,\"order\":0,\"width\":\"medium\",\"type\":\"optionsListControl\",\"explicitInput\":{\"id\":\"ba14dd38-3256-313e-2eb9-8a73fea4ed25\",\"dataViewId\":\"metrics-*\",\"fieldName\":\"resource.attributes.host.name\",\"title\":\"Host\",\"searchTechnique\":\"prefix\",\"selectedOptions\":[],\"sort\":{\"by\":\"_count\",\"direction\":\"desc\"}}},\"a710b1ce-97f3-66d6-b2c5-09c5b73a4568\":{\"grow\":false,\"order\":1,\"width\":\"medium\",\"type\":\"optionsListControl\",\"explicitInput\":{\"id\":\"a710b1ce-97f3-66d6-b2c5-09c5b73a4568\",\"dataViewId\":\"metrics-*\",\"fieldName\":\"iis.site\",\"title\":\"Site\",\"searchTechnique\":\"prefix\",\"selectedOptions\":[],\"sort\":{\"by\":\"_count\",\"direction\":\"desc\"}}},\"2aa79284-fddb-46b6-64a3-983d23b2dd43\":{\"grow\":false,\"order\":2,\"width\":\"medium\",\"type\":\"optionsListControl\",\"explicitInput\":{\"id\":\"2aa79284-fddb-46b6-64a3-983d23b2dd43\",\"dataViewId\":\"metrics-*\",\"fieldName\":\"iis.application_pool\",\"title\":\"Application Pool\",\"searchTechnique\":\"prefix\",\"selectedOptions\":[],\"sort\":{\"by\":\"_count\",\"direction\":\"desc\"}}}}",
-      "showApplySelections": false
-    }
-  },
-  "coreMigrationVersion": "8.8.0",
-  "created_at": "2023-10-01T00:00:00Z",
-  "created_by": "admin",
-  "id": "iis_otel-sites",
-  "managed": false,
-  "references": [
-    {
-      "type": "dashboard",
-      "id": "iis_otel-overview",
-      "name": "5ec9d4e9-3f1c-8f1e-41f0-eb022308081d:link_3af4ba12-6f83-488a-bdc9-0c7216a22d73_dashboard"
-    },
-    {
-      "type": "dashboard",
-      "id": "iis_otel-sites",
-      "name": "5ec9d4e9-3f1c-8f1e-41f0-eb022308081d:link_311e2098-d3cb-e8f4-bf13-b097739154c3_dashboard"
-    },
-    {
-      "type": "index-pattern",
-      "id": "metrics-*",
-      "name": "controlGroup_ba14dd38-3256-313e-2eb9-8a73fea4ed25:optionsListDataView"
-    },
-    {
-      "type": "index-pattern",
-      "id": "metrics-*",
-      "name": "controlGroup_a710b1ce-97f3-66d6-b2c5-09c5b73a4568:optionsListDataView"
-    },
-    {
-      "type": "index-pattern",
-      "id": "metrics-*",
-      "name": "controlGroup_2aa79284-fddb-46b6-64a3-983d23b2dd43:optionsListDataView"
-    }
-  ],
-  "type": "dashboard",
-  "typeMigrationVersion": "10.2.0",
-  "updated_at": "2023-10-01T00:00:00Z",
-  "updated_by": "admin",
-  "version": "1"
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2023-10-01T00:00:00Z",
+    "created_by": "admin",
+    "id": "iis_otel-sites",
+    "managed": false,
+    "references": [
+        {
+            "type": "dashboard",
+            "id": "iis_otel-overview",
+            "name": "5ec9d4e9-3f1c-8f1e-41f0-eb022308081d:link_3af4ba12-6f83-488a-bdc9-0c7216a22d73_dashboard"
+        },
+        {
+            "type": "dashboard",
+            "id": "iis_otel-sites",
+            "name": "5ec9d4e9-3f1c-8f1e-41f0-eb022308081d:link_311e2098-d3cb-e8f4-bf13-b097739154c3_dashboard"
+        },
+        {
+            "type": "index-pattern",
+            "id": "metrics-*",
+            "name": "controlGroup_ba14dd38-3256-313e-2eb9-8a73fea4ed25:optionsListDataView"
+        },
+        {
+            "type": "index-pattern",
+            "id": "metrics-*",
+            "name": "controlGroup_a710b1ce-97f3-66d6-b2c5-09c5b73a4568:optionsListDataView"
+        },
+        {
+            "type": "index-pattern",
+            "id": "metrics-*",
+            "name": "controlGroup_2aa79284-fddb-46b6-64a3-983d23b2dd43:optionsListDataView"
+        }
+    ],
+    "type": "dashboard",
+    "typeMigrationVersion": "10.2.0",
+    "updated_at": "2023-10-01T00:00:00Z",
+    "updated_by": "admin",
+    "version": "1"
 }

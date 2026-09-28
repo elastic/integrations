@@ -1,0 +1,38 @@
+- name: crowdstrike
+  type: group
+  fields:
+    - name: idp
+      type: group
+      fields:
+        - name: domain
+          type: keyword
+          description: Assessed identity domain.
+        - name: security_assessment
+          type: group
+          fields:
+            - name: overall_score
+              type: double
+              description: Falcon Identity Protection overall score (0-1).
+            - name: overall_score_level
+              type: keyword
+              description: Qualitative level (e.g. LOW, MEDIUM, HIGH).
+            - name: assessment_factors
+              type: group
+              description: Risk factors.
+              fields:
+                - name: risk_factor_type
+                  type: keyword
+                - name: likelihood
+                  type: keyword
+                - name: severity
+                  type: keyword
+            - name: assessment_factors_nested
+              type: nested
+              description: Risk factors as a nested object.
+              fields:
+                - name: risk_factor_type
+                  type: keyword
+                - name: likelihood
+                  type: keyword
+                - name: severity
+                  type: keyword

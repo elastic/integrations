@@ -1,0 +1,124 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects creation or modification of a GKE ClusterRoleBinding that grants the cluster-admin ClusterRole, providing unrestricted cluster access and enabling rapid privilege escalation or persistence.",
+        "index": [
+            "logs-gcp.audit-*"
+        ],
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "GKE Cluster-Admin Role Binding Created or Modified",
+        "note": "## Triage and analysis\n\n### Investigating GKE Cluster-Admin Role Binding Created or Modified\n\nIdentify who created or changed the binding and which subject received cluster-admin.\n\n### Investigation steps\n\n- Review `user.email`, `source.ip`, and `gcp.audit.request` for the bound subject.\n- Hunt for secret reads, privileged pod creation, or webhook changes from the same actor or new subject.\n\n### False positives\n\n- Bootstrap, recovery, or GitOps workflows may recreate cluster-admin bindings during approved changes.",
+        "query": "data_stream.dataset:gcp.audit and service.name:\"k8s.io\" and event.outcome:success and\nevent.action:(\n  \"io.k8s.authorization.rbac.v1.clusterrolebindings.create\" or\n  \"io.k8s.authorization.rbac.v1.clusterrolebindings.patch\" or\n  \"io.k8s.authorization.rbac.v1.clusterrolebindings.update\"\n) and gcp.audit.request.kind:\"ClusterRoleBinding\" and\ngcp.audit.resource_name:\"rbac.authorization.k8s.io/v1/clusterrolebindings/cluster-admin\"\n",
+        "references": [
+            "https://cloud.google.com/kubernetes-engine/docs/how-to/role-based-access-control",
+            "https://heilancoos.github.io/research/2025/12/16/kubernetes.html#overly-permissive-role-based-access-control"
+        ],
+        "related_integrations": [
+            {
+                "integration": "audit",
+                "package": "gcp",
+                "version": "^2.41.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "gcp.audit.request.kind",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "gcp.audit.resource_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "service.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "16708afb-4904-4d3c-af78-63640a075cb0",
+        "setup": "The GCP Fleet integration with GKE audit logs enabled is required to be compatible with this rule.",
+        "severity": "medium",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: Kubernetes",
+            "Data Source: GCP",
+            "Data Source: Google Cloud Platform",
+            "Use Case: Threat Detection",
+            "Tactic: Persistence",
+            "Tactic: Privilege Escalation",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1098",
+                        "name": "Account Manipulation",
+                        "reference": "https://attack.mitre.org/techniques/T1098/",
+                        "subtechnique": [
+                            {
+                                "id": "T1098.006",
+                                "name": "Additional Container Cluster Roles",
+                                "reference": "https://attack.mitre.org/techniques/T1098/006/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0004",
+                    "name": "Privilege Escalation",
+                    "reference": "https://attack.mitre.org/tactics/TA0004/"
+                },
+                "technique": [
+                    {
+                        "id": "T1098",
+                        "name": "Account Manipulation",
+                        "reference": "https://attack.mitre.org/techniques/T1098/",
+                        "subtechnique": [
+                            {
+                                "id": "T1098.006",
+                                "name": "Additional Container Cluster Roles",
+                                "reference": "https://attack.mitre.org/techniques/T1098/006/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "query",
+        "version": 1
+    },
+    "id": "16708afb-4904-4d3c-af78-63640a075cb0_1",
+    "type": "security-rule"
+}

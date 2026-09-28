@@ -1,0 +1,92 @@
+{
+    "message": "V1 SQL Injection on \"/WebGoat/attack\"",
+    "@timestamp": "2026-02-06T16:00:14.223Z",
+    "observer": {
+        "vendor": "Contrast Security",
+        "product": "Contrast ADR",
+        "type": "adr"
+    },
+    "ecs": {
+        "version": "9.1"
+    },
+    "rule": {
+        "category": "Security Incident",
+        "ruleset": "Contrast ADR",
+        "reference": [
+            "https://github.com/Contrast-Security-OSS/adr-runbooks/blob/main/_runbooks/path-traversal.md",
+            "Another runbook"
+        ],
+        "name": "sql-injection"
+    },
+    "event": {
+        "kind": "alert",
+        "category": [
+            "intrusion_detection"
+        ],
+        "type": [
+            "info"
+        ],
+        "dataset": "contrast_security.incident",
+        "module": "contrast_security",
+        "id": "INC-1996-19960",
+        "reason": "Incident Severity Updated",
+        "url": "https://test.contrast.com/Contrast/cs/index.html#/3ccd2a09-b356-42c4-9c0c-80128513ff3b/incidents/INC-1996-19960",
+        "created": "2026-06-18T16:05:47.365052Z",
+        "end": "2026-06-18T16:05:15.902Z",
+        "risk_score": 10,
+        "severity": 10,
+        "action": "incident_updated",
+        "provider": "contrast-security-adr"
+    },
+    "organization": {
+        "id": "3ccd2a09-b356-42c4-9c0c-80128513ff3b"
+    },
+    "contrast_security": {
+        "event_type": "contrast_security_incidentalert",
+        "status": "OPEN",
+        "related_rules": [
+            "sql-injection"
+        ],
+        "recommended_actions": [
+            "\t\t\t{{#paragraph}}The most effective method of stopping SQL injection attacks is to only use an\n\t{{#link}}http://en.wikipedia.org/wiki/Object-relational_mapping$$LINK_DELIM$$Object-Relational Mapping{{/link}} (ORM)\n\tlike\n\t{{#link}}http://www.hibernate.org$$LINK_DELIM$$Hibernate{{/link}}\n\tthat safely handles database interaction. If you must execute queries manually, use\n\n\t{{#link}}http://docs.oracle.com/javase/6/docs/api/java/sql/CallableStatement.html$$LINK_DELIM$$CallableStatement{{/link}}\n\n\t(for stored procedures) and\n\n\t{{#link}}http://docs.oracle.com/javase/6/docs/api/java/sql/PreparedStatement.html$$LINK_DELIM$$PreparedStatement{{/link}}\n\n\t(for normal queries). Both of these APIs utilize bind variables. Both techniques completely stop the injection of code if used properly.\n\tYou must still avoid concatenating untrusted supplied input to queries and use the binding pattern to keep untrusted input from being\n\tmisinterpreted as SQL code.{{/paragraph}}\n\n\t{{#paragraph}}Here's an example of an {{#badParam}}unsafe{{/badParam}} query:{{/paragraph}}\n\t{{#javaBlock}}\n\tString user = request.getParameter(\"user\");\n\tString pass = request.getParameter(\"pass\");\n\tString query = \"SELECT user_id FROM user_data WHERE user_name = '\" + user + \"' and user_password = '\" + pass +\"'\";\n\ttry {\n\tStatement statement = connection.createStatement( );\n\tResultSet results = statement.executeQuery( query ); // Unsafe!\n\t}{{/javaBlock}}\n\n\t{{#paragraph}}Here's an example of the same query, made {{#goodParam}}safe{{/goodParam}} with PreparedStatement:{{/paragraph}}\n\t{{#javaBlock}}String user = request.getParameter(\"user\");\n\tString pass = request.getParameter(\"pass\");\n\tString query = \"SELECT user_id FROM user_data WHERE user_name = ? and user_password = ?\";\n\ttry {\n\tPreparedStatement pstmt = connection.prepareStatement( query );\n\tpstmt.setString( 1, user );\n\tpstmt.setString( 2, pass );\n\tpstmt.execute(); // Safe!\n\t}{{/javaBlock}}\n\n\t{{#paragraph}}\n\tThere are some scenarios, like dynamic search, that make it difficult to use parameterized queries because the order and quantity\n\tof variables is not predetermined. If you are unable to avoid building such a SQL call on the fly, then validation and escaping all\n\tuntrusted data is necessary. Deciding which characters to escape depends on the database in use and the context into which the untrusted\n\tdata is being placed.{{/paragraph}}\n\n\t{{#paragraph}}This is difficult to do by hand, but luckily the {{#link}}https://www.owasp.org/index.php/ESAPI$$LINK_DELIM$$ESAPI library{{/link}} offers such functionality. Here's an example of safely encoding a dynamically built statement for an Oracle database using untrusted data:{{/paragraph}}\n\t{{#javaBlock}}\n\tCodec ORACLE_CODEC = new OracleCodec();\n\tString user = req.getParameter(\"user\");\n\tString pass = req.getParameter(\"pass\");\n\tString query = \"SELECT user_id FROM user_data WHERE user_name = '\" +\n\tESAPI.encoder().encodeForSQL( ORACLE_CODEC, **user**) + \"' and user_password = '\" +\n\tESAPI.encoder().encodeForSQL( ORACLE_CODEC, **pass**) + \"'\";{{/javaBlock}}\n\n\t{{#paragraph}}\n\tIf your user data needs to enter the logic of the query, rather than the data of the query. For example controlling the order the data is returned in a ORDER BY Field.\n\t{{/paragraph}}\n\n\t{{#javaBlock}}\n\tString userType = request.getParameter(\"userType\");\n\tString orderBy = request.getParameter(\"orderBy\");\n\tString query = \"+;\n\ttry {\n\tPreparedStatement preparedStatement = con.prepareStatement(\"select email,first_name,last_name from tbl_employees where user_type = ? ORDER BY \"+ orderBy+\";\");\n\tpreparedStatement.setString(userType);\n\tResultSet results = preparedStatement.executeQuery();\n\t}\n\t{{/javaBlock}}\n\tThis cannot be set in a parameterised field and SQL Sanitisers like {{#code}}ESAPI.encoder().encodeForSQL(){{/code}} are not sufficient. The safest way is to create a white list of allowed column names. For example :\n\n\t{{#javaBlock}}\n\tString userType = request.getParameter(\"userType\");\n\tString orderBy = request.getParameter(\"orderBy\");\n\tString query = \"+;\n\ttry {\n\tPreparedStatement preparedStatement = con.prepareStatement(\"select email,first_name,last_name from tbl_employees where user_type = ? ORDER BY \"+ ColumnMapping.valueOf(orderBy).getColumnName()+\";\");\n\tpreparedStatement.setString(userType);\n\tResultSet results = preparedStatement.executeQuery();\n\t}\n\t...\n\tenum ColumnMapping {\n\tFIRSTNAME(\"first_name\"),\n\tLASTNAME(\"last_name\"),\n\tAGE(\"age\");\n\n\tprivate String columnName;\n\n\tColumnMapping(String columnName) {\n\tthis.columnName = columnName;\n\t}\n\n\tpublic String getColumnName() {\n\treturn columnName;\n\t}\n\n\t}\n\t{{/javaBlock}}\n\n\n\t\n\t\n{{#paragraph}}It's also helpful to ensure that the application is granted only the minimum database privileges necessary to perform its function. This may help reduce the impact of a successful SQL injection attack. At a minimum, access to powerful database APIs that interact with the operating or file systems should be revoked.{{/paragraph}}"
+        ],
+        "http_source_ip": [
+            {
+                "blocked": true,
+                "ipAddress": "81.2.69.142",
+                "count": "1"
+            },
+            {
+                "blocked": false,
+                "ipAddress": "81.2.69.144",
+                "count": "1"
+            },
+            {
+                "blocked": true,
+                "ipAddress": "89.160.20.112",
+                "count": "1"
+            }
+        ],
+        "servers": [
+            {
+                "hostname": "webgoat-ns-demo2",
+                "environment": "QA",
+                "id": "e4f8dcfc-0c41-4e7d-8dcf-234a79fb1a51",
+                "operatingSystem": "OS"
+            },
+            {
+                "hostname": "webgoat-ns-demo3",
+                "environment": "QA",
+                "id": "8ac57a83-e8b6-47df-ae81-11e2f1b73706"
+            }
+        ],
+        "issue_ids": [
+            "ISS-2025-6"
+        ]
+    },
+    "cloud": {},
+    "service": {},
+    "source": {
+        "ip": "81.2.69.142"
+    }
+}

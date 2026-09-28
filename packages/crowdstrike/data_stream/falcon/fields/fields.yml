@@ -5,7 +5,7 @@
     - name: eventType
       type: keyword
       description: |
-        DetectionSummaryEvent, FirewallMatchEvent, IncidentSummaryEvent, RemoteResponseSessionStartEvent, RemoteResponseSessionEndEvent, AuthActivityAuditEvent, or UserActivityAuditEvent
+        DetectionSummaryEvent, FirewallMatchEvent, IncidentSummaryEvent, RemoteResponseSessionStartEvent, RemoteResponseSessionEndEvent, AuthActivityAuditEvent, UserActivityAuditEvent, or AutomatedLeadSummaryEvent
     - name: offset
       type: integer
       description: |
@@ -56,6 +56,10 @@
         Name of the computer where the detection occurred.
     - name: Description
       type: keyword
+    - name: DisplayName
+      type: keyword
+      description: |
+        The user-friendly detection name.
     - name: DetectName
       type: keyword
       description: |
@@ -202,6 +206,31 @@
       type: keyword
     - name: StatusMessage
       type: keyword
+    - name: ThreatgraphIndicators
+      type: group
+      fields:
+        - name: Description
+          type: keyword
+        - name: DisplayName
+          type: keyword
+        - name: HostId
+          type: keyword
+        - name: Hostname
+          type: keyword
+        - name: IndicatorId
+          type: keyword
+        - name: PatternDisposition
+          type: long
+        - name: PatternId
+          type: keyword
+        - name: ProcessId
+          type: keyword
+        - name: Severity
+          type: long
+        - name: SignalAssociationTimestamp
+          type: date
+        - name: TemplateInstanceId
+          type: keyword
     - name: Type
       type: keyword
       description: 'The endpoint detection type ("ldt": Legacy Endpoint Detection, or "ofp": Office Prevention Macro Detection).'
@@ -321,6 +350,14 @@
       type: keyword
       description: |
         Detected LDAP tool attack.
+    - name: LeadId
+      type: keyword
+      description: |
+        The ID given to the automated lead.
+    - name: LeadType
+      type: keyword
+      description: |
+        The type of automated lead.
     - name: Severity
       type: integer
       description: |
@@ -329,6 +366,22 @@
       type: keyword
       description: |
         The severity level of the detection, as a string (High/Medium/Informational).
+    - name: Score
+      type: long
+      description: |
+        The confidence score of the automated lead. Values range from 0 to 100.
+    - name: SignalEndTimestamp
+      type: date
+      description: |
+        Timestamp of when the last indicator was added to the lead.
+    - name: SignalStartTimestamp
+      type: date
+      description: |
+        Timestamp of when the first indicator was added to the lead.
+    - name: SignalUpdatedTimestamp
+      type: date
+      description: |
+        The last time the lead was updated with new information or when it was closed.
     - name: NotificationId
       type: keyword
       description: |
@@ -556,6 +609,7 @@
       type: flattened
       description: |
         A JSON blob with all resource attributes.
+      ignore_above: 8191
     - name: ResourceId
       type: keyword
       description: |
@@ -690,6 +744,7 @@
       type: flattened
       description: |
         JSON objects containing additional information about the event.
+      ignore_above: 8191
     - name: SessionId
       type: keyword
       description: |
@@ -836,6 +891,41 @@
         Commands run in a remote session.
     - name: AnodeIndicators
       type: nested
+      fields:
+        - name: Detected
+          type: boolean
+        - name: Destination
+          type: keyword
+        - name: Entity
+          type: keyword
+        - name: Explanation
+          type: keyword
+        - name: Name
+          type: keyword
+        - name: Type
+          type: keyword
+        - name: Score
+          type: float
+          description: Anomaly score for the indicator.
+        - name: DataVolumeIncreasePercentage
+          type: float
+          description: Observed data volume as a multiple of the entity's baseline.
+        - name: FileCountIncreasePercentage
+          type: float
+          description: Observed file count as a multiple of the entity's baseline.
+        - name: FileCategoryDistributions
+          type: group
+          fields:
+            - name: ID
+              type: keyword
+            - name: Name
+              type: keyword
+            - name: CurrentPercentage
+              type: float
+            - name: ExpectedPercentage
+              type: float
+            - name: IncreasePercentage
+              type: float
     - name: ContentPatterns
       type: group
       fields:
@@ -889,6 +979,7 @@
           type: keyword
     - name: OriginWebLocations
       type: flattened
+      ignore_above: 8191
     - name: RelatedClassifications
       type: group
       fields:

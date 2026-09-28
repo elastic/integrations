@@ -1,0 +1,366 @@
+---
+description: Parse Abuse.ch YARAify YARA rule metadata indicators from Commercial and Community API responses.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: '8.11.0'
+
+  # --- CEL input only ---
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
+      tag: remove_agentless_tags
+      description: >-
+        Removes the fields added by Agentless as metadata,
+        as they can collide with ECS fields.
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
+  # --- end CEL-only ---
+
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
+      if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      description: The `message` field is no longer required if the document has an `event.original` field.
+      if: ctx.event?.original != null
+
+  - json:
+      field: event.original
+      target_field: abusech.yaraify
+      tag: parse_json
+      if: ctx.event?.original != null
+      on_failure:
+        - append:
+            field: error.message
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: enrichment
+  - set:
+      field: event.category
+      tag: set_event_category
+      value: [threat]
+  - set:
+      field: event.type
+      tag: set_event_type
+      value: [indicator]
+
+  - date:
+      field: abusech.yaraify.first_seen
+      target_field: '@timestamp'
+      tag: date_first_seen_to_timestamp
+      formats:
+        - ISO8601
+      if: ctx.abusech?.yaraify?.first_seen != null && ctx.abusech.yaraify.first_seen != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+        - remove:
+            field: abusech.yaraify.first_seen
+            ignore_missing: true
+            tag: remove_first_seen_on_date_failure
+  - date:
+      field: abusech.yaraify.first_seen
+      target_field: threat.indicator.first_seen
+      tag: date_first_seen_to_threat_indicator_first_seen
+      formats:
+        - ISO8601
+      if: ctx.abusech?.yaraify?.first_seen != null && ctx.abusech.yaraify.first_seen != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - date:
+      field: abusech.yaraify.date_written
+      target_field: abusech.yaraify.date_written
+      tag: date_date_written
+      formats:
+        - yyyy-MM-dd
+      if: ctx.abusech?.yaraify?.date_written != null && ctx.abusech.yaraify.date_written != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+        - remove:
+            field: abusech.yaraify.date_written
+            ignore_missing: true
+            tag: remove_date_written_on_date_failure
+  - date:
+      field: abusech.yaraify.time_stamp
+      target_field: '@timestamp'
+      tag: date_time_stamp_to_timestamp
+      formats:
+        - yyyy-MM-dd HH:mm:ss z
+        - yyyy-MM-dd HH:mm:ss Z
+      if: ctx.abusech?.yaraify?.time_stamp != null && ctx.abusech.yaraify.time_stamp != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - date:
+      field: abusech.yaraify.time_stamp
+      target_field: threat.indicator.first_seen
+      tag: date_time_stamp_to_threat_indicator_first_seen
+      formats:
+        - yyyy-MM-dd HH:mm:ss z
+        - yyyy-MM-dd HH:mm:ss Z
+      if: ctx.abusech?.yaraify?.time_stamp != null && ctx.abusech.yaraify.time_stamp != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - date:
+      field: abusech.yaraify.time_stamp
+      target_field: abusech.yaraify.time_stamp
+      tag: date_time_stamp
+      formats:
+        - yyyy-MM-dd HH:mm:ss z
+        - yyyy-MM-dd HH:mm:ss Z
+      if: ctx.abusech?.yaraify?.time_stamp != null && ctx.abusech.yaraify.time_stamp != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+        - remove:
+            field: abusech.yaraify.time_stamp
+            ignore_missing: true
+            tag: remove_time_stamp_on_date_failure
+  - date:
+      field: abusech.yaraify.date
+      target_field: abusech.yaraify.date
+      tag: date_date
+      formats:
+        - yyyy-MM-dd
+      if: ctx.abusech?.yaraify?.date != null && ctx.abusech.yaraify.date != ''
+      on_failure:
+        - append:
+            field: error.message
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+        - remove:
+            field: abusech.yaraify.date
+            ignore_missing: true
+            tag: remove_date_on_date_failure
+
+  - rename:
+      field: abusech.yaraify.author
+      target_field: user.name
+      tag: rename_author_to_user_name
+      ignore_missing: true
+  - rename:
+      field: abusech.yaraify.rule_name
+      target_field: threat.indicator.name
+      tag: rename_rule_name_to_threat_indicator_name
+      ignore_missing: true
+  - set:
+      field: rule.name
+      tag: set_rule_name
+      copy_from: threat.indicator.name
+      if: ctx.threat?.indicator?.name != null
+  - rename:
+      field: abusech.yaraify.description
+      target_field: threat.indicator.description
+      tag: rename_description_to_threat_indicator_description
+      ignore_missing: true
+  - rename:
+      field: abusech.yaraify.yarahub_reference_link
+      target_field: threat.indicator.reference
+      tag: rename_yarahub_reference_link_to_threat_indicator_reference
+      ignore_missing: true
+  - rename:
+      field: abusech.yaraify.yarahub_reference_md5
+      target_field: threat.indicator.file.hash.md5
+      tag: rename_yarahub_reference_md5_to_threat_indicator_file_hash_md5
+      ignore_missing: true
+  - rename:
+      field: abusech.yaraify.yarahub_uuid
+      target_field: event.id
+      tag: rename_yarahub_uuid_to_event_id
+      ignore_missing: true
+
+  - append:
+      field: related.user
+      tag: append_user_name_to_related_user
+      value: '{{{user.name}}}'
+      allow_duplicates: false
+      if: ctx.user?.name != null
+  - append:
+      field: related.user
+      tag: append_yarahub_author_twitter_to_related_user
+      value: '{{{abusech.yaraify.yarahub_author_twitter}}}'
+      allow_duplicates: false
+      if: ctx.abusech?.yaraify?.yarahub_author_twitter != null
+
+  - script:
+      lang: painless
+      tag: set_threat_indicator_marking_tlp
+      description: Map YARAhub rule matching TLP values to ECS threat.indicator.marking.tlp.
+      if: ctx.abusech?.yaraify?.yarahub_rule_matching_tlp != null
+      source: |-
+        String tlp = ctx.abusech.yaraify.yarahub_rule_matching_tlp;
+        if (tlp.startsWith("TLP:")) {
+          tlp = tlp.substring(4);
+        }
+        if (tlp == "WHITE") {
+          tlp = "CLEAR";
+        }
+        ctx.threat = ctx.threat ?: [:];
+        ctx.threat.indicator = ctx.threat.indicator ?: [:];
+        ctx.threat.indicator.marking = ctx.threat.indicator.marking ?: [:];
+        ctx.threat.indicator.marking.tlp = tlp;
+  - set:
+      field: threat.indicator.marking.tlp
+      tag: set_threat_indicator_marking_tlp_default
+      value: CLEAR
+      if: ctx.threat?.indicator?.marking?.tlp == null
+
+  - set:
+      field: threat.indicator.type
+      tag: set_threat_indicator_type_file
+      value: file
+      if: ctx.threat?.indicator?.file?.hash?.md5 != null
+
+  - append:
+      field: related.hash
+      tag: append_md5_to_related_hash
+      value: '{{{threat.indicator.file.hash.md5}}}'
+      allow_duplicates: false
+      if: ctx.threat?.indicator?.file?.hash?.md5 != null
+
+  - script:
+      tag: script_set_deleted_at
+      lang: painless
+      description: >-
+        Sets abusech.yaraify.deleted_at to first_seen plus ioc_expiration_duration
+        (default 90d). Used by the latest transform retention policy.
+      if: >-
+        ctx.abusech?.yaraify?.deleted_at == null &&
+        ctx.threat?.indicator?.first_seen != null
+      source: |
+        def dur = '90d';
+        if (ctx._conf != null && ctx._conf.ioc_expiration_duration instanceof String && ctx._conf.ioc_expiration_duration != '') {
+          dur = ctx._conf.ioc_expiration_duration;
+        }
+        ZonedDateTime base = ZonedDateTime.parse(ctx.threat.indicator.first_seen.toString());
+        String unit = dur.substring(dur.length() - 1);
+        String value = dur.substring(0, dur.length() - 1);
+        long amount = Long.parseLong(value);
+        ZonedDateTime deletedAt;
+        if (unit.equals('d')) {
+          deletedAt = base.plusDays(amount);
+        } else if (unit.equals('h')) {
+          deletedAt = base.plusHours(amount);
+        } else if (unit.equals('m')) {
+          deletedAt = base.plusMinutes(amount);
+        } else {
+          deletedAt = base.plusDays(90L);
+          if (ctx.error == null) {
+            ctx.error = new HashMap();
+          }
+          if (ctx.error.message == null) {
+            ctx.error.message = new ArrayList();
+          }
+          ctx.error.message.add('invalid ioc_expiration_duration: using default 90 days');
+        }
+        if (ctx.abusech == null) {
+          ctx.abusech = new HashMap();
+        }
+        if (ctx.abusech.yaraify == null) {
+          ctx.abusech.yaraify = new HashMap();
+        }
+        ctx.abusech.yaraify.deleted_at = deletedAt;
+  - date:
+      field: abusech.yaraify.deleted_at
+      target_field: abusech.yaraify.deleted_at
+      tag: date_deleted_at
+      formats:
+        - ISO8601
+      if: ctx.abusech?.yaraify?.deleted_at != null
+      on_failure:
+        - append:
+            field: error.message
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+        - remove:
+            field: abusech.yaraify.deleted_at
+            ignore_missing: true
+            tag: remove_deleted_at_on_date_failure
+
+  - rename:
+      field: _conf.ioc_expiration_duration
+      target_field: abusech.yaraify.ioc_expiration_duration
+      tag: rename_ioc_expiration_duration
+      ignore_missing: true
+
+  - remove:
+      field:
+        - abusech.yaraify.first_seen
+        - abusech.yaraify.yarahub_rule_matching_tlp
+        - _conf
+      ignore_missing: true
+      tag: remove_temp_fields
+
+  - append:
+      field: tags
+      tag: append_preserve_original_event_on_error
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

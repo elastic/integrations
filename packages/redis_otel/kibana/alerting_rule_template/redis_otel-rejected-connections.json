@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when `INCREASE(redis.connections.rejected) > 0`. `maxclients` reached \u2014 new clients refused.",
     "name": "[Redis OTel] Rejected connections",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -20,13 +21,25 @@
       "lookBackWindow": 6,
       "statusChangeThreshold": 3
     },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "redis_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## Redis rejected connections\n\n### What fired\n`redis.connections.rejected` increased during the window.\n\n### Why it matters\nRejections happen when `maxclients` is reached. Clients hit connection errors and often retry storm, worsening the situation.\n\n### Triage\n1. Inspect current connected clients vs `maxclients`.\n2. Check client pool configurations.\n\n### Remediation\n- Raise `maxclients` and OS FD limits.\n- Fix client-side pooling.\n\n### Tuning\n- Fires on any increase.\n"
+      }
+    },
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
         "esql": "TS metrics-redisreceiver.otel-*\n| WHERE redis.connections.rejected IS NOT NULL\n// Counter: use INCREASE to get rejections over the time window\n| STATS rejected = SUM(INCREASE(redis.connections.rejected))\n  BY server.address, server.port\n// Alert when any instance rejected at least one connection (maxclients reached)\n| WHERE rejected > 0\n| SORT rejected DESC"
       },
       "size": 0,
-      "threshold": [0],
+      "threshold": [
+        0
+      ],
       "thresholdComparator": ">",
       "timeField": "@timestamp",
       "timeWindowSize": 15,

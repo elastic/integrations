@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when backend `haproxy.responses.errors` increases by more than 10 in 5 minutes. Response errors include server aborts and delivery failures.",
     "name": "[HAProxy OTel] Response errors spike",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -14,6 +15,19 @@
     },
     "alertDelay": {
       "active": 2
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "haproxy_otel-backend"
+        },
+        {
+          "id": "haproxy_otel-server"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## HAProxy response errors spike\n\n### What fired\nCounter `haproxy.responses.errors` increased by > 10 during the window.\n\n### Why it matters\nResponse errors are failures while delivering the response from server to client \u2014 server aborts, connection resets mid-response, etc. A spike often indicates unstable backend applications.\n\n### Triage\n1. Correlate with application error logs.\n2. Check server restarts / crashes.\n3. Inspect retry/redispatch counters.\n\n### Remediation\n- Stabilise the backend application.\n\n### Tuning\n- 10 errors/5m threshold; tune per traffic.\n"
+      }
     },
     "params": {
       "searchType": "esqlQuery",

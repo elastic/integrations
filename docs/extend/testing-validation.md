@@ -77,7 +77,7 @@ mapped_pages:
 
 `elastic-package` provides different types of test runners. See [*Test an integration*](/extend/testing.md) to learn about the various methods for testing packages.
 
-The `test` subcommand requires a reference to the live {{stack}}. This can be set up with `elastic=package stack up` command.
+The `test` subcommand requires a reference to the live {{stack}}. This can be set up with `elastic-package stack up` command.
 
 ## Review test coverage [_review_test_coverage]
 

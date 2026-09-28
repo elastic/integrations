@@ -2,6 +2,7 @@
 description: Pipeline for parsing Proofpoint TAP blocked message logs.
 processors:
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - remove:
@@ -11,82 +12,100 @@ processors:
         - team
       ignore_missing: true
       if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
-      tag: remove_agentless_tags
+      tag: remove_agentless_tags_e6856012
       description: >-
         Removes the fields added by Agentless as metadata,
         as they can collide with ECS fields.
   - rename:
+      tag: rename_message_to_event_original_56a77271
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
   - remove:
+      tag: remove_message_2ee3a7d4
       field: message
       ignore_missing: true
       if: ctx.event?.original != null
       description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
+      tag: json_event_original_to_json_cac66847
       field: event.original
       target_field: json
       ignore_failure: true
   - drop:
+      tag: drop_95015dc4
       if: ctx.json?.messagesBlocked instanceof List && ctx.json.messagesBlocked.length == 0
   - date:
+      tag: date_json_messageTime_a1f037bb
       field: json.messageTime
       if: ctx.json?.messageTime != null && ctx.json.messageTime != ''
       formats:
         - ISO8601
       on_failure:
         - append:
+            tag: append_error_message_63547788
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - fingerprint:
+      tag: fingerprint_to_id_02243b84
       fields:
         - event.original
       target_field: _id
       ignore_missing: true
   - append:
+      tag: append_event_category_df23064f
       field: event.category
       value: email
       ignore_failure: true
   - append:
+      tag: append_event_action_dce318aa
       field: event.action
       value: denied
       ignore_failure: true
   - append:
+      tag: append_event_type_61ba5509
       field: event.type
       value: info
       ignore_failure: true
   - set:
+      tag: set_event_kind_de80643c
       field: event.kind
       value: event
   - convert:
+      tag: convert_json_senderIP_to_source_ip_0e7c10d3
       field: json.senderIP
       target_field: source.ip
       type: ip
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_senderIP_d3b08891
             field: json.senderIP
         - append:
+            tag: append_error_message_18a6114e
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - append:
+      tag: append_related_ip_86c0561d
       field: related.ip
       value: '{{{source.ip}}}'
       if: ctx.source?.ip != null && ctx.source.ip != ''
       allow_duplicates: false
       ignore_failure: true
   - geoip:
+      tag: geoip_source_ip_to_source_geo_5d3ae3d6
       field: source.ip
       target_field: source.geo
       ignore_missing: true
       if: ctx.source?.ip != null && ctx.source.ip != ''
       on_failure:
         - append:
+            tag: append_error_message_900765d9
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - geoip:
+      tag: geoip_source_ip_to_source_as_82271077
       database_file: GeoLite2-ASN.mmdb
       field: source.ip
       target_field: source.as
@@ -97,20 +116,25 @@ processors:
       if: ctx.source?.ip != null && ctx.source.ip != ''
       on_failure:
         - append:
+            tag: append_error_message_e390fa84
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_source_as_asn_to_source_as_number_a917047d
       field: source.as.asn
       target_field: source.as.number
       ignore_missing: true
   - rename:
+      tag: rename_source_as_organization_name_to_source_as_organization_name_f1362d0b
       field: source.as.organization_name
       target_field: source.as.organization.name
       ignore_missing: true
   - foreach:
+      tag: foreach_json_messageParts_a01b3372
       field: json.messageParts
       processor:
         append:
+          tag: append_related_hash_e623cd05
           field: related.hash
           value: '{{{_ingest._value.md5}}}'
           allow_duplicates: false
@@ -118,9 +142,11 @@ processors:
       ignore_failure: true
       if: ctx.json?.messageParts instanceof List
   - foreach:
+      tag: foreach_json_messageParts_255f7bfb
       field: json.messageParts
       processor:
         append:
+          tag: append_related_hash_1ce738e2
           field: related.hash
           value: '{{{_ingest._value.sha256}}}'
           allow_duplicates: false
@@ -128,58 +154,72 @@ processors:
       ignore_failure: true
       if: ctx.json?.messageParts instanceof List
   - rename:
+      tag: rename_json_ccAddresses_to_email_cc_address_11b02c18
       field: json.ccAddresses
       target_field: email.cc.address
       ignore_missing: true
   - set:
+      tag: set_email_cc_address_76afae5b
       field: email.cc.address
       value: ['{{{email.cc.address}}}']
       if: ctx.email?.cc?.address instanceof String
   - set:
+      tag: set_email_delivery_timestamp_8dc48ca9
       field: email.delivery_timestamp
       copy_from: '@timestamp'
       ignore_failure: true
   - rename:
+      tag: rename_json_fromAddress_to_email_from_address_54a1d768
       field: json.fromAddress
       target_field: email.from.address
       ignore_missing: true
   - set:
+      tag: set_email_from_address_fff7c0a5
       field: email.from.address
       value: ['{{{email.from.address}}}']
       if: ctx.email?.from?.address instanceof String
   - rename:
+      tag: rename_json_messageID_to_email_message_id_478a43db
       field: json.messageID
       target_field: email.message_id
       ignore_missing: true
   - gsub:
+      tag: gsub_email_message_id_9c7cf5ea
       field: email.message_id
       pattern: '<|>'
       replacement: ''
       ignore_missing: true
   - rename:
+      tag: rename_json_replyToAddress_to_email_reply_to_address_f55651c7
       field: json.replyToAddress
       target_field: email.reply_to.address
       ignore_missing: true
   - rename:
+      tag: rename_json_sender_to_email_sender_address_90c69416
       field: json.sender
       target_field: email.sender.address
       ignore_missing: true
   - rename:
+      tag: rename_json_subject_to_email_subject_dcbc667a
       field: json.subject
       target_field: email.subject
       ignore_missing: true
   - set:
+      tag: set_email_to_address_00a46272
       field: email.to.address
       copy_from: json.toAddresses
       ignore_failure: true
   - set:
+      tag: set_email_to_address_52631338
       field: email.to.address
       value: ['{{{email.to.address}}}']
       if: ctx.email?.to?.address instanceof String
   - foreach:
+      tag: foreach_json_recipient_c1c02972
       field: json.recipient
       processor:
         append:
+          tag: append_email_to_address_c4234d48
           field: email.to.address
           value: '{{{_ingest._value}}}'
           allow_duplicates: false
@@ -187,21 +227,26 @@ processors:
       ignore_failure: true
       if: ctx.json?.recipient instanceof List
   - rename:
+      tag: rename_json_xmailer_to_email_x_mailer_7644d631
       field: json.xmailer
       target_field: email.x_mailer
       ignore_missing: true
   - rename:
+      tag: rename_json_id_to_event_id_6438e920
       field: json.id
       target_field: event.id
       ignore_missing: true
   - set:
+      tag: set_email_attachments_75c4fd67
       field: email.attachments
       copy_from: json.messageParts
       ignore_failure: true
   - foreach:
+      tag: foreach_email_attachments_f22ed6f5
       field: email.attachments
       processor:
         remove:
+          tag: remove_ingest_value_disposition_c5abfb08
           field:
             - _ingest._value.disposition
             - _ingest._value.oContentType
@@ -210,42 +255,51 @@ processors:
       ignore_failure: true
       if: ctx.email?.attachments instanceof List
   - foreach:
+      tag: foreach_email_attachments_5e0aa7a8
       field: email.attachments
       processor:
         rename:
+          tag: rename_ingest_value_contentType_to_ingest_value_file_mime_type_b0cff2eb
           field: _ingest._value.contentType
           target_field: _ingest._value.file.mime_type
           ignore_missing: true
       ignore_failure: true
       if: ctx.email?.attachments instanceof List
   - foreach:
+      tag: foreach_email_attachments_88d690e8
       field: email.attachments
       processor:
         rename:
+          tag: rename_ingest_value_md5_to_ingest_value_file_hash_md5_2a11333b
           field: _ingest._value.md5
           target_field: _ingest._value.file.hash.md5
           ignore_missing: true
       ignore_failure: true
       if: ctx.email?.attachments instanceof List
   - foreach:
+      tag: foreach_email_attachments_1ec76ffe
       field: email.attachments
       processor:
         rename:
+          tag: rename_ingest_value_sha256_to_ingest_value_file_hash_sha256_7aaf4fa5
           field: _ingest._value.sha256
           target_field: _ingest._value.file.hash.sha256
           ignore_missing: true
       ignore_failure: true
       if: ctx.email?.attachments instanceof List
   - foreach:
+      tag: foreach_email_attachments_7d6b12e8
       field: email.attachments
       processor:
         rename:
+          tag: rename_ingest_value_filename_to_ingest_value_file_name_44791ddb
           field: _ingest._value.filename
           target_field: _ingest._value.file.name
           ignore_missing: true
       ignore_failure: true
       if: ctx.email?.attachments instanceof List
   - script:
+      tag: script_adding_hash_related_hash_458cf990
       description: Adding hash in related.hash from artifact field.
       lang: painless
       ignore_failure: true
@@ -269,78 +323,97 @@ processors:
             }
         }
   - rename:
+      tag: rename_json_toAddresses_to_proofpoint_tap_message_blocked_to_addresses_9494e7e3
       field: json.toAddresses
       target_field: proofpoint_tap.message_blocked.to_addresses
       ignore_missing: true
   - rename:
+      tag: rename_json_recipient_to_proofpoint_tap_message_blocked_recipient_3d84084e
       field: json.recipient
       target_field: proofpoint_tap.message_blocked.recipient
       ignore_missing: true
   - rename:
+      tag: rename_json_cluster_to_proofpoint_tap_message_blocked_cluster_10b147ae
       field: json.cluster
       target_field: proofpoint_tap.message_blocked.cluster
       ignore_missing: true
   - convert:
+      tag: convert_json_completelyRewritten_to_proofpoint_tap_message_blocked_completely_rewritten_4dc32c74
       field: json.completelyRewritten
       target_field: proofpoint_tap.message_blocked.completely_rewritten
       type: string
       ignore_missing: true
       ignore_failure: true
   - rename:
+      tag: rename_json_GUID_to_proofpoint_tap_guid_ab57fad4
       field: json.GUID
       target_field: proofpoint_tap.guid
       ignore_missing: true
   - rename:
+      tag: rename_json_headerCC_to_proofpoint_tap_message_blocked_header_cc_797bb978
       field: json.headerCC
       target_field: proofpoint_tap.message_blocked.header.cc
       ignore_missing: true
   - rename:
+      tag: rename_json_headerFrom_to_proofpoint_tap_message_blocked_header_from_4f6bea24
       field: json.headerFrom
       target_field: proofpoint_tap.message_blocked.header.from
       ignore_missing: true
   - gsub:
+      tag: gsub_proofpoint_tap_message_blocked_header_from_443aa9de
       field: proofpoint_tap.message_blocked.header.from
       pattern: '<|>'
       replacement: ''
       ignore_missing: true
   - rename:
+      tag: rename_json_headerReplyTo_to_proofpoint_tap_message_blocked_header_replyto_56777162
       field: json.headerReplyTo
       target_field: proofpoint_tap.message_blocked.header.replyto
       ignore_missing: true
   - rename:
+      tag: rename_json_headerTo_to_proofpoint_tap_message_blocked_header_to_b7e0f5a0
       field: json.headerTo
       target_field: proofpoint_tap.message_blocked.header.to
       ignore_missing: true
   - convert:
+      tag: convert_json_impostorScore_to_proofpoint_tap_message_blocked_impostor_score_3dbd870d
       field: json.impostorScore
       target_field: proofpoint_tap.message_blocked.impostor_score
       type: double
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_impostorScore_c3862a0a
             field: json.impostorScore
         - append:
+            tag: append_error_message_123d53e4
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - convert:
+      tag: convert_json_malwareScore_to_proofpoint_tap_message_blocked_malware_score_7f7b2b18
       field: json.malwareScore
       target_field: proofpoint_tap.message_blocked.malware_score
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_malwareScore_de2cd0f9
             field: json.malwareScore
         - append:
+            tag: append_error_message_1006c5a7
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_messageParts_to_proofpoint_tap_message_blocked_message_parts_77d87247
       field: json.messageParts
       target_field: proofpoint_tap.message_blocked.message_parts
       ignore_missing: true
   - foreach:
+      tag: foreach_proofpoint_tap_message_blocked_message_parts_0f10002a
       field: proofpoint_tap.message_blocked.message_parts
       processor:
         remove:
+          tag: remove_ingest_value_contentType_c7c3f4a7
           field:
             - _ingest._value.contentType
             - _ingest._value.filename
@@ -350,129 +423,160 @@ processors:
       ignore_failure: true
       if: ctx.proofpoint_tap?.message_blocked?.message_parts instanceof List
   - foreach:
+      tag: foreach_proofpoint_tap_message_blocked_message_parts_ad423c27
       field: proofpoint_tap.message_blocked.message_parts
       processor:
         rename:
+          tag: rename_ingest_value_oContentType_to_ingest_value_o_content_type_f33ca96d
           field: _ingest._value.oContentType
           target_field: _ingest._value.o_content_type
           ignore_missing: true
       ignore_failure: true
       if: ctx.proofpoint_tap?.message_blocked?.message_parts instanceof List
   - foreach:
+      tag: foreach_proofpoint_tap_message_blocked_message_parts_f8880ba4
       field: proofpoint_tap.message_blocked.message_parts
       processor:
         rename:
+          tag: rename_ingest_value_sandboxStatus_to_ingest_value_sandbox_status_54107568
           field: _ingest._value.sandboxStatus
           target_field: _ingest._value.sandbox_status
           ignore_missing: true
       ignore_failure: true
       if: ctx.proofpoint_tap?.message_blocked?.message_parts instanceof List
   - convert:
+      tag: convert_json_messageSize_to_proofpoint_tap_message_blocked_message_size_04c39137
       field: json.messageSize
       target_field: proofpoint_tap.message_blocked.message_size
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_messageSize_d6216bd1
             field: json.messageSize
         - append:
+            tag: append_error_message_3dba3e5e
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_modulesRun_to_proofpoint_tap_message_blocked_modules_run_30024ec3
       field: json.modulesRun
       target_field: proofpoint_tap.message_blocked.modules_run
       ignore_missing: true
   - convert:
+      tag: convert_json_phishScore_to_proofpoint_tap_message_blocked_phish_score_5b8d7383
       field: json.phishScore
       target_field: proofpoint_tap.message_blocked.phish_score
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_phishScore_7cd80597
             field: json.phishScore
         - append:
+            tag: append_error_message_76a9e01c
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_policyRoutes_to_proofpoint_tap_message_blocked_policy_routes_b8864ce3
       field: json.policyRoutes
       target_field: proofpoint_tap.message_blocked.policy_routes
       ignore_missing: true
   - rename:
+      tag: rename_json_QID_to_proofpoint_tap_message_blocked_qid_1d1a55a2
       field: json.QID
       target_field: proofpoint_tap.message_blocked.qid
       ignore_missing: true
   - rename:
+      tag: rename_json_quarantineFolder_to_proofpoint_tap_message_blocked_quarantine_folder_f9edb48a
       field: json.quarantineFolder
       target_field: proofpoint_tap.message_blocked.quarantine.folder
       ignore_missing: true
   - rename:
+      tag: rename_json_quarantineRule_to_proofpoint_tap_message_blocked_quarantine_rule_eeff680a
       field: json.quarantineRule
       target_field: proofpoint_tap.message_blocked.quarantine.rule
       ignore_missing: true
   - convert:
+      tag: convert_json_spamScore_to_proofpoint_tap_message_blocked_spam_score_3a339cd8
       field: json.spamScore
       target_field: proofpoint_tap.message_blocked.spam_score
       type: long
       ignore_missing: true
       on_failure:
         - remove:
+            tag: remove_json_spamScore_f6b7964b
             field: json.spamScore
         - append:
+            tag: append_error_message_95041c61
             field: error.message
             value: '{{{_ingest.on_failure_message}}}'
   - rename:
+      tag: rename_json_threatsInfoMap_to_proofpoint_tap_message_blocked_threat_info_map_68cca403
       field: json.threatsInfoMap
       target_field: proofpoint_tap.message_blocked.threat_info_map
       ignore_missing: true
   - foreach:
+      tag: foreach_proofpoint_tap_message_blocked_threat_info_map_315e367c
       field: proofpoint_tap.message_blocked.threat_info_map
       processor:
         rename:
+          tag: rename_ingest_value_campaignId_to_ingest_value_campaign_id_d98abd78
           field: _ingest._value.campaignId
           target_field: _ingest._value.campaign_id
           ignore_missing: true
       ignore_failure: true
       if: ctx.proofpoint_tap?.message_blocked?.threat_info_map instanceof List
   - foreach:
+      tag: foreach_proofpoint_tap_message_blocked_threat_info_map_116656bb
       field: proofpoint_tap.message_blocked.threat_info_map
       processor:
         rename:
+          tag: rename_ingest_value_threat_to_ingest_value_threat_artifact_5bd8d255
           field: _ingest._value.threat
           target_field: _ingest._value.threat.artifact
           ignore_missing: true
       ignore_failure: true
       if: ctx.proofpoint_tap?.message_blocked?.threat_info_map instanceof List
   - foreach:
+      tag: foreach_proofpoint_tap_message_blocked_threat_info_map_53833de9
       field: proofpoint_tap.message_blocked.threat_info_map
       processor:
         rename:
+          tag: rename_ingest_value_threatID_to_ingest_value_threat_id_4b92bc9b
           field: _ingest._value.threatID
           target_field: _ingest._value.threat.id
           ignore_missing: true
       ignore_failure: true
       if: ctx.proofpoint_tap?.message_blocked?.threat_info_map instanceof List
   - foreach:
+      tag: foreach_proofpoint_tap_message_blocked_threat_info_map_650e1809
       field: proofpoint_tap.message_blocked.threat_info_map
       processor:
         rename:
+          tag: rename_ingest_value_threatId_to_ingest_value_threat_id_027c9bb0
           field: _ingest._value.threatId
           target_field: _ingest._value.threat.id
           ignore_missing: true
       ignore_failure: true
       if: ctx.proofpoint_tap?.message_blocked?.threat_info_map instanceof List
   - foreach:
+      tag: foreach_proofpoint_tap_message_blocked_threat_info_map_01f49681
       field: proofpoint_tap.message_blocked.threat_info_map
       processor:
         rename:
+          tag: rename_ingest_value_threatStatus_to_ingest_value_threat_status_10bc1780
           field: _ingest._value.threatStatus
           target_field: _ingest._value.threat.status
           ignore_missing: true
       ignore_failure: true
       if: ctx.proofpoint_tap?.message_blocked?.threat_info_map instanceof List
   - foreach:
+      tag: foreach_proofpoint_tap_message_blocked_threat_info_map_f4c9f2c5
       field: proofpoint_tap.message_blocked.threat_info_map
       processor:
         date:
+          tag: date_ingest_value_threatTime_to_ingest_value_threat_time_c54e57e5
           field: _ingest._value.threatTime
           target_field: _ingest._value.threat.time
           ignore_failure: true
@@ -481,26 +585,32 @@ processors:
       ignore_failure: true
       if: ctx.proofpoint_tap?.message_blocked?.threat_info_map instanceof List
   - foreach:
+      tag: foreach_proofpoint_tap_message_blocked_threat_info_map_bdb3d2dd
       field: proofpoint_tap.message_blocked.threat_info_map
       processor:
         remove:
+          tag: remove_ingest_value_threatTime_ebdef0dc
           field: _ingest._value.threatTime
           ignore_missing: true
       ignore_failure: true
       if: ctx.proofpoint_tap?.message_blocked?.threat_info_map instanceof List
   - foreach:
+      tag: foreach_proofpoint_tap_message_blocked_threat_info_map_f8eaca85
       field: proofpoint_tap.message_blocked.threat_info_map
       processor:
         rename:
+          tag: rename_ingest_value_threatType_to_ingest_value_threat_type_8f51cee4
           field: _ingest._value.threatType
           target_field: _ingest._value.threat.type
           ignore_missing: true
       ignore_failure: true
       if: ctx.proofpoint_tap?.message_blocked?.threat_info_map instanceof List
   - foreach:
+      tag: foreach_proofpoint_tap_message_blocked_threat_info_map_662b5883
       field: proofpoint_tap.message_blocked.threat_info_map
       processor:
         rename:
+          tag: rename_ingest_value_threatUrl_to_ingest_value_threat_url_b0418e55
           field: _ingest._value.threatUrl
           target_field: _ingest._value.threat.url
           ignore_missing: true
@@ -509,7 +619,7 @@ processors:
   - script:
       lang: painless
       description: Set the @timestamp to the maximum of messageTime and threatTime.
-      tag: timestamp-is-maximum
+      tag: timestamp-is-maximum_b702339d
       if: ctx.proofpoint_tap?.message_blocked?.threat_info_map instanceof List
       ignore_failure: true
       source: |
@@ -520,10 +630,12 @@ processors:
           }
         }
   - remove:
+      tag: remove_e5a80934
       field:
         - json
       ignore_missing: true
   - script:
+      tag: script_drops_null_empty_values_recursively_e2ccbdd7
       description: Drops null/empty values recursively.
       lang: painless
       source: |
@@ -542,12 +654,18 @@ processors:
         dropEmptyFields(ctx);
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message_206bb8ac
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'

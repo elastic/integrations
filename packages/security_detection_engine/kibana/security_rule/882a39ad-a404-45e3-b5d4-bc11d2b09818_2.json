@@ -1,0 +1,136 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies potential DNS exfiltration on Windows hosts by detecting a high volume of DNS queries whose subdomain labels follow a chunked encoding pattern (index-payload.base_domain). Attackers split stolen data across many DNS queries to evade volume-based detection; this rule aggregates queries per process, base domain, and five-minute window and flags sessions with many distinct chunk indices and sufficiently long encoded payloads.",
+        "from": "now-9m",
+        "interval": "5m",
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "host.id",
+                "host.name",
+                "user.id",
+                "user.name",
+                "process.name",
+                "dns.question.name"
+            ]
+        },
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Potential DNS Exfiltration via Excessive Chunked Queries",
+        "note": "## Triage and analysis\n\n### Investigating Potential DNS Exfiltration via Excessive Chunked Queries\n\nDNS tunneling and exfiltration often encode data in subdomain labels using a chunk index prefix (for example,\n`42-<base64-or-hex-payload>.attacker.example`). A large number of distinct chunk indices to the same base domain from\none process within a short window strongly suggests staged data transfer rather than normal resolution behavior.\n\n### Possible investigation steps\n\n- Review **Esql.base_domain**, **Esql.unique_chunks**, and **Esql.max_index** on the alert to gauge exfil volume and\n  whether chunk indices form a contiguous or near-contiguous sequence.\n- Identify **process.name** and **process.executable** (from related network events on the same host) and inspect the\n  process tree for scripting runtimes, LOLBins, or unsigned binaries.\n- Pivot on **host.id** for other DNS, network, or exfiltration alerts in the past 48 hours.\n- Inspect sample **dns.question.name** values for the session to confirm encoded payload subdomains and estimate data\n  volume (**Esql.avg_payload_len** \u00d7 **Esql.unique_chunks**).\n- Check whether the base domain is newly observed, lacks business justification, or resolves to infrastructure outside\n  approved DNS allowlists.\n\n### False positive analysis\n\n- Legitimate software that encodes telemetry or session tokens in DNS labels is rare; validate against known vendor\n  behavior before closing.\n- Security scanners or research tools that generate synthetic chunked DNS labels may match; confirm process identity and\n  organizational ownership.\n\n### Response and remediation\n\n- If confirmed malicious: isolate the host, block the **Esql.base_domain** at DNS and egress controls, and preserve\n  DNS/network logs for scoping.\n- Hunt for the same **Esql.base_domain** and process hash across other hosts and users.\n- Reset credentials and review data accessible to the involved user or process if exfiltration is confirmed.\n",
+        "query": "FROM logs-crowdstrike.fdr*, logs-endpoint.events.network-*, logs-windows.sysmon_operational-*\n| WHERE host.os.type == \"windows\"\n    AND event.category == \"network\"\n    AND event.action IN (\"lookup_requested\", \"DNSEvent (DNS query)\", \"DnsRequest\")\n    AND process.name != \"svchost.exe\"\n    AND dns.question.name RLIKE \"\"\"[0-9]{1,5}-[A-Za-z0-9+/=]{15,63}\\..+\"\"\"\n| GROK dns.question.name \"%{INT:chunk_index}-%{DATA:chunk_payload}\\\\.%{GREEDYDATA:Esql.base_domain}\"\n| WHERE chunk_index IS NOT NULL\n| EVAL payload_len = LENGTH(chunk_payload)\n| STATS\n    Esql.occurrences = COUNT(*),\n    Esql.unique_chunks = COUNT_DISTINCT(chunk_index),\n    Esql.max_index = MAX(TO_INTEGER(chunk_index)),\n    Esql.avg_payload_len = AVG(payload_len)\n  BY process.name, Esql.base_domain, user.id, user.name, host.id, host.name, data_stream.namespace, DATE_TRUNC(5 minutes, @timestamp)\n| WHERE Esql.occurrences >= 30\n    AND Esql.unique_chunks >= 30\n    AND Esql.avg_payload_len >= 20\n| SORT Esql.unique_chunks DESC\n| LIMIT 20\n| KEEP host.id, host.name, process.name, user.id, user.name, data_stream.namespace, Esql.*\n",
+        "references": [
+            "https://attack.mitre.org/techniques/T1048/003/",
+            "https://attack.mitre.org/techniques/T1572/",
+            "https://unit42.paloaltonetworks.com/dns-tunneling-how-dns-can-be-abused-by-malicious-actors/"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": ">=9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": ">=3.0.0"
+            },
+            {
+                "package": "crowdstrike",
+                "version": ">=3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.namespace",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "882a39ad-a404-45e3-b5d4-bc11d2b09818",
+        "setup": "## Setup\n\nThis rule is designed for data generated by [Elastic Defend](https://www.elastic.co/security/endpoint-security), which provides native endpoint detection and response, along with event enrichments designed to work with our detection rules.\n\nSetup instructions: https://ela.st/install-elastic-defend\n\n### Additional data sources\n\nThis rule also supports the following third-party data sources. For setup instructions, refer to the links below:\n\n- [CrowdStrike](https://ela.st/crowdstrike-integration)\n- [Sysmon Event ID 22 - DNS Query](https://ela.st/sysmon-event-22-setup)\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Exfiltration",
+            "Resources: Investigation Guide",
+            "Data Source: Elastic Defend",
+            "Data Source: Crowdstrike",
+            "Data Source: Sysmon",
+            "Tactic: Command and Control"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0010",
+                    "name": "Exfiltration",
+                    "reference": "https://attack.mitre.org/tactics/TA0010/"
+                },
+                "technique": [
+                    {
+                        "id": "T1048",
+                        "name": "Exfiltration Over Alternative Protocol",
+                        "reference": "https://attack.mitre.org/techniques/T1048/",
+                        "subtechnique": [
+                            {
+                                "id": "T1048.003",
+                                "name": "Exfiltration Over Unencrypted Non-C2 Protocol",
+                                "reference": "https://attack.mitre.org/techniques/T1048/003/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0011",
+                    "name": "Command and Control",
+                    "reference": "https://attack.mitre.org/tactics/TA0011/"
+                },
+                "technique": [
+                    {
+                        "id": "T1572",
+                        "name": "Protocol Tunneling",
+                        "reference": "https://attack.mitre.org/techniques/T1572/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 2
+    },
+    "id": "882a39ad-a404-45e3-b5d4-bc11d2b09818_2",
+    "type": "security-rule"
+}

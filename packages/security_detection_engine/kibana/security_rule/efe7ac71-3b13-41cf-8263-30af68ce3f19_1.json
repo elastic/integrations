@@ -1,0 +1,120 @@
+{
+    "attributes": {
+        "alert_suppression": {
+            "duration": {
+                "unit": "m",
+                "value": 15
+            },
+            "group_by": [
+                "Esql.appliance_id",
+                "source.ip"
+            ],
+            "missing_fields_strategy": "suppress"
+        },
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies multiple failed SonicWall authentication attempts against several user accounts from one source IP, followed by a successful remote-access login from the same source to the same appliance. This may indicate successful password spraying, credential stuffing, or password guessing.",
+        "false_positives": [
+            "Shared egress addresses, managed service providers, help desks, identity-provider outages, password rotation, or several legitimate users entering incorrect credentials before another user successfully authenticates may trigger this rule. Add exceptions only for confirmed shared-service sources and scope them to the relevant appliance."
+        ],
+        "from": "now-15m",
+        "interval": "5m",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Multiple SonicWall Login Failures Followed by Successful Login",
+        "note": "## Triage and analysis\n\n### Investigating Multiple SonicWall Login Failures Followed by Successful Login\n\nThis rule detects at least five failed authentication events affecting at least three users from one source IP to one SonicWall appliance, followed by at least one successful remote-access login after the failure activity began. The successful user does not have to be one of the failed users because credential attacks can test several credential pairs and shared source infrastructure can target multiple accounts.\n\nFailure event codes include incorrect or unknown credentials, RADIUS or LDAP authentication failures, and account lockouts. Successful event codes cover VPN- or WAN-zone administrator and remote-user logins, including SSL VPN.\n\n### Possible investigation steps\n\n- Review `source.ip`, its ASN, geolocation, reputation, and prior activity. Determine whether it belongs to expected corporate proxy, VPN egress, managed service provider, jump-host, or monitoring infrastructure.\n- Review `Esql.failed_user_names`, `Esql.successful_user_names`, `Esql.failed_logins`, `Esql.failed_user_count`, and `Esql.successful_logins`. Determine whether a successful user was also targeted by the failed attempts.\n- Review `Esql.failure_event_codes` and `Esql.success_event_codes` to distinguish administrator, remote-user, SSL VPN, LDAP, RADIUS, and lockout activity.\n- Examine the sequence between `Esql.first_failure`, `Esql.last_failure`, `Esql.first_success`, and `Esql.last_success`. Look for automated pacing, username enumeration, repeated attempts, or continued failures after the first successful login.\n- Confirm whether MFA was required and completed for each successful authentication.\n- Correlate successful VPN sessions with assigned tunnel IPs, internal authentication, DNS, network flow, and endpoint activity. For administrator logins, review subsequent SonicWall configuration changes.\n\n### False positive analysis\n\n- Several users behind a shared public address may enter incorrect credentials while another user authenticates.\n- Password rotation, expired cached credentials, LDAP or RADIUS issues, help-desk testing, and synthetic monitoring can generate failure-to-success patterns.\n- Validate the source and workflow before adding an exception. Prefer an exception scoped by both source and appliance rather than excluding a user or source globally.\n\n### Response and remediation\n\n- If unauthorized access is suspected, disable affected accounts, terminate active sessions, reset credentials, revoke tokens or keys, and enforce MFA.\n- Block or restrict the source at the SonicWall appliance while investigating.\n- Review configuration changes and downstream activity from successful VPN sessions. Isolate affected systems and begin incident response if post-authentication activity is identified.\n- Preserve SonicWall authentication, VPN session, and configuration audit logs before making broad changes.\n",
+        "query": "from logs-sonicwall_firewall.log-*\n| where\n    data_stream.dataset == \"sonicwall_firewall.log\" and\n    (\n      (\n        event.action == \"login-failure\" and\n        event.code in (\"30\", \"32\", \"33\", \"200\", \"243\", \"329\", \"745\", \"749\", \"1655\")\n      ) or (\n        event.action == \"login-success\" and\n        event.code in (\"235\", \"236\", \"237\", \"238\", \"1080\")\n      )\n    ) and\n    source.ip is not null and\n    user.name is not null and\n    (observer.serial_number is not null or observer.name is not null)\n| eval\n    Esql.appliance_id = coalesce(observer.serial_number, observer.name),\n    Esql.is_failure = case(event.action == \"login-failure\", 1, 0),\n    Esql.is_success = case(event.action == \"login-success\", 1, 0),\n    Esql.failed_user = case(event.action == \"login-failure\", user.name, null),\n    Esql.successful_user = case(event.action == \"login-success\", user.name, null),\n    Esql.failure_event_code = case(event.action == \"login-failure\", event.code, null),\n    Esql.success_event_code = case(event.action == \"login-success\", event.code, null),\n    Esql.failure_timestamp = case(event.action == \"login-failure\", @timestamp, null),\n    Esql.success_timestamp = case(event.action == \"login-success\", @timestamp, null)\n| stats\n    Esql.failed_logins = sum(Esql.is_failure),\n    Esql.successful_logins = sum(Esql.is_success),\n    Esql.failed_user_count = count_distinct(Esql.failed_user),\n    Esql.failed_user_names = values(Esql.failed_user),\n    Esql.successful_user_names = values(Esql.successful_user),\n    Esql.failure_event_codes = values(Esql.failure_event_code),\n    Esql.success_event_codes = values(Esql.success_event_code),\n    Esql.first_failure = min(Esql.failure_timestamp),\n    Esql.last_failure = max(Esql.failure_timestamp),\n    Esql.first_success = min(Esql.success_timestamp),\n    Esql.last_success = max(Esql.success_timestamp)\n  by Esql.appliance_id, source.ip\n| where\n    Esql.failed_logins >= 5 and\n    Esql.failed_user_count >= 3 and\n    Esql.successful_logins >= 1 and\n    Esql.first_failure < Esql.last_success\n| eval Esql.failure_to_success_seconds = date_diff(\"seconds\", Esql.first_failure, Esql.last_success)\n| sort Esql.failed_user_count desc, Esql.failed_logins desc\n| keep source.ip, Esql.*\n",
+        "references": [
+            "https://www.huntress.com/blog/sonicwall-credential-stuffing-campaign",
+            "https://www.elastic.co/docs/reference/integrations/sonicwall_firewall",
+            "https://www.sonicwall.com/support/knowledge-base/monitoring-sslvpn-user-logins/kA1VN0000000JQz0AM"
+        ],
+        "related_integrations": [
+            {
+                "package": "sonicwall_firewall",
+                "version": ">=1.18.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "source.ip",
+                "type": "ip"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "efe7ac71-3b13-41cf-8263-30af68ce3f19",
+        "setup": "## Setup\n\nThis rule requires the Elastic **SonicWall Firewall** integration and SonicWall Enhanced Syslog authentication events.\n\nConfigure the appliance to forward **Users > Authentication Access** and **Users > RADIUS Authentication** events.\nConfirm that credential failure event codes `30`, `32`, `33`, `200`, `243`, `329`, `745`, `749`, and `1655`, and\nsuccessful remote-access event codes `235`, `236`, `237`, `238`, and `1080`, are collected. Verify that the integration\npopulates `data_stream.dataset`, `event.action`, `event.code`, `source.ip`, `user.name`, and either\n`observer.serial_number` or a unique `observer.name`.\n\nIf several customers share one Kibana space, ensure the appliance identity is unique per tenant so activity from\ndifferent customers is not aggregated together.\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Network",
+            "Domain: Identity",
+            "Use Case: Threat Detection",
+            "Use Case: Identity and Access Audit",
+            "Tactic: Credential Access",
+            "Tactic: Initial Access",
+            "Data Source: SonicWall",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1110",
+                        "name": "Brute Force",
+                        "reference": "https://attack.mitre.org/techniques/T1110/",
+                        "subtechnique": [
+                            {
+                                "id": "T1110.001",
+                                "name": "Password Guessing",
+                                "reference": "https://attack.mitre.org/techniques/T1110/001/"
+                            },
+                            {
+                                "id": "T1110.003",
+                                "name": "Password Spraying",
+                                "reference": "https://attack.mitre.org/techniques/T1110/003/"
+                            },
+                            {
+                                "id": "T1110.004",
+                                "name": "Credential Stuffing",
+                                "reference": "https://attack.mitre.org/techniques/T1110/004/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0001",
+                    "name": "Initial Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0001/"
+                },
+                "technique": [
+                    {
+                        "id": "T1078",
+                        "name": "Valid Accounts",
+                        "reference": "https://attack.mitre.org/techniques/T1078/"
+                    },
+                    {
+                        "id": "T1133",
+                        "name": "External Remote Services",
+                        "reference": "https://attack.mitre.org/techniques/T1133/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "efe7ac71-3b13-41cf-8263-30af68ce3f19_1",
+    "type": "security-rule"
+}

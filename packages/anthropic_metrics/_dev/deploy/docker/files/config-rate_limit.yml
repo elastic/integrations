@@ -1,0 +1,57 @@
+rules:
+  - path: /v1/organizations/rate_limits
+    methods: ['GET']
+    request_headers:
+      x-api-key:
+        - 'xxxx'
+      anthropic-version:
+        - '2023-06-01'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ if ge .req_num 2 }}{{ minify_json `
+          {
+            "data": [],
+            "next_page": null
+          }
+          ` }}{{ else }}{{ minify_json `
+          {
+            "data": [
+              {
+                "type": "rate_limit",
+                "group_type": "model_group",
+                "models": [
+                  "claude-opus-4-5",
+                  "claude-opus-4-5-20251101",
+                  "claude-opus-4-6",
+                  "claude-opus-4-7"
+                ],
+                "limits": [
+                  { "type": "requests_per_minute", "value": 4000 },
+                  { "type": "input_tokens_per_minute_cache_aware", "value": 10000000 },
+                  { "type": "output_tokens_per_minute", "value": 800000 }
+                ]
+              },
+              {
+                "type": "rate_limit",
+                "group_type": "batch",
+                "models": null,
+                "limits": [
+                  { "type": "enqueued_batch_requests", "value": 500000 }
+                ]
+              },
+              {
+                "type": "rate_limit",
+                "group_type": "token_count",
+                "models": null,
+                "limits": [
+                  { "type": "input_tokens_per_minute", "value": 5000000 }
+                ]
+              }
+            ],
+            "next_page": null
+          }
+          ` }}{{ end }}

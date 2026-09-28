@@ -1,0 +1,470 @@
+# Test that replacing the agent (full re-enrollment, no cursor carried over)
+# does not lose events.
+#
+# The mock API serves two content types (Audit.SharePoint and Audit.General),
+# each with three content blobs. After the first collection cycle produces 6
+# events, the agent is destroyed and a new one is enrolled from scratch.
+# The new agent has no cursor state -- it re-collects from initial_interval.
+# The mock is swapped to a different set of blobs: event 001 is removed
+# (simulating expired/rotated content) and event 004 is added (new content
+# that appeared during the outage).
+#
+# Phase 1: {sp,gen}-event-{001,002,003} → 6 events
+# Phase 2: {sp,gen}-event-{002,003,004} → 6 events (001 gone, 004 new)
+#
+# Each install_agent creates a new Fleet policy with a unique namespace, so
+# each phase writes to a separate data stream. Phase 1 events live in one
+# data stream; phase 2 events live in another. The test verifies each phase
+# independently and then confirms all 8 distinct IDs exist across both.
+#
+# NOTE: This does NOT test mid-drain cursor consistency (cursor.last_for
+# advancing ahead of todo_content). That scenario requires killing the
+# agent container while blobs are still queued and preserving the cursor
+# across restart -- which the script test infrastructure does not support
+# (uninstall_agent destroys the enrollment and cursor).
+
+[!external_stack] skip 'Skipping external stack test.'
+[!exec:jq] skip 'Skipping test requiring absent jq command'
+
+# Connect to the running stack.
+use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+
+# Install an agent.
+install_agent -profile ${CONFIG_PROFILES}/${PROFILE} -network_name NETWORK_NAME
+
+# Start mock O365 API (phase 1: three blobs per content type).
+docker_up -profile ${CONFIG_PROFILES}/${PROFILE} -network ${NETWORK_NAME} o365-mock
+
+# Install the dev package.
+add_package -profile ${CONFIG_PROFILES}/${PROFILE}
+
+# Create policy and start collection.
+add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config.yaml DATA_STREAM_NAME
+
+# Wait for 6 events: 3 blobs x 2 content types.
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 6 -confirm 15s -timeout 5m ${DATA_STREAM_NAME}
+cp stdout got_docs_phase1.json
+
+# Verify all 6 distinct event IDs are present.
+exec jq '[.hits.hits[]._source.event.id] | sort | join(",")' got_docs_phase1.json
+stdout '"gen-event-001,gen-event-002,gen-event-003,sp-event-001,sp-event-002,sp-event-003"'
+
+# --- Simulate agent replacement (node rotation, pod eviction) ---
+# Destroy the agent entirely. The new agent will have no cursor state
+# and will re-collect from initial_interval.
+uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 1m
+docker_down o365-mock
+
+# Swap mock to phase 2: blob 001 removed, blob 004 added.
+cp o365-mock/config-phase2.yml o365-mock/config.yml
+
+# Install agent first so NETWORK_NAME is refreshed, then start the mock
+# on the agent's network so DNS resolution works.
+install_agent -profile ${CONFIG_PROFILES}/${PROFILE} -network_name NETWORK_NAME
+docker_up -profile ${CONFIG_PROFILES}/${PROFILE} -network ${NETWORK_NAME} o365-mock
+
+# Re-assign the package policy. This sets DATA_STREAM_NAME to the new
+# data stream (different namespace from phase 1).
+add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config.yaml DATA_STREAM_NAME
+
+# Wait for 6 phase 2 events in the new data stream.
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 6 -confirm 15s -timeout 5m ${DATA_STREAM_NAME}
+cp stdout got_docs_phase2.json
+
+# Phase 2 must contain events 002, 003, 004 (re-collected overlap + new).
+exec jq '[.hits.hits[]._source.event.id] | sort | join(",")' got_docs_phase2.json
+stdout '"gen-event-002,gen-event-003,gen-event-004,sp-event-002,sp-event-003,sp-event-004"'
+
+# Combine both phases and verify all 8 distinct event IDs are present:
+# 001 preserved from phase 1, 002/003 overlap, 004 new from phase 2.
+exec jq -s '[.[].hits.hits[]._source.event.id] | unique | sort | join(",")' got_docs_phase1.json got_docs_phase2.json
+stdout '"gen-event-001,gen-event-002,gen-event-003,gen-event-004,sp-event-001,sp-event-002,sp-event-003,sp-event-004"'
+
+# Clean up.
+remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_NAME}
+uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 1m
+docker_down o365-mock
+
+-- test_config.yaml --
+input: cel
+vars: ~
+data_stream:
+  vars:
+    url: http://o365-mock:8080
+    token_url: http://o365-mock:8080
+    preserve_original_event: true
+    client_id: test-cel-client-id
+    client_secret: test-cel-client-secret
+    azure_tenant_id: test-cel-tenant-id
+    content_types: "Audit.SharePoint, Audit.General"
+    interval: 30s
+    initial_interval: 1h
+    enable_request_tracer: false
+-- o365-mock/docker-compose.yml --
+version: '2.3'
+services:
+  o365-mock:
+    image: docker.elastic.co/observability/stream:v0.19.0
+    hostname: o365-mock
+    ports:
+      - 8080
+    environment:
+      PORT: "8080"
+    volumes:
+      - ./config.yml:/config.yml
+    command:
+      - http-server
+      - --addr=:8080
+      - --config=/config.yml
+-- o365-mock/config.yml --
+rules:
+  # Token endpoint.
+  - path: /test-cel-tenant-id/oauth2/v2.0/token
+    methods: [POST]
+    query_params:
+      client_id: test-cel-client-id
+      client_secret: test-cel-client-secret
+      grant_type: client_credentials
+      scope: https://manage.office.com/.default
+    request_headers:
+      Content-Type:
+        - "application/x-www-form-urlencoded"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"access_token":"test-token","token_type":"Bearer","expires_in":3600,"ext_expires_in":3600}
+
+  # Subscribe Audit.SharePoint.
+  - path: /api/v1.0/test-cel-tenant-id/activity/feed/subscriptions/start
+    methods: [POST]
+    query_params:
+      contentType: "Audit.SharePoint"
+      PublisherIdentifier: test-cel-tenant-id
+    request_headers:
+      Authorization:
+        - "Bearer test-token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"contentType":"Audit.SharePoint","status":"enabled","webhook":null}
+
+  # Subscribe Audit.General.
+  - path: /api/v1.0/test-cel-tenant-id/activity/feed/subscriptions/start
+    methods: [POST]
+    query_params:
+      contentType: "Audit.General"
+      PublisherIdentifier: test-cel-tenant-id
+    request_headers:
+      Authorization:
+        - "Bearer test-token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"contentType":"Audit.General","status":"enabled","webhook":null}
+
+  # List content for Audit.SharePoint (3 blobs).
+  - path: /api/v1.0/test-cel-tenant-id/activity/feed/subscriptions/content
+    methods: [GET]
+    query_params:
+      contentType: "Audit.SharePoint"
+      startTime: "{startTime:.*}"
+      endTime: "{endTime:.*}"
+      PublisherIdentifier: test-cel-tenant-id
+    request_headers:
+      Authorization:
+        - "Bearer test-token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          [{"contentType":"Audit.SharePoint","contentId":"sp-content-1","contentUri":"http://{{ hostname }}:{{ env "PORT" }}/api/v1.0/test-cel-tenant-id/activity/feed/audit/sp-content-1","contentCreated":"{{ .request.vars.endTime }}","contentExpiration":"2199-12-31T23:59:59.000Z"},{"contentType":"Audit.SharePoint","contentId":"sp-content-2","contentUri":"http://{{ hostname }}:{{ env "PORT" }}/api/v1.0/test-cel-tenant-id/activity/feed/audit/sp-content-2","contentCreated":"{{ .request.vars.endTime }}","contentExpiration":"2199-12-31T23:59:59.000Z"},{"contentType":"Audit.SharePoint","contentId":"sp-content-3","contentUri":"http://{{ hostname }}:{{ env "PORT" }}/api/v1.0/test-cel-tenant-id/activity/feed/audit/sp-content-3","contentCreated":"{{ .request.vars.endTime }}","contentExpiration":"2199-12-31T23:59:59.000Z"}]
+
+  # List content for Audit.General (3 blobs).
+  - path: /api/v1.0/test-cel-tenant-id/activity/feed/subscriptions/content
+    methods: [GET]
+    query_params:
+      contentType: "Audit.General"
+      startTime: "{startTime:.*}"
+      endTime: "{endTime:.*}"
+      PublisherIdentifier: test-cel-tenant-id
+    request_headers:
+      Authorization:
+        - "Bearer test-token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          [{"contentType":"Audit.General","contentId":"gen-content-1","contentUri":"http://{{ hostname }}:{{ env "PORT" }}/api/v1.0/test-cel-tenant-id/activity/feed/audit/gen-content-1","contentCreated":"{{ .request.vars.endTime }}","contentExpiration":"2199-12-31T23:59:59.000Z"},{"contentType":"Audit.General","contentId":"gen-content-2","contentUri":"http://{{ hostname }}:{{ env "PORT" }}/api/v1.0/test-cel-tenant-id/activity/feed/audit/gen-content-2","contentCreated":"{{ .request.vars.endTime }}","contentExpiration":"2199-12-31T23:59:59.000Z"},{"contentType":"Audit.General","contentId":"gen-content-3","contentUri":"http://{{ hostname }}:{{ env "PORT" }}/api/v1.0/test-cel-tenant-id/activity/feed/audit/gen-content-3","contentCreated":"{{ .request.vars.endTime }}","contentExpiration":"2199-12-31T23:59:59.000Z"}]
+
+  # Fetch SharePoint blob 1.
+  - path: /api/v1.0/test-cel-tenant-id/activity/feed/audit/sp-content-1
+    methods: [GET]
+    request_headers:
+      Authorization:
+        - "Bearer test-token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          [{"Id":"sp-event-001","CreationTime":"2020-02-07T16:43:53","Workload":"SharePoint","Operation":"PageViewed","RecordType":4,"OrganizationId":"b86ab9d4-fcf1-4b11-8a06-7a8f91b47fbd","UserId":"user@test.onmicrosoft.com","ClientIP":"192.0.2.1"}]
+
+  # Fetch SharePoint blob 2.
+  - path: /api/v1.0/test-cel-tenant-id/activity/feed/audit/sp-content-2
+    methods: [GET]
+    request_headers:
+      Authorization:
+        - "Bearer test-token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          [{"Id":"sp-event-002","CreationTime":"2020-02-07T17:10:22","Workload":"SharePoint","Operation":"FileUploaded","RecordType":6,"OrganizationId":"b86ab9d4-fcf1-4b11-8a06-7a8f91b47fbd","UserId":"user@test.onmicrosoft.com","ClientIP":"192.0.2.1"}]
+
+  # Fetch SharePoint blob 3.
+  - path: /api/v1.0/test-cel-tenant-id/activity/feed/audit/sp-content-3
+    methods: [GET]
+    request_headers:
+      Authorization:
+        - "Bearer test-token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          [{"Id":"sp-event-003","CreationTime":"2020-02-07T18:05:11","Workload":"SharePoint","Operation":"FileModified","RecordType":6,"OrganizationId":"b86ab9d4-fcf1-4b11-8a06-7a8f91b47fbd","UserId":"user@test.onmicrosoft.com","ClientIP":"192.0.2.1"}]
+
+  # Fetch General blob 1.
+  - path: /api/v1.0/test-cel-tenant-id/activity/feed/audit/gen-content-1
+    methods: [GET]
+    request_headers:
+      Authorization:
+        - "Bearer test-token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          [{"Id":"gen-event-001","CreationTime":"2020-02-28T09:42:45","Workload":"Yammer","Operation":"GroupCreation","RecordType":22,"OrganizationId":"b86ab9d4-fcf1-4b11-8a06-7a8f91b47fbd","UserId":"user@test.onmicrosoft.com","ClientIP":"192.0.2.2"}]
+
+  # Fetch General blob 2.
+  - path: /api/v1.0/test-cel-tenant-id/activity/feed/audit/gen-content-2
+    methods: [GET]
+    request_headers:
+      Authorization:
+        - "Bearer test-token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          [{"Id":"gen-event-002","CreationTime":"2020-02-28T10:15:33","Workload":"Yammer","Operation":"GroupUpdated","RecordType":22,"OrganizationId":"b86ab9d4-fcf1-4b11-8a06-7a8f91b47fbd","UserId":"user@test.onmicrosoft.com","ClientIP":"192.0.2.2"}]
+
+  # Fetch General blob 3.
+  - path: /api/v1.0/test-cel-tenant-id/activity/feed/audit/gen-content-3
+    methods: [GET]
+    request_headers:
+      Authorization:
+        - "Bearer test-token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          [{"Id":"gen-event-003","CreationTime":"2020-02-28T11:02:18","Workload":"Yammer","Operation":"GroupDeleted","RecordType":22,"OrganizationId":"b86ab9d4-fcf1-4b11-8a06-7a8f91b47fbd","UserId":"user@test.onmicrosoft.com","ClientIP":"192.0.2.2"}]
+-- o365-mock/config-phase2.yml --
+rules:
+  # Token endpoint.
+  - path: /test-cel-tenant-id/oauth2/v2.0/token
+    methods: [POST]
+    query_params:
+      client_id: test-cel-client-id
+      client_secret: test-cel-client-secret
+      grant_type: client_credentials
+      scope: https://manage.office.com/.default
+    request_headers:
+      Content-Type:
+        - "application/x-www-form-urlencoded"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"access_token":"test-token","token_type":"Bearer","expires_in":3600,"ext_expires_in":3600}
+
+  # Subscribe Audit.SharePoint.
+  - path: /api/v1.0/test-cel-tenant-id/activity/feed/subscriptions/start
+    methods: [POST]
+    query_params:
+      contentType: "Audit.SharePoint"
+      PublisherIdentifier: test-cel-tenant-id
+    request_headers:
+      Authorization:
+        - "Bearer test-token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"contentType":"Audit.SharePoint","status":"enabled","webhook":null}
+
+  # Subscribe Audit.General.
+  - path: /api/v1.0/test-cel-tenant-id/activity/feed/subscriptions/start
+    methods: [POST]
+    query_params:
+      contentType: "Audit.General"
+      PublisherIdentifier: test-cel-tenant-id
+    request_headers:
+      Authorization:
+        - "Bearer test-token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          {"contentType":"Audit.General","status":"enabled","webhook":null}
+
+  # List content for Audit.SharePoint (blobs 2, 3, 4 — blob 1 gone, blob 4 new).
+  - path: /api/v1.0/test-cel-tenant-id/activity/feed/subscriptions/content
+    methods: [GET]
+    query_params:
+      contentType: "Audit.SharePoint"
+      startTime: "{startTime:.*}"
+      endTime: "{endTime:.*}"
+      PublisherIdentifier: test-cel-tenant-id
+    request_headers:
+      Authorization:
+        - "Bearer test-token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          [{"contentType":"Audit.SharePoint","contentId":"sp-content-2","contentUri":"http://{{ hostname }}:{{ env "PORT" }}/api/v1.0/test-cel-tenant-id/activity/feed/audit/sp-content-2","contentCreated":"{{ .request.vars.endTime }}","contentExpiration":"2199-12-31T23:59:59.000Z"},{"contentType":"Audit.SharePoint","contentId":"sp-content-3","contentUri":"http://{{ hostname }}:{{ env "PORT" }}/api/v1.0/test-cel-tenant-id/activity/feed/audit/sp-content-3","contentCreated":"{{ .request.vars.endTime }}","contentExpiration":"2199-12-31T23:59:59.000Z"},{"contentType":"Audit.SharePoint","contentId":"sp-content-4","contentUri":"http://{{ hostname }}:{{ env "PORT" }}/api/v1.0/test-cel-tenant-id/activity/feed/audit/sp-content-4","contentCreated":"{{ .request.vars.endTime }}","contentExpiration":"2199-12-31T23:59:59.000Z"}]
+
+  # List content for Audit.General (blobs 2, 3, 4 — blob 1 gone, blob 4 new).
+  - path: /api/v1.0/test-cel-tenant-id/activity/feed/subscriptions/content
+    methods: [GET]
+    query_params:
+      contentType: "Audit.General"
+      startTime: "{startTime:.*}"
+      endTime: "{endTime:.*}"
+      PublisherIdentifier: test-cel-tenant-id
+    request_headers:
+      Authorization:
+        - "Bearer test-token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          [{"contentType":"Audit.General","contentId":"gen-content-2","contentUri":"http://{{ hostname }}:{{ env "PORT" }}/api/v1.0/test-cel-tenant-id/activity/feed/audit/gen-content-2","contentCreated":"{{ .request.vars.endTime }}","contentExpiration":"2199-12-31T23:59:59.000Z"},{"contentType":"Audit.General","contentId":"gen-content-3","contentUri":"http://{{ hostname }}:{{ env "PORT" }}/api/v1.0/test-cel-tenant-id/activity/feed/audit/gen-content-3","contentCreated":"{{ .request.vars.endTime }}","contentExpiration":"2199-12-31T23:59:59.000Z"},{"contentType":"Audit.General","contentId":"gen-content-4","contentUri":"http://{{ hostname }}:{{ env "PORT" }}/api/v1.0/test-cel-tenant-id/activity/feed/audit/gen-content-4","contentCreated":"{{ .request.vars.endTime }}","contentExpiration":"2199-12-31T23:59:59.000Z"}]
+
+  # Fetch SharePoint blob 2 (overlap with phase 1).
+  - path: /api/v1.0/test-cel-tenant-id/activity/feed/audit/sp-content-2
+    methods: [GET]
+    request_headers:
+      Authorization:
+        - "Bearer test-token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          [{"Id":"sp-event-002","CreationTime":"2020-02-07T17:10:22","Workload":"SharePoint","Operation":"FileUploaded","RecordType":6,"OrganizationId":"b86ab9d4-fcf1-4b11-8a06-7a8f91b47fbd","UserId":"user@test.onmicrosoft.com","ClientIP":"192.0.2.1"}]
+
+  # Fetch SharePoint blob 3 (overlap with phase 1).
+  - path: /api/v1.0/test-cel-tenant-id/activity/feed/audit/sp-content-3
+    methods: [GET]
+    request_headers:
+      Authorization:
+        - "Bearer test-token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          [{"Id":"sp-event-003","CreationTime":"2020-02-07T18:05:11","Workload":"SharePoint","Operation":"FileModified","RecordType":6,"OrganizationId":"b86ab9d4-fcf1-4b11-8a06-7a8f91b47fbd","UserId":"user@test.onmicrosoft.com","ClientIP":"192.0.2.1"}]
+
+  # Fetch SharePoint blob 4 (new in phase 2).
+  - path: /api/v1.0/test-cel-tenant-id/activity/feed/audit/sp-content-4
+    methods: [GET]
+    request_headers:
+      Authorization:
+        - "Bearer test-token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          [{"Id":"sp-event-004","CreationTime":"2020-02-07T19:30:45","Workload":"SharePoint","Operation":"FileDeleted","RecordType":6,"OrganizationId":"b86ab9d4-fcf1-4b11-8a06-7a8f91b47fbd","UserId":"user@test.onmicrosoft.com","ClientIP":"192.0.2.1"}]
+
+  # Fetch General blob 2 (overlap with phase 1).
+  - path: /api/v1.0/test-cel-tenant-id/activity/feed/audit/gen-content-2
+    methods: [GET]
+    request_headers:
+      Authorization:
+        - "Bearer test-token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          [{"Id":"gen-event-002","CreationTime":"2020-02-28T10:15:33","Workload":"Yammer","Operation":"GroupUpdated","RecordType":22,"OrganizationId":"b86ab9d4-fcf1-4b11-8a06-7a8f91b47fbd","UserId":"user@test.onmicrosoft.com","ClientIP":"192.0.2.2"}]
+
+  # Fetch General blob 3 (overlap with phase 1).
+  - path: /api/v1.0/test-cel-tenant-id/activity/feed/audit/gen-content-3
+    methods: [GET]
+    request_headers:
+      Authorization:
+        - "Bearer test-token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          [{"Id":"gen-event-003","CreationTime":"2020-02-28T11:02:18","Workload":"Yammer","Operation":"GroupDeleted","RecordType":22,"OrganizationId":"b86ab9d4-fcf1-4b11-8a06-7a8f91b47fbd","UserId":"user@test.onmicrosoft.com","ClientIP":"192.0.2.2"}]
+
+  # Fetch General blob 4 (new in phase 2).
+  - path: /api/v1.0/test-cel-tenant-id/activity/feed/audit/gen-content-4
+    methods: [GET]
+    request_headers:
+      Authorization:
+        - "Bearer test-token"
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - "application/json"
+        body: |-
+          [{"Id":"gen-event-004","CreationTime":"2020-02-28T12:20:55","Workload":"Yammer","Operation":"GroupCreation","RecordType":22,"OrganizationId":"b86ab9d4-fcf1-4b11-8a06-7a8f91b47fbd","UserId":"user@test.onmicrosoft.com","ClientIP":"192.0.2.2"}]

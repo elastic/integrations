@@ -1,0 +1,140 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects attempts to exploit a privilege escalation vulnerability (CVE-2020-1030) related to the print spooler service. Exploitation involves chaining multiple primitives to load an arbitrary DLL into the print spooler process running as SYSTEM.",
+        "from": "now-9m",
+        "index": [
+            "logs-endpoint.events.registry-*",
+            "endgame-*",
+            "logs-windows.sysmon_operational-*",
+            "winlogbeat-*",
+            "logs-sentinel_one_cloud_funnel.*",
+            "logs-m365_defender.event-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "host.id",
+                "host.name",
+                "user.id",
+                "user.name",
+                "user.domain"
+            ]
+        },
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Suspicious Print Spooler Point and Print DLL",
+        "note": "## Triage and analysis\n\n### Investigating Suspicious Print Spooler Point and Print DLL\n\n#### Possible investigation steps\n\n- Do the source registry events describe one printer object?\n  - Why: sequence alerts joined only on `host.id` can omit stage-specific registry and writer fields; recover member events before interpreting the grouped alert.\n  - Focus: compare the printer segment in `registry.path`, `registry.value`, and `registry.data.strings`; keep `user.id` and any `process.entity_id` pivots.\n  - Implication: escalate when one printer key sets SpoolDirectory to \"C:\\Windows\\System32\\spool\\drivers\\x64\\4\" then CopyFiles\\Payload\\Module under that path; lower concern only when recovery breaks the same-printer chain or value match.\n\n- Which process and user wrote the values, and does context fit printer administration?\n  - Focus: source-event writer context: `user.id`, `process.executable`, `process.command_line`, `process.parent.executable`, and recovered `process.entity_id`.\n  - Implication: escalate when reg.exe, rundll32.exe, a scripting host, a user-writable binary, or an unexpected interactive user wrote the values; lower concern when writer identity, parentage, and service context match the same confirmed driver deployment.\n\n- What DLL path did Module name, and was it staged?\n  - Focus: recovered Module `registry.data.strings`; if file telemetry exists, exact-path `file.path`, `file.Ext.original.path`, `file.origin_url`, and `file.Ext.windows.zone_identifier`. Missing file telemetry leaves staging unresolved, not benign.\n  - Implication: escalate when the path names a newly written, renamed, internet-marked, or script-staged DLL in the spool drivers tree; lower concern when the exact path is a stable signed printer-driver package tied to the recovered printer object and writer workflow.\n\n- Did Print Spooler or print isolation consume the module?\n  - Why: CVE-2020-1030 abuse becomes higher impact when the CopyFiles\\Payload\\Module value is loaded or spooler restart behavior forces the changed configuration into effect.\n  - Focus: in library or process telemetry, check spoolsv.exe or PrintIsolationHost.exe loading the recovered path with `dll.path`, `dll.hash.sha256`, `dll.code_signature.subject_name`, and `dll.code_signature.trusted`. !{investigate{\"description\":\"\",\"label\":\"Spooler or print isolation loads on the host\",\"providers\":[[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"library\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.name\",\"queryType\":\"phrase\",\"value\":\"spoolsv.exe\",\"valueType\":\"string\"}],[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"library\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.name\",\"queryType\":\"phrase\",\"value\":\"PrintIsolationHost.exe\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Hint: pivot on the recovered Module path because the sequence alert may not preserve that value; spooler termination or restart around the writes can be a force-load clue.\n  - Implication: escalate immediately when spooler loads the recovered DLL, restarts unexpectedly, or shows abnormal child activity soon after the writes; absent load telemetry does not clear a matching registry chain.\n\n- If suspicious or unresolved, does the pattern appear beyond this alert?\n  - Focus: related alerts for `host.id`, then exact matches for recovered `registry.data.strings`, printer `registry.path`, or `dll.hash.sha256` across other hosts when available. !{investigate{\"description\":\"\",\"label\":\"Alerts associated with the host\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n  - Implication: broaden response when the same module path, DLL hash, printer-object pattern, or spooler-abuse alert appears on unrelated hosts; keep scope local when the pattern stays confined to the same confirmed driver workflow.\n\n- What disposition do registry chain, writer, payload, spooler, and scope evidence support?\n  - Focus: decide from same-printer registry stages, writer identity, DLL staging/load, workflow fit, and scope: escalate suspicious or unresolved chains, close only when telemetry cleanly aligns with one signed driver or print-management workflow, and preserve artifacts when evidence is mixed or incomplete.\n\n### False positive analysis\n\n- Recognized signed printer-driver installation, print-management, imaging, or endpoint-build workflows can update SpoolDirectory and CopyFiles\\Payload\\Module or stage spool-directory drivers. Confirm recovered `registry.path`, exact `registry.data.strings`, stable signed DLL identity, writer `process.executable`, parent workflow, current-case `host.id`, and any spooler follow-on all point to the same driver or management workflow without ad hoc scripting, unsigned payloads, or suspicious child processes. Change or deployment records may corroborate; prior-alert recurrence can scope exceptions but must not substitute for current-case telemetry.\n- Build exceptions only from the minimum confirmed workflow pattern: `host.id`, recovered printer object from `registry.path`, exact recovered Module path, stable DLL identity, and the confirmed writer or deployment process. Avoid exceptions on the spool drivers directory alone, the printer name alone, or spoolsv.exe activity alone.\n\n### Response and remediation\n\n- If confirmed benign, record `host.id`, the recovered printer object, exact Module path, stable DLL identity, and deployment workflow that justified closure before reversing temporary containment. Create an exception only from that exact confirmed workflow pattern; use prior alerts to narrow scope, not to prove benignity.\n- If suspicious but unconfirmed, preserve the Timeline member events, exact `registry.path` and `registry.data.strings`, exported affected registry keys, recovered DLL file if present, file or library hashes, writer `process.executable`, user context, and any spoolsv.exe or PrintIsolationHost.exe follow-on evidence before containment. Apply reversible containment first, such as restricting remote printer administration, disabling Point and Print exposure, or pausing nonessential printing on the affected host.\n- If confirmed malicious, preserve the DLL if feasible, export the affected printer keys, and retain related spoolsv.exe or PrintIsolationHost.exe process and library telemetry before containment. Then use endpoint response to isolate the host when registry-chain, payload, or spooler-side evidence shows malicious activity and host criticality allows it. Review other hosts for the same recovered DLL path, DLL hash, or printer-object pattern before stopping spoolsv.exe, deleting the DLL, restoring registry values, and removing the mechanism that staged the payload.\n- Post-incident hardening: apply the Microsoft fix for CVE-2020-1030, restrict Point and Print and printer-driver installation rights where feasible, disable the Print Spooler service on hosts that do not need it, retain registry, file, and library telemetry for spooler abuse, and document confirmed printer-object and DLL patterns for future triage.\n",
+        "query": "sequence by host.id with maxspan=30s\n[registry where host.os.type == \"windows\" and\n   registry.value : \"SpoolDirectory\" and\n   registry.path : \"*\\\\SOFTWARE\\\\Microsoft\\\\Windows NT\\\\CurrentVersion\\\\Print\\\\Printers\\\\*\\\\SpoolDirectory\" and\n   registry.data.strings : \"C:\\\\Windows\\\\System32\\\\spool\\\\drivers\\\\x64\\\\4\"]\n[registry where host.os.type == \"windows\" and\n   registry.value : \"Module\" and\n   registry.path : \"*\\\\SOFTWARE\\\\Microsoft\\\\Windows NT\\\\CurrentVersion\\\\Print\\\\Printers\\\\*\\\\CopyFiles\\\\Payload\\\\Module\" and\n   registry.data.strings : \"C:\\\\Windows\\\\System32\\\\spool\\\\drivers\\\\x64\\\\4\\\\*\"]\n",
+        "references": [
+            "https://www.accenture.com/us-en/blogs/cyber-defense/discovering-exploiting-shutting-down-dangerous-windows-print-spooler-vulnerability",
+            "https://github.com/sbousseaden/EVTX-ATTACK-SAMPLES/blob/master/Privilege%20Escalation/privesc_sysmon_cve_20201030_spooler.evtx",
+            "https://msrc.microsoft.com/update-guide/en-US/vulnerability/CVE-2020-1030"
+        ],
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.9.0"
+            },
+            {
+                "package": "m365_defender",
+                "version": "^5.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "registry.data.strings",
+                "type": "wildcard"
+            },
+            {
+                "ecs": true,
+                "name": "registry.path",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "registry.value",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "bd7eefee-f671-494e-98df-f01daf9e5f17",
+        "setup": "## Setup\n\nThis rule is designed for data generated by [Elastic Defend](https://www.elastic.co/security/endpoint-security), which provides native endpoint detection and response, along with event enrichments designed to work with our detection rules.\n\nSetup instructions: https://ela.st/install-elastic-defend\n\n### Additional data sources\n\nThis rule also supports the following third-party data sources. For setup instructions, refer to the links below:\n\n- [Microsoft Defender XDR](https://ela.st/m365-defender)\n- [SentinelOne Cloud Funnel](https://ela.st/sentinel-one-cloud-funnel)\n- [Sysmon Registry Events](https://ela.st/sysmon-event-reg-setup)\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Privilege Escalation",
+            "Data Source: Elastic Endgame",
+            "Use Case: Vulnerability",
+            "Data Source: Elastic Defend",
+            "Data Source: Sysmon",
+            "Resources: Investigation Guide",
+            "Data Source: SentinelOne",
+            "Data Source: Microsoft Defender XDR"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0004",
+                    "name": "Privilege Escalation",
+                    "reference": "https://attack.mitre.org/tactics/TA0004/"
+                },
+                "technique": [
+                    {
+                        "id": "T1068",
+                        "name": "Exploitation for Privilege Escalation",
+                        "reference": "https://attack.mitre.org/techniques/T1068/"
+                    },
+                    {
+                        "id": "T1574",
+                        "name": "Hijack Execution Flow",
+                        "reference": "https://attack.mitre.org/techniques/T1574/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1112",
+                        "name": "Modify Registry",
+                        "reference": "https://attack.mitre.org/techniques/T1112/"
+                    }
+                ]
+            }
+        ],
+        "type": "eql",
+        "version": 215
+    },
+    "id": "bd7eefee-f671-494e-98df-f01daf9e5f17_215",
+    "type": "security-rule"
+}

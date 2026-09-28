@@ -1,0 +1,33 @@
+service: mysql_input_otel
+service_notify_signal: SIGHUP
+vars:
+  endpoint: "{{Hostname}}:{{Port}}"
+  username: "root"
+  collection_interval: 10s
+  initial_delay: 1s
+  enable_query_sample_events: true
+  enable_top_query_events: true
+  top_query_lookback_time: 60
+  top_query_collection_interval: 10s
+signal_types:
+  - logs
+assert:
+  min_count: 10
+  fields_present:
+    # Common to both event types
+    - db.query.text
+    - db.system.name
+    - db.namespace
+    - network.peer.address
+    - network.peer.port
+    - mysql.query_plan.hash
+    # Query-Sample Collection (db.server.query_sample)
+    - mysql.threads.thread_id
+    - mysql.threads.processlist_command
+    - mysql.threads.processlist_state
+    - mysql.session.id
+    - mysql.session.status
+    - mysql.events_statements_current.digest
+    - client.address
+    - client.port
+    - user.name

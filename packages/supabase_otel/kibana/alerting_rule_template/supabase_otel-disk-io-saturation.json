@@ -1,0 +1,56 @@
+{
+    "id": "supabase_otel-disk-io-saturation",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "description": "Fires when a disk device on the project node is busy for nearly all of the evaluation window. Disk IO is the most commonly exhausted resource on smaller Supabase compute tiers, and its exhaustion cascades into slower queries, connections held longer, and pool exhaustion.",
+        "name": "[Supabase OTel] Disk IO saturation",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "supabase",
+            "host",
+            "saturation"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 2
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "artifacts": {
+            "dashboards": [
+                {
+                    "id": "supabase_otel-7c6a2004-c517-4b50-b70a-2682b7a79228"
+                },
+                {
+                    "id": "supabase_otel-591c7a1f-6ac7-43cb-8ade-9c5684d47f5b"
+                }
+            ],
+            "investigation_guide": {
+                "blob": "## Disk IO Saturation\n\n`node_disk_io_time_seconds_total` counts device busy time, so its per-second rate is effectively utilisation: 1.0 means the device was busy for the entire window. On burstable compute tiers this appears as an abrupt throttle once the IO allowance is spent.\n\n### Triage Steps\n1. Read the `Avg Queue Depth` column. Above 1 means requests are queueing behind the device, not merely keeping it busy.\n2. Check per-operation service time to confirm the device is slow rather than just busy: `node_disk_read_time_seconds_total / node_disk_reads_completed_total` and the write equivalents.\n3. Look for the cause on the database side. The usual candidates are a fallen buffer cache hit ratio (`pg_stat_database_blks_read_total` rising against `pg_stat_database_blks_hit_total`), temp file spill from insufficient `work_mem`, and requested checkpoints outpacing timed ones.\n4. Expect downstream alerts. Throttled IO means queries hold connections longer, so pool queueing and connection saturation follow from here rather than being separate incidents.\n\n### Tuning\nMatches the `Disk IO Time vs Disk Discard Time` dashboard panel aggregation. Rates can round marginally outside [0, 1] so the value is clamped before being presented as a percentage. Lower the 90% threshold on burstable tiers where sustained high IO burns a credit balance you cannot see in these metrics."
+            }
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "TS metrics-supabase.metrics.otel-*\n// node_disk_io_time_seconds_total is a counter of device busy time, so its per-second rate\n// approximates utilisation (1.0 = busy for the whole window). Same metric and aggregation\n// as the \"Disk IO Time vs Disk Discard Time\" dashboard panel.\n| STATS\n    `IO Time Rate` = SUM(RATE(node_disk_io_time_seconds_total)),\n    `Weighted IO Time Rate` = SUM(RATE(node_disk_io_time_weighted_seconds_total))\n  BY resource.attributes.supabase_project_ref, attributes.device\n// Per-device rates can round marginally outside [0, 1], so clamp before presenting a %.\n| EVAL `Disk IO Utilisation %` = ROUND(CLAMP(`IO Time Rate`, 0.0, 1.0) * 100, 1)\n// Weighted time divided by busy time approximates average queue depth; above 1 means\n// requests are queueing behind the device rather than merely keeping it busy.\n| EVAL `Avg Queue Depth` = ROUND(`Weighted IO Time Rate` / CLAMP(`IO Time Rate`, 0.001, 1.0), 2)\n// Lower on burstable compute tiers, where sustained high IO silently burns a credit balance.\n| WHERE `Disk IO Utilisation %` >= 90\n// One row per device, so the alert instance key includes it.\n| EVAL alert_instance = CONCAT(resource.attributes.supabase_project_ref, \" / \", attributes.device)\n| SORT `Disk IO Utilisation %` DESC"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 15,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "alert_instance",
+            "termSize": 50
+        }
+    }
+}

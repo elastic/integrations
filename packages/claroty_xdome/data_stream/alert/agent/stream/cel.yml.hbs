@@ -23,7 +23,7 @@ redact:
     - api_token
 program: |
   (
-    (has(state.?worklist.alerts) && size(state.worklist.alerts) > 0) ?
+    (has(state.?worklist.alerts) && state.worklist.alerts != null && size(state.worklist.alerts) > 0) ?
       state
     :
       (
@@ -79,26 +79,32 @@ program: |
                 }
               ]
             }.encode_json()
-          ).with(
+          ).as(req, req.with(
             {
-              "Header": {
+              "Header": req.Header.with({
                 "Authorization": ["Bearer " + string(state.api_token)],
-              },
+              }),
             }
-          ).do_request().as(resp, (resp.StatusCode == 200) ?
+          )).do_request().as(resp, (resp.StatusCode == 200) ?
             resp.Body.decode_json().as(body,
-              {
-                "worklist": body,
-                "next": 0,
-                "offset": (size(body.alerts) > 0) ? (int(state.offset) + int(state.batch_size)) : 0,
-                "want_more": size(body.alerts) > 0,
-                "cursor": {
-                  ?"last_timestamp": (has(body.alerts) && size(body.alerts) > 0) ?
-                    optional.of(body.alerts[size(body.alerts) - 1].updated_time)
-                  :
-                    state.?cursor.last_timestamp,
-                },
-              }
+              (has(body.alerts) && body.alerts != null && size(body.alerts) > 0) ?
+                {
+                  "worklist": {
+                    "alerts": body.alerts,
+                  },
+                  "next": 0,
+                  "offset": int(state.offset) + int(state.batch_size),
+                  "want_more": true,
+                  "cursor": {
+                    "last_timestamp": body.alerts[size(body.alerts) - 1].updated_time,
+                  },
+                }
+              :
+                {
+                  "events": [],
+                  "want_more": false,
+                  "offset": 0,
+                }
             )
           :
             {
@@ -125,7 +131,7 @@ program: |
     state.with(
       !has(state.worklist) ? // Exit early due to POST failure.
         state
-      : (has(state.worklist.alerts) && size(state.worklist.alerts) > 0) ?
+      : (has(state.worklist.alerts) && state.worklist.alerts != null && size(state.worklist.alerts) > 0) ?
         post_request(
           state.url.trim_right("/") + "/api/v1/alerts/" + string(int(state.worklist.alerts[state.next].id)) + "/devices",
           "application/json",
@@ -290,17 +296,17 @@ program: |
               "is_resolved"
             ]
           }.encode_json()
-        ).with(
+        ).as(req, req.with(
           {
-            "Header": {
+            "Header": req.Header.with({
               "Authorization": ["Bearer " + string(state.api_token)],
-            },
+            }),
           }
-        ).do_request().as(resp, (resp.StatusCode == 200) ?
+        )).do_request().as(resp, (resp.StatusCode == 200) ?
           bytes(resp.Body).decode_json().as(body,
-            {
-              "events": (has(body.devices) && size(body.devices) > 0) ?
-                body.devices.orValue([]).map(evt,
+            (has(body.devices) && body.devices != null && size(body.devices) > 0) ?
+              {
+                "events": body.devices.map(evt,
                   {
                     "message": evt.with(
                       {
@@ -308,30 +314,41 @@ program: |
                       }
                     ).encode_json(),
                   }
-                )
-              : (has(state.device_offset) && int(state.device_offset) == 0) ?
-                [
-                  {
-                    "message": {
-                      "alert_info": state.worklist.alerts[int(state.next)],
-                    }.encode_json(),
-                  },
-                ]
-              :
-                [{}],
-              "device_offset": (size(body.devices) > 0) ? (int(state.device_offset) + int(state.batch_size)) : 0,
-              "next": (size(body.devices) > 0) ?
-                state.next
-              : (int(state.next) + 1 < size(state.worklist.alerts)) ? (int(state.next) + 1) : 0, // size(body.devices) > 0
-              "worklist": (size(body.devices) > 0) ?
-                state.worklist
-              : (int(state.next) + 1 < size(state.worklist.alerts)) ? state.worklist : {},
-              "start_time": state.start_time,
-              "initial_interval": state.initial_interval,
-              "batch_size": state.batch_size,
-              "api_token": state.api_token,
-              "offset": state.offset,
-            }
+                ),
+                "device_offset": int(state.device_offset) + int(state.batch_size),
+                "next": state.next,
+                "worklist": state.worklist,
+                "start_time": state.start_time,
+                "initial_interval": state.initial_interval,
+                "batch_size": state.batch_size,
+                "api_token": state.api_token,
+                "offset": state.offset,
+              }
+            :
+              {
+                "events": (has(state.device_offset) && int(state.device_offset) == 0) ?
+                  [
+                    {
+                      "message": {
+                        "alert_info": state.worklist.alerts[int(state.next)],
+                      }.encode_json(),
+                    },
+                  ]
+                :
+                  [
+                    dyn({
+                      "retry": true,
+                    }),
+                  ],
+                "device_offset": 0,
+                "next": (int(state.next) + 1 < size(state.worklist.alerts)) ? (int(state.next) + 1) : 0,
+                "worklist": (int(state.next) + 1 < size(state.worklist.alerts)) ? state.worklist : {},
+                "start_time": state.start_time,
+                "initial_interval": state.initial_interval,
+                "batch_size": state.batch_size,
+                "api_token": state.api_token,
+                "offset": state.offset,
+              }
           )
         :
           {
@@ -372,7 +389,8 @@ tags:
 {{#contains "forwarded" tags}}
 publisher_pipeline.disable_host: true
 {{/contains}}
-{{#if processors}}
 processors:
+- drop_event.when.equals.retry: true
+{{#if processors}}
 {{processors}}
 {{/if}}

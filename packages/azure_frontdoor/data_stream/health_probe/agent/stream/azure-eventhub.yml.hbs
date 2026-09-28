@@ -1,0 +1,59 @@
+{{#if auth_type}}
+auth_type: {{auth_type}}
+{{/if}}
+{{#if connection_string}}
+connection_string: {{connection_string}}
+{{/if}}
+{{#if eventhub_namespace}}
+eventhub_namespace: {{eventhub_namespace}}
+{{/if}}
+{{#if tenant_id}}
+tenant_id: {{tenant_id}}
+{{/if}}
+{{#if client_id}}
+client_id: {{client_id}}
+{{/if}}
+{{#if client_secret}}
+client_secret: {{client_secret}}
+{{/if}}
+{{#contains "client_secret" auth_type}}
+{{#if authority_host}}
+authority_host: {{authority_host}}
+{{/if}}
+{{/contains}}
+{{#if storage_account_container }}
+storage_account_container: {{storage_account_container}}
+{{else}}
+{{#if eventhub}}
+storage_account_container: frontdoor-health-probe-{{eventhub}}
+{{/if}}
+{{/if}}
+{{#if eventhub}}
+eventhub: {{eventhub}}
+{{/if}}
+{{#if consumer_group}}
+consumer_group: {{consumer_group}}
+{{/if}}
+{{#if storage_account}}
+storage_account: {{storage_account}}
+{{/if}}
+{{#if storage_account_key}}
+storage_account_key: {{storage_account_key}}
+{{/if}}
+{{#if resource_manager_endpoint}}
+resource_manager_endpoint: {{resource_manager_endpoint}}
+{{/if}}
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}

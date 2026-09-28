@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when `sqlserver.page.buffer_cache.free_list.stalls.rate > 0`. Free-list stalls mean extreme memory pressure on the buffer pool.",
     "name": "[SQL Server OTel] Free list stalls",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -19,13 +20,28 @@
       "lookBackWindow": 6,
       "statusChangeThreshold": 3
     },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "microsoft_sqlserver_otel-memory-saturation"
+        },
+        {
+          "id": "microsoft_sqlserver_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## SQL Server free list stalls\n\n### What fired\nFree-list stall rate exceeded 0 during the window.\n\n### Why it matters\nSQL Server stalls when it cannot find a free page in the buffer pool \u2014 a near-catastrophic memory pressure event.\n\n### Triage\n1. Check page life expectancy and lazy writer activity.\n2. Look at memory grants pending and query memory waits.\n\n### Remediation\n- Add memory immediately.\n- Kill or throttle memory-intensive queries.\n\n### Tuning\n- Fires on any non-zero rate.\n"
+      }
+    },
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
-        "esql": "FROM metrics-sqlserverreceiver.otel-default\n// Buffer pool cannot find a free page — indicates extreme memory pressure\n| WHERE metrics.sqlserver.page.buffer_cache.free_list.stalls.rate IS NOT NULL\n| STATS max_stalls = MAX(metrics.sqlserver.page.buffer_cache.free_list.stalls.rate),\n       instance_id = MAX(resource.attributes.service.instance.id)\n  BY COALESCE(resource.attributes.service.instance.id, host.name, \"unknown\")\n| WHERE max_stalls > 0\n| KEEP instance_id, max_stalls"
+        "esql": "FROM metrics-sqlserverreceiver.otel-default\n// Buffer pool cannot find a free page \u2014 indicates extreme memory pressure\n| WHERE metrics.sqlserver.page.buffer_cache.free_list.stalls.rate IS NOT NULL\n| STATS max_stalls = MAX(metrics.sqlserver.page.buffer_cache.free_list.stalls.rate),\n       instance_id = MAX(resource.attributes.service.instance.id)\n  BY COALESCE(resource.attributes.service.instance.id, host.name, \"unknown\")\n| WHERE max_stalls > 0\n| KEEP instance_id, max_stalls"
       },
       "size": 0,
-      "threshold": [0],
+      "threshold": [
+        0
+      ],
       "thresholdComparator": ">",
       "timeField": "@timestamp",
       "timeWindowSize": 5,

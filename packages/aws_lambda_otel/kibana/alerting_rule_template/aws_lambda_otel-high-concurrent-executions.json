@@ -1,0 +1,48 @@
+{
+    "id": "aws_lambda_otel-high-concurrent-executions",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "description": "Alerts when peak concurrent executions approach capacity limits, predicting imminent throttling.",
+        "name": "[AWS Lambda OTel] High concurrent executions",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "aws_lambda",
+            "otel"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 3
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "artifacts": {
+            "investigation_guide": {
+                "blob": "## High Concurrent Executions\n\n### Triage Steps\n1. Compare peak concurrency with your account regional limit and any per-function reserved concurrency.\n2. Review `UnreservedConcurrentExecutions` for remaining shared-pool headroom.\n3. Check for traffic spikes or slow invocations holding concurrency slots.\n4. Evaluate provisioned or reserved concurrency before throttling occurs.\n5. Cross-check the throttling alert rules — saturation often precedes throttles.\n\n### Note\nThe default threshold assumes a 1000 regional concurrency limit. Adjust to your account limit and reserved concurrency settings."
+            }
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "FROM metrics-aws.lambda.otel-*\n| WHERE Namespace == \"AWS/Lambda\"\n    AND MetricName == \"ConcurrentExecutions\"\n    AND stat == \"Maximum\"\n| STATS peak_concurrency = MAX(`metrics.amazonaws.com/AWS/Lambda/ConcurrentExecutions`)\n  BY FunctionName, cloud.region\n// Concurrency threshold: set near your account/function limit (default regional limit is 1000)\n| WHERE peak_concurrency > 800\n| EVAL function_id = CONCAT(FunctionName, \"/\", cloud.region)\n| SORT peak_concurrency DESC\n| LIMIT 10"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 15,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "function_id",
+            "termSize": 10,
+            "excludeHitsFromPreviousRun": true
+        }
+    }
+}

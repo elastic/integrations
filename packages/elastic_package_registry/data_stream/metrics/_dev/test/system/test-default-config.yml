@@ -1,5 +1,36 @@
+service_notify_signal: SIGHUP
 vars: ~
 data_stream:
   vars:
     hosts:
       - http://{{Hostname}}:9110
+assert:
+  min_count: 10
+  fields_present:
+    # Dashboard filters / controls
+    - data_stream.dataset
+    - service.type
+    - service.address
+    # Overview
+    - package_registry.uptime
+    - package_registry.labels.version
+    - package_registry.number_indexed_packages
+    - package_registry.in_flight_requests
+    # HTTP
+    - package_registry.labels.code
+    - package_registry.labels.path
+    - package_registry.labels.method
+    - package_registry.http_requests_total.counter
+    - package_registry.http.request_duration_seconds.histogram
+    - package_registry.http.request_size_bytes.histogram
+    - package_registry.http.response_size_bytes.histogram
+    # Storage
+    - package_registry.storage_requests_total.counter
+    - package_registry.labels.location
+    - package_registry.labels.component
+    # Indexer
+    - package_registry.labels.indexer
+    - package_registry.indexer.get_duration_seconds.histogram
+    - package_registry.storage_indexer.update_index_error_total.counter
+    - package_registry.storage_indexer.update_index_success_total.counter
+    - package_registry.storage_indexer.update_index_duration_seconds.histogram

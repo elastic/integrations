@@ -1,0 +1,48 @@
+{
+    "id": "aws_lambda_otel-high-throttle-rate",
+    "type": "alerting_rule_template",
+    "managed": true,
+    "attributes": {
+        "description": "Alerts when a Lambda function exceeds a configurable throttle rate (Throttles / (Invocations + Throttles)) over a 15-minute window.",
+        "name": "[AWS Lambda OTel] High throttle rate",
+        "ruleTypeId": ".es-query",
+        "tags": [
+            "observability",
+            "aws_lambda",
+            "otel"
+        ],
+        "schedule": {
+            "interval": "5m"
+        },
+        "alertDelay": {
+            "active": 3
+        },
+        "flapping": {
+            "lookBackWindow": 10,
+            "statusChangeThreshold": 4
+        },
+        "artifacts": {
+            "investigation_guide": {
+                "blob": "## High Throttle Rate\n\n### Triage Steps\n1. Compare throttle rate with `ConcurrentExecutions` peak to confirm capacity saturation.\n2. Review whether traffic increased or function duration grew, holding concurrency longer.\n3. Check reserved vs unreserved concurrency allocation for the function.\n4. Evaluate whether provisioned concurrency or a concurrency limit increase is needed.\n\n### Note\nThis rule uses throttle rate rather than raw count, which is useful for high-traffic functions where a small absolute throttle count may still represent a significant rejection rate."
+            }
+        },
+        "params": {
+            "searchType": "esqlQuery",
+            "esqlQuery": {
+                "esql": "FROM metrics-aws.lambda.otel-*\n| WHERE Namespace == \"AWS/Lambda\"\n    AND stat == \"Sum\"\n    AND MetricName IN (\"Throttles\", \"Invocations\")\n| STATS\n    total_throttles = SUM(`metrics.amazonaws.com/AWS/Lambda/Throttles`),\n    total_invocations = SUM(`metrics.amazonaws.com/AWS/Lambda/Invocations`)\n  BY FunctionName, cloud.region\n| EVAL denominator = total_invocations + total_throttles\n// Minimum traffic to avoid noisy alerts on idle functions\n| WHERE denominator > 10\n| EVAL throttle_rate_pct = ROUND(total_throttles / denominator * 100.0, 2)\n// Alert threshold (%): lower toward 0 for strict no-throttle policies\n| WHERE throttle_rate_pct > 0.5\n| EVAL function_id = CONCAT(FunctionName, \"/\", cloud.region)\n| SORT throttle_rate_pct DESC\n| LIMIT 10"
+            },
+            "size": 0,
+            "threshold": [
+                0
+            ],
+            "thresholdComparator": ">",
+            "timeField": "@timestamp",
+            "timeWindowSize": 15,
+            "timeWindowUnit": "m",
+            "groupBy": "row",
+            "termField": "function_id",
+            "termSize": 10,
+            "excludeHitsFromPreviousRun": true
+        }
+    }
+}

@@ -4,84 +4,86 @@ processors:
   - foreach:
       field: ses.attacks
       if: ctx.ses?.attacks instanceof List
-      tag: foreach_attacks
+      tag: foreach_attacks_2a19970c
       processor:
         foreach:
           field: _ingest._value.tactic_ids
-          tag: foreach_tactic_ids
+          tag: foreach_tactic_ids_64cf0b55
           ignore_missing: true
           processor:
             convert:
               field: _ingest._value
-              tag: convert_attacks_tactic_ids_to_string
+              tag: convert_attacks_tactic_ids_to_string_55a5db55
               type: string
               ignore_missing: true
               on_failure:
                 - remove:
+                    tag: remove_ingest_value_902d2a40
                     field: _ingest._value
                     ignore_missing: true
                 - append:
+                    tag: append_error_message_1a4ff5e4
                     field: error.message
                     value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - foreach:
       field: ses.attacks
       if: ctx.ses?.attacks instanceof List
-      tag: foreach_attacks_for_tactic_uids
+      tag: foreach_attacks_for_tactic_uids_9dbdbb34
       processor:
         foreach:
           field: _ingest._value.tactic_uids
-          tag: foreach_tactic_uids
+          tag: foreach_tactic_uids_da29ed8e
           ignore_missing: true
           processor:
             append:
               field: threat.tactic.id
               value: '{{{_ingest._value}}}'
-              tag: append_attacks_tactic_uids_to_threat_tactic_id
+              tag: append_attacks_tactic_uids_to_threat_tactic_id_68a1a9fd
               allow_duplicates: false
   - foreach:
       field: ses.attacks
       if: ctx.ses?.attacks instanceof List
-      tag: foreach_attacks_for_technique_uid
+      tag: foreach_attacks_for_technique_uid_03a8f0c6
       processor:
         append:
           field: threat.technique.id
           value: '{{{_ingest._value.technique_uid}}}'
-          tag: append_attacks_technique_uid_to_threat_technique_id
+          tag: append_attacks_technique_uid_to_threat_technique_id_5f9af80b
           allow_duplicates: false
   - foreach:
       field: ses.attacks
       if: ctx.ses?.attacks instanceof List
-      tag: foreach_attacks_for_technique_name
+      tag: foreach_attacks_for_technique_name_d004bccd
       processor:
         append:
           field: threat.technique.name
           value: '{{{_ingest._value.technique_name}}}'
-          tag: append_attacks_technique_name_to_threat_technique_name
+          tag: append_attacks_technique_name_to_threat_technique_name_ef64a8e8
           allow_duplicates: false
   - foreach:
       field: ses.attacks
       if: ctx.ses?.attacks instanceof List
-      tag: foreach_attacks_for_sub_technique_uid
+      tag: foreach_attacks_for_sub_technique_uid_16971924
       processor:
         append:
           field: threat.technique.subtechnique.id
           value: '{{{_ingest._value.sub_technique_uid}}}'
-          tag: append_attacks_sub_technique_uid_to_threat_technique_subtechnique_id
+          tag: append_attacks_sub_technique_uid_to_threat_technique_subtechnique_id_14b49a5f
           allow_duplicates: false
   - foreach:
       field: ses.attacks
       if: ctx.ses?.attacks instanceof List
-      tag: foreach_attacks_for_sub_technique_name
+      tag: foreach_attacks_for_sub_technique_name_b8cc5c9a
       processor:
         append:
           field: threat.technique.subtechnique.name
           value: '{{{_ingest._value.sub_technique_name}}}'
-          tag: append_attacks_sub_technique_name_to_threat_technique_subtechnique_name
+          tag: append_attacks_sub_technique_name_to_threat_technique_subtechnique_name_3b894088
           allow_duplicates: false
   - foreach:
       field: ses.attacks
       if: ctx.ses?.attacks instanceof List && ctx.tags?.contains('preserve_duplicate_custom_fields') != true
-      tag: foreach_remove_custom_duplicate_fields_from_ses_attacks
+      tag: foreach_remove_custom_duplicate_fields_from_ses_attacks_f44f75d6
       processor:
         remove:
           field:
@@ -90,13 +92,19 @@ processors:
             - _ingest._value.technique_name
             - _ingest._value.sub_technique_uid
             - _ingest._value.sub_technique_name
-          tag: remove_custom_duplicate_fields_from_ses_attacks
+          tag: remove_custom_duplicate_fields_from_ses_attacks_e28eeb91
           ignore_missing: true
 on_failure:
   - append:
+      tag: append_error_message_6906b116
       field: error.message
       value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - set:
       field: event.kind
-      tag: set_pipeline_error_to_event_kind
+      tag: set_pipeline_error_to_event_kind_72b1902f
       value: pipeline_error
+  - append:
+      tag: append_tags_279d5a5c
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

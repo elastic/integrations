@@ -1,37 +1,51 @@
 {
-    "id": "apache_tomcat_otel-file-descriptor-exhaustion",
-    "type": "alerting_rule_template",
-    "managed": true,
-    "attributes": {
-        "name": "[Tomcat OTel] File descriptor exhaustion",
-        "ruleTypeId": ".es-query",
-        "tags": [
-            "observability",
-            "tomcat"
-        ],
-        "schedule": {
-            "interval": "5m"
+  "id": "apache_tomcat_otel-file-descriptor-exhaustion",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when Tomcat's JVM process uses more than 80% of its file descriptor limit. FD exhaustion prevents new socket connections and file operations \u2014 effectively halting request processing.",
+    "name": "[Tomcat OTel] File descriptor exhaustion",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "tomcat"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 3
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "apache_tomcat_otel-jvm-os-resources"
         },
-        "alertDelay": {
-            "active": 3
-        },
-        "params": {
-            "searchType": "esqlQuery",
-            "esqlQuery": {
-                "esql": "FROM metrics-tomcat.otel-*\n| WHERE java_lang_OperatingSystem_OpenFileDescriptorCount IS NOT NULL\n    AND java_lang_OperatingSystem_MaxFileDescriptorCount IS NOT NULL\n| STATS\n    open_fds = MAX(java_lang_OperatingSystem_OpenFileDescriptorCount),\n    max_fds = MAX(java_lang_OperatingSystem_MaxFileDescriptorCount)\n  BY host.name\n| WHERE max_fds > 0\n| EVAL fd_pct = ROUND(open_fds / max_fds * 100.0, 2)\n// File descriptor exhaustion prevents new socket connections and file operations\n// Adjust threshold based on your FD limits (ulimit -n)\n| WHERE fd_pct > 80.0\n| SORT fd_pct DESC"
-            },
-            "size": 0,
-            "threshold": [
-                0
-            ],
-            "thresholdComparator": ">",
-            "timeField": "@timestamp",
-            "timeWindowSize": 5,
-            "timeWindowUnit": "m",
-            "groupBy": "row",
-            "termField": "host.name",
-            "termSize": 100,
-            "excludeHitsFromPreviousRun": true
+        {
+          "id": "apache_tomcat_otel-overview"
         }
+      ],
+      "investigation_guide": {
+        "blob": "## Tomcat file descriptor exhaustion\n\n### What fired\n`OpenFileDescriptorCount / MaxFileDescriptorCount` exceeded 0.80 over the evaluation window.\n\n### Why it matters\nSockets, log files, and class loading all consume file descriptors. When the JVM hits the OS-imposed limit, `Too many open files` errors cause request failures and the JVM may need to be restarted to recover. This is one of the most disruptive operational failures for Tomcat.\n\n### Triage\n1. JVM & OS Resources dashboard: confirm trend and current vs max FDs.\n2. Identify leak drivers: unclosed streams, lingering sockets (check `netstat` / `ss` for CLOSE_WAIT pile-up), verbose class loading.\n3. Look at request rate and connection count \u2014 scaling traffic naturally scales FDs.\n\n### Remediation\n- Raise `ulimit -n` / systemd `LimitNOFILE` and restart the JVM.\n- Identify and fix FD leaks (unclosed `InputStream`, `Socket`, etc.).\n- Reduce keep-alive timeouts to accelerate socket reclamation.\n\n### Tuning\n- 80% warning is conservative; some deployments alert at 70% to leave more time for operator response.\n"
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-tomcat.otel-*\n| WHERE java_lang_OperatingSystem_OpenFileDescriptorCount IS NOT NULL\n    AND java_lang_OperatingSystem_MaxFileDescriptorCount IS NOT NULL\n| STATS\n    open_fds = MAX(java_lang_OperatingSystem_OpenFileDescriptorCount),\n    max_fds = MAX(java_lang_OperatingSystem_MaxFileDescriptorCount)\n  BY host.name\n| WHERE max_fds > 0\n| EVAL fd_pct = ROUND(open_fds / max_fds * 100.0, 2)\n// File descriptor exhaustion prevents new socket connections and file operations\n// Adjust threshold based on your FD limits (ulimit -n)\n| WHERE fd_pct > 80.0\n| SORT fd_pct DESC"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 5,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "host.name",
+      "termSize": 100,
+      "excludeHitsFromPreviousRun": true
     }
+  }
 }

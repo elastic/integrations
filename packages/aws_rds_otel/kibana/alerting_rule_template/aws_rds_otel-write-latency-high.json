@@ -1,0 +1,48 @@
+{
+  "id": "aws_rds_otel-write-latency-high",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when peak write I/O latency exceeds a threshold. Uses the Maximum statistic for worst-case tail latency. Correlate with DiskQueueDepth and WriteIOPS for storage bottlenecks.",
+    "name": "[AWS RDS OTel] Write latency high",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "aws_rds",
+      "otel"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 3
+    },
+    "flapping": {
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    },
+    "artifacts": {
+      "investigation_guide": {
+        "blob": "## Write Latency High\n\n### Triage\n1. Check `DiskQueueDepth` and whether `WriteIOPS` is pinned at the provisioned ceiling.\n2. Inspect `BurstBalance` on gp2 volumes for credit depletion.\n3. Review write-heavy workloads — bulk inserts, large transactions, or checkpoint pressure.\n4. Compare `WriteThroughput` trends to storage provisioned capacity.\n\n### Mitigation\n- Increase provisioned IOPS or migrate to gp3/io2.\n- Batch writes or reduce transaction size.\n- Scale storage or instance if compute is the bottleneck."
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-aws.rds.otel-*\n| WHERE Namespace == \"AWS/RDS\"\n    AND MetricName == \"WriteLatency\"\n    AND stat == \"Maximum\"\n| STATS max_write_latency = MAX(`metrics.amazonaws.com/AWS/RDS/WriteLatency`)\n    BY DBInstanceIdentifier, cloud.region\n// Seconds per I/O — adjust sensitivity (default: 50 ms)\n| WHERE max_write_latency > 0.05\n| SORT max_write_latency DESC"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "DBInstanceIdentifier",
+      "termSize": 50,
+      "excludeHitsFromPreviousRun": true
+    }
+  }
+}

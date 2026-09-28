@@ -1,0 +1,745 @@
+---
+description: >-
+  Extended field extraction for Kolide audit_log events. Classifies each
+  description into the documented event name (snake_case) in event.action and
+  parses structured fields via category-gated grok blocks. Reference:
+  https://www.kolide.com/docs/admins/settings-admin-tools/audit-log#events.
+  Event names are not in the API/webhook payload; they are derived from the
+  description. Grok patterns use straight ASCII quotes (not typographic quotes).
+  Unmatched descriptions leave event.action unset here; default.yml then applies
+  a path-agnostic audit_log fallback before categorization so API and webhook
+  events behave identically.
+processors:
+  # Classify event.action from description; set _tmp.cat to gate grok blocks below.
+  # Most-specific prefix wins; unmatched descriptions leave event.action unchanged.
+  - script:
+      lang: painless
+      tag: classify_event_action
+      description: Map the audit description to the documented event name (snake_case) in event.action and route grok parsing via _tmp.cat.
+      if: ctx.message != null
+      source: |-
+        String m = ctx.message;
+        String a = null;
+        String c = null;
+
+        // Exact-match, fixed-description events (no extractable fields; no grok).
+        if (m == 'Created an API key') { a = 'api_key_created'; }
+        else if (m == 'Removed an API key') { a = 'api_key_deleted'; }
+        else if (m == 'Rotated API key') { a = 'api_key_secret_rotated'; }
+        else if (m == 'Enabled the logging pipeline') { a = 'logging_pipeline_enabled'; }
+        else if (m == 'Disabled the logging pipeline') { a = 'logging_pipeline_disabled'; }
+        else if (m == 'Updated osquery options') { a = 'updated_osquery_options'; }
+        else if (m == 'Reset all osquery options to their default value') { a = 'reset_osquery_options'; }
+        else if (m == 'Updated SAML configuration') { a = 'updated_saml_configuration'; c = 'sso'; }
+        else if (m == 'Okta event hooks verified') { a = 'saml_webhook_verification'; c = 'okta'; }
+        else if (m == 'Duplicate device found') { a = 'duplicate_device_found'; }
+        else if (m == 'created a Vanta integration') { a = 'vanta_integration_created'; c = 'integrations'; }
+        else if (m == 'removed Vanta integration') { a = 'vanta_integration_deleted'; c = 'integrations'; }
+        else if (m == "modified the organization's extended device compliance configuration") { a = 'extended_device_compliance_configuration_changed'; }
+
+        // Checks.
+        else if (m.startsWith('Deleted Check ')) { a = 'check_deleted'; c = 'check'; }
+        else if (m.startsWith('Reverted Check ')) { a = 'check_reverted'; c = 'check'; }
+        else if (m.startsWith('Updated existing Check ')) { a = 'check_updated'; c = 'check'; }
+        else if (m.startsWith('Published new Check ')) { a = 'check_published'; c = 'check'; }
+        else if (m.startsWith('Changed Fix Instructions Template ') || m.startsWith('Changed Rationale Template ')) { a = 'check_configuration_changed'; c = 'check'; }
+        else if (m.startsWith('Updated device trust settings for ') || m.startsWith('Updated run targets for ')) { a = 'updated_check_device_trust_settings'; c = 'check'; }
+        else if (m.startsWith('Paused check ')) { a = 'check_paused'; c = 'check'; }
+        else if (m.startsWith('Enabled check ')) { a = 'check_enabled'; c = 'check'; }
+
+        // Devices.
+        else if (m.startsWith('Changed device name from ')) { a = 'device_display_name_changed'; c = 'device'; }
+        else if (m.startsWith('Cancelled pending deletion for ')) { a = 'canceled_device_removal'; c = 'device'; }
+        else if (m.startsWith('Requested data export for device ')) { a = 'device_data_export_requested'; c = 'device'; }
+
+        // Device registrations.
+        else if (m.startsWith('Approved pending device registration for ')) { a = 'device_registration_approved'; c = 'device_reg'; }
+        else if (m.startsWith('Denied pending device registration for ')) { a = 'device_registration_denied'; c = 'device_reg'; }
+        else if (m.startsWith('Reopened previously ') && m.contains(' device registration for ')) { a = 'device_registration_reopened'; c = 'device_reg'; }
+        else if (m.contains(' registration self-approved by ')) { a = 'device_registration_self_approved'; c = 'device_reg'; }
+        else if (m.startsWith('Removed device registration for ')) { a = 'device_registration_removed'; c = 'device_reg'; }
+        else if (m.startsWith('TOFU device registration re-enabled for ')) { a = 'tofu_device_registration_re_enabled'; c = 'device_reg'; }
+        else if (m.startsWith('Updated device registration for ') && m.contains(' changed auth mode from ')) { a = 'device_registration_auth_mode_changed'; c = 'device_reg'; }
+        else if (m.startsWith('Changed Default Authentication Mode') || m.startsWith("Changed 'Allows ") || m.startsWith("Set 'Required ") || m.startsWith('Updated device registration configuration: ')) { a = 'device_registration_configuration_changed'; c = 'device_reg'; }
+
+        // Exemption requests.
+        else if (m.startsWith('Approved exemption request for ')) { a = 'exemption_request_approved'; c = 'exemption'; }
+        else if (m.startsWith('Denied exemption request for ')) { a = 'exemption_request_denied'; c = 'exemption'; }
+        else if (m.startsWith('Reopened previously ') && m.contains(' exemption for ')) { a = 'exemption_request_reopened'; c = 'exemption'; }
+        else if (m.contains(' withdrew exemption request for check: ')) { a = 'exemption_request_withdrawn'; c = 'exemption'; }
+        else if (m.startsWith('Exempted all future issues for ')) { a = 'check_marked_as_out_of_scope'; c = 'exemption'; }
+        else if (m.startsWith('Exempted issue ')) { a = 'issue_exempted'; c = 'exemption'; }
+
+        // People.
+        else if (m.startsWith('Reset factor enrollment for ')) { a = 'factor_enrollment_reset'; c = 'people'; }
+        else if (m.startsWith('Verified factor enrollment for ')) { a = 'factor_enrollment_verified'; c = 'people'; }
+        else if (m.startsWith('Merged the person, ')) { a = 'person_record_merged'; c = 'people'; }
+        else if (m.startsWith('Restored the person, ')) { a = 'person_record_unmerged'; c = 'people'; }
+
+        // Managed web app.
+        else if (m.startsWith('Created managed app ')) { a = 'managed_app_created'; c = 'managed_app'; }
+        else if (m.startsWith('Deleted managed app ')) { a = 'managed_app_deleted'; c = 'managed_app'; }
+        else if (m.startsWith('Sign on settings were updated for ')) { a = 'managed_app_sign_on_settings_updated'; c = 'managed_app'; }
+        else if (m.contains(' directly assigned people membership from ')) { a = 'managed_app_direct_assigned_people_membership_changed'; c = 'managed_app'; }
+        else if (m.contains(' directly assigned person groups membership from ')) { a = 'managed_app_person_groups_membership_changed'; c = 'managed_app'; }
+        else if (m.startsWith('Updated managed app ')) { a = 'managed_app_updated'; c = 'managed_app'; }
+
+        // Groups.
+        else if (m.startsWith('Mass-Removed members from device group: ')) { a = 'device_group_memberships_removed'; c = 'groups'; }
+        else if (m.startsWith('Created device group ')) { a = 'device_group_created'; c = 'groups'; }
+        else if (m.startsWith('Deleted device group ')) { a = 'device_group_deleted'; c = 'groups'; }
+
+        // Log pipeline.
+        else if (m.startsWith('Added device property logger ')) { a = 'device_property_logger_added'; c = 'log_pipeline'; }
+        else if (m.startsWith('Removed device property logger ')) { a = 'device_property_logger_removed'; c = 'log_pipeline'; }
+        else if (m.startsWith('Enabled the log pipeline destination ')) { a = 'enabled_log_pipeline_destination'; c = 'log_pipeline'; }
+        else if (m.startsWith('Disabled the log pipeline destination ')) { a = 'disabled_log_pipeline_destination'; c = 'log_pipeline'; }
+        else if (m.startsWith('Deleted the log pipeline destination ')) { a = 'deleted_log_pipeline_destination'; c = 'log_pipeline'; }
+        else if (m.startsWith('Updated the ') && m.contains(' log destination ')) { a = 'updated_log_pipeline_destination'; c = 'log_pipeline'; }
+        else if (m.startsWith('Created a ') && m.contains(' log pipeline destination named ')) { a = 'created_log_pipeline_destination'; c = 'log_pipeline'; }
+        else if (m.contains('osquery decorator ')) { a = 'osquery_decorator_changed'; c = 'log_pipeline'; }
+        else if (m.contains('osquery FIM category ')) { a = 'osquery_fim_category_changed'; c = 'log_pipeline'; }
+        else if (m.contains('discovery query ')) { a = 'discovery_query_changed'; c = 'log_pipeline'; }
+        else if (m.contains('osquery pack query ')) { a = 'osquery_pack_query_changed'; c = 'log_pipeline'; }
+        else if (m.contains('osquery query ')) { a = 'osquery_pack_query_changed'; c = 'log_pipeline'; }
+        else if (m.contains('osquery pack ')) { a = 'osquery_pack_changed'; c = 'log_pipeline'; }
+
+        // Live queries.
+        else if (m.startsWith('Created and ran Live Query Campaign ')) { a = 'live_query_created_and_run'; c = 'live_query'; }
+        else if (m.startsWith('Updated and ran Live Query Campaign ')) { a = 'live_query_updated_and_run'; c = 'live_query'; }
+        else if (m.startsWith('Deleted Live Query Campaign ')) { a = 'live_query_deleted'; c = 'live_query'; }
+        else if (m.startsWith('CSV Downloaded For Device ')) { a = 'live_query_single_result_csv_exported'; c = 'live_query'; }
+        else if (m.startsWith('Unpublished Live Query Campaign ')) { a = 'live_query_unpublished'; c = 'live_query'; }
+        else if (m.startsWith('CSV Downloaded For Live Query Campaign ')) { a = 'live_query_csv_exported'; c = 'live_query'; }
+        else if (m.startsWith('Published Live Query Campaign ')) { a = 'live_query_published'; c = 'live_query'; }
+
+        // Okta webhooks (dynamic event name; action set after grok extracts okta_event).
+        else if (m.startsWith('Okta event hook received for ')) { c = 'okta'; }
+
+        // Billing.
+        else if (m.startsWith('Updated billing email to ')) { a = 'billing_email_updated'; c = 'billing'; }
+
+        // End user portal (privacy center).
+        else if (m.startsWith("Changed 'Privacy Center Access Restriction Settings'") || m.startsWith('Changed Privacy Center Custom Resource Section visibility ')) { a = 'privacy_center_configuration_changed'; c = 'privacy_center'; }
+
+        // Automatic device removal.
+        else if (m.startsWith('Device ') && m.endsWith(' removed')) { a = 'device_removed'; c = 'device_removal'; }
+        else if (m.startsWith('triggered device deletion for ') || m.startsWith('Requested device deletion for ')) { a = 'device_deletion_requested'; c = 'device_removal'; }
+
+        // Restrictions.
+        else if (m.startsWith('Osquery Blocklist Updated From: ')) { a = 'osquery_blocklist_updated'; c = 'restrictions'; }
+
+        // Admin users.
+        else if (m.startsWith('user ') && m.endsWith(' accepted invitation to Kolide')) { a = 'kolide_team_member_created'; c = 'admin_users'; }
+        else if (m.startsWith('Invited ')) { a = 'kolide_team_member_invited'; c = 'admin_users'; }
+        else if (m.startsWith('Removed access for Kolide user ')) { a = 'kolide_team_member_deleted'; c = 'admin_users'; }
+        else if (m.contains(' restriction on ') && m.startsWith('Updated ')) { a = 'user_feature_restriction_changed'; c = 'admin_users'; }
+        else if (m.startsWith('Updated access for user ')) { a = 'user_access_changed'; c = 'admin_users'; }
+        else if (m.startsWith('Revoked invitations created by ')) { a = 'invitations_revoked_because_inviter_access_changed'; c = 'admin_users'; }
+        else if (m.startsWith('Added EPM user ')) { a = 'user_added'; c = 'admin_users'; }
+
+        // SSO settings.
+        else if (m.startsWith('Kolide IdP settings were updated from:')) { a = 'idp_settings_changed'; c = 'sso'; }
+        else if (m.startsWith('IdP Proxy webhook token generated for ')) { a = 'webhook_token_generated'; c = 'sso'; }
+        else if (m.startsWith('Kolide IdP: Additional Factor Sequencing was ')) { a = 'factor_sequencing_changed'; c = 'sso'; }
+        else if (m.startsWith('Identity provider ') && m.endsWith(' was activated')) { a = 'identity_provider_activated'; c = 'sso'; }
+        else if (m.startsWith('Updated SSO configuration for IdP: ')) { a = 'updated_sso_configuration'; c = 'sso'; }
+        else if (m.startsWith('SCIM provider bearer token generated for ')) { a = 'scim_provider_bearer_token_generated'; c = 'sso'; }
+
+        // Integrations (Google Workspace OAuth importer).
+        else if (m.startsWith('created a OAuth grant importer for a Google Workspace integration ')) { a = 'oauth_grant_importer_for_google_workspace_integration_created'; c = 'integrations'; }
+        else if (m.startsWith('removed a OAuth grant importer for a Google Workspace integration ')) { a = 'oauth_grant_importer_for_google_workspace_integration_deleted'; c = 'integrations'; }
+
+        // Device management providers.
+        else if (m.startsWith('Added a Device Management Provider')) { a = 'device_management_provider_added'; c = 'dmp'; }
+        else if (m.startsWith('Updated Device Management Provider: ')) { a = 'device_management_provider_updated'; c = 'dmp'; }
+        else if (m.startsWith('Removed Device Management Provider: ')) { a = 'device_management_provider_deleted'; c = 'dmp'; }
+
+        // Settings: auto-snooze policy.
+        else if (m.startsWith('Set auto-snooze policy for org ')) { a = 'auto_snooze_policy_changed'; c = 'auto_snooze'; }
+
+        // End user remediation configuration.
+        else if (m == "modified the organization's end user remediation configuration" || m.startsWith('Updated End-User Remediation Configuration')) { a = 'end_user_remediation_configuration_changed'; }
+
+        // Developers (API keys & webhooks).
+        else if (m.startsWith('Revealed full API Key token ')) { a = 'api_key_secret_viewed'; c = 'developers'; }
+        else if (m.startsWith('API Key ')) { a = 'updated_api_key'; c = 'developers'; }
+        else if (m.startsWith('Created webhook with url ')) { a = 'webhook_created'; c = 'developers'; }
+        else if (m.startsWith('Deleted webhook with url ')) { a = 'webhook_deleted'; c = 'developers'; }
+        else if (m.startsWith('Enabled webhook with url ')) { a = 'webhook_enabled'; c = 'developers'; }
+        else if (m.startsWith('Disabled webhook with url ')) { a = 'webhook_disabled'; c = 'developers'; }
+        else if (m.startsWith('Revealed full webhook signing secret ')) { a = 'webhook_signing_secret_viewed'; c = 'developers'; }
+        else if (m.startsWith('Updated webhook url from ')) { a = 'webhook_url_changed'; c = 'developers'; }
+        else if (m.startsWith('Updated event subscriptions for webhook ')) { a = 'webhook_event_subscriptions_changed'; c = 'developers'; }
+        else if (m.startsWith('Rolled signing secret for webhook with url ')) { a = 'webhook_signing_secret_rolled'; c = 'developers'; }
+
+        // Generic feature restriction change fallback (action set after grok confirms a match).
+        else if (m.startsWith("Changed '")) { c = 'setting_generic'; }
+
+        if (a != null) {
+          if (ctx.event == null) { ctx.event = new HashMap(); }
+          ctx.event.action = a;
+        }
+        if (c != null) {
+          if (ctx._tmp == null) { ctx._tmp = new HashMap(); }
+          ctx._tmp.cat = c;
+        }
+
+  # ════════════════════════════════════════════════════════════════════════════
+  # Checks
+  # ════════════════════════════════════════════════════════════════════════════
+  # check deleted / reverted / updated / published; rationale & fix-instruction edits.
+  - grok:
+      field: message
+      patterns:
+        - '^Deleted Check "%{DATA:rule.name}"$'
+        - '^Reverted Check "%{DATA:rule.name}" to a prior version$'
+        - '^Reverted Check "%{DATA:rule.name}" %{DATA} to a prior version$'
+        - '^Updated existing Check "%{DATA:rule.name}"$'
+        - '^Published new Check "%{DATA:rule.name}"$'
+        - "^Changed Fix Instructions Template Text for Check '%{DATA:rule.name}'$"
+        - "^Changed Rationale Template Text for Check '%{DATA:rule.name}'$"
+        - "^Changed Fix Instructions Template Strategy for Check '%{DATA:rule.name}' from '%{DATA:kolide.audit.change.from}' to '%{DATA:kolide.audit.change.to}'$"
+        - "^Changed Rationale Template Strategy for Check '%{DATA:rule.name}' from '%{DATA:kolide.audit.change.from}' to '%{DATA:kolide.audit.change.to}'$"
+      tag: grok_check_lifecycle
+      ignore_failure: true
+      if: ctx._tmp?.cat == 'check'
+
+  # check device trust settings / run targets changed.
+  - grok:
+      field: message
+      patterns:
+        - "^Updated device trust settings for '%{DATA:rule.name}' from: %{DATA:kolide.audit.change.from} to: %{GREEDYDATA:kolide.audit.change.to}$"
+        - "^Updated run targets for '%{DATA:rule.name}' from: %{DATA:kolide.audit.change.from} to: %{GREEDYDATA:kolide.audit.change.to}$"
+      tag: grok_check_device_trust
+      ignore_failure: true
+      if: ctx._tmp?.cat == 'check'
+
+  # check paused / enabled (observed in real instance data; not in current docs).
+  - grok:
+      field: message
+      patterns:
+        - "^Paused check '%{DATA:rule.name}'$"
+        - "^Enabled check '%{DATA:rule.name}'$"
+      tag: grok_check_paused_enabled
+      ignore_failure: true
+      if: ctx._tmp?.cat == 'check'
+
+  # ════════════════════════════════════════════════════════════════════════════
+  # Devices
+  # ════════════════════════════════════════════════════════════════════════════
+  # device display name changed.
+  - grok:
+      field: message
+      patterns:
+        - "^Changed device name from '%{DATA:kolide.audit.change.from}' to '%{DATA:kolide.audit.change.to}'$"
+      tag: grok_device_name_changed
+      ignore_failure: true
+      if: ctx._tmp?.cat == 'device'
+
+  # canceled device removal. Docs: "Cancelled pending deletion for '{device}'".
+  # Real instance data appends the serial: "...for '{name}' ({serial})".
+  - grok:
+      field: message
+      patterns:
+        - "^Cancelled pending deletion for '%{DATA:host.name}' \\(%{DATA:kolide.audit.target.device_serial}\\)$"
+        - "^Cancelled pending deletion for '%{DATA:host.name}'$"
+      tag: grok_device_deletion_cancelled
+      ignore_failure: true
+      if: ctx._tmp?.cat == 'device'
+
+  # data export requested for a device: "Requested data export for device
+  # '{name}' (id {device_id})".
+  - grok:
+      field: message
+      patterns:
+        - "^Requested data export for device '%{DATA:host.name}' \\(id %{DATA:kolide.audit.target.device_id}\\)$"
+      tag: grok_device_data_export
+      ignore_failure: true
+      if: ctx._tmp?.cat == 'device'
+
+  # ════════════════════════════════════════════════════════════════════════════
+  # Device Registrations
+  # ════════════════════════════════════════════════════════════════════════════
+  # device registration approved / denied.
+  - grok:
+      field: message
+      patterns:
+        - '^Approved pending device registration for "%{DATA:user.target.email}" and device "%{DATA:host.name}"\. Reason: "%{DATA:kolide.audit.reason}"$'
+        - '^Denied pending device registration for "%{DATA:user.target.email}" and device "%{DATA:host.name}"\. Reason: "%{DATA:kolide.audit.reason}"$'
+      tag: grok_device_reg_approved_denied
+      ignore_failure: true
+      if: ctx._tmp?.cat == 'device_reg'
+
+  # device registration reopened. Docs use a variable {prev_status}; real data
+  # shows "denied". Capture whatever status word appears.
+  - grok:
+      field: message
+      patterns:
+        - '^Reopened previously %{WORD:kolide.audit.target.prev_status} device registration for "%{DATA:user.target.email}" and device "%{DATA:host.name}"\.$'
+      tag: grok_device_reg_reopened
+      ignore_failure: true
+      if: ctx._tmp?.cat == 'device_reg'
+
+  # device registration self-approved (observed in real instance data).
+  - grok:
+      field: message
+      patterns:
+        - '^Device "%{DATA:host.name}" \(%{DATA:kolide.audit.target.device_serial}\) registration self-approved by %{DATA:user.target.email} from another trusted device$'
+      tag: grok_device_reg_self_approved
+      ignore_failure: true
+      if: ctx._tmp?.cat == 'device_reg'
+
+  # device registration removed. Docs: email unquoted; real data: email quoted.
+  - grok:
+      field: message
+      patterns:
+        - '^Removed device registration for "%{DATA:host.name}" that was registered to "%{DATA:user.target.email}"$'
+        - '^Removed device registration for "%{DATA:host.name}" that was registered to %{GREEDYDATA:user.target.email}$'
+      tag: grok_device_reg_removed
+      ignore_failure: true
+      if: ctx._tmp?.cat == 'device_reg'
+
+  # tofu device registration re-enabled.
+  - grok:
+      field: message
+      patterns:
+        - "^TOFU device registration re-enabled for '%{DATA:host.name}'$"
+      tag: grok_device_reg_tofu_reenabled
+      ignore_failure: true
+      if: ctx._tmp?.cat == 'device_reg'
+
+  # device registration auth_mode changed. Docs include a trailing "and changed
+  # allowed groups ..." clause; real data omits it. Support both.
+  - grok:
+      field: message
+      patterns:
+        - '^Updated device registration for "%{DATA:host.name}" changed auth mode from "%{DATA:kolide.audit.change.from}" to "%{DATA:kolide.audit.change.to}" and changed allowed groups from %{DATA:kolide.audit.change.groups_from} to %{GREEDYDATA:kolide.audit.change.groups_to}$'
+        - '^Updated device registration for "%{DATA:host.name}" changed auth mode from "%{DATA:kolide.audit.change.from}" to "%{GREEDYDATA:kolide.audit.change.to}"$'
+      tag: grok_device_reg_auth_mode
+      ignore_failure: true
+      if: ctx._tmp?.cat == 'device_reg'
+
+  # device registration configuration changed: platform allow / required checks /
+  # default auth mode. Real data also shows "Updated device registration
+  # configuration: {config_type}".
+  - grok:
+      field: message
+      patterns:
+        - "^Changed Default Authentication Mode changed who can authenticate from %{DATA:kolide.audit.change.from} to %{GREEDYDATA:kolide.audit.change.to}$"
+        - "^Changed 'Allows %{DATA:kolide.audit.target.platform} device registration' from %{DATA:kolide.audit.change.from} to %{GREEDYDATA:kolide.audit.change.to}$"
+        - "^Set 'Required %{DATA:kolide.audit.target.platform} checks' to %{GREEDYDATA:kolide.audit.target.check_names}$"
+        - "^Updated device registration configuration: %{GREEDYDATA:kolide.audit.target.config_type}$"
+      tag: grok_device_reg_config
+      ignore_failure: true
+      if: ctx._tmp?.cat == 'device_reg'
+
+  # default authentication mode changed (real instance variant with stray quote).
+  - grok:
+      field: message
+      patterns:
+        - '^Changed Default Authentication Mode" who can authenticate from "%{DATA:kolide.audit.change.from}" to "%{GREEDYDATA:kolide.audit.change.to}"$'
+      tag: grok_auth_mode_changed_realvariant
+      ignore_failure: true
+      if: ctx._tmp?.cat == 'device_reg'
+
+  # ════════════════════════════════════════════════════════════════════════════
+  # Exemption Requests
+  # ════════════════════════════════════════════════════════════════════════════
+  - grok:
+      field: message
+      patterns:
+        - '^Approved exemption request for "%{DATA:user.target.email}" for check: "%{DATA:rule.name}"\. Reason: "%{DATA:kolide.audit.reason}"$'
+        - '^Denied exemption request for "%{DATA:user.target.email}" for check: "%{DATA:rule.name}"\. Reason: "%{DATA:kolide.audit.reason}"$'
+        - '^Reopened previously %{WORD:kolide.audit.target.prev_status} exemption for "%{DATA:rule.name}"\.$'
+        - '^%{DATA:user.target.email} withdrew exemption request for check: "%{DATA:rule.name}"$'
+      tag: grok_exemption_request
+      ignore_failure: true
+      if: ctx._tmp?.cat == 'exemption'
+
+  # Issue exemptions (observed in real instance data).
+  - grok:
+      field: message
+      patterns:
+        - '^Exempted all future issues for "%{DATA:rule.name}" for device: "%{DATA:host.name}"\. Reason: %{DATA:kolide.audit.reason}\. \(Expires %{DATA:kolide.audit.expires_at}\)$'
+        - "^Exempted issue %{DATA:kolide.audit.target.issue_id}: '%{DATA:rule.name}', reason: '%{DATA:kolide.audit.reason}'$"
+      tag: grok_issue_exempted
+      ignore_failure: true
+      if: ctx._tmp?.cat == 'exemption'
+
+  # ════════════════════════════════════════════════════════════════════════════
+  # People
+  # ════════════════════════════════════════════════════════════════════════════
+  - grok:
+      field: message
+      patterns:
+        - "^Reset factor enrollment for '%{DATA:user.target.name}'$"
+        - "^Verified factor enrollment for '%{DATA:user.target.name}'$"
+        - '^Merged the person, %{DATA:kolide.audit.change.from}, with %{GREEDYDATA:kolide.audit.change.to}$'
+        - '^Restored the person, %{DATA:user.target.name}, to it.s original state$'
+      tag: grok_people
+      ignore_failure: true
+      if: ctx._tmp?.cat == 'people'
+
+  # ════════════════════════════════════════════════════════════════════════════
+  # Managed Web App
+  # ════════════════════════════════════════════════════════════════════════════
+  - grok:
+      field: message
+      patterns:
+        - '^Created managed app "%{DATA:kolide.audit.target.app_name}"$'
+        - '^Deleted managed app "%{DATA:kolide.audit.target.app_name}" with #?%{NUMBER:kolide.audit.target.count:long} people$'
+        - '^Updated managed app "%{DATA:kolide.audit.target.app_name}" from: %{DATA:kolide.audit.change.from} to: %{GREEDYDATA:kolide.audit.change.to}$'
+        - '^Sign on settings were updated for "%{DATA:kolide.audit.target.app_name}" from: %{DATA:kolide.audit.change.from} to: %{GREEDYDATA:kolide.audit.change.to}$'
+        - '^Updated managed app "#?%{DATA:kolide.audit.target.app_name}" directly assigned people membership from %{DATA:kolide.audit.change.from} to %{GREEDYDATA:kolide.audit.change.to}$'
+        - '^Updated managed app "#?%{DATA:kolide.audit.target.app_name}" directly assigned person groups membership from %{DATA:kolide.audit.change.from} to %{GREEDYDATA:kolide.audit.change.to}$'
+      tag: grok_managed_app
+      ignore_failure: true
+      if: ctx._tmp?.cat == 'managed_app'
+
+  # ════════════════════════════════════════════════════════════════════════════
+  # Groups
+  # ════════════════════════════════════════════════════════════════════════════
+  - grok:
+      field: message
+      patterns:
+        - '^Mass-Removed members from device group: "%{DATA:kolide.audit.target.group_name}"\. Device ID\(s\) removed: %{GREEDYDATA:kolide.audit.change.to}$'
+        - '^Created device group "%{DATA:kolide.audit.target.group_name}"$'
+        - '^Deleted device group "%{DATA:kolide.audit.target.group_name}" with %{NUMBER:kolide.audit.target.count:long} members$'
+      tag: grok_groups
+      ignore_failure: true
+      if: ctx._tmp?.cat == 'groups'
+
+  # ════════════════════════════════════════════════════════════════════════════
+  # Log Pipeline (osquery decorators, FIM categories, packs, queries, destinations)
+  # ════════════════════════════════════════════════════════════════════════════
+  - grok:
+      field: message
+      patterns:
+        - "^Added device property logger '%{DATA:kolide.audit.target.logger_name}'$"
+        - "^Removed device property logger '%{DATA:kolide.audit.target.logger_name}'$"
+        - "^Enabled the log pipeline destination '%{DATA:kolide.audit.target.destination_name}'$"
+        - "^Disabled the log pipeline destination '%{DATA:kolide.audit.target.destination_name}'$"
+        - "^Deleted the log pipeline destination '%{DATA:kolide.audit.target.destination_name}'$"
+        - "^Updated the %{DATA:kolide.audit.target.destination_type} log destination '%{DATA:kolide.audit.target.destination_name}'$"
+        - "^Created a %{DATA:kolide.audit.target.destination_type} log pipeline destination named '%{DATA:kolide.audit.target.destination_name}'$"
+      tag: grok_log_pipeline_destinations
+      ignore_failure: true
+      if: ctx._tmp?.cat == 'log_pipeline'
+  - grok:
+      field: message
+      patterns:
+        - "^Updated the osquery decorator '%{DATA:kolide.audit.target.osquery_name}'$"
+        - "^Added an osquery decorator '%{DATA:kolide.audit.target.osquery_name}'$"
+        - "^Enabled osquery decorator '%{DATA:kolide.audit.target.osquery_name}'$"
+        - "^Deleted osquery decorator '%{DATA:kolide.audit.target.osquery_name}'$"
+        - "^Updated the osquery FIM category '%{DATA:kolide.audit.target.fim_category}'$"
+        - "^Created osquery FIM category '%{DATA:kolide.audit.target.fim_category}'$"
+        - "^Enabled osquery FIM category '%{DATA:kolide.audit.target.fim_category}'$"
+        - "^Disabled osquery FIM category '%{DATA:kolide.audit.target.fim_category}'$"
+        - "^Deleted the osquery FIM category '%{DATA:kolide.audit.target.fim_category}'$"
+      tag: grok_log_pipeline_osquery_decorators_fim
+      ignore_failure: true
+      if: ctx._tmp?.cat == 'log_pipeline'
+  - grok:
+      field: message
+      patterns:
+        - "^Created discovery query '%{DATA:kolide.audit.target.query_name}'$"
+        - "^Updated the osquery discovery query '%{DATA:kolide.audit.target.query_name}'$"
+        - "^Deleted discovery query '%{DATA:kolide.audit.target.query_name}'$"
+        - "^Created osquery pack query '%{DATA:kolide.audit.target.query_name}'$"
+        - "^Updated the osquery query '%{DATA:kolide.audit.target.query_name}'$"
+        - "^Deleted osquery pack query '%{DATA:kolide.audit.target.query_name}'$"
+        - "^Created osquery pack '%{DATA:kolide.audit.target.pack_name}'$"
+        - "^Updated the osquery pack '%{DATA:kolide.audit.target.pack_name}'$"
+        - "^Enabled osquery pack '%{DATA:kolide.audit.target.pack_name}'$"
+        - "^Disabled osquery pack '%{DATA:kolide.audit.target.pack_name}'$"
+        - "^Deleted the osquery pack '%{DATA:kolide.audit.target.pack_name}'$"
+      tag: grok_log_pipeline_osquery_queries_packs
+      ignore_failure: true
+      if: ctx._tmp?.cat == 'log_pipeline'
+
+  # ════════════════════════════════════════════════════════════════════════════
+  # Live Queries
+  # ════════════════════════════════════════════════════════════════════════════
+  - grok:
+      field: message
+      patterns:
+        - '^Created and ran Live Query Campaign ID %{DATA:kolide.audit.target.campaign_id} that targets %{DATA} that uses table\(s\): %{GREEDYDATA:kolide.audit.target.tables}$'
+        - '^Updated and ran Live Query Campaign ID %{DATA:kolide.audit.target.campaign_id} that targets %{DATA} that uses table\(s\): %{GREEDYDATA:kolide.audit.target.tables}$'
+        - '^Deleted Live Query Campaign ID %{DATA:kolide.audit.target.campaign_id} : %{GREEDYDATA:rule.name}$'
+        - '^CSV Downloaded For Device %{DATA:host.name} - Live Query Campaign ID %{NUMBER:kolide.audit.target.campaign_id}$'
+        - '^Unpublished Live Query Campaign ID %{NUMBER:kolide.audit.target.campaign_id}$'
+        - '^CSV Downloaded For Live Query Campaign ID %{NUMBER:kolide.audit.target.campaign_id}$'
+        - '^Published Live Query Campaign ID %{NUMBER:kolide.audit.target.campaign_id}$'
+      tag: grok_live_queries
+      ignore_failure: true
+      if: ctx._tmp?.cat == 'live_query'
+
+  # ════════════════════════════════════════════════════════════════════════════
+  # Okta Webhooks
+  # ════════════════════════════════════════════════════════════════════════════
+  - grok:
+      field: message
+      patterns:
+        - "^Okta event hook received for '%{DATA:kolide.audit.target.okta_event}'$"
+        - '^Okta event hooks verified$'
+      tag: grok_okta_webhooks
+      ignore_failure: true
+      if: ctx._tmp?.cat == 'okta'
+
+  # ════════════════════════════════════════════════════════════════════════════
+  # Billing
+  # ════════════════════════════════════════════════════════════════════════════
+  - grok:
+      field: message
+      patterns:
+        - "^Updated billing email to '%{DATA:kolide.audit.change.to}' from '%{DATA:kolide.audit.change.from}'$"
+      tag: grok_billing
+      ignore_failure: true
+      if: ctx._tmp?.cat == 'billing'
+
+  # ════════════════════════════════════════════════════════════════════════════
+  # End User Portal (Privacy Center)
+  # ════════════════════════════════════════════════════════════════════════════
+  - grok:
+      field: message
+      patterns:
+        - "^Changed 'Privacy Center Access Restriction Settings' from '%{DATA:kolide.audit.change.from}' to '%{DATA:kolide.audit.change.to}'$"
+        - '^Changed Privacy Center Custom Resource Section visibility from %{DATA:kolide.audit.change.from} to %{GREEDYDATA:kolide.audit.change.to}$'
+      tag: grok_privacy_center
+      ignore_failure: true
+      if: ctx._tmp?.cat == 'privacy_center'
+
+  # ════════════════════════════════════════════════════════════════════════════
+  # Automatic Device Removal
+  # ════════════════════════════════════════════════════════════════════════════
+  # Docs: "Device '{name}' removed". Real data appends a serial:
+  # "Device '{name}' ({serial}) removed". Support both.
+  - grok:
+      field: message
+      patterns:
+        - "^Device '%{DATA:host.name}' \\(%{DATA:kolide.audit.target.device_serial}\\) removed$"
+        - "^Device '%{DATA:host.name}' removed$"
+      tag: grok_device_removed
+      ignore_failure: true
+      if: ctx._tmp?.cat == 'device_removal'
+  # Docs: "triggered device deletion for inactive device named '{name}'".
+  # Real data: "Requested device deletion for '{name}' ({serial}) ()". Support both.
+  - grok:
+      field: message
+      patterns:
+        - "^triggered device deletion for inactive device named '%{DATA:host.name}'$"
+        - "^Requested device deletion for '%{DATA:host.name}' \\(%{DATA:kolide.audit.target.device_serial}\\) \\(\\)$"
+      tag: grok_device_deletion_requested
+      ignore_failure: true
+      if: ctx._tmp?.cat == 'device_removal'
+
+  # ════════════════════════════════════════════════════════════════════════════
+  # Restrictions
+  # ════════════════════════════════════════════════════════════════════════════
+  - grok:
+      field: message
+      patterns:
+        - '^Osquery Blocklist Updated From: "%{DATA:kolide.audit.change.from}" To: "%{GREEDYDATA:kolide.audit.change.to}"$'
+      tag: grok_restrictions
+      ignore_failure: true
+      if: ctx._tmp?.cat == 'restrictions'
+
+  # ════════════════════════════════════════════════════════════════════════════
+  # Admin Users
+  # ════════════════════════════════════════════════════════════════════════════
+  - grok:
+      field: message
+      patterns:
+        - "^user '%{DATA:user.target.email}' accepted invitation to Kolide$"
+        - "^Invited '%{DATA:user.target.email}' to access kolide$"
+        - "^Removed access for Kolide user '%{DATA:user.target.name}'$"
+        - "^Updated %{DATA:kolide.audit.target.feature} restriction on %{DATA:user.target.name} from '%{DATA:kolide.audit.change.from}' to '%{DATA:kolide.audit.change.to}'$"
+        - "^Updated access for user '%{DATA:user.target.email}' from '%{DATA:kolide.audit.change.from}' to '%{DATA:kolide.audit.change.to}'$"
+        - "^Revoked invitations created by '%{DATA:user.target.email}' because admin access was removed\\. Revoked invitations with email address\\(es\\): %{GREEDYDATA:kolide.audit.change.to}$"
+        - "^Added EPM user '#?%{DATA:user.target.name}' to Kolide$"
+      tag: grok_admin_users
+      ignore_failure: true
+      if: ctx._tmp?.cat == 'admin_users'
+
+  # ════════════════════════════════════════════════════════════════════════════
+  # SSO Settings
+  # ════════════════════════════════════════════════════════════════════════════
+  - grok:
+      field: message
+      patterns:
+        - '^Kolide IdP settings were updated from:%{GREEDYDATA}$'
+        - "^IdP Proxy webhook token generated for '%{DATA:kolide.audit.target.org_name}'$"
+        - "^Kolide IdP: Additional Factor Sequencing was '%{DATA:kolide.audit.change.to}'$"
+        - '^Updated SAML configuration$'
+      tag: grok_sso_settings
+      ignore_failure: true
+      if: ctx._tmp?.cat == 'sso'
+
+  # IdP / SSO activation observed in real instance data (not in docs).
+  - grok:
+      field: message
+      patterns:
+        - "^Identity provider '%{DATA:kolide.audit.target.idp_url}' was activated$"
+        - '^Updated SSO configuration for IdP: %{GREEDYDATA:kolide.audit.target.idp_url}$'
+      tag: grok_idp_realvariant
+      ignore_failure: true
+      if: ctx._tmp?.cat == 'sso'
+
+  # SCIM provider bearer token (observed in real instance data).
+  - grok:
+      field: message
+      patterns:
+        - "^SCIM provider bearer token generated for '%{DATA:kolide.audit.target.org_name}'$"
+      tag: grok_scim_token_generated
+      ignore_failure: true
+      if: ctx._tmp?.cat == 'sso'
+
+  # ════════════════════════════════════════════════════════════════════════════
+  # Integrations
+  # ════════════════════════════════════════════════════════════════════════════
+  - grok:
+      field: message
+      patterns:
+        - '^created a Vanta integration$'
+        - '^removed Vanta integration$'
+        - '^created a OAuth grant importer for a Google Workspace integration with email %{GREEDYDATA:user.target.email}$'
+        - '^removed a OAuth grant importer for a Google Workspace integration with email %{GREEDYDATA:user.target.email}$'
+      tag: grok_integrations
+      ignore_failure: true
+      if: ctx._tmp?.cat == 'integrations'
+
+  # ════════════════════════════════════════════════════════════════════════════
+  # Device Management Providers. Docs: "Added a Device Management Provider {name}"
+  # (no colon). Real data: "Added a Device Management Provider: {name}" (colon).
+  # ════════════════════════════════════════════════════════════════════════════
+  - grok:
+      field: message
+      patterns:
+        - '^Added a Device Management Provider:? %{GREEDYDATA:kolide.audit.target.provider_name}$'
+        - '^Updated Device Management Provider: %{DATA:kolide.audit.target.provider_name} from: %{DATA:kolide.audit.change.from} to: %{GREEDYDATA:kolide.audit.change.to}$'
+        - '^Removed Device Management Provider: %{GREEDYDATA:kolide.audit.target.provider_name}$'
+      tag: grok_device_management_provider
+      ignore_failure: true
+      if: ctx._tmp?.cat == 'dmp'
+
+  # ════════════════════════════════════════════════════════════════════════════
+  # Settings: auto-snooze policy (observed in real instance data).
+  # ════════════════════════════════════════════════════════════════════════════
+  - grok:
+      field: message
+      patterns:
+        - '^Set auto-snooze policy for org %{DATA:kolide.audit.target.org_id} to %{GREEDYDATA:kolide.audit.change.to}$'
+      tag: grok_auto_snooze_policy
+      ignore_failure: true
+      if: ctx._tmp?.cat == 'auto_snooze'
+
+  # ════════════════════════════════════════════════════════════════════════════
+  # Developers (API keys & webhooks)
+  # ════════════════════════════════════════════════════════════════════════════
+  - grok:
+      field: message
+      patterns:
+        - '^Revealed full API Key token %{GREEDYDATA:kolide.audit.target.api_key_name}$'
+        - '^API Key %{DATA:kolide.audit.target.api_key_name} from: %{DATA:kolide.audit.change.from} to: %{GREEDYDATA:kolide.audit.change.to}$'
+      tag: grok_api_key
+      ignore_failure: true
+      if: ctx._tmp?.cat == 'developers'
+  - grok:
+      field: message
+      patterns:
+        - "^Created webhook with url '%{DATA:kolide.audit.target.webhook_url}'$"
+        - "^Deleted webhook with url '%{DATA:kolide.audit.target.webhook_url}'$"
+        - "^Enabled webhook with url '%{DATA:kolide.audit.target.webhook_url}'$"
+        - "^Disabled webhook with url '%{DATA:kolide.audit.target.webhook_url}'$"
+        - '^Revealed full webhook signing secret %{GREEDYDATA:kolide.audit.target.webhook_url}$'
+        - "^Updated webhook url from '%{DATA:kolide.audit.change.from}' to '%{DATA:kolide.audit.change.to}'$"
+        - "^Updated event subscriptions for webhook '%{DATA:kolide.audit.target.webhook_url}' from '%{DATA:kolide.audit.change.from}' to '%{DATA:kolide.audit.change.to}'$"
+        - "^Rolled signing secret for webhook with url '%{DATA:kolide.audit.target.webhook_url}'$"
+      tag: grok_webhooks
+      ignore_failure: true
+      if: ctx._tmp?.cat == 'developers'
+
+  # Generic settings change fallback (unquoted to-value variant).
+  - grok:
+      field: message
+      patterns:
+        - "^Changed '%{DATA:kolide.audit.change.field}' from '%{DATA:kolide.audit.change.from}' to '%{DATA:kolide.audit.change.to}'$"
+        - "^Changed '%{DATA:kolide.audit.change.field}' from '%{DATA:kolide.audit.change.from}' to %{GREEDYDATA:kolide.audit.change.to}$"
+      tag: grok_setting_changed_generic
+      ignore_failure: true
+      if: ctx._tmp?.cat == 'setting_generic' && ctx.kolide?.audit?.change?.field == null && ctx.kolide?.audit?.change?.from == null
+
+  # Set feature_restriction_changed once grok_setting_changed_generic matched.
+  - set:
+      field: event.action
+      tag: set_event_action_feature_restriction_changed
+      value: feature_restriction_changed
+      if: ctx._tmp?.cat == 'setting_generic' && ctx.kolide?.audit?.change?.field != null
+
+  # Okta hook: event.action is the dynamic event name from grok (when present).
+  - set:
+      field: event.action
+      tag: set_event_action_okta_event
+      copy_from: kolide.audit.target.okta_event
+      ignore_empty_value: true
+      if: ctx.kolide?.audit?.target?.okta_event != null
+
+  # Drop grok routing scratch field.
+  - remove:
+      field: _tmp
+      tag: remove_tmp
+      ignore_missing: true
+
+  # Derived fields and related.* enrichment from parsed targets.
+  - set:
+      field: url.domain
+      tag: set_url_domain_from_idp
+      copy_from: kolide.audit.target.idp_url
+      ignore_empty_value: true
+      if: ctx.kolide?.audit?.target?.idp_url != null
+
+  # host.hostname mirrors host.name when set by grok.
+  - set:
+      field: host.hostname
+      tag: set_host_hostname
+      copy_from: host.name
+      ignore_empty_value: true
+      if: ctx.host?.name != null
+
+  # ── related.* enrichment ─────────────────────────────────────────────────────
+  - append:
+      field: related.hosts
+      tag: append_related_hosts_target_device
+      value: '{{{host.name}}}'
+      allow_duplicates: false
+      if: ctx.host?.name != null
+  - append:
+      field: related.user
+      tag: append_related_user_target_email
+      value: '{{{user.target.email}}}'
+      allow_duplicates: false
+      if: ctx.user?.target?.email != null
+  - append:
+      field: related.user
+      tag: append_related_user_target_name
+      value: '{{{user.target.name}}}'
+      allow_duplicates: false
+      if: ctx.user?.target?.name != null
+
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

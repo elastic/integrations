@@ -1,0 +1,48 @@
+receivers:
+  jaeger:
+    protocols:
+{{#if grpc_enabled}}
+      grpc:
+        endpoint: {{grpc_endpoint}}
+{{#if tls_enabled}}
+        tls:
+          cert_file: {{tls_cert_file}}
+          key_file: {{tls_key_file}}
+{{#if tls_client_ca_file}}
+          client_ca_file: {{tls_client_ca_file}}
+{{/if}}
+{{/if}}
+{{/if}}
+{{#if thrift_http_enabled}}
+      thrift_http:
+        endpoint: {{thrift_http_endpoint}}
+{{#if tls_enabled}}
+        tls:
+          cert_file: {{tls_cert_file}}
+          key_file: {{tls_key_file}}
+{{#if tls_client_ca_file}}
+          client_ca_file: {{tls_client_ca_file}}
+{{/if}}
+{{/if}}
+{{/if}}
+{{#if thrift_compact_enabled}}
+      thrift_compact:
+        endpoint: {{thrift_compact_endpoint}}
+        queue_size: {{udp_queue_size}}
+        max_packet_size: {{udp_max_packet_size}}
+        workers: {{udp_workers}}
+        socket_buffer_size: {{udp_socket_buffer_size}}
+{{/if}}
+{{#if thrift_binary_enabled}}
+      thrift_binary:
+        endpoint: {{thrift_binary_endpoint}}
+        queue_size: {{udp_queue_size}}
+        max_packet_size: {{udp_max_packet_size}}
+        workers: {{udp_workers}}
+        socket_buffer_size: {{udp_socket_buffer_size}}
+{{/if}}
+
+service:
+  pipelines:
+    traces:
+      receivers: [jaeger]

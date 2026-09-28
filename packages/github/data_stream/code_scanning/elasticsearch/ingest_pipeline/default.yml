@@ -2,39 +2,46 @@
 description: Pipeline for parsing GitHub audit logs
 processors:
   - set:
+      tag: set_ecs_version_0f7334bb
       field: ecs.version
       value: '8.11.0'
   - rename:
       field: message
-      tag: rename_message_to_event_original
+      tag: rename_message_to_event_original_176375fd
       target_field: event.original
       ignore_missing: true
       description: Renames the original `message` field to `event.original` to store a copy of the original message. The `event.original` field is not touched if the document already has one; it may happen when Logstash sends the document.
       if: ctx.event?.original == null
   - remove:
       field: message
-      tag: remove_message
+      tag: remove_message_9ecc8509
       ignore_missing: true
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
   - json:
+      tag: json_event_original_to_github_code_scanning_7a97be3c
       field: event.original
       target_field: github.code_scanning
   - fail:
+      tag: fail_missing_json_object_0524996d
       if: "!(ctx.github.code_scanning instanceof Map)"
       message: Missing JSON object
   - set:
+      tag: set_event_kind_39295792
       field: event.kind
       value: alert
   - append:
+      tag: append_event_type_449ae2bb
       field: event.type
       value: creation
       if: ctx.github?.code_scanning?.fixed_at == null && ctx.github?.code_scanning?.dismissed_at == null
   - append:
+      tag: append_event_type_7b5dee62
       field: event.type
       value: deletion
       if: ctx.github?.code_scanning?.fixed_at != null || ctx.github?.code_scanning?.dismissed_at != null
   - date:
+      tag: date_github_code_scanning_created_at_to_event_created_63a63689
       field: github.code_scanning.created_at
       formats:
         - ISO8601
@@ -42,6 +49,7 @@ processors:
       target_field: "event.created"
       if: ctx.github.code_scanning.created_at != null
   - date:
+      tag: date_github_code_scanning_created_at_to_timestamp_feaeecef
       field: github.code_scanning.created_at
       formats:
         - ISO8601
@@ -49,6 +57,7 @@ processors:
       target_field: "@timestamp"
       if: ctx.github.code_scanning.created_at != null
   - date:
+      tag: date_github_code_scanning_updated_at_to_timestamp_d54416b5
       field: github.code_scanning.updated_at
       formats:
         - ISO8601
@@ -56,6 +65,7 @@ processors:
       target_field: "@timestamp"
       if: ctx.github.code_scanning.updated_at != null
   - date:
+      tag: date_github_code_scanning_dismissed_at_to_github_code_scanning_dismissed_at_46798104
       field: github.code_scanning.dismissed_at
       formats:
         - ISO8601
@@ -63,93 +73,115 @@ processors:
       target_field: github.code_scanning.dismissed_at
       if: ctx.github?.code_scanning?.dismissed_at != null
   - rename:
+      tag: rename_github_code_scanning_repository_to__temp_fa3b2ed5
       target_field: _temp
       field: github.code_scanning.repository
       ignore_missing: true
   - rename:
+      tag: rename__temp_id_to_github_repository_id_327ad07c
       field: _temp.id
       target_field: github.repository.id
       ignore_missing: true
   - rename:
+      tag: rename__temp_name_to_github_repository_name_2866cc74
       field: _temp.name
       target_field: github.repository.name
       ignore_missing: true
   - rename:
+      tag: rename__temp_full_name_to_github_repository_full_name_e875d03e
       field: _temp.full_name
       target_field: github.repository.full_name
       ignore_missing: true
   - rename:
+      tag: rename__temp_private_to_github_repository_private_8af96072
       field: _temp.private
       target_field: github.repository.private
       ignore_missing: true
   - rename:
+      tag: rename__temp_html_url_to_github_repository_html_url_28d63710
       field: _temp.html_url
       target_field: github.repository.html_url
       ignore_missing: true
   - rename:
+      tag: rename__temp_url_to_github_repository_url_6a22e32e
       field: _temp.url
       target_field: github.repository.url
       ignore_missing: true
   - rename:
+      tag: rename__temp_description_to_github_repository_description_bb25b568
       field: _temp.description
       target_field: github.repository.description
       ignore_missing: true
   - rename:
+      tag: rename__temp_fork_to_github_repository_fork_f89db4d0
       field: _temp.fork
       target_field: github.repository.fork
       ignore_missing: true
   - rename:
+      tag: rename__temp_owner_login_to_github_repository_owner_login_65889624
       field: _temp.owner.login
       target_field: github.repository.owner.login
       ignore_missing: true
   - rename:
+      tag: rename__temp_owner_id_to_github_repository_owner_id_7ec1ab08
       field: _temp.owner.id
       target_field: github.repository.owner.id
       ignore_missing: true
   - rename:
+      tag: rename__temp_owner_url_to_github_repository_owner_url_f442f74c
       field: _temp.owner.url
       target_field: github.repository.owner.url
       ignore_missing: true
   - rename:
+      tag: rename__temp_owner_html_url_to_github_repository_owner_html_url_6d19c164
       field: _temp.owner.html_url
       target_field: github.repository.owner.html_url
       ignore_missing: true
   - rename:
+      tag: rename__temp_owner_type_to_github_repository_owner_type_7e1b8774
       field: _temp.owner.type
       target_field: github.repository.owner.type
       ignore_missing: true
   - rename:
+      tag: rename__temp_owner_site_admin_to_github_repository_owner_site_admin_fa5ae018
       field: _temp.owner.site_admin
       target_field: github.repository.owner.site_admin
       ignore_missing: true
   - dissect:
+      tag: dissect_github_code_scanning_url_1e82b0ca
       field: github.code_scanning.url
       pattern: "https://api.github.com/repos/%{_temp.owner}/%{_temp.repository}/code-scanning/alerts/%{_temp.number}"
       ignore_missing: true
   - set:
+      tag: set_github_repository_html_url_ec5e1981
       field: github.repository.html_url
       value: "https://github.com/{{{_temp.owner}}}/{{{_temp.repository}}}"
       if: ctx.github.repository?.html_url == null && ctx._temp?.owner != null && ctx._temp?.repository != null
   - set:
+      tag: set_github_repository_url_f0b322a3
       field: github.repository.url
       value: "https://api.github.com/repos/{{{_temp.owner}}}/{{{_temp.repository}}}"
       if: ctx.github.repository?.url == null && ctx._temp?.owner != null && ctx._temp?.repository != null
   - rename:
+      tag: rename__temp_repository_to_github_repository_name_c2e74f39
       field: _temp.repository
       target_field: github.repository.name
       if: ctx.github.repository?.name == null
       ignore_missing: true
   - rename:
+      tag: rename__temp_owner_to_github_repository_owner_login_f9ff210d
       field: _temp.owner
       target_field: github.repository.owner.login
       if: ctx.github.repository?.owner?.login == null
       ignore_missing: true
   - rename:
+      tag: rename__temp_number_to_github_code_scanning_number_b36ddfb3
       field: _temp.number
       target_field: github.code_scanning.number
       if: ctx.github.code_scanning.number == null
       ignore_missing: true
   - fingerprint:
+      tag: fingerprint_to_id_9319bf6b
       fields:
         - github.repository.owner.login
         - github.repository.name
@@ -160,47 +192,59 @@ processors:
       target_field: "_id"
       ignore_missing: true
   - lowercase:
+      tag: lowercase_github_code_scanning_state_06b21ee0
       field: github.code_scanning.state
       ignore_missing: true
   - lowercase:
+      tag: lowercase_github_code_scanning_rule_security_severity_level_2822e234
       field: github.code_scanning.rule.security_severity_level
       ignore_missing: true
   - rename:
+      tag: rename_github_code_scanning_dismissed_by_to__temp_dismissed_by_fa70a3d5
       target_field: _temp.dismissed_by
       field: github.code_scanning.dismissed_by
       ignore_missing: true
   - remove:
+      tag: remove_github_code_scanning_dismissed_by_0b57f54f
       field: github.code_scanning.dismissed_by
       ignore_missing: true
   - rename:
+      tag: rename__temp_dismissed_by_login_to_github_code_scanning_dismissed_by_login_5b819cb5
       field: _temp.dismissed_by.login
       target_field: github.code_scanning.dismissed_by.login
       ignore_missing: true
   - rename:
+      tag: rename__temp_dismissed_by_id_to_github_code_scanning_dismissed_by_id_0d9039a7
       field: _temp.dismissed_by.id
       target_field: github.code_scanning.dismissed_by.id
       ignore_missing: true
   - rename:
+      tag: rename__temp_dismissed_by_url_to_github_code_scanning_dismissed_by_url_a408e6d5
       field: _temp.dismissed_by.url
       target_field: github.code_scanning.dismissed_by.url
       ignore_missing: true
   - rename:
+      tag: rename__temp_dismissed_by_html_url_to_github_code_scanning_dismissed_by_html_url_66ea2cdb
       field: _temp.dismissed_by.html_url
       target_field: github.code_scanning.dismissed_by.html_url
       ignore_missing: true
   - rename:
+      tag: rename__temp_dismissed_by_type_to_github_code_scanning_dismissed_by_type_567c11f3
       field: _temp.dismissed_by.type
       target_field: github.code_scanning.dismissed_by.type
       ignore_missing: true
   - rename:
+      tag: rename__temp_dismissed_by_site_admin_to_github_code_scanning_dismissed_by_site_admin_45f098ff
       field: _temp.dismissed_by.site_admin
       target_field: github.code_scanning.dismissed_by.site_admin
       ignore_missing: true
   - rename:
+      tag: rename_github_code_scanning_most_recent_instance_message_text_to_message_8c8d19e0
       field: github.code_scanning.most_recent_instance.message.text
       target_field: message
       ignore_missing: true
   - script:
+      tag: script_calculate_time_taken_to_resolve_f715f9a4
       lang: painless
       description: Calculate time taken to resolve the alerts
       if: ctx.github.code_scanning.fixed_at != null || ctx.github.code_scanning.dismissed_at != null
@@ -227,36 +271,44 @@ processors:
       # Rule ECS Fields #
       ###################
   - rename:
+      tag: rename_github_code_scanning_rule_id_to_rule_id_c69ecc48
       field: github.code_scanning.rule.id
       target_field: rule.id
       if: ctx.github.code_scanning.rule?.id != null
   - rename:
+      tag: rename_github_code_scanning_rule_name_to_rule_name_95f8f72e
       field: github.code_scanning.rule.name
       target_field: rule.name
       if: ctx.github.code_scanning.rule?.name != null
   - rename:
+      tag: rename_github_code_scanning_rule_description_to_rule_description_ce15d0a7
       field: github.code_scanning.rule.description
       target_field: rule.description
       if: ctx.github.code_scanning.rule?.description != null
   - foreach:
+      tag: foreach_github_code_scanning_rule_tags_abb933eb
       field: "github.code_scanning.rule.tags"
       processor:
         append:
+          tag: append_tags_e65d71f6
           field: tags
           value: "{{{_ingest._value}}}"
       ignore_missing: true
       if: ctx.github.code_scanning.rule?.tags != null
   - remove:
+      tag: remove_github_code_scanning_rule_tags_f195e1c7
       field: github.code_scanning.rule.tags
       ignore_missing: true
       ###########
       # Cleanup #
       ###########
   - remove:
+      tag: remove_cleanup_1f8c5875
       field:
         - _temp
       ignore_missing: true
   - script:
+      tag: script_processor_iterates_over_whole_document_4d6993cb
       lang: painless
       description: This script processor iterates over the whole document to remove fields with null values.
       source: |
@@ -283,12 +335,18 @@ processors:
         handleMap(ctx);
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_f03ee041
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message_206bb8ac
       field: error.message
-      value: '{{{ _ingest.on_failure_message }}}'
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'

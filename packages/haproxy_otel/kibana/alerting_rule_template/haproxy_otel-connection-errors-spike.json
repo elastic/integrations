@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when `haproxy.connections.errors` increases by more than 10 in 5 minutes. Connection errors indicate backend-reach problems.",
     "name": "[HAProxy OTel] Connection errors spike",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -14,6 +15,22 @@
     },
     "alertDelay": {
       "active": 2
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "haproxy_otel-backend"
+        },
+        {
+          "id": "haproxy_otel-server"
+        },
+        {
+          "id": "haproxy_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## HAProxy connection errors spike\n\n### What fired\n`haproxy.connections.errors` increased by > 10 in the window.\n\n### Why it matters\nConnection errors mean HAProxy failed the TCP connect to a backend server. Usually indicates crashed servers, network problems, or health-check-flapping targets.\n\n### Triage\n1. Check health-check failures and per-server downtime.\n2. Inspect network between HAProxy and the affected backend.\n3. Look at retry/redispatch counters.\n\n### Remediation\n- Fix the unreachable server(s) or network path.\n- Remove dead targets from the backend.\n\n### Tuning\n- Threshold 10 errors in 5m; tune to your traffic baseline.\n"
+      }
     },
     "params": {
       "searchType": "esqlQuery",

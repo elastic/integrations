@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when the scrape target `up` metric is 0 \u2014 the collector cannot reach the etcd metrics endpoint.",
     "name": "[etcd OTel] Scrape target down",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -20,13 +21,25 @@
       "lookBackWindow": 6,
       "statusChangeThreshold": 3
     },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "etcd_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## etcd scrape target down\n\n### What fired\n`up == 0` during the entire window.\n\n### Why it matters\nA down scrape target means either etcd has stopped, the metrics endpoint is unreachable, or the collector is misconfigured. Either way, observability of that member is lost.\n\n### Triage\n1. Confirm whether etcd itself is running or the metrics endpoint is blocked.\n2. Check collector logs for scrape failures.\n3. Verify network / firewall to the metrics port.\n\n### Remediation\n- Restore the metrics endpoint or the etcd process.\n\n### Tuning\n- Fires only when `up == 0` for the whole window (MAX=0).\n"
+      }
+    },
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
         "esql": "FROM metrics-etcd.otel-default*\n// Scrape health: up=0 when Prometheus/OTel collector cannot reach the etcd metrics endpoint\n| WHERE `up` IS NOT NULL\n  AND `up` == 0\n| STATS count = COUNT(*) BY resource.attributes.service.instance.id\n| SORT count DESC"
       },
       "size": 0,
-      "threshold": [0],
+      "threshold": [
+        0
+      ],
       "thresholdComparator": ">",
       "timeField": "@timestamp",
       "timeWindowSize": 5,

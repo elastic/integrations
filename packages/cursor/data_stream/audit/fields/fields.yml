@@ -1,0 +1,234 @@
+- name: cursor.audit
+  type: group
+  fields:
+    - name: team_id
+      type: keyword
+      description: Cursor team identifier (numeric string).
+    - name: auth_id
+      type: keyword
+      description: Auth identity from event metadata context.
+    - name: ghost_mode
+      type: boolean
+      description: Whether ghost mode was enabled for the request.
+    - name: privacy_mode
+      type: keyword
+      description: Privacy mode enum extracted from embedded context JSON.
+    - name: request_id
+      type: keyword
+      description: Request correlation identifier.
+    - name: event_data
+      type: flattened
+      description: Unknown or unmapped event-type payload fields. Known fields are promoted to dedicated cursor.audit.* fields.
+    - name: action
+      type: keyword
+      description: Sub-action reported inside the event payload (for example, create, revoke, install, disconnect).
+    - name: source
+      type: keyword
+      description: How an action was initiated (for example, invite, autoAdd, dashboard, slack, ide, manual).
+    - name: setting_name
+      type: keyword
+      description: Name of the setting that changed.
+    - name: old_value
+      type: keyword
+      description: Previous value for setting changes.
+    - name: new_value
+      type: keyword
+      description: New value for setting changes.
+    - name: role
+      type: keyword
+      description: Role assigned to the user (lower-cased for add_user).
+    - name: old_role
+      type: keyword
+      description: Previous role (update_user_role).
+    - name: new_role
+      type: keyword
+      description: New role (update_user_role).
+    - name: rule_id
+      type: keyword
+      description: Team/Bugbot rule identifier.
+    - name: rule_name
+      type: keyword
+      description: Team/Bugbot rule name.
+    - name: command_id
+      type: keyword
+      description: Team command identifier.
+    - name: command_name
+      type: keyword
+      description: Team command name.
+    - name: hook_id
+      type: keyword
+      description: Team hook identifier.
+    - name: hook_step
+      type: keyword
+      description: Team hook step name.
+    - name: hook_type
+      type: keyword
+      description: Team hook type (command or prompt).
+    - name: script_name
+      type: keyword
+      description: Team hook script name.
+    - name: script_content
+      type: keyword
+      description: Team hook script content.
+    - name: operating_systems
+      type: keyword
+      description: Operating systems targeted by a team hook.
+    - name: is_active
+      type: boolean
+      description: Whether the rule, hook, or command is active.
+    - name: is_required
+      type: boolean
+      description: Whether the rule is required.
+    - name: prompt_content
+      type: keyword
+      description: Team hook prompt content.
+    - name: prompt_model
+      type: keyword
+      description: Team hook prompt model.
+    - name: installation_id
+      type: keyword
+      description: Bugbot GitHub App installation identifier.
+    - name: github_app_type
+      type: keyword
+      description: Bugbot GitHub App type (dotcom or enterprise).
+    - name: github_hostname
+      type: keyword
+      description: Bugbot GitHub Enterprise hostname.
+    - name: repo_url
+      type: keyword
+      description: Repository URL (Bugbot repo settings, team_repo).
+    - name: repo_node_id
+      type: keyword
+      description: GitHub node ID of the repository.
+    - name: repo_name
+      type: keyword
+      description: Repository name for team_repo events.
+    - name: repos_updated
+      type: long
+      description: Number of repos updated in a bulk operation.
+    - name: bugbot_enabled
+      type: boolean
+      description: Whether Bugbot was enabled or disabled in a bulk repo update.
+    - name: operation
+      type: keyword
+      description: Operation label (for example, enable, disable) for bulk repo updates.
+    - name: provider
+      type: keyword
+      description: Provider (for example, github) reported by Bugbot installation events.
+    - name: enabled
+      type: boolean
+      description: Whether a single-value toggle is enabled (Bugbot repo settings, privacy_mode API).
+    - name: secret_name
+      type: keyword
+      description: Cloud agent secret name.
+    - name: scope
+      type: keyword
+      description: Scope qualifier (for example, team, user).
+    - name: server_name
+      type: keyword
+      description: MCP server display name (mcp_server_config events).
+    - name: server_type
+      type: keyword
+      description: MCP server transport type (for example, HTTP) for mcp_server_config events.
+    - name: scoped_to_repos
+      type: keyword
+      description: Repositories a cloud agent secret is scoped to.
+    - name: service_account_id
+      type: keyword
+      description: Service account identifier.
+    - name: service_account_name
+      type: keyword
+      description: Service account name.
+    - name: api_key_id
+      type: keyword
+      description: API key identifier (also used for the Admin API alias `key_id`).
+    - name: api_key_name
+      type: keyword
+      description: API key name.
+    - name: repo_scope
+      type: keyword
+      description: Repositories the API key is scoped to.
+    - name: repo_scope_enabled
+      type: boolean
+      description: Whether repo scoping is enabled for the API key.
+    - name: organization_id
+      type: keyword
+      description: Organization identifier for organization_api_key events.
+    - name: scope_id
+      type: keyword
+      description: Protected git scope identifier.
+    - name: git_org_owner
+      type: keyword
+      description: Git organization or owner name.
+    - name: git_provider
+      type: keyword
+      description: Git provider (for example, github).
+    - name: git_enterprise_uuid
+      type: keyword
+      description: Enterprise UUID for GitHub Enterprise installations.
+    - name: user_id
+      type: keyword
+      description: User identifier reported inside the event payload (actor for protected_git_scope events).
+    - name: reason
+      type: keyword
+      description: Reason string for access-check results.
+    - name: result
+      type: keyword
+      description: Raw access-check result (`allowed` or `blocked`). Mirrors event.outcome.
+    - name: success
+      type: boolean
+      description: Raw `success` flag reported for login events.
+    - name: login_type
+      type: keyword
+      description: Login type reported by login events.
+    - name: invite_id
+      type: keyword
+      description: Truncated invite code for correlation.
+    - name: invited_by_email
+      type: keyword
+      description: Email of the user who created the invite.
+    - name: invited_by_user_id
+      type: keyword
+      description: User ID of the invite creator.
+    - name: creator_email
+      type: keyword
+      description: Email of the user who created/revoked the invite link.
+    - name: creator_user_id
+      type: keyword
+      description: User ID of the invite link creator.
+    - name: expires_in_seconds
+      type: long
+      description: Duration after which the invite expires, in seconds.
+    - name: sender_email
+      type: keyword
+      description: Email of the user who sent an invite email.
+    - name: sender_user_id
+      type: keyword
+      description: User ID of the invite email sender.
+    - name: personal_message
+      type: keyword
+      description: Indicator of whether a personal message was attached (yes/no), not the actual content.
+    - name: old_limit_cents
+      type: long
+      description: Previous user spend limit in cents.
+    - name: new_limit_cents
+      type: long
+      description: New user spend limit in cents.
+    - name: spend_limit_dollars
+      type: long
+      description: Spend limit reported by the Admin API in dollars.
+    - name: old_privacy_mode
+      type: keyword
+      description: Previous privacy mode setting.
+    - name: new_privacy_mode
+      type: keyword
+      description: New privacy mode setting.
+    - name: directory_group_name
+      type: keyword
+      description: Directory group name (for group settings events).
+    - name: permissions
+      type: keyword
+      description: Permissions granted to a directory group.
+    - name: metadata
+      type: keyword
+      description: Free-form metadata string (team_repo, create_directory_group).

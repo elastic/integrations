@@ -1,0 +1,130 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies suspicious access to LSASS handle from a call trace pointing to DBGHelp.dll or DBGCore.dll, which both export the MiniDumpWriteDump method that can be used to dump LSASS memory content in preparation for credential access.",
+        "from": "now-9m",
+        "index": [
+            "winlogbeat-*",
+            "logs-windows.sysmon_operational-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "host.name",
+                "host.id",
+                "user.name",
+                "user.id",
+                "process.entity_id",
+                "process.pid",
+                "process.executable",
+                "process.command_line",
+                "winlog.event_data.SourceProcessGUID",
+                "winlog.event_data.SourceImage",
+                "winlog.event_data.TargetImage",
+                "winlog.event_data.GrantedAccess",
+                "winlog.event_data.CallTrace"
+            ]
+        },
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Potential Credential Access via LSASS Memory Dump",
+        "note": "## Triage and analysis\n\n### Investigating Potential Credential Access via LSASS Memory Dump\n\n#### Possible investigation steps\n\n- What did the process-access event prove?\n  - Focus: `winlog.event_data.SourceImage`, `winlog.event_data.SourceProcessGUID`, `winlog.event_data.TargetImage`, `winlog.event_data.GrantedAccess`, and `winlog.event_data.CallTrace`.\n  - Implication: escalate on a non-WerFault source touching LSASS with dbgcore in the call trace plus any corroborator; lower concern only when the tuple matches a stable EDR, crash-analysis, support, or authorized-test workflow on that `host.id`.\n\n- Does the source process match a recognized diagnostic tool?\n  - Focus: recover the process start on the same `host.id` using `winlog.event_data.SourceProcessGUID` or `process.entity_id`, then review `process.executable`, `process.command_line`, `process.pe.original_file_name`, `process.code_signature.subject_name`, and `process.code_signature.trusted`. !{investigate{\"description\":\"\",\"label\":\"Source process events by GUID\",\"providers\":[[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{winlog.event_data.SourceProcessGUID}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"process\",\"valueType\":\"string\"}],[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"process\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Hint: if the source lacks `winlog.event_data.SourceProcessGUID`, fall back to `winlog.event_data.SourceImage`, `host.id`, and a tight window around `@timestamp`; if PE or signature metadata is absent, keep identity unresolved rather than inferring trust from path.\n  - Implication: escalate when the recovered source is unsigned, renamed, user-writable, or uses MiniDumpWriteDump-adjacent arguments such as ProcDump-style switches or rundll32 with comsvcs.dll; if process-start telemetry is unavailable, treat identity as unresolved and do not close on `winlog.event_data.SourceImage` alone.\n\n- Does the recovered launch chain explain why this process would touch LSASS?\n  - Focus: `process.command_line`, `process.parent.executable`, `process.parent.command_line`, `process.Ext.authentication_id`, and `user.id`; use `process.Ext.ancestry` when parent context is incomplete.\n  - Implication: escalate when shells, script hosts, Office, browsers, archive tools, or remote-admin launchers start the accessor, or when `user.id` does not fit recognized troubleshooting; record `process.Ext.authentication_id` only as a later session bridge, and treat missing lineage as unresolved rather than benign.\n\n- Do same-source file events show dump creation, rename, or staging?\n  - Focus: same-host file events for recovered `process.entity_id`, or `host.id` plus `process.pid` in a tight alert window; read `file.path`, `file.name`, `file.Ext.original.path`, and `file.size`. !{investigate{\"description\":\"\",\"label\":\"File activity for the source process\",\"providers\":[[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{winlog.event_data.SourceProcessGUID}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"file\",\"valueType\":\"string\"}],[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"file\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Implication: escalate when the accessor writes dump output to temp, public, user-writable, or share paths, or renames it into archives or deceptive extensions; missing file telemetry is unresolved, not benign.\n\n- Do surrounding process events show dump handling, archive, copy, or cleanup?\n  - Focus: child process starts from the recovered accessor on the same `host.id`, especially `process.parent.entity_id`, `process.executable`, `process.command_line`, and `@timestamp`. !{investigate{\"description\":\"\",\"label\":\"Child process events for the source process\",\"providers\":[[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.parent.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{winlog.event_data.SourceProcessGUID}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"process\",\"valueType\":\"string\"}],[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.parent.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"process\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Hint: sibling process review remains a manual expansion from the recovered parent/session context.\n  - Implication: escalate when archivers, copy tools, PowerShell, rundll32, or cleanup commands appear immediately before or after the access; if process telemetry is sparse, preserve the gap and rely on the access tuple plus other corroborators.\n\n- Do authentication events suggest the account pivoted after the access?\n  - Why: MiniDumpWriteDump-style LSASS access is usually a precursor step; later credential use matters more than the access alone.\n  - Focus: after process recovery, use `process.Ext.authentication_id` and `host.id` to review authentication events via `winlog.event_data.TargetLogonId`; search `winlog.event_data.SubjectLogonId` separately for \"4648\" explicit-credential context.\n  - Hint: if the process does not preserve `process.Ext.authentication_id`, skip the auth bridge and record the gap.\n  - Implication: escalate when the linked session or `user.id` shows unexpected remote logons, explicit-credential use, or admin-share access soon after; missing authentication telemetry is unresolved, not benign.\n\n- If source identity, artifacts, or follow-on activity remain suspicious, do related alerts widen scope?\n  - Focus: related `user.id` alerts for credential access, lateral movement, privilege escalation, or suspicious authentication. !{investigate{\"description\":\"\",\"label\":\"Alerts associated with the user\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"user.id\",\"queryType\":\"phrase\",\"value\":\"{{user.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n  - Hint: compare `host.id` alerts to separate account reuse from host-local dump staging. !{investigate{\"description\":\"\",\"label\":\"Alerts associated with the host\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n  - Implication: broaden when the same user or host also triggers dumping, suspicious logon, lateral movement, or exfiltration findings; keep local when related alerts are absent.\n\n- Escalate when LSASS access plus one meaningful corroborator points to unauthorized dump preparation or credential use; close only when identity, access tuple, launch, artifacts, authentication, and scope align with one recognized benign workflow; preserve and escalate if mixed or incomplete.\n\n### False positive analysis\n\n- Recognized EDR, crash-analysis, vendor-support, or authorized testing tooling can legitimately touch LSASS through dbgcore. Close only when the alert tuple, recovered source identity, parent context, `user.id`, and `host.id` all point to that same workflow, with no contradictory dump artifact or post-access authentication evidence. Case records, inventories, and owner confirmation can corroborate but not replace the telemetry match.\n- Before exceptioning, validate recurrence for the same recovered tool identity, signer, parent context, `winlog.event_data.SourceImage`, `user.id`, and `host.id`. Avoid exceptions on `winlog.event_data.CallTrace`, `winlog.event_data.TargetImage`, or LSASS access alone.\n\n### Response and remediation\n\n- If confirmed benign, reverse temporary containment and document the alert tuple, recovered source identity, parent context, `user.id`, `host.id`, and absence of contradictory dump or post-access authentication evidence. Create an exception only if the same stable workflow recurs.\n- If suspicious but unconfirmed, preserve the full alert event, recovered source process event, dump artifacts, linked authentication records, `user.id`, and `host.id` before containment. Apply reversible containment first, such as heightened monitoring or temporary restrictions on the affected `host.id`; weigh host criticality before isolating domain controllers or other privileged systems, and escalate to isolation only when dump artifacts or linked authentication evidence indicates likely credential exposure.\n- If confirmed malicious, preserve the alert tuple, source process identifiers, command line, parent context, dump artifact paths, and linked authentication evidence before terminating processes or deleting files. Then isolate the endpoint; if direct response is unavailable, escalate with the preserved artifact set. Restrict affected share paths when share-staged dumps were identified.\n- On servers, jump hosts, or privileged admin systems, scope which local, cached, service, or administrative credentials may have been exposed, then reset or rotate affected credentials according to their role and exposure.\n- Before eradication, review related hosts and users for the same source image, dump path pattern, or transfer target. Then remove dump utilities, scripts, archives, copied dumps, persistence mechanisms, and remediate the privilege path or initial access route that enabled the LSASS access.\n- Post-incident hardening: retain Sysmon Event ID 10 plus supporting process, file, and authentication telemetry, and document adjacent LSASS dump paths such as ProcDump-style switches or rundll32 with comsvcs.dll for the detection engineering team.\n",
+        "query": "process where host.os.type == \"windows\" and event.code == \"10\" and\n  winlog.event_data.TargetImage : \"?:\\\\WINDOWS\\\\system32\\\\lsass.exe\" and\n\n  /* dbgcore.dll hosts MiniDumpWriteDump on modern Windows; dbghelp-only traces are non-dump usage */\n  winlog.event_data.CallTrace : \"*dbgcore*\" and\n\n  /* crash handlers */\n  not process.executable : (\n        \"?:\\\\Windows\\\\System32\\\\WerFault.exe\",\n        \"?:\\\\Windows\\\\SysWOW64\\\\WerFault.exe\",\n        \"?:\\\\Windows\\\\System32\\\\WerFaultSecure.exe\"\n      )\n",
+        "references": [
+            "https://www.ired.team/offensive-security/credential-access-and-credential-dumping/dump-credentials-from-lsass-process-without-mimikatz",
+            "https://www.elastic.co/security-labs/detect-credential-access",
+            "https://www.elastic.co/security-labs/elastic-protects-against-data-wiper-malware-targeting-ukraine-hermeticwiper"
+        ],
+        "related_integrations": [
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.code",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "winlog.event_data.CallTrace",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "winlog.event_data.TargetImage",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "9960432d-9b26-409f-972b-839a959e79e2",
+        "setup": "## Setup\n\nThis rule requires Sysmon telemetry to be enabled and ingested.\n\nSetup instructions: https://ela.st/sysmon-event-10-setup\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Credential Access",
+            "Data Source: Sysmon",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1003",
+                        "name": "OS Credential Dumping",
+                        "reference": "https://attack.mitre.org/techniques/T1003/",
+                        "subtechnique": [
+                            {
+                                "id": "T1003.001",
+                                "name": "LSASS Memory",
+                                "reference": "https://attack.mitre.org/techniques/T1003/001/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1106",
+                        "name": "Native API",
+                        "reference": "https://attack.mitre.org/techniques/T1106/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 314
+    },
+    "id": "9960432d-9b26-409f-972b-839a959e79e2_314",
+    "type": "security-rule"
+}

@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when lock waits exceed 10 requests/sec. High wait rate means queries routinely block on each other.",
     "name": "[SQL Server OTel] Lock wait rate high",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -19,13 +20,28 @@
       "lookBackWindow": 8,
       "statusChangeThreshold": 4
     },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "microsoft_sqlserver_otel-concurrency-errors"
+        },
+        {
+          "id": "microsoft_sqlserver_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## SQL Server lock wait rate high\n\n### What fired\nAverage `sqlserver.lock.wait.rate` exceeded 10/sec over the window.\n\n### Why it matters\nLock waits indicate contention even when no timeouts have occurred. Sustained high wait rates correlate with blocked processes and throughput degradation.\n\n### Triage\n1. Profile top wait types.\n2. Identify hot tables / indexes.\n\n### Remediation\n- Tune indexes / query plans.\n- Use snapshot isolation where appropriate.\n\n### Tuning\n- 10/sec is a moderate starting point.\n"
+      }
+    },
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
         "esql": "FROM metrics-sqlserverreceiver.otel-default\n// Lock requests resulting in waits per second; high values mean queries blocking each other\n| WHERE metrics.sqlserver.lock.wait.rate IS NOT NULL\n| STATS avg_wait_rate = AVG(metrics.sqlserver.lock.wait.rate),\n       instance_id = MAX(resource.attributes.service.instance.id)\n  BY COALESCE(resource.attributes.service.instance.id, host.name, \"unknown\")\n// Adjust threshold (requests/s) based on expected workload; 10 is a starting point\n| WHERE avg_wait_rate > 10.0\n| KEEP instance_id, avg_wait_rate"
       },
       "size": 0,
-      "threshold": [0],
+      "threshold": [
+        0
+      ],
       "thresholdComparator": ">",
       "timeField": "@timestamp",
       "timeWindowSize": 10,

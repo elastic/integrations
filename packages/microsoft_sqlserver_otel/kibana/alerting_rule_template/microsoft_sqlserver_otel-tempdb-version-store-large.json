@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when TempDB version store exceeds 1 GB. Large version stores indicate a long-running transaction preventing cleanup.",
     "name": "[SQL Server OTel] TempDB version store large",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -19,13 +20,28 @@
       "lookBackWindow": 6,
       "statusChangeThreshold": 3
     },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "microsoft_sqlserver_otel-database-io"
+        },
+        {
+          "id": "microsoft_sqlserver_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## SQL Server TempDB version store large\n\n### What fired\nVersion store size exceeded 1 GB during the window.\n\n### Why it matters\nVersion store rows are created for snapshot isolation and read-committed snapshot. They persist until the oldest open transaction ends. An unbounded growth indicates a leaked or zombie transaction.\n\n### Triage\n1. Find the oldest open transaction.\n2. Check for stuck application instances.\n\n### Remediation\n- Kill the stuck transaction after confirming.\n\n### Tuning\n- 1 GB default; tune to TempDB capacity.\n"
+      }
+    },
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
         "esql": "FROM metrics-sqlserverreceiver.otel-default\n// Version store growth can exhaust TempDB; affects snapshot isolation, sorts, spills\n| WHERE metrics.sqlserver.database.tempdb.version_store.size IS NOT NULL\n| STATS max_version_store_kb = MAX(metrics.sqlserver.database.tempdb.version_store.size),\n       instance_id = MAX(resource.attributes.service.instance.id)\n  BY COALESCE(resource.attributes.service.instance.id, host.name, \"unknown\")\n// Alert when version store exceeds 1GB (1048576 KB); adjust for your TempDB capacity\n| WHERE max_version_store_kb > 1048576\n| KEEP instance_id, max_version_store_kb"
       },
       "size": 0,
-      "threshold": [0],
+      "threshold": [
+        0
+      ],
       "thresholdComparator": ">",
       "timeField": "@timestamp",
       "timeWindowSize": 10,

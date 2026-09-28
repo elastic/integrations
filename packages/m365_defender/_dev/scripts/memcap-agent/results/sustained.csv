@@ -1,0 +1,20 @@
+# Sustained runs, 2026-08-12, agent 9.6.0-SNAPSHOT, emitted by bin/sweep.sh:
+#   AXIS=alerts_per_incident DRAIN=1 INTERVAL=10s HOLD_S=300 SWEEP_CAP=3g POINTS=... bin/sweep.sh
+# Host: no other stack running, ~7 GiB free in the Docker VM (a run the VM cannot hold is
+# reclaimed by the host and measures nothing).
+#
+# The 400 point is recorded three times because it is the number the sizing decision rests
+# on. knobs.csv row 1 is a fourth run of the same configuration; across all four, peaks span
+# 1,835-2,135 MB (cgroup) and 1,603-1,932 MB (working set), so publish the maximum - 2,135 MB,
+# which lives in knobs.csv. workingset_bytes - the end-of-run snapshot - varies 526-1,556 MB
+# over those same four runs, which is why it must never be quoted as a peak.
+#
+# These rows supersede the 2026-08-04 rows that were transcribed from console output. That
+# 400 point read 1,516 MB cgroup peak and is not reproducible: it is 20% below all three
+# runs here at byte-identical page sizes (total_raw_bytes matches exactly), and it was
+# measured on a host that was also running an elastic-package stack.
+axis,point,label,streams,params,mode,mem_limit_bytes,gomemlimit,hold_s,total_raw_bytes,peak_bytes,workingset_bytes,workingset_peak_bytes,anon_bytes,oom,agent_image,run_log
+alerts_per_incident,100,run 1,alert+incident+vulnerability,alert=1000 incident=50 vulnerability=10000 alerts_per_incident=100,sustained,3221225472,,300,43580715,753467392,606474240,749102694,491307008,false,docker.elastic.co/elastic-agent/elastic-agent:9.6.0-SNAPSHOT,
+alerts_per_incident,400,run 1,alert+incident+vulnerability,alert=1000 incident=50 vulnerability=10000 alerts_per_incident=400,sustained,3221225472,,300,129863880,1924927488,551067648,1744830464,329732096,false,docker.elastic.co/elastic-agent/elastic-agent:9.6.0-SNAPSHOT,
+alerts_per_incident,400,run 2,alert+incident+vulnerability,alert=1000 incident=50 vulnerability=10000 alerts_per_incident=400,sustained,3221225472,,300,129863880,2007703552,788910080,1756641624,640745472,false,docker.elastic.co/elastic-agent/elastic-agent:9.6.0-SNAPSHOT,
+alerts_per_incident,400,run 3,alert+incident+vulnerability,alert=1000 incident=50 vulnerability=10000 alerts_per_incident=400,sustained,3221225472,,300,129863880,1924308992,1517641728,1680405954,1348964352,false,docker.elastic.co/elastic-agent/elastic-agent:9.6.0-SNAPSHOT,

@@ -2,225 +2,255 @@
 description: Pipeline for parsing Jamf Protect Web Protection threat logs
 processors:
     - set:
+        tag: set_ecs_version_f5923549
         field: ecs.version
         value: '8.17.0'
     - json:
+        tag: json_message_to_jamf_protect_threat_19580f82
         field: message
         target_field: jamf_protect.threat
         if: ctx.message != null
     - rename:
+        tag: rename_json_to_jamf_protect_threat_d4d31d44
         field: json
         target_field: jamf_protect.threat
         if: ctx.json != null
 
-##########################
-## ECS Observer Mapping ##
-##########################
+    ##########################
+    ## ECS Observer Mapping ##
+    ##########################
     - set:
+        tag: set_observer_product_e40a396c
         field: observer.product
         value: Jamf Protect
     - set:
+        tag: set_observer_vendor_6a522e0a
         field: observer.vendor
         value: Jamf
     - set:
+        tag: set_observer_type_ae54f4bd
         field: observer.type
         value: Endpoint Security
 
-#######################
-## ECS Event Mapping ##
-#######################
+    #######################
+    ## ECS Event Mapping ##
+    #######################
     - set:
+        tag: set_event_kind_39295792
         field: event.kind
         value: alert
     - set:
+        tag: set_event_provider_7e881320
         field: event.provider
         value: Jamf Protect
     - rename:
+        tag: rename_jamf_protect_threat_event_timestamp_to_event_start_2c89cb7d
         field: jamf_protect.threat.event.timestamp
         target_field: event.start
         if: ctx.jamf_protect?.threat?.event?.timestamp != null
     - append:
+        tag: append_event_category_3fa422a0
         field: event.category
         value: host
     - append:
+        tag: append_event_category_8998f81d
         field: event.category
         value: malware
         if: ctx.jamf_protect?.threat?.event?.eventType?.name == 'MALWARE'
     - rename:
+        tag: rename_jamf_protect_threat_event_action_to_event_action_c9e473f8
         field: jamf_protect.threat.event.action
         target_field: event.action
         ignore_missing: true
         if: ctx.jamf_protect?.threat?.event?.action != null
     - set:
+        tag: set_event_reason_624ddbe7
         field: event.reason
         value: '{{{jamf_protect.threat.event.eventType.description}}}'
         if: ctx.jamf_protect?.threat?.event?.eventType?.description != null
         # ignore_missing: true
     - rename:
+        tag: rename_jamf_protect_threat_event_alertId_to_event_id_0eac0a93
         field: jamf_protect.threat.event.alertId
         target_field: event.id
         ignore_missing: true
         if: ctx.jamf_protect?.threat?.event?.alertId != null
     - rename:
+        tag: rename_jamf_protect_threat_event_severity_to_event_severity_7248c525
         field: jamf_protect.threat.event.severity
         target_field: event.severity
         ignore_missing: true
         if: ctx.jamf_protect?.threat?.event?.severity != null
     - rename:
+        tag: rename_jamf_protect_threat_event_eventUrl_to_event_url_8684d0bf
         field: jamf_protect.threat.event.eventUrl
         target_field: event.url
         ignore_missing: true
         if: ctx.jamf_protect?.threat?.event?.eventUrl != null
 
-
-#######################
-## ECS Rule Mapping ##
-#######################
+    #######################
+    ## ECS Rule Mapping ##
+    #######################
     - rename:
+        tag: rename_jamf_protect_threat_event_eventType_name_to_rule_name_810b38da
         field: jamf_protect.threat.event.eventType.name
-        target_field: rule.name       
+        target_field: rule.name
         if: ctx.jamf_protect?.threat?.event?.eventType?.name != null
         ignore_missing: true
     - set:
+        tag: set_rule_description_f0c0edcb
         field: rule.description
         value: '{{{jamf_protect.threat.event.eventType.description}}}'
         if: ctx.jamf_protect?.threat?.event?.eventType?.description != null
         # ignore_missing: true
     - rename:
+        tag: rename_jamf_protect_threat_event_eventType_id_toString()_to_rule_id_cc36fe1d
         field: jamf_protect.threat.event.eventType.id.toString()
         target_field: rule.id
         if: ctx.jamf_protect?.threat?.event?.eventType?.id != null
         ignore_missing: true
 
-
-#######################
-## ECS Host Mapping ##
-#######################
+    #######################
+    ## ECS Host Mapping ##
+    #######################
     - rename:
+        tag: rename_jamf_protect_threat_event_device_userDeviceName_to_host_hostname_99d60132
         field: jamf_protect.threat.event.device.userDeviceName
         target_field: host.hostname
         ignore_missing: true
         if: ctx.jamf_protect?.threat?.event?.device?.userDeviceName != null
     - rename:
+        tag: rename_jamf_protect_threat_event_device_deviceName_to_host_hostname_3651fc92
         field: jamf_protect.threat.event.device.deviceName
         target_field: host.hostname
         ignore_missing: true
         if: ctx.jamf_protect?.threat?.event?.device?.deviceName == null && ctx.jamf_protect?.threat?.event?.device?.userDeviceName != null
     - rename:
+        tag: rename_jamf_protect_threat_event_device_deviceId_to_host_id_18fe9b70
         field: jamf_protect.threat.event.device.deviceId
         target_field: host.id
         ignore_missing: true
         if: ctx.jamf_protect?.threat?.event?.device?.deviceId != null
     - rename:
+        tag: rename_jamf_protect_threat_event_device_os_to_host_os_full_0b13d038
         field: jamf_protect.threat.event.device.os
         target_field: host.os.full
         if: ctx.jamf_protect?.threat?.event?.device?.os != null
         ignore_missing: true
 
-########################
-## ECS User Mapping ##
-########################
 
+    ########################
+    ## ECS User Mapping ##
+    ########################
     - rename:
+          tag: rename_jamf_protect_threat_event_user_name_to_user_name_013ef2ce
           field: jamf_protect.threat.event.user.name
           target_field: user.name
-        #   ignore_missing: true
+          #   ignore_missing: true
           if: ctx.jamf_protect?.threat?.event?.user?.name != null
     - rename:
+          tag: rename_jamf_protect_threat_event_user_email_to_user_email_2f09046d
           field: jamf_protect.threat.event.user.email
           target_field: user.email
-        #   ignore_missing: true
+          #   ignore_missing: true
           if: ctx.jamf_protect?.threat?.event?.user?.email != null
 
-########################
-## ECS GEO Mapping ##
-########################
+    ########################
+    ## ECS GEO Mapping ##
+    ########################
     - rename:
+          tag: rename_jamf_protect_threat_event_location_to_host_geo_country_iso_code_17606000
           field: jamf_protect.threat.event.location
           target_field: host.geo.country_iso_code
-        #   ignore_missing: true
+          #   ignore_missing: true
           if: ctx.jamf_protect?.threat?.event?.location != null
 
-
-#######################
-## ECS Destination Mapping ##
-#######################
+    #######################
+    ## ECS Destination Mapping ##
+    #######################
     - rename:
+          tag: rename_jamf_protect_threat_event_destination_ip_to_destination_address_e8e49248
           field: jamf_protect.threat.event.destination.ip
           target_field: destination.address
-        #   ignore_missing: true
+          #   ignore_missing: true
           if: ctx.jamf_protect?.threat?.event?.destination?.ip != null
     - rename:
+          tag: rename_jamf_protect_threat_event_destination_name_to_destination_domain_2a2eac9c
           field: jamf_protect.threat.event.destination.name
           target_field: destination.domain
-        #   ignore_missing: true
+          #   ignore_missing: true
           if: ctx.jamf_protect?.threat?.event?.destination?.name != null
     - rename:
+          tag: rename_jamf_protect_threat_event_destination_port_to_destination_port_150ac799
           field: jamf_protect.threat.event.destination.port
           target_field: destination.port
-        #   ignore_missing: true
+          #   ignore_missing: true
           if: ctx.jamf_protect?.threat?.event?.destination?.port != null
 
-
-#######################
-## ECS File Mapping ##
-#######################
+    #######################
+    ## ECS File Mapping ##
+    #######################
     - rename:
+          tag: rename_jamf_protect_threat_event_app_name_to_file_name_dbbca645
           field: jamf_protect.threat.event.app.name
           target_field: file.name
-        #   ignore_missing: true
+          #   ignore_missing: true
           if: ctx.jamf_protect?.threat?.event?.app?.name != null
     - rename:
+          tag: rename_jamf_protect_threat_event_app_sha1_to_file_hash_sha1_243dc881
           field: jamf_protect.threat.event.app.sha1
           target_field: file.hash.sha1
-        #   ignore_missing: true
+          #   ignore_missing: true
           if: ctx.jamf_protect?.threat?.event?.app?.sha1 != null
     - rename:
+          tag: rename_jamf_protect_threat_event_app_sha256_to_file_hash_sha256_c9c97747
           field: jamf_protect.threat.event.app.sha256
           target_field: file.hash.sha256
-        #   ignore_missing: true
+          #   ignore_missing: true
           if: ctx.jamf_protect?.threat?.event?.app?.sha256 != null
 
-#######################
-## ECS Source Mapping ##
-#######################
+    #######################
+    ## ECS Source Mapping ##
+    #######################
     - rename:
+          tag: rename_jamf_protect_threat_event_source_ip_to_source_address_2678a1b8
           field: jamf_protect.threat.event.source.ip
           target_field: source.address
-        #   ignore_missing: true
+          #   ignore_missing: true
           if: ctx.jamf_protect?.threat?.event?.destination?.ip != null
     - rename:
+          tag: rename_jamf_protect_threat_event_source_port_to_source_port_6d2a1cdc
           field: jamf_protect.threat.event.source.port
           target_field: source.port
-        #   ignore_missing: true
+          #   ignore_missing: true
           if: ctx.jamf_protect?.threat?.event?.source?.port != null
 
-# ########################
-# # ECS Organization Mapping ##
-# ########################
+    # ########################
+    # # ECS Organization Mapping ##
+    # ########################
     - rename:
+          tag: rename_jamf_protect_threat_event_account_customerId_to_organization_id_e08585f3
           field: jamf_protect.threat.event.account.customerId
           target_field: organization.id
           ignore_missing: true
           if: ctx.jamf_protect?.threat?.event?.account?.customerId != null
 
+    ########################
+    # ECS Related Mapping ##
+    ########################
 
-
-########################
-# ECS Related Mapping ##
-########################
-
-
-#############
-## Cleanup ##
-#############
+    #############
+    ## Cleanup ##
+    #############
     - remove:
+        tag: remove_cleanup_924b382b
         field:
         - jamf_protect.threat
         - jamf_protect
         - message
         ignore_missing: true
     - script:
+        tag: script_drops_null_empty_values_recursively_258616c7
         description: Drops null/empty values recursively.
         lang: painless
         source: |
@@ -239,12 +269,15 @@ processors:
             dropEmptyFields(ctx);
 on_failure:
     - set:
+        tag: set_event_kind_72b1902f
         field: event.kind
         value: pipeline_error
     - append:
+        tag: append_tags_279d5a5c
         field: tags
         value: preserve_original_event
         allow_duplicates: false
     - append:
+        tag: append_error_message_206bb8ac
         field: error.message
         value: '{{{ _ingest.on_failure_message }}}'

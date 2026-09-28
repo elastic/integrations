@@ -1,0 +1,68 @@
+---
+description: >-
+  Pipeline for categorizing ECS event fields for Kolide osquery Status Logs.
+  These are GLOG-style logs about the osquery daemon/agent process itself,
+  not host inventory state, so event.category is [process]. log.level is
+  derived from GLOG severity (0=INFO -> info, 1=WARNING -> warning,
+  2=ERROR -> error, 3=FATAL -> critical) and carries the severity
+  distinction; event.type stays "info" for all severities, since ECS's
+  allowed event.type values for category "process" (access/change/end/info/
+  start) have no dedicated value for an error/fatal log line. There is no
+  success/failure outcome concept for status lines, so event.outcome is
+  left unset.
+processors:
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: event
+  - append:
+      field: event.category
+      tag: append_event_category
+      value: ['process']
+      allow_duplicates: false
+  - append:
+      field: event.type
+      tag: append_event_type
+      value: ['info']
+      allow_duplicates: false
+  - set:
+      field: log.level
+      tag: set_log_level_info
+      value: info
+      if: ctx.kolide?.osquery_status?.severity == '0'
+  - set:
+      field: log.level
+      tag: set_log_level_warning
+      value: warning
+      if: ctx.kolide?.osquery_status?.severity == '1'
+  - set:
+      field: log.level
+      tag: set_log_level_error
+      value: error
+      if: ctx.kolide?.osquery_status?.severity == '2'
+  - set:
+      field: log.level
+      tag: set_log_level_critical
+      value: critical
+      if: ctx.kolide?.osquery_status?.severity == '3'
+  - set:
+      field: log.level
+      tag: set_log_level_default
+      value: info
+      if: ctx.log?.level == null && ctx.kolide?.osquery_status?.severity != null
+
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

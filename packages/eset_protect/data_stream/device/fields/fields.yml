@@ -1,0 +1,168 @@
+- name: host
+  type: group
+  fields:
+    - name: id
+      external: ecs
+    - name: ip
+      external: ecs
+    - name: mac
+      external: ecs
+    - name: name
+      external: ecs
+    - name: os
+      type: group
+      fields:
+        - name: family
+          external: ecs
+        - name: full
+          external: ecs
+        - name: name
+          external: ecs
+        - name: platform
+          external: ecs
+        - name: type
+          external: ecs
+        - name: version
+          external: ecs
+- name: eset_protect
+  type: group
+  fields:
+    - name: device
+      type: group
+      fields:
+        - name: active_products
+          type: keyword
+          description: List of active ESET product identifiers installed on the device.
+        - name: deployed_components
+          type: group
+          fields:
+            - name: display_name
+              type: keyword
+              description: Human-friendly name of the deployed ESET component.
+            - name: version
+              type: group
+              fields:
+                - name: name
+                  type: keyword
+                  description: Human-readable version string of the deployed component.
+        - name: description
+          type: keyword
+          description: Optional description of the device.
+        - name: display_name
+          type: keyword
+          description: Human-friendly name of the device.
+        - name: enrollment_status
+          type: keyword
+          description: >-
+            Enrollment status of the device.
+            Possible values: DEVICE_ENROLLMENT_STATUS_ENROLLED,
+            DEVICE_ENROLLMENT_STATUS_UNENROLLED.
+        - name: etag
+          type: keyword
+          description: Opaque entity tag used for cache validation and change detection.
+        - name: functionality_problem_count
+          type: long
+          description: Number of active functionality problems on the device.
+        - name: functionality_status
+          type: keyword
+          description: >-
+            Functionality status of the device.
+            Possible values: DEVICE_FUNCTIONALITY_STATUS_OK,
+            DEVICE_FUNCTIONALITY_STATUS_ATTENTION_RECOMMENDED,
+            DEVICE_FUNCTIONALITY_STATUS_ATTENTION_REQUIRED.
+        - name: hardware_profiles
+          type: group
+          fields:
+            - name: bios
+              type: group
+              fields:
+                - name: serial_number
+                  type: keyword
+                  description: BIOS serial number.
+            - name: hard_drives
+              type: group
+              fields:
+                - name: capacity_bytes
+                  type: long
+                  description: Total capacity of the drive in bytes.
+                - name: display_name
+                  type: keyword
+                  description: Human-friendly name of the hard drive.
+                - name: drive_type
+                  type: keyword
+                  description: Type of the drive (e.g. DRIVE_TYPE_SSD, DRIVE_TYPE_HDD).
+                - name: hardware_encryption_supported
+                  type: boolean
+                  description: Whether the drive supports hardware-level encryption.
+                - name: manufacturer_name
+                  type: keyword
+                  description: Name of the drive manufacturer.
+                - name: serial_number
+                  type: keyword
+                  description: Serial number of the hard drive.
+            - name: network_adapters
+              type: group
+              fields:
+                - name: mac_address
+                  type: keyword
+                  description: MAC address of the network adapter.
+            - name: processors
+              type: group
+              fields:
+                - name: architecture
+                  type: keyword
+                  description: Processor architecture (e.g. x86_64, ARM).
+                - name: caption
+                  type: keyword
+                  description: Human-readable description of the processor.
+                - name: id
+                  type: keyword
+                  description: Processor identifier as reported by the OS.
+                - name: manufacturer
+                  type: keyword
+                  description: Name of the processor manufacturer.
+        - name: is_master
+          type: boolean
+          description: If true, this device acts as an ESET management master agent.
+        - name: is_mobile
+          type: boolean
+          description: If true, the device is a mobile device.
+        - name: is_muted
+          type: boolean
+          description: If true, the device is muted and alerts are suppressed.
+        - name: labels
+          type: group
+          fields:
+            - name: name
+              type: keyword
+              description: Label tag applied to the device.
+        - name: last_sync_time
+          type: date
+          description: Timestamp of the last successful synchronisation with the ESET PROTECT server.
+        - name: management_domain
+          type: keyword
+          description: Management domain the device belongs to.
+        - name: original_display_name
+          type: keyword
+          description: Original display name of the device before any rename.
+        - name: owner_uuid
+          type: keyword
+          description: UUID of the user who owns the device.
+        - name: parent_group_uuid
+          type: keyword
+          description: UUID of the parent device group.
+        - name: primary_local_ip_address
+          type: ip
+          description: Primary local (LAN) IP address of the device.
+        - name: public_ip_address
+          type: ip
+          description: Public (WAN) IP address of the device.
+        - name: type
+          type: keyword
+          description: >-
+            Device type identifier.
+            Possible values: DEVICE_TYPE_DESKTOP, DEVICE_TYPE_SERVER,
+            DEVICE_TYPE_LAPTOP, DEVICE_TYPE_MOBILE, DEVICE_TYPE_VIRTUAL.
+        - name: uuid
+          type: keyword
+          description: Unique identifier of the device.

@@ -1,0 +1,63 @@
+---
+description: >-
+  Normalizes Kolide audit_log objects collected from the Log Pipeline via the
+  aws-s3 input. The S3 envelope is {"type":"audit_log","timestamp":...,"data":{...}};
+  this lifts the `data` object up to json.* and maps the flat actor/IP fields
+  (which the API path expects nested under actor_info and sourced from the webhook
+  branch). default.yml then handles actor_name, description, geo enrichment, and
+  description classification.
+  Reference: https://www.kolide.com/docs/admins/settings-admin-tools/audit-log
+processors:
+  - script:
+      lang: painless
+      tag: lift_s3_data
+      if: ctx.json?.data instanceof Map
+      description: Lift the S3 `data` object up to json.* and drop the routing `type`.
+      source: |-
+        Map data = (Map) ctx.json.remove('data');
+        for (def entry : data.entrySet()) {
+          ctx.json[entry.getKey()] = entry.getValue();
+        }
+        ctx.json.remove('type');
+  - rename:
+      field: json.actor_email
+      target_field: user.email
+      tag: rename_actor_email
+      ignore_missing: true
+      if: ctx.user?.email == null && ctx.json?.actor_email != null && ctx.json.actor_email != ''
+  - remove:
+      field: json.actor_email
+      tag: remove_null_actor_email
+      ignore_missing: true
+  - rename:
+      field: json.actor_type
+      target_field: kolide.audit.actor_type
+      tag: rename_actor_type
+      ignore_missing: true
+      if: ctx.kolide?.audit?.actor_type == null
+  - rename:
+      field: json.ip_address
+      target_field: source.ip
+      tag: rename_source_ip
+      ignore_missing: true
+      if: ctx.source?.ip == null && ctx.json?.ip_address != null && ctx.json.ip_address != ''
+  - remove:
+      field: json.ip_address
+      tag: remove_null_ip_address
+      ignore_missing: true
+
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false

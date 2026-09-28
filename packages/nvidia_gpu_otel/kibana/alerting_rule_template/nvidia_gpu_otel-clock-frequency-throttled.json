@@ -1,40 +1,51 @@
 {
-    "id": "nvidia_gpu_otel-clock-frequency-throttled",
-    "type": "alerting_rule_template",
-    "managed": true,
-    "attributes": {
-        "name": "[NVIDIA GPU OTel] Clock frequency throttled under load",
-        "ruleTypeId": ".es-query",
-        "tags": [
-            "observability",
-            "nvidia_gpu"
-        ],
-        "schedule": {
-            "interval": "5m"
-        },
-        "alertDelay": {
-            "active": 3
-        },
-        "flapping": {
-            "lookBackWindow": 10,
-            "statusChangeThreshold": 4
-        },
-        "params": {
-            "searchType": "esqlQuery",
-            "esqlQuery": {
-                "esql": "FROM metrics-nvidia_gpu.otel-default\n| WHERE DCGM_FI_DEV_SM_CLOCK IS NOT NULL\n    AND DCGM_FI_DEV_GPU_UTIL IS NOT NULL\n    AND DCGM_FI_DEV_GPU_TEMP IS NOT NULL\n| STATS\n    avg_sm_clock = AVG(DCGM_FI_DEV_SM_CLOCK),\n    max_sm_clock = MAX(DCGM_FI_DEV_SM_CLOCK),\n    avg_util = AVG(DCGM_FI_DEV_GPU_UTIL),\n    avg_temp = AVG(DCGM_FI_DEV_GPU_TEMP)\n  BY Hostname, UUID, modelName\n// Detect throttling: GPU is under load (>50% util) but clock is low\n// relative to its observed max — indicates thermal or power throttling\n// Adjust the clock ratio threshold based on your GPU model's expected boost clocks\n| WHERE avg_util > 50 AND max_sm_clock > 0\n| EVAL clock_ratio = ROUND(avg_sm_clock / max_sm_clock * 100.0, 2)\n| WHERE clock_ratio < 70\n| SORT clock_ratio ASC"
-            },
-            "size": 0,
-            "threshold": [
-                0
-            ],
-            "thresholdComparator": ">",
-            "timeField": "@timestamp",
-            "timeWindowSize": 15,
-            "timeWindowUnit": "m",
-            "groupBy": "row",
-            "termField": "UUID",
-            "termSize": 50
+  "id": "nvidia_gpu_otel-clock-frequency-throttled",
+  "type": "alerting_rule_template",
+  "managed": true,
+  "attributes": {
+    "description": "Alerts when a GPU is under load (>50% utilization) but the SM clock is more than 30% below its observed maximum, indicating thermal or power throttling.",
+    "name": "[NVIDIA GPU OTel] Clock frequency throttled under load",
+    "ruleTypeId": ".es-query",
+    "tags": [
+      "observability",
+      "nvidia_gpu"
+    ],
+    "schedule": {
+      "interval": "5m"
+    },
+    "alertDelay": {
+      "active": 3
+    },
+    "flapping": {
+      "lookBackWindow": 10,
+      "statusChangeThreshold": 4
+    },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "nvidia_gpu_otel-overview"
         }
+      ],
+      "investigation_guide": {
+        "blob": "## NVIDIA GPU clock frequency throttled under load\n\n### What fired\nGPU `avg_util > 50%` while `avg_sm_clock / max_sm_clock < 70%` during the window.\n\n### Why it matters\nWhen a GPU is busy but its clock is held below its observed boost ceiling, the device is throttling \u2014 usually because of temperature, power cap, or PCIe / NVLink limits. Throttling silently reduces compute throughput, hurting model training time and inference QoS.\n\n### Triage\n1. Cross-check `DCGM_FI_DEV_GPU_TEMP` \u2014 temperatures above 83\u00b0C usually trigger thermal throttling.\n2. Inspect `DCGM_FI_DEV_POWER_USAGE` against the GPU's power cap.\n3. Look at host-level airflow and chassis temperature.\n4. Check whether the workload pattern matches the throttling intervals.\n\n### Remediation\n- Improve cooling or relocate workloads to less constrained nodes.\n- Raise the persistence-mode power limit (`nvidia-smi -pl`) if the policy allows.\n- Reduce concurrent GPU jobs on the host.\n\n### Tuning\n- 70% clock-ratio threshold; tune to your GPU model's expected boost behaviour.\n"
+      }
+    },
+    "params": {
+      "searchType": "esqlQuery",
+      "esqlQuery": {
+        "esql": "FROM metrics-nvidia_gpu.otel-default\n| WHERE DCGM_FI_DEV_SM_CLOCK IS NOT NULL\n    AND DCGM_FI_DEV_GPU_UTIL IS NOT NULL\n    AND DCGM_FI_DEV_GPU_TEMP IS NOT NULL\n| STATS\n    avg_sm_clock = AVG(DCGM_FI_DEV_SM_CLOCK),\n    max_sm_clock = MAX(DCGM_FI_DEV_SM_CLOCK),\n    avg_util = AVG(DCGM_FI_DEV_GPU_UTIL),\n    avg_temp = AVG(DCGM_FI_DEV_GPU_TEMP)\n  BY Hostname, UUID, modelName\n// Detect throttling: GPU is under load (>50% util) but clock is low\n// relative to its observed max \u2014 indicates thermal or power throttling\n// Adjust the clock ratio threshold based on your GPU model's expected boost clocks\n| WHERE avg_util > 50 AND max_sm_clock > 0\n| EVAL clock_ratio = ROUND(avg_sm_clock / max_sm_clock * 100.0, 2)\n| WHERE clock_ratio < 70\n| SORT clock_ratio ASC"
+      },
+      "size": 0,
+      "threshold": [
+        0
+      ],
+      "thresholdComparator": ">",
+      "timeField": "@timestamp",
+      "timeWindowSize": 15,
+      "timeWindowUnit": "m",
+      "groupBy": "row",
+      "termField": "UUID",
+      "termSize": 50
     }
+  }
 }

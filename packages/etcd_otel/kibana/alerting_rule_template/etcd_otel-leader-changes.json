@@ -3,6 +3,7 @@
   "type": "alerting_rule_template",
   "managed": true,
   "attributes": {
+    "description": "Alerts when more than 1 leader change occurs in 15 minutes (`etcd_server_leader_changes_seen_total`). Frequent elections point to disk, network, or resource issues.",
     "name": "[etcd OTel] Frequent leader elections",
     "ruleTypeId": ".es-query",
     "tags": [
@@ -20,13 +21,28 @@
       "lookBackWindow": 6,
       "statusChangeThreshold": 3
     },
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "etcd_otel-raft-consensus"
+        },
+        {
+          "id": "etcd_otel-overview"
+        }
+      ],
+      "investigation_guide": {
+        "blob": "## etcd frequent leader elections\n\n### What fired\nCounter `etcd_server_leader_changes_seen_total` incremented more than once in 15 minutes.\n\n### Why it matters\nLeader elections pause all writes and rebuild Raft state. Frequent elections degrade throughput and indicate instability in the cluster.\n\n### Triage\n1. Correlate with heartbeat failures and slow applies.\n2. Inspect disk fsync latency on all peers.\n3. Check for network partitions or peer restarts.\n\n### Remediation\n- Stabilise disk I/O.\n- Keep peers in the same failure domain for low latency.\n\n### Tuning\n- `> 1 change per 15m` is the documented threshold. Lower for latency-sensitive tiers.\n"
+      }
+    },
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
         "esql": "TS metrics-etcd.otel-default*\n// Counter: leader changes observed; frequent elections suggest disk I/O, network, or resource issues\n| WHERE etcd_server_leader_changes_seen_total IS NOT NULL\n| STATS changes = SUM(INCREASE(etcd_server_leader_changes_seen_total))\n    BY resource.attributes.service.instance.id\n// Alert when more than 1 leader change in window; adjust threshold for sensitivity\n| WHERE changes > 1\n| SORT changes DESC"
       },
       "size": 0,
-      "threshold": [0],
+      "threshold": [
+        0
+      ],
       "thresholdComparator": ">",
       "timeField": "@timestamp",
       "timeWindowSize": 15,

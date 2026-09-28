@@ -1,0 +1,195 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies PowerShell, PowerShell ISE, or Cmd execution spawned from Windows Script Host or MSHTA.",
+        "from": "now-9m",
+        "index": [
+            "logs-m365_defender.event-*",
+            "logs-sentinel_one_cloud_funnel.*",
+            "logs-system.security*",
+            "logs-windows.forwarded*",
+            "logs-windows.sysmon_operational-*",
+            "winlogbeat-*",
+            "endgame-*",
+            "logs-crowdstrike.fdr*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "host.id",
+                "user.id",
+                "process.entity_id",
+                "process.pid",
+                "process.executable",
+                "process.command_line",
+                "process.pe.original_file_name",
+                "process.hash.sha256",
+                "process.code_signature.subject_name",
+                "process.code_signature.trusted",
+                "process.parent.name",
+                "process.parent.executable",
+                "process.parent.command_line",
+                "process.parent.args"
+            ]
+        },
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Command and Scripting Interpreter via Windows Scripts",
+        "note": "## Triage and analysis\n\n### Investigating Command and Scripting Interpreter via Windows Scripts\n\n#### Possible investigation steps\n\n- What script-host-to-interpreter chain did the alert capture?\n  - Focus: `process.parent.name`, `process.parent.executable`, `process.parent.command_line`, `process.name`, and `process.command_line`.\n  - Implication: escalate when \"wscript.exe\" or \"mshta.exe\" launches PowerShell/pwsh/ISE/cmd from user-writable script/HTA, archive, download path, or URL; lower suspicion only when parent source, child command, `user.id`, and `host.id` fit one recognized logon, deployment, or vendor workflow.\n\n- Does the child command express staging, retrieval, persistence, or defense evasion?\n  - Focus: `process.command_line`: \"-EncodedCommand\"/\"-e\", \"-NoProfile\", hidden windows, execution-policy bypass, Invoke-Expression/DownloadString, cmd \"/c\" chaining, curl/bitsadmin retrieval, or schtasks/sc.exe changes.\n  - Hint: decode or reconstruct encoded or inline PowerShell before deciding intent; use script-block logs as optional corroboration.\n  - Follow-on: inspect child starts from `process.entity_id`; PID-only matches are timestamp-bound candidates. !{investigate{\"description\":\"\",\"label\":\"Child process events for the script-launched process\",\"providers\":[[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"process\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.type\",\"queryType\":\"phrase\",\"value\":\"start\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.parent.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"}],[{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"process\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.type\",\"queryType\":\"phrase\",\"value\":\"start\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.parent.pid\",\"queryType\":\"phrase\",\"value\":\"{{process.pid}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Implication: escalate when the command fetches content, decodes or executes inline script, launches another shell, or changes tasks/services; lower risk only when it runs a local script from the same logon, deployment, or vendor source without staging or unexpected egress.\n\n- Does the child binary identity fit the observed command line and location?\n  - Focus: `process.executable`, `process.pe.original_file_name`, `process.hash.sha256`, `process.code_signature.subject_name`, and `process.code_signature.trusted`.\n  - Implication: escalate when the child is renamed, unsigned or untrusted from a user-writable path, or mismatched to original file name; lower identity risk when signer, path, and hash history fit the expected interpreter, but identity alone never clears suspicious command intent.\n\n- Did the alerting process stage scripts, archives, or follow-on payloads?\n  - Focus: file events scoped by `host.id` plus `process.entity_id`, or `host.id` plus `process.pid` in a tight window, checking `file.path`, `file.Ext.original.path`, `file.Ext.original.extension`, `file.Ext.header_bytes`, and `file.Ext.windows.zone_identifier`. !{investigate{\"description\":\"\",\"label\":\"File events for the script-launched process\",\"providers\":[[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"file\",\"valueType\":\"string\"}],[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.pid\",\"queryType\":\"phrase\",\"value\":\"{{process.pid}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"file\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Hint: for PID fallback, require file time within the child lifetime.\n  - Implication: escalate when the child writes or renames scriptable or executable content under temp, profile, public, startup, or deceptive paths, especially with internet provenance or type/extension mismatch; absent file telemetry is unresolved, not benign.\n\n- Did same-process network events show retrieval, staging, or callback behavior?\n  - Focus: network events scoped by `host.id` plus `process.entity_id`, or `host.id` plus `process.pid` in a tight window, separating DNS `dns.question.name` and `dns.resolved_ip` from connection `destination.ip`, `destination.port`, and `destination.as.organization.name`. !{investigate{\"description\":\"\",\"label\":\"Network events for the script-launched process\",\"providers\":[[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"network\",\"valueType\":\"string\"}],[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.pid\",\"queryType\":\"phrase\",\"value\":\"{{process.pid}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"network\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Hint: map DNS `dns.resolved_ip` to later connections before treating a domain as confirmed.\n  - Implication: escalate when the process reaches external script-delivery, paste, storage, or C2 infra unrelated to the workflow; lower network risk when connections stay on recognized internal, proxy, or vendor services. Missing network telemetry is unresolved, not benign.\n\n- If local evidence stays suspicious or unresolved, does the same pattern appear in related alerts?\n  - Focus: related alerts for `user.id`, checking execution, persistence, defense-evasion, or outbound context before comparing preserved `process.parent.executable`, `process.parent.command_line`, or `process.command_line` fragments. !{investigate{\"description\":\"\",\"label\":\"Alerts associated with the user\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"user.id\",\"queryType\":\"phrase\",\"value\":\"{{user.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n  - Hint: use `host.id` alerts to test whether the chain is isolated, repeats with suspicious activity, or appears as adjacent variants such as \"cscript.exe\" launchers or delayed descendant shells. !{investigate{\"description\":\"\",\"label\":\"Alerts associated with the host\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n  - Implication: broaden scope when the same user or host shows repeated script-host launches, task or service changes, persistence, or outbound staging; keep local only when the pattern is isolated and local evidence supports one recognized workflow.\n\n- Escalate when parent provenance, command intent, identity, artifacts, destinations, or related alerts support proxy execution or second-stage activity; close only when alert-local evidence and recovery bind one recognized workflow, with outside confirmation for telemetry gaps; preserve artifacts and escalate when evidence conflicts or visibility is incomplete.\n\n### False positive analysis\n\n- Logon scripts and deployment wrappers can legitimately launch cmd or PowerShell through Windows Script Host. Confirm only when `process.parent.executable`, `process.parent.command_line`, `process.command_line`, `user.id`, `host.id`, and same-process `file.path` or `destination.ip` recovered through `host.id` plus `process.entity_id`, or `host.id` plus `process.pid` in a tight window, align with one recognized workflow. If file or network telemetry is absent, use outside confirmation. Stable recurrence for that parent source, child command, user, and host can support closure when script inventory or change context exists; first-observed workflows need outside confirmation before exceptioning. Any mismatch keeps the case suspicious.\n- Vendor/installer/hardware-diagnostic HTA/VBS launchers can trigger this rule. Confirm only when `process.executable`, `process.pe.original_file_name`, `process.hash.sha256`, `process.code_signature.subject_name`, parent script path, file writes, and destinations match one vendor package. Without package context, recurring signer/hash, parent source, child command, and host cohort can support closure; first-observed packages need outside confirmation.\n- For exceptions, validate: `process.parent.executable`, `process.parent.command_line`, child `process.executable`, stable `process.command_line` fragment, `process.code_signature.subject_name`, `user.id`, and `host.id`. Avoid exceptions on `process.name`, child `process.executable`, or parent process name alone.\n\n### Response and remediation\n\n- If confirmed benign, reverse temporary containment and record the parent script path, child command pattern, signer, `user.id`, and `host.id` proving the workflow. Create exceptions only for exact workflows recurring in prior rule alerts.\n- If suspicious but unconfirmed, preserve the process event, `process.entity_id` or `process.pid` with `host.id` and time, command lines, suspicious `file.path` values, and confirmed `dns.question.name`, `destination.ip`, or `destination.port` before response. Apply reversible containment first: temporary destination blocking, disabling newly created scripts or tasks, or heightened host monitoring. Isolate only when corroborating staging, persistence, or outbound activity is confirmed and interruption is tolerable. Avoid destructive cleanup until scope is clearer.\n- If confirmed malicious, preserve `process.entity_id`, `process.parent.entity_id`, command lines, written `file.path` artifacts, and confirmed destinations, then isolate the host or block destinations based on staging and network evidence. Terminate malicious child or descendant processes after evidence capture; if direct endpoint response is unavailable, hand off artifacts for isolation or destination blocking.\n- Review related hosts and users for the same parent-child command pattern, confirmed destinations, and confirmed staged files only when endpoint file telemetry or related alerts preserve them. Then remove malicious scripts, HTA content, scheduled tasks, or dropped payloads, and remediate the delivery path.\n- Post-incident hardening: restrict unsupported \"mshta.exe\" and Windows Script Host use on workstations, retain process/file/network telemetry needed for this investigation, and record adjacent variants found during triage.\n",
+        "query": "process where host.os.type == \"windows\" and event.type == \"start\" and\n  process.command_line != null and\n  (\n    process.name : (\"powershell.exe\", \"pwsh.exe\", \"powershell_ise.exe\", \"cmd.exe\") or\n    ?process.pe.original_file_name : (\"powershell.exe\", \"pwsh.dll\", \"powershell_ise.exe\", \"Cmd.Exe\")\n  ) and\n  process.parent.name : (\"wscript.exe\", \"mshta.exe\") and\n  not (\n    process.args : (\n      \"C:\\\\Program Files\\\\Intel\\\\SUR\\\\QUEENCREEK\\\\x64\\\\task.bat\",\n      \"\\\"C:\\\\Program Files\\\\Intel\\\\SUR\\\\QUEENCREEK\\\\x64\\\\task.bat\\\"\"\n    ) or\n    process.command_line : (\n      \"\\\"C:\\\\Windows\\\\system32\\\\cmd.exe\\\" /c auditpol.exe /set /SUBCATEGORY:*\",\n      \"\\\"C:\\\\Windows\\\\system32\\\\cmd.exe\\\" /c auditpol.exe /get*\",\n      \"\\\"C:\\\\Windows\\\\system32\\\\cmd.exe\\\" /c exit\\\"\"\n    ) or\n    (process.args == \"-File\" and process.args == \"-ExecutionPolicy\")\n  )\n  and \n  not (\n    ?user.id == \"S-1-5-18\" and\n    /* Don't apply the user.id exclusion to Sysmon for compatibility */\n    not data_stream.dataset : (\"windows.sysmon_operational\", \"windows.sysmon\")\n  ) \n",
+        "related_integrations": [
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "system",
+                "version": "^2.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.9.0"
+            },
+            {
+                "package": "m365_defender",
+                "version": "^5.0.0"
+            },
+            {
+                "package": "crowdstrike",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.command_line",
+                "type": "wildcard"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.pe.original_file_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.id",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "2d62889e-e758-4c5e-b57e-c735914ee32a",
+        "setup": "## Setup\n\nThis rule requires telemetry from one of the configured source integrations to be enabled and ingested.\n\n### Supported data sources\n\nThis rule can use the following data sources. For setup instructions, refer to the links below:\n\n- [CrowdStrike](https://ela.st/crowdstrike-integration)\n- [Microsoft Defender XDR](https://ela.st/m365-defender)\n- [SentinelOne Cloud Funnel](https://ela.st/sentinel-one-cloud-funnel)\n- [Sysmon Event ID 1 - Process Creation](https://ela.st/sysmon-event-1-setup)\n- [Windows Process Creation Logs](https://ela.st/audit-process-creation)\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Execution",
+            "Resources: Investigation Guide",
+            "Data Source: Windows Security Event Logs",
+            "Data Source: Sysmon",
+            "Data Source: SentinelOne",
+            "Data Source: Microsoft Defender XDR",
+            "Data Source: Elastic Endgame",
+            "Data Source: Crowdstrike"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1059",
+                        "name": "Command and Scripting Interpreter",
+                        "reference": "https://attack.mitre.org/techniques/T1059/",
+                        "subtechnique": [
+                            {
+                                "id": "T1059.001",
+                                "name": "PowerShell",
+                                "reference": "https://attack.mitre.org/techniques/T1059/001/"
+                            },
+                            {
+                                "id": "T1059.003",
+                                "name": "Windows Command Shell",
+                                "reference": "https://attack.mitre.org/techniques/T1059/003/"
+                            },
+                            {
+                                "id": "T1059.005",
+                                "name": "Visual Basic",
+                                "reference": "https://attack.mitre.org/techniques/T1059/005/"
+                            },
+                            {
+                                "id": "T1059.007",
+                                "name": "JavaScript",
+                                "reference": "https://attack.mitre.org/techniques/T1059/007/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1218",
+                        "name": "System Binary Proxy Execution",
+                        "reference": "https://attack.mitre.org/techniques/T1218/",
+                        "subtechnique": [
+                            {
+                                "id": "T1218.005",
+                                "name": "Mshta",
+                                "reference": "https://attack.mitre.org/techniques/T1218/005/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 211
+    },
+    "id": "2d62889e-e758-4c5e-b57e-c735914ee32a_211",
+    "type": "security-rule"
+}

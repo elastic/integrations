@@ -1,0 +1,124 @@
+- name: elasticsearch.querylog
+  type: group
+  description: Query log events from Elasticsearch (DSL, ES&#124;QL, SQL, EQL)
+  fields:
+    - name: indices
+      type: keyword
+      description: Indices involved (DSL, ES&#124;QL when response present, EQL). Not emitted by SqlLogProducer.
+    - name: query
+      type: keyword
+      description: Query text (DSL JSON, ES&#124;QL, SQL, or EQL)
+    - name: result_count
+      type: long
+      description: Number of rows or hits returned (clamped to int where applicable)
+    - name: took
+      type: long
+      description: Duration in nanoseconds
+    - name: took_millis
+      type: long
+      description: Duration in milliseconds
+    - name: type
+      type: keyword
+      description: "Query kind: dsl, esql, sql, or eql"
+    - name: timed_out
+      type: boolean
+      description: True when the request timed out (e.g. DSL SearchResponse, EQL timeout)
+    - name: has_aggregations
+      type: boolean
+      description: True if the search response has aggregations (DSL)
+    - name: is_system
+      type: boolean
+      description: True if all resolved indices match the system-index predicate (QueryLogger); omitted when SQL has no indices
+    - name: is_remote
+      type: boolean
+      description: True when SearchRequest#getLocalClusterAlias() is set (DSL remote-cluster request)
+    - name: shards
+      type: group
+      fields:
+        - name: successful
+          type: long
+          description: Successful shard count when shardInfo() is present
+        - name: skipped
+          type: long
+          description: Skipped shards (only emitted if count > 0)
+        - name: failed
+          type: long
+          description: Failed shards (only emitted if count > 0)
+    - name: dsl
+      type: group
+      fields:
+        - name: total_count
+          type: long
+          description: Total hits from TotalHits (DSL only, SearchLogProducer)
+        - name: total_count_partial
+          type: boolean
+          description: True when total hit relation is not EQUAL_TO
+    - name: clusters
+      type: group
+      fields:
+        - name: remotes
+          type: keyword
+          description: Remote cluster aliases when remotes exist (DSL/ES&#124;QL/EQL)
+        - name: remote_count
+          type: long
+          description: Number of remote clusters or distinct remote aliases
+        - name: total
+          type: long
+          description: Total cluster entries in the map (DSL and ES&#124;QL only; not EQL)
+        - name: skipped
+          type: long
+          description: Skipped cluster count when present in the cluster map
+        - name: failed
+          type: long
+          description: Failed cluster count when present in the cluster map
+        - name: partial
+          type: long
+          description: Partial cluster count when present in the cluster map
+        - name: running
+          type: long
+          description: Running cluster count when present in the cluster map
+        - name: successful
+          type: long
+          description: Successful cluster count when present in the cluster map
+    - name: esql
+      type: group
+      fields:
+        - name: profile
+          type: group
+          fields:
+            - name: analysis
+              type: group
+              fields:
+                - name: took
+                  type: long
+                  description: ES&#124;QL profile analysis phase duration in nanoseconds
+            - name: planning
+              type: group
+              fields:
+                - name: took
+                  type: long
+                  description: ES&#124;QL profile planning phase duration in nanoseconds
+            - name: parsing
+              type: group
+              fields:
+                - name: took
+                  type: long
+                  description: ES&#124;QL profile parsing phase duration in nanoseconds
+            - name: preanalysis
+              type: group
+              fields:
+                - name: took
+                  type: long
+                  description: ES&#124;QL profile preanalysis phase duration in nanoseconds
+            - name: query
+              type: group
+              fields:
+                - name: took
+                  type: long
+                  description: ES&#124;QL profile query phase duration in nanoseconds
+            - name: dependency_resolution
+              type: group
+              fields:
+                - name: took
+                  type: long
+                  description: ES&#124;QL profile dependency resolution phase duration in nanoseconds

@@ -6,6 +6,7 @@ on:
 permissions:
   actions: read
   contents: read
+  copilot-requests: write
   discussions: write
   issues: write
   pull-requests: write
@@ -14,13 +15,15 @@ jobs:
   run:
     # Access control is enforced by the upstream reusable workflow pre_activation
     # check (required roles: admin, maintainer, write).
-    if: >-
-      github.event.action == 'opened' ||
-      (github.event.action == 'labeled' && github.event.label.name == 'claude-plz-triage')
+    #
+    # Disabled 2026-07-02 — no current owner. To re-enable, remove `if: false`
+    # and restore the original activation condition below via a reviewed PR:
+    #   if: >-
+    #     github.event.action == 'opened' ||
+    #     (github.event.action == 'labeled' && github.event.label.name == 'claude-plz-triage')
+    if: false
     uses: elastic/ai-github-actions/.github/workflows/gh-aw-issue-triage.lock.yml@v0
     with:
       setup-commands: |
         export GOTOOLCHAIN=auto
         go install github.com/elastic/elastic-package@latest
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}

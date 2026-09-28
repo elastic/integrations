@@ -4,8 +4,9 @@ source .buildkite/scripts/common.sh
 
 set -euo pipefail
 
-# package name
-package="$1"
+# package path
+package_path="$1"
+package_name="$(basename "${package_path}")"
 
 if [ ! -d packages ]; then
     echo "Missing packages folder"
@@ -25,23 +26,21 @@ with_kubernetes
 
 use_elastic_package
 
-pushd packages > /dev/null
 exit_code=0
-if ! process_package "${package}" ; then
+if ! process_package "${package_path}" ; then
     # keep this message as a collapsed group in Buildkite, so it
     # is not hidden by the previous collapsed group.
-    echo "--- [${package}] failed"
+    echo "--- [${package_name}] failed"
     exit_code=1
 fi
-popd > /dev/null
 
 if [ "${exit_code}" -ne 0 ] ; then
   exit "${exit_code}"
 fi
 
-custom_package_checker_script_path="${SCRIPTS_BUILDKITE_PATH}/packages/${package}.sh"
+custom_package_checker_script_path="${SCRIPTS_BUILDKITE_PATH}/${package_path}.sh"
 
 if [ -x "$custom_package_checker_script_path" ]; then
-  echo "--- [${package}] Run individual package checker"
+  echo "--- [${package_name}] Run individual package checker"
   "$custom_package_checker_script_path"
 fi

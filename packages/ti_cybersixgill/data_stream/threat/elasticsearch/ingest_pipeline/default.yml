@@ -2,36 +2,51 @@
 description: Initial pipeline for parsing Cybersixgill webhooks
 processors:
   - set:
+      tag: set_ecs_version_6b2cef5e
       field: ecs.version
       value: '8.11.0'
   - set:
+      tag: set_event_kind_3410a97a
       field: event.kind
       value: enrichment
   - set:
+      tag: set_event_category_4675e36d
       field: event.category
       value: [threat]
   - set:
+      tag: set_event_type_acbc82af
       field: event.type
       value: [indicator]
   - rename:
+      tag: rename_message_to_event_original_a7b1f822
       field: message
       target_field: event.original
       ignore_missing: true
       if: ctx.event?.original == null
+  - remove:
+      field: message
+      tag: remove_message_facc4822
+      ignore_missing: true
+      if: ctx.event?.original != null
+      description: 'The `message` field is no longer required if the document has an `event.original` field.'
   - json:
+      tag: json_event_original_to_cybersixgill_ad2ad3f5
       field: event.original
       target_field: cybersixgill
   - remove:
+      tag: remove_cfa20026
       field:
         - cybersixgill.extensions
       ignore_missing: true
   - drop:
+      tag: drop_205584c9
       if: ctx?.cybersixgill?.type != "indicator"
   #####################
   # Threat ECS Fields #
   #####################
   ## File indicator operations
   - date:
+      tag: date_cybersixgill_created_fae6f726
       field: cybersixgill.created
       formats:
         - "yyyy-MM-dd'T'HH:mm:ssz"
@@ -44,6 +59,7 @@ processors:
         - "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
       if: "ctx.cybersixgill?.created != null"
   - date:
+      tag: date_cybersixgill_modified_to_threat_indicator_last_seen_df02424a
       field: cybersixgill.modified
       target_field: threat.indicator.last_seen
       formats:
@@ -57,6 +73,7 @@ processors:
         - "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
       if: "ctx.cybersixgill?.modified != null"
   - date:
+      tag: date_cybersixgill_valid_from_to_threat_indicator_first_seen_38bfbabe
       field: cybersixgill.valid_from
       target_field: threat.indicator.first_seen
       formats:
@@ -70,6 +87,7 @@ processors:
         - "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
       if: "ctx.cybersixgill?.valid_from != null"
   - fingerprint:
+      tag: fingerprint_to_id_fb46da6d
       fields:
         - cybersixgill.id
         - cybersixgill.created
@@ -77,6 +95,7 @@ processors:
       target_field: "_id"
       ignore_missing: true
   - grok:
+      tag: grok_cybersixgill_pattern_8f77b131
       field: cybersixgill.pattern
       patterns:
         - "^\\[%{MD5}\\]"
@@ -92,103 +111,124 @@ processors:
         SHA256: "%{DATA:_temp_.type}:hashes.'SHA-256'%{SPACE}=%{SPACE}'%{WORD:threat.indicator.file.hash.sha256}'"
       if: ctx.cybersixgill?.pattern != null
   - set:
+      tag: set_threat_indicator_type_54a605f2
       field: threat.indicator.type
       copy_from: _temp_.type
       if: |
         ctx?._temp_?.type != null &&
         ctx?._temp_?.type instanceof String
   - foreach:
+      tag: foreach__temp__type_94862449
       field: _temp_.type
       if: |
         ctx?._temp_?.type != null &&
         ctx?._temp_?.type instanceof List
       processor:
         set:
+          tag: set_threat_indicator_type_dcdfcbeb
           field: threat.indicator.type
           value: "{{{_ingest._value}}}"
           override: false
       ignore_missing: true
   - set:
+      tag: set_threat_indicator_name_ab157e3a
       field: threat.indicator.name
       value: '{{{_temp_.threatvalue}}}'
       ignore_empty_value: true
   - set:
+      tag: set_threat_indicator_name_b88e0528
       field: threat.indicator.name
       copy_from: threat.indicator.file.hash.md5
       ignore_empty_value: true
   - set:
+      tag: set_threat_indicator_name_97c665a0
       field: threat.indicator.name
       copy_from: threat.indicator.file.hash.sha1
       ignore_empty_value: true
   - set:
+      tag: set_threat_indicator_name_3df46eac
       field: threat.indicator.name
       copy_from: threat.indicator.file.hash.sha256
       ignore_empty_value: true
   - rename:
+      tag: rename__temp__threatvalue_to_threat_indicator_ip_82b16d77
       field: _temp_.threatvalue
       target_field: threat.indicator.ip
       ignore_missing: true
       if: "['ipv4-addr', 'ipv6-addr'].contains(ctx.threat?.indicator?.type)"
   - uri_parts:
+      tag: uri_parts__temp__threatvalue_to_threat_indicator_url_3e34e486
       field: _temp_.threatvalue
       target_field: threat.indicator.url
       keep_original: true
       remove_if_successful: true
       if: ctx.threat?.indicator?.type == 'url'
   - rename:
+      tag: rename__temp__threatvalue_to_threat_indicator_email_address_0124687e
       field: _temp_.threatvalue
       target_field: threat.indicator.email.address
       ignore_missing: true
       if: ctx.threat?.indicator?.type == 'email-addr'
   - rename:
+      tag: rename__temp__threatvalue_to_threat_indicator_url_domain_656f5f85
       field: _temp_.threatvalue
       target_field: threat.indicator.url.domain
       ignore_missing: true
       if: ctx.threat?.indicator?.type == 'domain-name'
   - set:
+      tag: set_threat_indicator_type_7fff9e89
       field: threat.indicator.type
       value: unknown
       if: ctx.threat?.indicator?.type == null
   - rename:
+      tag: rename_cybersixgill_labels_to__temp__tags_7ebbb3ab
       field: cybersixgill.labels
       target_field: _temp_.tags
       ignore_missing: true
   - rename:
+      tag: rename_cybersixgill_sixgill_severity_to_event_severity_ba7c5171
       field: cybersixgill.sixgill_severity
       target_field: event.severity
       ignore_missing: true
   - rename:
+      tag: rename_cybersixgill_description_to_threat_indicator_description_085cb0a2
       field: cybersixgill.description
       target_field: threat.indicator.description
       ignore_missing: true
   - rename:
+      tag: rename_cybersixgill_sixgill_feedname_to_cybersixgill_feedname_145175d0
       field: cybersixgill.sixgill_feedname
       target_field: cybersixgill.feedname
       ignore_missing: true
   - rename:
+      tag: rename_cybersixgill_sixgill_source_to_threat_indicator_provider_e862c583
       field: cybersixgill.sixgill_source
       target_field: threat.indicator.provider
       ignore_missing: true
   - rename:
+      tag: rename_cybersixgill_sixgill_posttitle_to_cybersixgill_title_85d85fd1
       field: cybersixgill.sixgill_posttitle
       target_field: cybersixgill.title
       ignore_missing: true
   - rename:
+      tag: rename_cybersixgill_sixgill_actor_to_cybersixgill_actor_c368f00f
       field: cybersixgill.sixgill_actor
       target_field: cybersixgill.actor
       ignore_missing: true
   - set:
+      tag: set_threat_indicator_reference_b453d168
       field: threat.indicator.reference
       value: "https://portal.cybersixgill.com/#/search?q=_id:{{{cybersixgill.sixgill_postid}}}"
       if: ctx.cybersixgill?.sixgill_postid != null
   - convert:
+      tag: convert_cybersixgill_sixgill_confidence_to_threat_indicator_confidence_5a0f2f6e
       field: cybersixgill.sixgill_confidence
       type: integer
       target_field: threat.indicator.confidence
       ignore_missing: true
   - script:
       lang: painless
-      tag: script-default-deleted_at
+      tag: script-default-deleted_at_159484d1
       if: ctx.cybersixgill?.deleted_at == null && ctx._conf?.ioc_expiration_duration != null && ctx._conf.ioc_expiration_duration != ''
       description: Indicator Expiration is done after `_conf.ioc_expiration_duration` (default 90d) since its creation time. This script adds a default `cybersixgill.indicator.deleted_at` field to allow indicator expiration.
       source: >
@@ -218,28 +258,32 @@ processors:
         }
       on_failure:
         - append:
+            tag: append_error_message_29e89737
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - date:
       field: cybersixgill.deleted_at
-      tag: date_deleted_at
+      tag: date_deleted_at_92cd6bde
       target_field: cybersixgill.deleted_at
       formats:
         - ISO8601
         - UNIX
       on_failure:
         - append:
+            tag: append_error_message_739285f5
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
         - fail:
+            tag: fail_date_processor_fails_leads_458aaccd
             description: 'If this date processor fails, it leads to transform errors, hence failing the document for investigation.'
             message: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed'
   - rename:
       field: _conf.ioc_expiration_duration
-      tag: rename_conf_ioc_expiration_duration
+      tag: rename_conf_ioc_expiration_duration_4e406972
       target_field: cybersixgill.expiration_duration
       ignore_missing: true
   - script:
+      tag: script_adds_mitre_virustotal_fields_1d3ad6a8
       lang: painless
       if: ctx.cybersixgill?.external_references != null
       description: >
@@ -270,15 +314,18 @@ processors:
           }    
         }
   - foreach:
+      tag: foreach__temp__tags_f3e34b90
       field: _temp_.tags
       processor:
         append:
+          tag: append_tags_82ce0149
           field: tags
           value: "{{{_ingest._value}}}"
       ignore_missing: true
       ignore_failure: true
       if: ctx._temp_?.tags != null
   - script:
+      tag: script_normalize_confidence_level_6d304712
       lang: painless
       if: ctx.threat?.indicator?.confidence != null
       description: >
@@ -302,6 +349,7 @@ processors:
           return;
         }
   - script:
+      tag: script_683bea01
       lang: painless
       if: ctx?.threatintel != null
       source: |
@@ -326,6 +374,7 @@ processors:
         }
         handleMap(ctx);
   - remove:
+      tag: remove_0644e7b0
       field:
         - _temp_
         - cybersixgill.sixgill_postid
@@ -350,12 +399,15 @@ processors:
       ignore_missing: true
 on_failure:
   - set:
+      tag: set_event_kind_72b1902f
       field: event.kind
       value: pipeline_error
   - append:
+      tag: append_tags_279d5a5c
       field: tags
       value: preserve_original_event
       allow_duplicates: false
   - append:
+      tag: append_error_message_206bb8ac
       field: error.message
       value: '{{{ _ingest.on_failure_message }}}'

@@ -1,0 +1,63 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            agentVersion: ^9.4.0
+            name: aws
+      name: test-httpjson-agentless-cloud-connector-aws
+      streams:
+        - auth.aws:
+            role_arn: arn:aws:iam::123456789012:role/ElasticFederatedIdentity
+            use_cloud_connectors: true
+          config_version: 2
+          data_stream:
+            dataset: aws.securityhub_findings_full_posture
+          interval: 24h
+          publisher_pipeline.disable_host: true
+          request.method: POST
+          request.ssl: null
+          request.timeout: 2m
+          request.transforms:
+            - set:
+                target: body.MaxResults
+                value: 100
+                value_type: int
+            - set:
+                target: body.Filters.RecordState
+                value: '[{"Comparison":"NOT_EQUALS","Value":"ARCHIVED"}]'
+                value_type: json
+            - set:
+                target: body.Filters.WorkflowStatus
+                value: '[{"Comparison":"NOT_EQUALS","Value":"SUPPRESSED"}]'
+                value_type: json
+          request.url: https://securityhub.us-east-1.amazonaws.com/findings
+          response.pagination:
+            - set:
+                do_not_log_failure: true
+                fail_on_template_error: true
+                target: body.NextToken
+                value: '[[if (eq (len .last_response.body.Findings) 100)]][[.last_response.body.NextToken]][[end]]'
+          response.split:
+            ignore_empty_value: true
+            target: body.Findings
+          tags:
+            - forwarded
+            - aws_securityhub_findings_full_posture
+      type: httpjson
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - logs-aws.securityhub_findings_full_posture-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references: []

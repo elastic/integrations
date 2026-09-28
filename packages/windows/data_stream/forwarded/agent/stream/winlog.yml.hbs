@@ -37,6 +37,34 @@ processors:
     account_type_target: winlog.event_data._MemberAccountType
     ignore_missing: true
     ignore_failure: true
+- decode_xml:
+    when:
+      and:
+        - has_fields:
+            - winlog.event_data.TaskContent
+        - equals:
+            winlog.provider_name: Microsoft-Windows-Security-Auditing
+        - regexp:
+            winlog.channel: '^[Ss][Ee][Cc][Uu][Rr][Ii][Tt][Yy]$'
+    field: winlog.event_data.TaskContent
+    target_field: winlog._tmp.scheduled_task.task_content
+    to_lower: true
+    ignore_missing: true
+    ignore_failure: true
+- decode_xml:
+    when:
+      and:
+        - has_fields:
+            - winlog.event_data.TaskContentNew
+        - equals:
+            winlog.provider_name: Microsoft-Windows-Security-Auditing
+        - regexp:
+            winlog.channel: '^[Ss][Ee][Cc][Uu][Rr][Ii][Tt][Yy]$'
+    field: winlog.event_data.TaskContentNew
+    target_field: winlog._tmp.scheduled_task.task_content_new
+    to_lower: true
+    ignore_missing: true
+    ignore_failure: true
 {{#if processors.length}}
 {{processors}}
 {{/if}}

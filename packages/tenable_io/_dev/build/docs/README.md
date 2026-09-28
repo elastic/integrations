@@ -18,7 +18,7 @@ The Tenable Vulnerability Management integration collects logs for five types of
 
 **Vulnerability** is used to retrieve all vulnerabilities on each asset, including the vulnerability state. See more details in the API documentation [here](https://developer.tenable.com/reference/exports-vulns-request-export).
 
-**Scan** is used to retrieve details about existing scans and scan details, including scan statuses, assigned targets, and more. See more details in the API documentation for [Scan](https://developer.tenable.com/reference/scans-list) and [Scan Details](https://developer.tenable.com/reference/was-v2-scans-details).
+**Scan** is used to retrieve details about existing scans and scan details, including scan statuses, assigned targets, and more. See more details in the API documentation for [Scan](https://developer.tenable.com/reference/scans-list) and [Scan Details](https://developer.tenable.com/reference/scans-details).
 
 ## Compatibility
 
@@ -32,6 +32,8 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
   - In this integration, export and plugin endpoints of vulnerability management are used to fetch data.
   - The default value is the recommended value for a batch size by Tenable. Using a smaller batch size can improve performance. A very large value might not work as intended depending on the API and instance limitations.
   - If any long-running export jobs are stuck in the "PROCESSING" state and reach the user-provided timeout, the export job will be terminated, allowing for the initiation of a new export job after the specified interval.
+  - While an export job is queued or processing, its status is checked once every "Export Status Poll Interval" (default 30s). Export jobs that Tenable reports as "CANCELLED", "ERROR", or "FINISHED" with failed chunks are abandoned and reported as an error. The same data window is retried with a new export job at the next interval.
+  - "Maximum Pages Per Interval" bounds the total number of status checks and chunk downloads per interval. A 12h export status timeout at the default 30s poll interval alone accounts for 1440 of them.
 
 ## Agentless-enabled integration
 

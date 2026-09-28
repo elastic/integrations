@@ -19,6 +19,27 @@ processors:
   - set:
       field: event.kind
       value: event
+  - script:
+      description: >-
+        Categorize systemd unit lifecycle messages. Only the completed
+        'Started'/'Stopped' templates are matched; 'Stopped target' is
+        excluded because targets are synchronization points, not services.
+        event.outcome is intentionally not set: a 'Stopped' line is identical
+        for clean shutdowns and crashed units, so outcome cannot be derived
+        from a single message.
+      tag: script_categorize_systemd_lifecycle
+      if: ctx.process?.name == 'systemd' && ctx.message != null
+      lang: painless
+      source: >-
+        if (ctx.message.startsWith('Started ')) {
+          ctx.event.category = ['process'];
+          ctx.event.type = ['start'];
+          ctx.event.action = 'service-start';
+        } else if (ctx.message.startsWith('Stopped ') && !ctx.message.startsWith('Stopped target ')) {
+          ctx.event.category = ['process'];
+          ctx.event.type = ['end'];
+          ctx.event.action = 'service-stop';
+        }
   - append:
       field: related.hosts
       value: "{{host.hostname}}"

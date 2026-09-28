@@ -1,0 +1,69 @@
+rules:
+  # Regression coverage for the empty-terminal-registration-page cursor stall:
+  # /exemption_requests still returns one item every poll (proves exemption
+  # collection is unaffected), but /registration_requests always returns an
+  # empty terminal page (next_cursor empty, zero items). Before the fix, this
+  # would collapse the "events" list to [] with no drop-marker, the cursor's
+  # flip back to kind "exemption" would never persist, and every later poll
+  # would stall re-querying the same empty registration page forever. This
+  # config only proves the empty page is handled without error; see
+  # research_results/kolide/action-item.md #3 for why the stall itself isn't
+  # re-proven by this system test.
+  - path: /exemption_requests
+    methods: ['GET']
+    query_params:
+      per_page: '{per_page:.*}'
+    request_headers:
+      Authorization:
+        - 'Bearer k2sk_v1_exampleexampleexample'
+      X-Kolide-Api-Version:
+        - '2026-04-07'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {
+            "data": [
+              {
+                "id": "exemption-request-001",
+                "status": "open",
+                "requester_message": "Need temporary access for incident response",
+                "requested_at": "2024-03-11T21:28:17Z",
+                "device_information": {"identifier": "200001", "link": "https://api.example.com/devices/200001"},
+                "requester_information": {"identifier": "100001", "link": "https://api.example.com/people/100001"},
+                "issues": [{"identifier": "9999", "link": "https://api.example.com/issues/9999"}]
+              }
+            ],
+            "pagination": {
+              "next": "",
+              "current_cursor": "",
+              "next_cursor": "",
+              "count": 1
+            }
+          }
+  - path: /registration_requests
+    methods: ['GET']
+    query_params:
+      per_page: '{per_page:.*}'
+    request_headers:
+      Authorization:
+        - 'Bearer k2sk_v1_exampleexampleexample'
+      X-Kolide-Api-Version:
+        - '2026-04-07'
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {
+            "data": [],
+            "pagination": {
+              "next": "",
+              "current_cursor": "",
+              "next_cursor": "",
+              "count": 0
+            }
+          }

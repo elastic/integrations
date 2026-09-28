@@ -1,0 +1,155 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "This rule detects potential SQL injection attempts in web server requests by identifying common SQL injection patterns in URLs. Such activity may indicate reconnaissance or exploitation attempts by attackers trying to manipulate backend databases or extract sensitive information.",
+        "from": "now-9m",
+        "index": [
+            "logs-nginx.access-*",
+            "logs-apache.access-*",
+            "logs-apache_tomcat.access-*",
+            "logs-iis.access-*",
+            "logs-traefik.access-*",
+            "logs-zeek.http-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Web Server Potential SQL Injection Request",
+        "note": "## Triage and analysis\n\n### Investigating Web Server Potential SQL Injection Request\n\nSQL injection (SQLi) attempts to manipulate backend database queries via unsanitized\ninput passed through web request parameters. This rule flags requests whose URL or\nquery string contains structural patterns characteristic of automated SQLi tooling\n(sqlmap and similar) or manual exploitation techniques, spanning boolean-blind,\ntime-based, error-based, and UNION-based extraction methods across MySQL, MSSQL,\nPostgreSQL, and Oracle syntax.\n\n#### Possible investigation steps\n\n- Identify the full request and response context:\n  - `url.original` / `url.query` \u2014 full injected payload\n  - `http.request.method`, `http.response.status_code` \u2014 was the request accepted (2xx) or rejected (4xx/5xx/WAF block)?\n  - `source.ip`, `source.as.organization.name`, `source.geo.*` \u2014 is this a known scanner IP, hosting/VPS ASN, or unexpected geography for this application's userbase?\n  - `user_agent.original` \u2014 check for tool signatures (`sqlmap`, `Assetnote`, `Nessus`, `Nuclei`, etc.) vs. a spoofed browser UA\n- Determine which SQLi technique is present, since it changes the likely intent and next steps:\n  - **Boolean-blind** (`AND 1=1--`, `CASE WHEN...THEN...ELSE`) \u2014 attacker inferring true/false conditions one bit/char at a time; usually high request volume against the same parameter\n  - **Time-based blind** (`SLEEP`, `BENCHMARK`, `WAITFOR DELAY`, `pg_sleep`) \u2014 look for abnormal response latency on matching requests to confirm exploitation succeeded vs. was blocked\n  - **Error-based** (`EXTRACTVALUE`, `UPDATEXML`, `GTID_SUBSET`, `CONVERT(INT,...)`) \u2014 check `http.response.status_code`/body for a 500 or a reflected DB error message; if present, the attacker likely received leaked data directly\n  - **UNION-based** (`UNION SELECT NULL,...`, `UNION ALL SELECT...CONCAT(MD5(...`) \u2014 attacker is enumerating column count or confirming a reflection point to pull data directly into the page body\n  - **Stacked queries** (`;SELECT...`, `;EXEC xp_cmdshell`) \u2014 most severe; if the DB driver allows multiple statements, this can lead to command execution (`xp_cmdshell`) rather than just data disclosure\n- Pivot on the target parameter and endpoint (e.g. `url.path`, the specific query-string key such as `id=`, `sort=`, `column=`) to see:\n  - How many distinct payloads/techniques were tried against the same parameter (suggests automated technique-fuzzing by a single tool run)\n  - Whether the same `source.ip` hit multiple endpoints/parameters (broader scan) or repeatedly refined one payload (targeted exploitation attempt)\n- Check for a correlated spike in requests from the same IP/ASN in a tight time window \u2014 sqlmap and similar tools generate many rapid, near-identical requests when fuzzing technique/column count/character position.\n- If the backend database technology is known, cross-check the payload's SQL dialect (MySQL vs. MSSQL vs. PostgreSQL functions) against what the application actually runs \u2014 a payload using the wrong dialect's functions will simply error out and fail, lowering severity.\n- If available, correlate with database-side audit logs (e.g. MSSQL Audit `event.code: 33205`, slow query logs) for the same timeframe/client IP to confirm whether the payload actually reached and executed against the database.\n\n### False positive analysis\n\n- **Vulnerability scanners and security tooling** are the most common source of noise: Assetnote, Burp Suite, Qualys, Nessus, Acunetix, and similar tools intentionally send these exact payloads as part of authorized scanning. Check `user_agent.original` for scanner signatures and cross-reference `source.ip`/ASN against your organization's known scanning infrastructure or third-party ASM vendor.\n- Legitimate application traffic containing SQL-like keywords is rare given the specificity of these patterns (chained `CHAR()` calls, `ELT(n=n,1)` self-comparisons, hex-delimited `CONCAT`), but verify against applications that accept raw SQL fragments as legitimate input (e.g., internal admin/reporting tools with a \"custom query\" field) if any exist in your environment.\n- Consider adding a suppression/exception for confirmed, recurring authorized scanning sources rather than tuning the query patterns themselves, to avoid reducing detection coverage against real attackers using the same tools.\n\n### Response and remediation\n\n- If the request reached the application layer unblocked (`event.outcome: success` / 2xx response) and the payload matches an error-based or UNION-based technique, treat as a potential confirmed data exposure \u2014 check application/database logs for evidence of returned sensitive data.\n- If a stacked-query or `xp_cmdshell` payload succeeded, escalate immediately \u2014 this can lead to OS-level command execution, not just data disclosure.\n- Validate that the affected endpoint uses parameterized queries/prepared statements; SQL injection at this scale of tooling almost always indicates raw string concatenation in the query layer.\n- If exploitation is confirmed, review the database account's privileges used by the web application (least privilege should prevent `xp_cmdshell`, `INFORMATION_SCHEMA` enumeration, or cross-database access even if injection succeeds).\n- Block or rate-limit the source IP/ASN at the WAF or reverse proxy if not already filtered, and consider a virtual-patch WAF rule for the specific vulnerable parameter while the application fix is developed.\n- Review other requests from the same source IP across the retention window for prior reconnaissance (e.g., directory enumeration, parameter fuzzing) that may have preceded the injection attempt.\n",
+        "query": "any where (\nurl.original like~ (\n    \"*dbms_pipe.receive_message%28chr%*\",\n    \"*waitfor%20delay%20%270%3a0%3a*\",\n    \"*%28select%28sleep%285*\", \"*%28select%20*from%20pg_sleep%285*\", \"*%3bselect%20pg_sleep%285*\",\n    \"*and%20sleep%28*%29*\", \"*or%20sleep%28*%29*\", \"*case%20when*then%20sleep%28*\", \"*if%28sleep%28*%29*\",\n    \"*benchmark%28*%2c*md5%28*\",\n    \"*convert%28int%2c%28select%20char%28*\",\n    \"*char%28*char%28*char%28*char%28*\",\n    \"*concat%28concat%28char%28*\",\n    \"*case%20when%20%28*%3d*%29%20then*else*end*\",\n    \"*elt%28*%3d*%2c1%29%29*\",\n    \"*union%20select%20null%2cnull*\", \"*union%20all%20select%20null*\",\n    \"*union%20all%20select%20*concat%28md5%28*\",\n    \"*extractvalue%28*concat%280x*\", \"*updatexml%28*concat%280x*\",\n    \"*procedure%2f%2a%2a%2fanalyse%28extractvalue%28*\",\n    \"*gtid_subset%28concat%280x*\", \"*gtid_subtract%28concat%280x*\",\n    \"*mid%28ifnull%28session_user%28%29*\",\n    \"*'qq'%2b%28%28select%20@@version%29%29%2b'qq'*\",\n    \"*%27%20or%20%271%27%3d%271*\", \"*%22%20or%20%221%22%3d%221*\", \"*%27%20or%20%27a%27%3d%27a*\",\n    \"*and%201%3d1--*\", \"*and%201%3d2--*\",\n    \"*%29%3bselect*if%28%28ord%28mid%28*\",\n    \"*xp_cmdshell*\",\n    \"*select%20*into%20outfile*\", \"*select%20*into%20dumpfile*\",\n    \"*load_file%28*\", \"*load%5ffile%28*\",\n    \"*select%20*from%20information_schema.tables*\", \"*from%20information_schema.columns%20where%20table_schema*\",\n    \"*dbms_pipe%2ereceive_message*\", \"*dbms_lock%2esleep*\",\n    \"*select%20@@version*\", \"*select%20user%28%29*\", \"*select%20current_user%28%29*\", \"*select%20database%28%29*\",\n    \"*sp_executesql%20*exec%20*\", \"*xp_dirtree*\"\n  )\n  or\n  url.query like~ (\n    \"*dbms_pipe.receive_message(chr*\",\n    \"*waitfor delay '0:0:*\",\n    \"*(select(sleep(5*\", \"*(select*from pg_sleep(5*\", \"*;select pg_sleep(5*\",\n    \"*and sleep(*)*\", \"*or sleep(*)*\", \"*case when*then sleep(*\", \"*if(sleep(*)*\",\n    \"*benchmark(*,*md5(*\",\n    \"*convert(int,(select char(*\",\n    \"*char(*char(*char(*char(*\",\n    \"*concat(concat(char(*\",\n    \"*case when (*=*) then*else*end*\",\n    \"*elt(*=*,1))*\",\n    \"*union select null,null*\", \"*union all select null*\",\n    \"*union all select*concat(md5(*\",\n    \"*extractvalue(*concat(0x*\", \"*updatexml(*concat(0x*\",\n    \"*procedure/**/analyse(extractvalue(*\",\n    \"*gtid_subset(concat(0x*\", \"*gtid_subtract(concat(0x*\",\n    \"*mid(ifnull(session_user()*\",\n    \"*'qq'+((select @@version))+'qq'*\",\n    \"*' or '1'='1*\", \"*\\\" or \\\"1\\\"=\\\"1*\", \"*' or 'a'='a*\",\n    \"*and 1=1--*\", \"*and 1=2--*\",\n    \"*);select*if((ord(mid(*\",\n    \"*xp_cmdshell*\",\n    \"*select*into outfile*\", \"*select*into dumpfile*\",\n    \"*load_file(*\",\n    \"*select*from information_schema.tables*\", \"*from information_schema.columns where table_schema*\",\n    \"*dbms_pipe.receive_message*\", \"*dbms_lock.sleep*\",\n    \"*select @@version*\", \"*select user()*\", \"*select current_user()*\", \"*select database()*\",\n    \"*sp_executesql*exec*\", \"*xp_dirtree*\"\n  )\n)\n",
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "url.original",
+                "type": "wildcard"
+            },
+            {
+                "ecs": true,
+                "name": "url.query",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "7f7a0ee1-7b6f-466a-85b4-110fb105f5e2",
+        "severity": "high",
+        "tags": [
+            "Domain: Web",
+            "Domain: Network",
+            "Use Case: Threat Detection",
+            "Tactic: Reconnaissance",
+            "Tactic: Credential Access",
+            "Tactic: Persistence",
+            "Tactic: Execution",
+            "Tactic: Command and Control",
+            "Data Source: Nginx",
+            "Data Source: Apache",
+            "Data Source: Apache Tomcat",
+            "Data Source: IIS",
+            "Data Source: Traefik",
+            "Data Source: Zeek",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1505",
+                        "name": "Server Software Component",
+                        "reference": "https://attack.mitre.org/techniques/T1505/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1059",
+                        "name": "Command and Scripting Interpreter",
+                        "reference": "https://attack.mitre.org/techniques/T1059/",
+                        "subtechnique": [
+                            {
+                                "id": "T1059.004",
+                                "name": "Unix Shell",
+                                "reference": "https://attack.mitre.org/techniques/T1059/004/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0011",
+                    "name": "Command and Control",
+                    "reference": "https://attack.mitre.org/tactics/TA0011/"
+                },
+                "technique": [
+                    {
+                        "id": "T1071",
+                        "name": "Application Layer Protocol",
+                        "reference": "https://attack.mitre.org/techniques/T1071/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0043",
+                    "name": "Reconnaissance",
+                    "reference": "https://attack.mitre.org/tactics/TA0043/"
+                },
+                "technique": [
+                    {
+                        "id": "T1595",
+                        "name": "Active Scanning",
+                        "reference": "https://attack.mitre.org/techniques/T1595/",
+                        "subtechnique": [
+                            {
+                                "id": "T1595.002",
+                                "name": "Vulnerability Scanning",
+                                "reference": "https://attack.mitre.org/techniques/T1595/002/"
+                            },
+                            {
+                                "id": "T1595.003",
+                                "name": "Wordlist Scanning",
+                                "reference": "https://attack.mitre.org/techniques/T1595/003/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0001",
+                    "name": "Initial Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0001/"
+                },
+                "technique": [
+                    {
+                        "id": "T1190",
+                        "name": "Exploit Public-Facing Application",
+                        "reference": "https://attack.mitre.org/techniques/T1190/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 4
+    },
+    "id": "7f7a0ee1-7b6f-466a-85b4-110fb105f5e2_4",
+    "type": "security-rule"
+}

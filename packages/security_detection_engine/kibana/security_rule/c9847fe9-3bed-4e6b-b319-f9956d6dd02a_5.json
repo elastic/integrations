@@ -1,0 +1,164 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies attempts to install a file from a remote server using MsiExec. Adversaries may abuse Windows Installers for initial access and delivery of malware.",
+        "from": "now-9m",
+        "index": [
+            "endgame-*",
+            "logs-crowdstrike.fdr*",
+            "logs-endpoint.events.process-*",
+            "logs-m365_defender.event-*",
+            "logs-sentinel_one_cloud_funnel.*",
+            "logs-system.security*",
+            "logs-windows.forwarded*",
+            "logs-windows.sysmon_operational-*",
+            "winlogbeat-*"
+        ],
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "host.id",
+                "user.id",
+                "process.entity_id",
+                "process.pid",
+                "process.executable",
+                "process.command_line",
+                "process.args",
+                "process.hash.sha256",
+                "process.parent.entity_id",
+                "process.parent.executable",
+                "process.parent.command_line",
+                "process.pe.original_file_name",
+                "process.code_signature.subject_name",
+                "process.code_signature.trusted"
+            ]
+        },
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Potential Remote Install via MsiExec",
+        "note": "## Triage and analysis\n\n### Investigating Potential Remote Install via MsiExec\n#### Possible investigation steps\n\n- What remote installer behavior is preserved in the alert?\n  - Focus: `process.command_line`, `process.parent.name`, and `process.parent.command_line`, especially quiet install or patch switches, the remote MSI or `TRANSFORMS=` source, and HTTP, raw-IP, public-hosting, or recognized distribution sources.\n  - Implication: escalate for quiet remote installs, remote MSTs, or patches from suspicious infrastructure under interactive or script-launcher parents; lower concern only when the command, source, and parent match one recurring deployment, repair, or onboarding pattern.\n\n- Is the msiexec binary identity expected for Windows Installer?\n  - Focus: `process.executable`, `process.pe.original_file_name`, `process.code_signature.subject_name`, `process.code_signature.trusted`, and `process.hash.sha256`.\n  - Implication: escalate faster when msiexec is renamed, unsigned, untrusted, newly seen, or in a user-writable path; trusted Microsoft identity only confirms the proxy binary, not the remote install.\n\n- Does the parent and ancestry explain why msiexec ran?\n  - Focus: `process.parent.executable`, `process.parent.command_line`, `process.Ext.ancestry`, `user.id`, and the affected host.\n  - Implication: escalate when browser-adjacent, script, shell, WMI, or unusual interactive ancestry invokes the remote package without a stable workflow; lower concern when the parent, user, and host pattern fits a recognized management or support path.\n\n- Do process events show payload execution after the installer starts?\n  - Focus: child starts on the same `host.id` where `process.parent.entity_id` matches `process.entity_id`, checking child `process.command_line`, `process.executable`, and `process.hash.sha256`. !{investigate{\"description\":\"\",\"label\":\"Child process activity from msiexec\",\"providers\":[[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.parent.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"process\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.type\",\"queryType\":\"phrase\",\"value\":\"start\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Hint: use `host.id` + `process.pid` + tight alert window only when entity linkage is unavailable, and treat the result as weaker.\n  - Implication: escalate when msiexec spawns shells, script interpreters, LOLBins, scheduled-task tools, or user-space binaries tied to the remote package; lower concern when follow-on activity stays inside the same signed product install flow.\n\n- Does the remote source and workflow context fit one legitimate package path?\n  - Focus: URL, host, package name, or remote `TRANSFORMS=` in `process.command_line`, plus `process.parent.executable`, `user.id`, and `host.id` context for that source.\n  - Hint: if network or file telemetry exists, correlate destination or artifact evidence with `host.id` + `process.entity_id`; use `host.id` + `process.pid` + tight alert window only without entity linkage. Missing file or network telemetry is unresolved, not benign, and does not block escalation when process evidence is strong. !{investigate{\"description\":\"\",\"label\":\"File or network activity by msiexec\",\"providers\":[[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"file\",\"valueType\":\"string\"}],[{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"process.entity_id\",\"queryType\":\"phrase\",\"value\":\"{{process.entity_id}}\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"event.category\",\"queryType\":\"phrase\",\"value\":\"network\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-1h\",\"relativeTo\":\"now\"}}\n  - Implication: escalate when the source is raw IPs, public file hosting, look-alike vendors, temp/download staging, or infrastructure unrelated to the expected product; lower concern when source, launcher, user-host scope, and recovered corroboration fit one internal distribution point or vendor service.\n\n- Escalate on suspicious quiet-install intent, mismatched identity or lineage, unfit package source, or payload child execution; close only when process evidence and recovered corroboration align to one exact deployment, repair, or support workflow; preserve and escalate when evidence is mixed or visibility is incomplete. Use same-user or same-host related alerts after escalation only to size scope, not prove the local alert. !{investigate{\"description\":\"\",\"label\":\"Alerts associated with the user\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"user.id\",\"queryType\":\"phrase\",\"value\":\"{{user.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}} !{investigate{\"description\":\"\",\"label\":\"Alerts associated with the host\",\"providers\":[[{\"excluded\":false,\"field\":\"event.kind\",\"queryType\":\"phrase\",\"value\":\"signal\",\"valueType\":\"string\"},{\"excluded\":false,\"field\":\"host.id\",\"queryType\":\"phrase\",\"value\":\"{{host.id}}\",\"valueType\":\"string\"}]],\"relativeFrom\":\"now-48h/h\",\"relativeTo\":\"now\"}}\n\n### False positive analysis\n\n- First check whether `http:` or `https:` follows `/i` or `/p` directly (remote source -- investigate) or sits inside a `PROPERTY=` value while the MSI source is local or relative (configuration URL -- likely benign). The rule excludes local `C:\\` sources after `/i`; UNC, relative-path, or other local sources with property URLs need manual confirmation or customer-side exceptions.\n- Legitimate deployment, patching, or agent-repair workflows can use quiet remote msiexec. Confirm when `process.command_line`, `process.parent.executable`, `user.id`, and `host.id` align to one recurring product path. Do not close on a vendor-looking URL, signed msiexec, or familiar parent name alone.\n- Build exceptions from `process.parent.executable`, package source pattern in `process.command_line`, and stable `host.id` or `user.id` cohort. Avoid exceptions on msiexec, `process.parent.name`, domain suffix, or `user.name` alone.\n\n### Response and remediation\n\n- If confirmed benign, reverse any temporary containment and record the installer command, remote package source, parent launcher, signer/hash identity, affected `user.id`, affected `host.id`, and any recovered destination or artifact pattern. Create an exception only after the same workflow recurs across prior alerts from this rule.\n- If suspicious but unconfirmed, preserve the alert record, process tree, `process.entity_id` values, installer command line, remote URL or `TRANSFORMS=` value, parent command line, child process records, and any recovered package, destination, or provenance artifacts before containment. Apply reversible controls only when command, parent, or child-process evidence suggests active delivery; otherwise keep evidence collection open rather than starting cleanup.\n- If confirmed malicious, preserve process identifiers, command lines, recovered packages, and destination indicators before isolating the host, terminating msiexec or follow-on payloads, blocking confirmed indicators, or removing staged installers, extracted payloads, persistence changes, or scheduled-task material tied to the chain.\n- Post-incident hardening: close the delivery path that introduced the remote package, restrict msiexec remote-install use to controlled deployment tooling where feasible, review hosts where installer-elevation policy would increase impact, and document adjacent variants such as remote `TRANSFORMS=` abuse or DLL registration through `/y` and `/z`.\n",
+        "query": "process where host.os.type == \"windows\" and event.type == \"start\" and\n  process.name : \"msiexec.exe\" and process.args : (\"-i*\", \"/i*\", \"-p*\", \"/p*\") and\n  process.command_line : (\"*http:*\", \"*https:*\") and\n  process.args : (\"/qn\", \"-qn\", \"-q\", \"/q\", \"/quiet\") and\n  process.parent.name : (\n    \"sihost.exe\", \"explorer.exe\", \"cmd.exe\", \"wscript.exe\", \"mshta.exe\",\n    \"powershell.exe\", \"wmiprvse.exe\", \"pcalua.exe\", \"forfiles.exe\", \"conhost.exe\"\n  ) and\n\n  not process.command_line : (\n        \"*--set-server=*\", \"*UPGRADEADD=*\" , \"*--url=*\", \"*USESERVERCONFIG=*\", \"*RCTENTERPRISESERVER=*\",\n        \"*app.ninjarmm.com*\", \"*zoom.us/client*\", \"*SUPPORTSERVERSTSURI=*\", \"*START_URL=*\", \"*AUTOCONFIG=*\",\n        \"*awscli.amazonaws.com*\", \"*/i \\\"C:*\", \"*/i C:\\\\*\"\n  )\n",
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": "^9.0.0"
+            },
+            {
+                "package": "windows",
+                "version": "^3.0.0"
+            },
+            {
+                "package": "system",
+                "version": "^2.0.0"
+            },
+            {
+                "package": "m365_defender",
+                "version": "^5.0.0"
+            },
+            {
+                "package": "sentinel_one_cloud_funnel",
+                "version": "^1.9.0"
+            },
+            {
+                "package": "crowdstrike",
+                "version": "^3.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.command_line",
+                "type": "wildcard"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.name",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "c9847fe9-3bed-4e6b-b319-f9956d6dd02a",
+        "setup": "## Setup\n\nThis rule is designed for data generated by [Elastic Defend](https://www.elastic.co/security/endpoint-security), which provides native endpoint detection and response, along with event enrichments designed to work with our detection rules.\n\nSetup instructions: https://ela.st/install-elastic-defend\n\n### Additional data sources\n\nThis rule also supports the following third-party data sources. For setup instructions, refer to the links below:\n\n- [CrowdStrike](https://ela.st/crowdstrike-integration)\n- [Microsoft Defender XDR](https://ela.st/m365-defender)\n- [SentinelOne Cloud Funnel](https://ela.st/sentinel-one-cloud-funnel)\n- [Sysmon Event ID 1 - Process Creation](https://ela.st/sysmon-event-1-setup)\n- [Windows Process Creation Logs](https://ela.st/audit-process-creation)\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "Use Case: Threat Detection",
+            "Tactic: Defense Evasion",
+            "Data Source: Elastic Endgame",
+            "Data Source: Elastic Defend",
+            "Data Source: Windows Security Event Logs",
+            "Data Source: Microsoft Defender XDR",
+            "Data Source: Sysmon",
+            "Data Source: SentinelOne",
+            "Data Source: Crowdstrike",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1218",
+                        "name": "System Binary Proxy Execution",
+                        "reference": "https://attack.mitre.org/techniques/T1218/",
+                        "subtechnique": [
+                            {
+                                "id": "T1218.007",
+                                "name": "Msiexec",
+                                "reference": "https://attack.mitre.org/techniques/T1218/007/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0011",
+                    "name": "Command and Control",
+                    "reference": "https://attack.mitre.org/tactics/TA0011/"
+                },
+                "technique": [
+                    {
+                        "id": "T1105",
+                        "name": "Ingress Tool Transfer",
+                        "reference": "https://attack.mitre.org/techniques/T1105/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 5
+    },
+    "id": "c9847fe9-3bed-4e6b-b319-f9956d6dd02a_5",
+    "type": "security-rule"
+}

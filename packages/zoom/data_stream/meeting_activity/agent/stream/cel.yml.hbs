@@ -1,0 +1,182 @@
+config_version: 2
+interval: {{interval}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{#if proxy_url}}
+resource.proxy_url: {{proxy_url}}
+{{/if}}
+{{#if ssl}}
+resource.ssl: {{ssl}}
+{{/if}}
+{{#if http_client_timeout}}
+resource.timeout: {{http_client_timeout}}
+{{/if}}
+{{#if resource_rate_limit_limit}}
+resource.rate_limit.limit: {{resource_rate_limit_limit}}
+{{/if}}
+{{#if resource_rate_limit_burst}}
+resource.rate_limit.burst: {{resource_rate_limit_burst}}
+{{/if}}
+resource.url: {{url}}
+auth.oauth2:
+  client.id: {{client_id}}
+  client.secret: {{client_secret}}
+  token_url: {{token_url}}/oauth/token
+  endpoint_params:
+    grant_type: account_credentials
+    account_id: {{account_id}}
+state:
+  page_size: {{page_size}}
+  initial_interval: {{initial_interval}}
+  activity_type: {{activity_type}}
+  want_more: false
+redact:
+  fields: ~
+program: |-
+  (
+    // Workflow overview: Zoom GET /v2/report/meeting_activities returns meeting
+    // activity audit records for a date window (date granularity; max 1-month
+    // window). The `activity_type` query parameter selects which category of
+    // activity to collect. Each poll drains one window page-by-page via
+    // next_page_token, then advances cursor.poll_start so the next interval resumes
+    // after the data already collected. Only `cursor` persists across runs; `next`
+    // holds the in-progress page token within a single poll. Dates are
+    // "YYYY-MM-DD" strings, which sort chronologically and so can be compared and
+    // min/max'd directly.
+    //
+    // The current code supports both [from, to] and [from, to) window
+    // inclusiveness. If Zoom treats the window as [from, to], the last day may be
+    // fetched more than once; downstream fingerprinting ensures the duplicated
+    // events are not ingested into Elasticsearch twice.
+    //
+    // Step 1 - pick the window start. If a page token is in flight we are mid-way
+    // through a window: keep state as-is so the token drives the next page and
+    // from_date stays frozen. Otherwise begin the next window (or the first one):
+    // drop any stale token and seed from_date from the saved cursor, or from
+    // `now - initial_interval` on the first run. Keying on the token (not want_more)
+    // lets a finished window advance to the next window while want_more is still
+    // true for backfill.
+    has(state.?next.page_token) ?
+      state
+    :
+      state.drop("next").with(
+        {
+          "from_date": state.?cursor.poll_start.orValue(
+            (now - duration(state.initial_interval)).format("2006-01-02")
+          ),
+        }
+      )
+  ).as(state,
+    // Step 2 - clamp the window.
+    // from_date: requested start.
+    // to_date:   from_date + 1 month, capped at today (1-month max, no future).
+    // Zoom documents that only a 1-month window can be queried at once, so we
+    // keep the assumption that 1 month is 30 days (720h).
+    state.from_date.as(from_date,
+      min(
+        (timestamp(from_date + "T00:00:00Z") + duration("720h")).format("2006-01-02"),
+        now.format("2006-01-02")
+      ).as(to_date,
+        // Step 3 - if the window start already passed the end, everything up to now
+        // is collected: emit a dropped placeholder (no API call) and hold the cursor.
+        (from_date > to_date) ?
+          state.with(
+            {
+              "events": dyn([{"retry": true}]),
+              "want_more": false,
+              "next": {},
+              "cursor": {"poll_start": from_date},
+            }
+          )
+        :
+          // Step 4 - fetch one page of the window. next_page_token is sent only when
+          // resuming pagination within the same poll.
+          state.with(
+            request(
+              "GET",
+              state.url.trim_right("/") + "/v2/report/meeting_activities?" + {
+                "from": [from_date],
+                "to": [to_date],
+                "activity_type": [state.activity_type],
+                "page_size": [string(int(state.page_size))],
+                ?"next_page_token": state.?next.page_token.optMap(v, [v]),
+              }.format_query()
+            ).do_request().as(resp,
+              (resp.StatusCode == 200) ?
+                resp.Body.decode_json().as(body,
+                  body.?meeting_activity_logs.orValue([]).as(logs,
+                    body.?next_page_token.optFlatMap(v,
+                      (v != "") ? optional.of(v) : optional.none()
+                    ).as(next_token,
+                      {
+                        // Step 5 - one event per record; emit a dropped placeholder for
+                        // an empty page so want_more / cursor still take effect.
+                        "events": (size(logs) > 0) ?
+                          dyn(logs.map(e, {"message": e.encode_json()}))
+                        :
+                          dyn([{"retry": true}]),
+                        // Keep going while Zoom returns a token (more pages in this
+                        // window) OR the window has not yet reached today (more
+                        // windows to backfill). This drains the whole lookback in one
+                        // polling cycle.
+                        "want_more": next_token.hasValue() || to_date != now.format("2006-01-02"),
+                        // Carry the page token within this poll; cleared when the chain ends.
+                        "next": {?"page_token": next_token},
+                        // Step 6 - cursor advancement. While still paging, freeze
+                        // poll_start at from_date so a mid-window restart re-drains the
+                        // whole window (resuming at to_date would skip un-fetched pages).
+                        // Once the window is fully drained, advance to to_date.
+                        "cursor": {
+                          "poll_start": next_token.hasValue() ?
+                            from_date
+                          :
+                            to_date,
+                        },
+                      }
+                    )
+                  )
+                )
+              :
+                // Non-200: report the error and stop this cycle without advancing the
+                // cursor (object error form => the agent retries the same window).
+                // Clear the in-flight page token so the retry restarts the window
+                // from its first page rather than reusing a stale (possibly expired)
+                // token.
+                {
+                  "events": {
+                    "error": {
+                      "code": string(resp.StatusCode),
+                      "id": resp.Status,
+                      "message": "GET " + state.url.trim_right("/") + "/v2/report/meeting_activities: " + (
+                        (size(resp.Body) != 0) ?
+                          string(resp.Body)
+                        :
+                          resp.Status + " (" + string(resp.StatusCode) + ")"
+                      ),
+                    },
+                  },
+                  "want_more": false,
+                  "next": {},
+                }
+            )
+          )
+      )
+    )
+  )
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+processors:
+- drop_event.when.equals.retry: true
+{{#if processors}}
+{{processors}}
+{{/if}}

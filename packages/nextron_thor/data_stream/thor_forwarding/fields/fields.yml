@@ -2,8 +2,118 @@
   type: long
   metric_type: counter
   description: Number of alerts generated during the THOR scan.
-- name: thor.command
+- name: thor.app
+  type: group
+  description: Application metadata from a Windows Error Reporting (WER) event.
+  fields:
+    - name: company
+      type: keyword
+      description: Company name from PE file metadata of a WER application.
+    - name: created
+      type: date
+      description: Creation time of the WER application file.
+    - name: description
+      type: keyword
+      description: File description from PE file metadata of a WER application.
+    - name: exists
+      type: keyword
+      description: Whether the WER application file exists on the filesystem.
+    - name: first_bytes
+      type: keyword
+      description: First bytes of the WER application file in hexadecimal format.
+    - name: imphash
+      type: keyword
+      description: Import hash (imphash) of the WER application PE file.
+    - name: internal_name
+      type: keyword
+      description: Internal name from PE file metadata of a WER application.
+    - name: legal_copyright
+      type: keyword
+      description: Legal copyright information from PE file metadata of a WER application.
+    - name: md5
+      type: keyword
+      description: MD5 hash of the WER application file.
+    - name: original_name
+      type: keyword
+      description: Original filename from PE file metadata of a WER application.
+    - name: owner
+      type: keyword
+      description: Owner of the WER application file.
+    - name: permissions
+      type: keyword
+      description: File permissions or access control list (ACL) of the WER application.
+    - name: product
+      type: keyword
+      description: Product name from PE file metadata of a WER application.
+    - name: sha1
+      type: keyword
+      description: SHA1 hash of the WER application file.
+    - name: sha256
+      type: keyword
+      description: SHA256 hash of the WER application file.
+    - name: size
+      type: long
+      description: Size of the WER application file in bytes.
+    - name: type
+      type: keyword
+      description: File type classification of the WER application (for example, EXE, DLL).
+- name: thor.apppath
   type: keyword
+  description: Application path from a Windows Error Reporting (WER) event.
+- name: thor.arch
+  type: keyword
+  description: CPU architecture of the scanned system (for example, ARM64, AMD64).
+- name: thor.archive
+  type: group
+  description: Archive metadata for a file extracted during scanning.
+  fields:
+    - name: accessed
+      type: date
+      description: Last access time of the archive file.
+    - name: created
+      type: date
+      description: Creation time of the archive file.
+    - name: first_bytes
+      type: keyword
+      description: First bytes of the archive file in hexadecimal format.
+    - name: md5
+      type: keyword
+      description: MD5 hash of the archive file.
+    - name: modified
+      type: date
+      description: Modification time of the archive file.
+    - name: owner
+      type: keyword
+      description: Owner of the archive file.
+    - name: path
+      type: keyword
+      description: Full path to the archive file.
+    - name: permissions
+      type: keyword
+      description: File permissions or access control list (ACL) of the archive file.
+    - name: sha1
+      type: keyword
+      description: SHA1 hash of the archive file.
+    - name: sha256
+      type: keyword
+      description: SHA256 hash of the archive file.
+    - name: size
+      type: long
+      description: Size of the archive file in bytes.
+    - name: type
+      type: keyword
+      description: File type classification of the archive (for example, ZIP, RAR).
+- name: thor.arguments
+  type: keyword
+  description: Command-line arguments for an autostart entry.
+- name: thor.badpwcount
+  type: long
+  description: Number of bad password attempts for a user account.
+- name: thor.campaign_id
+  type: keyword
+  description: Campaign ID of a THOR scan.
+- name: thor.command
+  type: wildcard
   description: Command line or executable path associated with a scheduled task, service, or process.
 - name: thor.connection_count
   type: long
@@ -21,6 +131,69 @@
 - name: thor.enabled
   type: boolean
   description: Whether a scheduled task or service is enabled.
+- name: thor.exec_flag
+  type: boolean
+  description: Whether the autostart entry is flagged as executable.
+- name: thor.is_admin
+  type: boolean
+  description: Whether the user account has administrator rights.
+- name: thor.no_expire
+  type: boolean
+  description: Whether a user account password is configured to never expire.
+- name: thor.active
+  type: boolean
+  description: Whether a user account is active.
+- name: thor.build_number
+  type: keyword
+  description: Operating system build number.
+- name: thor.caption
+  type: keyword
+  description: Caption or description for a Windows hotfix.
+- name: thor.comment
+  type: keyword
+  description: Comment associated with a user account.
+- name: thor.date
+  type: date
+  description: Date of a Windows Error Reporting (WER) event.
+- name: thor.directory
+  type: keyword
+  description: Directory path being analyzed.
+- name: thor.drive
+  type: keyword
+  description: Drive letter being analyzed.
+- name: thor.entries
+  type: long
+  description: Number of entries in a cache or hive analysis.
+- name: thor.error
+  type: wildcard
+  description: Error message from a Windows Error Reporting (WER) event.
+- name: thor.event_channel
+  type: keyword
+  description: Windows event log channel name.
+- name: thor.event_id
+  type: long
+  description: Windows event log event ID.
+- name: thor.event_level
+  type: keyword
+  description: Windows event log level (for example, Information, Warning).
+- name: thor.event_time
+  type: date
+  description: Timestamp of a Windows event log entry.
+- name: thor.exe
+  type: keyword
+  description: Executable name from a Windows Error Reporting (WER) event.
+- name: thor.expires
+  type: keyword
+  description: License expiration date.
+- name: thor.failure_command
+  type: wildcard
+  description: Failure recovery command for a Windows service.
+- name: thor.fault_in_module
+  type: keyword
+  description: Module where a fault occurred in a Windows Error Reporting (WER) event.
+- name: thor.locked
+  type: boolean
+  description: Whether a user account is locked.
 - name: thor.errors
   type: float
   description: Number of errors encountered during the THOR scan.
@@ -55,6 +228,9 @@
   type: group
   description: Group of file objects associated with a detection or system object.
   fields:
+    - name: exists
+      type: keyword
+      description: Whether the file exists on the filesystem.
     - name: company
       type: keyword
       description: Company name from PE file metadata.
@@ -91,10 +267,22 @@
     - name: type
       type: keyword
       description: File type classification (e.g., EXE, DLL, UNKNOWN, Import).
+    - name: target
+      type: keyword
+      description: Link target path for shortcut (LNK) files.
 - name: thor.files
   type: group
   description: Nested array of file objects associated with a detection or system object.
   fields:
+    - name: accessed
+      type: date
+      description: Last access time of a file in a files array.
+    - name: modified
+      type: date
+      description: Modification time of a file in a files array.
+    - name: permissions
+      type: keyword
+      description: File permissions of a file in a files array.
     - name: company
       type: keyword
       description: Company name from PE file metadata in a files array.
@@ -107,6 +295,9 @@
     - name: exists
       type: keyword
       description: Whether a file exists on the filesystem (e.g., "yes", "no").
+    - name: group
+      type: keyword
+      description: Group owner of a file in a files array (Linux/Unix systems).
     - name: first_bytes
       type: keyword
       description: First bytes of a file in hexadecimal format in a files array.
@@ -152,6 +343,18 @@
 - name: thor.hive
   type: keyword
   description: Path to a Windows registry hive file being analyzed.
+- name: thor.hotfix_id
+  type: keyword
+  description: Windows hotfix identifier (for example, KB5066128).
+- name: thor.image_name
+  type: keyword
+  description: Image or executable name for an autostart entry.
+- name: thor.installed_by
+  type: keyword
+  description: Account that installed a Windows hotfix.
+- name: thor.installed_on
+  type: date
+  description: Date a Windows hotfix or component was installed.
 - name: thor.image_path
   type: keyword
   description: Image path or executable path for a Windows service.
@@ -209,6 +412,9 @@
 - name: thor.image.size
   type: long
   description: Size of an image/executable file in bytes.
+- name: thor.image.exists
+  type: keyword
+  description: Whether the image or executable file exists on the filesystem.
 - name: thor.image.type
   type: keyword
   description: File type classification of an image/executable (e.g., EXE, DLL).
@@ -224,6 +430,27 @@
 - name: thor.last_run
   type: date
   description: Last execution time of a scheduled task.
+- name: thor.last_logon
+  type: date
+  description: Last logon time for a user account.
+- name: thor.launch_string
+  type: wildcard
+  description: Launch string for an autostart entry.
+- name: thor.license
+  type: keyword
+  description: Path to the THOR license file.
+- name: thor.location
+  type: keyword
+  description: Registry location for an autostart entry.
+- name: thor.log_accessed
+  type: date
+  description: Last access time of a log file.
+- name: thor.log_created
+  type: date
+  description: Creation time of a log file.
+- name: thor.log_modified
+  type: date
+  description: Modification time of a log file.
 - name: thor.listen_ports
   type: keyword
   description: Network ports on which a process is listening.
@@ -233,6 +460,9 @@
 - name: thor.memory_usage
   type: keyword
   description: Memory usage information for a process or system.
+- name: thor.md5
+  type: keyword
+  description: MD5 hash of a file at the top level of a THOR event.
 - name: thor.modified
   type: date
   description: Modification time of a file, registry key, or other object.
@@ -245,12 +475,21 @@
 - name: thor.notices
   type: float
   description: Number of notices generated during the THOR scan.
+- name: thor.num_logons
+  type: long
+  description: Number of logons for a user account.
+- name: thor.other_domains
+  type: keyword
+  description: Other domains associated with a logged-in user.
 - name: thor.owner
   type: keyword
   description: Owner of a process, file, THOR license or other system object.
 - name: thor.parent
   type: keyword
   description: Path to the parent process executable.
+- name: thor.pass_age
+  type: double
+  description: Password age in days for a user account.
 - name: thor.path
   type: keyword
   description: Path to a file, scheduled task, or other system object.
@@ -263,6 +502,9 @@
 - name: thor.process_name
   type: keyword
   description: Name of a running process executable.
+- name: thor.proc
+  type: keyword
+  description: Processor description for the scanned system.
 - name: thor.reasons
   type: group
   description: Group of detection reasons explaining why a file or object was flagged.
@@ -275,6 +517,12 @@
 - name: thor.runlevel
   type: keyword
   description: Run level or privilege level for a scheduled task (e.g., LeastPrivilege).
+- name: thor.ref
+  type: keyword
+  description: Reference identifier for a THOR signature or rule.
+- name: thor.scanned
+  type: long
+  description: Number of event log entries scanned.
 - name: thor.scan_id
   type: keyword
   description: Unique identifier for a THOR scan.
@@ -282,12 +530,21 @@
   type: long
   metric_type: counter
   description: Number of elements scanned with a module.
+- name: thor.scanner
+  type: keyword
+  description: THOR scanner product name from the license file.
+- name: thor.server
+  type: keyword
+  description: Server or host name for a logged-in user session.
 - name: thor.service_name
   type: keyword
   description: Name or display name of a Windows service.
 - name: thor.session
   type: keyword
   description: Session identifier for a process (e.g., Console, Services)
+- name: thor.sha256
+  type: keyword
+  description: SHA256 hash of a file at the top level of a THOR event.
 - name: thor.sha1
   type: keyword
   description: SHA1 hash of a file.
@@ -297,6 +554,21 @@
 - name: thor.start
   type: date
   description: Start time or start condition for a scheduled task.
+- name: thor.share_name
+  type: keyword
+  description: Name of a network share.
+- name: thor.start_time
+  type: date
+  description: THOR scan start time.
+- name: thor.starts
+  type: keyword
+  description: License start date.
+- name: thor.timestamp
+  type: date
+  description: Timestamp of a SHIM cache entry.
+- name: thor.type
+  type: keyword
+  description: Type classification for a THOR module event (for example, run_key, SIGMA, Server).
 - name: thor.unit_group
   type: keyword
   description: Group owner of a systemd unit file (Linux systems).
@@ -312,15 +584,21 @@
 - name: thor.unit
   type: keyword
   description: Name of a systemd unit (Linux systems).
+- name: thor.valid
+  type: boolean
+  description: Whether the THOR license is valid.
+- name: thor.var
+  type: keyword
+  description: Environment variable name from EnvCheck module.
+- name: thor.version
+  type: keyword
+  description: Operating system or component version string.
 - name: thor.warnings
   type: float
   description: Number of warnings generated during the THOR scan.
 - name: thor.entry
-  type: keyword
+  type: wildcard
   description: Registry entry value or cache entry (e.g., URL in MS Office connection cache).
-- name: group
-  type: keyword
-  description: Group owner of a file in a files array (Linux/Unix systems).
 - name: thor.full_name
   type: keyword
   description: Full name or display name of a user account.
@@ -360,6 +638,15 @@
 - name: thor.reasons.signature.author
   type: keyword
   description: Author of a signature rule.
+- name: thor.reasons.signature.description
+  type: keyword
+  description: Description of a signature or Sigma rule.
+- name: thor.reasons.signature.falsepositives
+  type: keyword
+  description: Known false positive conditions for a signature rule.
+- name: thor.reasons.signature.id
+  type: keyword
+  description: Identifier of a signature or Sigma rule.
 - name: thor.reasons.signature.ref
   type: keyword
   description: Reference or source of a signature rule (e.g., threat intelligence feed, research).
@@ -381,6 +668,39 @@
 - name: thor.reasons.matched.data
   type: keyword
   description: Actual data that matched a signature rule (matched string or pattern).
+- name: thor.reasons.matched.field
+  type: keyword
+  description: Field name that matched in a Sigma or signature rule.
 - name: thor.reasons.matched.offset
   type: long
   description: Byte offset within a file where a signature match occurred.
+- name: thor.port
+  type: long
+  description: Network port associated with a process connection or firewall event.
+- name: thor.ip
+  type: ip
+  description: Local IP address for a process connection event.
+- name: thor.protocol
+  type: keyword
+  description: Network protocol for a process connection event (e.g., TCP, UDP).
+- name: thor.rip
+  type: ip
+  description: Remote IP address for an established process connection.
+- name: thor.rport
+  type: long
+  description: Remote port for an established process connection.
+- name: thor.rule
+  type: keyword
+  description: Identifier or name of a firewall or security rule.
+- name: thor.rule_name
+  type: keyword
+  description: Display name of a firewall or security rule.
+- name: thor.signature
+  type: keyword
+  description: Signature identifier associated with a detection.
+- name: thor.string
+  type: wildcard
+  description: String value from a registry or configuration check.
+- name: thor.value
+  type: wildcard
+  description: Registry or configuration value from a THOR check.
