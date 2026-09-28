@@ -11,15 +11,19 @@ permissions:
 jobs:
   auto-backport:
     runs-on: ubuntu-latest
-    # Skip bot-authored edits to break the infinite self-trigger loop:
-    # patching the checklist comment (✅ / ⚠️ suffix) fires another
-    # issue_comment edited event — filtering on actor stops it here.
-    # Also require:
+    # Guards (all from the event payload — no API call needed):
+    #   - comment was originally posted by github-actions[bot] (it's our checklist)
+    #     → github.event.comment.user.login
+    #   - the editor is not github-actions[bot] (breaks the self-trigger loop:
+    #     patching the checklist comment with ✅ / ⚠️ fires another edited event)
+    #     → github.actor (== github.event.sender.login)
     #   - the event is on a pull request (not a plain issue)
-    #   - the edited comment contains the checklist marker (zero-cost body check,
-    #     no API call needed — the full comment body is in the event payload)
+    #     → github.event.issue.pull_request
+    #   - the edited comment contains the checklist marker
+    #     → github.event.comment.body
     if: >-
       ${{
+        github.event.comment.user.login == 'github-actions[bot]' &&
         github.actor != 'github-actions[bot]' &&
         github.event.issue.pull_request != null &&
         contains(github.event.comment.body, '<!-- backport-checklist -->')
@@ -33,6 +37,17 @@ jobs:
       pull-requests: write
 
     steps:
+      - name: Debug event context
+        env:
+          COMMENT_AUTHOR: ${{ github.event.comment.user.login }}
+          EDITED_BY: ${{ github.actor }}
+          PR_NUMBER: ${{ github.event.issue.number }}
+          COMMENT_ID: ${{ github.event.comment.id }}
+        run: |
+          echo "Comment #$COMMENT_ID on PR #$PR_NUMBER"
+          echo "  originally posted by: $COMMENT_AUTHOR"
+          echo "  edited by:            $EDITED_BY"
+
       - name: Check PR is merged
         id: pr-check
         env:
