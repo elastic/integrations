@@ -863,7 +863,7 @@ processors:
         // Classify target entities by type
         if (!enrichCtx.target.isEmpty()) {
           // Always set the legacy target.entity.id for backward compatibility
-          field("target.entity.id").set(enrichCtx.target);
+          field("target.entity.id").set(new ArrayList(enrichCtx.target));
           
           def userTargets = new TreeSet();
           def hostTargets = new TreeSet();
@@ -951,16 +951,16 @@ processors:
 
           // Set the appropriate type-specific entity fields
           if (!userTargets.isEmpty()) {
-            field("user.target.entity.id").set(userTargets);
+            field("user.target.entity.id").set(new ArrayList(userTargets));
           }
           if (!hostTargets.isEmpty()) {
-            field("host.target.entity.id").set(hostTargets);
+            field("host.target.entity.id").set(new ArrayList(hostTargets));
           }
           if (!serviceTargets.isEmpty()) {
-            field("service.target.entity.id").set(serviceTargets);
+            field("service.target.entity.id").set(new ArrayList(serviceTargets));
           }
           if (!genericTargets.isEmpty()) {
-            field("entity.target.id").set(genericTargets);
+            field("entity.target.id").set(new ArrayList(genericTargets));
           }
 
           enrichCtx.related.addAll(enrichCtx.target);
@@ -1027,7 +1027,7 @@ processors:
           }
         }
 
-        field("related.entity").set(enrichCtx.related);
+        field("related.entity").set(new ArrayList(enrichCtx.related));
 
   - rename:
       tag: rename_json_eventVersion_to_aws_cloudtrail_event_version_6f418145
