@@ -29,9 +29,12 @@ jobs:
         contains(github.event.comment.body, '<!-- backport-checklist -->')
       }}
     concurrency:
-      # Serialise runs per PR to avoid concurrent cherry-picks on the same branch.
+      # Serialise runs per PR. cancel-in-progress is false so that a second
+      # checkbox edit (which cancels and restarts) cannot interrupt a run that is
+      # mid-cherry-pick or mid-push, leaving a branch in a partial state.
+      # Runs are idempotent (deduplication via gh pr list), so queuing is safe.
       group: auto-backport|${{ github.event.issue.number }}
-      cancel-in-progress: true
+      cancel-in-progress: false
     permissions:
       contents: write
       pull-requests: write
