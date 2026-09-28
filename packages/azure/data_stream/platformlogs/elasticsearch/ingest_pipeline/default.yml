@@ -222,6 +222,18 @@ processors:
       target_field: cloud.region
       ignore_missing: true
   - rename:
+      tag: rename_azure_platformlogs_tenantId_to_azure_tenant_id_d5f1c803
+      field: azure.platformlogs.tenantId
+      target_field: azure.tenant_id
+      ignore_missing: true
+      if: ctx?.azure?.tenant_id == null
+  - rename:
+      tag: rename_azure_platformlogs_TenantId_to_azure_tenant_id_7a6b29de
+      field: azure.platformlogs.TenantId
+      target_field: azure.tenant_id
+      ignore_missing: true
+      if: ctx?.azure?.tenant_id == null
+  - rename:
       tag: rename_azure_platformlogs_Host_to_host_name_1a0686c9
       field: azure.platformlogs.Host
       target_field: host.name
@@ -313,6 +325,11 @@ processors:
       params:
         param_nano: 1000000
       ignore_failure: true
+  - set:
+      tag: set_cloud_region_from_platformlogs_location_b2c9e1f4
+      field: cloud.region
+      copy_from: azure.platformlogs.location
+      if: 'ctx.cloud?.region == null && ctx.azure?.platformlogs?.location instanceof String && ctx.azure.platformlogs.location.length() > 2'
   - rename:
       tag: rename_azure_platformlogs_location_to_geo_name_3bbd11f4
       field: azure.platformlogs.location

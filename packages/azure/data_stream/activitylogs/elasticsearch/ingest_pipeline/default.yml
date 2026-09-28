@@ -109,6 +109,11 @@ processors:
       params:
         param_nano: 1000000
       ignore_failure: true
+  - set:
+      tag: set_cloud_region_from_activitylogs_location_b2c9e1f4
+      field: cloud.region
+      copy_from: azure.activitylogs.location
+      if: 'ctx.cloud?.region == null && ctx.azure?.activitylogs?.location instanceof String && ctx.azure.activitylogs.location.length() > 2'
   - rename:
       tag: rename_azure_activitylogs_location_to_geo_name_328edfb6
       field: azure.activitylogs.location
@@ -196,6 +201,11 @@ processors:
       tag: rename_azure_activitylogs_tenantId_to_azure_activitylogs_tenant_id_fa01d4db
       field: azure.activitylogs.tenantId
       target_field: azure.activitylogs.tenant_id
+      ignore_missing: true
+  - rename:
+      tag: rename_azure_activitylogs_tenant_id_to_azure_tenant_id_a7f3d291
+      field: azure.activitylogs.tenant_id
+      target_field: azure.tenant_id
       ignore_missing: true
   - rename:
       tag: rename_azure_activitylogs_Level_to_azure_activitylogs_level_e67f7944

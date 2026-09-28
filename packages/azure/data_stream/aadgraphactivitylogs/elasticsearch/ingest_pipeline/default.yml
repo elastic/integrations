@@ -543,6 +543,23 @@ processors:
         ctx.event.action = hyphenated.toString() + '-' + verb;
       ignore_failure: true
 
+  - rename:
+      tag: rename_azure_aadgraphactivitylogs_resource_id_to_azure_resource_id_7c2f3a91
+      field: azure.aadgraphactivitylogs.resource_id
+      target_field: azure.resource_id
+      ignore_missing: true
+  - rename:
+      tag: rename_azure_aadgraphactivitylogs_correlation_id_to_azure_correlation_id_8b4e2d05
+      field: azure.aadgraphactivitylogs.correlation_id
+      target_field: azure.correlation_id
+      ignore_missing: true
+  # Set before the shared pipeline call so that cloud.region goes through the
+  # region normalization defined there.
+  - set:
+      field: cloud.region
+      value: '{{destination.geo.region_name}}'
+      tag: set-cloud_region_d432e8db
+      ignore_empty_value: true
   - pipeline:
       name: '{{ IngestPipeline "azure-shared-pipeline" }}'
       tag: pipeline-azure-shared-pipeline_431c6aae
@@ -558,15 +575,14 @@ processors:
       target_field: _id
       ignore_missing: true
       tag: fingerprint-id_8fd61902
+  # The shared pipeline already sets cloud.account.id from azure.subscription_id
+  # when one is present, and falls back to azure.tenant_id otherwise. Only fill
+  # in the tenant ID here when it found neither.
   - set:
       field: cloud.account.id
       value: '{{azure.tenant_id}}'
       tag: set-cloud_account_id_a16bbfe4
-      ignore_empty_value: true
-  - set:
-      field: cloud.region
-      value: '{{destination.geo.region_name}}'
-      tag: set-cloud_region_d432e8db
+      if: 'ctx.cloud?.account?.id == null'
       ignore_empty_value: true
   - set:
       field: cloud.service.name

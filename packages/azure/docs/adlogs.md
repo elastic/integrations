@@ -454,6 +454,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | azure.identityprotection.properties.user_principal_name | The user principal name (UPN) of the user. | keyword |
 | azure.identityprotection.properties.user_type | The type of the user (for example, "member"). | keyword |
 | azure.identityprotection.result_signature | Result signature | keyword |
+| azure.resource.authorization_rule | Authorization rule | keyword |
 | azure.resource.group | Resource group | keyword |
 | azure.resource.id | Resource ID | keyword |
 | azure.resource.name | Name | keyword |
@@ -692,6 +693,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | azure.provisioning.result_signature | Result signature | keyword |
 | azure.provisioning.result_type | Result type | keyword |
 | azure.provisioning.tenant_id | Unique Microsoft Entra ID tenant ID | keyword |
+| azure.resource.authorization_rule | Authorization rule | keyword |
 | azure.resource.group | Resource group | keyword |
 | azure.resource.id | Resource ID | keyword |
 | azure.resource.name | Name | keyword |
