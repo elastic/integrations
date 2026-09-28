@@ -52,6 +52,15 @@ For Filebeat input documentation, refer to the following pages:
 
 *This integration is not compatible with GitHub Enterprise server.*
 
+#### Routing API request events to a separate data stream
+
+When GitHub audit log streaming has [API Request Events](https://docs.github.com/en/enterprise-cloud@latest/admin/monitoring-activity-in-your-enterprise/reviewing-audit-logs-for-your-enterprise/streaming-the-audit-log-for-your-enterprise) enabled, `api.request` events are typically much higher in volume than regular audit records. To manage their retention and index lifecycle independently, enable the **Route API request events to a separate data stream** setting on the audit data stream. When enabled, events with `event.action` set to `api.request` are routed to the `github.api_requests` data stream (`logs-github.api_requests-*`) instead of `github.audit`.
+
+Notes:
+ - The setting is available on the streaming inputs only (AWS S3/SQS, Azure Blob Storage, Azure Event Hub and Google Cloud Storage). GitHub does not return `api.request` events through the REST audit log API, so the setting does not apply to the API input.
+ - Enabling the setting only affects new data; existing documents remain in `logs-github.audit-*`. Queries that must span old and new data should target both data streams.
+ - The rerouted documents keep the `github.*` field names, and carry a `route_api_request_events` tag.
+
 **Exported fields**
 
 | Field | Description | Type |
@@ -135,6 +144,8 @@ For Filebeat input documentation, refer to the following pages:
 | github.request_body | The request body of the API request. GraphQL API request queries regularly exceed the default `ignore_above` limit of 1024, which leaves them unindexed. | keyword |
 | github.request_body.text | Multi-field of `github.request_body`. | match_only_text |
 | github.request_category |  | keyword |
+| github.request_method | The HTTP method of the API request. | keyword |
+| github.route | The API route template of the API request. | keyword |
 | github.ruleset_bypass_actors.actor_id |  | long |
 | github.ruleset_bypass_actors.actor_type |  | keyword |
 | github.ruleset_bypass_actors.bypass_mode |  | keyword |
@@ -201,6 +212,7 @@ For Filebeat input documentation, refer to the following pages:
 | github.secret_type_display_name |  | keyword |
 | github.secrets_updated |  | keyword |
 | github.source_branch |  | keyword |
+| github.status_code | The HTTP response status code of the API request. | long |
 | github.target_branch |  | keyword |
 | github.team | GitHub team name. | keyword |
 | github.token_id |  | keyword |
@@ -286,6 +298,180 @@ An example event for `audit` looks as following:
     }
 }
 ```
+
+### API Request
+
+The API Request data stream receives GitHub `api.request` audit log events rerouted from the audit data stream when the **Route API request events to a separate data stream** setting is enabled on a streaming audit input. It has no inputs of its own.
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| aws.s3.bucket.arn | The AWS S3 bucket ARN. | keyword |
+| aws.s3.bucket.name | The AWS S3 bucket name. | keyword |
+| aws.s3.object.key | The AWS S3 Object key. | keyword |
+| azure.storage.blob.content_type | The content type of the Azure Blob Storage blob object | keyword |
+| azure.storage.blob.name | The name of the Azure Blob Storage blob object | keyword |
+| azure.storage.container.name | The name of the Azure Blob Storage container | keyword |
+| data_stream.dataset | Data stream dataset name. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| event.dataset | Event dataset | constant_keyword |
+| event.module | Event module | constant_keyword |
+| gcs.storage.bucket.name | The name of the Google Cloud Storage Bucket. | keyword |
+| gcs.storage.object.content_type | The content type of the Google Cloud Storage object. | keyword |
+| gcs.storage.object.name | The content type of the Google Cloud Storage object. | keyword |
+| github.active |  | boolean |
+| github.actor_id | The id of the actor who performed the action. | keyword |
+| github.actor_ip | The IP address of the entity performing the action. | ip |
+| github.actor_is_bot |  | boolean |
+| github.actor_location.country_name |  | keyword |
+| github.actor_location.ip |  | ip |
+| github.audit_log_stream_enabled |  | boolean |
+| github.audit_log_stream_id |  | keyword |
+| github.audit_log_stream_sink |  | keyword |
+| github.audit_log_stream_sink_details |  | keyword |
+| github.blocked_user | The username of the account being blocked. | keyword |
+| github.business |  | keyword |
+| github.business_id |  | keyword |
+| github.category | GitHub action category. | keyword |
+| github.changes.billing_plan |  | keyword |
+| github.changes.roles |  | keyword |
+| github.commit_id |  | keyword |
+| github.data.event |  | keyword |
+| github.data.head_branch |  | keyword |
+| github.data.head_sha |  | keyword |
+| github.data.started_at |  | date |
+| github.data.trigger_id |  | keyword |
+| github.data.workflow_id |  | keyword |
+| github.data.workflow_run_id |  | keyword |
+| github.device |  | keyword |
+| github.events |  | keyword |
+| github.events_object |  | object |
+| github.forked_repository |  | keyword |
+| github.hashed_token | SHA-256 hash of the token used for authentication. | keyword |
+| github.hook_id |  | keyword |
+| github.integration | The GitHub App that triggered the event. | keyword |
+| github.login_method |  | keyword |
+| github.logout_reason |  | keyword |
+| github.message |  | keyword |
+| github.multi_repo |  | boolean |
+| github.name |  | keyword |
+| github.new_role |  | keyword |
+| github.number |  | long |
+| github.old_role |  | keyword |
+| github.operation_type |  | keyword |
+| github.org | GitHub organization name. | keyword |
+| github.org_id |  | keyword |
+| github.permission | GitHub user permissions for the event. | keyword |
+| github.programmatic_access_type | Type of authentication used. | keyword |
+| github.public_repo |  | boolean |
+| github.publicly_leaked |  | boolean |
+| github.pull_request_id |  | keyword |
+| github.pull_request_title |  | keyword |
+| github.pull_request_url |  | keyword |
+| github.query_string | The query string of the API request. GraphQL API request queries regularly exceed the default `ignore_above` limit of 1024, which leaves them unindexed. | keyword |
+| github.query_string.text | Multi-field of `github.query_string`. | match_only_text |
+| github.reason |  | keyword |
+| github.repo | GitHub repository name. | keyword |
+| github.repo_id |  | keyword |
+| github.repositories_added |  | keyword |
+| github.repositories_added_names | The name of the repository added to a GitHub App installation. | keyword |
+| github.repositories_removed |  | keyword |
+| github.repositories_removed_names | The name of the repository removed from a GitHub App installation. | keyword |
+| github.repository | The name of the repository. | keyword |
+| github.repository_public | Whether the GitHub repository is publicly visible. | boolean |
+| github.repository_selection | Whether all repositories have been selected or there's a selection involved. | keyword |
+| github.request_body | The request body of the API request. GraphQL API request queries regularly exceed the default `ignore_above` limit of 1024, which leaves them unindexed. | keyword |
+| github.request_body.text | Multi-field of `github.request_body`. | match_only_text |
+| github.request_category |  | keyword |
+| github.request_method | The HTTP method of the API request. | keyword |
+| github.route | The API route template of the API request. | keyword |
+| github.ruleset_bypass_actors.actor_id |  | long |
+| github.ruleset_bypass_actors.actor_type |  | keyword |
+| github.ruleset_bypass_actors.bypass_mode |  | keyword |
+| github.ruleset_bypass_actors.id |  | long |
+| github.ruleset_bypass_actors_added.actor_id |  | long |
+| github.ruleset_bypass_actors_added.actor_type |  | keyword |
+| github.ruleset_bypass_actors_added.bypass_mode |  | keyword |
+| github.ruleset_bypass_actors_added.id |  | long |
+| github.ruleset_bypass_actors_deleted.actor_id |  | long |
+| github.ruleset_bypass_actors_deleted.actor_type |  | keyword |
+| github.ruleset_bypass_actors_deleted.bypass_mode |  | keyword |
+| github.ruleset_bypass_actors_deleted.id |  | long |
+| github.ruleset_bypass_actors_updated.actor_id |  | long |
+| github.ruleset_bypass_actors_updated.actor_type |  | keyword |
+| github.ruleset_bypass_actors_updated.bypass_mode |  | keyword |
+| github.ruleset_bypass_actors_updated.id |  | long |
+| github.ruleset_conditions.id |  | long |
+| github.ruleset_conditions.old_parameters |  | object |
+| github.ruleset_conditions.old_parameters.exclude |  | keyword |
+| github.ruleset_conditions.old_parameters.include |  | keyword |
+| github.ruleset_conditions.old_parameters.repository_ids |  | keyword |
+| github.ruleset_conditions.parameters |  | object |
+| github.ruleset_conditions.parameters.exclude |  | keyword |
+| github.ruleset_conditions.parameters.include |  | keyword |
+| github.ruleset_conditions.parameters.repository_ids |  | keyword |
+| github.ruleset_conditions.target |  | keyword |
+| github.ruleset_conditions_added.id |  | long |
+| github.ruleset_conditions_added.old_parameters |  | object |
+| github.ruleset_conditions_added.old_parameters.exclude |  | keyword |
+| github.ruleset_conditions_added.old_parameters.include |  | keyword |
+| github.ruleset_conditions_added.old_parameters.repository_ids |  | keyword |
+| github.ruleset_conditions_added.parameters |  | object |
+| github.ruleset_conditions_added.parameters.exclude |  | keyword |
+| github.ruleset_conditions_added.parameters.include |  | keyword |
+| github.ruleset_conditions_added.parameters.repository_ids |  | keyword |
+| github.ruleset_conditions_added.target |  | keyword |
+| github.ruleset_conditions_deleted.id |  | long |
+| github.ruleset_conditions_deleted.old_parameters |  | object |
+| github.ruleset_conditions_deleted.old_parameters.exclude |  | keyword |
+| github.ruleset_conditions_deleted.old_parameters.include |  | keyword |
+| github.ruleset_conditions_deleted.old_parameters.repository_ids |  | keyword |
+| github.ruleset_conditions_deleted.parameters |  | object |
+| github.ruleset_conditions_deleted.parameters.exclude |  | keyword |
+| github.ruleset_conditions_deleted.parameters.include |  | keyword |
+| github.ruleset_conditions_deleted.parameters.repository_ids |  | keyword |
+| github.ruleset_conditions_deleted.target |  | keyword |
+| github.ruleset_conditions_updated.id |  | long |
+| github.ruleset_conditions_updated.old_parameters |  | object |
+| github.ruleset_conditions_updated.old_parameters.exclude |  | keyword |
+| github.ruleset_conditions_updated.old_parameters.include |  | keyword |
+| github.ruleset_conditions_updated.old_parameters.repository_ids |  | keyword |
+| github.ruleset_conditions_updated.parameters |  | object |
+| github.ruleset_conditions_updated.parameters.exclude |  | keyword |
+| github.ruleset_conditions_updated.parameters.include |  | keyword |
+| github.ruleset_conditions_updated.parameters.repository_ids |  | keyword |
+| github.ruleset_conditions_updated.target |  | keyword |
+| github.ruleset_enforcement | Enforcement state of the ruleset (active, disabled, evaluate). | keyword |
+| github.ruleset_id | Unique identifier of the ruleset. | keyword |
+| github.ruleset_name | Name of the ruleset. | keyword |
+| github.ruleset_old_enforcement | Previous enforcement state of the ruleset on update (active, disabled, evaluate). | keyword |
+| github.ruleset_old_name | Previous name of the ruleset, emitted on rename. | keyword |
+| github.ruleset_source_type | Source type of the ruleset (Organization, Repository). | keyword |
+| github.secret_type |  | keyword |
+| github.secret_type_display_name |  | keyword |
+| github.secrets_updated |  | keyword |
+| github.source_branch |  | keyword |
+| github.status_code | The HTTP response status code of the API request. | long |
+| github.target_branch |  | keyword |
+| github.team | GitHub team name. | keyword |
+| github.token_id |  | keyword |
+| github.token_scopes |  | keyword |
+| github.topic |  | keyword |
+| github.transport_protocol | The type of protocol (for example, HTTP or SSH) used to transfer Git data. | long |
+| github.transport_protocol_name | A human readable name for the protocol (for example, HTTP or SSH) used to transfer Git data. | keyword |
+| github.user_agent | The user agent of the entity performing the action. | keyword |
+| github.user_id |  | keyword |
+| github.version |  | keyword |
+| github.visibility | The repository visibility, for example `public` or `private`. | keyword |
+| host.containerized | If the host is a container. | boolean |
+| host.os.build | OS build information. | keyword |
+| host.os.codename | OS codename, if any. | keyword |
+| input.type | Type of Filebeat input. | keyword |
+| log.offset | Log offset. | long |
+
 
 
 ### Code Scanning

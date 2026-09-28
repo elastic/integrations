@@ -52,9 +52,24 @@ For Filebeat input documentation, refer to the following pages:
 
 *This integration is not compatible with GitHub Enterprise server.*
 
+#### Routing API request events to a separate data stream
+
+When GitHub audit log streaming has [API Request Events](https://docs.github.com/en/enterprise-cloud@latest/admin/monitoring-activity-in-your-enterprise/reviewing-audit-logs-for-your-enterprise/streaming-the-audit-log-for-your-enterprise) enabled, `api.request` events are typically much higher in volume than regular audit records. To manage their retention and index lifecycle independently, enable the **Route API request events to a separate data stream** setting on the audit data stream. When enabled, events with `event.action` set to `api.request` are routed to the `github.api_requests` data stream (`logs-github.api_requests-*`) instead of `github.audit`.
+
+Notes:
+ - The setting is available on the streaming inputs only (AWS S3/SQS, Azure Blob Storage, Azure Event Hub and Google Cloud Storage). GitHub does not return `api.request` events through the REST audit log API, so the setting does not apply to the API input.
+ - Enabling the setting only affects new data; existing documents remain in `logs-github.audit-*`. Queries that must span old and new data should target both data streams.
+ - The rerouted documents keep the `github.*` field names, and carry a `route_api_request_events` tag.
+
 {{fields "audit"}}
 
 {{event "audit"}}
+
+### API Request
+
+The API Request data stream receives GitHub `api.request` audit log events rerouted from the audit data stream when the **Route API request events to a separate data stream** setting is enabled on a streaming audit input. It has no inputs of its own.
+
+{{fields "api_requests"}}
 
 
 ### Code Scanning

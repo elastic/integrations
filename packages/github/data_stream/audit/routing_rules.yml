@@ -1,0 +1,9 @@
+# "Route API request events to a separate data stream" must be enabled on the
+# integration policy (adds the route_api_request_events tag) for rerouting to occur.
+- source_dataset: github.audit
+  rules:
+    - target_dataset: github.api_requests
+      if: ctx.event?.action == 'api.request' && ctx.tags != null && ctx.tags.contains('route_api_request_events')
+      namespace:
+        - "{{data_stream.namespace}}"
+        - default
