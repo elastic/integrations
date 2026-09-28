@@ -43,14 +43,18 @@ jobs:
             exit 0
           fi
 
-          PR_NUMBER=$(jq -r '.number'   <<< "$PR_DATA")
-          BASE_SHA=$(jq -r  '.base.sha' <<< "$PR_DATA")
-          HEAD_SHA=$(jq -r  '.head.sha' <<< "$PR_DATA")
+          PR_NUMBER=$(jq -r '.number'           <<< "$PR_DATA")
+          BASE_SHA=$(jq -r  '.base.sha'         <<< "$PR_DATA")
+          HEAD_SHA=$(jq -r  '.head.sha'         <<< "$PR_DATA")
+          PR_AUTHOR=$(jq -r '.user.login'       <<< "$PR_DATA")
+          PR_MERGER=$(jq -r '.merged_by.login'  <<< "$PR_DATA")
 
           echo "PR #$PR_NUMBER — base: $BASE_SHA, head: $HEAD_SHA"
           echo "pr_number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
           echo "base_sha=$BASE_SHA"   >> "$GITHUB_OUTPUT"
           echo "head_sha=$HEAD_SHA"   >> "$GITHUB_OUTPUT"
+          echo "pr_author=$PR_AUTHOR" >> "$GITHUB_OUTPUT"
+          echo "pr_merger=$PR_MERGER" >> "$GITHUB_OUTPUT"
 
       - name: Checkout repository
         if: steps.find-pr.outputs.pr_number != ''
@@ -120,6 +124,8 @@ jobs:
           ARTIFACT: ${{ github.workspace }}/detected-packages.json
           PR_NUMBER: ${{ steps.find-pr.outputs.pr_number }}
           COMMENT_ID: ${{ steps.find-comment.outputs.comment_id }}
+          PR_AUTHOR: ${{ steps.find-pr.outputs.pr_author }}
+          PR_MERGER: ${{ steps.find-pr.outputs.pr_merger }}
         run: |
           EXISTING_BODY=""
           if [[ -n "$COMMENT_ID" ]]; then
@@ -136,6 +142,14 @@ jobs:
           if [[ -z "$NEW_BODY" ]]; then
             echo "No active backport branches — nothing to post"
             exit 0
+          fi
+
+          # Append author/merger mentions so GitHub notifies them. Omit the merger
+          # mention when the PR was merged by its own author (no duplicate ping).
+          if [[ "$PR_AUTHOR" == "$PR_MERGER" ]]; then
+            NEW_BODY=$(printf '%s\ncc @%s' "$NEW_BODY" "$PR_AUTHOR")
+          else
+            NEW_BODY=$(printf '%s\ncc @%s @%s' "$NEW_BODY" "$PR_AUTHOR" "$PR_MERGER")
           fi
 
           BODY_FILE=$(mktemp)
