@@ -1,0 +1,55 @@
+{
+  "attributes": {
+    "name": "[Temporal OTel] Service latency p99 below 100ms 99% rolling 30 days",
+    "description": "Measures whether the 99th-percentile gRPC frontend latency of the Temporal Cloud service stays below 100 milliseconds (0.1 seconds) within each 1-minute evaluation window. The Temporal Cloud frontend is the single API entry-point for all client operations including starting workflows, signalling executions, and polling for tasks — latency spikes here propagate directly to workflow orchestration responsiveness. Breaching this SLO warrants investigation of Temporal Cloud service health or upstream capacity limits. Target: 99% of 1-minute timeslices report healthy p99 latency, grouped by namespace and operation to isolate which API methods are affected.",
+    "indicator": {
+      "type": "sli.metric.timeslice",
+      "params": {
+        "index": "metrics-*",
+        "filter": "data_stream.dataset: \"temporal.cloud_metrics.otel\"",
+        "metric": {
+          "metrics": [
+            {
+              "name": "A",
+              "aggregation": "max",
+              "field": "metrics.temporal_cloud_v1_service_latency_p99",
+              "filter": ""
+            }
+          ],
+          "equation": "A",
+          "comparator": "LT",
+          "threshold": 0.1
+        },
+        "timestampField": "@timestamp"
+      }
+    },
+    "budgetingMethod": "timeslices",
+    "timeWindow": {
+      "duration": "30d",
+      "type": "rolling"
+    },
+    "objective": {
+      "target": 0.99,
+      "timesliceTarget": 0.99,
+      "timesliceWindow": "1m"
+    },
+    "tags": [
+      "temporal",
+      "temporal-cloud",
+      "otel"
+    ],
+    "groupBy": [
+      "attributes.temporal_namespace",
+      "attributes.operation"
+    ],
+    "artifacts": {
+      "dashboards": [
+        {
+          "id": "temporal_otel-5e3e5a3c-5eaf-4556-af1e-72a001264380"
+        }
+      ]
+    }
+  },
+  "id": "temporal_otel-service-latency-p99-99-Rolling30Days",
+  "type": "slo_template"
+}

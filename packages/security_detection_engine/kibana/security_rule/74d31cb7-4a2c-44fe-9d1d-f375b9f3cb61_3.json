@@ -1,0 +1,2534 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies oversized command lines used by Python, PowerShell, Node.js, or Deno that contain base64 decoding or encoded-command patterns. Adversaries may embed long inline encoded payloads in scripting interpreters to evade inspection and execute malicious content across Windows, macOS, and Linux systems.",
+        "from": "now-9m",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Long Base64 Encoded Command via Scripting Interpreter",
+        "note": "## Triage and analysis\n\n### Investigating Long Base64 Encoded Command via Scripting Interpreter\n\nThis rule detects process start events where the original `process.command_line` field was ignored at index time due to\nits size, but the full command line remains available in `process.command_line.text`. Attackers commonly use very long\nbase64-encoded inline commands with interpreters such as Python, PowerShell, Node.js, and Deno to conceal payloads and\navoid straightforward command-line inspection.\n\n### Possible investigation steps\n\n- Review `process.command_line.text` to determine whether the encoded content includes shell commands, scripts, URLs, or embedded payloads.\n- Inspect the parent process and execution chain to understand how the interpreter was launched and whether it originated from a browser, office application, archive utility, or remote access tool.\n- Check whether the same host or user generated additional suspicious process, network, or file events around the same time.\n- If the payload can be safely decoded in an isolated environment, inspect the decoded content for follow-on execution, credential access, persistence, or download behavior.\n\n### False positive analysis\n\n- Administrative automation, packaging workflows, or developer tooling may legitimately pass large encoded blobs to scripting interpreters.\n- PowerShell remoting, software deployment frameworks, or internal bootstrap scripts can occasionally use encoded commands; validate the source, user, and expected automation context.\n\n### Response and remediation\n\n- Isolate the affected host if the decoded content or surrounding activity indicates malicious execution.\n- Terminate the suspicious interpreter process and any spawned child processes.\n- Preserve the full command line and related process tree for forensic analysis before making changes on the host.\n- Reset or revoke any credentials, tokens, or secrets exposed by the decoded payload or subsequent attacker activity.\n",
+        "query": "FROM logs-endpoint.events.process-* METADATA _id, _index, _version, _ignored\n| MV_EXPAND _ignored\n| WHERE _ignored == \"process.command_line\"\n| WHERE event.category == \"process\" and event.type == \"start\"\n| EVAL command_line = TO_LOWER(process.command_line.text), pname = TO_LOWER(process.name)\n| WHERE \n(\n    (\n        /* Python: inline exec with base64 decode or -c flag with encoded payload */\n        pname like \"python*\" and\n        (\n            command_line like \"*b64decode*\" or\n            (command_line like \"*-c*\" and command_line like \"*base64*\")\n        )\n    ) or\n    (\n        /* PowerShell: encoded command flag \u2014 require trailing space to avoid matching\n           -Encoding, -EncryptionType, -EncryptionProvider, etc. */\n        (pname like \"powershell*\" or pname like \"pwsh*\") and\n        (\n            command_line rlike \".* -(e|en|enc|enco|encod|encode|encoded|encodedcommand) .+\" or\n            command_line like \"*-encodedcommand*\" or\n            command_line like \"*frombase64string*\"\n        )\n    ) or\n    (\n        /* Node.js: buffer.from must be paired with base64 to avoid matching\n           general Buffer usage; atob is always base64 */\n        pname like \"node*\" and\n        (\n            (command_line like \"*buffer.from*\" and command_line like \"*base64*\") or\n            command_line like \"*atob(*\"\n        )\n    ) or\n    (\n        /* Deno: eval( (not eval/evaluate/evaluation), atob, or buffer+base64 */\n        pname like \"deno*\" and\n        (\n            command_line like \"*atob(*\" or\n            (command_line like \"*buffer.from*\" and command_line like \"*base64*\") or\n            command_line like \"*eval(*\"\n        )\n    )\n)\n| EVAL Esql.length_cmdline = LENGTH(command_line)\n| WHERE Esql.length_cmdline >= 4000\n| KEEP *\n",
+        "related_integrations": [
+            {
+                "package": "endpoint",
+                "version": ">=9.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "@timestamp",
+                "type": "date"
+            },
+            {
+                "ecs": false,
+                "name": "_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "_ignored",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "_index",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "_version",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "agent.build.original",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "agent.ephemeral_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "agent.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "agent.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "agent.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "agent.version",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.account.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.account.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.availability_zone",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.instance.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.instance.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.machine.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.project.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.project.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.provider",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.region",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "cloud.service.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "command_line",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "container.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "container.image.hash.all",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "container.image.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "container.image.tag",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "container.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.namespace",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.type",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "destination.geo.city_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "destination.geo.continent_code",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "destination.geo.continent_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "destination.geo.country_iso_code",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "destination.geo.country_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "destination.geo.location",
+                "type": "geo_point"
+            },
+            {
+                "ecs": true,
+                "name": "destination.geo.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "destination.geo.postal_code",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "destination.geo.region_iso_code",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "destination.geo.region_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "destination.geo.timezone",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "ecs.version",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.agent_id_status",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.code",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.created",
+                "type": "date"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.hash",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.ingested",
+                "type": "date"
+            },
+            {
+                "ecs": true,
+                "name": "event.kind",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.module",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.provider",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.sequence",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "event.severity",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "event.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "group.Ext.real.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "group.Ext.real.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "group.domain",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "group.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "group.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.architecture",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.boot.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.cpu.usage",
+                "type": "scaled_float"
+            },
+            {
+                "ecs": true,
+                "name": "host.disk.read.bytes",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "host.disk.write.bytes",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "host.domain",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.hostname",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": true,
+                "name": "host.mac",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.network.egress.bytes",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "host.network.egress.packets",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "host.network.ingress.bytes",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "host.network.ingress.packets",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "host.os.Ext.variant",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.family",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.full",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "host.os.full.caseless",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "host.os.full.text",
+                "type": "text"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.kernel",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "host.os.name.caseless",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "host.os.name.text",
+                "type": "text"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.platform",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.os.version",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.pid_ns_ino",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.tags",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.uptime",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "message",
+                "type": "match_only_text"
+            },
+            {
+                "ecs": true,
+                "name": "orchestrator.cluster.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "orchestrator.cluster.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "orchestrator.namespace",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "orchestrator.resource.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": true,
+                "name": "orchestrator.resource.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "orchestrator.resource.parent.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "orchestrator.resource.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "package.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "pname",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.Ext.ancestry",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.Ext.architecture",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.Ext.authentication_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.Ext.created_suspended",
+                "type": "boolean"
+            },
+            {
+                "ecs": false,
+                "name": "process.Ext.defense_evasions",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.Ext.desktop_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.Ext.device.bus_type",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.Ext.device.dos_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.Ext.device.file_system_type",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.Ext.device.nt_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.Ext.device.product_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.Ext.device.serial_number",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.Ext.device.vendor_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.Ext.device.volume_device_type",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.Ext.dll.Ext.mapped_address",
+                "type": "unsigned_long"
+            },
+            {
+                "ecs": false,
+                "name": "process.Ext.dll.Ext.mapped_size",
+                "type": "unsigned_long"
+            },
+            {
+                "ecs": false,
+                "name": "process.Ext.dll.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.Ext.dll.path",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.Ext.effective_parent.entity_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.Ext.effective_parent.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.Ext.effective_parent.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.Ext.effective_parent.pid",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "process.Ext.load_module.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.Ext.load_module.src_version",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.Ext.load_module.taint_flags",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.Ext.load_module.taints",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "process.Ext.load_module.version",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.Ext.memfd.flag_allow_seal",
+                "type": "boolean"
+            },
+            {
+                "ecs": false,
+                "name": "process.Ext.memfd.flag_cloexec",
+                "type": "boolean"
+            },
+            {
+                "ecs": false,
+                "name": "process.Ext.memfd.flag_exec",
+                "type": "boolean"
+            },
+            {
+                "ecs": false,
+                "name": "process.Ext.memfd.flag_hugetlb",
+                "type": "boolean"
+            },
+            {
+                "ecs": false,
+                "name": "process.Ext.memfd.flag_noexec_seal",
+                "type": "boolean"
+            },
+            {
+                "ecs": false,
+                "name": "process.Ext.memfd.flags",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "process.Ext.memfd.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.Ext.mitigation_policies",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.Ext.protection",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.Ext.ptrace.addr",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "process.Ext.ptrace.child_pid",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "process.Ext.ptrace.data",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "process.Ext.ptrace.request",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "process.Ext.relative_file_creation_time",
+                "type": "double"
+            },
+            {
+                "ecs": false,
+                "name": "process.Ext.relative_file_name_modify_time",
+                "type": "double"
+            },
+            {
+                "ecs": false,
+                "name": "process.Ext.script.content",
+                "type": "text"
+            },
+            {
+                "ecs": false,
+                "name": "process.Ext.script.path",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.Ext.session",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.Ext.session_info.authentication_package",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.Ext.session_info.client_address",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.Ext.session_info.id",
+                "type": "unsigned_long"
+            },
+            {
+                "ecs": false,
+                "name": "process.Ext.session_info.logon_type",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.Ext.session_info.relative_logon_time",
+                "type": "double"
+            },
+            {
+                "ecs": false,
+                "name": "process.Ext.session_info.relative_password_age",
+                "type": "double"
+            },
+            {
+                "ecs": false,
+                "name": "process.Ext.session_info.user_flags",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.Ext.shmget.flags",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "process.Ext.shmget.key",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "process.Ext.shmget.size",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "process.Ext.token.elevation",
+                "type": "boolean"
+            },
+            {
+                "ecs": false,
+                "name": "process.Ext.token.elevation_level",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.Ext.token.elevation_type",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.Ext.token.integrity_level_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.Ext.token.security_attributes",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.Ext.trusted",
+                "type": "boolean"
+            },
+            {
+                "ecs": false,
+                "name": "process.Ext.trusted_descendant",
+                "type": "boolean"
+            },
+            {
+                "ecs": false,
+                "name": "process.Ext.windows.zone_identifier",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.ai_agent.is_descendant",
+                "type": "boolean"
+            },
+            {
+                "ecs": false,
+                "name": "process.ai_agent.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.args_count",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "process.code_signature.exists",
+                "type": "boolean"
+            },
+            {
+                "ecs": true,
+                "name": "process.code_signature.signing_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.code_signature.status",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.code_signature.subject_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.code_signature.team_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.code_signature.thumbprint_sha256",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.code_signature.trusted",
+                "type": "boolean"
+            },
+            {
+                "ecs": true,
+                "name": "process.code_signature.valid",
+                "type": "boolean"
+            },
+            {
+                "ecs": true,
+                "name": "process.command_line",
+                "type": "wildcard"
+            },
+            {
+                "ecs": false,
+                "name": "process.command_line.caseless",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.command_line.text",
+                "type": "text"
+            },
+            {
+                "ecs": true,
+                "name": "process.end",
+                "type": "date"
+            },
+            {
+                "ecs": true,
+                "name": "process.entity_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.entry_leader.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.entry_leader.args_count",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "process.entry_leader.attested_groups.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.entry_leader.attested_user.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.entry_leader.attested_user.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.entry_leader.attested_user.name.text",
+                "type": "text"
+            },
+            {
+                "ecs": true,
+                "name": "process.entry_leader.command_line",
+                "type": "wildcard"
+            },
+            {
+                "ecs": false,
+                "name": "process.entry_leader.command_line.caseless",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.entry_leader.command_line.text",
+                "type": "text"
+            },
+            {
+                "ecs": true,
+                "name": "process.entry_leader.entity_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.entry_leader.entry_meta.source.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": true,
+                "name": "process.entry_leader.entry_meta.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.entry_leader.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.entry_leader.executable.caseless",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.entry_leader.executable.text",
+                "type": "text"
+            },
+            {
+                "ecs": true,
+                "name": "process.entry_leader.group.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.entry_leader.group.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.entry_leader.interactive",
+                "type": "boolean"
+            },
+            {
+                "ecs": true,
+                "name": "process.entry_leader.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.entry_leader.name.caseless",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.entry_leader.name.text",
+                "type": "text"
+            },
+            {
+                "ecs": true,
+                "name": "process.entry_leader.parent.entity_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.entry_leader.parent.pid",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "process.entry_leader.parent.session_leader.entity_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.entry_leader.parent.session_leader.pid",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "process.entry_leader.parent.session_leader.start",
+                "type": "date"
+            },
+            {
+                "ecs": true,
+                "name": "process.entry_leader.parent.start",
+                "type": "date"
+            },
+            {
+                "ecs": true,
+                "name": "process.entry_leader.pid",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "process.entry_leader.real_group.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.entry_leader.real_group.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.entry_leader.real_user.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.entry_leader.real_user.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.entry_leader.real_user.name.text",
+                "type": "text"
+            },
+            {
+                "ecs": true,
+                "name": "process.entry_leader.same_as_process",
+                "type": "boolean"
+            },
+            {
+                "ecs": true,
+                "name": "process.entry_leader.saved_group.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.entry_leader.saved_group.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.entry_leader.saved_user.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.entry_leader.saved_user.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.entry_leader.saved_user.name.text",
+                "type": "text"
+            },
+            {
+                "ecs": true,
+                "name": "process.entry_leader.start",
+                "type": "date"
+            },
+            {
+                "ecs": true,
+                "name": "process.entry_leader.supplemental_groups.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.entry_leader.supplemental_groups.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.entry_leader.tty.char_device.major",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "process.entry_leader.tty.char_device.minor",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "process.entry_leader.user.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.entry_leader.user.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.entry_leader.user.name.text",
+                "type": "text"
+            },
+            {
+                "ecs": true,
+                "name": "process.entry_leader.working_directory",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.entry_leader.working_directory.caseless",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.entry_leader.working_directory.text",
+                "type": "text"
+            },
+            {
+                "ecs": true,
+                "name": "process.env_vars",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.executable.caseless",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.executable.text",
+                "type": "text"
+            },
+            {
+                "ecs": true,
+                "name": "process.exit_code",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "process.group.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.group.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.group_leader.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.group_leader.args_count",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "process.group_leader.command_line",
+                "type": "wildcard"
+            },
+            {
+                "ecs": false,
+                "name": "process.group_leader.command_line.caseless",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.group_leader.command_line.text",
+                "type": "text"
+            },
+            {
+                "ecs": true,
+                "name": "process.group_leader.entity_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.group_leader.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.group_leader.executable.caseless",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.group_leader.executable.text",
+                "type": "text"
+            },
+            {
+                "ecs": true,
+                "name": "process.group_leader.group.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.group_leader.group.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.group_leader.interactive",
+                "type": "boolean"
+            },
+            {
+                "ecs": true,
+                "name": "process.group_leader.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.group_leader.name.caseless",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.group_leader.name.text",
+                "type": "text"
+            },
+            {
+                "ecs": true,
+                "name": "process.group_leader.pid",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "process.group_leader.real_group.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.group_leader.real_group.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.group_leader.real_user.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.group_leader.real_user.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.group_leader.real_user.name.text",
+                "type": "text"
+            },
+            {
+                "ecs": true,
+                "name": "process.group_leader.same_as_process",
+                "type": "boolean"
+            },
+            {
+                "ecs": true,
+                "name": "process.group_leader.saved_group.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.group_leader.saved_group.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.group_leader.saved_user.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.group_leader.saved_user.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.group_leader.saved_user.name.text",
+                "type": "text"
+            },
+            {
+                "ecs": true,
+                "name": "process.group_leader.start",
+                "type": "date"
+            },
+            {
+                "ecs": true,
+                "name": "process.group_leader.supplemental_groups.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.group_leader.supplemental_groups.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.group_leader.tty.char_device.major",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "process.group_leader.tty.char_device.minor",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "process.group_leader.user.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.group_leader.user.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.group_leader.user.name.text",
+                "type": "text"
+            },
+            {
+                "ecs": true,
+                "name": "process.group_leader.working_directory",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.group_leader.working_directory.caseless",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.group_leader.working_directory.text",
+                "type": "text"
+            },
+            {
+                "ecs": true,
+                "name": "process.hash.md5",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.hash.sha1",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.hash.sha256",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.hash.sha512",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.interactive",
+                "type": "boolean"
+            },
+            {
+                "ecs": true,
+                "name": "process.io.max_bytes_per_process_exceeded",
+                "type": "boolean"
+            },
+            {
+                "ecs": true,
+                "name": "process.io.text",
+                "type": "wildcard"
+            },
+            {
+                "ecs": true,
+                "name": "process.io.total_bytes_captured",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "process.io.total_bytes_skipped",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "process.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.name.caseless",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.name.text",
+                "type": "text"
+            },
+            {
+                "ecs": false,
+                "name": "process.origin_referrer_url",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.origin_url",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.parent.Ext.architecture",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.parent.Ext.protection",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.parent.Ext.real.pid",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "process.parent.Ext.user",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.args_count",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.code_signature.exists",
+                "type": "boolean"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.code_signature.signing_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.code_signature.status",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.code_signature.subject_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.code_signature.team_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.code_signature.thumbprint_sha256",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.code_signature.trusted",
+                "type": "boolean"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.code_signature.valid",
+                "type": "boolean"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.command_line",
+                "type": "wildcard"
+            },
+            {
+                "ecs": false,
+                "name": "process.parent.command_line.caseless",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.parent.command_line.text",
+                "type": "text"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.entity_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.parent.executable.caseless",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.parent.executable.text",
+                "type": "text"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.exit_code",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.group.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.group.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.group_leader.entity_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.group_leader.pid",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.group_leader.start",
+                "type": "date"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.hash.md5",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.hash.sha1",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.hash.sha256",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.hash.sha512",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.interactive",
+                "type": "boolean"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.parent.name.caseless",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.parent.name.text",
+                "type": "text"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.pe.company",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.pe.description",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.pe.file_version",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.pe.imphash",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.pe.original_file_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.pe.product",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.parent.pgid",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.pid",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "process.parent.ppid",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.real_group.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.real_group.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.real_user.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.real_user.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.parent.real_user.name.text",
+                "type": "text"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.saved_group.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.saved_group.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.saved_user.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.saved_user.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.parent.saved_user.name.text",
+                "type": "text"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.start",
+                "type": "date"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.supplemental_groups.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.supplemental_groups.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.parent.thread.Ext.call_stack.allocation_private_bytes",
+                "type": "unsigned_long"
+            },
+            {
+                "ecs": false,
+                "name": "process.parent.thread.Ext.call_stack.callsite_leading_bytes",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.parent.thread.Ext.call_stack.callsite_trailing_bytes",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.parent.thread.Ext.call_stack.protection",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.parent.thread.Ext.call_stack.symbol_info",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.parent.thread.Ext.call_stack_contains_unbacked",
+                "type": "boolean"
+            },
+            {
+                "ecs": false,
+                "name": "process.parent.thread.Ext.call_stack_summary",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.parent.thread.Ext.hardware_breakpoint_set",
+                "type": "boolean"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.thread.id",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.thread.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.title",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.parent.title.text",
+                "type": "text"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.tty.char_device.major",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.tty.char_device.minor",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.uptime",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.user.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.user.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.parent.user.name.text",
+                "type": "text"
+            },
+            {
+                "ecs": true,
+                "name": "process.parent.working_directory",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.parent.working_directory.caseless",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.parent.working_directory.text",
+                "type": "text"
+            },
+            {
+                "ecs": true,
+                "name": "process.pe.company",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.pe.description",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.pe.file_version",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.pe.imphash",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.pe.original_file_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.pe.product",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.pgid",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "process.pid",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "process.ppid",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "process.previous.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.previous.args_count",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "process.previous.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.previous.executable.caseless",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.previous.executable.text",
+                "type": "text"
+            },
+            {
+                "ecs": true,
+                "name": "process.real_group.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.real_group.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.real_user.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.real_user.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.real_user.name.text",
+                "type": "text"
+            },
+            {
+                "ecs": true,
+                "name": "process.saved_group.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.saved_group.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.saved_user.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.saved_user.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.saved_user.name.text",
+                "type": "text"
+            },
+            {
+                "ecs": true,
+                "name": "process.session_leader.args",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.session_leader.args_count",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "process.session_leader.command_line",
+                "type": "wildcard"
+            },
+            {
+                "ecs": false,
+                "name": "process.session_leader.command_line.caseless",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.session_leader.command_line.text",
+                "type": "text"
+            },
+            {
+                "ecs": true,
+                "name": "process.session_leader.entity_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.session_leader.executable",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.session_leader.executable.caseless",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.session_leader.executable.text",
+                "type": "text"
+            },
+            {
+                "ecs": true,
+                "name": "process.session_leader.group.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.session_leader.group.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.session_leader.interactive",
+                "type": "boolean"
+            },
+            {
+                "ecs": true,
+                "name": "process.session_leader.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.session_leader.name.caseless",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.session_leader.name.text",
+                "type": "text"
+            },
+            {
+                "ecs": true,
+                "name": "process.session_leader.parent.entity_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.session_leader.parent.pid",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "process.session_leader.parent.session_leader.entity_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.session_leader.parent.session_leader.pid",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "process.session_leader.parent.session_leader.start",
+                "type": "date"
+            },
+            {
+                "ecs": true,
+                "name": "process.session_leader.parent.start",
+                "type": "date"
+            },
+            {
+                "ecs": true,
+                "name": "process.session_leader.pid",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "process.session_leader.real_group.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.session_leader.real_group.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.session_leader.real_user.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.session_leader.real_user.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.session_leader.real_user.name.text",
+                "type": "text"
+            },
+            {
+                "ecs": true,
+                "name": "process.session_leader.same_as_process",
+                "type": "boolean"
+            },
+            {
+                "ecs": true,
+                "name": "process.session_leader.saved_group.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.session_leader.saved_group.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.session_leader.saved_user.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.session_leader.saved_user.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.session_leader.saved_user.name.text",
+                "type": "text"
+            },
+            {
+                "ecs": true,
+                "name": "process.session_leader.start",
+                "type": "date"
+            },
+            {
+                "ecs": true,
+                "name": "process.session_leader.supplemental_groups.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.session_leader.supplemental_groups.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.session_leader.tty.char_device.major",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "process.session_leader.tty.char_device.minor",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "process.session_leader.user.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.session_leader.user.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.session_leader.user.name.text",
+                "type": "text"
+            },
+            {
+                "ecs": true,
+                "name": "process.session_leader.working_directory",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.session_leader.working_directory.caseless",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.session_leader.working_directory.text",
+                "type": "text"
+            },
+            {
+                "ecs": true,
+                "name": "process.start",
+                "type": "date"
+            },
+            {
+                "ecs": true,
+                "name": "process.supplemental_groups.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.supplemental_groups.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.thread.capabilities.effective",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.thread.capabilities.permitted",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.thread.id",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "process.thread.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.title",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.title.text",
+                "type": "text"
+            },
+            {
+                "ecs": true,
+                "name": "process.tty.char_device.major",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "process.tty.char_device.minor",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "process.tty.columns",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "process.tty.rows",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "process.uptime",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "process.user.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "process.user.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.user.name.text",
+                "type": "text"
+            },
+            {
+                "ecs": true,
+                "name": "process.working_directory",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.working_directory.caseless",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "process.working_directory.text",
+                "type": "text"
+            },
+            {
+                "ecs": true,
+                "name": "source.geo.city_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.geo.continent_code",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.geo.continent_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.geo.country_iso_code",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.geo.country_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.geo.location",
+                "type": "geo_point"
+            },
+            {
+                "ecs": true,
+                "name": "source.geo.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.geo.postal_code",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.geo.region_iso_code",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.geo.region_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.geo.timezone",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "user.Ext.real.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "user.Ext.real.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.domain",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.email",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.full_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "user.full_name.text",
+                "type": "text"
+            },
+            {
+                "ecs": false,
+                "name": "user.group.Ext.real.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "user.group.Ext.real.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.group.domain",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.group.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.group.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.hash",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "user.name.text",
+                "type": "text"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "74d31cb7-4a2c-44fe-9d1d-f375b9f3cb61",
+        "severity": "high",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: Windows",
+            "OS: macOS",
+            "OS: Linux",
+            "Use Case: Threat Detection",
+            "Tactic: Execution",
+            "Data Source: Elastic Defend",
+            "Resources: Investigation Guide",
+            "Noise: Unknown",
+            "Performance: Normal",
+            "Profile: Recommended",
+            "Threat: Encoding-Based Obfuscation",
+            "Threat: Script-Based Execution",
+            "Rule Type: ES|QL",
+            "Platform: Windows",
+            "Platform: Linux",
+            "Platform: macOS",
+            "Tactic: Stealth"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Stealth",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1027",
+                        "name": "Obfuscated Files or Information",
+                        "reference": "https://attack.mitre.org/techniques/T1027/"
+                    },
+                    {
+                        "id": "T1140",
+                        "name": "Deobfuscate/Decode Files or Information",
+                        "reference": "https://attack.mitre.org/techniques/T1140/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1059",
+                        "name": "Command and Scripting Interpreter",
+                        "reference": "https://attack.mitre.org/techniques/T1059/",
+                        "subtechnique": [
+                            {
+                                "id": "T1059.001",
+                                "name": "PowerShell",
+                                "reference": "https://attack.mitre.org/techniques/T1059/001/"
+                            },
+                            {
+                                "id": "T1059.006",
+                                "name": "Python",
+                                "reference": "https://attack.mitre.org/techniques/T1059/006/"
+                            },
+                            {
+                                "id": "T1059.007",
+                                "name": "JavaScript",
+                                "reference": "https://attack.mitre.org/techniques/T1059/007/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 3
+    },
+    "id": "74d31cb7-4a2c-44fe-9d1d-f375b9f3cb61_3",
+    "type": "security-rule"
+}

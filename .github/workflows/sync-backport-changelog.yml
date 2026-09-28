@@ -28,11 +28,7 @@ jobs:
       pull-requests: write # create sync PR and comment on backport PR
 
     steps:
-      - uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
-
-      - uses: ./.github/actions/sync-backport-changelog
+      - uses: elastic/integrations/.github/actions/sync-backport-changelog@main
         with:
           before: ${{ github.event.before }}
           after: ${{ github.event.after }}
@@ -112,12 +108,7 @@ jobs:
           echo "backport_branch=$BASE"      >> "$GITHUB_OUTPUT"
           echo "pr_number=$ISSUE_NUMBER"    >> "$GITHUB_OUTPUT"
 
-      - uses: actions/checkout@v7
-        if: steps.resolve.outputs.pr_number != ''
-        with:
-          fetch-depth: 0
-
-      - uses: ./.github/actions/sync-backport-changelog
+      - uses: elastic/integrations/.github/actions/sync-backport-changelog@main
         if: steps.resolve.outputs.pr_number != ''
         with:
           before: ${{ steps.resolve.outputs.before }}
