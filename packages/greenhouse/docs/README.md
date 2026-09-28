@@ -67,6 +67,7 @@ When a candidate or prospect is rejected, Greenhouse records a `Candidate or Pro
    - **Rejection reasons** → *Show rejection reason* (`harvest:rejection_reasons:show`)
    - **Notes** → *List notes* (`harvest:notes:list`)
 2. Enable the **Enrich rejected application events** setting on the integration.
+3. If you use the **Event Types Filter**, make sure it includes both `action` and `data_change_create`. The correlation depends on the `RejectionDetails` events, which are `data_change_create` events.
 
 When enrichment succeeds, `greenhouse.audit.event.rejection` is populated with `application_id`, `candidate_id`, `reason.id`/`reason.name`/`reason.type`, `notes`, and `rejected_at`. The notes are also copied to `event.reason`.
 
@@ -119,7 +120,7 @@ If rejection events are tagged with `greenhouse-rejection-enrichment-failed`, ch
 Common causes and remedies:
 1. Verify the OAuth credential has been granted all three required read permissions: **Rejection details** (*List rejection details*), **Rejection reasons** (*Show rejection reason*), and **Notes** (*List notes*)
 2. Check that the authorizing user has permission to view the affected application
-3. If the error mentions no matching `RejectionDetails` event was found, the rejection was recorded without a `RejectionDetails` audit event (correlation already looks across neighbouring pages and the following poll). Check the application in Greenhouse directly
+3. If the error mentions no matching `RejectionDetails` event was found, the rejection was recorded without a `RejectionDetails` audit event (correlation already looks across every page of a collection window and the following poll). Check the application in Greenhouse directly
 4. If the error mentions an ambiguous match, the rejection was likely part of a bulk-reject action. `greenhouse.audit.event.rejection.ambiguous_application_ids` lists the candidates involved for manual follow-up
 
 ## Logs reference

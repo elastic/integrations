@@ -61,15 +61,17 @@ Rejection enrichment (optional, enrich_rejections):
   1. Collect: identify "Candidate or Prospect rejected" action events and
      correlate each to its sibling "RejectionDetails" audit event via
      request.id. Extract the application_id from unambiguous (1:1) matches.
-     The API does not document result ordering, so the sibling may land on
-     a neighbouring page. To avoid page-local misses or false 1:1 matches,
-     the {request.id, application_id} pairs of every RejectionDetails seen
-     are carried in the cursor for two pages (rd_prev, rd_prev2), and each
-     rejection action is resolved only after the following page has been
-     seen: actions on a page are held in the cursor (pending_actions) for
-     exactly one evaluation when more pages follow, or when no sibling was
-     found on the final page of a window (it may arrive in the next poll).
-     All other events are emitted immediately.
+     The API does not document result ordering, so a sibling may land on
+     any page of the window. Correlation is therefore resolved only once the
+     whole window has been paged (has_more == false): rejection actions are
+     held in the cursor (pending_actions) while pages remain, and the
+     {request.id, application_id} pairs of every RejectionDetails seen in
+     the window are accumulated (rd_win). At window end an action is still
+     held for one more poll when it has no sibling yet, or when it is so
+     recent that its request may still be writing audit events (a poll can
+     land mid-request, or mid bulk-rejection, and see only some siblings).
+     An action is never held past the end of the following window. All
+     other events are emitted immediately.
 
   2. Fetch (batched): a single call to rejection_details retrieves all
      matched application_ids at once; notes are batch-fetched similarly.
@@ -101,11 +103,16 @@ Cursor:
     Cleared when the window completes; preserved when an expired PIT
     forces a retry of the same window.
   pit_id, search_after — pagination state; cleared between poll intervals.
-  rd_prev, rd_prev2 — compact RejectionDetails pairs from the previous two
-    pages, used to correlate rejection actions across page boundaries.
-  pending_actions — rejection action events held for one evaluation until
-    the following page has been seen. Preserved across PIT-expiry retries
-    (duplicates are collapsed by the ingest pipeline fingerprint).
+  rd_win — compact RejectionDetails pairs accumulated over the pages of the
+    current window. Reset when the window completes or a PIT-expiry retry
+    restarts it.
+  rd_carry — pairs from the previous window whose request.id matched no
+    rejection action in it (their action may arrive in this window).
+  pending_actions — [{e: event, w: windows_held}] rejection actions awaiting
+    resolution. Entries with w == 0 belong to the current window and are
+    dropped on a PIT-expiry retry (the retry re-reads them); w == 1 entries
+    came from the previous window and are always resolved at this window's
+    end. Duplicates are collapsed by the ingest pipeline fingerprint.
 --}}
 program: |-
   // 1. Resolve auth token (sequential state pipeline — avoids nesting the event fetch inside the auth block).
@@ -204,20 +211,26 @@ program: |-
                 "results": body.?results.orValue([]),
                 "has_more": body.?paging.next_search_after.orValue(null) != null,
                 "harvest_hdr": {"Header": {"Authorization": ["Bearer " + state.auth_token.token]}},
+                // Newest event_time seen so far in the window. Result ordering is undocumented,
+                // so take the maximum over the whole page rather than results[0].
                 "next_max": state.?cursor.max_event_time.orValue("").as(prev_max,
-                  (size(body.?results.orValue([])) > 0 && (prev_max == "" || timestamp(body.?results.orValue([])[0].event_time) > timestamp(prev_max))) ?
-                    body.?results.orValue([])[0].event_time
-                  :
-                    prev_max
+                  body.?results.orValue([]).filter(e, type(e.?event_time.orValue(null)) == string).map(e, timestamp(e.event_time)).as(ts,
+                    (ts.size() > 0 && (prev_max == "" || ts.max() > timestamp(prev_max))) ?
+                      ts.max().format(time_layout.RFC3339Nano)
+                    :
+                      prev_max
+                  )
                 ),
                 // Compact {request.id, application_id} pairs for the RejectionDetails on this page.
                 "rd_now": !state.enrich_rejections ? [] :
                   body.?results.orValue([]).filter(rd_e,
                     rd_e.?event.target_type.orValue("") == "RejectionDetails" &&
                     rd_e.?event.type.orValue("") == "data_change_create" &&
-                    has(rd_e.?event.meta.application_id) &&
+                    type(rd_e.?event.meta.application_id.orValue(null)) in [int, double, string] &&
                     rd_e.?request.id.orValue("") != ""
-                  ).map(rd_e, {"r": rd_e.request.id, "a": string(int(rd_e.event.meta.application_id))}),
+                  ).map(rd_e, rd_e.event.meta.application_id.as(a,
+                    {"r": rd_e.request.id, "a": (type(a) == string) ? a : string(int(a))}
+                  )),
                 // Rejection action events on this page (empty when enrichment is disabled).
                 "acts_now": body.?results.orValue([]).filter(e,
                   state.enrich_rejections && e.?event.type.orValue("") == "action" &&
@@ -230,34 +243,46 @@ program: |-
                     state.enrich_rejections && e.?event.type.orValue("") == "action" &&
                     e.?event.target_type.orValue("") == "Candidate or Prospect rejected"
                   )
-                ) + (state.enrich_rejections ? [] : state.?cursor.pending_actions.orValue([])),
-                // Rejection actions held from the previous evaluation; all of their neighbouring
-                // pages have now been seen, so they are resolved in this evaluation.
+                ) + (state.enrich_rejections ? [] : state.?cursor.pending_actions.orValue([]).map(p, p.e)),
+                // Rejection actions held from earlier evaluations, as {e: event, w: windows_held}.
                 "held": state.enrich_rejections ? state.?cursor.pending_actions.orValue([]) : [],
               }.as(pg,
-                // 4. Correlate against the RejectionDetails from the previous two pages and this one.
-                //    Actions on this page are held for one more evaluation when more pages follow,
-                //    or when no sibling was found on the final page of a window (it may arrive in the
-                //    next poll). An action is never held for more than one evaluation.
-                (state.?cursor.rd_prev2.orValue([]) + state.?cursor.rd_prev.orValue([]) + pg.rd_now).as(rd_all,
-                  (pg.held + pg.acts_now).transformList(i, e,
-                    // Unique application IDs sharing this action's request.id. Dedup protects the
-                    // count when a PIT-expiry retry re-reads a page already carried in rd_prev.
+                // 4. Correlate against every RejectionDetails seen in this window so far, plus the
+                //    unconsumed pairs carried over from the previous window. Nothing is resolved while
+                //    pages remain. At window end an action is resolved unless it is being seen for the
+                //    first time and either has no sibling yet or is recent enough that its request may
+                //    still be writing audit events; such actions are held for exactly one more window.
+                (state.?cursor.rd_carry.orValue([]) + state.?cursor.rd_win.orValue([]) + pg.rd_now).as(rd_all,
+                  (pg.held + pg.acts_now.map(e, {"e": e, "w": 0})).map(p,
+                    // Unique application IDs sharing this action's request.id.
                     rd_all.filter(rd,
-                      e.?request.id.orValue("") != "" && rd.r == e.?request.id.orValue("")
+                      p.e.?request.id.orValue("") != "" && rd.r == p.e.?request.id.orValue("")
                     ).map(rd, rd.a).as(ids, ids.zip(ids).keys()).as(m,
                       {
-                        "e": e,
+                        "e": p.e,
+                        "w": p.w,
                         "n": m.size(),
                         "app_id": (m.size() == 1) ? m[0] : "",
                         "ambiguous_ids": (m.size() > 1) ? m : [],
-                        "hold": i >= pg.held.size() && (pg.has_more || m.size() == 0),
+                        "hold": pg.has_more || (
+                          p.w == 0 && (
+                            m.size() == 0 ||
+                            (m.size() == 1 && p.e.?event_time.optMap(t, now - timestamp(t) < duration("2m")).orValue(false))
+                          )
+                        ),
                       }
                     )
                   ).as(corr,
                     {
                       "resolve": corr.filter(c, !c.hold),
-                      "hold": corr.filter(c, c.hold).map(c, c.e),
+                      // Held entries advance to w=1 when the window completes.
+                      "hold": corr.filter(c, c.hold).map(c, {"e": c.e, "w": pg.has_more ? c.w : 1}),
+                      // This window's pairs not consumed by a resolved action: their action may be in the
+                      // next window, or is held above and must still see them next time. Pairs carried in
+                      // from the previous window are not carried again, which bounds the cursor size.
+                      "rd_carry": corr.filter(c, !c.hold).map(c, c.e.?request.id.orValue("")).as(rids,
+                        (state.?cursor.rd_win.orValue([]) + pg.rd_now).filter(rd, !(rd.r in rids))
+                      ),
                     }.as(cx,
                       // 5. Fetch: batch-retrieve rejection_details for all unambiguous matches.
                       (cx.resolve.filter(c, c.n == 1).size() > 0 ?
@@ -273,8 +298,13 @@ program: |-
                       ).as(rd_fetch,
                         // Build lookup maps keyed by application_id, rejection reason id, and note id.
                         {
-                          "rd_map": rd_fetch.data.transformMapEntry(_, rd,
-                            {string(int(rd.application_id)): rd}
+                          // Keyed by application_id. Harvest may return several records for one
+                          // application (re-rejections); keep the last, since a duplicate key would
+                          // abort the whole evaluation.
+                          "rd_map": rd_fetch.data.filter(rd, rd.?application_id.orValue(null) != null).as(rds,
+                            rds.map(rd, string(int(rd.application_id))).as(ids, ids.zip(ids).keys()).transformMapEntry(_, id,
+                              {id: rds.filter(rd, string(int(rd.application_id)) == id).as(l, l[l.size() - 1])}
+                            )
                           ),
                           "reason_map": rd_fetch.data.map(rd, rd.?rejection_reason_id.orValue(null) != null, string(int(rd.rejection_reason_id))).as(rr_ids,
                             // Deduplicate: zip with self produces {id: id} map; keys() extracts the unique ids.
@@ -302,7 +332,11 @@ program: |-
                                 state.harvest_url.trim_right("/") + "/v3/notes?ids=" + note_ids.zip(note_ids).keys().join(",")
                               ).with(pg.harvest_hdr).do_request().as(n_resp,
                                 n_resp.StatusCode == 200 ?
-                                  n_resp.Body.decode_json().transformMapEntry(_, note, {string(int(note.id)): note.?body.orValue("")})
+                                  n_resp.Body.decode_json().filter(note, note.?id.orValue(null) != null).as(notes,
+                                    notes.map(note, string(int(note.id))).as(ids, ids.zip(ids).keys()).transformMapEntry(_, id,
+                                      {id: notes.filter(note, string(int(note.id)) == id)[0].?body.orValue("")}
+                                    )
+                                  )
                                 : {"_error": "notes fetch failed: HTTP " + string(n_resp.StatusCode)}
                               )
                             : {}
@@ -409,8 +443,8 @@ program: |-
                                                       :
                                                         optional.of(
                                                           {
-                                                            "id": string(int(enrich.reason.id)),
-                                                            "name": enrich.reason.name,
+                                                            ?"id": enrich.reason.?id.optMap(v, string(int(v))),
+                                                            "name": enrich.reason.?name.orValue(""),
                                                             "type": enrich.reason.?type.?name.orValue(""),
                                                           }
                                                         ),
@@ -436,8 +470,8 @@ program: |-
                               "max_event_time": pg.has_more ? pg.next_max : "",
                               "pit_id": pg.has_more ? string(body.paging.pit_id) : "",
                               "search_after": pg.has_more ? string(body.paging.next_search_after) : "",
-                              "rd_prev": pg.rd_now,
-                              "rd_prev2": state.?cursor.rd_prev.orValue([]),
+                              "rd_win": pg.has_more ? state.?cursor.rd_win.orValue([]) + pg.rd_now : [],
+                              "rd_carry": pg.has_more ? state.?cursor.rd_carry.orValue([]) : cx.rd_carry,
                               "pending_actions": cx.hold,
                             },
                             "want_more": pg.has_more,
@@ -469,9 +503,11 @@ program: |-
                 "max_event_time": state.?cursor.max_event_time.orValue(""),
                 "pit_id": "",
                 "search_after": "",
-                "rd_prev": state.?cursor.rd_prev.orValue([]),
-                "rd_prev2": state.?cursor.rd_prev2.orValue([]),
-                "pending_actions": state.?cursor.pending_actions.orValue([]),
+                // The window is re-read from the start, so drop this window's accumulated pairs and
+                // held actions (they will be seen again); keep entries carried from the previous window.
+                "rd_win": [],
+                "rd_carry": state.?cursor.rd_carry.orValue([]),
+                "pending_actions": state.?cursor.pending_actions.orValue([]).filter(p, p.w > 0),
               },
               "want_more": false,
             }
