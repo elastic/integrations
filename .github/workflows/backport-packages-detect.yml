@@ -43,11 +43,15 @@ jobs:
             exit 0
           fi
 
-          PR_NUMBER=$(jq -r '.number'           <<< "$PR_DATA")
-          BASE_SHA=$(jq -r  '.base.sha'         <<< "$PR_DATA")
-          HEAD_SHA=$(jq -r  '.head.sha'         <<< "$PR_DATA")
-          PR_AUTHOR=$(jq -r '.user.login'       <<< "$PR_DATA")
-          PR_MERGER=$(jq -r '.merged_by.login'  <<< "$PR_DATA")
+          PR_NUMBER=$(jq -r '.number'   <<< "$PR_DATA")
+          BASE_SHA=$(jq -r  '.base.sha' <<< "$PR_DATA")
+          HEAD_SHA=$(jq -r  '.head.sha' <<< "$PR_DATA")
+          PR_AUTHOR=$(jq -r '.user.login' <<< "$PR_DATA")
+
+          # merged_by is only present on the full PR object, not the list
+          # representation returned by /commits/{sha}/pulls.
+          FULL_PR=$(gh api "repos/$REPOSITORY/pulls/$PR_NUMBER")
+          PR_MERGER=$(jq -r '.merged_by.login // empty' <<< "$FULL_PR")
 
           echo "PR #$PR_NUMBER — base: $BASE_SHA, head: $HEAD_SHA"
           echo "pr_number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
