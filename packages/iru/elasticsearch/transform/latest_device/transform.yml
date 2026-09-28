@@ -4,9 +4,16 @@ source:
     - "logs-iru.device-*"
   query:
     bool:
-      must:
+      filter:
         - term:
             event.kind: "asset"
+      must_not:
+        - exists:
+            field: error.message
+        - terms:
+            _tier:
+              - data_frozen
+              - data_cold
 dest:
   index: "logs-iru_latest.dest_device-1"
   aliases:
@@ -27,7 +34,11 @@ sync:
   time:
     field: "event.ingested"
     delay: 120s
+retention_policy:
+  time:
+    field: event.ingested
+    max_age: 30d
 _meta:
   managed: true
-  fleet_transform_version: 1.0.0
+  fleet_transform_version: 1.1.0
   run_as_kibana_system: false

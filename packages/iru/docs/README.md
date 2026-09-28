@@ -345,6 +345,7 @@ The `device` data stream collects managed device inventory from `GET /api/v1/dev
 | iru.device.tags | Tag names assigned to the device. | keyword |
 | iru.device.user.active | Whether the assigned directory user is active. | boolean |
 | iru.device.user.is_archived | Whether the assigned directory user is archived. | boolean |
+| labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
 | log.offset | Log offset. | long |
 | observer.product | The product name of the observer. | constant_keyword |
 | observer.vendor | Vendor name of the observer. | constant_keyword |

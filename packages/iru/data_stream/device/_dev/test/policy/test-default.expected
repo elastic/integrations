@@ -10,62 +10,60 @@ inputs:
             dataset: iru.device
           interval: 1h
           program: |-
-            state.with(
-              request(
-                "GET",
-                state.url.trim_right("/") + "/api/v1/devices?" + {
-                  "limit": [string(int(state.batch_size))],
-                  "offset": [string(int(
-                    state.?want_more.orValue(false) ?
-                      state.offset
-                    :
-                      0
-                  ))],
-                }.format_query()
-              ).with(
-                {
-                  "Header": {
-                    "Authorization": ["Bearer " + state.api_token],
-                    "Accept": ["application/json"],
-                  },
-                }
-              ).do_request().as(resp, resp.StatusCode == 200 ?
-                resp.Body.decode_json().as(body,
-                  (size(body) > 0 && size(body) >= int(state.batch_size)) ?
-                    state.with(
-                      {
-                        "events": body.map(e, {"message": e.encode_json()}),
-                        "offset": int(state.?offset.orValue(0)) + int(state.batch_size),
-                        "want_more": true,
-                      }
-                    )
+            request(
+              "GET",
+              state.url.trim_right("/") + "/api/v1/devices?" + {
+                "limit": [string(int(state.batch_size))],
+                "offset": [string(int(
+                  state.?want_more.orValue(false) ?
+                    state.offset
                   :
-                    // optional.none() does not remove offset from state; drop it when pagination ends.
-                    state.drop("offset").with(
-                      {
-                        "events": body.map(e, {"message": e.encode_json()}),
-                        "want_more": false,
-                      }
-                    )
-                )
-              :
-                state.drop("offset").with(
-                  {
-                    "events": {
-                      "error": {
-                        "code": string(resp.StatusCode),
-                        "id": resp.Status,
-                        "message": "GET " + state.url.trim_right("/") + "/api/v1/devices: " + (
-                          (size(resp.Body) != 0) ?
-                            string(resp.Body)
-                          :
-                            resp.Status
-                        ),
-                      },
+                    0
+                ))],
+              }.format_query()
+            ).with(
+              {
+                "Header": {
+                  "Authorization": ["Bearer " + state.api_token],
+                  "Accept": ["application/json"],
+                },
+              }
+            ).do_request().as(resp, resp.StatusCode == 200 ?
+              resp.Body.decode_json().as(body,
+                (size(body) > 0 && size(body) >= int(state.batch_size)) ?
+                  state.with(
+                    {
+                      "events": body.map(e, {"message": e.encode_json()}),
+                      "offset": int(state.?offset.orValue(0)) + int(state.batch_size),
+                      "want_more": true,
+                    }
+                  )
+                :
+                  // Drop the pagination offset when the last page has been fetched.
+                  state.drop("offset").with(
+                    {
+                      "events": body.map(e, {"message": e.encode_json()}),
+                      "want_more": false,
+                    }
+                  )
+              )
+            :
+              state.drop("offset").with(
+                {
+                  "events": {
+                    "error": {
+                      "code": string(resp.StatusCode),
+                      "id": resp.Status,
+                      "message": "GET " + state.url.trim_right("/") + "/api/v1/devices: " + (
+                        (size(resp.Body) != 0) ?
+                          string(resp.Body)
+                        :
+                          resp.Status
+                      ),
                     },
-                    "want_more": false,
-                  }
-                )
+                  },
+                  "want_more": false,
+                }
               )
             )
           publisher_pipeline.disable_host: true
