@@ -82,7 +82,7 @@ export OTEL_RESOURCE_ATTRIBUTES="data_stream.dataset=claude_code.events.otel"
 
 ### Option B: Elastic Agent OTLP receiver
 
-The Elastic Agent exposes an OTLP HTTP receiver on port 4318. Configure Claude Code to send events to the agent:
+The Elastic Agent exposes an OTLP HTTP receiver on the configured HTTP endpoint (default port: 4318). Configure Claude Code to send events to the agent:
 
 ```bash
 export CLAUDE_CODE_ENABLE_TELEMETRY=1
@@ -105,7 +105,7 @@ After deploying, run a short Claude Code session with telemetry enabled and conf
 ### No events arriving
 
 - Verify `CLAUDE_CODE_ENABLE_TELEMETRY=1` is set in the environment where Claude Code runs.
-- Check that the OTLP endpoint is reachable from the Claude Code host (`curl -v http://<agent-host>:4318/v1/logs`).
+- Check that the OTLP endpoint is reachable from the Claude Code host (`curl -v http://<agent-host>:<port>/v1/logs`, where `<port>` matches the HTTP Endpoint configured in the integration policy, default `4318`).
 - Confirm the Elastic Agent is running and the integration policy is assigned.
 
 ### Missing tool parameters or prompt text

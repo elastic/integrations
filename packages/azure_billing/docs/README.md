@@ -212,6 +212,12 @@ The data stream has some additional options about scope and period. To learn mor
 `Billing Scope Account ID`  _string_
 : Retrieve data based on the billing account ID. The billing account ID is available on the [Azure Portal](https://portal.azure.com/) at **Cost Management + Billing**, select a billing scope of the type "billing account", then **Setting** > **Properties** > **ID**.
 
+`Billing Usage Lookback` _string_
+: The lookback window for retrieving billing usage data. The default is `24h`. The value must be a positive multiple of `24h`.
+
+`Billing Forecast Window` _string_
+: The window for retrieving billing forecast data. The default is `720h` (30 days). The value must be a positive multiple of `24h`.
+
 `Period` _string_
 : The time interval to use when retrieving metric values.
 

@@ -31,9 +31,17 @@ Before using any Amazon Bedrock AgentCore integration you will need:
 
 For more details about these requirements, check the [AWS integration documentation](https://docs.elastic.co/integrations/aws#requirements).
 
-* Elastic Agent must be installed. For detailed guidance, follow these [instructions](https://www.elastic.co/guide/en/fleet/current/elastic-agent-installation.html).
-* You can install only one Elastic Agent per host.
-* Elastic Agent is required to collect metrics from CloudWatch and ship the data to Elastic, where the events will then be processed through the integration's ingest pipelines.
+### Agent-based deployment
+
+Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md). You can install only one Elastic Agent per host.
+
+Elastic Agent is required to collect metrics and logs from CloudWatch and ship the data to Elastic, where the events will then be processed through the integration's ingest pipelines.
+
+### Elastic Managed deployment
+
+Elastic Managed deployments are only supported in Elastic Serverless and Elastic Cloud environments. Elastic Managed deployments provide a means to ingest data while avoiding the orchestration, management, and maintenance needs associated with standard ingest infrastructure. Using an Elastic Managed deployment makes manual agent deployment unnecessary, allowing you to focus on your data instead of the agent that collects it.
+
+For more information, refer to [Elastic Managed integrations](https://www.elastic.co/guide/en/serverless/current/security-agentless-integrations.html) and [Elastic Managed integrations FAQ](https://www.elastic.co/guide/en/serverless/current/agentless-integration-troubleshooting.html).
 
 ### How to find the `log_group_arn` (for log-based datasets)
 

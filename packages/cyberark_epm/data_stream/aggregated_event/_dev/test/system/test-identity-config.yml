@@ -1,0 +1,42 @@
+input: cel
+service: cyberark_epm
+vars:
+  auth_type: identity
+  epm_server_url: http://{{Hostname}}:{{Port}}
+  identity_id: elastic-test
+  identity_application_id: elastic_epm_api
+  client_id: 'svc_elastic@cyberark.cloud.1234'
+  client_secret: 'p@ss"w/ord\test'
+  ssl: |
+    certificate_authorities:
+      - |
+        -----BEGIN CERTIFICATE-----
+        MIIDXjCCAkagAwIBAgIUcW0OaLtoq+zHmATDz14hhDevv9UwDQYJKoZIhvcNAQEL
+        BQAwKTEnMCUGA1UEAwweZWxhc3RpYy10ZXN0LmlkLmN5YmVyYXJrLmNsb3VkMB4X
+        DTI2MDgyMDA5MTM0OFoXDTM2MDgxNzA5MTM0OFowKTEnMCUGA1UEAwweZWxhc3Rp
+        Yy10ZXN0LmlkLmN5YmVyYXJrLmNsb3VkMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8A
+        MIIBCgKCAQEAoW2VUELB7SNGQDzS83r1DPucuKdzUbFhBA7NN3mzF7GtJ9L2dwzo
+        RdieV0Z0jxPi6vVcMlz8qckgQ+eZ3nX2kF5bEBU8gKhLx5BJgFAhdSwmnehJX8KT
+        7rkDUT/GK9I1oYyr3/w65o+VKASKcbe0/eXQo8SDQnU4/AsoHaLG91G8KAn/YarB
+        0j6O0XtEq3u7mUq7Vgk5jQio/akXmu07m+ILuwlAJI16zlVSefgR0dZUwWM4IjXl
+        /hDoZ+l8UCus7pYJiPZkuEkFdlqA+4VKsbNigSJ+Hn9v/ZGZxWD4HlJxYcX1Ndci
+        2Cdzy6b+SaWVp5zRblQy1wrskZ1ja53DgQIDAQABo34wfDAdBgNVHQ4EFgQUJLJ1
+        RmDKq0bGvXhrNXdzJAmwCswwHwYDVR0jBBgwFoAUJLJ1RmDKq0bGvXhrNXdzJAmw
+        CswwDwYDVR0TAQH/BAUwAwEB/zApBgNVHREEIjAggh5lbGFzdGljLXRlc3QuaWQu
+        Y3liZXJhcmsuY2xvdWQwDQYJKoZIhvcNAQELBQADggEBAFAy8L239V/TsW7Hn55j
+        Oi44LLuv/+DgNYekciuImPy1dZWvDO7R2HBZ3uLIBP4qUE0p3MiRG1DSHxIJA516
+        yOvRKPNCPr64p1lAxYka2G1AQ8fDjCQjMuoDKjXaUd0vgHxH+NJY5Z5P0huL8jgm
+        FeSbFuKjJTg1EeeEcr+yeQEeDwZO+Ou3dxyDe3EzdppzFedrGT2HW8It8wiroFH9
+        tLvXJBG/CjEsaw0aYCP+4KBesvv6wPgnNAFX8htVsk9pomlVrh1dvMwzyZ/Z+3Gg
+        DhS/JdNF4gvgvF1BJyyVIldUIws5BtMWzxMtAjh5dTXx2PxJ0PO3FMTGh2TNyAam
+        1eM=
+        -----END CERTIFICATE-----
+data_stream:
+  vars:
+    interval: 5m
+    initial_interval: 24h
+    page_size: 2
+    preserve_original_event: true
+    preserve_duplicate_custom_fields: true
+assert:
+  hit_count: 2
