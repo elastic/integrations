@@ -60,6 +60,7 @@ Because ReConfirm requires the destination to be reachable over HTTPS from the p
    - **Listen Address** and **Listen Port** — the address/port the Agent binds (defaults `0.0.0.0` and port `9023`).
    - **URL** — the request path ReConfirm posts to (e.g. `/reconfirm`); it must match the endpoint set in ReConfirm.
    - **Authorization Token** — the exact value ReConfirm sends in the `Authorization` header, e.g. `Bearer <token>`. The listener fixes the header name to `Authorization`; requests whose header value does not match are rejected with a 401.
+   - **Preserve Original Event** — disabled by default. When enabled, the HTTP Endpoint input stores the raw request body in `event.original`. Scan payloads can be several hundred KB, so this noticeably increases storage.
    - **Redact Leaked Passwords** — enabled by default. When enabled, leaked plaintext passwords in credential leak findings and `event.original` are replaced with `REDACTED`.
    - **TLS** — provide a certificate and key if the Agent terminates HTTPS directly.
 3. Save and deploy the integration to the Agent policy.
