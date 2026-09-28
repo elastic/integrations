@@ -5,25 +5,38 @@ Scans a package (or the whole catalog) for mapping features that Elasticsearch
 rejects or silently degrades under the `logsdb_columnar` index mode, and proposes
 an index sort key per data stream.
 
-Usage:
-    scripts/audit.py packages/nginx                 # one package, Markdown report
-    scripts/audit.py packages/nginx --format json   # one package, JSON report
-    scripts/audit.py packages/ --catalog            # whole catalog summary
-    scripts/audit.py packages/ --catalog --format json --out report.json
+Usage, from the root of the integrations repository (<skill-dir> is the directory
+of the columnar-readiness skill, e.g. .agents/skills/columnar-readiness in the repo,
+or wherever `npx skills add` installed it):
+    python3 <skill-dir>/scripts/audit.py packages/nginx                 # one package
+    python3 <skill-dir>/scripts/audit.py packages/nginx --format json   # one package, JSON
+    python3 <skill-dir>/scripts/audit.py packages/ --catalog            # whole catalog
+    python3 <skill-dir>/scripts/audit.py packages/ --catalog --format json --out report.json
 
 Requires: Python 3.8+ and PyYAML.
     python3 -m pip install --user pyyaml
     # or, without touching the system interpreter:
     python3 -m venv /tmp/columnar-venv && /tmp/columnar-venv/bin/pip install pyyaml
-    /tmp/columnar-venv/bin/python3 scripts/audit.py packages/nginx
+    /tmp/columnar-venv/bin/python3 <skill-dir>/scripts/audit.py packages/nginx
 
-Scope: logs data streams only. Metrics/traces/synthetics streams and `type: input`
-packages are reported as OUT_OF_SCOPE and skipped.
+Scope: logs data streams only. Metrics/traces/synthetics streams, streams fed by an
+OpenTelemetry input and `type: input` packages are reported as OUT_OF_SCOPE and
+skipped.
+
+Also read, when present:
+  * the prebuilt detection rules shipped in `packages/security_detection_engine`
+    (the sibling of the audited package; override with `--rules DIR`, skip with
+    `--no-rules`), to find rules that read a stream's `_source` and to list the rules
+    that query it;
+  * elastic-package's ECS cache (`~/.elastic-package/cache/fields/ecs/`), for the
+    types of `external: ecs` fields. Without it a small built-in list is used and the
+    report says so.
 """
 
 from __future__ import annotations
 
 import argparse
+import fnmatch
 import json
 import os
 import re
@@ -344,6 +357,26 @@ FIELD_CHILD_KEYS = ("fields",)
 # Index modes that make a data stream columnar.
 COLUMNAR_INDEX_MODES = {"logsdb_columnar", "columnar"}
 
+# Inputs whose streams are OpenTelemetry data. The rollout strategy keeps OTel log
+# streams off columnar until logs sharing the same resource attributes can be
+# clustered (derived fields): a single base mapping covers every OTel dataset, so a
+# per-dataset sort key is the wrong tool, and `host.name` alone is not enough.
+OTEL_INPUTS = {"otelcol"}
+
+# Field types whose inverted index columnar mode keeps. Counted per stream as input
+# for the ECS `.text` sub-field review; they never change a status.
+TEXT_TYPES = {"text", "match_only_text"}
+
+# Selective lookup fields the columnar mapping plan calls out: exact-value filters on
+# them become doc-value scans unless they are in the sort key or indexed. Used only to
+# flag lookup candidates for the per-stream `index: true` review.
+LOOKUP_RISK_FIELDS = {
+    "trace.id", "transaction.id", "span.id", "event.id", "error.id",
+    "source.ip", "destination.ip", "client.ip", "server.ip", "user.name", "user.id",
+    "url.path", "http.request.id", "host.id",
+}
+LOOKUP_RISK_PREFIXES = ("file.hash.", "process.hash.", "process.parent.hash.", "dll.hash.")
+
 # --------------------------------------------------------------------------- #
 # package-spec 3.7.0 columnar constructs
 #
@@ -360,9 +393,11 @@ COLUMNAR_INDEX_MODES = {"logsdb_columnar", "columnar"}
 #    logsdb or standard stack keeps today's mapping byte for byte, so repairing
 #    a columnar blocker costs nothing on the installs that are not columnar.
 #
-#    The block also accepts `index`, for the rare field that benchmarks prove
-#    still needs an inverted index. This audit only ever *reports* that one and
-#    asks for the evidence; it never proposes it (rollout rule 2).
+#    The block also accepts `index`, for a field whose exact-value lookups the
+#    stream's dashboards or detection rules depend on. Whether a stream needs any
+#    is a per-stream human decision ("none" is a valid answer): this audit lists
+#    lookup candidates from the rules and dashboards, and reports an existing
+#    override, but never writes one (rollout rule 2).
 #
 #    Fleet applies it to STATIC LEAF FIELDS ONLY. It does not apply it to a
 #    field it renders as a `dynamic_templates` entry (`type: object`/`group`
@@ -399,16 +434,19 @@ def worse(a: str, b: str) -> str:
 # --------------------------------------------------------------------------- #
 
 _ECS_SCHEMA: Optional[Dict[str, Dict[str, Any]]] = None
+# Which ECS definitions the run used, printed in every report: results differ between
+# a machine with elastic-package's cache and one without it.
+_ECS_SOURCE: Optional[str] = None
 
 
 def ecs_schema() -> Dict[str, Dict[str, Any]]:
-    """flat_name -> {"type": ..., "array": bool} from elastic-package's ECS cache.
+    """flat_name -> {"type", "array", "text_subfields"} from elastic-package's ECS cache.
 
     An `external: ecs` reference carries no `type` in the package source, so without
     this the sort-candidate type and array checks cannot see anything. Falls back to
     `ECS_ARRAY_FIELDS_FALLBACK` (arrays only, no types) when the cache is absent.
     """
-    global _ECS_SCHEMA
+    global _ECS_SCHEMA, _ECS_SOURCE
     if _ECS_SCHEMA is not None:
         return _ECS_SCHEMA
 
@@ -435,13 +473,29 @@ def ecs_schema() -> Dict[str, Dict[str, Any]]:
                 schema[flat] = {
                     "type": fdef.get("type"),
                     "array": "array" in (fdef.get("normalize") or []),
+                    "text_subfields": [
+                        mf.get("name") for mf in (fdef.get("multi_fields") or [])
+                        if isinstance(mf, dict) and mf.get("type") in TEXT_TYPES
+                    ],
                 }
-    else:
+        _ECS_SOURCE = (f"elastic-package ECS cache {versions[-1]} "
+                       f"(`{os.path.join(ECS_CACHE_DIR, versions[-1])}`)")
+    if not schema:
         for flat in ECS_ARRAY_FIELDS_FALLBACK:
-            schema[flat] = {"type": None, "array": True}
+            schema[flat] = {"type": None, "array": True, "text_subfields": []}
+        _ECS_SOURCE = ("built-in fallback: no elastic-package ECS cache found in "
+                       f"`{ECS_CACHE_DIR}`, so `external: ecs` fields have no type and sort "
+                       "proposals are more conservative (run `elastic-package build` once "
+                       "to populate the cache)")
 
     _ECS_SCHEMA = schema
     return schema
+
+
+def ecs_source() -> str:
+    """Human-readable description of the ECS definitions this run used."""
+    ecs_schema()
+    return _ECS_SOURCE or "unknown"
 
 
 def _version_key(name: str) -> Tuple[int, ...]:
@@ -624,6 +678,184 @@ def finding(code: str, klass: str, severity: str, message: str,
 
 
 # --------------------------------------------------------------------------- #
+# Suggested changes (ready-to-paste snippets attached to findings)
+#
+# Pipeline snippets follow one convention: they go inline in the pipeline that needs
+# them, at the position the change requires, with a `columnar_*` tag and a
+# description starting with "columnar:", so `grep columnar_` finds every one. There is
+# deliberately no separate "columnar" pipeline file: a pipeline cannot see the index
+# mode a document lands in, so these processors run in every mode anyway, and they
+# need different positions (a `dot_expander` first, a `copy_to` replacement after the
+# processors that set its source).
+# --------------------------------------------------------------------------- #
+
+def patch(file: str, position: str, body: str, lang: str = "yaml",
+          note: Optional[str] = None) -> Dict[str, Any]:
+    """Where a suggested change goes (`file`, `position`) and what to write (`body`)."""
+    return {"file": file, "position": position, "lang": lang, "body": body, "note": note}
+
+
+def _tag_id(name: str) -> str:
+    """`crowdstrike.info.host` -> `crowdstrike_info_host`, for processor tags."""
+    return re.sub(r"[^a-z0-9]+", "_", name.lower()).strip("_")
+
+
+DOT_EXPANDER_YAML = (
+    "- dot_expander:\n"
+    "    tag: columnar_expand_dotted_keys\n"
+    "    field: \"*\"\n"
+    "    description: >-\n"
+    "      columnar: a columnar source returns _source with dotted keys; expand them so\n"
+    "      the processors below find their fields. A no-op for nested input.\n"
+)
+
+DOT_EXPANDER_JSON = (
+    "{\n"
+    "  \"dot_expander\": {\n"
+    "    \"tag\": \"columnar_expand_dotted_keys\",\n"
+    "    \"field\": \"*\",\n"
+    "    \"description\": \"columnar: a columnar source returns _source with dotted keys; "
+    "expand them so the processors below find their fields. A no-op for nested input.\"\n"
+    "  }\n"
+    "}\n"
+)
+
+# Painless that appends a field's value(s) to one or more targets, creating parent
+# objects as needed: `copy_to` semantics (targets gain the values, nothing is
+# overwritten, arrays and types are preserved), done at ingest instead of at mapping
+# time.
+COPY_TO_PAINLESS = """\
+def read(def doc, String path) {
+  def cur = doc;
+  for (String key : path.splitOnToken('.')) {
+    if (!(cur instanceof Map)) { return null; }
+    cur = cur.get(key);
+  }
+  return cur;
+}
+def value = read(ctx, params.field);
+if (value == null) { return; }
+def values = value instanceof List ? value : [value];
+for (String target : params.targets) {
+  def parts = target.splitOnToken('.');
+  def cur = ctx;
+  for (int i = 0; i < parts.length - 1; i++) {
+    if (!(cur.get(parts[i]) instanceof Map)) { cur.put(parts[i], new HashMap()); }
+    cur = cur.get(parts[i]);
+  }
+  def last = parts[parts.length - 1];
+  def existing = cur.get(last);
+  def merged = new ArrayList();
+  if (existing instanceof List) { merged.addAll(existing); } else if (existing != null) { merged.add(existing); }
+  merged.addAll(values);
+  cur.put(last, merged.size() == 1 ? merged.get(0) : merged);
+}
+"""
+
+
+def copy_to_snippet(field: str, targets: List[str]) -> str:
+    """An ingest `script` processor that replaces `copy_to` on `field`."""
+    body = "".join(f"      {ln}\n" if ln else "\n" for ln in COPY_TO_PAINLESS.splitlines())
+    return (
+        "- script:\n"
+        f"    tag: columnar_copy_{_tag_id(field)}\n"
+        "    description: >-\n"
+        f"      columnar: replaces the copy_to on {field}, which columnar index modes\n"
+        "      reject. Runs in every index mode.\n"
+        "    lang: painless\n"
+        "    params:\n"
+        f"      field: {json.dumps(field)}\n"
+        f"      targets: [{', '.join(json.dumps(t) for t in targets)}]\n"
+        "    source: |-\n"
+        + body
+    )
+
+
+def runtime_snippet(field: str, script: str) -> str:
+    """A skeleton ingest `script` processor for a mapping-level runtime field."""
+    lines = [
+        "- script:",
+        f"    tag: columnar_compute_{_tag_id(field)}",
+        "    description: >-",
+        f"      columnar: computes {field} at ingest time; columnar index modes reject",
+        "      mapping-level runtime fields. Runs in every index mode.",
+        "    lang: painless",
+        "    source: |-",
+        "      // Port of the runtime script below: read ctx values instead of",
+        f"      // doc['...'].value, and assign {field} (creating its parent objects)",
+        "      // instead of calling emit().",
+    ]
+    lines += [f"      // {ln}" for ln in script.splitlines()]
+    return "\n".join(lines) + "\n"
+
+
+def _runtime_script(runtime: Any) -> Optional[str]:
+    """The script of a mapping-level runtime field, when it has one."""
+    if isinstance(runtime, str) and runtime.strip().lower() not in ("true", "false"):
+        return runtime
+    if isinstance(runtime, dict):
+        script = runtime.get("script")
+        if isinstance(script, dict):
+            script = script.get("source")
+        if isinstance(script, str):
+            return script
+    return None
+
+
+def attach_pipeline_patches(findings: List[Dict[str, Any]],
+                            field_index: Dict[str, Dict[str, Any]],
+                            ds_dir: str, pkg_dir: str) -> None:
+    """Attach ingest-pipeline snippets to `copy_to` and `runtime_field` findings.
+
+    Both fixes move logic from the mapping into the data stream's default pipeline,
+    which is resolved here (YAML or JSON; created if the stream has none).
+    """
+    pipe_dir = os.path.join(ds_dir, "elasticsearch", "ingest_pipeline")
+    existing = next((n for n in ("default.yml", "default.yaml", "default.json")
+                     if os.path.isfile(os.path.join(pipe_dir, n))), None)
+    pipe_file = os.path.relpath(os.path.join(pipe_dir, existing or "default.yml"), pkg_dir)
+    extra = ""
+    if existing == "default.json":
+        extra = " The pipeline is JSON: convert the snippet."
+    elif not existing:
+        extra = " The data stream has no default pipeline yet: create it with this processor."
+    for f in findings:
+        if f.get("patch") or not f.get("field"):
+            continue
+        fdef = field_index.get(f["field"]) or {}
+        if f["code"] == "copy_to":
+            raw = fdef.get("copy_to")
+            targets = [raw] if isinstance(raw, str) else [str(t) for t in (raw or [])]
+            if not targets:
+                continue
+            f["patch"] = patch(
+                pipe_file,
+                f"near the end of `processors:`, after the processors that set `{f['field']}` "
+                f"and before any that read " + ", ".join(f"`{t}`" for t in targets),
+                copy_to_snippet(f["field"], targets),
+                note="Then delete `copy_to` from the field definition (it applies in every "
+                     "index mode) and regenerate the pipeline test expectations with `-g`: "
+                     "the targets now appear in the documents." + extra)
+        elif f["code"] == "runtime_field":
+            script = _runtime_script(fdef.get("runtime"))
+            if script:
+                f["patch"] = patch(
+                    pipe_file,
+                    "near the end of `processors:`, after the processors that set the fields "
+                    "the script reads",
+                    runtime_snippet(f["field"], script),
+                    note="A skeleton: port the script by hand, then map the field with a "
+                         "concrete type instead of `runtime`." + extra)
+            else:
+                f["patch"] = patch(
+                    f["where"], f"the definition of `{f['field']}`",
+                    f"- name: {fdef.get('name', f['field'])}\n"
+                    f"  type: {fdef.get('type', 'keyword')}   # keep the type; delete `runtime: true`\n",
+                    note="`runtime: true` without a script reads the value from the document, "
+                         "so a concrete mapping needs no pipeline change.")
+
+
+# --------------------------------------------------------------------------- #
 # Field-tree walking
 # --------------------------------------------------------------------------- #
 
@@ -696,18 +928,48 @@ def check_field(fdef: Dict[str, Any], flat: str, nested_depth: int,
     # --- Class A: rejected by Elasticsearch -------------------------------- #
     if ftype == "nested":
         if nested_depth >= 1:
+            # `nested_depth` counts nested ancestors both through `fields:` children and
+            # through dotted names declared as sibling entries (`whats` nested, then a
+            # separate `whats.intel_intra_ids` nested): Fleet expands the dotted names
+            # into the same hierarchy, so both are nested inside nested.
             out.append(finding(
                 "nested_in_nested", "A", "blocker",
-                f"`{flat}` is a `nested` field inside another `nested` field.",
-                "Flatten the inner level to leaf arrays, or map it as `type: flattened`.",
+                f"`{flat}` is a `nested` field inside another `nested` field. Columnar "
+                f"supports one level of nesting only (`NestedObjectMapper`: \"columnar "
+                f"index modes support only a single level of nesting\"), so the index "
+                f"template PUT fails.",
+                "First check that no dashboard or detection rule runs a `nested` query on "
+                "this inner path. Then, in order of preference: (1) change the inner level "
+                "to `type: group` (a plain object): every value is kept, you only lose "
+                "matching within a single inner element; (2) map it as `type: flattened` "
+                "if its keys are open-ended; (3) if the pairing inside each inner element "
+                "matters, build a single-level `nested` array in the ingest pipeline, one "
+                "entry per (outer, inner) pair carrying both sets of keys. All three change "
+                "the mapping for logsdb installs too. On an existing data stream the type "
+                "change takes effect at the next rollover: Fleet rolls the stream over when "
+                "the write index rejects the mapping (\"can't merge a non-nested mapping "
+                "... with a nested mapping\"). Or keep this stream on logsdb: the opt-in is "
+                "per stream.",
                 rel_file, flat))
+            out[-1]["patch"] = patch(
+                rel_file, f"the definition of `{flat}`",
+                f"- name: {fdef.get('name', flat)}\n"
+                "  type: group   # was: nested (columnar allows one level of nesting)\n"
+                "  # keep its other attributes and its `fields:` children unchanged\n",
+                note="Mapping-only: the documents do not change. Check first that nothing runs "
+                     "a `nested` query on this path.")
         else:
             # Single level nested is accepted but the flattened shape changes.
             out.append(finding(
                 "nested_single_level", "A", "review",
                 f"`{flat}` is a single-level `nested` field.",
-                "Accepted by columnar mode, but confirm consumers tolerate the flattened "
-                "synthetic-source shape (object arrays are not retained faithfully).",
+                "Accepted by columnar mode, and `nested` queries keep matching within one "
+                "element: each element stays its own hidden document. Two things to review: "
+                "consumers of `_source` see the columnar shape, and any mapping with a "
+                "`nested` field turns off columnar's batch indexing path for the whole "
+                "stream (`ShardBatchMapper`), so it does not get the ingest speed-up. Keep "
+                "it when queries need per-element matching; otherwise consider "
+                "`type: group`.",
                 rel_file, flat))
 
     # Multi-fields are exempt from the reconstructability check
@@ -774,13 +1036,13 @@ def check_field(fdef: Dict[str, Any], flat: str, nested_depth: int,
         out.append(finding(
             "columnar_index_true", "C", "info",
             f"`{flat}` keeps an inverted index under columnar modes "
-            f"(`columnar.index: true`) — benchmark-justified inverted index; confirm the "
-            f"evidence exists.",
-            "This skill never proposes this override and no static analysis can justify "
-            "it: the premise of the rollout is that columnar does not need inverted "
-            "indexes, and index sorting is the per-integration lever "
-            "(`references/sorting.md`). Keep it only if a benchmark on this specific field "
-            "is linked from the PR that added it; otherwise remove it.",
+            f"(`columnar.index: true`); confirm the query that needs it.",
+            "Per-field inverted indexes are a per-stream decision taken from the queries "
+            "the stream's dashboards and detection rules run, and \"none\" is a valid "
+            "answer. Keep this one if a named query filters on the field by exact value "
+            "and the field is not in the sort key (see the stream's lookup candidates); "
+            "record that query in the PR. Otherwise remove it: index sorting is the first "
+            "lever (`references/sorting.md`).",
             rel_file, flat))
 
     if columnar and not columnar_override_allowed:
@@ -822,8 +1084,9 @@ def check_field(fdef: Dict[str, Any], flat: str, nested_depth: int,
         out.append(finding(
             "copy_to", "A", "auto_fix",
             f"`{flat}` uses `copy_to`, which columnar mode rejects unconditionally.",
-            "Do the copy in the ingest pipeline (`set`/`append` processor), or drop the "
-            "target field.",
+            "Do the copy in the ingest pipeline — the suggested `script` processor appends "
+            "to the targets the way `copy_to` does, keeping arrays and types — then delete "
+            "`copy_to` from the field; or drop the target field.",
             rel_file, flat))
 
     if ftype == "keyword" and fdef.get("normalizer") and not in_multi_field:
@@ -850,6 +1113,17 @@ def check_field(fdef: Dict[str, Any], flat: str, nested_depth: int,
                 "or move the normalized variant into `multi_fields:` (multi-fields are "
                 "exempt from the reconstructability check).",
                 rel_file, flat))
+            out[-1]["patch"] = patch(
+                rel_file, f"the definition of `{flat}`",
+                f"- name: {fdef.get('name', flat)}\n"
+                "  type: keyword   # the parent keeps the raw value\n"
+                "  multi_fields:\n"
+                "    - name: normalized\n"
+                "      type: keyword\n"
+                f"      normalizer: {fdef.get('normalizer')}\n",
+                note="Keep the field's other attributes. Queries that relied on the normalized "
+                     "comparison move to `<field>.normalized`. If the original value is not "
+                     "needed, normalize in the pipeline instead (`lowercase`, `trim`, `gsub`).")
 
     if str(fdef.get("dynamic", "")).strip().lower() == "runtime":
         out.append(finding(
@@ -1951,7 +2225,7 @@ def _is_low_cardinality(name: str) -> bool:
 
 
 # --------------------------------------------------------------------------- #
-# Columnar `_source` consumers (Class C — `references/blockers.md` C6-C8)
+# Columnar `_source` consumers (Class C — `references/blockers.md` C6-C10)
 #
 # Columnar never stores the original JSON. What comes back as `_source` is
 # reconstructed from doc values, and it is NOT a faithful copy:
@@ -2339,10 +2613,459 @@ def source_consumer_findings(ds_name: str, transforms: List[Dict[str, Any]],
 
 
 # --------------------------------------------------------------------------- #
+# Index patterns
+# --------------------------------------------------------------------------- #
+
+def _strip_cluster(pattern: str) -> str:
+    """`remote:logs-*` -> `logs-*` (cross-cluster search prefix)."""
+    pattern = pattern.strip().strip("\"'")
+    return pattern.split(":", 1)[1] if ":" in pattern else pattern
+
+
+def index_pattern_matches(pattern: str, index_name: str) -> bool:
+    """Whether an index pattern from a rule or a transform covers `index_name`.
+
+    Exclusions (`-logs-foo-*`) never match; everything else is a shell glob, which is
+    what Elasticsearch index patterns are.
+    """
+    pattern = _strip_cluster(pattern)
+    if not pattern or pattern.startswith("-"):
+        return False
+    return fnmatch.fnmatchcase(index_name, pattern)
+
+
+def stream_index_name(ds_type: str, pkg_name: str, ds_name: str,
+                      manifest: Dict[str, Any]) -> str:
+    """A concrete index name for the stream, for matching patterns against."""
+    dataset = manifest.get("dataset") if isinstance(manifest.get("dataset"), str) else None
+    return f"{ds_type}-{dataset or f'{pkg_name}.{ds_name}'}-default"
+
+
+# --------------------------------------------------------------------------- #
+# Detection rules shipped in this repo (packages/security_detection_engine)
+# --------------------------------------------------------------------------- #
+
+# Prebuilt detection rules are generated from `elastic/detection-rules` and ship to
+# users inside the `security_detection_engine` package, one saved object per rule
+# version (`kibana/security_rule/<rule_id>_<version>.json`). That package is a sibling
+# of every other package in this repo, so the rules that query a data stream can be
+# read directly. Rules a user writes, or installs from elsewhere, are not covered.
+RULES_PACKAGE = "security_detection_engine"
+RULES_SUBDIR = os.path.join("kibana", "security_rule")
+
+# `FROM a, b METADATA _source | ...`, optionally after `SET ...;` directives.
+_ESQL_FROM_RE = re.compile(r"(?is)^\s*(?:set\b[^;]*;\s*)*from\s+(.+?)(?=\s+metadata\b|\||$)")
+_JSON_EXTRACT_PATH_RE = re.compile(r'(?i)json_extract\s*\(\s*_source\s*,\s*"([^"]+)"')
+# Dotted identifiers in a query text. Only names that resolve to a field of the stream
+# are kept, so values that happen to contain dots (`"cmd.exe"`) drop out.
+_QUERY_FIELD_RE = re.compile(r"(?<![\w.@$'\"])([A-Za-z_@][\w@]*(?:\.[\w@]+)+)")
+
+_RULES_CACHE: Dict[str, Dict[str, Any]] = {}
+
+
+def default_rules_dir(pkg_dir: str) -> Optional[str]:
+    """`packages/security_detection_engine/kibana/security_rule` next to `pkg_dir`."""
+    candidate = os.path.join(os.path.dirname(os.path.abspath(pkg_dir)),
+                             RULES_PACKAGE, RULES_SUBDIR)
+    return candidate if os.path.isdir(candidate) else None
+
+
+def load_detection_rules(rules_dir: Optional[str]) -> Dict[str, Any]:
+    """The latest version of every shipped rule, plus a pattern -> rules index.
+
+    Read once per run and cached: the catalog run matches every logs stream against
+    the same ~2,200 rules, so matching goes through the few hundred distinct index
+    patterns rather than rule by rule.
+    """
+    empty: Dict[str, Any] = {"dir": rules_dir, "rules": [], "by_pattern": {}}
+    if not rules_dir or not os.path.isdir(rules_dir):
+        return empty
+    if rules_dir in _RULES_CACHE:
+        return _RULES_CACHE[rules_dir]
+
+    latest: Dict[str, Tuple[int, Dict[str, Any]]] = {}
+    for fname in os.listdir(rules_dir):
+        if not fname.endswith(".json"):
+            continue
+        try:
+            with open(os.path.join(rules_dir, fname), encoding="utf-8") as fh:
+                doc = json.load(fh)
+        except (OSError, ValueError):
+            continue
+        attrs = doc.get("attributes", doc) if isinstance(doc, dict) else None
+        if not isinstance(attrs, dict) or not attrs.get("rule_id") or not attrs.get("type"):
+            continue
+        try:
+            version = int(attrs.get("version") or 0)
+        except (TypeError, ValueError):
+            version = 0
+        rule_id = str(attrs["rule_id"])
+        if rule_id not in latest or version > latest[rule_id][0]:
+            latest[rule_id] = (version, attrs)
+
+    rules: List[Dict[str, Any]] = []
+    for _, attrs in sorted(latest.values(), key=lambda v: str(v[1].get("name"))):
+        query = attrs.get("query") if isinstance(attrs.get("query"), str) else ""
+        language = attrs.get("language") or attrs.get("type")
+        patterns = [p for p in (attrs.get("index") or []) if isinstance(p, str)]
+        if language == "esql" or attrs.get("type") == "esql":
+            match = _ESQL_FROM_RE.search(query)
+            if match:
+                patterns = [p.strip() for p in match.group(1).split(",") if p.strip()]
+        # Indicator match rules also read the threat intel indices they match against.
+        patterns += [p for p in (attrs.get("threat_index") or []) if isinstance(p, str)]
+        rules.append({
+            "name": attrs.get("name") or attrs["rule_id"],
+            "rule_id": attrs["rule_id"],
+            "language": language,
+            "patterns": patterns,
+            "query": query,
+            "source_hits": _source_access_hits(query),
+            "extract_paths": sorted(set(_JSON_EXTRACT_PATH_RE.findall(query))),
+        })
+
+    by_pattern: Dict[str, List[int]] = {}
+    for idx, rule in enumerate(rules):
+        for pattern in rule["patterns"]:
+            by_pattern.setdefault(pattern, []).append(idx)
+    result = {"dir": rules_dir, "rules": rules, "by_pattern": by_pattern}
+    _RULES_CACHE[rules_dir] = result
+    return result
+
+
+def rules_for_stream(rule_set: Dict[str, Any], index_name: str, ds_type: str,
+                     pkg_name: str) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
+    """(rules naming this package's indices, rules reaching it via broad patterns).
+
+    A pattern counts as specific when it starts with `<type>-<package>`
+    (`logs-network_traffic.sip-*`, `logs-network_traffic.*`); `logs-*` and `*` are
+    broad. Both kinds read the stream, so both count for the `_source` check; only
+    the specific ones feed the workload and the lookup candidates.
+    """
+    rules = rule_set.get("rules") or []
+    prefix = f"{ds_type}-{pkg_name}"
+    specific: Dict[int, None] = {}
+    broad: Dict[int, None] = {}
+    for pattern, idxs in (rule_set.get("by_pattern") or {}).items():
+        if not index_pattern_matches(pattern, index_name):
+            continue
+        target = specific if _strip_cluster(pattern).startswith(prefix) else broad
+        for idx in idxs:
+            target[idx] = None
+    return ([rules[i] for i in specific],
+            [rules[i] for i in broad if i not in specific])
+
+
+def detection_rule_findings(specific: List[Dict[str, Any]],
+                            broad: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """`source_consumer_detection_rule`: shipped rules that read this stream's `_source`."""
+    out: List[Dict[str, Any]] = []
+    for rule in specific + broad:
+        if not rule["source_hits"]:
+            continue
+        detail = "; ".join(f"{label} — `{excerpt}`" for label, excerpt in rule["source_hits"][:2])
+        paths = rule["extract_paths"]
+        out.append(finding(
+            "source_consumer_detection_rule", "C", "review",
+            f"The shipped detection rule \"{rule['name']}\" ({rule['language']}) reads this "
+            f"stream's `_source`: {detail}"
+            + (f". `JSON_EXTRACT` paths: {', '.join(f'`{p}`' for p in paths[:6])}"
+               f"{', …' if len(paths) > 6 else ''}" if paths else "")
+            + ". Columnar returns `_source` with dotted top-level keys (`{\"a.b\": …}` rather "
+              "than `{\"a\": {\"b\": …}}`), so a nested lookup such as "
+              "`JSON_EXTRACT(_source, \"a.b\")` returns null and the rule stops matching, with "
+              "no error.",
+            "Hold this stream back from the tech preview until the rule is fixed in "
+            "`elastic/detection-rules`. The fix: reference the mapped fields as columns "
+            "instead of `_source` (cast with `TO_STRING` where the index patterns disagree "
+            "on a type), and add `SET unmapped_fields = \"nullify\";` when a field may be "
+            "missing from one of the patterns. Values inside a `flattened` field cannot be "
+            "read as columns: promote the value to its own field in the ingest pipeline, "
+            "or wait for elasticsearch#160300 (a `JSON_EXTRACT` that resolves dotted keys).",
+            f"packages/{RULES_PACKAGE}/{RULES_SUBDIR.replace(os.sep, '/')}/"
+            f"{rule['rule_id']}_<version>.json"))
+    return out
+
+
+def rule_workload(specific: List[Dict[str, Any]], broad: List[Dict[str, Any]],
+                  scanned: bool) -> Dict[str, Any]:
+    """The rule half of the performance workload for one stream."""
+    return {
+        "scanned": scanned,
+        "specific": len(specific),
+        "broad": len(broad),
+        "by_language": dict(sorted(Counter(r["language"] for r in specific).items())),
+        "reading_source": [r["name"] for r in specific + broad if r["source_hits"]],
+        "names": [r["name"] for r in specific][:25],
+    }
+
+
+def lookup_candidates(specific: List[Dict[str, Any]], filter_fields: Counter,
+                      field_index: Dict[str, Dict[str, Any]], sort_fields: List[str],
+                      limit: int = 10) -> List[Dict[str, Any]]:
+    """Fields the stream's rules and dashboards filter on, for the `index: true` review.
+
+    Columnar drops the inverted index of every non-`text` field, so an exact-value
+    filter on a field outside the sort key becomes a doc-value scan. This lists the
+    `keyword`/`ip` fields the shipped rules (and, when scanned, the dashboard filters)
+    reference, most referenced first, with the plan's high-risk lookup fields flagged.
+    It is a starting point for a human decision, never a recommendation: "none" is a
+    valid answer, and a field in the sort key needs no index.
+    """
+    rule_refs: Counter = Counter()
+    for rule in specific:
+        for name in set(_QUERY_FIELD_RE.findall(rule["query"])):
+            rule_refs[name] += 1
+    names = set(rule_refs) | set(filter_fields or {})
+    schema = ecs_schema()
+    out: List[Dict[str, Any]] = []
+    for name in names:
+        if name in sort_fields or name.startswith(("data_stream.", "@")):
+            continue
+        fdef = field_index.get(name)
+        ftype = _resolved_type(fdef, name) if fdef else (schema.get(name) or {}).get("type")
+        high_risk = name in LOOKUP_RISK_FIELDS or name.startswith(LOOKUP_RISK_PREFIXES)
+        if ftype not in ("keyword", "ip") and not (ftype is None and high_risk):
+            continue
+        # Enum-like fields (`event.type`, `host.os.type`, `http.request.method`) are
+        # grouping dimensions that aggregations read from doc values anyway; the plan
+        # keeps them doc-values-only, so they are not lookup candidates.
+        if not high_risk and _is_low_cardinality(name):
+            continue
+        if fdef is None and name not in schema:
+            continue  # not a field of this stream as far as the audit can tell
+        out.append({
+            "field": name,
+            "type": ftype,
+            "rules": rule_refs.get(name, 0),
+            "dashboard_filters": (filter_fields or {}).get(name, 0),
+            "high_risk": high_risk,
+        })
+    out.sort(key=lambda c: (not c["high_risk"], -c["rules"], -c["dashboard_filters"], c["field"]))
+    return out[:limit]
+
+
+# --------------------------------------------------------------------------- #
+# `latest` transforms
+# --------------------------------------------------------------------------- #
+
+_INGEST_PIPELINE_NAME_RE = re.compile(r'ingestPipelineName\s+"([^"]+)"')
+
+
+def _pipeline_expands_dotted_keys(path: str) -> bool:
+    """Whether a pipeline turns dotted top-level keys back into objects first.
+
+    Either a leading `dot_expander` with `field: "*"`, or the pipeline-level
+    `field_access_pattern: flexible`, which resolves dotted names on access.
+    """
+    try:
+        doc = load_yaml(path) or {}
+    except RuntimeError:
+        return False
+    if not isinstance(doc, dict):
+        return False
+    if str(doc.get("field_access_pattern", "")).strip().lower() == "flexible":
+        return True
+    procs = doc.get("processors") if isinstance(doc.get("processors"), list) else []
+    first = procs[0] if procs and isinstance(procs[0], dict) else {}
+    expander = first.get("dot_expander")
+    return isinstance(expander, dict) and str(expander.get("field")) == "*"
+
+
+def latest_transforms(pkg_dir: str) -> List[Dict[str, Any]]:
+    """The package's `latest` transforms, with their source patterns and destination.
+
+    A `latest` transform keeps the newest document per `unique_key` and writes that
+    document's `_source` to its destination index. It is a `_source` consumer even
+    without a single script, which is why it is scanned separately from
+    `transform_source_consumers`.
+    """
+    out: List[Dict[str, Any]] = []
+    root = os.path.join(pkg_dir, "elasticsearch", "transform")
+    if not os.path.isdir(root):
+        return out
+    for name in sorted(os.listdir(root)):
+        path = os.path.join(root, name, "transform.yml")
+        if not os.path.isfile(path):
+            continue
+        try:
+            doc = load_yaml(path) or {}
+        except RuntimeError:
+            continue
+        if not isinstance(doc, dict) or not isinstance(doc.get("latest"), dict):
+            continue
+        source = doc.get("source") if isinstance(doc.get("source"), dict) else {}
+        indices = source.get("index")
+        indices = [indices] if isinstance(indices, str) else (indices or [])
+        patterns = [part.strip() for entry in indices for part in str(entry).split(",")
+                    if part.strip()]
+        dest = doc.get("dest") if isinstance(doc.get("dest"), dict) else {}
+        ref = str(dest.get("pipeline") or "")
+        match = _INGEST_PIPELINE_NAME_RE.search(ref)
+        pipeline_name = match.group(1) if match else (ref or None)
+        pipeline_file = None
+        if pipeline_name:
+            for ext in (".yml", ".yaml", ".json"):
+                candidate = os.path.join(pkg_dir, "elasticsearch", "ingest_pipeline",
+                                         pipeline_name + ext)
+                if os.path.isfile(candidate):
+                    pipeline_file = candidate
+                    break
+        unique_key = doc["latest"].get("unique_key") or []
+        out.append({
+            "name": name,
+            "file": os.path.relpath(path, pkg_dir),
+            "patterns": patterns,
+            "unique_key": unique_key if isinstance(unique_key, list) else [unique_key],
+            "dest_index": dest.get("index"),
+            "dest_pipeline": (os.path.relpath(pipeline_file, pkg_dir) if pipeline_file
+                              else pipeline_name),
+            "expands_dotted": bool(pipeline_file) and _pipeline_expands_dotted_keys(pipeline_file),
+        })
+    return out
+
+
+_CATALOG_LATEST_CACHE: Dict[str, List[Dict[str, Any]]] = {}
+_CATALOG_STREAMS_CACHE: Dict[str, List[Tuple[str, str, str]]] = {}
+
+
+def catalog_latest_transforms(packages_root: str) -> List[Dict[str, Any]]:
+    """Every package's `latest` transforms under `packages_root`, tagged with the owner.
+
+    A `latest` transform in one package can read another package's data stream, and
+    that stream is the one whose opt-in changes the transform's output, so the finding
+    has to land there, not only in the owner's report. Read once per run.
+    """
+    root = os.path.abspath(packages_root)
+    if root in _CATALOG_LATEST_CACHE:
+        return _CATALOG_LATEST_CACHE[root]
+    out: List[Dict[str, Any]] = []
+    if os.path.isdir(root):
+        for name in sorted(os.listdir(root)):
+            pkg_dir = os.path.join(root, name)
+            if not os.path.isdir(os.path.join(pkg_dir, "elasticsearch", "transform")):
+                continue
+            for tr in latest_transforms(pkg_dir):
+                out.append(dict(tr, package=name))
+    _CATALOG_LATEST_CACHE[root] = out
+    return out
+
+
+def _pattern_could_match_package(pattern: str, pkg: str) -> bool:
+    """Cheap pre-check: could this index pattern match a logs stream of `pkg`?
+
+    Compares the pattern's literal prefix (up to the first wildcard) with
+    `logs-<pkg>`; exact glob matching per stream happens later.
+    """
+    literal = _strip_cluster(pattern).split("*", 1)[0].split("?", 1)[0]
+    if not literal or literal.startswith("-"):
+        return not literal
+    target = f"logs-{pkg}"
+    return target.startswith(literal) or literal.startswith(target)
+
+
+def catalog_stream_index_names(packages_root: str) -> List[Tuple[str, str, str]]:
+    """(package, data stream, index name) for every in-scope logs stream under the root.
+
+    Only needed to say where a transform that reads no stream of its own package is
+    flagged, so it is built lazily, once per run. Mirrors the scope rules of
+    `audit_data_stream`: `type: logs`, and no OpenTelemetry input.
+    """
+    root = os.path.abspath(packages_root)
+    if root in _CATALOG_STREAMS_CACHE:
+        return _CATALOG_STREAMS_CACHE[root]
+    out: List[Tuple[str, str, str]] = []
+    if os.path.isdir(root):
+        for pkg in sorted(os.listdir(root)):
+            ds_root = os.path.join(root, pkg, "data_stream")
+            if not os.path.isdir(ds_root):
+                continue
+            for ds in sorted(os.listdir(ds_root)):
+                path = os.path.join(ds_root, ds, "manifest.yml")
+                if not os.path.isfile(path):
+                    continue
+                try:
+                    manifest = load_yaml(path) or {}
+                except RuntimeError:
+                    continue
+                if not isinstance(manifest, dict) or manifest.get("type") != "logs":
+                    continue
+                inputs = {s.get("input") for s in (manifest.get("streams") or [])
+                          if isinstance(s, dict)}
+                if inputs & OTEL_INPUTS:
+                    continue
+                out.append((pkg, ds, stream_index_name("logs", pkg, ds, manifest)))
+    _CATALOG_STREAMS_CACHE[root] = out
+    return out
+
+
+def latest_transform_findings(index_name: str, transforms: List[Dict[str, Any]],
+                              current_pkg: Optional[str] = None) -> List[Dict[str, Any]]:
+    """`source_consumer_latest_transform` for the latest transforms reading this stream.
+
+    `transforms` holds the package's own transforms and, tagged with `package`, the
+    ones other packages own; `current_pkg` is the audited package's directory name.
+    """
+    out: List[Dict[str, Any]] = []
+    for tr in transforms:
+        if not any(index_pattern_matches(p, index_name) for p in tr["patterns"]):
+            continue
+        owner = tr.get("package")
+        foreign = bool(owner) and owner != current_pkg
+        subject = (f"The `{owner}` package's `{tr['name']}` transform" if foreign
+                   else f"The `{tr['name']}` transform")
+        keys = ", ".join(f"`{k}`" for k in tr["unique_key"]) or "unique key"
+        # A resolved pipeline is a path inside the owner package; say which package.
+        pipe_ref = tr["dest_pipeline"]
+        if foreign and pipe_ref and "/" in pipe_ref:
+            pipe_ref = f"packages/{owner}/{pipe_ref}"
+        if tr["dest_pipeline"] and not tr["expands_dotted"]:
+            pipeline = (f" Its destination pipeline `{pipe_ref}` addresses fields "
+                        f"by path, so its processors will not find the dotted keys: `rename`, "
+                        f"`set` and `remove` with `ignore_missing` skip silently, and scripts "
+                        f"see `ctx.<object>` as null.")
+        elif tr["dest_pipeline"]:
+            pipeline = (f" Its destination pipeline `{pipe_ref}` already expands "
+                        f"dotted keys, so only the array shapes change.")
+        else:
+            pipeline = ""
+        out.append(finding(
+            "source_consumer_latest_transform", "C", "review",
+            f"{subject} is a `latest` transform: for each {keys} it "
+            f"copies the newest document's `_source` into `{tr['dest_index']}`. On a "
+            f"columnar source that `_source` is rebuilt flat (dotted keys, object arrays "
+            f"as parallel arrays, single-element arrays as plain values), so the "
+            f"destination documents change shape.{pipeline}",
+            "Start the destination pipeline with `dot_expander` and `field: \"*\"` (a no-op "
+            "on logsdb input), or set `field_access_pattern: flexible` on it. Check that no "
+            "consumer of the destination index depends on object-array pairing or reads its "
+            "`_source`. Then run the transform on this stream in both modes and diff the "
+            "destination documents. Pivot transforms are unaffected: they aggregate from "
+            "doc values."
+            + (f" The fix belongs in the `{owner}` package, which owns the transform; "
+               f"coordinate with its owners before this stream declares readiness."
+               if foreign else ""),
+            f"packages/{owner}/{tr['file']}" if foreign else tr["file"]))
+        # A resolved pipeline file that does not expand dotted keys yet gets the exact
+        # processor to add, in the owner's file.
+        if tr["dest_pipeline"] and "/" in tr["dest_pipeline"] and not tr["expands_dotted"]:
+            is_json = tr["dest_pipeline"].endswith(".json")
+            out[-1]["patch"] = patch(
+                pipe_ref, "as the first entry under `processors:`",
+                DOT_EXPANDER_JSON if is_json else DOT_EXPANDER_YAML,
+                lang="json" if is_json else "yaml",
+                note="Or set `field_access_pattern: flexible` at the top level of the pipeline. "
+                     "Test it with `_ingest/pipeline/_simulate`: the same document sent nested "
+                     "and with dotted keys must give the same output.")
+    return out
+
+
+# --------------------------------------------------------------------------- #
 # Package audit
 # --------------------------------------------------------------------------- #
 
-def audit_package(pkg_dir: str, scan_dashboards: bool = True) -> Dict[str, Any]:
+def audit_package(pkg_dir: str, scan_dashboards: bool = True,
+                  rules_dir: Optional[str] = "auto") -> Dict[str, Any]:
     pkg_dir = os.path.abspath(pkg_dir.rstrip("/"))
     pkg_name = os.path.basename(pkg_dir)
     result: Dict[str, Any] = {
@@ -2382,10 +3105,28 @@ def audit_package(pkg_dir: str, scan_dashboards: bool = True) -> Dict[str, Any]:
     dash_fields, filter_fields, kibana_consumers = scan_kibana_assets(
         pkg_dir, count_fields=scan_dashboards)
     transforms = transform_source_consumers(pkg_dir)
+    latest = latest_transforms(pkg_dir)
+    # `latest` transforms other packages own: one of them may read this package's streams.
+    # Pre-filtered on the literal prefix of each pattern (`logs-*` could match anything,
+    # `logs-other_pkg.x-*` or `metrics-…` cannot), so the per-stream glob matching only
+    # sees the handful that could apply.
+    own_dir = os.path.basename(pkg_dir)
+    packages_root = os.path.dirname(pkg_dir)
+    foreign_latest = [t for t in catalog_latest_transforms(packages_root)
+                      if t["package"] != own_dir
+                      and any(_pattern_could_match_package(p, own_dir) for p in t["patterns"])]
     result["source_consumer_assets"] = (
-        [t["file"] for t in transforms] + [k["file"] for k in kibana_consumers])
+        [t["file"] for t in transforms] + [k["file"] for k in kibana_consumers]
+        + [t["file"] for t in latest])
+    result["latest_transforms"] = latest
     result["dashboard_top_fields"] = [f for f, _ in dash_fields.most_common(15)]
     result["dashboard_filter_fields"] = [f for f, _ in filter_fields.most_common(15)]
+
+    if rules_dir == "auto":
+        rules_dir = default_rules_dir(pkg_dir)
+    rule_set = load_detection_rules(rules_dir)
+    result["detection_rules_dir"] = rule_set["dir"]
+    result["detection_rules_scanned"] = len(rule_set["rules"])
 
     status = "OUT_OF_SCOPE"
     for ds_name in sorted(os.listdir(ds_root)):
@@ -2394,10 +3135,25 @@ def audit_package(pkg_dir: str, scan_dashboards: bool = True) -> Dict[str, Any]:
             continue
         stream = audit_data_stream(pkg_dir, ds_dir, ds_name, dash_fields, filter_fields,
                                    format_version=result.get("format_version"),
-                                   transforms=transforms, kibana=kibana_consumers)
+                                   transforms=transforms, kibana=kibana_consumers,
+                                   latest=latest, foreign_latest=foreign_latest,
+                                   rule_set=rule_set, pkg_name=result["package"])
         result["data_streams"].append(stream)
         status = worse(status, stream["status"])
     result["status"] = status
+
+    # Where each of the package's own `latest` transforms lands: its own in-scope
+    # streams, or, for one that reads none of them, the other packages' streams that
+    # carry its finding (possibly none: metrics streams, alert indices).
+    for tr in latest:
+        tr["streams"] = [s["data_stream"] for s in result["data_streams"]
+                         if s.get("index_name")
+                         and any(index_pattern_matches(p, s["index_name"]) for p in tr["patterns"])]
+        if not tr["streams"]:
+            tr["flagged_on"] = [f"{pkg}/{ds}" for pkg, ds, idx
+                                in catalog_stream_index_names(packages_root)
+                                if pkg != own_dir
+                                and any(index_pattern_matches(p, idx) for p in tr["patterns"])]
     return result
 
 
@@ -2405,7 +3161,11 @@ def audit_data_stream(pkg_dir: str, ds_dir: str, ds_name: str,
                       dash_fields: Counter, filter_fields: Counter,
                       format_version: Any = None,
                       transforms: Optional[List[Dict[str, Any]]] = None,
-                      kibana: Optional[List[Dict[str, Any]]] = None) -> Dict[str, Any]:
+                      kibana: Optional[List[Dict[str, Any]]] = None,
+                      latest: Optional[List[Dict[str, Any]]] = None,
+                      foreign_latest: Optional[List[Dict[str, Any]]] = None,
+                      rule_set: Optional[Dict[str, Any]] = None,
+                      pkg_name: Optional[str] = None) -> Dict[str, Any]:
     rel = lambda p: os.path.relpath(p, pkg_dir)  # noqa: E731
     stream: Dict[str, Any] = {
         "data_stream": ds_name,
@@ -2441,9 +3201,10 @@ def audit_data_stream(pkg_dir: str, ds_dir: str, ds_name: str,
     es_section = manifest.get("elasticsearch") if isinstance(manifest.get("elasticsearch"), dict) else {}
     stream["index_mode"] = es_section.get("index_mode")
     # package-spec 3.7.0 stream-level readiness flag. Fleet shows the per-stream
-    # opt-in toggle when it is set; a columnar `index_mode` makes columnar the
-    # default for new installs instead. Either one means "this stream is
-    # columnar-enabled" as far as this report is concerned.
+    # opt-in toggle when it is set; a columnar `index_mode` forces columnar instead
+    # (the toggle is locked on and existing streams switch at the next rollover).
+    # Either one means "this stream is columnar-enabled" as far as this report is
+    # concerned.
     stream["columnar_supported"] = is_true(columnar_block(es_section).get("supported"))
     stream["columnar_enabled"] = bool(
         stream["columnar_supported"] or stream["index_mode"] in COLUMNAR_INDEX_MODES
@@ -2457,6 +3218,17 @@ def audit_data_stream(pkg_dir: str, ds_dir: str, ds_name: str,
     stream["inputs"] = sorted({
         s.get("input") for s in (manifest.get("streams") or []) if isinstance(s, dict) and s.get("input")
     })
+
+    otel_inputs = [i for i in stream["inputs"] if i in OTEL_INPUTS]
+    if otel_inputs:
+        stream["out_of_scope_reason"] = (
+            f"OpenTelemetry input ({', '.join(f'`{i}`' for i in otel_inputs)}): OTel log "
+            f"streams stay on LogsDB until logs sharing the same resource attributes can be "
+            f"clustered (derived fields), per the rollout strategy")
+        return stream
+
+    pkg_name = pkg_name or os.path.basename(pkg_dir)
+    stream["index_name"] = stream_index_name(stream["type"], pkg_name, ds_name, manifest)
 
     findings = check_stream_manifest(manifest, rel(manifest_path))
 
@@ -2473,6 +3245,12 @@ def audit_data_stream(pkg_dir: str, ds_dir: str, ds_name: str,
     # `cloud.account.id` declared only in the generated `agent.yml` is Elastic
     # Agent's metadata, not the event's tenant (`_tier1_event_evidence`).
     field_sources: Dict[str, str] = {}
+    # Two passes: nested ancestry is decided by full path over every field file of the
+    # stream, because packages declare nested children both through `fields:` and as
+    # separate entries with dotted names (tanium: `whats` nested, then
+    # `whats.intel_intra_ids` nested next to it), and Fleet expands both into the
+    # same hierarchy.
+    entries: List[Tuple[Dict[str, Any], str, int, bool, str, str]] = []
     fields_dir = os.path.join(ds_dir, "fields")
     if os.path.isdir(fields_dir):
         for fname in sorted(os.listdir(fields_dir)):
@@ -2485,12 +3263,25 @@ def audit_data_stream(pkg_dir: str, ds_dir: str, ds_name: str,
                 stream["errors"].append(str(exc))
                 continue
             for fdef, flat, depth, in_mf in walk_fields(defs):
-                if not in_mf:
-                    field_index.setdefault(flat, fdef)
-                    field_sources.setdefault(flat, fname)
-                if columnar_block(fdef):
-                    columnar_construct_sites.append(f"`{flat}` ({rel(fpath)})")
-                findings.extend(check_field(fdef, flat, depth, in_mf, rel(fpath)))
+                entries.append((fdef, flat, depth, in_mf, rel(fpath), fname))
+    nested_paths = {flat for fdef, flat, _, in_mf, _, _ in entries
+                    if not in_mf and fdef.get("type") == "nested"}
+    text_subfields: set = set()
+    for fdef, flat, depth, in_mf, rel_file, fname in entries:
+        if not in_mf:
+            field_index.setdefault(flat, fdef)
+            field_sources.setdefault(flat, fname)
+        if columnar_block(fdef):
+            columnar_construct_sites.append(f"`{flat}` ({rel_file})")
+        path_depth = sum(1 for p in nested_paths if flat.startswith(p + "."))
+        findings.extend(check_field(fdef, flat, max(depth, path_depth), in_mf, rel_file))
+        # Text sub-fields keep an inverted index in columnar: input for the ECS `.text`
+        # review. Declared ones, plus the ones `external: ecs` imports carry.
+        if in_mf and fdef.get("type") in TEXT_TYPES:
+            text_subfields.add(flat)
+        elif not in_mf and fdef.get("external") == "ecs":
+            for sub in (ecs_schema().get(flat) or {}).get("text_subfields") or []:
+                text_subfields.add(f"{flat}.{sub}")
 
     # --- package-spec version gate -------------------------------------- #
     # Both constructs are new in package-spec 3.7.0. Declaring either one under
@@ -2542,38 +3333,53 @@ def audit_data_stream(pkg_dir: str, ds_dir: str, ds_name: str,
 
     sample = load_sample_event(ds_dir)
     pipeline_arrays = scan_pipelines(ds_dir)
+    attach_pipeline_patches(findings, field_index, ds_dir, pkg_dir)
 
-    # --- columnar `_source` consumers (C6-C8) ---------------------------- #
+    # --- columnar `_source` consumers (C6-C10) --------------------------- #
     # Appended last: they are Class C, so they cannot turn a Class A verdict, but a
     # `review` one does move a stream to NEEDS_REVIEW, which is the point — a stream
     # whose `_source` is read by a transform, a Kibana runtime field or an ES|QL
     # `METADATA _source` query should not be declared `supported` before someone has
     # looked at it.
     findings.extend(source_consumer_findings(ds_name, transforms or [], kibana or []))
+    findings.extend(latest_transform_findings(
+        stream["index_name"], (latest or []) + (foreign_latest or []),
+        current_pkg=os.path.basename(pkg_dir)))
+    rule_set = rule_set or {}
+    specific_rules, broad_rules = rules_for_stream(rule_set, stream["index_name"],
+                                                   stream["type"], pkg_name)
+    findings.extend(detection_rule_findings(specific_rules, broad_rules))
     flattened_exempt: set = set()
     findings.extend(object_array_findings(ds_dir, ds_name, field_index, sample,
                                           flattened_exempt))
 
-    # What the C6-C8 scan actually looked at. Recorded so the report can state the
-    # NEGATIVE result in words: an empty Class C section is indistinguishable from a
-    # check that never ran, and the reader has to know which one it was before
+    # What the `_source` consumer scan actually looked at. Recorded so the report can
+    # state the NEGATIVE result in words: an empty Class C section is indistinguishable
+    # from a check that never ran, and the reader has to know which one it was before
     # declaring a stream ready.
     code_counts = Counter(f["code"] for f in findings)
     stream["source_consumers"] = {
         "transform": code_counts["source_consumer_transform"],
+        "latest_transform": code_counts["source_consumer_latest_transform"],
         "kibana": code_counts["source_consumer_kibana"],
+        "detection_rule": code_counts["source_consumer_detection_rule"],
         "object_arrays": code_counts["object_array_flattening"],
         "flattened_exempt": sorted(flattened_exempt),
     }
+    stream["detection_rules"] = rule_workload(specific_rules, broad_rules,
+                                              scanned=bool(rule_set.get("rules")))
 
     stream["findings"] = findings
     stream["field_count"] = len(field_index)
+    stream["text_subfields"] = sorted(text_subfields)
     stream["host_name_in_sample"] = sample_has_host_name(sample)
     stream["sort"] = recommend_sort(stream, field_index, dash_fields, filter_fields,
                                     array_fields=sample_array_fields(sample),
                                     pipeline_arrays=pipeline_arrays,
                                     sample=sample,
                                     field_sources=field_sources)
+    stream["lookup_candidates"] = lookup_candidates(
+        specific_rules, filter_fields, field_index, stream["sort"].get("sort_fields") or [])
     stream["status"] = status_from_findings(findings)
     return stream
 
@@ -2633,14 +3439,16 @@ def columnar_optin_label(stream: Dict[str, Any]) -> str:
     Two independent declarations, and the difference matters:
       * `elasticsearch.columnar.supported: true` — the stream is *ready*; Fleet
         exposes the per-stream opt-in toggle, but logsdb stays the default.
-      * `elasticsearch.index_mode: logsdb_columnar` — columnar is the *default*
-        for new installs of this package version.
+      * `elasticsearch.index_mode: logsdb_columnar` — columnar is *forced* for every
+        install of this package version: Fleet locks the toggle on (the API cannot
+        turn it off either), and existing streams switch at the next rollover.
     """
     mode = stream.get("index_mode")
     parts: List[str] = []
     if mode in COLUMNAR_INDEX_MODES:
-        parts.append(f"**columnar by default** via `index_mode: {mode}` — new installs of "
-                     f"this package version get columnar without the user asking")
+        parts.append(f"**columnar forced** via `index_mode: {mode}` — every install of this "
+                     f"package version is columnar, users cannot opt out, and existing "
+                     f"streams switch at the next rollover")
     if stream.get("columnar_supported"):
         parts.append("**declared ready** via `elasticsearch.columnar.supported: true` — "
                      "Fleet offers the per-stream opt-in toggle; users have to turn it on")
@@ -2761,26 +3569,31 @@ def _sort_summary(fields: List[str], orders: List[str]) -> str:
 
 
 def source_consumer_line(result: Dict[str, Any], s: Dict[str, Any]) -> str:
-    """The C6-C8 result for one stream — stated in words even when it is empty.
+    """The `_source` consumer result for one stream, stated in words even when empty.
 
     A negative result has to be printed: an absent Class C section reads as "not
-    checked", and the migration decision depends on knowing which one it was. The
-    consumer class the audit genuinely cannot see — detection rules, which live in
-    `elastic/detection-rules` — is named every time so it is never mistaken for part
-    of the "none found".
+    checked", and the migration decision depends on knowing which one it was.
     """
     sc = s.get("source_consumers") or {}
-    pkg = result.get("package")
+    rules_scanned = (s.get("detection_rules") or {}).get("scanned")
     hits: List[str] = []
     if sc.get("transform"):
-        hits.append(f"{sc['transform']} transform finding(s) (`source_consumer_transform`)")
+        hits.append(f"{sc['transform']} transform script(s) (`source_consumer_transform`)")
+    if sc.get("latest_transform"):
+        hits.append(f"{sc['latest_transform']} `latest` transform(s) "
+                    f"(`source_consumer_latest_transform`)")
     if sc.get("kibana"):
-        hits.append(f"{sc['kibana']} `kibana/` asset finding(s) (`source_consumer_kibana`)")
+        hits.append(f"{sc['kibana']} `kibana/` asset(s) (`source_consumer_kibana`)")
+    if sc.get("detection_rule"):
+        hits.append(f"{sc['detection_rule']} shipped detection rule(s) "
+                    f"(`source_consumer_detection_rule`)")
     if hits:
-        head = "**" + " and ".join(hits) + "** — see the Class C findings below"
+        head = "**" + ", ".join(hits) + "** — see the Class C findings below"
     else:
-        head = ("none found in this package (no transforms reading `_source`, no "
-                "scripted/runtime fields in `kibana/`, no ES|QL `METADATA _source`)")
+        head = ("none found (no transform script reading `_source`, no `latest` transform, "
+                "no scripted/runtime fields or ES|QL `METADATA _source` in `kibana/`"
+                + (", no shipped detection rule reading `_source`" if rules_scanned else "")
+                + ")")
     if sc.get("object_arrays"):
         arrays = "see `object_array_flattening` below"
     else:
@@ -2790,19 +3603,83 @@ def source_consumer_line(result: Dict[str, Any], s: Dict[str, Any]) -> str:
     if exempt:
         arrays += ("; fields of type `flattened` are exempt, they keep their JSON "
                    "verbatim: " + ", ".join(f"`{f}`" for f in exempt))
-    return (f"`_source` consumers: {head}; object arrays: {arrays}. Detection rules are "
-            f"**not** part of the package — still check `elastic/detection-rules` by hand "
-            f"for rules that read `_source` of `logs-{pkg}.*` (command at the end of this "
-            f"report).")
+    tail = ("" if rules_scanned else
+            " Detection rules were **not** scanned (no `packages/security_detection_engine` "
+            "next to this package, or `--no-rules`), so rules reading `_source` are unknown.")
+    return f"`_source` consumers: {head}; object arrays: {arrays}.{tail}"
+
+
+def detection_rules_line(s: Dict[str, Any]) -> str:
+    """Which shipped rules query the stream: the rule half of the performance workload."""
+    dr = s.get("detection_rules") or {}
+    if not dr.get("scanned"):
+        return "Detection rules: not scanned."
+    if not dr.get("specific") and not dr.get("broad"):
+        return "Detection rules: no shipped rule queries this stream."
+    langs = ", ".join(f"{n} {lang}" for lang, n in (dr.get("by_language") or {}).items())
+    parts = [f"{dr['specific']} shipped rule(s) query this stream directly"
+             + (f" ({langs})" if langs else "")]
+    if dr.get("broad"):
+        parts.append(f"{dr['broad']} more reach it through broad patterns such as `logs-*`")
+    readers = len(dr.get("reading_source") or [])
+    parts.append(f"{readers} read `_source`" if readers else "none reads `_source`")
+    return ("Detection rules: " + "; ".join(parts) + ". Replay the direct ones (EQL and "
+            "KQL are Query DSL underneath) in the performance tests.")
+
+
+def lookup_candidates_line(s: Dict[str, Any]) -> str:
+    """Lookup candidates for the per-stream `index: true` review."""
+    cands = s.get("lookup_candidates") or []
+    if not cands:
+        return ("Lookup candidates for the `index: true` review: none (no shipped rule or "
+                "scanned dashboard filter references a `keyword`/`ip` field outside the "
+                "sort key).")
+    items = []
+    for c in cands:
+        src = []
+        if c.get("rules"):
+            src.append(f"{c['rules']} rule{'s' if c['rules'] != 1 else ''}")
+        if c.get("dashboard_filters"):
+            n = c["dashboard_filters"]
+            src.append(f"{n} dashboard filter{'s' if n != 1 else ''}")
+        items.append(f"`{c['field']}`" + (" (high-risk lookup)" if c.get("high_risk") else "")
+                     + (f": {', '.join(src)}" if src else ""))
+    return ("Lookup candidates for the `index: true` review, a starting point and not a "
+            "recommendation (\"none\" is a valid decision): " + "; ".join(items) + ".")
+
+
+def text_subfields_line(s: Dict[str, Any]) -> str:
+    subs = s.get("text_subfields") or []
+    shown = ", ".join(f"`{t}`" for t in subs[:8]) + (", …" if len(subs) > 8 else "")
+    return (f"Text sub-fields (they keep an inverted index in columnar; input for the ECS "
+            f"`.text` review): {len(subs)}" + (f", {shown}" if subs else "")
+            + ". Sub-fields that `ecs@mappings` adds at index time are not counted.")
+
+
+# Human-readable gloss for statuses whose name alone overstates what was checked.
+STATUS_GLOSS = {
+    "READY": "no mapping blocker found; this is not a validation result",
+}
+
+
+def status_label(status: str) -> str:
+    gloss = STATUS_GLOSS.get(status)
+    return f"**{status}** ({gloss})" if gloss else f"**{status}**"
 
 
 def md_package(result: Dict[str, Any]) -> str:
     lines: List[str] = []
     lines.append(f"# Columnar readiness: `{result['package']}`")
     lines.append("")
-    lines.append(f"- Status: **{result['status']}**")
+    lines.append(f"- Status: {status_label(result['status'])}")
     lines.append(f"- Package type: `{result.get('type')}`, version `{result.get('version')}`, "
                  f"format_version `{result.get('format_version')}`")
+    lines.append(f"- ECS definitions: {ecs_source()}")
+    if result.get("detection_rules_scanned"):
+        lines.append(f"- Detection rules: {result['detection_rules_scanned']} shipped rules "
+                     f"scanned (latest version of each, from `{RULES_PACKAGE}`)")
+    else:
+        lines.append("- Detection rules: not scanned")
     if result.get("kibana_condition"):
         if kibana_condition_meets_columnar(result["kibana_condition"]):
             lines.append(f"- Kibana condition: `{result['kibana_condition']}` — already at "
@@ -2843,6 +3720,9 @@ def md_package(result: Dict[str, Any]) -> str:
         lines.append(f"- Columnar opt-in: {columnar_optin_label(s)}")
         lines.append(f"- Sort: **{s['sort']['recommendation']}** — {s['sort']['reason']}")
         lines.append(f"- {source_consumer_line(result, s)}")
+        lines.append(f"- {detection_rules_line(s)}")
+        lines.append(f"- {lookup_candidates_line(s)}")
+        lines.append(f"- {text_subfields_line(s)}")
         body, notes = stream_manifest_block(s)
         segments: List[str] = list(notes)
         if body:
@@ -2875,6 +3755,17 @@ def md_package(result: Dict[str, Any]) -> str:
                 lines.append(f"  - Where: `{f['where']}`")
                 for idx, ln in enumerate(f["remediation"].split("\n")):
                     lines.append(f"  - {ln}" if idx == 0 else f"    {ln}")
+                p = f.get("patch")
+                if p:
+                    lines.append(f"  - **Suggested change** in `{p['file']}`, {p['position']}:")
+                    lines.append("")
+                    lines.append(f"    ```{p.get('lang') or 'yaml'}")
+                    for ln in p["body"].rstrip("\n").split("\n"):
+                        lines.append(f"    {ln}" if ln else "")
+                    lines.append("    ```")
+                    if p.get("note"):
+                        lines.append("")
+                        lines.append(f"    {p['note']}")
             lines.append("")
 
     if skipped:
@@ -2896,31 +3787,32 @@ def md_package(result: Dict[str, Any]) -> str:
         lines.append("")
         lines.append(", ".join(f"`{f}`" for f in result["dashboard_filter_fields"]))
         lines.append("")
-    if in_scope:
-        lines.append("## `_source` consumers the audit cannot see (manual)")
+    # `latest` transforms that read none of this package's in-scope streams. Each is
+    # flagged on the other packages' logs streams it reads, if any; the rest read
+    # metrics streams or indices no package here owns. Listed so none is dropped silently.
+    stray = [tr for tr in result.get("latest_transforms") or [] if not tr.get("streams")]
+    if stray:
+        lines.append("## `latest` transforms that read no stream of this package")
         lines.append("")
-        lines.append("Detection rules are generated from `elastic/detection-rules` and reach "
-                     "users through the `security_detection_engine` package, so a rule that "
-                     "reads the `_source` of this package's indices is invisible to an audit "
-                     "of this package. There is no automated check — run it by hand:")
+        lines.append("None of this package's in-scope logs streams carries a finding for "
+                     "them. One that reads another package's logs stream is flagged on that "
+                     "stream, and the fix is discussed here, in the package that owns it.")
         lines.append("")
-        lines.append("```bash")
-        lines.append("git clone https://github.com/elastic/detection-rules")
-        lines.append("cd detection-rules")
-        lines.append(f"grep -rl 'logs-{result['package']}\\.' rules/ | xargs grep -l '_source'")
-        lines.append(f"grep -rl 'logs-{result['package']}\\.' rules/ | wc -l")
-        lines.append("```")
+        for tr in stray:
+            flagged = tr.get("flagged_on") or []
+            where = ("flagged on " + ", ".join(f"`{s}`" for s in flagged) if flagged
+                     else "reads no in-scope logs stream of a package in this repo, so no "
+                          "columnar opt-in here changes its output")
+            lines.append(f"- `{tr['name']}` (`{tr['file']}`): "
+                         + ", ".join(f"`{p}`" for p in tr["patterns"]) + f" — {where}")
         lines.append("")
-        lines.append("A hit on the first command is a rule that walks the document source of a "
-                     "data stream in this package — read it before declaring readiness. Rules "
-                     "that only query *fields* (KQL, EQL, ES|QL without `METADATA _source`) "
-                     "are unaffected.")
+    if in_scope and result.get("detection_rules_scanned"):
+        lines.append("## Detection rules in the PR notes")
         lines.append("")
-        lines.append("Record both numbers in the PR notes — "
-                     "\"N detection rules query this package; none read `_source`\", or "
-                     "\"no detection rules query this package\" when the second command "
-                     "returns 0. \"No detection rule concerns\" does not tell a reviewer "
-                     "whether the check ran.")
+        lines.append("Record the per-stream **Detection rules** lines above in the PR, with "
+                     "both numbers: \"N shipped rules query this stream; none read "
+                     "`_source`\", or \"no shipped rule queries this stream\". Rules a user "
+                     "wrote, or installed from elsewhere, are not covered.")
         lines.append("")
     return "\n".join(lines)
 
@@ -2974,15 +3866,29 @@ def md_catalog(results: List[Dict[str, Any]]) -> str:
     in_scope_pkgs = sum(1 for r in results
                         if any(s["status"] != "OUT_OF_SCOPE" for s in r["data_streams"]))
     lines.append(f"Packages scanned: {len(results)}")
-    lines.append(f"Candidate packages (at least one `type: logs` data stream): {in_scope_pkgs}")
+    lines.append(f"Candidate packages (at least one in-scope `type: logs` data stream): "
+                 f"{in_scope_pkgs}")
+    lines.append(f"ECS definitions: {ecs_source()}")
+    rules_scanned = max((r.get("detection_rules_scanned") or 0) for r in results) if results else 0
+    lines.append(f"Detection rules: {rules_scanned} shipped rules scanned (latest version of "
+                 f"each, from `{RULES_PACKAGE}`)" if rules_scanned
+                 else "Detection rules: not scanned")
     lines.append("")
     lines.append("| Status | Packages | Logs data streams |")
     lines.append("| --- | --- | --- |")
     for st in ("BLOCKED", "NEEDS_REVIEW", "READY_AFTER_AUTO_FIX", "READY"):
-        lines.append(f"| {st} | {len(by_status[st])} | {stream_status[st]} |")
-    lines.append(f"| OUT_OF_SCOPE (input package / no logs streams) | "
+        label = f"{st} ({STATUS_GLOSS[st]})" if st in STATUS_GLOSS else st
+        lines.append(f"| {label} | {len(by_status[st])} | {stream_status[st]} |")
+    lines.append(f"| OUT_OF_SCOPE (input package / no logs streams / OTel input) | "
                  f"{len(by_status['OUT_OF_SCOPE'])} | {stream_status['OUT_OF_SCOPE']} |")
     lines.append("")
+    otel_streams = [(r["package"], s_["data_stream"]) for r in results for s_ in r["data_streams"]
+                    if "OpenTelemetry input" in (s_.get("out_of_scope_reason") or "")]
+    if otel_streams:
+        lines.append(f"OTel log streams out of scope until derived fields land "
+                     f"({len(otel_streams)}): "
+                     + ", ".join(f"`{p}`/{d}" for p, d in sorted(otel_streams)))
+        lines.append("")
 
     # Streams that already carry one of the package-spec 3.7.0 columnar
     # declarations. Omitted entirely while the count is zero, so the section
@@ -3001,8 +3907,9 @@ def md_catalog(results: List[Dict[str, Any]]) -> str:
                          + ", ".join(f"`{p}`/{d}" for p, d in sorted(supported)))
             lines.append("")
         if default_mode:
-            lines.append(f"Columnar `index_mode` — columnar is the default for new installs "
-                         f"({len(default_mode)} {plural(len(default_mode))}): "
+            lines.append(f"Columnar `index_mode` — columnar is forced: every install of the "
+                         f"version, the Fleet toggle is locked on, and existing streams switch "
+                         f"at the next rollover ({len(default_mode)} {plural(len(default_mode))}): "
                          + ", ".join(f"`{p}`/{d}" for p, d in sorted(default_mode)))
             lines.append("")
 
@@ -3065,6 +3972,38 @@ def md_catalog(results: List[Dict[str, Any]]) -> str:
     lines.append("")
     lines.extend(code_rows(REVIEW_CODES) or ["(none)", ""])
 
+    # `_source` readers outside the mappings: shipped detection rules and `latest`
+    # transforms. Nothing fails when a stream with one of them goes columnar; the reader
+    # silently gets the flat shape, which is why they are called out on their own.
+    CONSUMER_CODES = ["source_consumer_detection_rule", "source_consumer_latest_transform"]
+    npkg, nds, _ = union(CONSUMER_CODES)
+    lines.append(f"## `_source` readers outside the mappings — review "
+                 f"({npkg} packages, {nds} data streams)")
+    lines.append("")
+    lines.append("Shipped detection rules that read `_source` (they silently stop matching on "
+                 "columnar), and `latest` transforms, which copy `_source` into their "
+                 "destination index (whose documents change shape, and whose destination "
+                 "pipeline may stop finding fields). See `references/blockers.md` C6-C10.")
+    lines.append("")
+    lines.extend(code_rows(CONSUMER_CODES) or ["(none)", ""])
+    fix_pipes = sorted({(r["package"], t["dest_pipeline"]) for r in results
+                        for t in r.get("latest_transforms") or []
+                        if t.get("dest_pipeline") and "/" in t["dest_pipeline"]
+                        and not t.get("expands_dotted")})
+    if fix_pipes:
+        owners = sorted({p for p, _ in fix_pipes})
+        lines.append(f"{len(fix_pipes)} `latest` transform destination pipelines need a leading "
+                     f"`dot_expander` with `field: \"*\"` ({', '.join(f'`{p}`' for p in owners)}); "
+                     f"the per-package report prints the snippet for each file.")
+        lines.append("")
+    if rules_scanned:
+        direct = sum(1 for r in results for s_ in r["data_streams"]
+                     if (s_.get("detection_rules") or {}).get("specific"))
+        lines.append(f"Shipped rules query {direct} in-scope logs data streams directly; the "
+                     "per-package report lists them, as the rule half of each stream's "
+                     "performance workload.")
+        lines.append("")
+
     # Problems with the package-spec 3.7.0 columnar declarations themselves.
     # Kept out of the blocker/auto-fix sections above on purpose: those count
     # mapping features, these count mistakes in the opt-in plumbing. Omitted
@@ -3100,7 +4039,8 @@ def md_catalog(results: List[Dict[str, Any]]) -> str:
     lines.append("")
     for st in ("BLOCKED", "NEEDS_REVIEW", "READY_AFTER_AUTO_FIX", "READY"):
         pkgs = sorted(by_status[st])
-        lines.append(f"### {st} ({len(pkgs)})")
+        gloss = f" — {STATUS_GLOSS[st]}" if st in STATUS_GLOSS else ""
+        lines.append(f"### {st} ({len(pkgs)}){gloss}")
         lines.append("")
         lines.append(", ".join(f"`{p}`" for p in pkgs) or "(none)")
         lines.append("")
@@ -3168,15 +4108,33 @@ def main(argv: Optional[List[str]] = None) -> int:
                         help="scan kibana/ assets for sort tie-breaks (default: on for a single "
                              "package, off for --catalog)")
     parser.add_argument("--no-dashboards", dest="dashboards", action="store_false")
+    parser.add_argument("--rules", metavar="DIR",
+                        help="directory of detection rule saved objects to scan (default: "
+                             f"the `{RULES_PACKAGE}` package next to the audited package)")
+    parser.add_argument("--no-rules", dest="no_rules", action="store_true",
+                        help="do not scan detection rules")
     args = parser.parse_args(argv)
 
     scan_dashboards = (not args.catalog) if args.dashboards is None else args.dashboards
+    rules_dir: Optional[str] = None if args.no_rules else (args.rules or "auto")
+    if args.rules and not os.path.isdir(args.rules):
+        print(f"error: --rules {args.rules}: not a directory", file=sys.stderr)
+        return 2
+
+    path = os.path.abspath(args.path.rstrip("/") or args.path)
+    if not os.path.isdir(path):
+        print(f"error: {args.path}: not a directory", file=sys.stderr)
+        return 2
 
     if args.catalog:
-        root = os.path.abspath(args.path.rstrip("/"))
+        root = path
         pkg_dirs = [os.path.join(root, d) for d in sorted(os.listdir(root))
                     if os.path.isfile(os.path.join(root, d, "manifest.yml"))]
-        results = [audit_package(p, scan_dashboards) for p in pkg_dirs]
+        if not pkg_dirs:
+            print(f"error: {args.path}: no packages (sub-directories with a manifest.yml); "
+                  f"pass the packages/ root with --catalog", file=sys.stderr)
+            return 2
+        results = [audit_package(p, scan_dashboards, rules_dir) for p in pkg_dirs]
         if args.status:
             wanted = {s.upper() for s in args.status}
             results_out = [r for r in results if r["status"] in wanted]
@@ -3186,6 +4144,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         payload: Any = {
             "mode": "catalog",
             "root": root,
+            "ecs_schema_source": ecs_source(),
             "packages": results_out,
             "summary": {
                 "scanned": len(results),
@@ -3194,7 +4153,12 @@ def main(argv: Optional[List[str]] = None) -> int:
             },
         }
     else:
-        result = audit_package(args.path, scan_dashboards)
+        if not os.path.isfile(os.path.join(path, "manifest.yml")):
+            print(f"error: {args.path}: no manifest.yml; pass a package directory, or the "
+                  f"packages/ root with --catalog", file=sys.stderr)
+            return 2
+        result = audit_package(path, scan_dashboards, rules_dir)
+        result["ecs_schema_source"] = ecs_source()
         md = md_package(result)
         payload = result
 
