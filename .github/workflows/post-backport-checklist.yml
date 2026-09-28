@@ -25,7 +25,12 @@ jobs:
       actions: read
 
     steps:
-      - uses: actions/checkout@v7
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          # Full history is needed so that git diff can resolve the PR base SHA,
+          # which is a commit on main. The PR head SHA is fetched separately below.
+          fetch-depth: 0
 
       - name: Set up Go
         uses: actions/setup-go@v7
@@ -34,6 +39,8 @@ jobs:
           go-version-file: cmd/backport/.go-version
 
       - name: Build backport tool
+        # The checkout above is always from the base repository's default branch,
+        # so the binary is built from trusted code — never from the PR's source.
         run: mkdir -p "$GITHUB_WORKSPACE/build" && go build -C cmd/backport -o "$GITHUB_WORKSPACE/build/backport" .
 
       - name: Download artifact
@@ -48,20 +55,52 @@ jobs:
           name: pr-packages-${{ github.event.workflow_run.id }}
           path: artifacts
 
-      - name: Validate artifact and find checklist comment
+      - name: Find PR, detect packages, and find checklist comment
         id: find-comment
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPOSITORY: ${{ github.repository }}
-          ARTIFACT: artifacts/pr-packages.json
+          ARTIFACT: artifacts/pr-trigger.json
+          # HEAD_SHA, HEAD_REPO, and HEAD_BRANCH come from the trusted workflow_run
+          # event context. The PR number and base SHA are then derived from the
+          # GitHub API using these values, so nothing security-sensitive is read
+          # from the artifact (which the pull_request workflow produced).
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+          HEAD_REPO: ${{ github.event.workflow_run.head_repository.full_name }}
+          HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
         run: |
           if [[ ! -f "$ARTIFACT" ]]; then
             echo "Artifact not found — exiting"
             exit 0
           fi
 
-          PR_NUMBER=$(jq -r '.pr_number' "$ARTIFACT")
+          # Find the open PR associated with this workflow run via the GitHub API.
+          # We filter by head repo + branch and then match on the exact SHA so this
+          # works for both same-repo and fork PRs.
+          HEAD_OWNER="${HEAD_REPO%%/*}"
+          PR_DATA=$(gh api \
+            "repos/$REPOSITORY/pulls?state=open&head=${HEAD_OWNER}:${HEAD_BRANCH}" \
+            --jq "[.[] | select(.head.sha == env.HEAD_SHA)] | first // empty")
+
+          if [[ -z "$PR_DATA" ]]; then
+            echo "No open PR found for head SHA $HEAD_SHA — exiting"
+            exit 0
+          fi
+
+          PR_NUMBER=$(jq -r '.number' <<< "$PR_DATA")
+          BASE_SHA=$(jq -r '.base.sha' <<< "$PR_DATA")
+
           echo "pr_number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
+
+          # Fetch the PR head commit. refs/pull/<N>/head is available in the base
+          # repository for all open PRs, including those from forks.
+          git fetch origin "refs/pull/$PR_NUMBER/head"
+
+          # Detect packages using the trusted binary built above from main's code.
+          PACKAGES_JSON=$("$GITHUB_WORKSPACE/build/backport" detect-packages --json "$BASE_SHA" "$HEAD_SHA")
+          echo "Detected packages: $PACKAGES_JSON"
+          jq -n --argjson pkgs "$PACKAGES_JSON" '{"packages": $pkgs}' \
+            > "$GITHUB_WORKSPACE/detected-packages.json"
 
           # Collect all comments that contain the checklist marker across all pages.
           MATCHING=$(gh api "repos/$REPOSITORY/issues/$PR_NUMBER/comments" \
@@ -86,7 +125,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPOSITORY: ${{ github.repository }}
-          ARTIFACT: artifacts/pr-packages.json
+          ARTIFACT: ${{ github.workspace }}/detected-packages.json
           PR_NUMBER: ${{ steps.find-comment.outputs.pr_number }}
           COMMENT_ID: ${{ steps.find-comment.outputs.comment_id }}
         run: |
