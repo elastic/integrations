@@ -25,6 +25,12 @@ jobs:
         # No checkout or binary execution: we never run untrusted fork code here.
         # The privileged post-backport-checklist.yml workflow detects packages
         # itself using trusted code from main and SHAs retrieved from the API.
+        #
+        # The artifact content is intentionally empty — it acts purely as a
+        # boolean signal: its presence tells post-backport-checklist.yml that
+        # this job ran (i.e. the PR does not carry the backport:sync-changelog
+        # label). When the job is skipped the artifact is never uploaded, and
+        # the post workflow exits early on the missing-file check.
         run: echo '{}' > pr-trigger.json
 
       - name: Upload artifact

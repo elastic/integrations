@@ -69,6 +69,9 @@ jobs:
           HEAD_REPO: ${{ github.event.workflow_run.head_repository.full_name }}
           HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
         run: |
+          # The artifact is a boolean signal: its presence means the detect job
+          # ran (PR has no backport:sync-changelog label). When the detect job
+          # is skipped the artifact is never uploaded, so we exit here.
           if [[ ! -f "$ARTIFACT" ]]; then
             echo "Artifact not found — exiting"
             exit 0
