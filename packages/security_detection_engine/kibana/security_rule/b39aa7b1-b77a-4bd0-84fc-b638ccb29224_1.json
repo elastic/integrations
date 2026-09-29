@@ -1,0 +1,105 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Primary ownership is the highest administrative authority in an Anthropic organization, covering billing, membership, and organization-wide settings. Transferring ownership to an attacker-controlled account can lock out the legitimate administrator from recovery paths that depend on the original owner. Attackers often do this after role escalation so defenders cannot reverse earlier privilege changes through normal administration.",
+        "false_positives": [
+            "Organizations transfer primary ownership during reorganizations, administrator departures, or vendor transitions. Verify both the previous and new owner with internal stakeholders before treating the event as malicious."
+        ],
+        "from": "now-9m",
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "event.action",
+                "event.id",
+                "organization.id",
+                "anthropic.audit.previous_owner_id",
+                "anthropic.audit.new_owner_id",
+                "anthropic.audit.actor.type",
+                "user.email",
+                "user.id",
+                "source.ip",
+                "user_agent.original"
+            ]
+        },
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Anthropic Primary Owner Transferred",
+        "note": "## Triage and analysis\n\n### Investigating Anthropic Primary Owner Transferred\n\nPrimary ownership is the highest Anthropic org authority (billing, membership, org-wide settings). Transfers should\nbe rare and ticketed. Actor fields identify who initiated the transfer \u2014 not the new owner\n(`anthropic.audit.previous_owner_id` / `new_owner_id`).\n\nUnauthorized = no HR/IT offboarding or ownership-change ticket naming both parties, or the new owner was recently\ninvited / granted admin and immediately received ownership, especially with follow-on SSO/key/export changes.\n\n#### Possible investigation steps\n\n- Map `anthropic.audit.previous_owner_id` \u2192 `new_owner_id` and resolve initiator (`actor.type`; for `user_actor`\n  check email/IP/UA).\n- Before the transfer: look for `claude_user_role_updated` with `anthropic.audit.current_role: admin`, invite accept,\n  or admin API key creation for the new owner path.\n- After the transfer: look for SSO changes, exports, compliance logging disablement, or IP restriction deletes by the\n  new owner.\n- Contact previous and new owners only after ticket/timeline triage; escalate when ticket is missing or the new owner\n  chain looks staged.\n\n### False positive analysis\n\n- Reorgs and admin departures are valid \u2014 require matching change management / HR records.\n\n### Response and remediation\n\n- On unauthorized transfer: engage Anthropic support and internal IT to recover ownership, revoke the new owner's\n  sessions/keys, and review every admin change made under the new owner account.\n",
+        "query": "from logs-anthropic.audit-* metadata _id, _version, _index\n| where\n    data_stream.dataset == \"anthropic.audit\" and\n    mv_contains(event.category, \"iam\") and\n    event.action == \"primary_owner_transferred\" and\n    event.outcome == \"success\"\n| keep _id, _version, _index, @timestamp, event.*, organization.*, user.*, source.*, user_agent.*, anthropic.audit.*, data_stream.*\n",
+        "references": [
+            "https://platform.claude.com/docs/en/api/compliance/activities/list"
+        ],
+        "related_integrations": [
+            {
+                "package": "anthropic",
+                "version": "^1.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "b39aa7b1-b77a-4bd0-84fc-b638ccb29224",
+        "severity": "high",
+        "tags": [
+            "Domain: GenAI",
+            "Platform: Anthropic",
+            "Data Source: Anthropic Audit Logs",
+            "Use Case: Identity and Access Audit",
+            "Use Case: Threat Detection",
+            "Resources: Investigation Guide",
+            "Rule Type: ES|QL",
+            "Tactic: Privilege Escalation"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0004",
+                    "name": "Privilege Escalation",
+                    "reference": "https://attack.mitre.org/tactics/TA0004/"
+                },
+                "technique": [
+                    {
+                        "id": "T1098",
+                        "name": "Account Manipulation",
+                        "reference": "https://attack.mitre.org/techniques/T1098/",
+                        "subtechnique": [
+                            {
+                                "id": "T1098.003",
+                                "name": "Additional Cloud Roles",
+                                "reference": "https://attack.mitre.org/techniques/T1098/003/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "b39aa7b1-b77a-4bd0-84fc-b638ccb29224_1",
+    "type": "security-rule"
+}
