@@ -13,3 +13,13 @@ services:
       - http-server
       - --addr=:8090
       - --config=/files/config.yml
+  ti_google_threat_intelligence-filestream:
+    image: alpine
+    volumes:
+      - ./sample_logs:/sample_logs:ro
+      - ${SERVICE_LOGS_DIR}:/var/log
+    command: >
+      /bin/sh -c "
+        cp /sample_logs/*.log /var/log/ &&
+        tail -f /dev/null
+      "

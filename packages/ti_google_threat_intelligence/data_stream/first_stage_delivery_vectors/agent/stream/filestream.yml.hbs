@@ -1,0 +1,34 @@
+paths:
+{{#each paths as |path|}}
+  - {{path}}
+{{/each}}
+exclude_files: ['\.gz$']
+parsers:
+  # GTI threat_list files are a single pretty-printed JSON array: {"iocs":[ {...}, {...} ]}.
+  # filestream reads line-by-line, so multiline regroups each top-level element (lines from a
+  # 4-space-indented "{" onward) into one event per IOC; the ingest pipeline then strips the wrapper.
+  - multiline:
+      type: pattern
+      pattern: '^    \{'
+      negate: true
+      match: after
+      max_lines: 100000
+      timeout: 5s
+  # Drop the leading '{ "iocs": [' array-wrapper event (it does not start with a
+  # 4-space "{"), so only assembled IOC objects continue to the ingest pipeline.
+  - include_message:
+      patterns: ['^    \{']
+tags:
+{{#if preserve_original_event}}
+  - preserve_original_event
+{{/if}}
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
