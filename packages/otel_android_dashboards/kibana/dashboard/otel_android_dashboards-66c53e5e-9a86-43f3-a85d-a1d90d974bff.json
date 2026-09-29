@@ -51,7 +51,7 @@
                         "description": "",
                         "params": {
                             "fontSize": 12,
-                            "markdown": "### Android Exception Details\n\nShows all details about a single exception. This dashboard is meant to be opened from the \"Android Application Overview\" dashboard by selecting a specific crash from the crashes list to see its details.",
+                            "markdown": "### ![Android logo](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEEAAAAoCAYAAAChDJfXAAAACXBIWXMAAC4jAAAuIwF4pT92AAADEElEQVRo3mNgGAWjYBSMAgqB7Y1mRZvbLW9sb7c0Dgr3AN1hc7v1tf31dgW6WQqyzPZ260+g5b/sbjZpDmQAgOwHuQPkHst7zfL0Df1brb1Ai/8D8e4BTQW3WraD3GFzq6WH7pab3arnA1r8HBwQN1u8ByIAbG61+YDtv9X60v5+vcCAxILNnZY0aCzc9rg1kZ2edmtdqWcD2n0DbP/t1tSBS4v/65mAsXAa5BC7263F9C0Mm0ug2fF86P9VzANbMt9stoOmhg+Wd+rFsKkxPjOT1epOi4n17ZY4YK3SbnOrdQUQ7wDm5yNAfAZEQ/nLwfK322JB6kH6sJkHsgdkHyQrNtsNjirzdusqSN5smQWvQe53SQBL7Rwg3gxMrp+hsUYShurbBMTZ5ndbxZEKw1lQNasGTbsBVDUBHfYNGDt/gHQGMDbXQqut/9TDLb+AgbIGbD7Enm90rxKJqKoWUdfTBDDQvkHjeXCyp3cAIFLHZvtbHTIDXCi2JMALqAHCwAL1PajApX/s769nATqgYyA9j5k9Wmfiqk2oDlzudvADY3/foAoARDmxB9SSpWkAGD+t5wKW0AcHZQDAs0fLMfsr9Tw0CQCLR72cgzYFYEkRwL4EBy2qwOVDIgAQNcdiKtcCrelDKwDghWUydQYt7jbpglpnQzMQWr7Z32nVobCX+J8RWA8fJaIwArUVsoE9Oyug+jrIqBNNPPYTmCprQPZA+iWtH4lIDYdB/qBgvKA1gsgGSwyKvtutTTQKhAZke0CNJGL0Abv5YWTXBsDk9JA4xzXLopQhd5qdaBEIQM84ogTC3Q454nqjLffJqi2sb7UkkZD3gtHGHyto1AYoR01xLaFE6wc28cmpEs+QUAq/BKaGcJu7bWpAh2YB+V9pVNp/BXelQfaAs2rLKxIC8BSpqcBiSNYGhLLT3TZTUkaKJg7HQACmnD5SAuHGMA2Eq6TMLv0frhhUoxAzoZE4nAPB9k5bPOFAuN3aNZwDATSkT0zVuH54B0LrGiKyQ8vlYR0It1ovjS6uGAWjYBTgAwBlTSLX7n7wmAAAAABJRU5ErkJggg==) Android Exception Details\n\nShows all details about a single exception. Open it from the \"Android Application Overview\" dashboard by clicking a group ID in the crashes table of its Crashes section. The group ID filter at the top narrows every panel to that exception.\n\n* Click a session ID in \"Top affected sessions\" to open the Application Overview filtered by that session.\n* \"Top exception messages\" lists the message variants behind this stack trace, useful when the message carries variables.\n* The \"Stack trace\" section shows the full trace of the most recent occurrence.\n* Each panel has a description that explains in detail what it shows. Hover over its info icon (a circled \"i\" letter) to read it.",
                             "openLinksInNewTab": false
                         },
                         "title": "",
@@ -60,552 +60,15 @@
                     }
                 },
                 "gridData": {
-                    "h": 10,
+                    "h": 11,
                     "i": "d7716259-244f-44c9-bb1b-51347dc00079",
-                    "w": 8,
+                    "sectionId": "5a2c7e9b-1d4f-4b8a-9c3e-7f0a2d5b8c41",
+                    "w": 24,
                     "x": 0,
                     "y": 0
                 },
                 "panelIndex": "d7716259-244f-44c9-bb1b-51347dc00079",
                 "type": "visualization"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "references": [],
-                        "state": {
-                            "adHocDataViews": {
-                                "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77": {
-                                    "allowNoIndex": false,
-                                    "fieldAttrs": {
-                                        "_stacktrace.group_id": {
-                                            "customDescription": "Internal field used by Elastic dashboards. Do not use in user queries."
-                                        },
-                                        "_timeline.text": {
-                                            "customDescription": "Internal field used by Elastic dashboards. Do not use in user queries."
-                                        }
-                                    },
-                                    "fieldFormats": {},
-                                    "id": "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77",
-                                    "name": "android-observability",
-                                    "runtimeFieldMap": {
-                                        "_stacktrace.group_id": {
-                                            "script": {
-                                                "source": "if(!doc.containsKey(\"exception.stacktrace\") || doc[\"exception.stacktrace\"].isEmpty()){\n    return;\n}\ndef stacktrace = doc[\"exception.stacktrace\"].value;\ndef exceptionType = doc[\"exception.type\"].value;\n\ndef stacktraceLinesPattern = /^[^\\s].+((\\n\\sat.+)+)[\\S\\s]*/;\ndef lineNumberPattern = /:\\d+\\)/;\ndef unwantedLinePattern = /\\nCaused by.+|\\n\\s+\\..+/;\ndef stackTraceLinesMatcher = stacktraceLinesPattern.matcher(stacktrace.replaceAll(unwantedLinePattern, (s)-\u003e\"\"));\n\nif(stackTraceLinesMatcher.matches()) {\n    def curatedLines = stackTraceLinesMatcher.group(1).replaceAll(lineNumberPattern, (s)-\u003e\")\");\n    def stacktracePattern = exceptionType + curatedLines;\n    emit(String.valueOf(stacktracePattern.hashCode()).encodeBase64());\n}"
-                                            },
-                                            "type": "keyword"
-                                        },
-                                        "_timeline.text": {
-                                            "script": {
-                                                "source": "if(doc.containsKey(\"span.name\") \u0026\u0026 !doc[\"span.name\"].isEmpty()) {\n  emit(\"[Span] - \" + $(\"span.name\", \"\"));\n} else if (doc.containsKey(\"message\")) {\n  if (doc.containsKey(\"event_name\") \u0026\u0026 !doc[\"event_name\"].isEmpty()) {\n    emit(\"[Log] - \" + $(\"event_name\", \"\"));\n  } else {\n    emit(\"[Log] - \" + $(\"message\", \"\"));\n  }\n}"
-                                            },
-                                            "type": "keyword"
-                                        }
-                                    },
-                                    "sourceFilters": [],
-                                    "timeFieldName": "@timestamp",
-                                    "title": "logs-generic.otel*,traces-generic.otel*"
-                                }
-                            },
-                            "datasourceStates": {
-                                "formBased": {
-                                    "layers": {
-                                        "9ad5f3d5-91c7-4509-94d8-9ef3e33c1815": {
-                                            "columnOrder": [
-                                                "de6d5ed3-bc36-4a5b-842b-1707a42f4d6b",
-                                                "bcb003de-d70e-4a3a-9d74-4cd4fb0a2dc2"
-                                            ],
-                                            "columns": {
-                                                "bcb003de-d70e-4a3a-9d74-4cd4fb0a2dc2": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Occurrences",
-                                                    "operationType": "count",
-                                                    "params": {
-                                                        "emptyAsNull": true
-                                                    },
-                                                    "sourceField": "_stacktrace.group_id"
-                                                },
-                                                "de6d5ed3-bc36-4a5b-842b-1707a42f4d6b": {
-                                                    "customLabel": true,
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "Id",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "exclude": [],
-                                                        "excludeIsRegex": false,
-                                                        "include": [],
-                                                        "includeIsRegex": false,
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "bcb003de-d70e-4a3a-9d74-4cd4fb0a2dc2",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": true,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "size": 10
-                                                    },
-                                                    "sourceField": "session.id"
-                                                }
-                                            },
-                                            "ignoreGlobalFilters": false,
-                                            "incompleteColumns": {},
-                                            "sampling": 1
-                                        }
-                                    }
-                                },
-                                "indexpattern": {
-                                    "layers": {}
-                                },
-                                "textBased": {
-                                    "layers": {}
-                                }
-                            },
-                            "filters": [],
-                            "internalReferences": [
-                                {
-                                    "id": "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77",
-                                    "name": "indexpattern-datasource-layer-9ad5f3d5-91c7-4509-94d8-9ef3e33c1815",
-                                    "type": "index-pattern"
-                                }
-                            ],
-                            "query": {
-                                "language": "kuery",
-                                "query": "os.name: \"Android\" and exception.stacktrace: * and session.id : *"
-                            },
-                            "visualization": {
-                                "columns": [
-                                    {
-                                        "columnId": "de6d5ed3-bc36-4a5b-842b-1707a42f4d6b",
-                                        "isMetric": false,
-                                        "isTransposed": false,
-                                        "oneClickFilter": true
-                                    },
-                                    {
-                                        "columnId": "bcb003de-d70e-4a3a-9d74-4cd4fb0a2dc2",
-                                        "hidden": false,
-                                        "isMetric": true,
-                                        "isTransposed": false
-                                    }
-                                ],
-                                "density": "normal",
-                                "layerId": "9ad5f3d5-91c7-4509-94d8-9ef3e33c1815",
-                                "layerType": "data",
-                                "paging": {
-                                    "enabled": true,
-                                    "size": 10
-                                },
-                                "rowHeight": "auto",
-                                "rowHeightLines": -1
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsDatatable"
-                    },
-                    "description": "Shows the top sessions with the most occurrences of this exception. A session is a period of time during which a user interacts with the application to accomplish a single task or goal. Ideally, a session should represent an isolated user interaction with the application.",
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": [
-                                {
-                                    "action": {
-                                        "config": {
-                                            "openInNewTab": false,
-                                            "useCurrentDateRange": true,
-                                            "useCurrentFilters": false
-                                        },
-                                        "factoryId": "DASHBOARD_TO_DASHBOARD_DRILLDOWN",
-                                        "name": "View session details"
-                                    },
-                                    "eventId": "dd9d5fda-48a3-4c5d-9679-559a8382965f",
-                                    "triggers": [
-                                        "FILTER_TRIGGER"
-                                    ]
-                                }
-                            ]
-                        }
-                    },
-                    "filters": [],
-                    "query": {
-                        "language": "kuery",
-                        "query": "os.name: \"Android\" and exception.stacktrace: * and session.id : *"
-                    },
-                    "syncColors": false,
-                    "syncCursor": true,
-                    "syncTooltips": false,
-                    "title": "Top affected sessions"
-                },
-                "gridData": {
-                    "h": 10,
-                    "i": "eed746a9-7e1d-4258-a46c-e2ced4100f5e",
-                    "w": 24,
-                    "x": 8,
-                    "y": 0
-                },
-                "panelIndex": "eed746a9-7e1d-4258-a46c-e2ced4100f5e",
-                "type": "lens"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "references": [],
-                        "state": {
-                            "adHocDataViews": {
-                                "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77": {
-                                    "allowNoIndex": false,
-                                    "fieldAttrs": {
-                                        "_stacktrace.group_id": {
-                                            "customDescription": "Internal field used by Elastic dashboards. Do not use in user queries."
-                                        },
-                                        "_timeline.text": {
-                                            "customDescription": "Internal field used by Elastic dashboards. Do not use in user queries."
-                                        }
-                                    },
-                                    "fieldFormats": {},
-                                    "id": "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77",
-                                    "name": "android-observability",
-                                    "runtimeFieldMap": {
-                                        "_stacktrace.group_id": {
-                                            "script": {
-                                                "source": "if(!doc.containsKey(\"exception.stacktrace\") || doc[\"exception.stacktrace\"].isEmpty()){\n    return;\n}\ndef stacktrace = doc[\"exception.stacktrace\"].value;\ndef exceptionType = doc[\"exception.type\"].value;\n\ndef stacktraceLinesPattern = /^[^\\s].+((\\n\\sat.+)+)[\\S\\s]*/;\ndef lineNumberPattern = /:\\d+\\)/;\ndef unwantedLinePattern = /\\nCaused by.+|\\n\\s+\\..+/;\ndef stackTraceLinesMatcher = stacktraceLinesPattern.matcher(stacktrace.replaceAll(unwantedLinePattern, (s)-\u003e\"\"));\n\nif(stackTraceLinesMatcher.matches()) {\n    def curatedLines = stackTraceLinesMatcher.group(1).replaceAll(lineNumberPattern, (s)-\u003e\")\");\n    def stacktracePattern = exceptionType + curatedLines;\n    emit(String.valueOf(stacktracePattern.hashCode()).encodeBase64());\n}"
-                                            },
-                                            "type": "keyword"
-                                        },
-                                        "_timeline.text": {
-                                            "script": {
-                                                "source": "if(doc.containsKey(\"span.name\") \u0026\u0026 !doc[\"span.name\"].isEmpty()) {\n  emit(\"[Span] - \" + $(\"span.name\", \"\"));\n} else if (doc.containsKey(\"message\")) {\n  if (doc.containsKey(\"event_name\") \u0026\u0026 !doc[\"event_name\"].isEmpty()) {\n    emit(\"[Log] - \" + $(\"event_name\", \"\"));\n  } else {\n    emit(\"[Log] - \" + $(\"message\", \"\"));\n  }\n}"
-                                            },
-                                            "type": "keyword"
-                                        }
-                                    },
-                                    "sourceFilters": [],
-                                    "timeFieldName": "@timestamp",
-                                    "title": "logs-generic.otel*,traces-generic.otel*"
-                                }
-                            },
-                            "datasourceStates": {
-                                "formBased": {
-                                    "layers": {
-                                        "90dab598-1e5c-4228-bd2b-6c00d93a4fbf": {
-                                            "columnOrder": [
-                                                "58b7b0a3-38ab-4863-81cc-ab40e12ddee8",
-                                                "58b7b0a3-38ab-4863-81cc-ab40e12ddee8X0",
-                                                "58b7b0a3-38ab-4863-81cc-ab40e12ddee8X1",
-                                                "58b7b0a3-38ab-4863-81cc-ab40e12ddee8X2"
-                                            ],
-                                            "columns": {
-                                                "58b7b0a3-38ab-4863-81cc-ab40e12ddee8": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Occurrences by session",
-                                                    "operationType": "formula",
-                                                    "params": {
-                                                        "format": {
-                                                            "id": "number",
-                                                            "params": {
-                                                                "decimals": 1
-                                                            }
-                                                        },
-                                                        "formula": "count(_stacktrace.group_id) / unique_count(session.id)",
-                                                        "isFormulaBroken": false
-                                                    },
-                                                    "references": [
-                                                        "58b7b0a3-38ab-4863-81cc-ab40e12ddee8X2"
-                                                    ]
-                                                },
-                                                "58b7b0a3-38ab-4863-81cc-ab40e12ddee8X0": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Part of Occurrences by session",
-                                                    "operationType": "count",
-                                                    "params": {
-                                                        "emptyAsNull": false
-                                                    },
-                                                    "sourceField": "_stacktrace.group_id"
-                                                },
-                                                "58b7b0a3-38ab-4863-81cc-ab40e12ddee8X1": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Part of Occurrences by session",
-                                                    "operationType": "unique_count",
-                                                    "params": {
-                                                        "emptyAsNull": false
-                                                    },
-                                                    "sourceField": "session.id"
-                                                },
-                                                "58b7b0a3-38ab-4863-81cc-ab40e12ddee8X2": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Part of Occurrences by session",
-                                                    "operationType": "math",
-                                                    "params": {
-                                                        "tinymathAst": {
-                                                            "args": [
-                                                                "58b7b0a3-38ab-4863-81cc-ab40e12ddee8X0",
-                                                                "58b7b0a3-38ab-4863-81cc-ab40e12ddee8X1"
-                                                            ],
-                                                            "location": {
-                                                                "max": 50,
-                                                                "min": 0
-                                                            },
-                                                            "name": "divide",
-                                                            "text": "count(_stacktrace.group_id) / unique_count(session.id)",
-                                                            "type": "function"
-                                                        }
-                                                    },
-                                                    "references": [
-                                                        "58b7b0a3-38ab-4863-81cc-ab40e12ddee8X0",
-                                                        "58b7b0a3-38ab-4863-81cc-ab40e12ddee8X1"
-                                                    ]
-                                                }
-                                            },
-                                            "ignoreGlobalFilters": false,
-                                            "incompleteColumns": {},
-                                            "sampling": 1
-                                        }
-                                    }
-                                },
-                                "indexpattern": {
-                                    "layers": {}
-                                },
-                                "textBased": {
-                                    "indexPatternRefs": [],
-                                    "layers": {}
-                                }
-                            },
-                            "filters": [],
-                            "internalReferences": [
-                                {
-                                    "id": "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77",
-                                    "name": "indexpattern-datasource-layer-90dab598-1e5c-4228-bd2b-6c00d93a4fbf",
-                                    "type": "index-pattern"
-                                }
-                            ],
-                            "query": {
-                                "language": "kuery",
-                                "query": "os.name: \"Android\" and exception.stacktrace: * and session.id : * "
-                            },
-                            "visualization": {
-                                "layerId": "90dab598-1e5c-4228-bd2b-6c00d93a4fbf",
-                                "layerType": "data",
-                                "metricAccessor": "58b7b0a3-38ab-4863-81cc-ab40e12ddee8",
-                                "palette": {
-                                    "name": "custom",
-                                    "params": {
-                                        "colorStops": [
-                                            {
-                                                "color": "#f6c7bc",
-                                                "stop": 1
-                                            },
-                                            {
-                                                "color": "#e48f7d",
-                                                "stop": 2
-                                            },
-                                            {
-                                                "color": "#cc5642",
-                                                "stop": 3
-                                            }
-                                        ],
-                                        "continuity": "above",
-                                        "maxSteps": 5,
-                                        "name": "custom",
-                                        "progression": "fixed",
-                                        "rangeMax": null,
-                                        "rangeMin": 1,
-                                        "rangeType": "number",
-                                        "reverse": false,
-                                        "steps": 3,
-                                        "stops": [
-                                            {
-                                                "color": "#f6c7bc",
-                                                "stop": 2
-                                            },
-                                            {
-                                                "color": "#e48f7d",
-                                                "stop": 3
-                                            },
-                                            {
-                                                "color": "#cc5642",
-                                                "stop": 8
-                                            }
-                                        ]
-                                    },
-                                    "type": "palette"
-                                },
-                                "secondaryTrend": {
-                                    "type": "none"
-                                },
-                                "subtitle": "On average",
-                                "titlesTextAlign": "left",
-                                "valueFontMode": "default",
-                                "valuesTextAlign": "right"
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsMetric"
-                    },
-                    "description": "Average of recorded exceptions by session",
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
-                    },
-                    "filters": [],
-                    "hidePanelTitles": true,
-                    "query": {
-                        "language": "kuery",
-                        "query": "os.name: \"Android\" and exception.stacktrace: * and session.id : * "
-                    },
-                    "syncColors": false,
-                    "syncCursor": true,
-                    "syncTooltips": false
-                },
-                "gridData": {
-                    "h": 10,
-                    "i": "18dd36f2-9b30-4dc0-9d0b-296f25b88f28",
-                    "w": 8,
-                    "x": 32,
-                    "y": 0
-                },
-                "panelIndex": "18dd36f2-9b30-4dc0-9d0b-296f25b88f28",
-                "type": "lens"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "references": [],
-                        "state": {
-                            "adHocDataViews": {
-                                "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77": {
-                                    "allowNoIndex": false,
-                                    "fieldAttrs": {
-                                        "_stacktrace.group_id": {
-                                            "customDescription": "Internal field used by Elastic dashboards. Do not use in user queries."
-                                        },
-                                        "_timeline.text": {
-                                            "customDescription": "Internal field used by Elastic dashboards. Do not use in user queries."
-                                        }
-                                    },
-                                    "fieldFormats": {},
-                                    "id": "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77",
-                                    "name": "android-observability",
-                                    "runtimeFieldMap": {
-                                        "_stacktrace.group_id": {
-                                            "script": {
-                                                "source": "if(!doc.containsKey(\"exception.stacktrace\") || doc[\"exception.stacktrace\"].isEmpty()){\n    return;\n}\ndef stacktrace = doc[\"exception.stacktrace\"].value;\ndef exceptionType = doc[\"exception.type\"].value;\n\ndef stacktraceLinesPattern = /^[^\\s].+((\\n\\sat.+)+)[\\S\\s]*/;\ndef lineNumberPattern = /:\\d+\\)/;\ndef unwantedLinePattern = /\\nCaused by.+|\\n\\s+\\..+/;\ndef stackTraceLinesMatcher = stacktraceLinesPattern.matcher(stacktrace.replaceAll(unwantedLinePattern, (s)-\u003e\"\"));\n\nif(stackTraceLinesMatcher.matches()) {\n    def curatedLines = stackTraceLinesMatcher.group(1).replaceAll(lineNumberPattern, (s)-\u003e\")\");\n    def stacktracePattern = exceptionType + curatedLines;\n    emit(String.valueOf(stacktracePattern.hashCode()).encodeBase64());\n}"
-                                            },
-                                            "type": "keyword"
-                                        },
-                                        "_timeline.text": {
-                                            "script": {
-                                                "source": "if(doc.containsKey(\"span.name\") \u0026\u0026 !doc[\"span.name\"].isEmpty()) {\n  emit(\"[Span] - \" + $(\"span.name\", \"\"));\n} else if (doc.containsKey(\"message\")) {\n  if (doc.containsKey(\"event_name\") \u0026\u0026 !doc[\"event_name\"].isEmpty()) {\n    emit(\"[Log] - \" + $(\"event_name\", \"\"));\n  } else {\n    emit(\"[Log] - \" + $(\"message\", \"\"));\n  }\n}"
-                                            },
-                                            "type": "keyword"
-                                        }
-                                    },
-                                    "sourceFilters": [],
-                                    "timeFieldName": "@timestamp",
-                                    "title": "logs-generic.otel*,traces-generic.otel*"
-                                }
-                            },
-                            "datasourceStates": {
-                                "formBased": {
-                                    "layers": {
-                                        "90dab598-1e5c-4228-bd2b-6c00d93a4fbf": {
-                                            "columnOrder": [
-                                                "6c7882e7-2d47-47fb-9116-66d0b87d6207"
-                                            ],
-                                            "columns": {
-                                                "6c7882e7-2d47-47fb-9116-66d0b87d6207": {
-                                                    "customLabel": true,
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Total occurrences",
-                                                    "operationType": "count",
-                                                    "params": {
-                                                        "emptyAsNull": true
-                                                    },
-                                                    "sourceField": "___records___"
-                                                }
-                                            },
-                                            "ignoreGlobalFilters": false,
-                                            "incompleteColumns": {},
-                                            "sampling": 1
-                                        }
-                                    }
-                                },
-                                "indexpattern": {
-                                    "layers": {}
-                                },
-                                "textBased": {
-                                    "indexPatternRefs": [],
-                                    "layers": {}
-                                }
-                            },
-                            "filters": [],
-                            "internalReferences": [
-                                {
-                                    "id": "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77",
-                                    "name": "indexpattern-datasource-layer-90dab598-1e5c-4228-bd2b-6c00d93a4fbf",
-                                    "type": "index-pattern"
-                                }
-                            ],
-                            "query": {
-                                "language": "kuery",
-                                "query": "os.name: \"Android\" and exception.stacktrace: * and session.id : * "
-                            },
-                            "visualization": {
-                                "color": "#F6726A",
-                                "layerId": "90dab598-1e5c-4228-bd2b-6c00d93a4fbf",
-                                "layerType": "data",
-                                "metricAccessor": "6c7882e7-2d47-47fb-9116-66d0b87d6207",
-                                "secondaryTrend": {
-                                    "type": "none"
-                                },
-                                "titlesTextAlign": "left",
-                                "valueFontMode": "default",
-                                "valuesTextAlign": "right"
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsMetric"
-                    },
-                    "description": "Total recorded exceptions",
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
-                    },
-                    "filters": [],
-                    "hidePanelTitles": true,
-                    "query": {
-                        "language": "kuery",
-                        "query": "os.name: \"Android\" and exception.stacktrace: * and session.id : * "
-                    },
-                    "syncColors": false,
-                    "syncCursor": true,
-                    "syncTooltips": false
-                },
-                "gridData": {
-                    "h": 10,
-                    "i": "4f65242b-ffad-449c-b7cb-9681e230f9ab",
-                    "w": 8,
-                    "x": 40,
-                    "y": 0
-                },
-                "panelIndex": "4f65242b-ffad-449c-b7cb-9681e230f9ab",
-                "type": "lens"
             },
             {
                 "embeddableConfig": {
@@ -654,166 +117,6 @@
                             "datasourceStates": {
                                 "formBased": {
                                     "layers": {
-                                        "d23814eb-f5c5-4b31-a46f-3f3596bfd0d5": {
-                                            "columnOrder": [
-                                                "82a08bb3-f81a-4abd-80a8-b626b0644cee",
-                                                "7674912a-1492-40db-828e-2b942249a169"
-                                            ],
-                                            "columns": {
-                                                "7674912a-1492-40db-828e-2b942249a169": {
-                                                    "dataType": "number",
-                                                    "isBucketed": false,
-                                                    "label": "Count of records",
-                                                    "operationType": "count",
-                                                    "params": {
-                                                        "emptyAsNull": true
-                                                    },
-                                                    "sourceField": "___records___"
-                                                },
-                                                "82a08bb3-f81a-4abd-80a8-b626b0644cee": {
-                                                    "customLabel": true,
-                                                    "dataType": "string",
-                                                    "isBucketed": true,
-                                                    "label": "Top message values",
-                                                    "operationType": "terms",
-                                                    "params": {
-                                                        "exclude": [],
-                                                        "excludeIsRegex": false,
-                                                        "include": [],
-                                                        "includeIsRegex": false,
-                                                        "missingBucket": false,
-                                                        "orderBy": {
-                                                            "columnId": "7674912a-1492-40db-828e-2b942249a169",
-                                                            "type": "column"
-                                                        },
-                                                        "orderDirection": "desc",
-                                                        "otherBucket": true,
-                                                        "parentFormat": {
-                                                            "id": "terms"
-                                                        },
-                                                        "size": 10
-                                                    },
-                                                    "sourceField": "_exception.message"
-                                                }
-                                            },
-                                            "ignoreGlobalFilters": false,
-                                            "incompleteColumns": {},
-                                            "sampling": 1
-                                        }
-                                    }
-                                },
-                                "indexpattern": {
-                                    "layers": {}
-                                },
-                                "textBased": {
-                                    "indexPatternRefs": [],
-                                    "layers": {}
-                                }
-                            },
-                            "filters": [],
-                            "internalReferences": [
-                                {
-                                    "id": "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77",
-                                    "name": "indexpattern-datasource-layer-d23814eb-f5c5-4b31-a46f-3f3596bfd0d5",
-                                    "type": "index-pattern"
-                                }
-                            ],
-                            "query": {
-                                "language": "kuery",
-                                "query": "os.name: \"Android\" and exception.stacktrace: * and session.id : * "
-                            },
-                            "visualization": {
-                                "columns": [
-                                    {
-                                        "columnId": "82a08bb3-f81a-4abd-80a8-b626b0644cee",
-                                        "isMetric": false,
-                                        "isTransposed": false
-                                    },
-                                    {
-                                        "columnId": "7674912a-1492-40db-828e-2b942249a169",
-                                        "isMetric": true,
-                                        "isTransposed": false
-                                    }
-                                ],
-                                "layerId": "d23814eb-f5c5-4b31-a46f-3f3596bfd0d5",
-                                "layerType": "data",
-                                "paging": {
-                                    "enabled": true,
-                                    "size": 10
-                                }
-                            }
-                        },
-                        "title": "",
-                        "type": "lens",
-                        "visualizationType": "lnsDatatable"
-                    },
-                    "description": "Shows top messages associated with this exception. Useful when a stacktrace has variables in its message",
-                    "enhancements": {
-                        "dynamicActions": {
-                            "events": []
-                        }
-                    },
-                    "filters": [],
-                    "hidePanelTitles": true,
-                    "query": {
-                        "language": "kuery",
-                        "query": "os.name: \"Android\" and exception.stacktrace: * and session.id : * "
-                    },
-                    "syncColors": false,
-                    "syncCursor": true,
-                    "syncTooltips": false
-                },
-                "gridData": {
-                    "h": 11,
-                    "i": "db707750-bda5-44c7-89f3-5307c2535717",
-                    "w": 32,
-                    "x": 0,
-                    "y": 10
-                },
-                "panelIndex": "db707750-bda5-44c7-89f3-5307c2535717",
-                "type": "lens"
-            },
-            {
-                "embeddableConfig": {
-                    "attributes": {
-                        "references": [],
-                        "state": {
-                            "adHocDataViews": {
-                                "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77": {
-                                    "allowNoIndex": false,
-                                    "fieldAttrs": {
-                                        "_stacktrace.group_id": {
-                                            "customDescription": "Internal field used by Elastic dashboards. Do not use in user queries."
-                                        },
-                                        "_timeline.text": {
-                                            "customDescription": "Internal field used by Elastic dashboards. Do not use in user queries."
-                                        }
-                                    },
-                                    "fieldFormats": {},
-                                    "id": "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77",
-                                    "name": "android-observability",
-                                    "runtimeFieldMap": {
-                                        "_stacktrace.group_id": {
-                                            "script": {
-                                                "source": "if(!doc.containsKey(\"exception.stacktrace\") || doc[\"exception.stacktrace\"].isEmpty()){\n    return;\n}\ndef stacktrace = doc[\"exception.stacktrace\"].value;\ndef exceptionType = doc[\"exception.type\"].value;\n\ndef stacktraceLinesPattern = /^[^\\s].+((\\n\\sat.+)+)[\\S\\s]*/;\ndef lineNumberPattern = /:\\d+\\)/;\ndef unwantedLinePattern = /\\nCaused by.+|\\n\\s+\\..+/;\ndef stackTraceLinesMatcher = stacktraceLinesPattern.matcher(stacktrace.replaceAll(unwantedLinePattern, (s)-\u003e\"\"));\n\nif(stackTraceLinesMatcher.matches()) {\n    def curatedLines = stackTraceLinesMatcher.group(1).replaceAll(lineNumberPattern, (s)-\u003e\")\");\n    def stacktracePattern = exceptionType + curatedLines;\n    emit(String.valueOf(stacktracePattern.hashCode()).encodeBase64());\n}"
-                                            },
-                                            "type": "keyword"
-                                        },
-                                        "_timeline.text": {
-                                            "script": {
-                                                "source": "if(doc.containsKey(\"span.name\") \u0026\u0026 !doc[\"span.name\"].isEmpty()) {\n  emit(\"[Span] - \" + $(\"span.name\", \"\"));\n} else if (doc.containsKey(\"message\")) {\n  if (doc.containsKey(\"event_name\") \u0026\u0026 !doc[\"event_name\"].isEmpty()) {\n    emit(\"[Log] - \" + $(\"event_name\", \"\"));\n  } else {\n    emit(\"[Log] - \" + $(\"message\", \"\"));\n  }\n}"
-                                            },
-                                            "type": "keyword"
-                                        }
-                                    },
-                                    "sourceFilters": [],
-                                    "timeFieldName": "@timestamp",
-                                    "title": "logs-generic.otel*,traces-generic.otel*"
-                                }
-                            },
-                            "datasourceStates": {
-                                "formBased": {
-                                    "layers": {
                                         "e85d6684-402c-4186-a1b5-5aa79db4a066": {
                                             "columnOrder": [
                                                 "e6aca9d2-19ed-4db9-8c87-a81a729e146f",
@@ -821,19 +124,21 @@
                                             ],
                                             "columns": {
                                                 "9471156d-4842-4f16-93cb-9806851bdbe4": {
+                                                    "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Count of _stacktrace.group_id",
+                                                    "label": "Occurrences",
                                                     "operationType": "count",
                                                     "params": {
                                                         "emptyAsNull": true
                                                     },
-                                                    "sourceField": "_stacktrace.group_id"
+                                                    "sourceField": "___records___"
                                                 },
                                                 "e6aca9d2-19ed-4db9-8c87-a81a729e146f": {
+                                                    "customLabel": true,
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top 10 values of os.version",
+                                                    "label": "OS version",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -945,9 +250,10 @@
                 "gridData": {
                     "h": 11,
                     "i": "46b18d81-c2cc-42d3-82c6-4956597c18db",
-                    "w": 8,
-                    "x": 32,
-                    "y": 10
+                    "sectionId": "5a2c7e9b-1d4f-4b8a-9c3e-7f0a2d5b8c41",
+                    "w": 12,
+                    "x": 24,
+                    "y": 0
                 },
                 "panelIndex": "46b18d81-c2cc-42d3-82c6-4956597c18db",
                 "type": "lens"
@@ -972,6 +278,12 @@
                                     "id": "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77",
                                     "name": "android-observability",
                                     "runtimeFieldMap": {
+                                        "_exception.message": {
+                                            "script": {
+                                                "source": "String msg = $(\"exception.message\", null);\nif (msg != null) {\n    emit(msg);\n}"
+                                            },
+                                            "type": "keyword"
+                                        },
                                         "_stacktrace.group_id": {
                                             "script": {
                                                 "source": "if(!doc.containsKey(\"exception.stacktrace\") || doc[\"exception.stacktrace\"].isEmpty()){\n    return;\n}\ndef stacktrace = doc[\"exception.stacktrace\"].value;\ndef exceptionType = doc[\"exception.type\"].value;\n\ndef stacktraceLinesPattern = /^[^\\s].+((\\n\\sat.+)+)[\\S\\s]*/;\ndef lineNumberPattern = /:\\d+\\)/;\ndef unwantedLinePattern = /\\nCaused by.+|\\n\\s+\\..+/;\ndef stackTraceLinesMatcher = stacktraceLinesPattern.matcher(stacktrace.replaceAll(unwantedLinePattern, (s)-\u003e\"\"));\n\nif(stackTraceLinesMatcher.matches()) {\n    def curatedLines = stackTraceLinesMatcher.group(1).replaceAll(lineNumberPattern, (s)-\u003e\")\");\n    def stacktracePattern = exceptionType + curatedLines;\n    emit(String.valueOf(stacktracePattern.hashCode()).encodeBase64());\n}"
@@ -1000,19 +312,21 @@
                                             ],
                                             "columns": {
                                                 "9471156d-4842-4f16-93cb-9806851bdbe4": {
+                                                    "customLabel": true,
                                                     "dataType": "number",
                                                     "isBucketed": false,
-                                                    "label": "Count of _stacktrace.group_id",
+                                                    "label": "Occurrences",
                                                     "operationType": "count",
                                                     "params": {
                                                         "emptyAsNull": true
                                                     },
-                                                    "sourceField": "_stacktrace.group_id"
+                                                    "sourceField": "___records___"
                                                 },
                                                 "e6aca9d2-19ed-4db9-8c87-a81a729e146f": {
+                                                    "customLabel": true,
                                                     "dataType": "string",
                                                     "isBucketed": true,
-                                                    "label": "Top 10 values of device.manufacturer",
+                                                    "label": "Manufacturer",
                                                     "operationType": "terms",
                                                     "params": {
                                                         "exclude": [],
@@ -1124,9 +438,10 @@
                 "gridData": {
                     "h": 11,
                     "i": "fd15ebf6-0989-4d92-a54e-1a95a1852f38",
-                    "w": 8,
-                    "x": 40,
-                    "y": 10
+                    "sectionId": "5a2c7e9b-1d4f-4b8a-9c3e-7f0a2d5b8c41",
+                    "w": 12,
+                    "x": 36,
+                    "y": 0
                 },
                 "panelIndex": "fd15ebf6-0989-4d92-a54e-1a95a1852f38",
                 "type": "lens"
@@ -1151,6 +466,1020 @@
                                     "id": "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77",
                                     "name": "android-observability",
                                     "runtimeFieldMap": {
+                                        "_exception.message": {
+                                            "script": {
+                                                "source": "String msg = $(\"exception.message\", null);\nif (msg != null) {\n    emit(msg);\n}"
+                                            },
+                                            "type": "keyword"
+                                        },
+                                        "_stacktrace.group_id": {
+                                            "script": {
+                                                "source": "if(!doc.containsKey(\"exception.stacktrace\") || doc[\"exception.stacktrace\"].isEmpty()){\n    return;\n}\ndef stacktrace = doc[\"exception.stacktrace\"].value;\ndef exceptionType = doc[\"exception.type\"].value;\n\ndef stacktraceLinesPattern = /^[^\\s].+((\\n\\sat.+)+)[\\S\\s]*/;\ndef lineNumberPattern = /:\\d+\\)/;\ndef unwantedLinePattern = /\\nCaused by.+|\\n\\s+\\..+/;\ndef stackTraceLinesMatcher = stacktraceLinesPattern.matcher(stacktrace.replaceAll(unwantedLinePattern, (s)-\u003e\"\"));\n\nif(stackTraceLinesMatcher.matches()) {\n    def curatedLines = stackTraceLinesMatcher.group(1).replaceAll(lineNumberPattern, (s)-\u003e\")\");\n    def stacktracePattern = exceptionType + curatedLines;\n    emit(String.valueOf(stacktracePattern.hashCode()).encodeBase64());\n}"
+                                            },
+                                            "type": "keyword"
+                                        },
+                                        "_timeline.text": {
+                                            "script": {
+                                                "source": "if(doc.containsKey(\"span.name\") \u0026\u0026 !doc[\"span.name\"].isEmpty()) {\n  emit(\"[Span] - \" + $(\"span.name\", \"\"));\n} else if (doc.containsKey(\"message\")) {\n  if (doc.containsKey(\"event_name\") \u0026\u0026 !doc[\"event_name\"].isEmpty()) {\n    emit(\"[Log] - \" + $(\"event_name\", \"\"));\n  } else {\n    emit(\"[Log] - \" + $(\"message\", \"\"));\n  }\n}"
+                                            },
+                                            "type": "keyword"
+                                        }
+                                    },
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "logs-generic.otel*,traces-generic.otel*"
+                                }
+                            },
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "90dab598-1e5c-4228-bd2b-6c00d93a4fbf": {
+                                            "columnOrder": [
+                                                "6c7882e7-2d47-47fb-9116-66d0b87d6207"
+                                            ],
+                                            "columns": {
+                                                "6c7882e7-2d47-47fb-9116-66d0b87d6207": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Total occurrences",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "sourceField": "___records___"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "indexPatternRefs": [],
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77",
+                                    "name": "indexpattern-datasource-layer-90dab598-1e5c-4228-bd2b-6c00d93a4fbf",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "language": "kuery",
+                                "query": "os.name: \"Android\" and exception.stacktrace: * and session.id : * "
+                            },
+                            "visualization": {
+                                "layerId": "90dab598-1e5c-4228-bd2b-6c00d93a4fbf",
+                                "layerType": "data",
+                                "metricAccessor": "6c7882e7-2d47-47fb-9116-66d0b87d6207",
+                                "secondaryTrend": {
+                                    "type": "none"
+                                },
+                                "titlesTextAlign": "left",
+                                "valueFontMode": "default",
+                                "valuesTextAlign": "right"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "description": "Total recorded occurrences of this exception",
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "hidePanelTitles": true,
+                    "query": {
+                        "language": "kuery",
+                        "query": "os.name: \"Android\" and exception.stacktrace: * and session.id : * "
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
+                },
+                "gridData": {
+                    "h": 5,
+                    "i": "4f65242b-ffad-449c-b7cb-9681e230f9ab",
+                    "sectionId": "5a2c7e9b-1d4f-4b8a-9c3e-7f0a2d5b8c41",
+                    "w": 8,
+                    "x": 0,
+                    "y": 11
+                },
+                "panelIndex": "4f65242b-ffad-449c-b7cb-9681e230f9ab",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77": {
+                                    "allowNoIndex": false,
+                                    "fieldAttrs": {
+                                        "_stacktrace.group_id": {
+                                            "customDescription": "Internal field used by Elastic dashboards. Do not use in user queries."
+                                        },
+                                        "_timeline.text": {
+                                            "customDescription": "Internal field used by Elastic dashboards. Do not use in user queries."
+                                        }
+                                    },
+                                    "fieldFormats": {},
+                                    "id": "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77",
+                                    "name": "android-observability",
+                                    "runtimeFieldMap": {
+                                        "_exception.message": {
+                                            "script": {
+                                                "source": "String msg = $(\"exception.message\", null);\nif (msg != null) {\n    emit(msg);\n}"
+                                            },
+                                            "type": "keyword"
+                                        },
+                                        "_stacktrace.group_id": {
+                                            "script": {
+                                                "source": "if(!doc.containsKey(\"exception.stacktrace\") || doc[\"exception.stacktrace\"].isEmpty()){\n    return;\n}\ndef stacktrace = doc[\"exception.stacktrace\"].value;\ndef exceptionType = doc[\"exception.type\"].value;\n\ndef stacktraceLinesPattern = /^[^\\s].+((\\n\\sat.+)+)[\\S\\s]*/;\ndef lineNumberPattern = /:\\d+\\)/;\ndef unwantedLinePattern = /\\nCaused by.+|\\n\\s+\\..+/;\ndef stackTraceLinesMatcher = stacktraceLinesPattern.matcher(stacktrace.replaceAll(unwantedLinePattern, (s)-\u003e\"\"));\n\nif(stackTraceLinesMatcher.matches()) {\n    def curatedLines = stackTraceLinesMatcher.group(1).replaceAll(lineNumberPattern, (s)-\u003e\")\");\n    def stacktracePattern = exceptionType + curatedLines;\n    emit(String.valueOf(stacktracePattern.hashCode()).encodeBase64());\n}"
+                                            },
+                                            "type": "keyword"
+                                        },
+                                        "_timeline.text": {
+                                            "script": {
+                                                "source": "if(doc.containsKey(\"span.name\") \u0026\u0026 !doc[\"span.name\"].isEmpty()) {\n  emit(\"[Span] - \" + $(\"span.name\", \"\"));\n} else if (doc.containsKey(\"message\")) {\n  if (doc.containsKey(\"event_name\") \u0026\u0026 !doc[\"event_name\"].isEmpty()) {\n    emit(\"[Log] - \" + $(\"event_name\", \"\"));\n  } else {\n    emit(\"[Log] - \" + $(\"message\", \"\"));\n  }\n}"
+                                            },
+                                            "type": "keyword"
+                                        }
+                                    },
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "logs-generic.otel*,traces-generic.otel*"
+                                }
+                            },
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "a4c8e2f6-7d1b-4b3e-9f5a-2c6d8e0b4a71": {
+                                            "columnOrder": [
+                                                "d2f6a0c4-9e3b-4a7d-b1c5-8f0e2a4c6d93"
+                                            ],
+                                            "columns": {
+                                                "d2f6a0c4-9e3b-4a7d-b1c5-8f0e2a4c6d93": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Affected installations",
+                                                    "operationType": "unique_count",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "app.installation.id"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "indexPatternRefs": [],
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77",
+                                    "name": "indexpattern-datasource-layer-a4c8e2f6-7d1b-4b3e-9f5a-2c6d8e0b4a71",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "language": "kuery",
+                                "query": "os.name: \"Android\" and exception.stacktrace: * and session.id : *"
+                            },
+                            "visualization": {
+                                "layerId": "a4c8e2f6-7d1b-4b3e-9f5a-2c6d8e0b4a71",
+                                "layerType": "data",
+                                "metricAccessor": "d2f6a0c4-9e3b-4a7d-b1c5-8f0e2a4c6d93",
+                                "secondaryTrend": {
+                                    "type": "none"
+                                },
+                                "titlesTextAlign": "left",
+                                "valueFontMode": "default",
+                                "valuesTextAlign": "right"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "description": "Number of distinct installations that recorded this exception. This is tracked by an installation ID that's stored in each device's cache",
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "hidePanelTitles": true,
+                    "query": {
+                        "language": "kuery",
+                        "query": "os.name: \"Android\" and exception.stacktrace: * and session.id : *"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
+                },
+                "gridData": {
+                    "h": 5,
+                    "i": "3e9a1c7d-5b2f-4e8a-9d6c-0f4b2a7e1c58",
+                    "sectionId": "5a2c7e9b-1d4f-4b8a-9c3e-7f0a2d5b8c41",
+                    "w": 8,
+                    "x": 0,
+                    "y": 16
+                },
+                "panelIndex": "3e9a1c7d-5b2f-4e8a-9d6c-0f4b2a7e1c58",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77": {
+                                    "allowNoIndex": false,
+                                    "fieldAttrs": {
+                                        "_stacktrace.group_id": {
+                                            "customDescription": "Internal field used by Elastic dashboards. Do not use in user queries."
+                                        },
+                                        "_timeline.text": {
+                                            "customDescription": "Internal field used by Elastic dashboards. Do not use in user queries."
+                                        }
+                                    },
+                                    "fieldFormats": {},
+                                    "id": "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77",
+                                    "name": "android-observability",
+                                    "runtimeFieldMap": {
+                                        "_exception.message": {
+                                            "script": {
+                                                "source": "String msg = $(\"exception.message\", null);\nif (msg != null) {\n    emit(msg);\n}"
+                                            },
+                                            "type": "keyword"
+                                        },
+                                        "_stacktrace.group_id": {
+                                            "script": {
+                                                "source": "if(!doc.containsKey(\"exception.stacktrace\") || doc[\"exception.stacktrace\"].isEmpty()){\n    return;\n}\ndef stacktrace = doc[\"exception.stacktrace\"].value;\ndef exceptionType = doc[\"exception.type\"].value;\n\ndef stacktraceLinesPattern = /^[^\\s].+((\\n\\sat.+)+)[\\S\\s]*/;\ndef lineNumberPattern = /:\\d+\\)/;\ndef unwantedLinePattern = /\\nCaused by.+|\\n\\s+\\..+/;\ndef stackTraceLinesMatcher = stacktraceLinesPattern.matcher(stacktrace.replaceAll(unwantedLinePattern, (s)-\u003e\"\"));\n\nif(stackTraceLinesMatcher.matches()) {\n    def curatedLines = stackTraceLinesMatcher.group(1).replaceAll(lineNumberPattern, (s)-\u003e\")\");\n    def stacktracePattern = exceptionType + curatedLines;\n    emit(String.valueOf(stacktracePattern.hashCode()).encodeBase64());\n}"
+                                            },
+                                            "type": "keyword"
+                                        },
+                                        "_timeline.text": {
+                                            "script": {
+                                                "source": "if(doc.containsKey(\"span.name\") \u0026\u0026 !doc[\"span.name\"].isEmpty()) {\n  emit(\"[Span] - \" + $(\"span.name\", \"\"));\n} else if (doc.containsKey(\"message\")) {\n  if (doc.containsKey(\"event_name\") \u0026\u0026 !doc[\"event_name\"].isEmpty()) {\n    emit(\"[Log] - \" + $(\"event_name\", \"\"));\n  } else {\n    emit(\"[Log] - \" + $(\"message\", \"\"));\n  }\n}"
+                                            },
+                                            "type": "keyword"
+                                        }
+                                    },
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "logs-generic.otel*,traces-generic.otel*"
+                                }
+                            },
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "90dab598-1e5c-4228-bd2b-6c00d93a4fbf": {
+                                            "columnOrder": [
+                                                "58b7b0a3-38ab-4863-81cc-ab40e12ddee8",
+                                                "58b7b0a3-38ab-4863-81cc-ab40e12ddee8X0",
+                                                "58b7b0a3-38ab-4863-81cc-ab40e12ddee8X1",
+                                                "58b7b0a3-38ab-4863-81cc-ab40e12ddee8X2"
+                                            ],
+                                            "columns": {
+                                                "58b7b0a3-38ab-4863-81cc-ab40e12ddee8": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Occurrences per session",
+                                                    "operationType": "formula",
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 1
+                                                            }
+                                                        },
+                                                        "formula": "count() / unique_count(session.id)",
+                                                        "isFormulaBroken": false
+                                                    },
+                                                    "references": [
+                                                        "58b7b0a3-38ab-4863-81cc-ab40e12ddee8X2"
+                                                    ]
+                                                },
+                                                "58b7b0a3-38ab-4863-81cc-ab40e12ddee8X0": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Occurrences per session",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "sourceField": "___records___"
+                                                },
+                                                "58b7b0a3-38ab-4863-81cc-ab40e12ddee8X1": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Occurrences per session",
+                                                    "operationType": "unique_count",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "sourceField": "session.id"
+                                                },
+                                                "58b7b0a3-38ab-4863-81cc-ab40e12ddee8X2": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Part of Occurrences per session",
+                                                    "operationType": "math",
+                                                    "params": {
+                                                        "tinymathAst": {
+                                                            "args": [
+                                                                "58b7b0a3-38ab-4863-81cc-ab40e12ddee8X0",
+                                                                "58b7b0a3-38ab-4863-81cc-ab40e12ddee8X1"
+                                                            ],
+                                                            "location": {
+                                                                "max": 34,
+                                                                "min": 0
+                                                            },
+                                                            "name": "divide",
+                                                            "text": "count() / unique_count(session.id)",
+                                                            "type": "function"
+                                                        }
+                                                    },
+                                                    "references": [
+                                                        "58b7b0a3-38ab-4863-81cc-ab40e12ddee8X0",
+                                                        "58b7b0a3-38ab-4863-81cc-ab40e12ddee8X1"
+                                                    ]
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "indexPatternRefs": [],
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77",
+                                    "name": "indexpattern-datasource-layer-90dab598-1e5c-4228-bd2b-6c00d93a4fbf",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "language": "kuery",
+                                "query": "os.name: \"Android\" and exception.stacktrace: * and session.id : * "
+                            },
+                            "visualization": {
+                                "layerId": "90dab598-1e5c-4228-bd2b-6c00d93a4fbf",
+                                "layerType": "data",
+                                "metricAccessor": "58b7b0a3-38ab-4863-81cc-ab40e12ddee8",
+                                "secondaryTrend": {
+                                    "type": "none"
+                                },
+                                "subtitle": "On average",
+                                "titlesTextAlign": "left",
+                                "valueFontMode": "default",
+                                "valuesTextAlign": "right"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsMetric"
+                    },
+                    "description": "Average number of occurrences per session that recorded this exception",
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "hidePanelTitles": true,
+                    "query": {
+                        "language": "kuery",
+                        "query": "os.name: \"Android\" and exception.stacktrace: * and session.id : * "
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false
+                },
+                "gridData": {
+                    "h": 5,
+                    "i": "18dd36f2-9b30-4dc0-9d0b-296f25b88f28",
+                    "sectionId": "5a2c7e9b-1d4f-4b8a-9c3e-7f0a2d5b8c41",
+                    "w": 8,
+                    "x": 0,
+                    "y": 21
+                },
+                "panelIndex": "18dd36f2-9b30-4dc0-9d0b-296f25b88f28",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77": {
+                                    "allowNoIndex": false,
+                                    "fieldAttrs": {
+                                        "_stacktrace.group_id": {
+                                            "customDescription": "Internal field used by Elastic dashboards. Do not use in user queries."
+                                        },
+                                        "_timeline.text": {
+                                            "customDescription": "Internal field used by Elastic dashboards. Do not use in user queries."
+                                        }
+                                    },
+                                    "fieldFormats": {},
+                                    "id": "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77",
+                                    "name": "android-observability",
+                                    "runtimeFieldMap": {
+                                        "_exception.message": {
+                                            "script": {
+                                                "source": "String msg = $(\"exception.message\", null);\nif (msg != null) {\n    emit(msg);\n}"
+                                            },
+                                            "type": "keyword"
+                                        },
+                                        "_stacktrace.group_id": {
+                                            "script": {
+                                                "source": "if(!doc.containsKey(\"exception.stacktrace\") || doc[\"exception.stacktrace\"].isEmpty()){\n    return;\n}\ndef stacktrace = doc[\"exception.stacktrace\"].value;\ndef exceptionType = doc[\"exception.type\"].value;\n\ndef stacktraceLinesPattern = /^[^\\s].+((\\n\\sat.+)+)[\\S\\s]*/;\ndef lineNumberPattern = /:\\d+\\)/;\ndef unwantedLinePattern = /\\nCaused by.+|\\n\\s+\\..+/;\ndef stackTraceLinesMatcher = stacktraceLinesPattern.matcher(stacktrace.replaceAll(unwantedLinePattern, (s)-\u003e\"\"));\n\nif(stackTraceLinesMatcher.matches()) {\n    def curatedLines = stackTraceLinesMatcher.group(1).replaceAll(lineNumberPattern, (s)-\u003e\")\");\n    def stacktracePattern = exceptionType + curatedLines;\n    emit(String.valueOf(stacktracePattern.hashCode()).encodeBase64());\n}"
+                                            },
+                                            "type": "keyword"
+                                        },
+                                        "_timeline.text": {
+                                            "script": {
+                                                "source": "if(doc.containsKey(\"span.name\") \u0026\u0026 !doc[\"span.name\"].isEmpty()) {\n  emit(\"[Span] - \" + $(\"span.name\", \"\"));\n} else if (doc.containsKey(\"message\")) {\n  if (doc.containsKey(\"event_name\") \u0026\u0026 !doc[\"event_name\"].isEmpty()) {\n    emit(\"[Log] - \" + $(\"event_name\", \"\"));\n  } else {\n    emit(\"[Log] - \" + $(\"message\", \"\"));\n  }\n}"
+                                            },
+                                            "type": "keyword"
+                                        }
+                                    },
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "logs-generic.otel*,traces-generic.otel*"
+                                }
+                            },
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "9ad5f3d5-91c7-4509-94d8-9ef3e33c1815": {
+                                            "columnOrder": [
+                                                "de6d5ed3-bc36-4a5b-842b-1707a42f4d6b",
+                                                "bcb003de-d70e-4a3a-9d74-4cd4fb0a2dc2"
+                                            ],
+                                            "columns": {
+                                                "bcb003de-d70e-4a3a-9d74-4cd4fb0a2dc2": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Occurrences",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "sourceField": "___records___"
+                                                },
+                                                "de6d5ed3-bc36-4a5b-842b-1707a42f4d6b": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Session ID",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "bcb003de-d70e-4a3a-9d74-4cd4fb0a2dc2",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "sourceField": "session.id"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77",
+                                    "name": "indexpattern-datasource-layer-9ad5f3d5-91c7-4509-94d8-9ef3e33c1815",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "language": "kuery",
+                                "query": "os.name: \"Android\" and exception.stacktrace: * and session.id : *"
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "de6d5ed3-bc36-4a5b-842b-1707a42f4d6b",
+                                        "isMetric": false,
+                                        "isTransposed": false,
+                                        "oneClickFilter": true
+                                    },
+                                    {
+                                        "columnId": "bcb003de-d70e-4a3a-9d74-4cd4fb0a2dc2",
+                                        "hidden": false,
+                                        "isMetric": true,
+                                        "isTransposed": false
+                                    }
+                                ],
+                                "density": "normal",
+                                "layerId": "9ad5f3d5-91c7-4509-94d8-9ef3e33c1815",
+                                "layerType": "data",
+                                "paging": {
+                                    "enabled": true,
+                                    "size": 10
+                                },
+                                "rowHeight": "auto",
+                                "rowHeightLines": -1
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "description": "Shows the top sessions with the most occurrences of this exception. A session is a period of time during which a user interacts with the application to accomplish a single task or goal. Ideally, a session should represent an isolated user interaction with the application",
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": [
+                                {
+                                    "action": {
+                                        "config": {
+                                            "openInNewTab": false,
+                                            "useCurrentDateRange": true,
+                                            "useCurrentFilters": false
+                                        },
+                                        "factoryId": "DASHBOARD_TO_DASHBOARD_DRILLDOWN",
+                                        "name": "View session details"
+                                    },
+                                    "eventId": "dd9d5fda-48a3-4c5d-9679-559a8382965f",
+                                    "triggers": [
+                                        "FILTER_TRIGGER"
+                                    ]
+                                }
+                            ]
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "language": "kuery",
+                        "query": "os.name: \"Android\" and exception.stacktrace: * and session.id : *"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Top affected sessions"
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "eed746a9-7e1d-4258-a46c-e2ced4100f5e",
+                    "sectionId": "5a2c7e9b-1d4f-4b8a-9c3e-7f0a2d5b8c41",
+                    "w": 20,
+                    "x": 8,
+                    "y": 11
+                },
+                "panelIndex": "eed746a9-7e1d-4258-a46c-e2ced4100f5e",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77": {
+                                    "allowNoIndex": false,
+                                    "fieldAttrs": {
+                                        "_stacktrace.group_id": {
+                                            "customDescription": "Internal field used by Elastic dashboards. Do not use in user queries."
+                                        },
+                                        "_timeline.text": {
+                                            "customDescription": "Internal field used by Elastic dashboards. Do not use in user queries."
+                                        }
+                                    },
+                                    "fieldFormats": {},
+                                    "id": "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77",
+                                    "name": "android-observability",
+                                    "runtimeFieldMap": {
+                                        "_exception.message": {
+                                            "script": {
+                                                "source": "String msg = $(\"exception.message\", null);\nif (msg != null) {\n    emit(msg);\n}"
+                                            },
+                                            "type": "keyword"
+                                        },
+                                        "_stacktrace.group_id": {
+                                            "script": {
+                                                "source": "if(!doc.containsKey(\"exception.stacktrace\") || doc[\"exception.stacktrace\"].isEmpty()){\n    return;\n}\ndef stacktrace = doc[\"exception.stacktrace\"].value;\ndef exceptionType = doc[\"exception.type\"].value;\n\ndef stacktraceLinesPattern = /^[^\\s].+((\\n\\sat.+)+)[\\S\\s]*/;\ndef lineNumberPattern = /:\\d+\\)/;\ndef unwantedLinePattern = /\\nCaused by.+|\\n\\s+\\..+/;\ndef stackTraceLinesMatcher = stacktraceLinesPattern.matcher(stacktrace.replaceAll(unwantedLinePattern, (s)-\u003e\"\"));\n\nif(stackTraceLinesMatcher.matches()) {\n    def curatedLines = stackTraceLinesMatcher.group(1).replaceAll(lineNumberPattern, (s)-\u003e\")\");\n    def stacktracePattern = exceptionType + curatedLines;\n    emit(String.valueOf(stacktracePattern.hashCode()).encodeBase64());\n}"
+                                            },
+                                            "type": "keyword"
+                                        },
+                                        "_timeline.text": {
+                                            "script": {
+                                                "source": "if(doc.containsKey(\"span.name\") \u0026\u0026 !doc[\"span.name\"].isEmpty()) {\n  emit(\"[Span] - \" + $(\"span.name\", \"\"));\n} else if (doc.containsKey(\"message\")) {\n  if (doc.containsKey(\"event_name\") \u0026\u0026 !doc[\"event_name\"].isEmpty()) {\n    emit(\"[Log] - \" + $(\"event_name\", \"\"));\n  } else {\n    emit(\"[Log] - \" + $(\"message\", \"\"));\n  }\n}"
+                                            },
+                                            "type": "keyword"
+                                        }
+                                    },
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "logs-generic.otel*,traces-generic.otel*"
+                                }
+                            },
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "d23814eb-f5c5-4b31-a46f-3f3596bfd0d5": {
+                                            "columnOrder": [
+                                                "82a08bb3-f81a-4abd-80a8-b626b0644cee",
+                                                "7674912a-1492-40db-828e-2b942249a169"
+                                            ],
+                                            "columns": {
+                                                "7674912a-1492-40db-828e-2b942249a169": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Occurrences",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": true
+                                                    },
+                                                    "sourceField": "___records___"
+                                                },
+                                                "82a08bb3-f81a-4abd-80a8-b626b0644cee": {
+                                                    "customLabel": true,
+                                                    "dataType": "string",
+                                                    "isBucketed": true,
+                                                    "label": "Message",
+                                                    "operationType": "terms",
+                                                    "params": {
+                                                        "exclude": [],
+                                                        "excludeIsRegex": false,
+                                                        "include": [],
+                                                        "includeIsRegex": false,
+                                                        "missingBucket": false,
+                                                        "orderBy": {
+                                                            "columnId": "7674912a-1492-40db-828e-2b942249a169",
+                                                            "type": "column"
+                                                        },
+                                                        "orderDirection": "desc",
+                                                        "otherBucket": true,
+                                                        "parentFormat": {
+                                                            "id": "terms"
+                                                        },
+                                                        "size": 10
+                                                    },
+                                                    "sourceField": "_exception.message"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "indexPatternRefs": [],
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77",
+                                    "name": "indexpattern-datasource-layer-d23814eb-f5c5-4b31-a46f-3f3596bfd0d5",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "language": "kuery",
+                                "query": "os.name: \"Android\" and exception.stacktrace: * and session.id : * "
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "82a08bb3-f81a-4abd-80a8-b626b0644cee",
+                                        "isMetric": false,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "7674912a-1492-40db-828e-2b942249a169",
+                                        "isMetric": true,
+                                        "isTransposed": false
+                                    }
+                                ],
+                                "layerId": "d23814eb-f5c5-4b31-a46f-3f3596bfd0d5",
+                                "layerType": "data",
+                                "paging": {
+                                    "enabled": true,
+                                    "size": 10
+                                },
+                                "rowHeight": "auto",
+                                "rowHeightLines": -1
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "description": "Shows top messages associated with this exception. Useful when a stack trace has variables in its message",
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "language": "kuery",
+                        "query": "os.name: \"Android\" and exception.stacktrace: * and session.id : * "
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Top exception messages"
+                },
+                "gridData": {
+                    "h": 15,
+                    "i": "db707750-bda5-44c7-89f3-5307c2535717",
+                    "sectionId": "5a2c7e9b-1d4f-4b8a-9c3e-7f0a2d5b8c41",
+                    "w": 20,
+                    "x": 28,
+                    "y": 11
+                },
+                "panelIndex": "db707750-bda5-44c7-89f3-5307c2535717",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77": {
+                                    "allowNoIndex": false,
+                                    "fieldAttrs": {
+                                        "_stacktrace.group_id": {
+                                            "customDescription": "Internal field used by Elastic dashboards. Do not use in user queries."
+                                        },
+                                        "_timeline.text": {
+                                            "customDescription": "Internal field used by Elastic dashboards. Do not use in user queries."
+                                        }
+                                    },
+                                    "fieldFormats": {},
+                                    "id": "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77",
+                                    "name": "android-observability",
+                                    "runtimeFieldMap": {
+                                        "_exception.message": {
+                                            "script": {
+                                                "source": "String msg = $(\"exception.message\", null);\nif (msg != null) {\n    emit(msg);\n}"
+                                            },
+                                            "type": "keyword"
+                                        },
+                                        "_stacktrace.group_id": {
+                                            "script": {
+                                                "source": "if(!doc.containsKey(\"exception.stacktrace\") || doc[\"exception.stacktrace\"].isEmpty()){\n    return;\n}\ndef stacktrace = doc[\"exception.stacktrace\"].value;\ndef exceptionType = doc[\"exception.type\"].value;\n\ndef stacktraceLinesPattern = /^[^\\s].+((\\n\\sat.+)+)[\\S\\s]*/;\ndef lineNumberPattern = /:\\d+\\)/;\ndef unwantedLinePattern = /\\nCaused by.+|\\n\\s+\\..+/;\ndef stackTraceLinesMatcher = stacktraceLinesPattern.matcher(stacktrace.replaceAll(unwantedLinePattern, (s)-\u003e\"\"));\n\nif(stackTraceLinesMatcher.matches()) {\n    def curatedLines = stackTraceLinesMatcher.group(1).replaceAll(lineNumberPattern, (s)-\u003e\")\");\n    def stacktracePattern = exceptionType + curatedLines;\n    emit(String.valueOf(stacktracePattern.hashCode()).encodeBase64());\n}"
+                                            },
+                                            "type": "keyword"
+                                        },
+                                        "_timeline.text": {
+                                            "script": {
+                                                "source": "if(doc.containsKey(\"span.name\") \u0026\u0026 !doc[\"span.name\"].isEmpty()) {\n  emit(\"[Span] - \" + $(\"span.name\", \"\"));\n} else if (doc.containsKey(\"message\")) {\n  if (doc.containsKey(\"event_name\") \u0026\u0026 !doc[\"event_name\"].isEmpty()) {\n    emit(\"[Log] - \" + $(\"event_name\", \"\"));\n  } else {\n    emit(\"[Log] - \" + $(\"message\", \"\"));\n  }\n}"
+                                            },
+                                            "type": "keyword"
+                                        }
+                                    },
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "logs-generic.otel*,traces-generic.otel*"
+                                }
+                            },
+                            "datasourceStates": {
+                                "formBased": {
+                                    "layers": {
+                                        "e1b5d9f3-4a7c-4d2e-8b6f-0c3a5e7d9b15": {
+                                            "columnOrder": [
+                                                "f3a7c1e5-6b9d-4e4a-a2c8-1d5f7b9e3a62",
+                                                "b6e0d4a8-2c5f-4f1b-9a3d-7e1c3f5a8b24"
+                                            ],
+                                            "columns": {
+                                                "b6e0d4a8-2c5f-4f1b-9a3d-7e1c3f5a8b24": {
+                                                    "customLabel": true,
+                                                    "dataType": "number",
+                                                    "isBucketed": false,
+                                                    "label": "Occurrences",
+                                                    "operationType": "count",
+                                                    "params": {
+                                                        "emptyAsNull": false
+                                                    },
+                                                    "scale": "ratio",
+                                                    "sourceField": "___records___"
+                                                },
+                                                "f3a7c1e5-6b9d-4e4a-a2c8-1d5f7b9e3a62": {
+                                                    "customLabel": true,
+                                                    "dataType": "date",
+                                                    "isBucketed": true,
+                                                    "label": "Time",
+                                                    "operationType": "date_histogram",
+                                                    "params": {
+                                                        "dropPartials": false,
+                                                        "includeEmptyRows": true,
+                                                        "interval": "auto"
+                                                    },
+                                                    "scale": "interval",
+                                                    "sourceField": "@timestamp"
+                                                }
+                                            },
+                                            "ignoreGlobalFilters": false,
+                                            "incompleteColumns": {},
+                                            "sampling": 1
+                                        }
+                                    }
+                                },
+                                "indexpattern": {
+                                    "layers": {}
+                                },
+                                "textBased": {
+                                    "layers": {}
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77",
+                                    "name": "indexpattern-datasource-layer-e1b5d9f3-4a7c-4d2e-8b6f-0c3a5e7d9b15",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "language": "kuery",
+                                "query": "os.name: \"Android\" and exception.stacktrace: * and session.id : *"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": false
+                                },
+                                "curveType": "LINEAR",
+                                "fittingFunction": "None",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "b6e0d4a8-2c5f-4f1b-9a3d-7e1c3f5a8b24"
+                                        ],
+                                        "layerId": "e1b5d9f3-4a7c-4d2e-8b6f-0c3a5e7d9b15",
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "f3a7c1e5-6b9d-4e4a-a2c8-1d5f7b9e3a62"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": false,
+                                    "position": "bottom"
+                                },
+                                "pointVisibility": "never",
+                                "preferredSeriesType": "line",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "yLeftExtent": {
+                                    "mode": "full",
+                                    "niceValues": true
+                                },
+                                "yLeftScale": "linear",
+                                "yRightExtent": {
+                                    "mode": "full",
+                                    "niceValues": true
+                                },
+                                "yRightScale": "linear"
+                            }
+                        },
+                        "title": "",
+                        "type": "lens",
+                        "visualizationType": "lnsXY"
+                    },
+                    "description": "Number of occurrences of this exception per time bucket. Reacts to the selected group ID, application, version and any other filter",
+                    "enhancements": {
+                        "dynamicActions": {
+                            "events": []
+                        }
+                    },
+                    "filters": [],
+                    "query": {
+                        "language": "kuery",
+                        "query": "os.name: \"Android\" and exception.stacktrace: * and session.id : *"
+                    },
+                    "syncColors": false,
+                    "syncCursor": true,
+                    "syncTooltips": false,
+                    "title": "Occurrences over time"
+                },
+                "gridData": {
+                    "h": 10,
+                    "i": "7b3d9f1e-2a6c-4c5b-8e1d-4a9f6c2b0d37",
+                    "sectionId": "5a2c7e9b-1d4f-4b8a-9c3e-7f0a2d5b8c41",
+                    "w": 48,
+                    "x": 0,
+                    "y": 26
+                },
+                "panelIndex": "7b3d9f1e-2a6c-4c5b-8e1d-4a9f6c2b0d37",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77": {
+                                    "allowNoIndex": false,
+                                    "fieldAttrs": {
+                                        "_stacktrace.group_id": {
+                                            "customDescription": "Internal field used by Elastic dashboards. Do not use in user queries."
+                                        },
+                                        "_timeline.text": {
+                                            "customDescription": "Internal field used by Elastic dashboards. Do not use in user queries."
+                                        }
+                                    },
+                                    "fieldFormats": {},
+                                    "id": "9fffeed5-13fb-4ca8-ace7-7c7d6e1f5d77",
+                                    "name": "android-observability",
+                                    "runtimeFieldMap": {
+                                        "_exception.message": {
+                                            "script": {
+                                                "source": "String msg = $(\"exception.message\", null);\nif (msg != null) {\n    emit(msg);\n}"
+                                            },
+                                            "type": "keyword"
+                                        },
                                         "_stacktrace.group_id": {
                                             "script": {
                                                 "source": "if(!doc.containsKey(\"exception.stacktrace\") || doc[\"exception.stacktrace\"].isEmpty()){\n    return;\n}\ndef stacktrace = doc[\"exception.stacktrace\"].value;\ndef exceptionType = doc[\"exception.type\"].value;\n\ndef stacktraceLinesPattern = /^[^\\s].+((\\n\\sat.+)+)[\\S\\s]*/;\ndef lineNumberPattern = /:\\d+\\)/;\ndef unwantedLinePattern = /\\nCaused by.+|\\n\\s+\\..+/;\ndef stackTraceLinesMatcher = stacktraceLinesPattern.matcher(stacktrace.replaceAll(unwantedLinePattern, (s)-\u003e\"\"));\n\nif(stackTraceLinesMatcher.matches()) {\n    def curatedLines = stackTraceLinesMatcher.group(1).replaceAll(lineNumberPattern, (s)-\u003e\")\");\n    def stacktracePattern = exceptionType + curatedLines;\n    emit(String.valueOf(stacktracePattern.hashCode()).encodeBase64());\n}"
@@ -1189,7 +1518,7 @@
                                                         "query": "exception.stacktrace: *"
                                                     },
                                                     "isBucketed": false,
-                                                    "label": "Stacktrace",
+                                                    "label": "Most recent occurrence",
                                                     "operationType": "last_value",
                                                     "params": {
                                                         "showArrayValues": true,
@@ -1339,20 +1668,28 @@
                         "type": "lens",
                         "visualizationType": "lnsDatatable"
                     },
-                    "description": "Shows the full stacktrace for the selected exception. Click a row to retrace it.",
-                    "drilldowns": [
-                        {
-                            "encode_url": true,
-                            "label": "Retrace stacktrace",
-                            "open_in_new_tab": false,
-                            "trigger": "on_click_row",
-                            "type": "url_drilldown",
-                            "url": "{{kibanaUrl}}/app/clientApps/android/retrace?session_id={{event.values.[2]}}\u0026timestamp={{event.values.[3]}}\u0026app_build_id={{event.values.[4]}}"
-                        }
-                    ],
+                    "description": "Shows the full stack trace of the most recent occurrence of the selected exception. Open a row's menu and choose \"Retrace stack trace\" to deobfuscate it",
                     "enhancements": {
                         "dynamicActions": {
-                            "events": []
+                            "events": [
+                                {
+                                    "action": {
+                                        "config": {
+                                            "encodeUrl": true,
+                                            "openInNewTab": false,
+                                            "url": {
+                                                "template": "{{kibanaUrl}}/app/clientApps/android/retrace?session_id={{event.values.[2]}}\u0026timestamp={{event.values.[3]}}\u0026app_build_id={{event.values.[4]}}"
+                                            }
+                                        },
+                                        "factoryId": "URL_DRILLDOWN",
+                                        "name": "Retrace stack trace"
+                                    },
+                                    "eventId": "a3f61c2e-8d4b-4f7a-b9e2-5c0d7e1f3a86",
+                                    "triggers": [
+                                        "ROW_CLICK_TRIGGER"
+                                    ]
+                                }
+                            ]
                         }
                     },
                     "filters": [],
@@ -1368,12 +1705,31 @@
                 "gridData": {
                     "h": 25,
                     "i": "e90b57f5-ad97-4a2e-87f8-3604d75f8ba6",
+                    "sectionId": "c7f1a3d5-9b2e-4d6c-8a4f-1e3b5c7d9f02",
                     "w": 48,
                     "x": 0,
-                    "y": 21
+                    "y": 0
                 },
                 "panelIndex": "e90b57f5-ad97-4a2e-87f8-3604d75f8ba6",
                 "type": "lens"
+            }
+        ],
+        "sections": [
+            {
+                "collapsed": false,
+                "gridData": {
+                    "i": "5a2c7e9b-1d4f-4b8a-9c3e-7f0a2d5b8c41",
+                    "y": 0
+                },
+                "title": "Overview"
+            },
+            {
+                "collapsed": false,
+                "gridData": {
+                    "i": "c7f1a3d5-9b2e-4d6c-8a4f-1e3b5c7d9f02",
+                    "y": 1
+                },
+                "title": "Stack trace"
             }
         ],
         "timeRestore": false,
@@ -1381,7 +1737,7 @@
         "version": 3
     },
     "coreMigrationVersion": "8.8.0",
-    "created_at": "2026-08-12T13:01:57.882Z",
+    "created_at": "2026-09-23T11:55:12.827Z",
     "id": "otel_android_dashboards-66c53e5e-9a86-43f3-a85d-a1d90d974bff",
     "references": [
         {
