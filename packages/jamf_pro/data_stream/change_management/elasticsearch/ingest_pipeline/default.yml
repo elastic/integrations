@@ -1,0 +1,234 @@
+---
+description: >
+  Ingest pipeline for Jamf Pro change management events, rerouted from the
+  access data stream. The shared envelope (@timestamp, event.original,
+  observer.*) is already set; this pipeline parses the CHANGEMANAGEMENT header,
+  operation/object_type classification, actor extraction, and detail block.
+processors:
+  - set:
+      field: event.kind
+      tag: set_event_kind_cm_a1b2c3d4
+      value: event
+  - json:
+      field: event.original
+      tag: json_parse_envelope_cm_d1e2f3a4
+      target_field: _tmp.envelope
+      if: ctx.event?.original != null
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_json_parse_error_cm_b5c6d7e8
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              in pipeline '{{{ _ingest.pipeline }}}'
+              failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: _tmp.raw_message
+      tag: set_raw_message_cm_f9a0b1c2
+      copy_from: _tmp.envelope.message
+      ignore_empty_value: true
+      if: ctx._tmp?.envelope?.message != null
+  # Header: [CHANGEMANAGEMENT] <ts> [<level>] [<thread>] [<logger>] - [<actor> (ID: <id>)] [<op>] [<obj_type>] [<event_time>]<detail>
+  - grok:
+      field: _tmp.raw_message
+      tag: grok_cm_header_d3e4f5a6
+      patterns:
+        - '^%{DATA:_tmp.cm_prefix} \[%{DATA:_tmp.log_level}\] \[%{DATA:_tmp.thread}\] \[%{DATA:_tmp.logger}\] - \[%{DATA:_tmp.actor_raw} \(ID: %{DATA:_tmp.actor_id}\)\] \[%{DATA:_tmp.operation}\] \[%{DATA:_tmp.object_type}\] \[%{DATA:_tmp.event_time}\](?<_tmp.detail_raw>[\s\S]*)'
+      if: ctx._tmp?.raw_message != null && ctx._tmp.raw_message.startsWith('[CHANGEMANAGEMENT]')
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_grok_cm_error_b7c8d9e0
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              in pipeline '{{{ _ingest.pipeline }}}'
+              failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: jamf_pro.change_management.operation
+      tag: set_cm_operation_f1a2b3c4
+      copy_from: _tmp.operation
+      ignore_empty_value: true
+      if: ctx._tmp?.operation != null
+  - set:
+      field: jamf_pro.change_management.object_type
+      tag: set_cm_object_type_d5e6f7a8
+      copy_from: _tmp.object_type
+      ignore_empty_value: true
+      if: ctx._tmp?.object_type != null
+  - set:
+      field: jamf_pro.change_management.actor.name
+      tag: set_cm_actor_name_b9c0d1e2
+      copy_from: _tmp.actor_raw
+      ignore_empty_value: true
+      if: ctx._tmp?.actor_raw != null
+  - set:
+      field: jamf_pro.change_management.actor.id
+      tag: set_cm_actor_id_f3a4b5c6
+      copy_from: _tmp.actor_id
+      ignore_empty_value: true
+      if: ctx._tmp?.actor_id != null
+  - set:
+      field: jamf_pro.change_management.log_level
+      tag: set_cm_log_level_d7e8f9a0
+      copy_from: _tmp.log_level
+      ignore_empty_value: true
+      if: ctx._tmp?.log_level != null
+  - set:
+      field: jamf_pro.change_management.thread
+      tag: set_cm_thread_b1c2d3e4
+      copy_from: _tmp.thread
+      ignore_empty_value: true
+      if: ctx._tmp?.thread != null
+  # Trim padding spaces from log_level and thread (Jamf format pads these fields)
+  - trim:
+      field: jamf_pro.change_management.log_level
+      tag: trim_cm_log_level_f5a6b7c8
+      ignore_missing: true
+  - trim:
+      field: jamf_pro.change_management.thread
+      tag: trim_cm_thread_d9e0f1a2
+      ignore_missing: true
+  # Detail block: tab-indented lines after the header with ID/Name pairs
+  - script:
+      lang: painless
+      tag: parse_cm_detail_b3c4d5e6
+      description: Extract ID, Name, and raw detail from CHANGEMANAGEMENT detail block.
+      if: ctx._tmp?.detail_raw != null && ctx._tmp.detail_raw.trim().length() > 0
+      source: |-
+        def raw = ctx._tmp.detail_raw.trim();
+        if (raw.length() == 0) { return; }
+        if (ctx.jamf_pro == null) { ctx.jamf_pro = new HashMap(); }
+        if (ctx.jamf_pro.change_management == null) { ctx.jamf_pro.change_management = new HashMap(); }
+        ctx.jamf_pro.change_management.detail = raw;
+        def idMatcher = /(?m)^\t*ID[\t .]+(\S+)/.matcher(raw);
+        if (idMatcher.find()) {
+          if (ctx.jamf_pro.change_management.object == null) { ctx.jamf_pro.change_management.object = new HashMap(); }
+          ctx.jamf_pro.change_management.object.id = idMatcher.group(1);
+        }
+        def nameMatcher = /(?m)^\t*Name[\t .]+(.+)/.matcher(raw);
+        if (nameMatcher.find()) {
+          def val = nameMatcher.group(1).trim();
+          if (val.length() > 0) {
+            if (ctx.jamf_pro.change_management.object == null) { ctx.jamf_pro.change_management.object = new HashMap(); }
+            ctx.jamf_pro.change_management.object.name = val;
+          }
+        }
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_parse_cm_detail_error_f7a8b9c0
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              in pipeline '{{{ _ingest.pipeline }}}'
+              failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: user.name
+      tag: set_user_name_cm_d1e2f3a5
+      copy_from: _tmp.actor_raw
+      ignore_empty_value: true
+      if: ctx._tmp?.actor_raw != null
+  - set:
+      field: user.id
+      tag: set_user_id_cm_b5c6d7e9
+      copy_from: _tmp.actor_id
+      ignore_empty_value: true
+      if: ctx._tmp?.actor_id != null
+  - set:
+      field: event.action
+      tag: set_event_action_cm_f9a0b1c3
+      copy_from: _tmp.operation
+      ignore_empty_value: true
+      if: ctx._tmp?.operation != null
+  - set:
+      field: event.category
+      tag: set_event_category_cm_d3e4f5a7
+      value:
+        - configuration
+  - script:
+      lang: painless
+      tag: derive_event_type_cm_b7c8d9e1
+      description: Derive event.type from CHANGEMANAGEMENT operation.
+      if: ctx._tmp?.operation != null
+      source: |-
+        def op = ctx._tmp.operation;
+        ArrayList types = new ArrayList();
+        if (op.equalsIgnoreCase('CREATE')) {
+          types.add('creation');
+        } else if (op.equalsIgnoreCase('UPDATE')) {
+          types.add('change');
+        } else if (op.equalsIgnoreCase('DELETE')) {
+          types.add('deletion');
+        } else if (op.equalsIgnoreCase('READ')) {
+          types.add('access');
+        } else {
+          types.add('info');
+        }
+        ctx.event.type = types;
+      on_failure:
+        - append:
+            field: error.message
+            tag: append_derive_event_type_cm_error_f1a2b3c5
+            value: >-
+              Processor '{{{ _ingest.on_failure_processor_type }}}'
+              with tag '{{{ _ingest.on_failure_processor_tag }}}'
+              in pipeline '{{{ _ingest.pipeline }}}'
+              failed with message '{{{ _ingest.on_failure_message }}}'
+  - set:
+      field: event.outcome
+      tag: set_event_outcome_cm_d5e6f7a9
+      value: success
+  - append:
+      field: related.user
+      tag: append_related_user_cm_b9c0d1e3
+      value: '{{{user.name}}}'
+      allow_duplicates: false
+      if: ctx.user?.name != null
+  - set:
+      field: event.dataset
+      tag: set_event_dataset_cm_f3a4b5c7
+      value: jamf_pro.change_management
+  - set:
+      field: event.module
+      tag: set_event_module_cm_d7e8f9a1
+      value: jamf_pro
+  - remove:
+      field:
+        - _tmp
+      tag: remove_tmp_fields_cm_b1c2d3e5
+      ignore_missing: true
+  - pipeline:
+      name: logs-jamf_pro.change_management@custom
+      ignore_missing_pipeline: true
+      tag: pipeline_custom_cm_f5a6b7c9
+  - append:
+      field: tags
+      tag: append_preserve_original_event_on_error_cm_d9e0f1a3
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind_cm_b3c4d5e7
+      value: pipeline_error
+      if: ctx.error?.message != null
+on_failure:
+  - set:
+      field: event.kind
+      tag: set_event_kind_pipeline_error_cm_f7a8b9c1
+      value: pipeline_error
+  - append:
+      field: tags
+      tag: append_preserve_original_event_on_failure_cm_d1e2f3a6
+      value: preserve_original_event
+      allow_duplicates: false
+  - append:
+      field: error.message
+      tag: append_pipeline_failure_message_cm_b5c6d7ea
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        in pipeline '{{{ _ingest.pipeline }}}'
+        failed with message '{{{ _ingest.on_failure_message }}}'

@@ -133,3 +133,42 @@ Here is an example real-time event document:
 The following non-ECS fields are used in real-time event documents:
 
 {{fields "events"}}
+
+### Access
+
+The access data stream collects Jamf Pro Log Stream access logs delivered via
+AWS S3. These logs record authentication events such as user logins, logouts,
+and API token operations. Both access and change management logs arrive on this
+data stream; change management events are automatically rerouted to the
+`change_management` data stream by ingest routing rules.
+
+To collect Jamf Pro Log Stream logs, configure the Jamf Pro Log Stream to deliver
+logs to an AWS S3 bucket, then configure the integration to read from that bucket
+(either directly or via an SQS queue).
+
+Documents from the access data stream can be found with the filter
+`event.dataset: "jamf_pro.access"`.
+
+{{event "access"}}
+
+The following non-ECS fields are used in access documents:
+
+{{fields "access"}}
+
+### Change Management
+
+The change management data stream collects Jamf Pro Log Stream change management
+logs. These logs record configuration changes such as creating, reading, updating,
+or deleting objects in Jamf Pro (computers, policies, configuration profiles, etc.).
+
+Change management events are automatically rerouted from the access data stream.
+No separate input configuration is required.
+
+Documents from the change management data stream can be found with the filter
+`event.dataset: "jamf_pro.change_management"`.
+
+{{event "change_management"}}
+
+The following non-ECS fields are used in change management documents:
+
+{{fields "change_management"}}

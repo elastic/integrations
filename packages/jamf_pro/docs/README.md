@@ -659,3 +659,205 @@ The following non-ECS fields are used in real-time event documents:
 | jamf_pro.events.webhook.name |  | keyword |
 | jamf_pro.events.webhook.webhook_event |  | keyword |
 
+
+### Access
+
+The access data stream collects Jamf Pro Log Stream access logs delivered via
+AWS S3. These logs record authentication events such as user logins, logouts,
+and API token operations. Both access and change management logs arrive on this
+data stream; change management events are automatically rerouted to the
+`change_management` data stream by ingest routing rules.
+
+To collect Jamf Pro Log Stream logs, configure the Jamf Pro Log Stream to deliver
+logs to an AWS S3 bucket, then configure the integration to read from that bucket
+(either directly or via an SQS queue).
+
+Documents from the access data stream can be found with the filter
+`event.dataset: "jamf_pro.access"`.
+
+An example event for `access` looks as following:
+
+```json
+{
+    "@timestamp": "2026-09-23T19:56:19.086595497Z",
+    "ecs": {
+        "version": "9.4.0"
+    },
+    "observer": {
+        "vendor": "Jamf",
+        "product": "Jamf Pro"
+    },
+    "event": {
+        "kind": "event",
+        "category": [
+            "authentication"
+        ],
+        "type": [
+            "start"
+        ],
+        "action": "Successful Login",
+        "outcome": "success",
+        "original": "{\"time\":\"2026-09-23T19:56:19.086595497Z\",\"message\":\"[JSSACCESSLOG] 2026-09-23T19:56:19,086 - username=kftyfgicvdsbhx@buqprrmmj.com, status=Successful Login, ipAddress=89.160.20.128, entryPoint=Single Sign On (OIDC)\"}",
+        "module": "jamf_pro",
+        "dataset": "jamf_pro.access"
+    },
+    "user": {
+        "name": "kftyfgicvdsbhx@buqprrmmj.com"
+    },
+    "source": {
+        "as": {
+            "number": 29518,
+            "organization": {
+                "name": "Bredband2 AB"
+            }
+        },
+        "geo": {
+            "city_name": "Linköping",
+            "continent_name": "Europe",
+            "country_iso_code": "SE",
+            "country_name": "Sweden",
+            "location": {
+                "lat": 58.4167,
+                "lon": 15.6167
+            },
+            "region_iso_code": "SE-E",
+            "region_name": "Östergötland County"
+        },
+        "ip": "89.160.20.128"
+    },
+    "related": {
+        "ip": [
+            "89.160.20.128"
+        ],
+        "user": [
+            "kftyfgicvdsbhx@buqprrmmj.com"
+        ]
+    },
+    "jamf_pro": {
+        "access": {
+            "username": "kftyfgicvdsbhx@buqprrmmj.com",
+            "status": "Successful Login",
+            "ip_address": "89.160.20.128",
+            "entry_point": "Single Sign On (OIDC)"
+        }
+    },
+    "tags": [
+        "forwarded",
+        "jamf_pro-access"
+    ]
+}
+```
+
+The following non-ECS fields are used in access documents:
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| event.dataset | Event dataset. | constant_keyword |
+| event.module | Event module. | constant_keyword |
+| input.type | Type of filebeat input. | keyword |
+| jamf_pro.access.entry_point | The interface through which the access was made, such as Universal API (OAuth), Single Sign On (OIDC), JSS, or Self Service (macOS). | keyword |
+| jamf_pro.access.ip_address | The IP address of the client that performed the access action. | keyword |
+| jamf_pro.access.status | The result status of the access attempt, such as Successful Login or Failed token creation. | keyword |
+| jamf_pro.access.username | The username that performed the access action. | keyword |
+
+
+### Change Management
+
+The change management data stream collects Jamf Pro Log Stream change management
+logs. These logs record configuration changes such as creating, reading, updating,
+or deleting objects in Jamf Pro (computers, policies, configuration profiles, etc.).
+
+Change management events are automatically rerouted from the access data stream.
+No separate input configuration is required.
+
+Documents from the change management data stream can be found with the filter
+`event.dataset: "jamf_pro.change_management"`.
+
+An example event for `change_management` looks as following:
+
+```json
+{
+    "@timestamp": "2026-09-23T19:56:45.940685642Z",
+    "ecs": {
+        "version": "9.4.0"
+    },
+    "event": {
+        "action": "DELETE",
+        "category": [
+            "configuration"
+        ],
+        "dataset": "jamf_pro.change_management",
+        "kind": "event",
+        "module": "jamf_pro",
+        "original": "{\"time\":\"2026-09-23T19:56:45.940685642Z\",\"message\":\"[CHANGEMANAGEMENT] 2026-09-23T19:56:45,940 [INFO ] [eralPool-47] [file                     ] - [dnopnmcns@buqprrmmj.com (ID: -1)] [DELETE] [Computer] [2026-09-23T19:56:45.940+0000]\\n\\tID             2430\\n\\tName ......... ZO-RFLEIOF03I-Z\"}",
+        "outcome": "success",
+        "type": [
+            "deletion"
+        ]
+    },
+    "jamf_pro": {
+        "change_management": {
+            "actor": {
+                "id": "-1",
+                "name": "dnopnmcns@buqprrmmj.com"
+            },
+            "detail": "ID             2430\n\tName ......... ZO-RFLEIOF03I-Z",
+            "log_level": "INFO",
+            "object": {
+                "id": "2430",
+                "name": "ZO-RFLEIOF03I-Z"
+            },
+            "object_type": "Computer",
+            "operation": "DELETE",
+            "thread": "eralPool-47"
+        }
+    },
+    "observer": {
+        "product": "Jamf Pro",
+        "vendor": "Jamf"
+    },
+    "related": {
+        "user": [
+            "dnopnmcns@buqprrmmj.com"
+        ]
+    },
+    "user": {
+        "id": "-1",
+        "name": "dnopnmcns@buqprrmmj.com"
+    },
+    "tags": [
+        "forwarded",
+        "jamf_pro-access"
+    ]
+}
+```
+
+The following non-ECS fields are used in change management documents:
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| event.dataset | Event dataset. | constant_keyword |
+| event.module | Event module. | constant_keyword |
+| input.type | Type of filebeat input. | keyword |
+| jamf_pro.change_management.actor.id | The Jamf Pro internal ID of the actor (-1 for system, 0 for API clients, positive integers for human users). | keyword |
+| jamf_pro.change_management.actor.name | The name or email of the actor who performed the change. | keyword |
+| jamf_pro.change_management.detail | The full detail block of the change management entry, containing configuration settings or object properties. | text |
+| jamf_pro.change_management.log_level | The log level of the change management entry (typically INFO). | keyword |
+| jamf_pro.change_management.object.id | The ID of the object affected by the change, extracted from the detail block. | keyword |
+| jamf_pro.change_management.object.name | The name of the object affected by the change, extracted from the detail block. | keyword |
+| jamf_pro.change_management.object_type | The type of object affected by the change, such as Computer, Policy, or Smart Computer Group. | keyword |
+| jamf_pro.change_management.operation | The change management operation performed (CREATE, READ, UPDATE, DELETE). | keyword |
+| jamf_pro.change_management.thread | The application thread that generated the log entry. | keyword |
+
