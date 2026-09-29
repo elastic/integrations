@@ -1,0 +1,60 @@
+title: "agent"
+type: logs
+streams:
+  - input: cel
+    title: HarfangLab Agent Inventory
+    description: Collect endpoint agent inventory snapshots from the HarfangLab EDR REST API.
+    template_path: cel.yml.hbs
+    vars:
+      - name: interval
+        type: text
+        title: Interval
+        description: How often to poll the HarfangLab API for agent inventory updates.
+        required: true
+        show_user: true
+        default: 1h
+      - name: initial_interval
+        type: text
+        title: Initial Interval
+        description: Lookback window on the first poll (e.g. 30d).
+        required: false
+        show_user: true
+        default: 30d
+      - name: page_size
+        type: integer
+        title: Page Size
+        description: Number of agents to request per page (DRF limit parameter).
+        required: false
+        show_user: false
+        default: 100
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: false
+        show_user: false
+        default:
+          - forwarded
+      - name: preserve_original_event
+        type: bool
+        title: Preserve Original Event
+        required: false
+        show_user: true
+        default: false
+      - name: enable_request_tracer
+        type: bool
+        title: Enable Request Tracer
+        description: Log HTTP requests and responses to the agent filesystem for debugging.
+        required: false
+        show_user: false
+        default: false
+      - name: processors
+        type: yaml
+        title: Processors
+        description: Processors to apply to events before they are shipped.
+        required: false
+        show_user: false
+elasticsearch:
+  index_template:
+    mappings:
+      subobjects: false

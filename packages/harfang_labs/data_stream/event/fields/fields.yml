@@ -1,0 +1,373 @@
+- name: host.user.name
+  type: keyword
+  description: Logged-in user name on the endpoint.
+- name: host.user.domain
+  type: keyword
+  description: Logged-in user domain on the endpoint.
+- name: winlog
+  type: group
+  description: Windows Event Log fields mapped for eventlog telemetry.
+  fields:
+    - name: event_id
+      type: keyword
+    - name: provider_name
+      type: keyword
+    - name: channel
+      type: keyword
+    - name: provider_guid
+      type: keyword
+    - name: record_id
+      type: long
+    - name: computer_name
+      type: keyword
+    - name: level
+      type: keyword
+    - name: task
+      type: keyword
+    - name: opcode
+      type: keyword
+    - name: event_data
+      type: flattened
+    - name: user_data
+      type: flattened
+    - name: process
+      type: group
+      fields:
+        - name: pid
+          type: long
+        - name: thread
+          type: group
+          fields:
+            - name: id
+              type: long
+- name: harfang_labs
+  type: group
+  fields:
+    - name: event
+      type: group
+      description: Syslog event stream metadata and per-log_type custom fields.
+      fields:
+        - name: log_type
+          type: keyword
+          description: Source log_type value from the JSON body.
+        - name: process
+          type: group
+          fields:
+            - name: integrity_level
+              type: keyword
+            - name: session_id
+              type: long
+            - name: logonid
+              type: long
+            - name: size
+              type: long
+        - name: network
+          type: group
+          fields:
+            - name: event_id
+              type: keyword
+            - name: conn_type
+              type: long
+            - name: initiated
+              type: keyword
+            - name: is_ipv6
+              type: keyword
+            - name: query_results
+              type: flattened
+        - name: file
+          type: group
+          fields:
+            - name: operation
+              type: keyword
+            - name: event_id
+              type: keyword
+            - name: thread_id
+              type: long
+        - name: driverload
+          type: group
+          fields:
+            - name: image_size
+              type: long
+            - name: image_base
+              type: keyword
+        - name: injectedthread
+          type: group
+          fields:
+            - name: thread_id
+              type: long
+            - name: thread_uid
+              type: keyword
+            - name: thread_sha256
+              type: keyword
+            - name: start_address
+              type: long
+            - name: start_address_string
+              type: keyword
+            - name: region_size
+              type: long
+            - name: region_type
+              type: long
+            - name: region_protect
+              type: long
+            - name: region_state
+              type: long
+        - name: eventlog
+          type: group
+          fields:
+            - name: type
+              type: keyword
+        - name: auditlog
+          type: group
+          fields:
+            - name: response_status_text
+              type: keyword
+        - name: connectionlog
+          type: group
+          fields:
+            - name: connection_count
+              type: long
+            - name: telemetry_sum
+              type: long
+            - name: investigation_data_sum
+              type: long
+            - name: object_type
+              type: keyword
+        - name: investigation
+          type: group
+          fields:
+            - name: status
+              type: keyword
+            - name: object_type
+              type: keyword
+            - name: job_id
+              type: keyword
+            - name: job_instance_id
+              type: keyword
+            - name: binaryinfo
+              type: flattened
+    - name: alert
+      type: group
+      fields:
+        - name: id
+          type: keyword
+        - name: status
+          type: keyword
+        - name: type
+          type: keyword
+        - name: subtype
+          type: keyword
+        - name: maturity
+          type: keyword
+        - name: threat_key
+          type: long
+        - name: aggregation_key
+          type: keyword
+        - name: score
+          type: long
+        - name: session_id
+          type: long
+        - name: logonid
+          type: long
+        - name: payload_type
+          type: keyword
+        - name: execution_mode
+          type: long
+        - name: level
+          type: keyword
+        - name: matched_rules
+          type: nested
+          fields:
+            - name: namespace
+              type: keyword
+            - name: rulename
+              type: keyword
+            - name: source
+              type: keyword
+        - name: eventlog
+          type: group
+          fields:
+            - name: event_id
+              type: keyword
+            - name: source_name
+              type: keyword
+            - name: channel
+              type: keyword
+            - name: event_data
+              type: flattened
+        - name: process
+          type: group
+          fields:
+            - name: integrity_level
+              type: keyword
+            - name: size
+              type: long
+            - name: issuer_name
+              type: keyword
+            - name: product_version
+              type: keyword
+    - name: threat
+      type: group
+      fields:
+        - name: id
+          type: long
+        - name: slug
+          type: keyword
+        - name: status
+          type: keyword
+        - name: level
+          type: keyword
+        - name: first_seen
+          type: date
+        - name: last_seen
+          type: date
+        - name: last_update
+          type: date
+        - name: alert_count
+          type: long
+        - name: alert_count_by_level
+          type: object
+          object_type: long
+        - name: agent_count
+          type: long
+        - name: rule_count
+          type: long
+        - name: agents
+          type: nested
+          fields:
+            - name: id
+              type: keyword
+            - name: hostname
+              type: keyword
+            - name: agent_id
+              type: keyword
+            - name: agent_hostname
+              type: keyword
+            - name: agent_ostype
+              type: keyword
+            - name: security_event_count
+              type: long
+            - name: domainname
+              type: keyword
+            - name: osproducttype
+              type: keyword
+            - name: ostype
+              type: keyword
+            - name: ipaddress
+              type: ip
+        - name: impacted_users
+          type: nested
+          fields:
+            - name: full_name
+              type: keyword
+            - name: user_sid
+              type: keyword
+        - name: rules
+          type: nested
+          fields:
+            - name: rule_name
+              type: keyword
+            - name: rule_id
+              type: keyword
+            - name: rule_level
+              type: keyword
+            - name: security_event_count
+              type: long
+        - name: top_agents
+          type: nested
+          fields:
+            - name: agent_hostname
+              type: keyword
+            - name: agent_id
+              type: keyword
+        - name: top_impacted_users
+          type: nested
+          fields:
+            - name: user_name
+              type: keyword
+        - name: top_rules
+          type: nested
+          fields:
+            - name: rule_name
+              type: keyword
+        - name: note
+          type: group
+          fields:
+            - name: title
+              type: keyword
+            - name: content
+              type: text
+            - name: creation_date
+              type: date
+            - name: last_update
+              type: date
+    - name: agent
+      type: group
+      fields:
+        - name: id
+          type: keyword
+        - name: status
+          type: keyword
+        - name: online_status
+          type: keyword
+        - name: version
+          type: keyword
+        - name: domain
+          type: keyword
+        - name: policy_name
+          type: keyword
+        - name: policy_id
+          type: keyword
+        - name: groupname
+          type: keyword
+        - name: update_status
+          type: keyword
+        - name: first_seen
+          type: date
+        - name: last_seen
+          type: date
+        - name: install_date
+          type: date
+        - name: os_build
+          type: long
+        - name: external_ip
+          type: ip
+        - name: cpu_count
+          type: long
+        - name: cpu_frequency
+          type: long
+        - name: total_memory
+          type: double
+        - name: avg_cpu
+          type: double
+        - name: avg_memory
+          type: double
+        - name: isolation_state
+          type: boolean
+        - name: isolation_policy
+          type: keyword
+        - name: group_count
+          type: long
+        - name: groups
+          type: nested
+          fields:
+            - name: id
+              type: keyword
+            - name: name
+              type: keyword
+        - name: policy
+          type: group
+          fields:
+            - name: id
+              type: keyword
+            - name: name
+              type: keyword
+            - name: revision
+              type: long
+        - name: effective_policy_id
+          type: keyword
+        - name: effective_policy_revision
+          type: long
+        - name: tenant
+          type: keyword
+        - name: subnet
+          type: keyword

@@ -1,0 +1,109 @@
+- name: harfang_labs
+  type: group
+  fields:
+    - name: threat
+      type: group
+      fields:
+        - name: id
+          type: long
+          description: HarfangLab numeric threat identifier.
+        - name: slug
+          type: keyword
+          description: Threat display slug.
+        - name: status
+          type: keyword
+          description: Threat workflow status.
+        - name: level
+          type: keyword
+          description: Raw threat severity level string.
+        - name: first_seen
+          type: date
+          description: Timestamp of the first related security event.
+        - name: last_seen
+          type: date
+          description: Timestamp of the most recent related security event.
+        - name: last_update
+          type: date
+          description: Timestamp of the last threat update.
+        - name: alert_count
+          type: long
+          description: Total count of related security events (alerts).
+        - name: alert_count_by_level
+          type: object
+          description: Related alert counts grouped by severity level.
+          object_type: long
+        - name: agent_count
+          type: long
+          description: Number of impacted agents.
+        - name: rule_count
+          type: long
+          description: Number of contributing detection rules.
+        - name: agents
+          type: nested
+          description: Impacted endpoint agents.
+          fields:
+            - name: id
+              type: keyword
+            - name: hostname
+              type: keyword
+            - name: domainname
+              type: keyword
+            - name: osproducttype
+              type: keyword
+            - name: ostype
+              type: keyword
+            - name: ipaddress
+              type: ip
+        - name: impacted_users
+          type: nested
+          description: Users impacted by the threat.
+          fields:
+            - name: full_name
+              type: keyword
+            - name: user_sid
+              type: keyword
+        - name: rules
+          type: nested
+          description: Detection rules contributing to the threat.
+          fields:
+            - name: rule_name
+              type: keyword
+            - name: rule_level
+              type: keyword
+            - name: security_event_count
+              type: long
+        - name: top_agents
+          type: nested
+          description: Top impacted agents ranked by activity.
+          fields:
+            - name: agent_hostname
+              type: keyword
+            - name: agent_id
+              type: keyword
+        - name: top_impacted_users
+          type: nested
+          description: Top impacted users ranked by activity.
+          fields:
+            - name: user_name
+              type: keyword
+        - name: top_rules
+          type: nested
+          description: Top contributing rules ranked by activity.
+          fields:
+            - name: rule_name
+              type: keyword
+        - name: note
+          type: group
+          description: Analyst note attached to the threat.
+          fields:
+            - name: title
+              type: keyword
+            - name: content
+              type: text
+            - name: creation_date
+              type: date
+            - name: last_update
+              type: date
+        - name: mitre_tactics
+          type: keyword
+          description: MITRE ATT&CK tactic identifiers associated with the threat.
