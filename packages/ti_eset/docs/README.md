@@ -90,8 +90,6 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | input.type | Input type. | keyword |
 | labels.is_ioc_transform_source | Indicates whether an IOC is in the raw source data stream, or the in latest destination index. | constant_keyword |
-| threat.indicator.last_seen | The date and time when intelligence source last reported sighting this indicator. | date |
-| threat.indicator.modified_at | The date and time when intelligence source last modified information for this indicator. | date |
 
 
 An example event for `androidinfostealer` looks as following:
@@ -496,8 +494,6 @@ An example event for `domains` looks as following:
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | input.type | Input type. | keyword |
 | labels.is_ioc_transform_source | Indicates whether an IOC is in the raw source data stream, or the in latest destination index. | constant_keyword |
-| threat.indicator.last_seen | The date and time when intelligence source last reported sighting this indicator. | date |
-| threat.indicator.modified_at | The date and time when intelligence source last modified information for this indicator. | date |
 
 
 An example event for `emailattachments` looks as following:
