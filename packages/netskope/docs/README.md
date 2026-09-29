@@ -1027,10 +1027,10 @@ An example event for `alerts` looks as following:
 | netskope.alert_v2.http_port | Http port used detected by IPS event manager service. Actual metadata comes from an HTTP header - X-NS-FLOW-DATA that is created by the proxy services. | long |
 | netskope.alert_v2.http_status | HTTP status code used by NSProxy. | keyword |
 | netskope.alert_v2.http_transaction_count | HTTP transaction count. | long |
-| netskope.alert_v2.iaas_asset_tags | List of tags associated with the asset for which alert is raised. Each tag is a key/value pair (array in API JSON). | keyword |
+| netskope.alert_v2.iaas_asset_tags | List of tags associated with the asset for which alert is raised. Each tag is a key/value pair (array in API JSON). | flattened |
 | netskope.alert_v2.iaas_remediated | value representing whether IAAS alerts remediated or not. | boolean |
 | netskope.alert_v2.iaas_remediated_by | IAAS/CSA scan alerts can be remediated by taking remediation steps. This field captures the admin's email address who applied the remediation steps. | keyword |
-| netskope.alert_v2.iaas_remediated_on | IAAS/CSA scan alerts can be remediated by taking remediation steps. This field captures the time in epoch format when remediation steps were taken. | date |
+| netskope.alert_v2.iaas_remediated_on | IAAS/CSA scan alerts can be remediated by taking remediation steps. This field captures the time in epoch format when remediation steps were taken. | long |
 | netskope.alert_v2.iaas_remediation_action | IAAS/CSA scan alerts can be remediated by taking remediation steps. This field captures the action taken. | keyword |
 | netskope.alert_v2.incident_id | Unique Incident ID associated with main container (or non-container) file that was scanned. | keyword |
 | netskope.alert_v2.instance | Instance associated with an organization application instance. | keyword |
@@ -1166,7 +1166,7 @@ An example event for `alerts` looks as following:
 | netskope.alert_v2.process_path | The path to the process that performed the action on the endpoint. | keyword |
 | netskope.alert_v2.product_id | It's Part of USB specification. Used to identify a USB device. | keyword |
 | netskope.alert_v2.profile_emails | List of emails addresses (main user mail address and / or alternate email address as a list)/. (array in API JSON). | keyword |
-| netskope.alert_v2.profile_hits | Metadata related to DLP profiles which contains rule_name, severity and policy name etc. (array in API JSON). | keyword |
+| netskope.alert_v2.profile_hits | Metadata related to DLP profiles which contains rule_name, severity and policy name etc. (array in API JSON). | flattened |
 | netskope.alert_v2.profile_id | Anomaly profile ID | keyword |
 | netskope.alert_v2.protocol | Protocol value used by applications. | keyword |
 | netskope.alert_v2.protocol_port | Protocol Port used in NPA related applications. | keyword |
@@ -1353,15 +1353,15 @@ An example event for `alerts_v2` looks as following:
 {
     "@timestamp": "2024-07-29T19:54:49.000Z",
     "agent": {
-        "ephemeral_id": "ac3a9004-52f6-4e7e-b722-8db11de35445",
-        "id": "fbda3b2c-de01-42a6-b6d3-d9ba717f0e76",
-        "name": "elastic-agent-83948",
+        "ephemeral_id": "cd0f9785-e51d-40b4-acf4-26876aa45408",
+        "id": "6c9770e1-491e-4656-a94a-c48ecd274876",
+        "name": "elastic-agent-99172",
         "type": "filebeat",
-        "version": "8.19.0"
+        "version": "8.19.9"
     },
     "data_stream": {
         "dataset": "netskope.alerts_v2",
-        "namespace": "74771",
+        "namespace": "73714",
         "type": "logs"
     },
     "destination": {
@@ -1371,19 +1371,16 @@ An example event for `alerts_v2` looks as following:
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "fbda3b2c-de01-42a6-b6d3-d9ba717f0e76",
+        "id": "6c9770e1-491e-4656-a94a-c48ecd274876",
         "snapshot": false,
-        "version": "8.19.0"
+        "version": "8.19.9"
     },
     "event": {
         "action": "alert",
         "agent_id_status": "verified",
-        "category": [
-            "intrusion_detection"
-        ],
         "dataset": "netskope.alerts_v2",
         "id": "5182808a2a99fc688d4a8057",
-        "ingested": "2026-09-16T14:18:43Z",
+        "ingested": "2026-09-29T08:47:14Z",
         "kind": "alert",
         "original": "{\"_id\":\"5182808a2a99fc688d4a8057\",\"access_method\":\"Client\",\"action\":\"alert\",\"activity\":\"Upload\",\"alert\":\"yes\",\"alert_name\":\"Example Policy Alert\",\"alert_type\":\"policy\",\"app\":\"Dropbox\",\"appcategory\":\"Cloud Storage\",\"device\":\"Windows Device\",\"dstip\":\"81.2.69.142\",\"hostname\":\"host-1.example.local\",\"policy\":\"Example File Policy\",\"srcip\":\"89.160.20.112\",\"timestamp\":1722282889,\"traffic_type\":\"CloudApp\",\"type\":\"nspolicy\",\"url\":\"https://www.dropbox.com/example\",\"user\":\"user@example.com\",\"userip\":\"216.160.83.56\"}",
         "type": [
@@ -1442,7 +1439,9 @@ An example event for `alerts_v2` looks as following:
         "original": "https://www.dropbox.com/example"
     },
     "user": {
-        "email": "user@example.com"
+        "domain": "example.com",
+        "email": "user@example.com",
+        "name": "user"
     }
 }
 ```
@@ -1978,7 +1977,7 @@ An example event for `events` looks as following:
 | netskope.events_v2.executable_hash | Flag to indicate if executable_hash is signed or not. | keyword |
 | netskope.events_v2.executable_signed | Flag to indicate if executable_hash is signed or not. | boolean |
 | netskope.events_v2.exposure | Type for the exposure of a document.The exposure information of the incident ( for ex Public , Private etc ). | keyword |
-| netskope.events_v2.ext_labels | Data Classification and Encryption framework that will support MIP where MIP is Sensitivity labels from Microsoft Purview Information Protection let you classify and protect your organization's data. ext_labels is list of map which carries the information Sensitivity Labels applied to the file. Data returned will be have 4 sub fields. id: Sensitivity Label ID. name: Sensitivity Label Name. instance: Instance whose Sensitivity Label is applied. vendor: Vendor whose Sensitivity Label is applied. (array in API JSON). | keyword |
+| netskope.events_v2.ext_labels | Data Classification and Encryption framework that will support MIP where MIP is Sensitivity labels from Microsoft Purview Information Protection let you classify and protect your organization's data. ext_labels is list of map which carries the information Sensitivity Labels applied to the file. Data returned will be have 4 sub fields. id: Sensitivity Label ID. name: Sensitivity Label Name. instance: Instance whose Sensitivity Label is applied. vendor: Vendor whose Sensitivity Label is applied. (array in API JSON). | flattened |
 | netskope.events_v2.external_collaborator_count | Count of external collaborators on a file/folder. Supported for some apps. | long |
 | netskope.events_v2.external_email | Flag to check if External Email ID is detected. | long |
 | netskope.events_v2.file_cls_encrypted | Its a boolean value representing  whether its CLS encrypted or not. | boolean |
@@ -1995,7 +1994,7 @@ An example event for `events` looks as following:
 | netskope.events_v2.fromlogs | Shows if the event was generated from the Risk Insights log. | keyword |
 | netskope.events_v2.hostname | User's Host name. | keyword |
 | netskope.events_v2.http_transaction_count | HTTP transaction count. | long |
-| netskope.events_v2.iaas_asset_tags | List of tags associated with the asset for which alert is raised. Each tag is a key/value pair (array in API JSON). | keyword |
+| netskope.events_v2.iaas_asset_tags | List of tags associated with the asset for which alert is raised. Each tag is a key/value pair (array in API JSON). | flattened |
 | netskope.events_v2.iaas_remediated | value representing whether IAAS alerts remediated or not. | boolean |
 | netskope.events_v2.iaas_remediated_on | IAAS/CSA scan alerts can be remediated by taking remediation steps. This field captures the time in epoch format when remediation steps were taken. | date |
 | netskope.events_v2.incident_id | Unique Incident ID associated with main container (or non-container) file that was scanned. | keyword |
@@ -2242,24 +2241,24 @@ An example event for `events_v2` looks as following:
 {
     "@timestamp": "2024-07-29T19:55:10.000Z",
     "agent": {
-        "ephemeral_id": "53ac2554-0219-43fb-b82d-41871fea6a46",
-        "id": "72c0a2ac-9b31-4e5f-803e-ae11dafb78cd",
-        "name": "elastic-agent-32295",
+        "ephemeral_id": "2d26dfda-2f95-4257-b74e-a4396cd4714c",
+        "id": "8539b9ab-bea1-4905-a764-e15501da7c02",
+        "name": "elastic-agent-28548",
         "type": "filebeat",
-        "version": "8.19.0"
+        "version": "8.19.9"
     },
     "data_stream": {
         "dataset": "netskope.events_v2",
-        "namespace": "66727",
+        "namespace": "89423",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "72c0a2ac-9b31-4e5f-803e-ae11dafb78cd",
+        "id": "8539b9ab-bea1-4905-a764-e15501da7c02",
         "snapshot": false,
-        "version": "8.19.0"
+        "version": "8.19.9"
     },
     "event": {
         "agent_id_status": "verified",
@@ -2268,7 +2267,7 @@ An example event for `events_v2` looks as following:
         ],
         "dataset": "netskope.events_v2",
         "id": "09cb28d89f9cd8d2d1e9598d",
-        "ingested": "2026-09-16T14:33:29Z",
+        "ingested": "2026-09-29T08:45:59Z",
         "kind": "event",
         "original": "{\"_id\":\"09cb28d89f9cd8d2d1e9598d\",\"audit_log_event\":\"Edited private app segment\",\"ccl\":\"unknown\",\"count\":1,\"details\":[],\"organization_unit\":\"example.local/Example/Active Users/Full Time\",\"record_type\":\"audit\",\"sAMAccountName\":\"admin\",\"severity_level\":\"low\",\"supporting_data\":{\"data_type\":\"npa-provisioner\",\"data_values\":[\"[EXAMPLE-APP] (ID: 101)\"]},\"timestamp\":1722282910,\"type\":\"admin_audit_logs\",\"ur_normalized\":\"admin@example.com\",\"user\":\"admin@example.com\",\"userPrincipalName\":\"admin@example.com\"}",
         "outcome": "unknown",

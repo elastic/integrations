@@ -1,6 +1,10 @@
 ---
 description: Pipeline for Netskope alert v2 logs (REST dataexport and routed log streaming).
 processors:
+  - terminate:
+      tag: data_collection_error_4bdbb3d0
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
   - rename:
       field: message
       tag: rename_message_to_event_original_alerts_v2
@@ -16,17 +20,12 @@ processors:
       field: event.original
       tag: json_event_original_alerts_v2
       target_field: netskope.alert_v2
+      if: ctx.event?.original != null
       on_failure:
         - append:
             tag: append_error_message_alerts_v2_json
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - terminate:
-      tag: data_collection_error
-      description: error message set and no data to process.
-      if: >-
-        ctx.message == null && ctx.event?.original == null &&
-        (ctx.error?.message != null || ctx.error?.code != null)
   - set:
       field: ecs.version
       tag: set_ecs_version_dbf680ba
@@ -437,8 +436,8 @@ processors:
       tag: remove_destination_geo_location_d08b068a
       field: destination.geo.location
       if: >-
-        !(ctx.destination?.geo?.location?.lat instanceof double)
-        || !(ctx.destination.geo.location.lon instanceof double)
+        !(ctx.destination?.geo?.location?.lat instanceof double
+        && ctx.destination.geo.location.lon instanceof double)
         || ctx.destination.geo.location.lat < -90.0
         || ctx.destination.geo.location.lat > 90.0
         || ctx.destination.geo.location.lon < -180.0
@@ -607,19 +606,14 @@ processors:
             tag: append_error_message_26e6c147
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - date:
+  - convert:
       field: netskope.alert_v2.iaas_remediated_on
-      tag: date_iaas_remediated_on_912779f0
-      target_field: netskope.alert_v2.iaas_remediated_on
-      formats:
-        - ISO8601
-        - UNIX
-        - epoch_second
-      if: ctx.netskope?.alert_v2?.iaas_remediated_on != null && ctx.netskope.alert_v2.iaas_remediated_on != ''
+      tag: convert_iaas_remediated_on_to_long_912779f0
+      type: long
+      ignore_missing: true
       on_failure:
         - remove:
             tag: remove_netskope_alert_v2_iaas_remediated_on_d16c3786
-            ignore_missing: true
             field: netskope.alert_v2.iaas_remediated_on
         - append:
             tag: append_error_message_5c2d8c7d
@@ -963,7 +957,13 @@ processors:
   - remove:
       tag: remove_source_geo_location_ca1d347e
       field: source.geo.location
-      if: ctx.source?.geo?.location?.lat == null || ctx.source.geo.location?.lon == null || ctx.source.geo.location.lat < -90.0 || ctx.source.geo.location.lat > 90.0 || ctx.source.geo.location.lon < -180.0 || ctx.source.geo.location.lon > 180.0
+      if: >-
+        !(ctx.source?.geo?.location?.lat instanceof double
+        && ctx.source.geo.location.lon instanceof double)
+        || ctx.source.geo.location.lat < -90.0
+        || ctx.source.geo.location.lat > 90.0
+        || ctx.source.geo.location.lon < -180.0
+        || ctx.source.geo.location.lon > 180.0
       ignore_failure: true
   - set:
       field: source.geo.city_name
@@ -1822,12 +1822,25 @@ processors:
       tag: append_event_category_intrusion_detection
       value: intrusion_detection
       allow_duplicates: false
+      if: ctx.netskope?.alert_v2?.alert_type != null && ['ctep', 'malsite'].contains(ctx.netskope.alert_v2.alert_type)
   - append:
       field: event.category
       tag: append_event_category_malware
       value: malware
       allow_duplicates: false
       if: ctx.netskope?.alert_v2?.alert_type != null && ['malware', 'malsite'].contains(ctx.netskope.alert_v2.alert_type)
+  - append:
+      field: event.category
+      tag: append_event_category_file
+      value: file
+      allow_duplicates: false
+      if: ctx.netskope?.alert_v2?.alert_type != null && ['dlp', 'quarantine'].contains(ctx.netskope.alert_v2.alert_type)
+  - append:
+      field: event.category
+      tag: append_event_category_vulnerability
+      value: vulnerability
+      allow_duplicates: false
+      if: ctx.netskope?.alert_v2?.alert_type == 'securityassessment'
   - append:
       field: event.type
       tag: append_event_type_info

@@ -1,6 +1,10 @@
 ---
 description: Pipeline for Netskope event v2 logs (REST dataexport and routed log streaming).
 processors:
+  - terminate:
+      tag: data_collection_error_4bdbb3d0
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
   - rename:
       field: message
       tag: rename_message_to_event_original_events_v2
@@ -16,17 +20,12 @@ processors:
       field: event.original
       tag: json_event_original_events_v2
       target_field: netskope.events_v2
+      if: ctx.event?.original != null
       on_failure:
         - append:
             tag: append_error_message_events_v2_json
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} failed with message: {{{_ingest.on_failure_message}}}'
-  - terminate:
-      tag: data_collection_error
-      description: error message set and no data to process.
-      if: >-
-        ctx.message == null && ctx.event?.original == null &&
-        (ctx.error?.message != null || ctx.error?.code != null)
   - set:
       field: ecs.version
       tag: set_ecs_version_dbf680ba
@@ -392,9 +391,28 @@ processors:
       if: ctx.netskope?.events_v2?.record_type == "audit"
   - append:
       field: event.category
-      tag: append_intrusion_detection_to_event_category
+      tag: append_event_category_intrusion_detection
       value: intrusion_detection
-      if: ctx.netskope?.events_v2?.record_type == "incident" || ctx.netskope?.events_v2?.alert == "yes"
+      allow_duplicates: false
+      if: ctx.netskope?.events_v2?.alert_type != null && ['ctep', 'malsite'].contains(ctx.netskope.events_v2.alert_type) && ctx.netskope.events_v2.alert == "yes"
+  - append:
+      field: event.category
+      tag: append_event_category_malware
+      value: malware
+      allow_duplicates: false
+      if: ctx.netskope?.events_v2?.alert_type != null && ['malware', 'malsite'].contains(ctx.netskope.events_v2.alert_type) && ctx.netskope.events_v2.alert == "yes"
+  - append:
+      field: event.category
+      tag: append_event_category_file
+      value: file
+      allow_duplicates: false
+      if: ctx.netskope?.events_v2?.alert_type != null && ['dlp', 'quarantine'].contains(ctx.netskope.events_v2.alert_type) && ctx.netskope.events_v2.alert == "yes"
+  - append:
+      field: event.category
+      tag: append_event_category_vulnerability
+      value: vulnerability
+      allow_duplicates: false
+      if: ctx.netskope?.events_v2?.alert_type == 'securityassessment' && ctx.netskope.events_v2.alert == "yes"
   - append:
       field: event.type
       tag: append_allowed_to_event_type_38d190d6
@@ -659,8 +677,8 @@ processors:
       tag: remove_destination_geo_location_d08b068a
       field: destination.geo.location
       if: >-
-        !(ctx.destination?.geo?.location?.lat instanceof double)
-        || !(ctx.destination.geo.location.lon instanceof double)
+        !(ctx.destination?.geo?.location?.lat instanceof double
+        && ctx.destination.geo.location.lon instanceof double)
         || ctx.destination.geo.location.lat < -90.0
         || ctx.destination.geo.location.lat > 90.0
         || ctx.destination.geo.location.lon < -180.0
@@ -1084,8 +1102,8 @@ processors:
       tag: remove_source_geo_location_a6f3b91b
       field: source.geo.location
       if: >-
-        !(ctx.source?.geo?.location?.lat instanceof double)
-        || !(ctx.source.geo.location.lon instanceof double)
+        !(ctx.source?.geo?.location?.lat instanceof double
+        && ctx.source.geo.location.lon instanceof double)
         || ctx.source.geo.location.lat < -90.0
         || ctx.source.geo.location.lat > 90.0
         || ctx.source.geo.location.lon < -180.0
@@ -1255,20 +1273,20 @@ processors:
       tag: set_user_email_from_events_v2_user_16c0feee
       copy_from: netskope.events_v2.user
       ignore_empty_value: true
-      if: ctx.netskope?.events_v2?.user != null && ctx.netskope.events_v2.user.indexOf('@') > -1
+      if: ctx.netskope?.events_v2?.user instanceof String && ctx.netskope.events_v2.user.indexOf('@') > -1
   - set:
       field: user.name
       tag: set_user_name_from_events_v2_user_b4e8a2f1
       copy_from: netskope.events_v2.user
       ignore_empty_value: true
-      if: ctx.netskope?.events_v2?.user != null && ctx.netskope.events_v2.user.indexOf('@') == -1
+      if: ctx.netskope?.events_v2?.user instanceof String && ctx.netskope.events_v2.user.indexOf('@') == -1
   - dissect:
       field: user.email
       tag: create_user_name_and_user_domain_93b5cc79
       pattern: "%{user.name}@%{user.domain}"
       ignore_missing: true
       ignore_failure: true
-      if: ctx.user?.email != null && ctx.user.email.indexOf('@') > -1
+      if: ctx.user?.email instanceof String && ctx.user.email.indexOf('@') > -1
   - append:
       field: related.user
       tag: append_user_name_into_related_user_325195a6

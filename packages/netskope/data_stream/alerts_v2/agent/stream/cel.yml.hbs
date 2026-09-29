@@ -88,7 +88,7 @@ program: |-
                 {
                   "events": [{"retry": true}],
                   "want_more": size(state.worklist) > 1,
-                  "worklist": (size(state.worklist) > 1) ? tail(state.worklist) : [],
+                  "worklist": tail(state.worklist),
                   "cursor": {
                     "started_types": (current_type in state.?cursor.started_types.orValue([])) ?
                       state.?cursor.started_types.orValue([])
@@ -126,7 +126,7 @@ program: |-
                 },
               ],
               "want_more": size(state.worklist) > 1,
-              "worklist": (size(state.worklist) > 1) ? tail(state.worklist) : [],
+              "worklist": tail(state.worklist),
               "cursor": {
                 "started_types": state.?cursor.started_types.orValue([]),
               },
@@ -146,10 +146,10 @@ tags:
 publisher_pipeline.disable_host: true
 {{/contains}}
 processors:
-  - drop_event:
-      when:
-        equals:
-          retry: true
+- drop_event:
+    when:
+      equals:
+        retry: true
 {{#if processors}}
 {{processors}}
 {{/if}}
