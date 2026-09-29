@@ -1,0 +1,92 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Extra usage spend limits cap Anthropic organizational spend beyond included usage. Deleting a spend limit removes that cap and can enable unrestricted API or Claude consumption. An attacker who already has administrative or API access can delete the limit to burn budget, run large automated workloads, or stage resource abuse without the previous guardrail.",
+        "false_positives": [
+            "Finance or platform teams delete outdated spend limits when consolidating billing policies or replacing them with new limits. Confirm the actor, nearby create or update events, and an approved change before escalating."
+        ],
+        "from": "now-9m",
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "event.action",
+                "event.id",
+                "organization.id",
+                "anthropic.audit.spend_limit_id",
+                "anthropic.audit.actor.type",
+                "anthropic.audit.actor.api_key_id",
+                "user.email",
+                "user.id",
+                "source.ip",
+                "user_agent.original"
+            ]
+        },
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Anthropic Extra Usage Spend Limit Deleted",
+        "note": "## Triage and analysis\n\n### Investigating Anthropic Extra Usage Spend Limit Deleted\n\nDeleting an extra-usage spend limit removes a billing guardrail; it does not create spend by itself. Treat it as an\nearly signal for follow-on quota burn or automated workloads.\n\nUnauthorized = no finance/platform ticket to redesign billing, and no nearby `extra_usage_spend_limit_created` /\n`extra_usage_spend_limit_updated` that replaces the deleted limit \u2014 especially if high chat creation or file uploads\nfollow.\n\n#### Possible investigation steps\n\n- Branch on actor: `user_actor` \u2192 `user.email` / `source.ip` / UA; `api_actor` \u2192 `anthropic.audit.actor.api_key_id`\n  and whether that key is in inventory.\n- Check for create/update of a replacement limit within the same change window (planned redesign) vs standalone\n  deletion.\n- After the delete, look for elevated `claude_chat_created`, file uploads, or other high-volume activity on the same\n  `organization.id`.\n- Close as FP when a finance/platform ticket names the redesign and a replacement create/update exists. Escalate when\n  deletion is orphaned or usage spikes afterward.\n\n### False positive analysis\n\n- Billing consolidations often delete an old limit shortly before creating a new one.\n\n### Response and remediation\n\n- On unauthorized deletion: restore an appropriate spend limit, review API keys and admin sessions active during the\n  exposure window, and quantify extra usage accrued after the change.\n",
+        "query": "from logs-anthropic.audit-* metadata _id, _version, _index\n| where\n    data_stream.dataset == \"anthropic.audit\" and\n    mv_contains(event.category, \"configuration\") and\n    event.action == \"extra_usage_spend_limit_deleted\"\n| keep _id, _version, _index, @timestamp, event.*, organization.*, user.*, source.*, user_agent.*, anthropic.audit.*, data_stream.*\n",
+        "references": [
+            "https://platform.claude.com/docs/en/api/compliance/activities/list"
+        ],
+        "related_integrations": [
+            {
+                "package": "anthropic",
+                "version": "^1.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "9a944f66-417d-4dee-83a2-afd3f7980212",
+        "severity": "medium",
+        "tags": [
+            "Domain: GenAI",
+            "Platform: Anthropic",
+            "Data Source: Anthropic Audit Logs",
+            "Use Case: Threat Detection",
+            "Resources: Investigation Guide",
+            "Rule Type: ES|QL",
+            "Tactic: Impact"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0040",
+                    "name": "Impact",
+                    "reference": "https://attack.mitre.org/tactics/TA0040/"
+                },
+                "technique": [
+                    {
+                        "id": "T1496",
+                        "name": "Resource Hijacking",
+                        "reference": "https://attack.mitre.org/techniques/T1496/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "9a944f66-417d-4dee-83a2-afd3f7980212_1",
+    "type": "security-rule"
+}
