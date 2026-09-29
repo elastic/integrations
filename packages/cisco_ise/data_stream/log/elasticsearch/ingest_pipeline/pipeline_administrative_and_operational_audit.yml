@@ -37,13 +37,55 @@ processors:
             target_field: cisco_ise.log.log_details
             field_split: ', (?=[^,=]+=)'
             value_split: =
-  - kv:
-      tag: kv_cisco_ise_log_log_details_raw_to_cisco_ise_log_log_details_08f93f23
+  - grok:
+      tag: grok_cisco_ise_log_log_details_raw_5f2c91ab
+      description: >-
+        ConfigChangeData carries free-form text whose commas are not field
+        separators, so lift it out whole before the key-value split. ISE
+        appends further fields after it that must stay parsed, and the set of
+        keys it appends is not fixed, so an unlisted one such as AcsInstance
+        must not be swallowed into the value. Appended keys are recognisable
+        because their names never contain spaces, unlike the "Name = Value"
+        text inside ConfigChangeData itself.
       field: cisco_ise.log.log_details_raw
       if: ctx.cisco_ise?.log?.message?.code == "52001"
+      ignore_failure: true
+      patterns:
+        - '^%{DATA:_tmp.kv_head}, ConfigChangeData=%{DATA:_tmp.config_change_data}, (?<_tmp.kv_tail>(?:ObjectType|ObjectName|Component|ObjectInternalID|OperationMessageText)=%{GREEDYDATA})$'
+        - '^%{DATA:_tmp.kv_head}, ConfigChangeData=%{DATA:_tmp.config_change_data}, (?<_tmp.kv_tail>[A-Za-z][A-Za-z0-9_]*=%{GREEDYDATA})$'
+        - '^%{DATA:_tmp.kv_head}, ConfigChangeData=%{GREEDYDATA:_tmp.config_change_data}$'
+  - kv:
+      tag: kv__tmp_kv_head_to_cisco_ise_log_log_details_7c1d40e6
+      field: _tmp.kv_head
+      if: ctx.cisco_ise?.log?.message?.code == "52001"
       target_field: cisco_ise.log.log_details
-      field_split: '(?<!\\), '
+      field_split: '(?<!\\), (?=[^,=]+=)'
       value_split: =
+      ignore_missing: true
+      ignore_failure: true
+  - kv:
+      tag: kv__tmp_kv_tail_to_cisco_ise_log_log_details_3ab8f215
+      field: _tmp.kv_tail
+      if: ctx.cisco_ise?.log?.message?.code == "52001"
+      target_field: cisco_ise.log.log_details
+      field_split: '(?<!\\), (?=[^,=]+=)'
+      value_split: =
+      ignore_missing: true
+      ignore_failure: true
+  - set:
+      tag: set_cisco_ise_log_log_details_ConfigChangeData_9e4b7c30
+      field: cisco_ise.log.log_details.ConfigChangeData
+      copy_from: _tmp.config_change_data
+      if: ctx._tmp?.config_change_data != null
+  - kv:
+      tag: kv_cisco_ise_log_log_details_raw_to_cisco_ise_log_log_details_08f93f23
+      description: Fallback for 52001 records that carry no ConfigChangeData.
+      field: cisco_ise.log.log_details_raw
+      if: ctx.cisco_ise?.log?.message?.code == "52001" && ctx._tmp?.kv_head == null
+      target_field: cisco_ise.log.log_details
+      field_split: '(?<!\\), (?=[^,=]+=)'
+      value_split: =
+      ignore_failure: true
   - grok:
       tag: grok_cisco_ise_log_log_details_log_detail_f4f57bc6
       field: cisco_ise.log.log_details.log_detail
@@ -412,6 +454,68 @@ processors:
       field: cisco_ise.log.log_details.ConfigChangeData
       target_field: cisco_ise.log.config_change.data
       ignore_missing: true
+  - script:
+      tag: script_parse_config_change_attributes
+      lang: painless
+      description: >-
+        Endpoint imports render their attributes into ConfigChangeData as
+        "\<tab>Attribute:NAME<tab> value:VALUE" runs. Expose them as a nested
+        name/value list so they can be queried. Attribute names are unbounded
+        (they include UUIDs and port labels) so they must not become fields.
+        ConfigChangeData itself is left untouched, and any other shape simply
+        yields no attributes.
+      if: ctx.cisco_ise?.log?.config_change?.data != null
+      source: |
+        def value = ctx.cisco_ise.log.config_change.data;
+        if (!(value instanceof String)) {
+          return;
+        }
+        String raw = (String)value;
+        if (raw.indexOf("Attribute:") < 0) {
+          return;
+        }
+        // Painless string literals support only \\, \" and \', so the tab
+        // separating an attribute name from its value is built explicitly.
+        String tab = "" + (char)9;
+        def attributes = [];
+        String[] parts = raw.splitOnToken("\\" + tab);
+        for (int i = 1; i < parts.length; ++i) {
+          String part = parts[i];
+          if (!part.startsWith("Attribute:")) {
+            continue;
+          }
+          int sep = part.indexOf(tab);
+          if (sep < 0) {
+            continue;
+          }
+          String name = part.substring(10, sep).trim();
+          if (name.isEmpty()) {
+            continue;
+          }
+          String attrValue = part.substring(sep + 1).trim();
+          if (attrValue.startsWith("value:")) {
+            attrValue = attrValue.substring(6);
+          }
+          // ISE escapes commas that belong inside a value (X.500 DNs arrive as
+          // CN=host\,OU=...), so an unescaped ", " separates list members.
+          if (attrValue.contains(", ")) {
+            def members = new ArrayList();
+            for (String member : /(?<!\\), /.split(attrValue)) {
+              members.add(member);
+            }
+            attributes.add(["name": name, "value": members]);
+          } else {
+            attributes.add(["name": name, "value": attrValue]);
+          }
+        }
+        if (!attributes.isEmpty()) {
+          ctx.cisco_ise.log.config_change.attributes = attributes;
+        }
+      on_failure:
+        - append:
+            tag: append_error_message_7b2e05c1
+            field: error.message
+            value: '{{{_ingest.on_failure_message}}}'
   - rename:
       tag: rename_cisco_ise_log_log_details_Component_to_cisco_ise_log_component_e40bde28
       field: cisco_ise.log.log_details.Component

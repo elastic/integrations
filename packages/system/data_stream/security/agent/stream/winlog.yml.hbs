@@ -9,6 +9,9 @@ ignore_older: {{ignore_older}}
 {{#if language}}
 language: {{language}}
 {{/if}}
+{{#if preserve_original_event}}
+include_xml: true
+{{/if}}
 tags:
 {{#each tags as |tag i|}}
   - {{tag}}
@@ -19,8 +22,11 @@ tags:
 {{#contains "forwarded" tags}}
 publisher_pipeline.disable_host: true
 {{/contains}}
-include_xml: true
 processors:
+- add_fields:
+    target: event
+    fields:
+      module: system
 - decode_xml:
     when:
       and:
