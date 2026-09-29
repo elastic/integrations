@@ -10,6 +10,11 @@
     - description: Fix `Invalid NextToken` errors (HTTP 403/400) observed when paginating large `GetFindings` result sets. The `httpjson` input re-evaluates the request transforms on every page, so the hour-truncated `UpdatedAt` window start could change mid-pagination and invalidate the `NextToken`, forcing collection to restart. The CEL program pins the window once per collection interval and only appends `NextToken` between pages.
       type: bugfix
       link: https://github.com/elastic/integrations/pull/20818
+- version: "8.5.1"
+  changes:
+    - description: Write `related.entity` and `*.target.entity.id` in CloudTrail as sorted lists so the array order no longer depends on unspecified Elasticsearch `Set` iteration order, which changed in 9.6.0 and broke pipeline test expectations.
+      type: bugfix
+      link: https://github.com/elastic/integrations/pull/21700
 - version: "8.5.0"
   changes:
     - description: Enable Elastic Managed deployment for AWS Network Firewall metrics, including the Identity Federation setup option. Log collection remains agent-only.
