@@ -861,3 +861,11 @@ The following non-ECS fields are used in change management documents:
 | jamf_pro.change_management.operation | The change management operation performed (CREATE, READ, UPDATE, DELETE). | keyword |
 | jamf_pro.change_management.thread | The application thread that generated the log entry. | keyword |
 
+
+### Dashboards
+
+The integration ships a **Log Stream Overview** dashboard that summarizes
+access and change management events — event volume over time, top actors,
+and a breakdown of change management operations by object type. It is tagged
+**Security Solution**, so it also appears in the Security app, and can be found
+in Kibana under **Dashboards** after installing the integration.

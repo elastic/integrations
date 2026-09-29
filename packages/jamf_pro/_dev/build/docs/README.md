@@ -172,3 +172,11 @@ Documents from the change management data stream can be found with the filter
 The following non-ECS fields are used in change management documents:
 
 {{fields "change_management"}}
+
+### Dashboards
+
+The integration ships a **Log Stream Overview** dashboard that summarizes
+access and change management events — event volume over time, top actors,
+and a breakdown of change management operations by object type. It is tagged
+**Security Solution**, so it also appears in the Security app, and can be found
+in Kibana under **Dashboards** after installing the integration.
