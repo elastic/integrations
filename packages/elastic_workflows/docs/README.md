@@ -9,7 +9,7 @@ Monitor your Elastic Workflows with out-of-the-box dashboards.
 Provides a high-level view of workflow execution activity. All panels use ES|QL
 queries against the workflow execution index.
 
-- **KPI strip** — Total Executions, Avg Duration, Slowest Workflow, Success Rate, Timed Out (with trendline), Failures (with trendline)
+- **KPI strip** — Total Executions, Avg Duration, Longest Execution, Success Rate, Timed Out (with trendline), Failures (with trendline)
 - **Executions Over Time** — stacked bar chart of runs per workflow
 - **Trigger Breakdown** — treemap of execution trigger sources
 - **Failure Rate by Workflow** — failure rate trend per workflow over time

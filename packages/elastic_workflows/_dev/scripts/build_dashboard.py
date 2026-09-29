@@ -15,7 +15,7 @@ ESQL_DATA_VIEW_ID = "elastic-workflows-executions-esql"
 def base_query() -> str:
     return (
         f"FROM {INDEX}\n"
-        f"| WHERE {TIME_FIELD} >= ?_tstart AND {TIME_FIELD} <= ?_tend\n"
+        f"| WHERE {TIME_FIELD} >= ?_tstart AND {TIME_FIELD} < ?_tend\n"
         "| WHERE (?space_ids IS NULL OR spaceId IN (?space_ids)) "
         "AND isTestRun IN (?run_types)"
     )
@@ -48,8 +48,6 @@ def column(
     column_format: dict | None = None,
 ) -> dict:
     metadata: dict = {"type": data_type, "esType": es_type}
-    if column_format is not None:
-        metadata["params"] = column_format
 
     result = {
         "columnId": name,
@@ -58,6 +56,8 @@ def column(
         "customLabel": label is not None,
         "meta": metadata,
     }
+    if column_format is not None:
+        result["params"] = {"format": column_format}
     if data_type == "number":
         result["inMetricDimension"] = True
     return result
@@ -124,6 +124,14 @@ def lens_panel(
                     }
                 },
                 "filters": [],
+                "internalReferences": [
+                    {
+                        "id": ESQL_DATA_VIEW_ID,
+                        "name": f"indexpattern-datasource-layer-{layer_id}",
+                        "type": "index-pattern",
+                    }
+                    for layer_id in layers
+                ],
                 "query": {"esql": main_query},
                 "visualization": visualization,
                 "adHocDataViews": {
@@ -360,7 +368,7 @@ def table_panel(
                 "label": "Open workflow",
                 "encode_url": True,
                 "open_in_new_tab": True,
-                "trigger": "on_click_value",
+                "trigger": "on_click_row",
                 "type": "url_drilldown",
                 "url": drilldown_url,
             }
@@ -413,13 +421,13 @@ def build_panels() -> list[dict]:
     panels.append(
         metric_panel(
             "slowest-execution",
-            "Slowest Workflow",
+            "Longest Execution",
             f"{base}\n| STATS max_duration_ms = MAX(duration)",
             column(
                 "max_duration_ms",
                 "number",
                 "long",
-                label="Slowest Workflow",
+                label="Longest Execution",
                 column_format=DURATION_FORMAT,
             ),
             x=14,
@@ -445,7 +453,6 @@ def build_panels() -> list[dict]:
             ),
             x=21,
             width=9,
-            show_bar=True,
         )
     )
     panels.append(
@@ -705,7 +712,7 @@ def build_panels() -> list[dict]:
             y=50,
             width=48,
             height=16,
-            drilldown_url="/app/workflows/{{event.value}}?tab=executions",
+            drilldown_url="{{kibanaUrl}}/app/workflows/{{event.values.[0]}}?tab=executions",
         )
     )
     panels.append(
@@ -760,7 +767,7 @@ def build_panels() -> list[dict]:
             y=66,
             width=48,
             height=16,
-            drilldown_url="/app/workflows/{{event.value}}",
+            drilldown_url="{{kibanaUrl}}/app/workflows/{{event.values.[0]}}",
         )
     )
     return panels
@@ -768,7 +775,7 @@ def build_panels() -> list[dict]:
 
 def control_group_input() -> dict:
     time_filter = (
-        f"FROM {INDEX}\n| WHERE {TIME_FIELD} >= ?_tstart AND {TIME_FIELD} <= ?_tend"
+        f"FROM {INDEX}\n| WHERE {TIME_FIELD} >= ?_tstart AND {TIME_FIELD} < ?_tend"
     )
     controls = {
         "run-type-control": {
