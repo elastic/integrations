@@ -56,48 +56,46 @@ An example event for `securityhub_findings` looks as following:
 {
     "@timestamp": "2018-08-31T00:15:09.000Z",
     "agent": {
-        "ephemeral_id": "b333f80a-aa3c-4180-bedc-b55bef909b01",
-        "id": "76aef659-3329-4b2e-a6c1-36bb8389faac",
-        "name": "elastic-agent-79144",
+        "ephemeral_id": "4bed5048-c3b2-4657-8c6e-f6a031f96d32",
+        "id": "683b03ec-1d8d-4442-b6e5-05a0ef2cf46a",
+        "name": "elastic-agent-33018",
         "type": "filebeat",
-        "version": "8.19.4"
+        "version": "9.6.0"
     },
     "aws": {
         "securityhub_findings": {
             "action": {
                 "port_probe": {
                     "blocked": false,
-                    "details": [
-                        {
-                            "local": {
-                                "ip": {
-                                    "address_v4": "1.128.0.0"
-                                },
-                                "port": {
-                                    "name": "HTTP",
-                                    "number": 80
-                                }
+                    "details": {
+                        "local": {
+                            "ip": {
+                                "address_v4": "1.128.0.0"
                             },
-                            "remote_ip": {
-                                "city": {
-                                    "name": "Example City"
-                                },
-                                "country": {
-                                    "name": "Example Country"
-                                },
-                                "geolocation": {
-                                    "latitude": 0,
-                                    "longitude": 0
-                                },
-                                "organization": {
-                                    "asn": "64496",
-                                    "asn_organization": "ExampleASO",
-                                    "internet_provider": "ExampleOrg",
-                                    "internet_service_provider": "ExampleISP"
-                                }
+                            "port": {
+                                "name": "HTTP",
+                                "number": 80
+                            }
+                        },
+                        "remote_ip": {
+                            "city": {
+                                "name": "Example City"
+                            },
+                            "country": {
+                                "name": "Example Country"
+                            },
+                            "geolocation": {
+                                "latitude": 0,
+                                "longitude": 0
+                            },
+                            "organization": {
+                                "asn": "64496",
+                                "asn_organization": "ExampleASO",
+                                "internet_provider": "ExampleOrg",
+                                "internet_service_provider": "ExampleISP"
                             }
                         }
-                    ]
+                    }
                 }
             },
             "aws_account_id": "111111111111",
@@ -110,12 +108,10 @@ An example event for `securityhub_findings` looks as following:
                     "Req2"
                 ],
                 "status": "PASSED",
-                "status_reasons": [
-                    {
-                        "description": "CloudWatch alarms do not exist in the account",
-                        "reason_code": "CLOUDWATCH_ALARMS_NOT_PRESENT"
-                    }
-                ]
+                "status_reasons": {
+                    "description": "CloudWatch alarms do not exist in the account",
+                    "reason_code": "CLOUDWATCH_ALARMS_NOT_PRESENT"
+                }
             },
             "confidence": 42,
             "criticality": 99,
@@ -125,66 +121,50 @@ An example event for `securityhub_findings` looks as following:
                 "id": "acme-vuln-9ab348"
             },
             "last_observed_at": "2017-03-23T13:22:13.933Z",
-            "malware": [
-                {
-                    "name": "Stringler",
-                    "path": "/usr/sbin/stringler",
-                    "state": "OBSERVED",
-                    "type": "COIN_MINER"
-                }
-            ],
+            "malware": {
+                "name": "Stringler",
+                "path": "/usr/sbin/stringler",
+                "state": "OBSERVED",
+                "type": "COIN_MINER"
+            },
             "network": {
                 "open_port_range": {
                     "begin": 443,
                     "end": 443
                 }
             },
-            "network_path": [
-                {
-                    "component": {
-                        "id": "abc-01a234bc56d8901ee",
-                        "type": "AWS::EC2::InternetGateway"
-                    },
-                    "egress": {
-                        "destination": {
-                            "address": [
-                                "1.128.0.0/24"
-                            ],
-                            "port_ranges": [
-                                {
-                                    "begin": 443,
-                                    "end": 443
-                                }
-                            ]
-                        },
-                        "protocol": "TCP",
-                        "source": {
-                            "address": [
-                                "175.16.199.1/24"
-                            ]
+            "network_path": {
+                "component": {
+                    "id": "abc-01a234bc56d8901ee",
+                    "type": "AWS::EC2::InternetGateway"
+                },
+                "egress": {
+                    "destination": {
+                        "address": "1.128.0.0/24",
+                        "port_ranges": {
+                            "begin": 443,
+                            "end": 443
                         }
                     },
-                    "ingress": {
-                        "destination": {
-                            "address": [
-                                "175.16.199.1/24"
-                            ],
-                            "port_ranges": [
-                                {
-                                    "begin": 443,
-                                    "end": 443
-                                }
-                            ]
-                        },
-                        "protocol": "TCP",
-                        "source": {
-                            "address": [
-                                "175.16.199.1/24"
-                            ]
+                    "protocol": "TCP",
+                    "source": {
+                        "address": "175.16.199.1/24"
+                    }
+                },
+                "ingress": {
+                    "destination": {
+                        "address": "175.16.199.1/24",
+                        "port_ranges": {
+                            "begin": 443,
+                            "end": 443
                         }
+                    },
+                    "protocol": "TCP",
+                    "source": {
+                        "address": "175.16.199.1/24"
                     }
                 }
-            ],
+            },
             "note": {
                 "text": "Don't forget to check under the mat.",
                 "updated_at": "2018-08-31T00:15:09.000Z",
@@ -229,84 +209,76 @@ An example event for `securityhub_findings` looks as following:
             "provider_fields": {
                 "confidence": 42,
                 "criticality": 99,
-                "related_findings": [
-                    {
-                        "id": "123e4567-e89b-12d3-a456-426655440000",
-                        "product": {
-                            "arn": "arn:aws:securityhub:us-west-2::product/aws/guardduty"
-                        }
-                    }
-                ],
-                "severity": {
-                    "label": "MEDIUM",
-                    "original": "MEDIUM"
-                },
-                "types": [
-                    "Software and Configuration Checks/Vulnerabilities/CVE"
-                ]
-            },
-            "record_state": "ACTIVE",
-            "region": "us-east-1",
-            "related_findings": [
-                {
+                "related_findings": {
                     "id": "123e4567-e89b-12d3-a456-426655440000",
                     "product": {
                         "arn": "arn:aws:securityhub:us-west-2::product/aws/guardduty"
                     }
                 },
-                {
-                    "id": "AcmeNerfHerder-111111111111-x189dx7824",
-                    "product": {
-                        "arn": "arn:aws:securityhub:us-west-2::product/aws/guardduty"
-                    }
+                "severity": {
+                    "label": "MEDIUM",
+                    "original": "MEDIUM"
+                },
+                "types": "Software and Configuration Checks/Vulnerabilities/CVE"
+            },
+            "record_state": "ACTIVE",
+            "region": "us-east-1",
+            "related_findings": {
+                "id": [
+                    "123e4567-e89b-12d3-a456-426655440000",
+                    "AcmeNerfHerder-111111111111-x189dx7824"
+                ],
+                "product": {
+                    "arn": [
+                        "arn:aws:securityhub:us-west-2::product/aws/guardduty",
+                        "arn:aws:securityhub:us-west-2::product/aws/guardduty"
+                    ]
                 }
-            ],
+            },
             "remediation": {
                 "recommendation": {
                     "text": "Run sudo yum update and cross your fingers and toes.",
                     "url": "http://myfp.com/recommendations/dangerous_things_and_how_to_fix_them.html"
                 }
             },
-            "resources": [
-                {
-                    "Details": {
-                        "IamInstanceProfileArn": "arn:aws:iam::123456789012:role/IamInstanceProfileArn",
-                        "ImageId": "ami-79fd7eee",
-                        "IpV4Addresses": [
-                            "175.16.199.1"
-                        ],
-                        "IpV6Addresses": [
-                            "2a02:cf40::"
-                        ],
-                        "KeyName": "testkey",
-                        "LaunchedAt": "2018-09-29T01:25:54Z",
-                        "MetadataOptions": {
-                            "HttpEndpoint": "enabled",
-                            "HttpProtocolIpv6": "enabled",
-                            "HttpPutResponseHopLimit": 1,
-                            "HttpTokens": "optional",
-                            "InstanceMetadataTags": "disabled"
-                        },
-                        "NetworkInterfaces": [
-                            {
-                                "NetworkInterfaceId": "eni-e5aa89a3"
-                            }
-                        ],
-                        "SubnetId": "PublicSubnet",
-                        "Type": "i3.xlarge",
-                        "VirtualizationType": "hvm",
-                        "VpcId": "TestVPCIpv6"
+            "resources": {
+                "Details": {
+                    "IamInstanceProfileArn": "arn:aws:iam::123456789012:role/IamInstanceProfileArn",
+                    "ImageId": "ami-79fd7eee",
+                    "IpV4Addresses": [
+                        "175.16.199.1"
+                    ],
+                    "IpV6Addresses": [
+                        "2a02:cf40::"
+                    ],
+                    "KeyName": "testkey",
+                    "LaunchedAt": "2018-09-29T01:25:54Z",
+                    "MetadataOptions": {
+                        "HttpEndpoint": "enabled",
+                        "HttpProtocolIpv6": "enabled",
+                        "HttpPutResponseHopLimit": 1,
+                        "HttpTokens": "optional",
+                        "InstanceMetadataTags": "disabled"
                     },
-                    "Id": "i-cafebabe",
-                    "Partition": "aws",
-                    "Region": "us-west-2",
-                    "Tags": {
-                        "billingCode": "Lotus-1-2-3",
-                        "needsPatching": "true"
-                    },
-                    "Type": "AwsEc2Instance"
-                }
-            ],
+                    "NetworkInterfaces": [
+                        {
+                            "NetworkInterfaceId": "eni-e5aa89a3"
+                        }
+                    ],
+                    "SubnetId": "PublicSubnet",
+                    "Type": "i3.xlarge",
+                    "VirtualizationType": "hvm",
+                    "VpcId": "TestVPCIpv6"
+                },
+                "Id": "i-cafebabe",
+                "Partition": "aws",
+                "Region": "us-west-2",
+                "Tags": {
+                    "billingCode": "Lotus-1-2-3",
+                    "needsPatching": "true"
+                },
+                "Type": "AwsEc2Instance"
+            },
             "sample": true,
             "schema": {
                 "version": "2018-10-08"
@@ -316,58 +288,50 @@ An example event for `securityhub_findings` looks as following:
                 "original": "8.3"
             },
             "source_url": "http://threatintelweekly.org/backdoors/8888",
-            "threat_intel_indicators": [
-                {
-                    "category": "BACKDOOR",
-                    "source": "Threat Intel Weekly",
-                    "source_url": "http://threatintelweekly.org/backdoors/8888",
-                    "value": "175.16.199.1"
-                }
-            ],
+            "threat_intel_indicators": {
+                "category": "BACKDOOR",
+                "source": "Threat Intel Weekly",
+                "source_url": "http://threatintelweekly.org/backdoors/8888",
+                "value": "175.16.199.1"
+            },
             "title": "EC2.20 Both VPN tunnels for an AWS Site-to-Site VPN connection should be up",
-            "types": [
-                "Software and Configuration Checks/Vulnerabilities/CVE"
-            ],
+            "types": "Software and Configuration Checks/Vulnerabilities/CVE",
             "updated_at": "2018-08-31T00:15:09.000Z",
             "user_defined_fields": {
                 "comeBackToLater": "Check this again on Monday",
                 "reviewedByCio": "true"
             },
             "verification_state": "UNKNOWN",
-            "vulnerabilities": [
-                {
-                    "cvss": [
-                        {
-                            "base_score": 4.7,
-                            "base_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N",
-                            "version": "V3"
-                        },
-                        {
-                            "base_score": 4.7,
-                            "base_vector": "AV:L/AC:M/Au:N/C:C/I:N/A:N",
-                            "version": "V2"
-                        }
+            "vulnerabilities": {
+                "cvss": {
+                    "base_score": [
+                        4.7,
+                        4.7
                     ],
-                    "related_vulnerabilities": [
-                        "CVE-2020-12345"
+                    "base_vector": [
+                        "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N",
+                        "AV:L/AC:M/Au:N/C:C/I:N/A:N"
                     ],
-                    "vendor": {
-                        "created_at": "2020-01-16T00:01:43.000Z",
-                        "severity": "Medium",
-                        "updated_at": "2020-01-16T00:01:43.000Z",
-                        "url": "https://alas.aws.amazon.com/ALAS-2020-1337.html"
-                    },
-                    "vulnerable_packages": [
-                        {
-                            "architecture": "x86_64",
-                            "epoch": "1",
-                            "name": "openssl",
-                            "release": "16.amzn2.0.3",
-                            "version": "1.0.2k"
-                        }
+                    "version": [
+                        "V3",
+                        "V2"
                     ]
+                },
+                "related_vulnerabilities": "CVE-2020-12345",
+                "vendor": {
+                    "created_at": "2020-01-16T00:01:43.000Z",
+                    "severity": "Medium",
+                    "updated_at": "2020-01-16T00:01:43.000Z",
+                    "url": "https://alas.aws.amazon.com/ALAS-2020-1337.html"
+                },
+                "vulnerable_packages": {
+                    "architecture": "x86_64",
+                    "epoch": "1",
+                    "name": "openssl",
+                    "release": "16.amzn2.0.3",
+                    "version": "1.0.2k"
                 }
-            ],
+            },
             "workflow": {
                 "state": "NEW",
                 "status": "NEW"
@@ -387,7 +351,7 @@ An example event for `securityhub_findings` looks as following:
     },
     "data_stream": {
         "dataset": "aws.securityhub_findings",
-        "namespace": "43694",
+        "namespace": "57779",
         "type": "logs"
     },
     "destination": {
@@ -402,9 +366,9 @@ An example event for `securityhub_findings` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "76aef659-3329-4b2e-a6c1-36bb8389faac",
-        "snapshot": false,
-        "version": "8.19.4"
+        "id": "683b03ec-1d8d-4442-b6e5-05a0ef2cf46a",
+        "snapshot": true,
+        "version": "9.6.0"
     },
     "event": {
         "action": "port_probe",
@@ -412,11 +376,11 @@ An example event for `securityhub_findings` looks as following:
         "category": [
             "configuration"
         ],
-        "created": "2025-12-09T05:40:33.772Z",
         "dataset": "aws.securityhub_findings",
         "id": "us-west-2/111111111111/98aebb2207407c87f51e89943f12b1ef",
-        "ingested": "2025-12-09T05:40:36Z",
+        "ingested": "2026-09-29T04:47:40Z",
         "kind": "state",
+        "module": "aws",
         "original": "{\"Action\":{\"ActionType\":\"PORT_PROBE\",\"PortProbeAction\":{\"Blocked\":false,\"PortProbeDetails\":[{\"LocalIpDetails\":{\"IpAddressV4\":\"1.128.0.0\"},\"LocalPortDetails\":{\"Port\":80,\"PortName\":\"HTTP\"},\"RemoteIpDetails\":{\"City\":{\"CityName\":\"Example City\"},\"Country\":{\"CountryName\":\"Example Country\"},\"GeoLocation\":{\"Lat\":0,\"Lon\":0},\"Organization\":{\"Asn\":64496,\"AsnOrg\":\"ExampleASO\",\"Isp\":\"ExampleISP\",\"Org\":\"ExampleOrg\"}}}]}},\"AwsAccountId\":\"111111111111\",\"CompanyName\":\"AWS\",\"Compliance\":{\"RelatedRequirements\":[\"Req1\",\"Req2\"],\"Status\":\"PASSED\",\"StatusReasons\":[{\"Description\":\"CloudWatch alarms do not exist in the account\",\"ReasonCode\":\"CLOUDWATCH_ALARMS_NOT_PRESENT\"}]},\"Confidence\":42,\"CreatedAt\":\"2017-03-22T13:22:13.933Z\",\"Criticality\":99,\"Description\":\"The version of openssl found on instance i-abcd1234 is known to contain a vulnerability.\",\"FindingProviderFields\":{\"Confidence\":42,\"Criticality\":99,\"RelatedFindings\":[{\"Id\":\"123e4567-e89b-12d3-a456-426655440000\",\"ProductArn\":\"arn:aws:securityhub:us-west-2::product/aws/guardduty\"}],\"Severity\":{\"Label\":\"MEDIUM\",\"Original\":\"MEDIUM\"},\"Types\":[\"Software and Configuration Checks/Vulnerabilities/CVE\"]},\"FirstObservedAt\":\"2017-03-22T13:22:13.933Z\",\"GeneratorId\":\"acme-vuln-9ab348\",\"Id\":\"us-west-2/111111111111/98aebb2207407c87f51e89943f12b1ef\",\"LastObservedAt\":\"2017-03-23T13:22:13.933Z\",\"Malware\":[{\"Name\":\"Stringler\",\"Path\":\"/usr/sbin/stringler\",\"State\":\"OBSERVED\",\"Type\":\"COIN_MINER\"}],\"Network\":{\"DestinationDomain\":\"example2.com\",\"DestinationIpV4\":\"1.128.0.0\",\"DestinationIpV6\":\"2a02:cf40::\",\"DestinationPort\":\"80\",\"Direction\":\"IN\",\"OpenPortRange\":{\"Begin\":443,\"End\":443},\"Protocol\":\"TCP\",\"SourceDomain\":\"example1.com\",\"SourceIpV4\":\"1.128.0.0\",\"SourceIpV6\":\"2a02:cf40::\",\"SourceMac\":\"00:0d:83:b1:c0:8e\",\"SourcePort\":\"42\"},\"NetworkPath\":[{\"ComponentId\":\"abc-01a234bc56d8901ee\",\"ComponentType\":\"AWS::EC2::InternetGateway\",\"Egress\":{\"Destination\":{\"Address\":[\"1.128.0.0/24\"],\"PortRanges\":[{\"Begin\":443,\"End\":443}]},\"Protocol\":\"TCP\",\"Source\":{\"Address\":[\"175.16.199.1/24\"]}},\"Ingress\":{\"Destination\":{\"Address\":[\"175.16.199.1/24\"],\"PortRanges\":[{\"Begin\":443,\"End\":443}]},\"Protocol\":\"TCP\",\"Source\":{\"Address\":[\"175.16.199.1/24\"]}}}],\"Note\":{\"Text\":\"Don't forget to check under the mat.\",\"UpdatedAt\":\"2018-08-31T00:15:09Z\",\"UpdatedBy\":\"jsmith\"},\"PatchSummary\":{\"FailedCount\":\"0\",\"Id\":\"pb-123456789098\",\"InstalledCount\":\"100\",\"InstalledOtherCount\":\"1023\",\"InstalledPendingReboot\":\"0\",\"InstalledRejectedCount\":\"0\",\"MissingCount\":\"100\",\"Operation\":\"Install\",\"OperationEndTime\":\"2018-09-27T23:39:31Z\",\"OperationStartTime\":\"2018-09-27T23:37:31Z\",\"RebootOption\":\"RebootIfNeeded\"},\"Process\":{\"LaunchedAt\":\"2018-09-27T22:37:31Z\",\"Name\":\"syslogd\",\"ParentPid\":56789,\"Path\":\"/usr/sbin/syslogd\",\"Pid\":12345,\"TerminatedAt\":\"2018-09-27T23:37:31Z\"},\"ProductArn\":\"arn:aws:securityhub:us-east-1:111111111111:product/111111111111/default\",\"ProductFields\":{\"Service_Name\":\"cloudtrail.amazonaws.com\",\"aws/inspector/AssessmentTargetName\":\"My prod env\",\"aws/inspector/AssessmentTemplateName\":\"My daily CVE assessment\",\"aws/inspector/RulesPackageName\":\"Common Vulnerabilities and Exposures\",\"generico/secure-pro/Count\":\"6\"},\"ProductName\":\"Security Hub\",\"RecordState\":\"ACTIVE\",\"Region\":\"us-east-1\",\"RelatedFindings\":[{\"Id\":\"123e4567-e89b-12d3-a456-426655440000\",\"ProductArn\":\"arn:aws:securityhub:us-west-2::product/aws/guardduty\"},{\"Id\":\"AcmeNerfHerder-111111111111-x189dx7824\",\"ProductArn\":\"arn:aws:securityhub:us-west-2::product/aws/guardduty\"}],\"Remediation\":{\"Recommendation\":{\"Text\":\"Run sudo yum update and cross your fingers and toes.\",\"Url\":\"http://myfp.com/recommendations/dangerous_things_and_how_to_fix_them.html\"}},\"Resources\":[{\"Details\":{\"IamInstanceProfileArn\":\"arn:aws:iam::123456789012:role/IamInstanceProfileArn\",\"ImageId\":\"ami-79fd7eee\",\"IpV4Addresses\":[\"175.16.199.1\"],\"IpV6Addresses\":[\"2a02:cf40::\"],\"KeyName\":\"testkey\",\"LaunchedAt\":\"2018-09-29T01:25:54Z\",\"MetadataOptions\":{\"HttpEndpoint\":\"enabled\",\"HttpProtocolIpv6\":\"enabled\",\"HttpPutResponseHopLimit\":1,\"HttpTokens\":\"optional\",\"InstanceMetadataTags\":\"disabled\"},\"NetworkInterfaces\":[{\"NetworkInterfaceId\":\"eni-e5aa89a3\"}],\"SubnetId\":\"PublicSubnet\",\"Type\":\"i3.xlarge\",\"VirtualizationType\":\"hvm\",\"VpcId\":\"TestVPCIpv6\"},\"Id\":\"i-cafebabe\",\"Partition\":\"aws\",\"Region\":\"us-west-2\",\"Tags\":{\"billingCode\":\"Lotus-1-2-3\",\"needsPatching\":\"true\"},\"Type\":\"AwsEc2Instance\"}],\"Sample\":true,\"SchemaVersion\":\"2018-10-08\",\"Severity\":{\"Label\":\"CRITICAL\",\"Original\":\"8.3\"},\"SourceUrl\":\"http://threatintelweekly.org/backdoors/8888\",\"ThreatIntelIndicators\":[{\"Category\":\"BACKDOOR\",\"LastObservedAt\":\"2018-09-27T23:37:31Z\",\"Source\":\"Threat Intel Weekly\",\"SourceUrl\":\"http://threatintelweekly.org/backdoors/8888\",\"Type\":\"IPV4_ADDRESS\",\"Value\":\"175.16.199.1\"}],\"Threats\":[{\"FilePaths\":[{\"FileName\":\"b.txt\",\"FilePath\":\"/tmp/b.txt\",\"Hash\":\"sha256\",\"ResourceId\":\"arn:aws:ec2:us-west-2:123456789012:volume/vol-032f3bdd89aee112f\"}],\"ItemCount\":3,\"Name\":\"Iot.linux.mirai.vwisi\",\"Severity\":\"HIGH\"}],\"Title\":\"EC2.20 Both VPN tunnels for an AWS Site-to-Site VPN connection should be up\",\"Types\":[\"Software and Configuration Checks/Vulnerabilities/CVE\"],\"UpdatedAt\":\"2018-08-31T00:15:09Z\",\"UserDefinedFields\":{\"comeBackToLater\":\"Check this again on Monday\",\"reviewedByCio\":\"true\"},\"VerificationState\":\"UNKNOWN\",\"Vulnerabilities\":[{\"Cvss\":[{\"BaseScore\":4.7,\"BaseVector\":\"AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N\",\"Version\":\"V3\"},{\"BaseScore\":4.7,\"BaseVector\":\"AV:L/AC:M/Au:N/C:C/I:N/A:N\",\"Version\":\"V2\"}],\"Id\":\"CVE-2020-12345\",\"ReferenceUrls\":[\"http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2019-12418\",\"http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2019-17563\"],\"RelatedVulnerabilities\":[\"CVE-2020-12345\"],\"Vendor\":{\"Name\":\"Alas\",\"Url\":\"https://alas.aws.amazon.com/ALAS-2020-1337.html\",\"VendorCreatedAt\":\"2020-01-16T00:01:43Z\",\"VendorSeverity\":\"Medium\",\"VendorUpdatedAt\":\"2020-01-16T00:01:43Z\"},\"VulnerablePackages\":[{\"Architecture\":\"x86_64\",\"Epoch\":\"1\",\"Name\":\"openssl\",\"Release\":\"16.amzn2.0.3\",\"Version\":\"1.0.2k\"}]}],\"Workflow\":{\"Status\":\"NEW\"},\"WorkflowState\":\"NEW\"}",
         "outcome": "success",
         "type": [
@@ -484,6 +448,7 @@ An example event for `securityhub_findings` looks as following:
         "port": 42
     },
     "tags": [
+        "run_as_cel",
         "preserve_original_event",
         "forwarded",
         "aws_securityhub_findings"
@@ -740,50 +705,48 @@ An example event for `securityhub_findings_full_posture` looks as following:
 
 ```json
 {
-    "@timestamp": "2025-12-09T05:41:36.060358393Z",
+    "@timestamp": "2026-09-29T04:48:28.100Z",
     "agent": {
-        "ephemeral_id": "2fc81c8f-5b52-4a9c-93d7-85d9dedab857",
-        "id": "a97254ef-b03a-4701-8ffd-0d94d12aa849",
-        "name": "elastic-agent-75964",
+        "ephemeral_id": "d99dd77d-7d39-4de0-bd12-60af5089a27a",
+        "id": "aa4976c4-3bd3-4cc2-bb03-8390d34605a9",
+        "name": "elastic-agent-59047",
         "type": "filebeat",
-        "version": "8.19.4"
+        "version": "9.6.0"
     },
     "aws": {
         "securityhub_findings_full_posture": {
             "action": {
                 "port_probe": {
                     "blocked": false,
-                    "details": [
-                        {
-                            "local": {
-                                "ip": {
-                                    "address_v4": "1.128.0.0"
-                                },
-                                "port": {
-                                    "name": "HTTP",
-                                    "number": 80
-                                }
+                    "details": {
+                        "local": {
+                            "ip": {
+                                "address_v4": "1.128.0.0"
                             },
-                            "remote_ip": {
-                                "city": {
-                                    "name": "Example City"
-                                },
-                                "country": {
-                                    "name": "Example Country"
-                                },
-                                "geolocation": {
-                                    "latitude": 0,
-                                    "longitude": 0
-                                },
-                                "organization": {
-                                    "asn": "64496",
-                                    "asn_organization": "ExampleASO",
-                                    "internet_provider": "ExampleOrg",
-                                    "internet_service_provider": "ExampleISP"
-                                }
+                            "port": {
+                                "name": "HTTP",
+                                "number": 80
+                            }
+                        },
+                        "remote_ip": {
+                            "city": {
+                                "name": "Example City"
+                            },
+                            "country": {
+                                "name": "Example Country"
+                            },
+                            "geolocation": {
+                                "latitude": 0,
+                                "longitude": 0
+                            },
+                            "organization": {
+                                "asn": "64496",
+                                "asn_organization": "ExampleASO",
+                                "internet_provider": "ExampleOrg",
+                                "internet_service_provider": "ExampleISP"
                             }
                         }
-                    ]
+                    }
                 }
             },
             "aws_account_id": "111111111111",
@@ -796,12 +759,10 @@ An example event for `securityhub_findings_full_posture` looks as following:
                     "Req2"
                 ],
                 "status": "PASSED",
-                "status_reasons": [
-                    {
-                        "description": "CloudWatch alarms do not exist in the account",
-                        "reason_code": "CLOUDWATCH_ALARMS_NOT_PRESENT"
-                    }
-                ]
+                "status_reasons": {
+                    "description": "CloudWatch alarms do not exist in the account",
+                    "reason_code": "CLOUDWATCH_ALARMS_NOT_PRESENT"
+                }
             },
             "confidence": 42,
             "criticality": 99,
@@ -811,66 +772,50 @@ An example event for `securityhub_findings_full_posture` looks as following:
                 "id": "acme-vuln-9ab348"
             },
             "last_observed_at": "2017-03-23T13:22:13.933Z",
-            "malware": [
-                {
-                    "name": "Stringler",
-                    "path": "/usr/sbin/stringler",
-                    "state": "OBSERVED",
-                    "type": "COIN_MINER"
-                }
-            ],
+            "malware": {
+                "name": "Stringler",
+                "path": "/usr/sbin/stringler",
+                "state": "OBSERVED",
+                "type": "COIN_MINER"
+            },
             "network": {
                 "open_port_range": {
                     "begin": 443,
                     "end": 443
                 }
             },
-            "network_path": [
-                {
-                    "component": {
-                        "id": "abc-01a234bc56d8901ee",
-                        "type": "AWS::EC2::InternetGateway"
-                    },
-                    "egress": {
-                        "destination": {
-                            "address": [
-                                "1.128.0.0/24"
-                            ],
-                            "port_ranges": [
-                                {
-                                    "begin": 443,
-                                    "end": 443
-                                }
-                            ]
-                        },
-                        "protocol": "TCP",
-                        "source": {
-                            "address": [
-                                "175.16.199.1/24"
-                            ]
+            "network_path": {
+                "component": {
+                    "id": "abc-01a234bc56d8901ee",
+                    "type": "AWS::EC2::InternetGateway"
+                },
+                "egress": {
+                    "destination": {
+                        "address": "1.128.0.0/24",
+                        "port_ranges": {
+                            "begin": 443,
+                            "end": 443
                         }
                     },
-                    "ingress": {
-                        "destination": {
-                            "address": [
-                                "175.16.199.1/24"
-                            ],
-                            "port_ranges": [
-                                {
-                                    "begin": 443,
-                                    "end": 443
-                                }
-                            ]
-                        },
-                        "protocol": "TCP",
-                        "source": {
-                            "address": [
-                                "175.16.199.1/24"
-                            ]
+                    "protocol": "TCP",
+                    "source": {
+                        "address": "175.16.199.1/24"
+                    }
+                },
+                "ingress": {
+                    "destination": {
+                        "address": "175.16.199.1/24",
+                        "port_ranges": {
+                            "begin": 443,
+                            "end": 443
                         }
+                    },
+                    "protocol": "TCP",
+                    "source": {
+                        "address": "175.16.199.1/24"
                     }
                 }
-            ],
+            },
             "note": {
                 "text": "Don't forget to check under the mat.",
                 "updated_at": "2018-08-31T00:15:09.000Z",
@@ -915,84 +860,76 @@ An example event for `securityhub_findings_full_posture` looks as following:
             "provider_fields": {
                 "confidence": 42,
                 "criticality": 99,
-                "related_findings": [
-                    {
-                        "id": "123e4567-e89b-12d3-a456-426655440000",
-                        "product": {
-                            "arn": "arn:aws:securityhub:us-west-2::product/aws/guardduty"
-                        }
-                    }
-                ],
-                "severity": {
-                    "label": "MEDIUM",
-                    "original": "MEDIUM"
-                },
-                "types": [
-                    "Software and Configuration Checks/Vulnerabilities/CVE"
-                ]
-            },
-            "record_state": "ACTIVE",
-            "region": "us-east-1",
-            "related_findings": [
-                {
+                "related_findings": {
                     "id": "123e4567-e89b-12d3-a456-426655440000",
                     "product": {
                         "arn": "arn:aws:securityhub:us-west-2::product/aws/guardduty"
                     }
                 },
-                {
-                    "id": "AcmeNerfHerder-111111111111-x189dx7824",
-                    "product": {
-                        "arn": "arn:aws:securityhub:us-west-2::product/aws/guardduty"
-                    }
+                "severity": {
+                    "label": "MEDIUM",
+                    "original": "MEDIUM"
+                },
+                "types": "Software and Configuration Checks/Vulnerabilities/CVE"
+            },
+            "record_state": "ACTIVE",
+            "region": "us-east-1",
+            "related_findings": {
+                "id": [
+                    "123e4567-e89b-12d3-a456-426655440000",
+                    "AcmeNerfHerder-111111111111-x189dx7824"
+                ],
+                "product": {
+                    "arn": [
+                        "arn:aws:securityhub:us-west-2::product/aws/guardduty",
+                        "arn:aws:securityhub:us-west-2::product/aws/guardduty"
+                    ]
                 }
-            ],
+            },
             "remediation": {
                 "recommendation": {
                     "text": "Run sudo yum update and cross your fingers and toes.",
                     "url": "http://myfp.com/recommendations/dangerous_things_and_how_to_fix_them.html"
                 }
             },
-            "resources": [
-                {
-                    "Details": {
-                        "IamInstanceProfileArn": "arn:aws:iam::123456789012:role/IamInstanceProfileArn",
-                        "ImageId": "ami-79fd7eee",
-                        "IpV4Addresses": [
-                            "175.16.199.1"
-                        ],
-                        "IpV6Addresses": [
-                            "2a02:cf40::"
-                        ],
-                        "KeyName": "testkey",
-                        "LaunchedAt": "2018-09-29T01:25:54Z",
-                        "MetadataOptions": {
-                            "HttpEndpoint": "enabled",
-                            "HttpProtocolIpv6": "enabled",
-                            "HttpPutResponseHopLimit": 1,
-                            "HttpTokens": "optional",
-                            "InstanceMetadataTags": "disabled"
-                        },
-                        "NetworkInterfaces": [
-                            {
-                                "NetworkInterfaceId": "eni-e5aa89a3"
-                            }
-                        ],
-                        "SubnetId": "PublicSubnet",
-                        "Type": "i3.xlarge",
-                        "VirtualizationType": "hvm",
-                        "VpcId": "TestVPCIpv6"
+            "resources": {
+                "Details": {
+                    "IamInstanceProfileArn": "arn:aws:iam::123456789012:role/IamInstanceProfileArn",
+                    "ImageId": "ami-79fd7eee",
+                    "IpV4Addresses": [
+                        "175.16.199.1"
+                    ],
+                    "IpV6Addresses": [
+                        "2a02:cf40::"
+                    ],
+                    "KeyName": "testkey",
+                    "LaunchedAt": "2018-09-29T01:25:54Z",
+                    "MetadataOptions": {
+                        "HttpEndpoint": "enabled",
+                        "HttpProtocolIpv6": "enabled",
+                        "HttpPutResponseHopLimit": 1,
+                        "HttpTokens": "optional",
+                        "InstanceMetadataTags": "disabled"
                     },
-                    "Id": "i-cafebabe",
-                    "Partition": "aws",
-                    "Region": "us-west-2",
-                    "Tags": {
-                        "billingCode": "Lotus-1-2-3",
-                        "needsPatching": "true"
-                    },
-                    "Type": "AwsEc2Instance"
-                }
-            ],
+                    "NetworkInterfaces": [
+                        {
+                            "NetworkInterfaceId": "eni-e5aa89a3"
+                        }
+                    ],
+                    "SubnetId": "PublicSubnet",
+                    "Type": "i3.xlarge",
+                    "VirtualizationType": "hvm",
+                    "VpcId": "TestVPCIpv6"
+                },
+                "Id": "i-cafebabe",
+                "Partition": "aws",
+                "Region": "us-west-2",
+                "Tags": {
+                    "billingCode": "Lotus-1-2-3",
+                    "needsPatching": "true"
+                },
+                "Type": "AwsEc2Instance"
+            },
             "sample": true,
             "schema": {
                 "version": "2018-10-08"
@@ -1002,58 +939,50 @@ An example event for `securityhub_findings_full_posture` looks as following:
                 "original": "8.3"
             },
             "source_url": "http://threatintelweekly.org/backdoors/8888",
-            "threat_intel_indicators": [
-                {
-                    "category": "BACKDOOR",
-                    "source": "Threat Intel Weekly",
-                    "source_url": "http://threatintelweekly.org/backdoors/8888",
-                    "value": "175.16.199.1"
-                }
-            ],
+            "threat_intel_indicators": {
+                "category": "BACKDOOR",
+                "source": "Threat Intel Weekly",
+                "source_url": "http://threatintelweekly.org/backdoors/8888",
+                "value": "175.16.199.1"
+            },
             "title": "EC2.20 Both VPN tunnels for an AWS Site-to-Site VPN connection should be up",
-            "types": [
-                "Software and Configuration Checks/Vulnerabilities/CVE"
-            ],
+            "types": "Software and Configuration Checks/Vulnerabilities/CVE",
             "updated_at": "2018-08-31T00:15:09.000Z",
             "user_defined_fields": {
                 "comeBackToLater": "Check this again on Monday",
                 "reviewedByCio": "true"
             },
             "verification_state": "UNKNOWN",
-            "vulnerabilities": [
-                {
-                    "cvss": [
-                        {
-                            "base_score": 4.7,
-                            "base_vector": "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N",
-                            "version": "V3"
-                        },
-                        {
-                            "base_score": 4.7,
-                            "base_vector": "AV:L/AC:M/Au:N/C:C/I:N/A:N",
-                            "version": "V2"
-                        }
+            "vulnerabilities": {
+                "cvss": {
+                    "base_score": [
+                        4.7,
+                        4.7
                     ],
-                    "related_vulnerabilities": [
-                        "CVE-2020-12345"
+                    "base_vector": [
+                        "AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N",
+                        "AV:L/AC:M/Au:N/C:C/I:N/A:N"
                     ],
-                    "vendor": {
-                        "created_at": "2020-01-16T00:01:43.000Z",
-                        "severity": "Medium",
-                        "updated_at": "2020-01-16T00:01:43.000Z",
-                        "url": "https://alas.aws.amazon.com/ALAS-2020-1337.html"
-                    },
-                    "vulnerable_packages": [
-                        {
-                            "architecture": "x86_64",
-                            "epoch": "1",
-                            "name": "openssl",
-                            "release": "16.amzn2.0.3",
-                            "version": "1.0.2k"
-                        }
+                    "version": [
+                        "V3",
+                        "V2"
                     ]
+                },
+                "related_vulnerabilities": "CVE-2020-12345",
+                "vendor": {
+                    "created_at": "2020-01-16T00:01:43.000Z",
+                    "severity": "Medium",
+                    "updated_at": "2020-01-16T00:01:43.000Z",
+                    "url": "https://alas.aws.amazon.com/ALAS-2020-1337.html"
+                },
+                "vulnerable_packages": {
+                    "architecture": "x86_64",
+                    "epoch": "1",
+                    "name": "openssl",
+                    "release": "16.amzn2.0.3",
+                    "version": "1.0.2k"
                 }
-            ],
+            },
             "workflow": {
                 "state": "NEW",
                 "status": "NEW"
@@ -1073,7 +1002,7 @@ An example event for `securityhub_findings_full_posture` looks as following:
     },
     "data_stream": {
         "dataset": "aws.securityhub_findings_full_posture",
-        "namespace": "28602",
+        "namespace": "13503",
         "type": "logs"
     },
     "destination": {
@@ -1088,9 +1017,9 @@ An example event for `securityhub_findings_full_posture` looks as following:
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "a97254ef-b03a-4701-8ffd-0d94d12aa849",
-        "snapshot": false,
-        "version": "8.19.4"
+        "id": "aa4976c4-3bd3-4cc2-bb03-8390d34605a9",
+        "snapshot": true,
+        "version": "9.6.0"
     },
     "event": {
         "action": "port_probe",
@@ -1098,11 +1027,11 @@ An example event for `securityhub_findings_full_posture` looks as following:
         "category": [
             "configuration"
         ],
-        "created": "2025-12-09T05:41:33.075Z",
         "dataset": "aws.securityhub_findings_full_posture",
         "id": "us-west-2/111111111111/98aebb2207407c87f51e89943f12b1ef",
-        "ingested": "2025-12-09T05:41:36Z",
+        "ingested": "2026-09-29T04:48:28Z",
         "kind": "state",
+        "module": "aws",
         "original": "{\"Action\":{\"ActionType\":\"PORT_PROBE\",\"PortProbeAction\":{\"Blocked\":false,\"PortProbeDetails\":[{\"LocalIpDetails\":{\"IpAddressV4\":\"1.128.0.0\"},\"LocalPortDetails\":{\"Port\":80,\"PortName\":\"HTTP\"},\"RemoteIpDetails\":{\"City\":{\"CityName\":\"Example City\"},\"Country\":{\"CountryName\":\"Example Country\"},\"GeoLocation\":{\"Lat\":0,\"Lon\":0},\"Organization\":{\"Asn\":64496,\"AsnOrg\":\"ExampleASO\",\"Isp\":\"ExampleISP\",\"Org\":\"ExampleOrg\"}}}]}},\"AwsAccountId\":\"111111111111\",\"CompanyName\":\"AWS\",\"Compliance\":{\"RelatedRequirements\":[\"Req1\",\"Req2\"],\"Status\":\"PASSED\",\"StatusReasons\":[{\"Description\":\"CloudWatch alarms do not exist in the account\",\"ReasonCode\":\"CLOUDWATCH_ALARMS_NOT_PRESENT\"}]},\"Confidence\":42,\"CreatedAt\":\"2017-03-22T13:22:13.933Z\",\"Criticality\":99,\"Description\":\"The version of openssl found on instance i-abcd1234 is known to contain a vulnerability.\",\"FindingProviderFields\":{\"Confidence\":42,\"Criticality\":99,\"RelatedFindings\":[{\"Id\":\"123e4567-e89b-12d3-a456-426655440000\",\"ProductArn\":\"arn:aws:securityhub:us-west-2::product/aws/guardduty\"}],\"Severity\":{\"Label\":\"MEDIUM\",\"Original\":\"MEDIUM\"},\"Types\":[\"Software and Configuration Checks/Vulnerabilities/CVE\"]},\"FirstObservedAt\":\"2017-03-22T13:22:13.933Z\",\"GeneratorId\":\"acme-vuln-9ab348\",\"Id\":\"us-west-2/111111111111/98aebb2207407c87f51e89943f12b1ef\",\"LastObservedAt\":\"2017-03-23T13:22:13.933Z\",\"Malware\":[{\"Name\":\"Stringler\",\"Path\":\"/usr/sbin/stringler\",\"State\":\"OBSERVED\",\"Type\":\"COIN_MINER\"}],\"Network\":{\"DestinationDomain\":\"example2.com\",\"DestinationIpV4\":\"1.128.0.0\",\"DestinationIpV6\":\"2a02:cf40::\",\"DestinationPort\":\"80\",\"Direction\":\"IN\",\"OpenPortRange\":{\"Begin\":443,\"End\":443},\"Protocol\":\"TCP\",\"SourceDomain\":\"example1.com\",\"SourceIpV4\":\"1.128.0.0\",\"SourceIpV6\":\"2a02:cf40::\",\"SourceMac\":\"00:0d:83:b1:c0:8e\",\"SourcePort\":\"42\"},\"NetworkPath\":[{\"ComponentId\":\"abc-01a234bc56d8901ee\",\"ComponentType\":\"AWS::EC2::InternetGateway\",\"Egress\":{\"Destination\":{\"Address\":[\"1.128.0.0/24\"],\"PortRanges\":[{\"Begin\":443,\"End\":443}]},\"Protocol\":\"TCP\",\"Source\":{\"Address\":[\"175.16.199.1/24\"]}},\"Ingress\":{\"Destination\":{\"Address\":[\"175.16.199.1/24\"],\"PortRanges\":[{\"Begin\":443,\"End\":443}]},\"Protocol\":\"TCP\",\"Source\":{\"Address\":[\"175.16.199.1/24\"]}}}],\"Note\":{\"Text\":\"Don't forget to check under the mat.\",\"UpdatedAt\":\"2018-08-31T00:15:09Z\",\"UpdatedBy\":\"jsmith\"},\"PatchSummary\":{\"FailedCount\":\"0\",\"Id\":\"pb-123456789098\",\"InstalledCount\":\"100\",\"InstalledOtherCount\":\"1023\",\"InstalledPendingReboot\":\"0\",\"InstalledRejectedCount\":\"0\",\"MissingCount\":\"100\",\"Operation\":\"Install\",\"OperationEndTime\":\"2018-09-27T23:39:31Z\",\"OperationStartTime\":\"2018-09-27T23:37:31Z\",\"RebootOption\":\"RebootIfNeeded\"},\"Process\":{\"LaunchedAt\":\"2018-09-27T22:37:31Z\",\"Name\":\"syslogd\",\"ParentPid\":56789,\"Path\":\"/usr/sbin/syslogd\",\"Pid\":12345,\"TerminatedAt\":\"2018-09-27T23:37:31Z\"},\"ProductArn\":\"arn:aws:securityhub:us-east-1:111111111111:product/111111111111/default\",\"ProductFields\":{\"Service_Name\":\"cloudtrail.amazonaws.com\",\"aws/inspector/AssessmentTargetName\":\"My prod env\",\"aws/inspector/AssessmentTemplateName\":\"My daily CVE assessment\",\"aws/inspector/RulesPackageName\":\"Common Vulnerabilities and Exposures\",\"generico/secure-pro/Count\":\"6\"},\"ProductName\":\"Security Hub\",\"RecordState\":\"ACTIVE\",\"Region\":\"us-east-1\",\"RelatedFindings\":[{\"Id\":\"123e4567-e89b-12d3-a456-426655440000\",\"ProductArn\":\"arn:aws:securityhub:us-west-2::product/aws/guardduty\"},{\"Id\":\"AcmeNerfHerder-111111111111-x189dx7824\",\"ProductArn\":\"arn:aws:securityhub:us-west-2::product/aws/guardduty\"}],\"Remediation\":{\"Recommendation\":{\"Text\":\"Run sudo yum update and cross your fingers and toes.\",\"Url\":\"http://myfp.com/recommendations/dangerous_things_and_how_to_fix_them.html\"}},\"Resources\":[{\"Details\":{\"IamInstanceProfileArn\":\"arn:aws:iam::123456789012:role/IamInstanceProfileArn\",\"ImageId\":\"ami-79fd7eee\",\"IpV4Addresses\":[\"175.16.199.1\"],\"IpV6Addresses\":[\"2a02:cf40::\"],\"KeyName\":\"testkey\",\"LaunchedAt\":\"2018-09-29T01:25:54Z\",\"MetadataOptions\":{\"HttpEndpoint\":\"enabled\",\"HttpProtocolIpv6\":\"enabled\",\"HttpPutResponseHopLimit\":1,\"HttpTokens\":\"optional\",\"InstanceMetadataTags\":\"disabled\"},\"NetworkInterfaces\":[{\"NetworkInterfaceId\":\"eni-e5aa89a3\"}],\"SubnetId\":\"PublicSubnet\",\"Type\":\"i3.xlarge\",\"VirtualizationType\":\"hvm\",\"VpcId\":\"TestVPCIpv6\"},\"Id\":\"i-cafebabe\",\"Partition\":\"aws\",\"Region\":\"us-west-2\",\"Tags\":{\"billingCode\":\"Lotus-1-2-3\",\"needsPatching\":\"true\"},\"Type\":\"AwsEc2Instance\"}],\"Sample\":true,\"SchemaVersion\":\"2018-10-08\",\"Severity\":{\"Label\":\"CRITICAL\",\"Original\":\"8.3\"},\"SourceUrl\":\"http://threatintelweekly.org/backdoors/8888\",\"ThreatIntelIndicators\":[{\"Category\":\"BACKDOOR\",\"LastObservedAt\":\"2018-09-27T23:37:31Z\",\"Source\":\"Threat Intel Weekly\",\"SourceUrl\":\"http://threatintelweekly.org/backdoors/8888\",\"Type\":\"IPV4_ADDRESS\",\"Value\":\"175.16.199.1\"}],\"Threats\":[{\"FilePaths\":[{\"FileName\":\"b.txt\",\"FilePath\":\"/tmp/b.txt\",\"Hash\":\"sha256\",\"ResourceId\":\"arn:aws:ec2:us-west-2:123456789012:volume/vol-032f3bdd89aee112f\"}],\"ItemCount\":3,\"Name\":\"Iot.linux.mirai.vwisi\",\"Severity\":\"HIGH\"}],\"Title\":\"EC2.20 Both VPN tunnels for an AWS Site-to-Site VPN connection should be up\",\"Types\":[\"Software and Configuration Checks/Vulnerabilities/CVE\"],\"UpdatedAt\":\"2018-08-31T00:15:09Z\",\"UserDefinedFields\":{\"comeBackToLater\":\"Check this again on Monday\",\"reviewedByCio\":\"true\"},\"VerificationState\":\"UNKNOWN\",\"Vulnerabilities\":[{\"Cvss\":[{\"BaseScore\":4.7,\"BaseVector\":\"AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N\",\"Version\":\"V3\"},{\"BaseScore\":4.7,\"BaseVector\":\"AV:L/AC:M/Au:N/C:C/I:N/A:N\",\"Version\":\"V2\"}],\"Id\":\"CVE-2020-12345\",\"ReferenceUrls\":[\"http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2019-12418\",\"http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2019-17563\"],\"RelatedVulnerabilities\":[\"CVE-2020-12345\"],\"Vendor\":{\"Name\":\"Alas\",\"Url\":\"https://alas.aws.amazon.com/ALAS-2020-1337.html\",\"VendorCreatedAt\":\"2020-01-16T00:01:43Z\",\"VendorSeverity\":\"Medium\",\"VendorUpdatedAt\":\"2020-01-16T00:01:43Z\"},\"VulnerablePackages\":[{\"Architecture\":\"x86_64\",\"Epoch\":\"1\",\"Name\":\"openssl\",\"Release\":\"16.amzn2.0.3\",\"Version\":\"1.0.2k\"}]}],\"Workflow\":{\"Status\":\"NEW\"},\"WorkflowState\":\"NEW\"}",
         "outcome": "success",
         "type": [
@@ -1170,6 +1099,7 @@ An example event for `securityhub_findings_full_posture` looks as following:
         "port": 42
     },
     "tags": [
+        "run_as_cel",
         "preserve_original_event",
         "forwarded",
         "aws_securityhub_findings_full_posture"
