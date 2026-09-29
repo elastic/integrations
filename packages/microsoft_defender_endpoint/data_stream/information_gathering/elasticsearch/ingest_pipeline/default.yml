@@ -122,6 +122,26 @@ processors:
       target_field: microsoft_defender_endpoint.information_gathering.device_gathered_info.av_is_signature_up_to_date
       tag: rename_av_is_signature_upto_date_to_av_is_signature_up_to_date
       ignore_missing: true
+  - rename:
+      field: microsoft_defender_endpoint.information_gathering.device_gathered_info.log4j__cve_2021_44228
+      target_field: microsoft_defender_endpoint.information_gathering.device_gathered_info.log4j_cve_2021_44228
+      tag: rename_log4j_cve_2021_44228
+      ignore_missing: true
+  - rename:
+      field: microsoft_defender_endpoint.information_gathering.device_gathered_info.log4_jenvironment_variable_mitigation
+      target_field: microsoft_defender_endpoint.information_gathering.device_gathered_info.log4j_environment_variable_mitigation
+      tag: rename_log4j_environment_variable_mitigation
+      ignore_missing: true
+  - rename:
+      field: microsoft_defender_endpoint.information_gathering.device_gathered_info.spring4_shell__cve_2022_22965
+      target_field: microsoft_defender_endpoint.information_gathering.device_gathered_info.spring4shell_cve_2022_22965
+      tag: rename_spring4shell_cve_2022_22965
+      ignore_missing: true
+  - rename:
+      field: microsoft_defender_endpoint.information_gathering.device_gathered_info.bootiful__mind_status
+      target_field: microsoft_defender_endpoint.information_gathering.device_gathered_info.bootiful_mind_status
+      tag: rename_bootiful_mind_status
+      ignore_missing: true
 
   # convert values
   - convert:
@@ -284,6 +304,120 @@ processors:
             ignore_missing: true
         - append:
             tag: append_error_message_av_signature_update_time
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: microsoft_defender_endpoint.information_gathering.device_gathered_info.av_mode_data_refresh_time
+      tag: date_av_mode_data_refresh_time
+      target_field: microsoft_defender_endpoint.information_gathering.device_gathered_info.av_mode_data_refresh_time
+      formats:
+        - ISO8601
+        - yyyy-MM-dd HH:mm:ss.SSS
+        - yyyy-MM-dd HH:mm:ss.S
+        - yyyy-MM-dd HH:mm:ss
+        - yyyy-MM-dd H:mm:ss
+      if: ctx.microsoft_defender_endpoint?.information_gathering?.device_gathered_info?.av_mode_data_refresh_time != null && ctx.microsoft_defender_endpoint.information_gathering.device_gathered_info.av_mode_data_refresh_time != ''
+      on_failure:
+        - remove:
+            tag: remove_av_mode_data_refresh_time_on_failure
+            field: microsoft_defender_endpoint.information_gathering.device_gathered_info.av_mode_data_refresh_time
+            ignore_missing: true
+        - append:
+            tag: append_error_message_av_mode_data_refresh_time
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: microsoft_defender_endpoint.information_gathering.device_gathered_info.av_engine_publish_time
+      tag: date_av_engine_publish_time
+      target_field: microsoft_defender_endpoint.information_gathering.device_gathered_info.av_engine_publish_time
+      formats:
+        - ISO8601
+        - yyyy-MM-dd HH:mm:ss.SSS
+        - yyyy-MM-dd HH:mm:ss.S
+        - yyyy-MM-dd HH:mm:ss
+        - yyyy-MM-dd H:mm:ss
+      if: ctx.microsoft_defender_endpoint?.information_gathering?.device_gathered_info?.av_engine_publish_time != null && ctx.microsoft_defender_endpoint.information_gathering.device_gathered_info.av_engine_publish_time != ''
+      on_failure:
+        - remove:
+            tag: remove_av_engine_publish_time_on_failure
+            field: microsoft_defender_endpoint.information_gathering.device_gathered_info.av_engine_publish_time
+            ignore_missing: true
+        - append:
+            tag: append_error_message_av_engine_publish_time
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: microsoft_defender_endpoint.information_gathering.device_gathered_info.av_platform_publish_time
+      tag: date_av_platform_publish_time
+      target_field: microsoft_defender_endpoint.information_gathering.device_gathered_info.av_platform_publish_time
+      formats:
+        - ISO8601
+        - yyyy-MM-dd HH:mm:ss.SSS
+        - yyyy-MM-dd HH:mm:ss.S
+        - yyyy-MM-dd HH:mm:ss
+        - yyyy-MM-dd H:mm:ss
+      if: ctx.microsoft_defender_endpoint?.information_gathering?.device_gathered_info?.av_platform_publish_time != null && ctx.microsoft_defender_endpoint.information_gathering.device_gathered_info.av_platform_publish_time != ''
+      on_failure:
+        - remove:
+            tag: remove_av_platform_publish_time_on_failure
+            field: microsoft_defender_endpoint.information_gathering.device_gathered_info.av_platform_publish_time
+            ignore_missing: true
+        - append:
+            tag: append_error_message_av_platform_publish_time
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: microsoft_defender_endpoint.information_gathering.device_gathered_info.av_platform_expiration_time
+      tag: date_av_platform_expiration_time
+      target_field: microsoft_defender_endpoint.information_gathering.device_gathered_info.av_platform_expiration_time
+      formats:
+        - ISO8601
+        - yyyy-MM-dd HH:mm:ss.SSS
+        - yyyy-MM-dd HH:mm:ss.S
+        - yyyy-MM-dd HH:mm:ss
+        - yyyy-MM-dd H:mm:ss
+      if: ctx.microsoft_defender_endpoint?.information_gathering?.device_gathered_info?.av_platform_expiration_time != null && ctx.microsoft_defender_endpoint.information_gathering.device_gathered_info.av_platform_expiration_time != ''
+      on_failure:
+        - remove:
+            tag: remove_av_platform_expiration_time_on_failure
+            field: microsoft_defender_endpoint.information_gathering.device_gathered_info.av_platform_expiration_time
+            ignore_missing: true
+        - append:
+            tag: append_error_message_av_platform_expiration_time
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - date:
+      field: microsoft_defender_endpoint.information_gathering.device_gathered_info.av_signature_data_refresh_time
+      tag: date_av_signature_data_refresh_time
+      target_field: microsoft_defender_endpoint.information_gathering.device_gathered_info.av_signature_data_refresh_time
+      formats:
+        - ISO8601
+        - yyyy-MM-dd HH:mm:ss.SSS
+        - yyyy-MM-dd HH:mm:ss.S
+        - yyyy-MM-dd HH:mm:ss
+        - yyyy-MM-dd H:mm:ss
+      if: ctx.microsoft_defender_endpoint?.information_gathering?.device_gathered_info?.av_signature_data_refresh_time != null && ctx.microsoft_defender_endpoint.information_gathering.device_gathered_info.av_signature_data_refresh_time != ''
+      on_failure:
+        - remove:
+            tag: remove_av_signature_data_refresh_time_on_failure
+            field: microsoft_defender_endpoint.information_gathering.device_gathered_info.av_signature_data_refresh_time
+            ignore_missing: true
+        - append:
+            tag: append_error_message_av_signature_data_refresh_time
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: microsoft_defender_endpoint.information_gathering.device_gathered_info.is_av_engine_loaded
+      tag: convert_is_av_engine_loaded_to_boolean
+      type: boolean
+      ignore_missing: true
+      on_failure:
+        - remove:
+            tag: remove_is_av_engine_loaded_on_failure
+            field: microsoft_defender_endpoint.information_gathering.device_gathered_info.is_av_engine_loaded
+            ignore_missing: true
+        - append:
+            tag: append_error_message_is_av_engine_loaded
             field: error.message
             value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 

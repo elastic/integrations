@@ -1098,20 +1098,38 @@ An example event for `information_gathering` looks as following:
 | event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |
 | input.type | Type of Filebeat input. | keyword |
+| microsoft_defender_endpoint.information_gathering.device_gathered_info.av_engine_publish_time | Datetime when the antivirus engine version was published. | date |
+| microsoft_defender_endpoint.information_gathering.device_gathered_info.av_engine_ring | Update ring of the antivirus engine. | keyword |
 | microsoft_defender_endpoint.information_gathering.device_gathered_info.av_engine_update_time | Datetime when the antivirus engine was last updated on the device. | date |
 | microsoft_defender_endpoint.information_gathering.device_gathered_info.av_engine_version | Antivirus engine version. | keyword |
 | microsoft_defender_endpoint.information_gathering.device_gathered_info.av_is_engine_up_to_date | Up-to-date status of the antivirus engine. | boolean |
 | microsoft_defender_endpoint.information_gathering.device_gathered_info.av_is_platform_up_to_date | Up-to-date status of the antivirus platform. | boolean |
 | microsoft_defender_endpoint.information_gathering.device_gathered_info.av_is_signature_up_to_date | Up-to-date status of the antivirus signature. | boolean |
 | microsoft_defender_endpoint.information_gathering.device_gathered_info.av_mode | Antivirus mode as a string-typed integer value ranging from 0 to 5. | keyword |
+| microsoft_defender_endpoint.information_gathering.device_gathered_info.av_mode_data_refresh_time | Datetime when the antivirus mode data was last refreshed. | date |
+| microsoft_defender_endpoint.information_gathering.device_gathered_info.av_platform_expiration_time | Datetime when the antivirus platform version expires. | date |
+| microsoft_defender_endpoint.information_gathering.device_gathered_info.av_platform_publish_time | Datetime when the antivirus platform version was published. | date |
+| microsoft_defender_endpoint.information_gathering.device_gathered_info.av_platform_ring | Update ring of the antivirus platform. | keyword |
 | microsoft_defender_endpoint.information_gathering.device_gathered_info.av_platform_update_time | Datetime when the antivirus platform was last updated on the device. | date |
 | microsoft_defender_endpoint.information_gathering.device_gathered_info.av_platform_version | Antivirus platform version. | keyword |
+| microsoft_defender_endpoint.information_gathering.device_gathered_info.av_scan_results | Antivirus scan results reported by the device. | keyword |
+| microsoft_defender_endpoint.information_gathering.device_gathered_info.av_signature_data_refresh_time | Datetime when the antivirus signature data was last refreshed. | date |
 | microsoft_defender_endpoint.information_gathering.device_gathered_info.av_signature_publish_time | Datetime when the antivirus security intelligence build was released. | date |
+| microsoft_defender_endpoint.information_gathering.device_gathered_info.av_signature_ring | Update ring of the antivirus signatures. | keyword |
 | microsoft_defender_endpoint.information_gathering.device_gathered_info.av_signature_update_time | Datetime when the antivirus security intelligence was last updated on the device. | date |
 | microsoft_defender_endpoint.information_gathering.device_gathered_info.av_signature_version | Antivirus security intelligence version. | keyword |
+| microsoft_defender_endpoint.information_gathering.device_gathered_info.bootiful_mind_status | Bootiful Mind scan status. | keyword |
+| microsoft_defender_endpoint.information_gathering.device_gathered_info.cloud_protection_state | Cloud-delivered protection state of the antivirus. | keyword |
 | microsoft_defender_endpoint.information_gathering.device_gathered_info.ebpf_status | Indicates whether the eBPF-based sensor is enabled on Linux endpoints. | keyword |
 | microsoft_defender_endpoint.information_gathering.device_gathered_info.full_scan_result | Full scan result of the device. | keyword |
+| microsoft_defender_endpoint.information_gathering.device_gathered_info.is_av_engine_loaded | Whether the antivirus engine is loaded. | boolean |
+| microsoft_defender_endpoint.information_gathering.device_gathered_info.local_cve_scanner_executed | Whether the local CVE scanner was executed. | keyword |
+| microsoft_defender_endpoint.information_gathering.device_gathered_info.log4j_cve_2021_44228 | Log4j CVE-2021-44228 exposure status. | keyword |
+| microsoft_defender_endpoint.information_gathering.device_gathered_info.log4j_environment_variable_mitigation | Whether the Log4j environment variable mitigation is present. | keyword |
+| microsoft_defender_endpoint.information_gathering.device_gathered_info.log4j_local_scan_vulnerable | Result of the local Log4j vulnerability scan. | keyword |
 | microsoft_defender_endpoint.information_gathering.device_gathered_info.quick_scan_result | Quick scan result of the device. | keyword |
+| microsoft_defender_endpoint.information_gathering.device_gathered_info.spring4shell_cve_2022_22965 | Spring4Shell CVE-2022-22965 exposure status. | keyword |
+| microsoft_defender_endpoint.information_gathering.device_gathered_info.wdavor_heartbeat_event_type | Type of the last Defender Antivirus heartbeat event. | keyword |
 | microsoft_defender_endpoint.information_gathering.last_seen | Last seen datetime of the device when the information gathering snapshot was collected. | date |
 | microsoft_defender_endpoint.information_gathering.os_platform | Platform of the operating system running on the device. | keyword |
 | microsoft_defender_endpoint.information_gathering.rbac_group_id | Device group ID that this machine belongs to. | keyword |

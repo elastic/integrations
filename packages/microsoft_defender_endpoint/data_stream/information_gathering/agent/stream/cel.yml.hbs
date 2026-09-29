@@ -43,7 +43,7 @@ program: |-
           size(resp.Body) == 0 ?
             {
               "events": [{"message": "retry"}],
-              "want_more": int(state.remaining_retries) > 0 || size(tail(state.work_list)) > 0,
+              "want_more": int(state.remaining_retries) > 0 || size(state.work_list) > 1,
               "work_list": int(state.remaining_retries) > 0 ? tail(state.work_list) + [state.work_list[0]] : tail(state.work_list),
               "remaining_retries": int(state.remaining_retries) - 1,
             }
@@ -146,12 +146,12 @@ program: |-
             "events": {
               "error": {
                 "code": string(auth.StatusCode),
-                "id": string(auth.Status),
+                "id": auth.Status,
                 "message": "POST /oauth2/v2.0/token :" + (
                   size(auth.Body) != 0 ?
                     string(auth.Body)
                   :
-                    string(auth.Status) + " (" + string(auth.StatusCode) + ")"
+                    auth.Status + " (" + string(auth.StatusCode) + ")"
                 ),
               },
             },
