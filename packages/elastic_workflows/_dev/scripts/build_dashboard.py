@@ -10,6 +10,9 @@ DASHBOARD_PATH = PACKAGE_ROOT / f"kibana/dashboard/{DASHBOARD_ID}.json"
 INDEX = ".workflows-executions"
 TIME_FIELD = "startedAt"
 ESQL_DATA_VIEW_ID = "elastic-workflows-executions-esql"
+# Production executions store isTestRun as null, not false.
+IS_TEST_RUN = "COALESCE(isTestRun, false)"
+RUN_TYPE = f'CASE({IS_TEST_RUN}, "test", "production")'
 
 
 def base_query() -> str:
@@ -17,15 +20,8 @@ def base_query() -> str:
         f"FROM {INDEX}\n"
         f"| WHERE {TIME_FIELD} >= ?_tstart AND {TIME_FIELD} < ?_tend\n"
         "| WHERE (?space_ids IS NULL OR spaceId IN (?space_ids)) "
-        "AND isTestRun IN (?run_types)"
+        f"AND {RUN_TYPE} IN (?run_types)"
     )
-
-
-def number_format(decimals: int = 0, suffix: str | None = None) -> dict:
-    params: dict = {"decimals": decimals, "compact": True}
-    if suffix is not None:
-        params["suffix"] = suffix
-    return {"id": "number", "params": params}
 
 
 DURATION_FORMAT = {
@@ -47,14 +43,12 @@ def column(
     label: str | None = None,
     column_format: dict | None = None,
 ) -> dict:
-    metadata: dict = {"type": data_type, "esType": es_type}
-
     result = {
         "columnId": name,
         "fieldName": name,
         "label": label or name,
         "customLabel": label is not None,
-        "meta": metadata,
+        "meta": {"type": data_type, "esType": es_type},
     }
     if column_format is not None:
         result["params"] = {"format": column_format}
@@ -723,12 +717,12 @@ def build_panels() -> list[dict]:
                 f"{base}\n"
                 "| STATS "
                 "executions = COUNT(*), "
-                "production_runs = COUNT(*) WHERE isTestRun == false, "
-                'failures = COUNT(*) WHERE status IN ("failed", "timed_out") AND isTestRun == false, '
-                'completed = COUNT(*) WHERE status == "completed" AND isTestRun == false, '
-                "test_runs = COUNT(*) WHERE isTestRun == true, "
-                "avg_duration_ms = AVG(duration) WHERE isTestRun == false, "
-                "p95_duration_ms = PERCENTILE(duration, 95) WHERE isTestRun == false "
+                f"production_runs = COUNT(*) WHERE NOT {IS_TEST_RUN}, "
+                f'failures = COUNT(*) WHERE status IN ("failed", "timed_out") AND NOT {IS_TEST_RUN}, '
+                f'completed = COUNT(*) WHERE status == "completed" AND NOT {IS_TEST_RUN}, '
+                f"test_runs = COUNT(*) WHERE {IS_TEST_RUN}, "
+                f"avg_duration_ms = AVG(duration) WHERE NOT {IS_TEST_RUN}, "
+                f"p95_duration_ms = PERCENTILE(duration, 95) WHERE NOT {IS_TEST_RUN} "
                 "BY workflowId\n"
                 "| EVAL success_rate = CASE(production_runs > 0, TO_DOUBLE(completed) / production_runs, 0.0)\n"
                 "| KEEP workflowId, executions, failures, completed, success_rate, test_runs, avg_duration_ms, p95_duration_ms\n"
@@ -786,11 +780,14 @@ def control_group_input() -> dict:
                 "id": "run-type-control",
                 "title": "Run type",
                 "enhancements": {},
-                "selected_options": ["false"],
+                "selected_options": ["production"],
                 "single_select": False,
                 "variable_name": "run_types",
                 "variable_type": "values",
-                "esql_query": f"{time_filter}\n| STATS BY isTestRun\n| SORT isTestRun",
+                "esql_query": (
+                    f"{time_filter}\n| EVAL run_type = {RUN_TYPE}\n"
+                    "| STATS BY run_type\n| SORT run_type"
+                ),
                 "control_type": "VALUES_FROM_QUERY",
                 "available_options": [],
             },
