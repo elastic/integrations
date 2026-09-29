@@ -148,17 +148,16 @@ jobs:
             exit 0
           fi
 
-          # Append author/merger mentions so GitHub notifies them. Omit the merger
-          # mention when the PR was merged by its own author (no duplicate ping).
+          # Append author/merger mentions so GitHub notifies them.
           # Two newlines produce a blank line in the rendered markdown, which closes
           # the preceding [!TIP] blockquote so the cc line appears outside it.
           # (Command substitution strips the trailing newline from render-checklist
           # output, so a single \n would land inside the callout.)
-          if [[ "$PR_AUTHOR" == "$PR_MERGER" ]]; then
-            NEW_BODY=$(printf '%s\n\ncc @%s' "$NEW_BODY" "$PR_AUTHOR")
-          else
-            NEW_BODY=$(printf '%s\n\ncc @%s @%s' "$NEW_BODY" "$PR_AUTHOR" "$PR_MERGER")
+          MENTIONS="@${PR_AUTHOR}"
+          if [[ -n "$PR_MERGER" && "$PR_MERGER" != "$PR_AUTHOR" ]]; then
+            MENTIONS="${MENTIONS} @${PR_MERGER}"
           fi
+          NEW_BODY=$(printf '%s\n\ncc %s' "$NEW_BODY" "$MENTIONS")
 
           BODY_FILE=$(mktemp)
           trap 'rm -f "$BODY_FILE"' EXIT
