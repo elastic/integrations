@@ -8,7 +8,7 @@ The [Elastic Distribution of OpenTelemetry iOS (EDOT iOS)](https://www.elastic.c
 
 ### Compatibility
 
-This package has been tested with EDOT iOS 2.2.0, EDOT Collector 9.5.4, and OpenTelemetry semantic conventions. The dashboards query data from `logs-generic.otel*` and `traces-generic.otel*` index patterns, and filter on `os.name: "iOS"`.
+This package is built for EDOT iOS 2.2.0 or later and OpenTelemetry semantic conventions. The dashboards query data from `logs-generic.otel*` and `traces-generic.otel*` index patterns, and filter on `os.name: "iOS"`.
 
 ## What do I need to use this package?
 
@@ -25,7 +25,7 @@ This package has been tested with EDOT iOS 2.2.0, EDOT Collector 9.5.4, and Open
   - `app.installation.id` (for installation counts)
   - `duration` (for span duration averages and percentiles)
 
-EDOT iOS populates all of these fields automatically. If you are using a different OpenTelemetry SDK, ensure they are configured in your instrumentation.
+EDOT iOS populates these fields automatically. If you are using a different OpenTelemetry SDK, ensure they are configured in your instrumentation.
 
 Crash analysis requires EDOT iOS 2.2.0 or later.
 
@@ -57,7 +57,7 @@ The main dashboard provides a high-level view of your iOS application's health a
 **Crashes**
 
 - **Total recorded crashes / Crashes per affected session** — Metric counters for the total crash count and the average number of crashes among sessions that recorded at least one crash.
-- **Crashes table** — List of crashes grouped by a group ID with their occurrence count. The group ID is computed from the exception type and the first frame of the crash in the app's own binary, so the same crash site in two app builds forms two groups. Clicking a group ID drills down into the Exception Details dashboard. Use that drilldown rather than filtering the dashboard on a group ID: the group ID is computed by Kibana, so a filter on it shows the metric counters and trend charts as empty.
+- **Crashes table** — List of crashes grouped by a group ID computed from their stack trace, with their occurrence count. Clicking a group ID drills down into the Exception Details dashboard. Use that drilldown rather than filtering the dashboard on a group ID: the group ID is computed by Kibana, so a filter on it shows the metric counters and trend charts as empty.
 - **Crash rate over time** — Line chart with the percentage of sessions active in each time bucket that recorded at least one crash.
 
 **Event timeline**
@@ -119,15 +119,15 @@ Within the **[iOS OTel] Application Overview** dashboard, scroll down to the "Cr
 
 ## Troubleshooting
 
-If you can't see the trace waterfall UI in Discover, as shown above, make sure that:
+If you can't see the trace waterfall UI in Discover as described in the preceding section, make sure that:
 
 - Your Elastic Stack version is supported by this package.
-- Your Kibana space's "solution view" is set to "Observability". As explained [here](https://www.elastic.co/blog/elastic-redesigned-navigation-menu-kibana#editing-space-settings-).
+- Your Kibana space uses the Observability solution view. See [how to change the space settings](https://www.elastic.co/blog/elastic-redesigned-navigation-menu-kibana#editing-space-settings-).
 
 If you do not see data in the dashboards, make sure that:
 
 - Your iOS application is sending telemetry to the Elastic Stack. You can verify this in Kibana's Discover by searching for `os.name: "iOS"` in the `logs-generic.otel*` or `traces-generic.otel*` index patterns.
-- The `session.id` field is present in the telemetry data. If you are not using EDOT iOS, you may need to configure session tracking manually.
+- The `session.id` field is present in the telemetry data. If you are not using EDOT iOS, you might need to configure session tracking manually.
 - The `service.name` field is set correctly so the application name filter works as expected.
 - No filter on a crash group ID is active. The group ID is computed by Kibana, and the metric counters and trend charts cannot evaluate it, so such a filter shows them as empty while the tables keep their data. Open crash details through the "View crash details" drilldown instead.
 - The time range selected in Kibana covers the period when your application was sending telemetry. If the default time range doesn't show any data, try expanding it (for example, to "Last 7 days" or "Last 30 days") to confirm data has been ingested.
