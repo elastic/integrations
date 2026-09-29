@@ -18,9 +18,9 @@ queries against the workflow execution index.
 - **Status Breakdown** — treemap of execution statuses
 - **Slowest Workflows** — table of workflows ranked by p95 duration
 - **Recent Failures** — table of failing workflows with drilldown to executions
-- **Per-Workflow Summary** — comprehensive table with executions, failures, success %, test runs, avg duration, and p95
+- **Per-Workflow Summary** — table with executions, failures, success %, avg duration, and p95
 
-Dashboard-level controls allow filtering by **space** and **excluding test runs** (excluded by default).
+Dashboard-level controls filter every panel by **space** and **run type**. The run type is `production` by default. Select `test` to include test runs.
 
 ## Data sources
 

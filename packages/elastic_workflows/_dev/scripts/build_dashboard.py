@@ -13,6 +13,8 @@ ESQL_DATA_VIEW_ID = "elastic-workflows-executions-esql"
 # Production executions store isTestRun as null, not false.
 IS_TEST_RUN = "COALESCE(isTestRun, false)"
 RUN_TYPE = f'CASE({IS_TEST_RUN}, "test", "production")'
+TIME_BUCKET = f"time_bucket = BUCKET({TIME_FIELD}, 50, ?_tstart, ?_tend)"
+FAILED = 'status IN ("failed", "timed_out")'
 
 
 def base_query() -> str:
@@ -55,6 +57,9 @@ def column(
     if data_type == "number":
         result["inMetricDimension"] = True
     return result
+
+
+TIME_COLUMN = column("time_bucket", "date", "date", label="Time")
 
 
 def esql_data_view() -> dict:
@@ -182,12 +187,7 @@ def metric_panel(
 
     if trend_query is not None:
         trend_layer_id = f"{panel_id}-trend"
-        trend_time_column = column("time_bucket", "date", "date", label="Time")
-        trend_metric_column = dict(metric_column)
-        layers[trend_layer_id] = layer(
-            trend_query,
-            [trend_metric_column, trend_time_column],
-        )
+        layers[trend_layer_id] = layer(trend_query, [metric_column, TIME_COLUMN])
         visualization.update(
             {
                 "trendlineLayerId": trend_layer_id,
@@ -460,7 +460,7 @@ def build_panels() -> list[dict]:
             color="#FCD883",
             trend_query=(
                 f'{base}\n| WHERE status == "timed_out"\n'
-                f"| STATS timed_out = COUNT(*) BY time_bucket = BUCKET({TIME_FIELD}, 50, ?_tstart, ?_tend)\n"
+                f"| STATS timed_out = COUNT(*) BY {TIME_BUCKET}\n"
                 "| SORT time_bucket"
             ),
         )
@@ -469,17 +469,14 @@ def build_panels() -> list[dict]:
         metric_panel(
             "failure-count",
             "Failures",
-            (
-                f'{base}\n| WHERE status IN ("failed", "timed_out")\n'
-                "| STATS failures = COUNT(*)"
-            ),
+            (f"{base}\n| WHERE {FAILED}\n| STATS failures = COUNT(*)"),
             column("failures", "number", "long", label="Failures"),
             x=39,
             width=9,
             color="#BD271E",
             trend_query=(
-                f'{base}\n| WHERE status IN ("failed", "timed_out")\n'
-                f"| STATS failures = COUNT(*) BY time_bucket = BUCKET({TIME_FIELD}, 50, ?_tstart, ?_tend)\n"
+                f"{base}\n| WHERE {FAILED}\n"
+                f"| STATS failures = COUNT(*) BY {TIME_BUCKET}\n"
                 "| SORT time_bucket"
             ),
         )
@@ -491,13 +488,13 @@ def build_panels() -> list[dict]:
             "Executions Over Time",
             (
                 f"{base}\n"
-                f"| STATS executions = COUNT(*) BY time_bucket = BUCKET({TIME_FIELD}, 50, ?_tstart, ?_tend), workflowId\n"
+                f"| STATS executions = COUNT(*) BY {TIME_BUCKET}, workflowId\n"
                 "| SORT time_bucket\n"
                 "| LIMIT 10000"
             ),
             [
                 column("executions", "number", "long", label="Executions"),
-                column("time_bucket", "date", "date", label="Time"),
+                TIME_COLUMN,
                 column("workflowId", "string", "keyword", label="Workflow"),
             ],
             x=0,
@@ -532,15 +529,15 @@ def build_panels() -> list[dict]:
             "Failure Rate by Workflow",
             (
                 f"{base}\n"
-                f'| STATS total = COUNT(*), failures = COUNT(*) WHERE status IN ("failed", "timed_out") '
-                f"BY time_bucket = BUCKET({TIME_FIELD}, 50, ?_tstart, ?_tend), workflowId\n"
+                f"| STATS total = COUNT(*), failures = COUNT(*) WHERE {FAILED} "
+                f"BY {TIME_BUCKET}, workflowId\n"
                 "| EVAL failure_rate = CASE(total > 0, TO_DOUBLE(failures) / total, 0.0)\n"
                 "| KEEP time_bucket, workflowId, failure_rate\n"
                 "| SORT time_bucket\n"
                 "| LIMIT 10000"
             ),
             [
-                column("time_bucket", "date", "date", label="Time"),
+                TIME_COLUMN,
                 column("workflowId", "string", "keyword", label="Workflow"),
                 column(
                     "failure_rate",
@@ -569,7 +566,7 @@ def build_panels() -> list[dict]:
                 "under_1s = COUNT(*) WHERE duration < 1000, "
                 "between_1s_and_5s = COUNT(*) WHERE duration >= 1000 AND duration < 5000, "
                 "between_5s_and_30s = COUNT(*) WHERE duration >= 5000 AND duration < 30000, "
-                f"over_30s = COUNT(*) WHERE duration >= 30000 BY time_bucket = BUCKET({TIME_FIELD}, 50, ?_tstart, ?_tend)\n"
+                f"over_30s = COUNT(*) WHERE duration >= 30000 BY {TIME_BUCKET}\n"
                 "| SORT time_bucket"
             ),
             [
@@ -577,7 +574,7 @@ def build_panels() -> list[dict]:
                 column("between_1s_and_5s", "number", "long", label="1s - 5s"),
                 column("between_5s_and_30s", "number", "long", label="5s - 30s"),
                 column("over_30s", "number", "long", label="> 30s"),
-                column("time_bucket", "date", "date", label="Time"),
+                TIME_COLUMN,
             ],
             x=24,
             y=22,
@@ -612,7 +609,7 @@ def build_panels() -> list[dict]:
             "Avg Duration by Workflow",
             (
                 f"{base}\n"
-                f"| STATS avg_duration_ms = AVG(duration) BY time_bucket = BUCKET({TIME_FIELD}, 50, ?_tstart, ?_tend), workflowId\n"
+                f"| STATS avg_duration_ms = AVG(duration) BY {TIME_BUCKET}, workflowId\n"
                 "| SORT time_bucket\n"
                 "| LIMIT 10000"
             ),
@@ -624,7 +621,7 @@ def build_panels() -> list[dict]:
                     label="Avg Duration",
                     column_format=DURATION_FORMAT,
                 ),
-                column("time_bucket", "date", "date", label="Time"),
+                TIME_COLUMN,
                 column("workflowId", "string", "keyword", label="Workflow"),
             ],
             x=0,
@@ -685,7 +682,7 @@ def build_panels() -> list[dict]:
             "recent-failures",
             "Recent Failures",
             (
-                f'{base}\n| WHERE status IN ("failed", "timed_out")\n'
+                f"{base}\n| WHERE {FAILED}\n"
                 f"| SORT {TIME_FIELD} DESC\n"
                 f"| KEEP workflowId, status, {TIME_FIELD}, duration\n"
                 "| LIMIT 20"
@@ -717,15 +714,13 @@ def build_panels() -> list[dict]:
                 f"{base}\n"
                 "| STATS "
                 "executions = COUNT(*), "
-                f"production_runs = COUNT(*) WHERE NOT {IS_TEST_RUN}, "
-                f'failures = COUNT(*) WHERE status IN ("failed", "timed_out") AND NOT {IS_TEST_RUN}, '
-                f'completed = COUNT(*) WHERE status == "completed" AND NOT {IS_TEST_RUN}, '
-                f"test_runs = COUNT(*) WHERE {IS_TEST_RUN}, "
-                f"avg_duration_ms = AVG(duration) WHERE NOT {IS_TEST_RUN}, "
-                f"p95_duration_ms = PERCENTILE(duration, 95) WHERE NOT {IS_TEST_RUN} "
+                f"failures = COUNT(*) WHERE {FAILED}, "
+                'completed = COUNT(*) WHERE status == "completed", '
+                "avg_duration_ms = AVG(duration), "
+                "p95_duration_ms = PERCENTILE(duration, 95) "
                 "BY workflowId\n"
-                "| EVAL success_rate = CASE(production_runs > 0, TO_DOUBLE(completed) / production_runs, 0.0)\n"
-                "| KEEP workflowId, executions, failures, completed, success_rate, test_runs, avg_duration_ms, p95_duration_ms\n"
+                "| EVAL success_rate = CASE(executions > 0, TO_DOUBLE(completed) / executions, 0.0)\n"
+                "| KEEP workflowId, executions, failures, completed, success_rate, avg_duration_ms, p95_duration_ms\n"
                 "| SORT executions DESC\n"
                 "| LIMIT 25"
             ),
@@ -741,7 +736,6 @@ def build_panels() -> list[dict]:
                     label="Success Rate",
                     column_format=PERCENT_FORMAT,
                 ),
-                column("test_runs", "number", "long", label="Test Runs"),
                 column(
                     "avg_duration_ms",
                     "number",
@@ -855,7 +849,6 @@ def main() -> None:
     DASHBOARD_PATH.parent.mkdir(parents=True, exist_ok=True)
     DASHBOARD_PATH.write_text(f"{json.dumps(dashboard, indent=2)}\n")
     print(f"Wrote {DASHBOARD_PATH}")
-    print(f"Panels: {len(build_panels())}")
 
 
 if __name__ == "__main__":
