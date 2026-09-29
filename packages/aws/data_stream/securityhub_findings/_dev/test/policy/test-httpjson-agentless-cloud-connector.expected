@@ -3,14 +3,10 @@ inputs:
         namespace: ep
       meta:
         package:
-            agentVersion: ^9.4.0
             name: aws
       name: test-httpjson-agentless-cloud-connector-aws
       streams:
-        - auth.aws:
-            role_arn: arn:aws:iam::123456789012:role/ElasticFederatedIdentity
-            use_cloud_connectors: true
-          config_version: 2
+        - config_version: 2
           cursor:
             last_execution_datetime:
                 value: '[[if (ne (len .last_response.body.Findings) 100)]][[.last_event.UpdatedAt]][[end]]'
@@ -35,6 +31,12 @@ inputs:
                 target: body.Filters.UpdatedAt
                 value: '[{ "Start": "[[formatDate (parseDate .cursor.last_execution_datetime "RFC3339") "2006-01-02T15"]]", "End": "2099-01-01T00" }]'
                 value_type: json
+            - set:
+                target: header.X-Amz-Date
+                value: '[[formatDate (now) "20060102T150405Z"]]'
+            - set:
+                target: header.Authorization
+                value: '[[$now := (now)]][[(sprintf "AWS4-HMAC-SHA256 Credential=/%s/us-east-1/securityhub/aws4_request, SignedHeaders=host;x-amz-date, Signature=%s" (formatDate ($now) "20060102") (hmac "sha256" (hexDecode (hmac "sha256" (hexDecode (hmac "sha256" (hexDecode (hmac "sha256" (hexDecode (hmac "sha256" "AWS4" (formatDate ($now) "20060102"))) "us-east-1")) "securityhub")) "aws4_request")) "AWS4-HMAC-SHA256\n" (formatDate ($now) "20060102T150405Z") "\n" (sprintf "%s/%s\n" (formatDate ($now) "20060102") "us-east-1/securityhub/aws4_request") (hash "sha256" "POST\n" "/findings\n" "\n" "host:securityhub.us-east-1.amazonaws.com\n" (sprintf "x-amz-date:%s\n\n" (formatDate ($now) "20060102T150405Z")) "host;x-amz-date\n" (hash "sha256" (sprintf `%s` .body)))))]]'
           request.url: https://securityhub.us-east-1.amazonaws.com/findings
           response.pagination:
             - set:
@@ -42,6 +44,11 @@ inputs:
                 fail_on_template_error: true
                 target: body.NextToken
                 value: '[[if (eq (len .last_response.body.Findings) 100)]][[.last_response.body.NextToken]][[end]]'
+            - delete:
+                target: header.Authorization
+            - set:
+                target: header.Authorization
+                value: '[[$now := (now)]][[(sprintf "AWS4-HMAC-SHA256 Credential=/%s/us-east-1/securityhub/aws4_request, SignedHeaders=host;x-amz-date, Signature=%s" (formatDate ($now) "20060102") (hmac "sha256" (hexDecode (hmac "sha256" (hexDecode (hmac "sha256" (hexDecode (hmac "sha256" (hexDecode (hmac "sha256" "AWS4" (formatDate ($now) "20060102"))) "us-east-1")) "securityhub")) "aws4_request")) "AWS4-HMAC-SHA256\n" (formatDate ($now) "20060102T150405Z") "\n" (sprintf "%s/%s\n" (formatDate ($now) "20060102") "us-east-1/securityhub/aws4_request") (hash "sha256" "POST\n" "/findings\n" "\n" "host:securityhub.us-east-1.amazonaws.com\n" (sprintf "x-amz-date:%s\n\n" (formatDate ($now) "20060102T150405Z")) "host;x-amz-date\n" (hash "sha256" (sprintf `%s` .body)))))]]'
           response.split:
             ignore_empty_value: true
             target: body.Findings
