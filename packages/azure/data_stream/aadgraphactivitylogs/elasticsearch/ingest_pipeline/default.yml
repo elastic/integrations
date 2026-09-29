@@ -575,6 +575,16 @@ processors:
       ignore_missing: true
       tag: fingerprint-id_8fd61902
   - set:
+      tag: set-cloud_account_id_a16bbfe4
+      field: cloud.account.id
+      copy_from: azure.tenant.id
+      ignore_empty_value: true
+      description: >-
+        Kept for backward compatibility. Per OTel semconv `cloud.account.id` means
+        the Azure subscription, which these tenant-scoped Graph logs do not carry;
+        correcting that is deferred to the next major version. Use `azure.tenant.id`
+        for the tenant.
+  - set:
       field: cloud.service.name
       value: 'Azure AD Graph'
       tag: set-cloud_service_name_46ab0d6f

@@ -80,7 +80,10 @@ An example event for `application_gateway` looks as following:
             "operation_name": "ApplicationGatewayAccess"
         },
         "resource": {
-            "name": "Application-Gateway-Name"
+            "name": "Application-Gateway-Name",
+            "id": "/SUBSCRIPTIONS/23103928-B2CF-472A-8CDB-0146E2849129/RESOURCEGROUPS/PEERINGTEST/PROVIDERS/MICROSOFT.NETWORK/APPLICATIONGATEWAYS/Application-Gateway-Name",
+            "group": "PEERINGTEST",
+            "provider": "MICROSOFT.NETWORK/APPLICATIONGATEWAYS"
         },
         "subscription_id": "23103928-B2CF-472A-8CDB-0146E2849129",
         "resource_group": {
@@ -189,19 +192,19 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | azure.application_gateway.policy.scope_name | The name of the object where the policy is applied. | keyword |
 | azure.application_gateway.transaction_id | Unique ID for a given transaction which helps group multiple rule violations that occurred within the same request. | keyword |
 | azure.correlation.id | Correlation ID for grouping related operations. | keyword |
-| azure.correlation_id | Deprecated: use `azure.correlation.id`. | alias |
+| azure.correlation_id | Legacy flat name for the correlation ID, still populated. Prefer `azure.correlation.id`. | keyword |
 | azure.resource.authorization_rule | Authorization rule. | keyword |
-| azure.resource.group | Deprecated: use `azure.resource_group.name`. | alias |
-| azure.resource.id | Deprecated: use `cloud.resource_id`. | alias |
+| azure.resource.group | Legacy name for the resource group, still populated. Prefer `azure.resource_group.name`. | keyword |
+| azure.resource.id | Legacy name for the ARM resource ID, still populated. Prefer `cloud.resource_id`. | keyword |
 | azure.resource.name | Resource name. | keyword |
 | azure.resource.namespace | Event Hub namespace parsed from the ARM resource ID. | keyword |
-| azure.resource.provider | Deprecated: use `azure.resource_provider.namespace`. | alias |
+| azure.resource.provider | Legacy name for the resource provider namespace, still populated. Prefer `azure.resource_provider.namespace`. | keyword |
 | azure.resource_group.name | Azure resource group name. | keyword |
 | azure.resource_id | Deprecated: use `cloud.resource_id`. | alias |
 | azure.resource_provider.namespace | Azure resource provider namespace (e.g., Microsoft.EventHub). | keyword |
 | azure.subscription_id | Azure subscription ID. | keyword |
 | azure.tenant.id | Azure tenant ID. | keyword |
-| azure.tenant_id | Deprecated: use `azure.tenant.id`. | alias |
+| azure.tenant_id | Legacy flat name for the tenant ID, still populated. Prefer `azure.tenant.id`. | keyword |
 | cloud.resource_id | Fully-qualified Azure Resource Manager (ARM) resource ID. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |

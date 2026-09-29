@@ -79,7 +79,10 @@ An example event for `springcloudlogs` looks as following:
     },
     "azure": {
         "resource": {
-            "name": "OBSSPRINCLOUD"
+            "name": "OBSSPRINCLOUD",
+            "id": "/SUBSCRIPTIONS/0E073EC1-C22F-4488-ADDE-DA35ED609CCD/RESOURCEGROUPS/TESTM/PROVIDERS/MICROSOFT.APPPLATFORM/SPRING/OBSSPRINCLOUD",
+            "group": "TESTM",
+            "provider": "MICROSOFT.APPPLATFORM/SPRING"
         },
         "springcloudlogs": {
             "category": "ApplicationConsole",
@@ -153,13 +156,13 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | azure.correlation.id | Correlation ID for grouping related operations. | keyword |
-| azure.correlation_id | Deprecated: use `azure.correlation.id`. | alias |
+| azure.correlation_id | Legacy flat name for the correlation ID, still populated. Prefer `azure.correlation.id`. | keyword |
 | azure.resource.authorization_rule | Authorization rule. | keyword |
-| azure.resource.group | Deprecated: use `azure.resource_group.name`. | alias |
-| azure.resource.id | Deprecated: use `cloud.resource_id`. | alias |
+| azure.resource.group | Legacy name for the resource group, still populated. Prefer `azure.resource_group.name`. | keyword |
+| azure.resource.id | Legacy name for the ARM resource ID, still populated. Prefer `cloud.resource_id`. | keyword |
 | azure.resource.name | Resource name. | keyword |
 | azure.resource.namespace | Event Hub namespace parsed from the ARM resource ID. | keyword |
-| azure.resource.provider | Deprecated: use `azure.resource_provider.namespace`. | alias |
+| azure.resource.provider | Legacy name for the resource provider namespace, still populated. Prefer `azure.resource_provider.namespace`. | keyword |
 | azure.resource_group.name | Azure resource group name. | keyword |
 | azure.resource_id | Deprecated: use `cloud.resource_id`. | alias |
 | azure.resource_provider.namespace | Azure resource provider namespace (e.g., Microsoft.EventHub). | keyword |
@@ -180,7 +183,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | azure.springcloudlogs.status | Status | keyword |
 | azure.subscription_id | Azure subscription ID. | keyword |
 | azure.tenant.id | Azure tenant ID. | keyword |
-| azure.tenant_id | Deprecated: use `azure.tenant.id`. | alias |
+| azure.tenant_id | Legacy flat name for the tenant ID, still populated. Prefer `azure.tenant.id`. | keyword |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloud.resource_id | Fully-qualified Azure Resource Manager (ARM) resource ID. | keyword |
 | data_stream.dataset | Data stream dataset name. | constant_keyword |

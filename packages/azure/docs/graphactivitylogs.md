@@ -128,7 +128,13 @@ An example event for `graphactivitylogs` looks as following:
         },
         "correlation": {
             "id": "f7839da0-e7d1-4e4f-985a-64937fbge347"
-        }
+        },
+        "resource": {
+            "id": "/TENANTS/AB30785B-417F-42A4-B5DC-8F9051718ACB/PROVIDERS/MICROSOFT.AADIAM",
+            "provider": "MICROSOFT.AADIAM"
+        },
+        "tenant_id": "ab30785b-417f-42a4-b5dc-8f9051718acb",
+        "correlation_id": "f7839da0-e7d1-4e4f-985a-64937fbge347"
     },
     "client": {
         "geo": {
@@ -233,7 +239,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 |---|---|---|
 | @timestamp | Event timestamp. | date |
 | azure.correlation.id | Correlation ID for grouping related operations. | keyword |
-| azure.correlation_id | Deprecated: use `azure.correlation.id`. | alias |
+| azure.correlation_id | Legacy flat name for the correlation ID, still populated. Prefer `azure.correlation.id`. | keyword |
 | azure.graphactivitylogs.category | Azure Event Category. For example, Graph Activity Logs has value `MicrosoftGraphActivityLogs`. | keyword |
 | azure.graphactivitylogs.operation_name | Operation name. | keyword |
 | azure.graphactivitylogs.operation_version | The Graph API version of the event. | keyword |
@@ -261,17 +267,17 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | azure.graphactivitylogs.properties.wids | Denotes the tenant-wide roles assigned to this user. | keyword |
 | azure.graphactivitylogs.result_signature | Result signature. | keyword |
 | azure.resource.authorization_rule | Authorization rule. | keyword |
-| azure.resource.group | Deprecated: use `azure.resource_group.name`. | alias |
-| azure.resource.id | Deprecated: use `cloud.resource_id`. | alias |
+| azure.resource.group | Legacy name for the resource group, still populated. Prefer `azure.resource_group.name`. | keyword |
+| azure.resource.id | Legacy name for the ARM resource ID, still populated. Prefer `cloud.resource_id`. | keyword |
 | azure.resource.name | Resource name. | keyword |
 | azure.resource.namespace | Event Hub namespace parsed from the ARM resource ID. | keyword |
-| azure.resource.provider | Deprecated: use `azure.resource_provider.namespace`. | alias |
+| azure.resource.provider | Legacy name for the resource provider namespace, still populated. Prefer `azure.resource_provider.namespace`. | keyword |
 | azure.resource_group.name | Azure resource group name. | keyword |
 | azure.resource_id | Deprecated: use `cloud.resource_id`. | alias |
 | azure.resource_provider.namespace | Azure resource provider namespace (e.g., Microsoft.EventHub). | keyword |
 | azure.subscription_id | Azure subscription ID. | keyword |
 | azure.tenant.id | Azure tenant ID. | keyword |
-| azure.tenant_id | Deprecated: use `azure.tenant.id`. | alias |
+| azure.tenant_id | Legacy flat name for the tenant ID, still populated. Prefer `azure.tenant.id`. | keyword |
 | client.geo.location | Longitude and latitude. | geo_point |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
 | cloud.resource_id | Fully-qualified Azure Resource Manager (ARM) resource ID. | keyword |

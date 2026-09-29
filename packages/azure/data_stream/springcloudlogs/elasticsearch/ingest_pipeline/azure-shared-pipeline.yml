@@ -104,21 +104,35 @@ processors:
       field: cloud.account.id
       copy_from: azure.subscription_id
       ignore_empty_value: true
-  - gsub:
-      tag: gsub_cloud_region_e5f4a3b2
-      field: cloud.region
-      pattern: '[^a-zA-Z0-9]'
-      replacement: ''
-      ignore_missing: true
-  - lowercase:
-      tag: lowercase_cloud_region_d2c1b0a9
-      field: cloud.region
-      ignore_missing: true
-  - remove:
-      tag: remove_cloud_region_global_f3e2d1c0
-      field: cloud.region
-      if: ctx.cloud?.region == 'global'
-      ignore_missing: true
+  # Backward compatibility (non-breaking): the pre-1.41.0 field names stay
+  # populated alongside the new semantic-convention names, so existing `_source`
+  # consumers, custom pipelines and saved objects keep working. Both sets are
+  # concrete fields; neither is an alias.
+  - set:
+      tag: set_legacy_azure_resource_id_7c1f9a24
+      field: azure.resource.id
+      copy_from: cloud.resource_id
+      ignore_empty_value: true
+  - set:
+      tag: set_legacy_azure_resource_group_2e8b5d13
+      field: azure.resource.group
+      copy_from: azure.resource_group.name
+      ignore_empty_value: true
+  - set:
+      tag: set_legacy_azure_resource_provider_9f4a6c07
+      field: azure.resource.provider
+      copy_from: azure.resource_provider.namespace
+      ignore_empty_value: true
+  - set:
+      tag: set_legacy_azure_tenant_id_5b3d8e91
+      field: azure.tenant_id
+      copy_from: azure.tenant.id
+      ignore_empty_value: true
+  - set:
+      tag: set_legacy_azure_correlation_id_1a7e4f62
+      field: azure.correlation_id
+      copy_from: azure.correlation.id
+      ignore_empty_value: true
 on_failure:
   - set:
       tag: set_event_kind_72b1902f
