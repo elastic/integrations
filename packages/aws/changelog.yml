@@ -1,4 +1,14 @@
 # newer versions go on top
+- version: "8.5.2"
+  changes:
+    - description: Remove `conditions.agent.version` from manifest; gate `auth.aws` on `>=9.4.0` with `semverSatisfies` and restore pre-7.0 hand-rolled SigV4 signing as fallback for the 6 HTTPJSON/CEL streams (guardduty, inspector, config, securityhub_findings, securityhub_findings_full_posture, securityhub_insights). Agents older than 9.4 regain access to the full integration; access-key credentials work on the restored fallback path. Relates to elastic/ingest-dev#9431.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/123456
+- version: "8.5.1"
+  changes:
+    - description: Add `{{semverSatisfies}}` template guard on `use_cloud_connectors` in all 20 metrics and CloudWatch log streams, preparing for eventual removal of the package-level `conditions.agent.version` once the 6 HTTPJSON/CEL `auth.aws` streams are migrated. Note - `conditions.agent.version` remains for now. Relates to elastic/ingest-dev#9431.
+      type: enhancement
+      link: https://github.com/elastic/integrations/pull/21680
 - version: "8.5.0"
   changes:
     - description: Enable Elastic Managed deployment for AWS Network Firewall metrics, including the Identity Federation setup option. Log collection remains agent-only.

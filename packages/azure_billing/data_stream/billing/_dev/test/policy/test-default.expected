@@ -1,0 +1,36 @@
+inputs:
+    - data_stream:
+        namespace: ep
+      meta:
+        package:
+            name: azure_billing
+      name: test-default-azure_billing
+      streams:
+        - add_cloud_metadata: true
+          client_id: your_client_id_here
+          client_secret: ${SECRET_0}
+          data_stream:
+            dataset: azure.billing
+          metricsets:
+            - billing
+          period: 24h
+          subscription_id: your_subscription_id_here
+          tenant_id: your_tenant_id_here
+      type: azure/metrics
+      use_output: default
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - metrics-azure.billing-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+secret_references:
+    - {}
