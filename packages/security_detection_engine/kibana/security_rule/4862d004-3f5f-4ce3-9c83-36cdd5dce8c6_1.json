@@ -1,0 +1,141 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies a high number of failed sudo password attempts on a macOS host within a short time window, using sudo messages collected by the Authentication data stream of the macOS Security Events integration. Repeated sudo authentication failures may indicate an adversary with access to a low-privileged account attempting to guess an administrator password to escalate privileges.",
+        "from": "now-9m",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Excessive Sudo Authentication Failures via macOS Security Events",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Excessive Sudo Authentication Failures via macOS Security Events\n\nOn macOS, `sudo` prompts for the invoking user's password and, after the configured number of incorrect attempts\n(three by default), logs a message of the form `<user> : <n> incorrect password attempts ; TTY=<tty> ; PWD=<dir> ;\nUSER=<target> ; COMMAND=<command>` to the unified log. This rule sums the reported attempt counts per host within the\nrule window and alerts when the total reaches the threshold. The invoking user, target user, TTY, and attempted commands\nare extracted from the messages and reported in the alert as `Esql.user_name_values`, `Esql.target_user_values`,\n`Esql.tty_values`, and `Esql.command_values`.\n\n### Possible investigation steps\n\n- Review `Esql.attempt_total`, `Esql.user_name_values`, and `Esql.command_values` in the alert to identify who was\nattempting to elevate, how many times, and what they were trying to run.\n- Determine whether the invoking account is expected to have sudo rights. Failures from an account that is not an\nadministrator suggest privilege escalation attempts rather than mistyped passwords.\n- Review the attempted commands for reconnaissance, persistence, or credential access tooling (for example, `dscl`,\n`launchctl`, `security`, `defaults`, shell interpreters, or scripts in user-writable locations).\n- Check whether a successful sudo invocation by the same user follows the failures in `logs-macos.authentication-*`,\nwhich would indicate the password was eventually guessed or known.\n- Review how the session originated: a local console session (`ttys` with a preceding login window login) versus an SSH\nsession, and correlate with SSH authentication alerts on the same host.\n- Correlate with other alerts or events from the same host and user during the same period.\n\n### False positive analysis\n\n- Administrators who mistype their password. The default three-attempt limit per invocation and the threshold make this\nunlikely from a single interactive session, but repeated invocations can approach it.\n- Scripts or automation that invoke `sudo` with stale or incorrect credentials in a loop.\n- Users who are not administrators habitually attempting `sudo`; consider tuning by user or excluding known cases if\nthis is expected behavior.\n\n### Response and remediation\n\n- Identify the invoking account and its session origin; if the account is not expected to use sudo or the session is\nremote and unexpected, terminate the session and disable or reset the account.\n- Review the attempted commands and the host for evidence of prior compromise of the low-privileged account.\n- Reset the administrator password if there is any indication it may have been guessed or exposed.\n- Review sudo configuration and administrator group membership on the host; remove unnecessary admin rights.\n- Escalate to the security operations team if additional hosts show similar patterns.\n",
+        "query": "FROM logs-macos.authentication-*\n| WHERE data_stream.dataset == \"macos.authentication\" and\n    macos.process.image_path LIKE \"*/sudo\" and\n    macos.event.message.description LIKE \"*incorrect password attempt*\"\n| GROK macos.event.message.description \"%{NOTSPACE:user_name} : %{NUMBER:attempt_count:int} incorrect password attempt%{DATA} ; TTY=%{NOTSPACE:tty} ; PWD=%{DATA:pwd} ; USER=%{NOTSPACE:target_user} ; COMMAND=%{GREEDYDATA:command}\"\n| STATS\n    Esql.failure_event_count = COUNT(*),\n    Esql.attempt_total = SUM(attempt_count),\n    Esql.user_name_values = VALUES(user_name),\n    Esql.target_user_values = VALUES(target_user),\n    Esql.tty_values = VALUES(tty),\n    Esql.command_values = VALUES(command)\n  BY host.id, host.name\n| WHERE Esql.attempt_total >= 10\n| KEEP host.id, host.name, Esql.failure_event_count, Esql.attempt_total, Esql.user_name_values, Esql.target_user_values, Esql.tty_values, Esql.command_values\n",
+        "references": [
+            "https://themittenmac.com/detecting-ssh-activity-via-process-monitoring/"
+        ],
+        "related_integrations": [
+            {
+                "package": "macos",
+                "version": "^1.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "attempt_count",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "command",
+                "type": "unknown"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "host.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "macos.event.message.description",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "macos.process.image_path",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "target_user",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "tty",
+                "type": "unknown"
+            },
+            {
+                "ecs": false,
+                "name": "user_name",
+                "type": "unknown"
+            }
+        ],
+        "risk_score": 21,
+        "rule_id": "4862d004-3f5f-4ce3-9c83-36cdd5dce8c6",
+        "setup": "## Setup\n\nThis rule requires data from the macOS Security Events integration.\nIntegration setup: https://www.elastic.co/docs/reference/security/prebuilt-rules/integration/macos/macos_security_events\nThis rule uses the Authentication data stream (`logs-macos.authentication-*`). The sudo messages it matches are\ncollected by the data stream's default configuration; no predicate or log-level changes are required.\n",
+        "severity": "low",
+        "tags": [
+            "Domain: Endpoint",
+            "OS: macOS",
+            "Platform: macOS",
+            "Use Case: Threat Detection",
+            "Tactic: Privilege Escalation",
+            "Tactic: Credential Access",
+            "Data Source: macOS Security Events",
+            "Rule Type: ESQL",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0004",
+                    "name": "Privilege Escalation",
+                    "reference": "https://attack.mitre.org/tactics/TA0004/"
+                },
+                "technique": [
+                    {
+                        "id": "T1548",
+                        "name": "Abuse Elevation Control Mechanism",
+                        "reference": "https://attack.mitre.org/techniques/T1548/",
+                        "subtechnique": [
+                            {
+                                "id": "T1548.003",
+                                "name": "Sudo and Sudo Caching",
+                                "reference": "https://attack.mitre.org/techniques/T1548/003/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0006",
+                    "name": "Credential Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0006/"
+                },
+                "technique": [
+                    {
+                        "id": "T1110",
+                        "name": "Brute Force",
+                        "reference": "https://attack.mitre.org/techniques/T1110/",
+                        "subtechnique": [
+                            {
+                                "id": "T1110.001",
+                                "name": "Password Guessing",
+                                "reference": "https://attack.mitre.org/techniques/T1110/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "4862d004-3f5f-4ce3-9c83-36cdd5dce8c6_1",
+    "type": "security-rule"
+}

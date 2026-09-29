@@ -26,16 +26,16 @@
         "query": "FROM packetbeat-*, auditbeat-*, filebeat-*, logs-network_traffic.flow-*, logs-panw.panos*, logs-pfsense.log-*, logs-zeek.connection-* METADATA _id\n| WHERE (\n    data_stream.dataset IN (\"network_traffic.flow\", \"zeek.connection\")\n    OR MV_CONTAINS(event.category, \"network\")\n    OR MV_CONTAINS(event.category, \"network_traffic\")\n  )\n  AND network.transport == \"udp\"\n  AND source.port == 4500\n  AND destination.port == 4500\n  AND CIDR_MATCH(source.ip, \"10.0.0.0/8\", \"172.16.0.0/12\", \"192.168.0.0/16\")\n  AND NOT CIDR_MATCH(\n    destination.ip,\n    \"10.0.0.0/8\", \"127.0.0.0/8\", \"169.254.0.0/16\", \"172.16.0.0/12\",\n    \"192.0.0.0/24\", \"192.0.0.0/29\", \"192.0.0.8/32\", \"192.0.0.9/32\",\n    \"192.0.0.10/32\", \"192.0.0.170/32\", \"192.0.0.171/32\", \"192.0.2.0/24\",\n    \"192.31.196.0/24\", \"192.52.193.0/24\", \"192.168.0.0/16\", \"192.88.99.0/24\",\n    \"224.0.0.0/4\", \"100.64.0.0/10\", \"192.175.48.0/24\", \"198.18.0.0/15\",\n    \"198.51.100.0/24\", \"203.0.113.0/24\", \"240.0.0.0/4\", \"::1\", \"FE80::/10\", \"FF00::/8\"\n  )\n  AND (\n    data_stream.dataset IS NULL\n    OR data_stream.dataset != \"panw.panos\"\n    OR event.action IS NULL\n    OR event.action NOT IN (\"flow_dropped\", \"flow_denied\")\n  )\n| EVAL Esql.dataset = COALESCE(data_stream.dataset, event.dataset)\n| STATS\n    Esql.first_seen = MIN(@timestamp),\n    Esql.last_seen = MAX(@timestamp),\n    Esql.event_count = COUNT(*),\n    Esql.source_ip_count = COUNT_DISTINCT(source.ip),\n    Esql.source_ip_values = MV_SLICE(VALUES(source.ip), 0, 100),\n    Esql.event_action_values = VALUES(event.action),\n    Esql.dataset_values = VALUES(Esql.dataset),\n    Esql.observer_name_values = MV_SLICE(VALUES(observer.name), 0, 20)\n  BY destination.ip\n| EVAL Esql.recent = DATE_DIFF(\"minute\", Esql.first_seen, NOW())\n| WHERE Esql.recent >= 0 AND Esql.recent <= 10\n| KEEP destination.ip, Esql.*\n",
         "related_integrations": [
             {
-                "package": "network_traffic",
-                "version": "^1.1.0"
-            },
-            {
                 "package": "panw",
                 "version": "^5.0.0"
             },
             {
                 "package": "pfsense",
                 "version": "^1.0.0"
+            },
+            {
+                "package": "network_traffic",
+                "version": "^1.1.0"
             },
             {
                 "package": "zeek",
@@ -45,8 +45,58 @@
         "required_fields": [
             {
                 "ecs": true,
+                "name": "@timestamp",
+                "type": "date"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
                 "name": "destination.ip",
                 "type": "ip"
+            },
+            {
+                "ecs": true,
+                "name": "destination.port",
+                "type": "long"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.category",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.dataset",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "network.transport",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "observer.name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": true,
+                "name": "source.port",
+                "type": "long"
             }
         ],
         "risk_score": 21,
