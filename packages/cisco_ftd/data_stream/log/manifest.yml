@@ -192,6 +192,22 @@ streams:
         show_user: true
         default:
           - /var/log/cisco-ftd.log
+      - name: exclude_files
+        type: text
+        title: Exclude files
+        multi: true
+        required: false
+        show_user: true
+        description: Regular expression patterns in [RE2 syntax](https://github.com/google/re2/wiki/Syntax) matching files to exclude from the logfile input. The default skips compressed files. See [exclude_files](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-log.html#filebeat-input-log-exclude-files) for details.
+        default:
+          - '\.gz$'
+      - name: ignore_older
+        type: text
+        title: Ignore older
+        multi: false
+        required: false
+        show_user: false
+        description: If set, the logfile input ignores files last modified before this duration. Valid units are `ns`, `us`, `ms`, `s`, `m`, and `h` (for example, `2h` or `5m`). Leave empty to read all matching files. See [ignore_older](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-log.html#filebeat-input-log-ignore-older) for details.
       - name: internal_zones
         type: text
         title: Internal Zones
@@ -250,3 +266,12 @@ streams:
         show_user: false
         default: UTC
         description: IANA time zone or time offset (e.g. `+0200`) to use when interpreting syslog timestamps without a time zone.
+      - name: custom
+        type: yaml
+        title: Custom configurations
+        multi: false
+        required: false
+        show_user: false
+        description: >
+          Additional logfile input settings. These settings are not validated and can override the options above. See [log input settings](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-log.html) for details.
+
