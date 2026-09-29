@@ -1,0 +1,116 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects shell syntax in NetScaler Pitboss records or in Citrix records that combine Pitboss, packet-engine, or core terminology with shell syntax. This may indicate that attacker-controlled data poisoned an appliance log consumed by a privileged script. The behavior includes CVE-2026-88771, but the detection is intended to identify similar NetScaler log-poisoning command-injection attempts without requiring a specific vulnerability, failure phrase, or command.",
+        "false_positives": [
+            "Authorized security testing may deliberately write a harmless forged Pitboss or PPE record to validate exposure or detection. Confirm the source and testing window. Normal Pitboss and packet-engine records should not contain shell separators, command substitution, pipes, or redirection."
+        ],
+        "from": "now-9m",
+        "index": [
+            "logs-citrix_adc.log-*"
+        ],
+        "language": "eql",
+        "license": "Elastic License v2",
+        "name": "Potential NetScaler Log Poisoning Command Injection Attempt",
+        "note": "## Triage and analysis\n\n### Investigating Potential NetScaler Log Poisoning Command Injection Attempt\n\nNetScaler emits Pitboss records for packet-engine process monitoring and recovery. Shell separators, command\nsubstitution, pipes, or redirection are not expected in these records. Their presence can indicate that\nattacker-controlled request or authentication data was written into an appliance log in a form that may later be\ninterpreted by a privileged log-processing, diagnostic, or core-handling script.\n\nCVE-2026-88771 is one example of this behavior. Its public exploit family forges a Pitboss/PPE failure record containing\nan `NSPPE` token and shell syntax that can later be processed by the root-running `ns_monuploadd_err.pl` script. This\nrule does not require that CVE's failure phrase, endpoint, parameter, filename, token ordering, or injected command.\n\n> **CVE-2026-88771 indicator note**:\n> During triage, specifically look for `pitboss PPE` followed by `unexpectedly died` or\n> `missed too many heartbeats`, a malformed `NSPPE` value, and shell syntax. Also review requests to\n> `/nf/auth/doAuthentication.do`, attacker-controlled `login` values, execution by `ns_monuploadd_err.pl`, and\n> suspicious `/var/core/NSPPE-*` artifacts. No single endpoint, path, or filename is sufficient to confirm exploitation.\n\n### Possible investigation steps\n\n- Preserve the complete `event.original`, remote syslog records, rotated logs, NetScaler Console results, support\n  bundles, packet-engine cores, snapshots, and relevant flow data before patching or rebooting.\n- Identify the source address and the targeted NetScaler or virtual server. In native `CONN_DELINK` records,\n  `destination.ip` can represent a backend service rather than the public virtual-server address; review the raw\n  `Vserver`, `NatIP`, and `Destination` values when present.\n- Review adjacent AAA/AAAD, authentication, login, and WAF records for the submitted username or login value, selected\n  request headers, action, response, and request or session identifiers. The `/nf/auth/doAuthentication.do` path is\n  useful context but is not proof of exploitation without the forged PPE structure.\n- Determine whether the value contains a shell separator (`;`, `&&`, `||`), command substitution (backticks or `$()`),\n  a pipe, or redirection, and repeatedly URL-decode percent-encoded values while preserving the original bytes.\n- Search remote and rotated NetScaler logs for the same value and source for at least 48 hours. A match can represent\n  an attempt even if `ns_monuploadd_err.pl` has not processed the poisoned record yet.\n- From the first poisoned-log timestamp, hunt forward at least 24\u201348 hours for root shell activity, unexpected\n  commands, file creation, configuration or startup changes, new listeners, packet-engine failure, restart, or HA\n  failover.\n- Review DNS, proxy, firewall, NetFlow/IPFIX, and Zeek telemetry for first-seen internet egress, payload retrieval,\n  long-lived outbound connections, or new internal SSH, SMB, RDP, WinRM, database, or management traffic from every\n  appliance identity, including NSIPs, SNIPs, HA peers, and translated egress addresses.\n- If the record resembles CVE-2026-88771, verify the exact NetScaler branch and build. Fixed versions include\n  14.1-73.37, 13.1-64.23, 14.1-73.37 FIPS, and 13.1-37.279 FIPS/NDcPP or later, subject to current Citrix upgrade\n  guidance.\n\n### False positive analysis\n\n- Confirm whether an authorized scanner, penetration test, synthetic log fixture, or incident-response exercise\n  generated the record.\n- Broad internet scanners and vulnerability probes can submit POST requests to `/nf/auth/doAuthentication.do` without\n  carrying the CVE-2026-88771 payload. Do not classify the endpoint path, request method, or source reputation alone as\n  exploitation.\n- A legitimate packet-engine crash or Pitboss recovery event can contain `PPE`, `NSPPE`, core-file terminology, and a\n  failure phrase, but should not contain the shell syntax required by this rule. Do not suppress genuine crashes\n  broadly.\n- If a benign test is confirmed, scope any exception to the controlled source and maintenance window rather than\n  excluding a failure phrase or shell token globally.\n\n### Response and remediation\n\n- Treat a match on an unpatched appliance as a potential root-compromise precursor. Preserve evidence, then isolate or\n  tightly restrict the appliance while maintaining an evidence-preserving management path.\n- Upgrade to a fixed build using current Citrix guidance. Patching prevents future exploitation but does not establish\n  that the appliance was not already compromised.\n- Run current NetScaler Console IOC and file-integrity checks. A clean scan does not prove absence of compromise.\n- If command execution is confirmed, rebuild from a trusted image and rotate administrative credentials, secrets,\n  certificates, tokens, and backend trust material stored on or transiting the appliance.\n- Restrict appliance egress and management access, and retain remote logs so a compromised appliance cannot erase the\n  only copy of the evidence.\n",
+        "query": "any where\n  data_stream.dataset == \"citrix_adc.log\" and\n  (\n    (\n      citrix.detail regex~ \"\"\".*pitboss.*(nsppe|ppe|packet.*engine|core).*\"\"\" and\n      citrix.detail like~ (\n        \"*;*\", \"*`*\", \"*$(*\", \"*&&*\", \"*||*\",\n        \"*%3b*\", \"*%60*\", \"*%7c*\", \"*%24%28*\", \"*%26%26*\", \"*%3e*\", \"*%3c*\"\n      )\n    ) or\n    (\n      citrix.device_event_class_id == \"PITBOSS\" and\n      citrix_adc.log.message like~ (\n        \"*;*\", \"*`*\", \"*$(*\", \"*|*\", \"*>*\", \"*<*\", \"*&&*\", \"*||*\",\n        \"*%3b*\", \"*%60*\", \"*%7c*\", \"*%24%28*\", \"*%26%26*\", \"*%3e*\", \"*%3c*\"\n      )\n    )\n  )\n",
+        "references": [
+            "https://support.citrix.com/external/article/CTX697096",
+            "https://labs.watchtowr.com/oh-look-the-foot-gun-went-off-again-citrix-netscaler-preauth-command-injection-cve-2026-88771/",
+            "https://www.cisa.gov/news-events/alerts/2026/09/27/critical-zero-day-vulnerabilities-exploited-citrix-netscaler-adc-gateway",
+            "https://www.elastic.co/docs/reference/integrations/citrix_adc"
+        ],
+        "related_integrations": [
+            {
+                "package": "citrix_adc",
+                "version": "^1.13.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "citrix.detail",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "citrix.device_event_class_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "citrix_adc.log.message",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "afaece21-6631-440b-87d3-1d0a2013576e",
+        "setup": "## Setup\n\nThis rule requires the Elastic Citrix ADC integration with the `citrix_adc.log` data stream enabled. Configure NetScaler\nto forward native syslog records to an Elastic Agent by TCP or UDP, or collect the corresponding log files. RFC 5424\nsyslog is recommended where supported. Include system/PPE and AAA/AAAD or authentication-related records so analysts\ncan recover the poisoned failure text and surrounding request context.\n\nThe integration stores the parsed inner Citrix record in `citrix.detail` and unmatched Pitboss message content in\n`citrix_adc.log.message`; the rule checks both because poisoned text can appear inside another Citrix event or as a\nPitboss-class record. Enable **Preserve original event** for investigation, forward logs to a remote collector, and\nretain rotated records for at least 48 hours because local evidence can be altered after root compromise and\nsome log consumers process records asynchronously. CVE-2026-88771 command execution can be delayed by up to 24 hours.\n\nThis rule analyzes appliance logs rather than encrypted request payloads. It can detect the poisoned record without TLS\ndecryption after the attacker-controlled value is logged, but it cannot prove that the vulnerable script executed the\ninjected command.\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Network",
+            "Platform: Citrix",
+            "Use Case: Network Security Monitoring",
+            "Use Case: Threat Detection",
+            "Use Case: Vulnerability",
+            "Tactic: Initial Access",
+            "Tactic: Execution",
+            "Data Source: Citrix ADC",
+            "Resources: Investigation Guide",
+            "Threat: Vulnerability Exploit",
+            "Rule Type: Event Correlation (EQL)",
+            "Vuln: CVE-2026-88771"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0001",
+                    "name": "Initial Access",
+                    "reference": "https://attack.mitre.org/tactics/TA0001/"
+                },
+                "technique": [
+                    {
+                        "id": "T1190",
+                        "name": "Exploit Public-Facing Application",
+                        "reference": "https://attack.mitre.org/techniques/T1190/"
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0002",
+                    "name": "Execution",
+                    "reference": "https://attack.mitre.org/tactics/TA0002/"
+                },
+                "technique": [
+                    {
+                        "id": "T1059",
+                        "name": "Command and Scripting Interpreter",
+                        "reference": "https://attack.mitre.org/techniques/T1059/",
+                        "subtechnique": [
+                            {
+                                "id": "T1059.004",
+                                "name": "Unix Shell",
+                                "reference": "https://attack.mitre.org/techniques/T1059/004/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "eql",
+        "version": 1
+    },
+    "id": "afaece21-6631-440b-87d3-1d0a2013576e_1",
+    "type": "security-rule"
+}

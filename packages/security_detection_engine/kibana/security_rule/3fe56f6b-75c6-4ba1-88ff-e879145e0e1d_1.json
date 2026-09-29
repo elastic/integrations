@@ -1,0 +1,160 @@
+{
+    "attributes": {
+        "alert_suppression": {
+            "duration": {
+                "unit": "m",
+                "value": 10
+            },
+            "group_by": [
+                "user.email",
+                "organization.id"
+            ],
+            "missing_fields_strategy": "suppress"
+        },
+        "author": [
+            "Elastic"
+        ],
+        "description": "Detects a single user performing at least two distinct organization discovery actions within a 10-minute window: listing users, exporting members, or viewing groups. Chaining these read actions maps membership and group structure and commonly precedes targeted role grants, invites, or data collection against high-value accounts.",
+        "false_positives": [
+            "Organization administrators, identity teams, and compliance reviewers may list users, export members, and view groups during audits, access reviews, or offboarding. Confirm the actor and change ticket before escalating."
+        ],
+        "from": "now-11m",
+        "interval": "10m",
+        "investigation_fields": {
+            "field_names": [
+                "user.email",
+                "organization.id",
+                "Esql.event_action_count_distinct",
+                "Esql.event_action_values",
+                "Esql.event_count",
+                "Esql.event_id_values",
+                "Esql.source_ip_values",
+                "Esql.user_agent_original_values",
+                "Esql.anthropic_audit_actor_type_values",
+                "Esql.user_id_values",
+                "Esql.timestamp_first_seen",
+                "Esql.timestamp_last_seen"
+            ]
+        },
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Anthropic Organization Member and Group Enumeration",
+        "note": "## Triage and analysis\n\n### Investigating Anthropic Organization Member and Group Enumeration\n\nOne email performed at least two distinct discovery actions among `org_users_listed`, `org_members_exported`, and\n`group_list_viewed` in a short window \u2014 reconnaissance of who is in the tenant.\n\nEscalate when scripting UA, follow-on invites/role grants/SSO changes/exports appear, or the actor is not an identity\nadmin. Close as FP for scheduled access reviews or onboarding console browsing with a ticket.\n\n#### Possible investigation steps\n\n- Read `Esql.event_action_values` to see which discovery actions combined; all three in one window is stronger than\n  two.\n- Inspect IP/UA/actor type for automation or unfamiliar clients.\n- Pivot the same actor/org for follow-on admin or project role grants, invites, SSO changes, or data exports.\n- Note: some `org_members_exported` without user email (e.g. certain `anthropic_actor` cases) are out of scope.\n\n### False positive analysis\n\n- Membership exports during access reviews commonly combine two of these actions briefly.\n\n### Response and remediation\n\n- On unauthorized recon: revoke sessions, review recent role and invite changes, and tighten least privilege on\n  identity read actions where possible.\n",
+        "query": "from logs-anthropic.audit-*\n| where\n    data_stream.dataset == \"anthropic.audit\" and\n    event.action in (\"org_members_exported\", \"org_users_listed\", \"group_list_viewed\") and\n    user.email is not null\n| stats\n    Esql.event_action_count_distinct = count_distinct(event.action),\n    Esql.event_action_values = values(event.action),\n    Esql.event_count = count(*),\n    Esql.event_id_values = values(event.id),\n    Esql.source_ip_values = values(source.ip),\n    Esql.user_agent_original_values = values(user_agent.original),\n    Esql.anthropic_audit_actor_type_values = values(anthropic.audit.actor.type),\n    Esql.user_id_values = values(user.id),\n    Esql.timestamp_first_seen = min(@timestamp),\n    Esql.timestamp_last_seen = max(@timestamp)\n  by user.email, organization.id\n| where Esql.event_action_count_distinct >= 2\n| keep user.email, organization.id, Esql.*\n",
+        "references": [
+            "https://platform.claude.com/docs/en/api/compliance/activities/list"
+        ],
+        "related_integrations": [
+            {
+                "package": "anthropic",
+                "version": "^1.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "@timestamp",
+                "type": "date"
+            },
+            {
+                "ecs": false,
+                "name": "anthropic.audit.actor.type",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "organization.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": true,
+                "name": "user.email",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user.id",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user_agent.original",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "3fe56f6b-75c6-4ba1-88ff-e879145e0e1d",
+        "severity": "medium",
+        "tags": [
+            "Domain: GenAI",
+            "Platform: Anthropic",
+            "Data Source: Anthropic Audit Logs",
+            "Use Case: Threat Detection",
+            "Use Case: UEBA",
+            "Resources: Investigation Guide",
+            "Rule Type: ES|QL",
+            "Tactic: Discovery"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0007",
+                    "name": "Discovery",
+                    "reference": "https://attack.mitre.org/tactics/TA0007/"
+                },
+                "technique": [
+                    {
+                        "id": "T1069",
+                        "name": "Permission Groups Discovery",
+                        "reference": "https://attack.mitre.org/techniques/T1069/",
+                        "subtechnique": [
+                            {
+                                "id": "T1069.003",
+                                "name": "Cloud Groups",
+                                "reference": "https://attack.mitre.org/techniques/T1069/003/"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "T1087",
+                        "name": "Account Discovery",
+                        "reference": "https://attack.mitre.org/techniques/T1087/",
+                        "subtechnique": [
+                            {
+                                "id": "T1087.004",
+                                "name": "Cloud Account",
+                                "reference": "https://attack.mitre.org/techniques/T1087/004/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "3fe56f6b-75c6-4ba1-88ff-e879145e0e1d_1",
+    "type": "security-rule"
+}

@@ -1,0 +1,119 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies the registration of a launch agent or launch daemon whose property list (plist) filename begins with a dot, using launch item registration messages collected by the macOS Security Events integration. An adversary may establish persistence by installing a launch agent or daemon that executes at login or boot; plist files with filenames starting with a dot are hidden from default directory listings and are particularly suspicious.",
+        "from": "now-9m",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Persistence via a Hidden Plist Filename via macOS Security Events",
+        "note": "## Triage and analysis\n\n> **Disclaimer**:\n> This investigation guide was created using generative AI technology and has been reviewed to improve its accuracy and relevance. While every effort has been made to ensure its quality, we recommend validating the content and adapting it to suit your specific environment and operational needs.\n\n### Investigating Persistence via a Hidden Plist Filename via macOS Security Events\n\nOn macOS, launch agents and launch daemons provide persistence by running a program defined in a property list (plist) file located in a LaunchAgents or LaunchDaemons directory. When a launch item is registered, the BackgroundTaskManagement subsystem logs its path, type, and target executable to the unified log. Adversaries name the plist with a leading dot (for example `.com.evil.agent.plist`) so it is hidden from default directory listings while still functioning as persistence. This rule alerts when a registered launch item's plist filename begins with a dot, and reports the plist path, item type, and target executable extracted from the message.\n\n### Possible investigation steps\n\n- Review `Esql.plist_path`, `Esql.item_type`, and `Esql.executable` in the alert to identify the hidden plist, whether it is a launch agent (per-user) or launch daemon (system-wide), and what it runs.\n- Retrieve and examine the plist and its target executable on the host. Determine whether the program is signed, where it is located, and what it does; executables in user-writable or temporary locations are higher risk.\n- Determine how and when the plist was created, and by which process, using Elastic Defend file telemetry if available.\n- Check whether the label or filename masquerades as a legitimate Apple or vendor service.\n- Review other alerts and activity for the host and associated user during the same period.\n\n### False positive analysis\n\n- Some legitimate software and management tooling create dot-prefixed plists as part of atomic file writes or internal bookkeeping.\n- Verify the executable and signing status before escalating; recurring benign cases can be excluded by plist path or executable.\n\n### Response and remediation\n\n- If the launch item is not legitimate, unload it with `launchctl bootout` and remove the plist, then remove or quarantine the target executable.\n- Investigate the host for related persistence, the initial access vector, and any activity performed by the launch item's program.\n- Reset credentials for the affected user and review the host for additional compromise.\n- Escalate to the security operations team if additional hosts show similar patterns.\n",
+        "query": "FROM logs-macos.process_execution_monitoring-* metadata _id, _version, _index\n| WHERE data_stream.dataset == \"macos.process_execution_monitoring\" and\n    macos.event.message.description LIKE \"*effectiveItemDisposition*\" and\n    (macos.event.message.description LIKE \"*url=file://*/Library/LaunchAgents/.*\" or\n        macos.event.message.description LIKE \"*url=file://*/Library/LaunchDaemons/.*\")\n| GROK macos.event.message.description \"url=file://%{DATA:Esql.plist_path}, config\"\n| GROK macos.event.message.description \"type=%{DATA:Esql.item_type},\"\n| GROK macos.event.message.description \"BTMConfigExecutablePath = \\\"%{DATA:Esql.executable}\\\"\"\n| WHERE Esql.plist_path RLIKE \".*/Library/Launch(Agents|Daemons)/\\\\..*\\\\.plist\"\n| KEEP _id, _version, _index, @timestamp, host.name, Esql.plist_path, Esql.item_type, Esql.executable, macos.event.message.description\n",
+        "references": [
+            "https://www.welivesecurity.com/2022/07/19/i-see-what-you-did-there-look-cloudmensis-macos-spyware/",
+            "https://developer.apple.com/library/archive/documentation/MacOSX/Conceptual/BPSystemStartup/Chapters/CreatingLaunchdJobs.html"
+        ],
+        "related_integrations": [
+            {
+                "package": "macos",
+                "version": "^1.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": false,
+                "name": "macos.event.message.description",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "fdff275f-83c2-4857-bedf-aee88f3442ed",
+        "setup": "## Setup\n\nThis rule requires data from the macOS Security Events integration.\nIntegration setup instructions: [macOS Security Events](https://www.elastic.co/docs/reference/security/prebuilt-rules/integration/macos/macos_security_events)\n",
+        "severity": "medium",
+        "tags": [
+            "OS: macOS",
+            "Use Case: Threat Detection",
+            "Tactic: Persistence",
+            "Tactic: Defense Evasion",
+            "Data Source: macOS Security Events",
+            "Resources: Investigation Guide",
+            "Rule Type: ESQL",
+            "Platform: macOS",
+            "Domain: Endpoint"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1547",
+                        "name": "Boot or Logon Autostart Execution",
+                        "reference": "https://attack.mitre.org/techniques/T1547/",
+                        "subtechnique": [
+                            {
+                                "id": "T1547.011",
+                                "name": "Plist Modification",
+                                "reference": "https://attack.mitre.org/techniques/T1547/011/"
+                            }
+                        ]
+                    },
+                    {
+                        "id": "T1543",
+                        "name": "Create or Modify System Process",
+                        "reference": "https://attack.mitre.org/techniques/T1543/",
+                        "subtechnique": [
+                            {
+                                "id": "T1543.001",
+                                "name": "Launch Agent",
+                                "reference": "https://attack.mitre.org/techniques/T1543/001/"
+                            },
+                            {
+                                "id": "T1543.004",
+                                "name": "Launch Daemon",
+                                "reference": "https://attack.mitre.org/techniques/T1543/004/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0005",
+                    "name": "Defense Evasion",
+                    "reference": "https://attack.mitre.org/tactics/TA0005/"
+                },
+                "technique": [
+                    {
+                        "id": "T1564",
+                        "name": "Hide Artifacts",
+                        "reference": "https://attack.mitre.org/techniques/T1564/",
+                        "subtechnique": [
+                            {
+                                "id": "T1564.001",
+                                "name": "Hidden Files and Directories",
+                                "reference": "https://attack.mitre.org/techniques/T1564/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "fdff275f-83c2-4857-bedf-aee88f3442ed_1",
+    "type": "security-rule"
+}

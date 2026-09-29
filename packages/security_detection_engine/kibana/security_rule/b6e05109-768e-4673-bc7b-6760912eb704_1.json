@@ -1,0 +1,152 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies the first MQTT relationship from an internal source to an external broker that was not observed during the previous 14 days. MQTT is commonly used by IoT and messaging applications, but malware including BambooToken, IOCONTROL, MQsTTang, and WailingCrab has used publish/subscribe traffic for command and control.",
+        "false_positives": [
+            "New or infrequently used IoT devices, telemetry agents, application messaging services, test environments, and broker migrations can create legitimate first-seen relationships. Sensor onboarding or retention gaps can also cause existing relationships to appear new."
+        ],
+        "from": "now-9m",
+        "history_window_start": "now-14d",
+        "index": [
+            "logs-panw.panos*",
+            "logs-suricata.eve-*",
+            "logs-zeek.connection-*"
+        ],
+        "interval": "5m",
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "source.ip",
+                "source.port",
+                "destination.ip",
+                "destination.port",
+                "destination.as.organization.name",
+                "network.protocol",
+                "network.transport",
+                "network.application",
+                "network.community_id",
+                "data_stream.dataset",
+                "observer.name"
+            ]
+        },
+        "language": "kuery",
+        "license": "Elastic License v2",
+        "name": "First Seen External MQTT Broker Connection",
+        "new_terms_fields": [
+            "source.ip",
+            "destination.ip"
+        ],
+        "note": "## Triage and analysis\n\n### Investigating First Seen External MQTT Broker Connection\n\nMQTT uses a broker to relay messages between publishers and subscribers. This architecture is useful for legitimate IoT\nand application messaging, but it also allows malware to receive commands and return results without connecting directly\nto an operator. This rule surfaces the first protocol-decoded or application-identified MQTT relationship between an\ninternal source and an external destination within the 14-day new-terms history window.\n\nThe alert does not prove malicious command and control. Suricata and Zeek require plaintext MQTT or traffic decrypted\nbefore inspection. PAN-OS coverage depends on App-ID identifying the traffic as `mqtt-base`; encrypted sessions may only\nbe identified as SSL when decryption is unavailable.\n\n### Possible investigation steps\n\n- Identify the asset, owner, operating system, and expected role of `source.ip`. MQTT from servers, workstations, routers,\n  firewalls, build systems, and other assets that are not approved MQTT clients warrants additional scrutiny.\n- Determine whether `destination.ip` belongs to an approved private or public MQTT broker. Review destination reputation,\n  ASN, geolocation, passive DNS, and other internal clients communicating with it.\n- For Suricata events, inspect `suricata.eve.mqtt` for CONNECT client IDs, credentials, subscribed topics, published\n  topics, payloads, keepalive values, and broker response codes. Review equivalent protocol details in the originating\n  network sensor when available.\n- Look for GUID- or UUID-scoped topics and BambooToken-associated suffixes such as `/Plugin`, `/removePlugin`,\n  `/unPlugin`, and `/LUA`. A `Global` publication containing `online` or `offline` status and a `gid` increases confidence.\n- Review the connection duration, reconnect cadence, bytes transferred, and additional ports contacted on the\n  destination. BambooToken infrastructure has included TCP ports 1883, 2883, and 8883.\n- Correlate with endpoint telemetry for unexpected MQTT-capable processes, DLL side-loading, shell execution, discovery,\n  file transfer, or persistence. For BambooToken, investigate `OnKeySrv.exe`, `OnKeyToken_KEB.dll`, and nearby\n  `OnKeySrv.dat` or `OnKeySvr.dat` files.\n\n### False positive analysis\n\n- Confirm newly deployed or intermittently active IoT, telemetry, messaging, and monitoring applications with the asset\n  owner.\n- Validate broker migrations, disaster-recovery tests, development environments, and vendor-managed services.\n- Scope exceptions to an approved source asset and broker pair where possible. Avoid excluding all MQTT traffic or an\n  entire public broker globally.\n\n### Response and remediation\n\n- Isolate the source if the process, topic structure, payload, or destination indicates command and control.\n- Block unauthorized broker access and preserve MQTT transactions, flow metadata, DNS history, and endpoint process\n  evidence.\n- Remove confirmed malware and persistence, rotate credentials available to the affected system, and search for the same\n  client ID, topic hierarchy, destination, and artifacts across the environment.\n- Establish an inventory of approved MQTT clients, brokers, ports, and topic prefixes, and restrict outbound MQTT where\n  operationally feasible.\n",
+        "query": "(\n  data_stream.dataset:suricata.eve and\n  suricata.eve.event_type:mqtt and\n  network.protocol:mqtt or\n  data_stream.dataset:zeek.connection and\n  network.protocol:mqtt or\n  data_stream.dataset:panw.panos and\n  network.application:mqtt-base\n) and\n  network.transport:tcp and\n  source.ip:(10.0.0.0/8 or 172.16.0.0/12 or 192.168.0.0/16 or \"FC00::/7\") and\n  destination.ip:(\n    * and not (\n      10.0.0.0/8 or 100.64.0.0/10 or 127.0.0.0/8 or 169.254.0.0/16 or 172.16.0.0/12 or\n      192.0.0.0/24 or 192.0.0.0/29 or 192.0.0.10/32 or 192.0.0.170/32 or 192.0.0.171/32 or\n      192.0.0.8/32 or 192.0.0.9/32 or 192.0.2.0/24 or 192.168.0.0/16 or 192.175.48.0/24 or\n      192.31.196.0/24 or 192.52.193.0/24 or 192.88.99.0/24 or 198.18.0.0/15 or\n      198.51.100.0/24 or 203.0.113.0/24 or 224.0.0.0/4 or 240.0.0.0/4 or \"::1\" or\n      \"FC00::/7\" or \"FE80::/10\" or \"FF00::/8\"\n    )\n  ) and\n  not (\n    data_stream.dataset:panw.panos and (\n      event.action:(flow_denied or flow_dropped) or\n      network.application:(incomplete or insufficient-data or not-applicable)\n    )\n  )\n",
+        "references": [
+            "https://www.lumen.com/blog/en-us/the-banana-stand-brokering-and-managing-infections-across-asia-using-mqtt",
+            "https://docs.suricata.io/en/latest/output/eve/eve-json-format.html#event-type-mqtt",
+            "https://www.elastic.co/docs/reference/integrations/suricata",
+            "https://docs.zeek.org/en/current/scripts/base/protocols/mqtt/main.zeek.html",
+            "https://www.elastic.co/docs/reference/integrations/zeek",
+            "https://www.elastic.co/docs/reference/integrations/panw"
+        ],
+        "related_integrations": [
+            {
+                "package": "panw",
+                "version": "^5.2.0"
+            },
+            {
+                "package": "suricata",
+                "version": "^2.24.0"
+            },
+            {
+                "package": "zeek",
+                "version": "^5.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "destination.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "network.application",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "network.protocol",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "network.transport",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.ip",
+                "type": "ip"
+            },
+            {
+                "ecs": false,
+                "name": "suricata.eve.event_type",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 47,
+        "rule_id": "b6e05109-768e-4673-bc7b-6760912eb704",
+        "setup": "## Setup\n\nThis rule requires one or more of the following integrations:\n\n- Suricata with the MQTT application-layer parser and MQTT EVE output enabled.\n- Zeek connection logs with the MQTT analyzer enabled so `network.protocol` is populated with `mqtt`.\n- PAN-OS traffic logs with App-ID enabled and MQTT identified as `mqtt-base`.\n\nPlace network sensors where they observe client-to-broker traffic before source NAT so internal client addresses remain\nvisible. Suricata and Zeek must observe plaintext MQTT or receive decrypted traffic. PAN-OS must identify the session with\nthe MQTT App-ID; without decryption, MQTT over TLS may only be identified as SSL.\n",
+        "severity": "medium",
+        "tags": [
+            "Domain: Network",
+            "Use Case: Network Security Monitoring",
+            "Use Case: Threat Detection",
+            "Tactic: Command and Control",
+            "Data Source: PAN-OS Logs",
+            "Data Source: Suricata Logs",
+            "Data Source: Zeek",
+            "Rule Type: New Terms",
+            "Resources: Investigation Guide"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0011",
+                    "name": "Command and Control",
+                    "reference": "https://attack.mitre.org/tactics/TA0011/"
+                },
+                "technique": [
+                    {
+                        "id": "T1071",
+                        "name": "Application Layer Protocol",
+                        "reference": "https://attack.mitre.org/techniques/T1071/",
+                        "subtechnique": [
+                            {
+                                "id": "T1071.005",
+                                "name": "Publish/Subscribe Protocols",
+                                "reference": "https://attack.mitre.org/techniques/T1071/005/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "new_terms",
+        "version": 1
+    },
+    "id": "b6e05109-768e-4673-bc7b-6760912eb704_1",
+    "type": "security-rule"
+}
