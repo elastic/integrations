@@ -26,24 +26,23 @@ state:
   {{#each dimensions as |dim|}}
     - {{dim}}
   {{/each}}
-  # Hard cap on backfill depth. The Analytics API supports up to 365 days for
-  # daily granularity with long-window dimensions (model, provider, etc.).
-  # Provider and similar dimensions cap the query *span* at 31 days, but the
-  # windowing loop issues day-at-a-time requests, so historical depth is unlimited
-  # for these dimensions as well.
+  # Hard cap on backfill depth (365 days, the API limit for daily granularity).
   max_lookback: "8760h"
   # Each request covers 30 days at daily granularity (safe under the 31-day span limit).
+  # If the API reports a truncated result, the span is halved (down to 24h) and
+  # persisted in the cursor.
   window_span: "720h"
 redact:
   fields:
     - management_api_key
 program: |
   // Usage stream: daily snapshot metrics (request count, tokens, cost) grouped by
-  // configured dimensions. Windowing issues 30-day chunks to stay within the Analytics
-  // API's 31-day per-query span limit. The cursor stores raw RFC3339 timestamps so
+  // configured dimensions. Windowing issues 30-day chunks (halved when the API reports
+  // a truncated result) to stay within the Analytics API's 31-day per-query span limit. The cursor stores raw RFC3339 timestamps so
   // today's in-progress bucket is re-polled every interval; dashboards use MAX→SUM
   // to aggregate across multiple documents for the same day.
   state.with(
+    state.?cursor.span.optMap(sp, duration(sp)).orValue(duration(state.window_span)).as(span,
     (now - duration(state.finalization_delay)).as(today,
         max(
           state.?cursor.last_end.optMap(ts, timestamp(ts)).orValue(
@@ -54,10 +53,11 @@ program: |
           {
             "today": today,
             "start": start,
-            "end": min(start + duration(state.window_span), today),
+            "span": span,
+            "end": min(start + span, today),
           }
         )
-      ).as(w,
+      )).as(w,
         // If we've caught up to today, stop and wait for the next scheduled run.
         // Note: start is truncated to DateOnly (midnight) on each read, so it is
         // always < today (raw timestamp) for the current day — today's running
@@ -102,20 +102,36 @@ program: |
           }).do_request().as(resp,
             resp.StatusCode == 200 ?
               resp.Body.decode_json().as(body,
-                body.?data.?data.orValue([]).as(rows,
-                  // Emit a sentinel event for empty windows so the cursor advances
-                  // and backfill is not stalled. The drop_event processor below
-                  // discards it before ingest.
-                  (size(rows) == 0 ?
-                    [{"message": "{\"_fake\":true}"}]
-                  :
-                    rows.map(row, {"message": row.encode_json()})
-                  ).as(events, {
-                    "events": events,
-                    "cursor": {"last_end": w.end.format(time_layout.RFC3339)},
-                    "want_more": w.end < w.today,
-                  })
-                )
+                // If the API truncated the result at the row limit, discard it and retry
+                // the same window with half the span so no rows are silently lost. At the
+                // minimum span the (possibly truncated) rows are ingested as-is.
+                (body.?data.?metadata.?truncated.orValue(false) && (w.end - w.start).getSeconds() > 86400) ?
+                  {
+                    "events": [],
+                    "cursor": {
+                      "last_end": w.start.format(time_layout.RFC3339),
+                      "span": string(max((w.end - w.start).getSeconds() / 2 / 86400 * 86400, 86400)) + "s",
+                    },
+                    "want_more": true,
+                  }
+                :
+                  body.?data.?data.orValue([]).as(rows,
+                    // Emit a sentinel event for empty windows so the cursor advances
+                    // and backfill is not stalled. The drop_event processor below
+                    // discards it before ingest.
+                    (size(rows) == 0 ?
+                      [{"message": "{\"_fake\":true}"}]
+                    :
+                      rows.map(row, {"message": row.encode_json()})
+                    ).as(events, {
+                      "events": events,
+                      "cursor": {
+                        "last_end": w.end.format(time_layout.RFC3339),
+                        "span": string(w.span.getSeconds()) + "s",
+                      },
+                      "want_more": w.end < w.today,
+                    })
+                  )
               )
             :
               {

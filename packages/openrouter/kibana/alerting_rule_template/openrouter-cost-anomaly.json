@@ -15,10 +15,10 @@
         },
         "params": {
             "searchType": "esqlQuery",
-            "timeWindowSize": 24,
+            "timeWindowSize": 48,
             "timeWindowUnit": "h",
             "esqlQuery": {
-                "esql": "// Alert when daily total_usage (in USD credits) exceeds a threshold.\n// Adjust the threshold in the final WHERE clause to match your budget.\n// Default: $50.00 per day.\n// MAX→SUM deduplicates re-polled documents for the current day.\n// The inner GROUP BY includes all supported dimension fields so the dedup is correct\n// regardless of which dimensions the user configured (unused fields are null).\nFROM metrics-openrouter.usage-*\n| WHERE openrouter.usage.total_usage IS NOT NULL\n| STATS _v = MAX(openrouter.usage.total_usage)\n  BY @timestamp, openrouter.usage.model, openrouter.usage.provider,\n     openrouter.usage.variant, openrouter.usage.api_key_id,\n     openrouter.usage.workspace, openrouter.usage.app, openrouter.usage.user\n| STATS daily_cost_usd = SUM(_v)\n| WHERE daily_cost_usd > 50"
+                "esql": "// Alert when daily total_usage (in USD credits) exceeds a threshold.\n// Adjust the threshold in the final WHERE clause to match your budget.\n// Default: $50.00 per day.\n// The rule looks back 48h because day buckets are timestamped at midnight and\n// their final totals arrive after the day ends; each day is evaluated separately.\n// MAX→SUM deduplicates re-polled documents for the current day.\n// The inner GROUP BY includes all supported dimension fields so the dedup is correct\n// regardless of which dimensions the user configured (unused fields are null).\nFROM metrics-openrouter.usage-*\n| WHERE openrouter.usage.total_usage IS NOT NULL\n| STATS _v = MAX(openrouter.usage.total_usage)\n  BY @timestamp, openrouter.usage.model, openrouter.usage.provider,\n     openrouter.usage.variant, openrouter.usage.api_key_id,\n     openrouter.usage.workspace, openrouter.usage.app, openrouter.usage.user\n| STATS daily_cost_usd = SUM(_v) BY day = @timestamp\n| WHERE daily_cost_usd > 50"
             },
             "groupBy": "row",
             "timeField": "@timestamp"

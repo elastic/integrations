@@ -88,6 +88,12 @@ After deploying, verify data is flowing in **Discover**:
 
 The integration issues windowed requests (30 days for `usage`, 24 hours for `performance`)
 to stay safely within the 31-day span limit regardless of dimension selection.
+If the API reports a truncated result (`metadata.truncated`), the window is halved and
+retried (down to 1 day for `usage`, 1 hour for `performance`). If a result is still
+truncated at the minimum window, the returned rows are ingested and the remainder is lost;
+reduce the number of distinct dimension values or use fewer dimensions.
+
+Supported dimensions are `model`, `variant`, `api_key_id`, `workspace`, `app`, `user`, and `provider`.
 
 ## Troubleshooting
 
@@ -170,6 +176,7 @@ always use `AVG` or `MAX` in ES|QL queries.
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |  |  |
 | input.type | Type of input that generated the event. | keyword |  |  |
 | openrouter.performance.api_key_id | API key identifier when grouped by api_key_id. | keyword |  |  |
+| openrouter.performance.app | Application identifier when grouped by app. | keyword |  |  |
 | openrouter.performance.cache_hit_rate | Fraction of requests served from prompt cache (0.0–1.0). This is a rate metric — do not sum across time windows. | double | percent | gauge |
 | openrouter.performance.guardrail_invoked_rate | Fraction of requests for which a guardrail was invoked (0.0–1.0). This is a rate metric — do not sum across time windows. | double | percent | gauge |
 | openrouter.performance.model | LLM model identifier (e.g. openai/gpt-4o). | keyword |  |  |
@@ -196,6 +203,7 @@ always use `AVG` or `MAX` in ES|QL queries.
 | openrouter.performance.p99_ttfb | 99th-percentile time-to-first-token (TTFT) in milliseconds. This is a rate metric — do not sum across time windows. | double | ms | gauge |
 | openrouter.performance.provider | Provider routing the request (e.g. OpenAI, Anthropic). | keyword |  |  |
 | openrouter.performance.response_cached_rate | Fraction of responses that were cached (0.0–1.0). This is a rate metric — do not sum across time windows. | double | percent | gauge |
+| openrouter.performance.user | User identifier when grouped by user. | keyword |  |  |
 | openrouter.performance.variant | Model variant identifier when grouped by variant. | keyword |  |  |
 | openrouter.performance.workspace | Workspace identifier when grouped by workspace. | keyword |  |  |
 
@@ -216,7 +224,7 @@ Alert rule templates require Elastic Stack version 9.2.0 or later.
 |---|---|
 | [OpenRouter] Cache Hit Rate Drop | Alerts when the average cache hit rate across all models drops below a configurable threshold. A sudden drop in cache hit rate can signal prompt changes, model switching, or cache invalidation events that increase effective token cost. |
 | [OpenRouter] Daily Cost Anomaly | Alerts when daily cost across all models and providers exceeds a configurable threshold. Catches unexpected spend spikes from runaway workloads or new model adoption before they accumulate. |
-| [OpenRouter] Provider Latency Regression | Alerts when the p99 end-to-end latency for any provider exceeds a configurable threshold. Detects provider-side degradation before it impacts end-user experience. |
+| [OpenRouter] Model Latency Regression | Alerts when the p99 end-to-end latency for any model exceeds a configurable threshold. Detects model or provider degradation before it impacts end-user experience. Works with the default dimensions (model, api_key_id). To alert per provider instead, add 'provider' to the performance stream dimensions. |
 
 </details>
 

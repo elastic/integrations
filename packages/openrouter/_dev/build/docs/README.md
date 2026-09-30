@@ -87,6 +87,12 @@ After deploying, verify data is flowing in **Discover**:
 
 The integration issues windowed requests (30 days for `usage`, 24 hours for `performance`)
 to stay safely within the 31-day span limit regardless of dimension selection.
+If the API reports a truncated result (`metadata.truncated`), the window is halved and
+retried (down to 1 day for `usage`, 1 hour for `performance`). If a result is still
+truncated at the minimum window, the returned rows are ingested and the remainder is lost;
+reduce the number of distinct dimension values or use fewer dimensions.
+
+Supported dimensions are `model`, `variant`, `api_key_id`, `workspace`, `app`, `user`, and `provider`.
 
 ## Troubleshooting
 

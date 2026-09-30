@@ -85,6 +85,16 @@ processors:
       target_field: openrouter.performance.workspace
       ignore_missing: true
       tag: rename_workspace
+  - rename:
+      field: json.app
+      target_field: openrouter.performance.app
+      ignore_missing: true
+      tag: rename_app
+  - rename:
+      field: json.user
+      target_field: openrouter.performance.user
+      ignore_missing: true
+      tag: rename_user
   # Performance metrics are returned as floating-point numbers.
   - convert:
       field: json.p50_latency
@@ -260,6 +270,12 @@ processors:
       value: preserve_original_event
       allow_duplicates: false
       if: ctx.error?.message != null
+  - remove:
+      field: event.original
+      tag: remove_event_original
+      ignore_missing: true
+      if: ctx.tags == null || !ctx.tags.contains('preserve_original_event')
+      description: Removes `event.original` unless `preserve_original_event` is enabled or an error occurred.
 on_failure:
   - append:
       field: error.message
