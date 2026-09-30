@@ -482,7 +482,7 @@ An example event for `report` looks as following:
 #### latest_report
 * Description: Latest Reports from HackerOne. As reports get updated, this transform stores only the latest state of each report inside the destination index. The transform's destination index contains only the latest state of the report.
 * Source Index: logs-hackerone.report-\*
-* Destination Index: logs-hackerone_latest.dest_report-v2
+* Destination Index: logs-hackerone_latest.dest_report-v3
 
 **Exported fields**
 
