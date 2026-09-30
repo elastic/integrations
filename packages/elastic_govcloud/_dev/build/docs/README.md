@@ -71,8 +71,7 @@ This installs:
 - Index templates for `logs-elastic_govcloud.org_audit-*`
 - Ingest pipeline for the `elastic_govcloud.org_audit` data stream
 - Field mappings (ECS + `elastic_govcloud.org_audit.api_key.*`)
-- The **Elastic GovCloud organization audit logs** data view (`logs-elastic_govcloud.org_audit-*`)
-- The **[Elastic GovCloud] Organization Audit Logs** dashboard
+- The **[Elastic GovCloud] Organization Audit Logs** dashboard (uses the stack `logs-*` data view)
 
 **2. Enable audit-log delivery (API only)**
 
@@ -111,8 +110,8 @@ PUT /_cluster/settings
 ### Validation
 
 1. Generate Elastic Cloud API traffic (for example list deployments or members).
-2. In Discover, select the **Elastic GovCloud organization audit logs** data view (`logs-elastic_govcloud.org_audit-*`).
-3. Confirm documents have `@timestamp`, `http.response.status_code`, `url.full`, `event.dataset: elastic_govcloud.org_audit`, and `data_stream.dataset: elastic_govcloud.org_audit`.
+2. In Discover, select the `logs-*` data view and filter on `event.dataset: elastic_govcloud.org_audit`.
+3. Confirm documents have `@timestamp`, `http.response.status_code`, `url.full`, and `event.dataset: elastic_govcloud.org_audit`.
 4. Open **[Elastic GovCloud] Organization Audit Logs** and confirm panels populate.
 
 If documents appear under `elastic-org<ORG_ID>-audit` instead, the enable request omitted a `logs-elastic_govcloud.org_audit-*` `index`. Re-enable with `"index": "logs-elastic_govcloud.org_audit-default"` after this package is installed.
@@ -126,7 +125,7 @@ For help with Elastic ingest tools, check [Common problems](https://www.elastic.
 - Confirm assets were installed on the **destination** deployment before enablement.
 - `GET /api/v1/organizations/<ORG_ID>/audit_logs` and verify `index` is a `logs-elastic_govcloud.org_audit-*` name, not `elastic-org...-audit`.
 - Confirm organization subscription is Platinum or Enterprise (`POST` is rejected otherwise).
-- The dashboard filters on `data_stream.dataset: elastic_govcloud.org_audit`. Cloud does not send `data_stream.*` or `event.dataset`. The package mapping fills `event.dataset` and `event.module`. Documents ingested before this package version need a reindex (or wait for new events).
+- The dashboard filters on `event.dataset: elastic_govcloud.org_audit`. Cloud does not send `event.dataset`. The package mapping fills `event.dataset` and `event.module`. Documents ingested before this package version need a reindex (or wait for new events).
 
 **Events exist but fields are still `status_code` / `request_url`**
 
