@@ -301,7 +301,7 @@ Error running EventLogFile collection: error reading log file body: context dead
 
 This is most common in the `apex` and `aura_request` data streams, where individual `EventLogFile` downloads can be large.
 
-**Solution:** Consider increasing the `Request timeout` setting in the `Advanced options` section for the affected data stream (it defaults to `30s`, or `180s` for `aura_request`). For example, set it to `120s`.
+**Solution:** Consider increasing the `Request timeout` setting in the `Advanced options` section for the affected data stream (it defaults to `30s`, or `60s` for `aura_request`). For example, set it to `120s`.
 
 ### Data ingestion error
 
