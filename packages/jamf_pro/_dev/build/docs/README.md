@@ -88,6 +88,25 @@ Note: `9202` is a port and `/jamf-pro-events` are default values and can be chan
 
 - **Webhook Event**: Event to be selected. In case set of events is required, 1:1 webhooks should be created.  
 
+### Setup for Log Stream (AWS S3 / SQS)
+
+The access and change management data streams collect logs from the Jamf Pro
+Log Stream via AWS S3. To set them up:
+
+1. In Jamf Pro, navigate to **Settings > System > Jamf Pro Log Stream** and
+   enable log streaming to **AWS S3**. Select the **Access** and
+   **Change Management** log types.
+2. Create or reuse the S3 bucket that Jamf Pro will write to.
+3. *(SQS mode, default)* Create an SQS queue and add an S3 event notification
+   for `s3:ObjectCreated:*` that targets the queue. In the integration policy,
+   provide the **Queue URL**.
+4. *(S3 polling mode)* Enable **Collect logs via S3 Bucket** in the integration
+   policy and provide the **Bucket ARN** instead.
+5. Grant the credentials used by Elastic Agent the following IAM permissions:
+   - `s3:GetObject` and `s3:ListBucket` on the bucket.
+   - For SQS mode: `sqs:ReceiveMessage`, `sqs:DeleteMessage`, and
+     `sqs:ChangeMessageVisibility` on the queue.
+
 
 ## Logs
 

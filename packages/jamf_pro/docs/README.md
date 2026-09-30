@@ -88,6 +88,25 @@ Note: `9202` is a port and `/jamf-pro-events` are default values and can be chan
 
 - **Webhook Event**: Event to be selected. In case set of events is required, 1:1 webhooks should be created.  
 
+### Setup for Log Stream (AWS S3 / SQS)
+
+The access and change management data streams collect logs from the Jamf Pro
+Log Stream via AWS S3. To set them up:
+
+1. In Jamf Pro, navigate to **Settings > System > Jamf Pro Log Stream** and
+   enable log streaming to **AWS S3**. Select the **Access** and
+   **Change Management** log types.
+2. Create or reuse the S3 bucket that Jamf Pro will write to.
+3. *(SQS mode, default)* Create an SQS queue and add an S3 event notification
+   for `s3:ObjectCreated:*` that targets the queue. In the integration policy,
+   provide the **Queue URL**.
+4. *(S3 polling mode)* Enable **Collect logs via S3 Bucket** in the integration
+   policy and provide the **Bucket ARN** instead.
+5. Grant the credentials used by Elastic Agent the following IAM permissions:
+   - `s3:GetObject` and `s3:ListBucket` on the bucket.
+   - For SQS mode: `sqs:ReceiveMessage`, `sqs:DeleteMessage`, and
+     `sqs:ChangeMessageVisibility` on the queue.
+
 
 ## Logs
 
@@ -770,7 +789,7 @@ The following non-ECS fields are used in access documents:
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | input.type | Type of filebeat input. | keyword |
 | jamf_pro.access.entry_point | The interface through which the access was made, such as Universal API (OAuth), Single Sign On (OIDC), JSS, or Self Service (macOS). | keyword |
-| jamf_pro.access.ip_address | The IP address of the client that performed the access action. | ip |
+| jamf_pro.access.ip_address | The IP address of the client that performed the access action. | keyword |
 | jamf_pro.access.status | The result status of the access attempt, such as Successful Login or Failed token creation. | keyword |
 | jamf_pro.access.username | The username that performed the access action. | keyword |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
@@ -823,7 +842,6 @@ An example event for `change_management` looks as following:
         "kind": "event",
         "module": "jamf_pro",
         "original": "{\"time\":\"2026-09-23T19:56:45.940685642Z\",\"message\":\"[CHANGEMANAGEMENT] 2026-09-23T19:56:45,940 [INFO ] [eralPool-47] [file                     ] - [dnopnmcns@buqprrmmj.com (ID: -1)] [DELETE] [Computer] [2026-09-23T19:56:45.940+0000]\\n\\tID             2430\\n\\tName ......... ZO-RFLEIOF03I-Z\"}",
-        "outcome": "success",
         "type": [
             "deletion"
         ]
@@ -883,7 +901,6 @@ The following non-ECS fields are used in change management documents:
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
 | event.module | Event module. | constant_keyword |
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
-| event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | input.type | Type of filebeat input. | keyword |
 | jamf_pro.change_management.actor.id | The Jamf Pro internal ID of the actor (-1 for system, 0 for API clients, positive integers for human users). | keyword |
