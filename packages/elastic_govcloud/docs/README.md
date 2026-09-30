@@ -187,7 +187,7 @@ An example event for `org_audit` looks as following:
         "type": "logs"
     },
     "ecs": {
-        "version": "9.3.0"
+        "version": "9.5.0"
     },
     "event": {
         "category": [
