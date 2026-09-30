@@ -37,9 +37,3 @@ The dashboards visualize the following Cloud Monitoring metric types:
 | **[GCP OTel] Cloud Storage Bucket Detail** | Per-bucket deep-dive into request volume by fault class, method, and response code, availability, stored bytes and object counts by storage class, storage consumption, and ACL-based access that indicates buckets not yet using uniform bucket-level access. |
 
 Open **[GCP OTel] Cloud Storage Overview** and click a bucket in the bucket hex map or the bucket ranking table to drill into **[GCP OTel] Cloud Storage Bucket Detail** for that bucket.
-
-## Alerting Rule Templates
-
-
-## SLO Templates
-
