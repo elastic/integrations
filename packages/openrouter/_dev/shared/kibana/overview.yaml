@@ -1,9 +1,9 @@
 dashboards:
   - name: "[OpenRouter] Overview"
-    id: "openrouter-overview-f0a1b2c3-d4e5-6789-abcd-ef0123456789"
+    id: "openrouter-usage-and-cost-overview-e4c812d7-a471-4c93-a58a-6e6e9504c97d"
     description: >-
       Cross-provider visibility into OpenRouter API usage, cost, and token consumption.
-      Covers request volume, spend by model and provider, token breakdown, and cache
+      Covers request volume, spend by model and API key, token breakdown, and cache
       efficiency. Data sourced from metrics-openrouter.usage-*.
     time_range:
       from: now-7d
@@ -16,10 +16,10 @@ dashboards:
         markdown:
           content: |
             ## OpenRouter — Usage & Cost Overview
-            Daily request volume, token consumption, and cost broken down by model and provider.
-            Data is collected once per day per model/provider combination. Use the time picker to adjust the window.
+            Daily request volume, token consumption, and cost broken down by model and API key.
+            Data is collected once per day per model/key combination. Use the time picker to adjust the window.
 
-      # KPI row
+      # KPI row — MAX→SUM deduplicates re-polled documents for the current day
       - title: "Total Requests"
         size: {w: 12, h: 5}
         esql:
@@ -27,7 +27,8 @@ dashboards:
           query: |
             FROM metrics-openrouter.usage-*
             | WHERE openrouter.usage.request_count IS NOT NULL
-            | STATS `Total Requests` = SUM(openrouter.usage.request_count)
+            | STATS _v = MAX(openrouter.usage.request_count) BY @timestamp, openrouter.usage.model, openrouter.usage.api_key_id
+            | STATS `Total Requests` = SUM(_v)
           primary:
             field: "Total Requests"
 
@@ -38,7 +39,8 @@ dashboards:
           query: |
             FROM metrics-openrouter.usage-*
             | WHERE openrouter.usage.total_usage IS NOT NULL
-            | STATS `Total Cost (USD)` = ROUND(SUM(openrouter.usage.total_usage), 4)
+            | STATS _v = MAX(openrouter.usage.total_usage) BY @timestamp, openrouter.usage.model, openrouter.usage.api_key_id
+            | STATS `Total Cost (USD)` = ROUND(SUM(_v), 4)
           primary:
             field: "Total Cost (USD)"
 
@@ -49,7 +51,8 @@ dashboards:
           query: |
             FROM metrics-openrouter.usage-*
             | WHERE openrouter.usage.tokens_total IS NOT NULL
-            | STATS `Total Tokens` = SUM(openrouter.usage.tokens_total)
+            | STATS _v = MAX(openrouter.usage.tokens_total) BY @timestamp, openrouter.usage.model, openrouter.usage.api_key_id
+            | STATS `Total Tokens` = SUM(_v)
           primary:
             field: "Total Tokens"
 
@@ -60,7 +63,9 @@ dashboards:
           query: |
             FROM metrics-openrouter.usage-*
             | WHERE openrouter.usage.tokens_total IS NOT NULL AND openrouter.usage.cached_tokens IS NOT NULL
-            | STATS total_tokens = SUM(openrouter.usage.tokens_total), cached_tokens = SUM(openrouter.usage.cached_tokens)
+            | STATS _tokens = MAX(openrouter.usage.tokens_total), _cached = MAX(openrouter.usage.cached_tokens)
+              BY @timestamp, openrouter.usage.model, openrouter.usage.api_key_id
+            | STATS total_tokens = SUM(_tokens), cached_tokens = SUM(_cached)
             | EVAL `Cache Hit %` = ROUND(100.0 * cached_tokens / total_tokens, 1)
             | KEEP `Cache Hit %`
           primary:
@@ -74,8 +79,9 @@ dashboards:
           query: |
             FROM metrics-openrouter.usage-*
             | WHERE openrouter.usage.request_count IS NOT NULL AND openrouter.usage.model IS NOT NULL
-            | STATS requests = SUM(openrouter.usage.request_count)
-              BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), model = openrouter.usage.model
+            | STATS _v = MAX(openrouter.usage.request_count)
+              BY time_bucket = BUCKET(@timestamp, 1 day), model = openrouter.usage.model, openrouter.usage.api_key_id
+            | STATS requests = SUM(_v) BY time_bucket, model
             | SORT time_bucket ASC
           dimension:
             field: "time_bucket"
@@ -94,8 +100,9 @@ dashboards:
           query: |
             FROM metrics-openrouter.usage-*
             | WHERE openrouter.usage.total_usage IS NOT NULL AND openrouter.usage.model IS NOT NULL
-            | STATS cost_usd = ROUND(SUM(openrouter.usage.total_usage), 4)
-              BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend), model = openrouter.usage.model
+            | STATS _v = MAX(openrouter.usage.total_usage)
+              BY time_bucket = BUCKET(@timestamp, 1 day), model = openrouter.usage.model, openrouter.usage.api_key_id
+            | STATS cost_usd = ROUND(SUM(_v), 4) BY time_bucket, model
             | SORT time_bucket ASC
           dimension:
             field: "time_bucket"
@@ -106,21 +113,22 @@ dashboards:
             field: "model"
           mode: stacked
 
-      - title: "Cost Share by Provider"
+      - title: "Cost Share by API Key"
         size: {w: 24, h: 12}
         esql:
           type: pie
           query: |
             FROM metrics-openrouter.usage-*
-            | WHERE openrouter.usage.total_usage IS NOT NULL AND openrouter.usage.provider IS NOT NULL
-            | STATS cost_usd = ROUND(SUM(openrouter.usage.total_usage), 4) BY provider = openrouter.usage.provider
+            | WHERE openrouter.usage.total_usage IS NOT NULL AND openrouter.usage.api_key_id IS NOT NULL
+            | STATS _v = MAX(openrouter.usage.total_usage) BY @timestamp, openrouter.usage.model, openrouter.usage.api_key_id
+            | STATS cost_usd = ROUND(SUM(_v), 4) BY api_key_id = openrouter.usage.api_key_id
             | SORT cost_usd DESC
             | LIMIT 20
           metrics:
             - field: "cost_usd"
               label: "Cost (USD)"
-          breakdowns:
-            - field: "provider"
+          breakdown:
+            field: "api_key_id"
 
       # Token breakdown
       - title: "Token Consumption: Prompt vs Completion"
@@ -130,9 +138,9 @@ dashboards:
           query: |
             FROM metrics-openrouter.usage-*
             | WHERE openrouter.usage.tokens_prompt IS NOT NULL AND openrouter.usage.tokens_completion IS NOT NULL
-            | STATS prompt_tokens = SUM(openrouter.usage.tokens_prompt),
-                    completion_tokens = SUM(openrouter.usage.tokens_completion)
-              BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            | STATS _p = MAX(openrouter.usage.tokens_prompt), _c = MAX(openrouter.usage.tokens_completion)
+              BY time_bucket = BUCKET(@timestamp, 1 day), openrouter.usage.model, openrouter.usage.api_key_id
+            | STATS prompt_tokens = SUM(_p), completion_tokens = SUM(_c) BY time_bucket
             | SORT time_bucket ASC
           dimension:
             field: "time_bucket"
@@ -150,9 +158,9 @@ dashboards:
           query: |
             FROM metrics-openrouter.usage-*
             | WHERE openrouter.usage.cached_tokens IS NOT NULL
-            | STATS cached_tokens = SUM(openrouter.usage.cached_tokens),
-                    total_tokens = SUM(openrouter.usage.tokens_total)
-              BY time_bucket = BUCKET(@timestamp, 20, ?_tstart, ?_tend)
+            | STATS _c = MAX(openrouter.usage.cached_tokens), _t = MAX(openrouter.usage.tokens_total)
+              BY time_bucket = BUCKET(@timestamp, 1 day), openrouter.usage.model, openrouter.usage.api_key_id
+            | STATS cached_tokens = SUM(_c), total_tokens = SUM(_t) BY time_bucket
             | SORT time_bucket ASC
           dimension:
             field: "time_bucket"
@@ -171,12 +179,16 @@ dashboards:
           query: |
             FROM metrics-openrouter.usage-*
             | WHERE openrouter.usage.model IS NOT NULL
-            | STATS
-                requests = SUM(openrouter.usage.request_count),
-                prompt_tokens = SUM(openrouter.usage.tokens_prompt),
-                completion_tokens = SUM(openrouter.usage.tokens_completion),
-                cost_usd = ROUND(SUM(openrouter.usage.total_usage), 4)
-              BY model = openrouter.usage.model, provider = openrouter.usage.provider
+            | STATS _req = MAX(openrouter.usage.request_count),
+                    _prompt = MAX(openrouter.usage.tokens_prompt),
+                    _completion = MAX(openrouter.usage.tokens_completion),
+                    _cost = MAX(openrouter.usage.total_usage)
+              BY @timestamp, model = openrouter.usage.model, openrouter.usage.api_key_id
+            | STATS requests = SUM(_req),
+                    prompt_tokens = SUM(_prompt),
+                    completion_tokens = SUM(_completion),
+                    cost_usd = ROUND(SUM(_cost), 4)
+              BY model
             | SORT cost_usd DESC
             | LIMIT 20
           metrics:
@@ -188,6 +200,5 @@ dashboards:
               label: "Completion Tokens"
             - field: "cost_usd"
               label: "Cost (USD)"
-          breakdowns:
-            - field: "model"
-            - field: "provider"
+          breakdown:
+            field: "model"
