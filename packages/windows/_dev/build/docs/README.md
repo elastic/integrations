@@ -15,6 +15,15 @@ If you're collecting Windows event logs, note that there are three related integ
 - **[System integration](https://www.elastic.co/docs/reference/integrations/system)**: Collects logs from the Windows `Application`, `System`, and `Security` channels with specialized ingest pipelines optimized for observability use cases.
 - **Windows integration** (this integration): Collects logs from Windows-specific channels like PowerShell, Sysmon, Windows Defender, and AppLocker with specialized security-focused ingest pipelines. Use this for security monitoring and advanced Windows telemetry.
 - **[Custom Windows event log package](https://www.elastic.co/docs/reference/integrations/winlog)**: Collects logs from any user-defined Windows event log channel without specialized pipelines.
+
+The `windows.forwarded` data stream also extracts forwarded `AD FS Auditing`
+events 1200-1210 when their original channel is `Security`. It uses
+the same `winlog.adfs.*`, `user.name`, and `source.ip` fields as `system.security`.
+The AD FS service account remains available under `winlog.user`; decoded
+request identities come from the Security audit XML. Event 1210 is specific
+to AD FS extranet smart lockout; it is not an intranet account lockout event.
+Microsoft documents the semantics of 1200-1207 and 1210; 1208/1209 are parsed
+only for fields present in the XML and are not assigned guessed actions.
   
 ## Data streams
 
