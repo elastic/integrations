@@ -2172,6 +2172,8 @@ processors:
   - rename:
       tag: rename_auditd_log_acct_to_user_name_b6df19a8
       ignore_failure: true
+      if: >-
+        !['ACCT_LOCK', 'ACCT_UNLOCK', 'ADD_USER', 'DEL_USER', 'USER_CHAUTHTOK', 'USER_MGMT'].contains(ctx.auditd?.log?.record_type)
       field: auditd.log.acct
       target_field: user.name
   - rename:
