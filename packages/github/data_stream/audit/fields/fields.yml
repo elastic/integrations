@@ -130,6 +130,15 @@
       type: keyword
     - name: pull_request_url
       type: keyword
+    - name: query_string
+      type: keyword
+      ignore_above: 8192
+      description: >-
+        The query string of the API request. GraphQL API request queries regularly
+        exceed the default `ignore_above` limit of 1024, which leaves them unindexed.
+      multi_fields:
+        - name: text
+          type: match_only_text
     - name: reason
       type: keyword
     - name: repo
@@ -162,6 +171,15 @@
       type: keyword
       description: >-
         The name of the repository.
+    - name: request_body
+      type: keyword
+      ignore_above: 8192
+      description: >-
+        The request body of the API request. GraphQL API request queries regularly
+        exceed the default `ignore_above` limit of 1024, which leaves them unindexed.
+      multi_fields:
+        - name: text
+          type: match_only_text
     - name: request_category
       type: keyword
     - name: ruleset_enforcement
@@ -382,6 +400,8 @@
       type: keyword
     - name: token_scopes
       type: keyword
+      description: >-
+        Scopes associated with the token used to perform the action.
     - name: topic
       type: keyword
     - name: transport_protocol
