@@ -1,0 +1,106 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Compliance-scoped API keys read organization audit activity and compliance data. Once an attacker has administrative access, creating one gives them programmatic read of chats, files, and membership without an interactive session. This is separate from admin API key creation, which covers organization administration rather than compliance read scopes.",
+        "false_positives": [
+            "Platform and security teams create compliance-scoped API keys when onboarding the Anthropic Fleet integration or setting up SIEM ingestion. Verify the actor and confirm the key is in the approved credentials inventory."
+        ],
+        "from": "now-9m",
+        "investigation_fields": {
+            "field_names": [
+                "@timestamp",
+                "event.action",
+                "event.id",
+                "organization.id",
+                "anthropic.audit.api_key_id",
+                "anthropic.audit.scopes",
+                "anthropic.audit.actor.type",
+                "anthropic.audit.actor.admin_api_key_id",
+                "user.email",
+                "user.id",
+                "source.ip",
+                "user_agent.original"
+            ]
+        },
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Anthropic Compliance API Key Created",
+        "note": "## Triage and analysis\n\n### Investigating Anthropic Compliance API Key Created\n\nA new API key was created with compliance read scopes (audit/compliance data), distinct from admin API keys used for\norg administration. Review `anthropic.audit.scopes` for exact permissions.\n\nUnauthorized = key not in approved inventory / no Fleet or investigation ticket, or creation by an unexpected actor\nfollowed by `compliance_api_accessed` / audit export activity.\n\n#### Possible investigation steps\n\n- Record `anthropic.audit.api_key_id` and scopes. Branch actor (`user_actor` vs `admin_api_key_actor`) and validate\n  against known platform admins or parent admin keys.\n- Pivot on that `api_key_id` for later `compliance_api_accessed` (programmatic use of the new key).\n- Correlate \u00b1hours for admin role grants, logging disablement, or data exports \u2014 recon before further intrusion.\n\n### False positive analysis\n\n- First Fleet onboarding key for an org is expected \u2014 require inventory / ticket evidence.\n\n### Response and remediation\n\n- On unauthorized creation: revoke the key and review Compliance API / export activity during the exposure window.\n",
+        "query": "from logs-anthropic.audit-* metadata _id, _version, _index\n| where\n    data_stream.dataset == \"anthropic.audit\" and\n    event.action == \"api_key_created\" and\n    event.outcome == \"success\" and\n    anthropic.audit.scopes is not null and\n    (\n        mv_contains(anthropic.audit.scopes, \"read:compliance_activities\") or\n        mv_contains(anthropic.audit.scopes, \"read:compliance_org_data\")\n    )\n| keep _id, _version, _index, @timestamp, event.*, organization.*, user.*, source.*, user_agent.*, anthropic.audit.*, data_stream.*\n",
+        "references": [
+            "https://platform.claude.com/docs/en/api/compliance/activities/list"
+        ],
+        "related_integrations": [
+            {
+                "package": "anthropic",
+                "version": ">=1.0.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": false,
+                "name": "anthropic.audit.scopes",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "data_stream.dataset",
+                "type": "constant_keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.action",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "event.outcome",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "b8c429a1-67f3-448c-a960-951807dd2cd8",
+        "severity": "high",
+        "tags": [
+            "Domain: GenAI",
+            "Platform: Anthropic",
+            "Data Source: Anthropic Audit Logs",
+            "Use Case: Identity and Access Audit",
+            "Use Case: Threat Detection",
+            "Resources: Investigation Guide",
+            "Rule Type: ES|QL",
+            "Tactic: Persistence"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1098",
+                        "name": "Account Manipulation",
+                        "reference": "https://attack.mitre.org/techniques/T1098/",
+                        "subtechnique": [
+                            {
+                                "id": "T1098.001",
+                                "name": "Additional Cloud Credentials",
+                                "reference": "https://attack.mitre.org/techniques/T1098/001/"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 1
+    },
+    "id": "b8c429a1-67f3-448c-a960-951807dd2cd8_1",
+    "type": "security-rule"
+}
