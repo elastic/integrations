@@ -449,6 +449,16 @@ processors:
       value: '{{{ azure.signinlogs.properties.device_detail.device_id }}}'
       allow_duplicates: false
       if: ctx.azure?.signinlogs?.properties?.device_detail?.device_id != null && ctx.azure.signinlogs.properties.device_detail.device_id != ''
+  - set:
+      tag: set-cloud_account_id_7a2f5d1c
+      field: cloud.account.id
+      copy_from: azure.tenant.id
+      ignore_empty_value: true
+      description: >-
+        Kept for backward compatibility. Per OTel semconv `cloud.account.id` means
+        the Azure subscription, which these tenant-scoped Entra ID logs do not carry;
+        correcting that is deferred to the next major version. Use `azure.tenant.id`
+        for the tenant.
   - pipeline:
       tag: pipeline_azure_shared_pipeline_7877e1a4
       name: '{{ IngestPipeline "azure-shared-pipeline" }}'

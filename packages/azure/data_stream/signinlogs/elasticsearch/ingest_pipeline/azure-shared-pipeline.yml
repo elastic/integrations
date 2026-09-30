@@ -18,7 +18,7 @@ processors:
   - grok:
       tag: grok_azure_resource_id_provider_c9d8e7f6
       field: azure.resource_id
-      if: ctx.azure?.resource_id != null && ctx.azure?.resource?.provider == null
+      if: ctx.azure?.resource_id != null && ctx.azure?.resource_provider?.namespace == null
       patterns:
         - (?i)/providers/%{PROVIDER:azure.resource_provider.namespace}
       pattern_definitions:
@@ -29,6 +29,11 @@ processors:
       field: azure.resource_id
       target_field: cloud.resource_id
       ignore_missing: true
+  - set:
+      tag: set_legacy_azure_resource_id_underscore_9a1b2c3d
+      field: azure.resource_id
+      copy_from: cloud.resource_id
+      ignore_empty_value: true
   - lowercase:
       tag: lowercase_event_outcome_eb9dfc47
       field: event.outcome
