@@ -33,7 +33,7 @@ processors:
       field: user.email
       copy_from: crowdstrike.event.UserId
       tag: set_user_email_from_UserId
-      if: ctx.crowdstrike?.event?.UserId != null && ctx.crowdstrike.event.UserId.indexOf("@") > 0
+      if: ctx.crowdstrike?.event?.UserId instanceof String && ctx.crowdstrike.event.UserId.indexOf("@") > 0
   - append:
       field: event.action
       value: '{{{crowdstrike.event.OperationName}}}'
@@ -119,6 +119,7 @@ processors:
       field: crowdstrike.event.Attributes.user_agent
       ignore_missing: true
       tag: remove_user_agent
+      if: ctx.user_agent?.original != null
   - rename:
       field: crowdstrike.event.Attributes.trace_id
       target_field: trace.id
@@ -144,11 +145,18 @@ processors:
         ctx.event = ctx.event ?: [:];
         ctx.event.duration = ctx._tmp_.elapsed_microseconds * 1000L;
   - remove:
-      field:
-        - crowdstrike.event.Attributes.status_code
-        - crowdstrike.event.Attributes.elapsed_microseconds
-        - _tmp_
-      tag: remove_custom_duplicate_fields
+      field: crowdstrike.event.Attributes.status_code
+      tag: remove_status_code
+      ignore_missing: true
+      if: ctx.http?.response?.status_code != null
+  - remove:
+      field: crowdstrike.event.Attributes.elapsed_microseconds
+      tag: remove_elapsed_microseconds
+      ignore_missing: true
+      if: ctx.event?.duration != null
+  - remove:
+      field: _tmp_
+      tag: remove_tmp
       ignore_missing: true
   - set:
       field: event.kind
@@ -165,7 +173,8 @@ processors:
 on_failure:
   - append:
       field: error.message
-      value: |-
+      tag: append_error_message
+      value: >-
         Processor "{{{ _ingest.on_failure_processor_type }}}" with tag "{{{ _ingest.on_failure_processor_tag }}}" in pipeline "{{{ _ingest.on_failure_pipeline }}}" failed with message "{{{ _ingest.on_failure_message }}}"
   - set:
       field: event.kind
@@ -173,5 +182,6 @@ on_failure:
       value: pipeline_error
   - append:
       field: tags
+      tag: append_preserve_original_event_tags
       value: preserve_original_event
       allow_duplicates: false
