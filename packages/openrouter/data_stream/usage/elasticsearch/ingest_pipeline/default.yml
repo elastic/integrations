@@ -11,10 +11,10 @@ processors:
         - division
         - team
       ignore_missing: true
-      if: ctx.organization instanceof String && ctx.division instanceof String && ctx.team instanceof String
       tag: remove_agentless_tags
       description: >-
         Removes fields added by Agentless as metadata, which can collide with ECS fields.
+        Uses ignore_missing so each field is removed independently if present.
   - terminate:
       tag: data_collection_error
       if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null

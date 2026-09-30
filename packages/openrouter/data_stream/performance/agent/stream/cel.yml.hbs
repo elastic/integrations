@@ -14,9 +14,10 @@ resource.ssl: {{ssl}}
 resource.timeout: {{http_client_timeout}}
 {{/if}}
 resource.url: {{url}}/analytics/query
-# OpenRouter Analytics API rate limit: 64 req/min. Use 1/s (=60/min) to stay safe.
-resource.rate_limit.limit: 1
-resource.rate_limit.burst: 5
+# OpenRouter Analytics API rate limit: 64 req/min (account-level, shared across all streams).
+# With two streams running, set each to 0.4/s so combined ≤ 48/min — safely under the limit.
+resource.rate_limit.limit: 0.4
+resource.rate_limit.burst: 2
 state:
   management_api_key: {{management_api_key}}
   initial_interval: {{initial_interval}}

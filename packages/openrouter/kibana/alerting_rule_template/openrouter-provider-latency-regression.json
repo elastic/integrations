@@ -2,12 +2,11 @@
     "id": "openrouter-provider-latency-regression",
     "type": "alerting_rule_template",
     "attributes": {
-        "name": "[OpenRouter] Provider Latency Regression",
-        "description": "Alerts when the p99 end-to-end latency for any provider exceeds a configurable threshold. Detects provider-side degradation before it impacts end-user experience.",
+        "name": "[OpenRouter] Model Latency Regression",
+        "description": "Alerts when the p99 end-to-end latency for any model exceeds a configurable threshold. Detects model or provider degradation before it impacts end-user experience. Works with the default dimensions (model, api_key_id). To alert per provider instead, add 'provider' to the performance stream dimensions.",
         "tags": [
             "OpenRouter",
             "Latency",
-            "Provider",
             "SLO"
         ],
         "ruleTypeId": ".es-query",
@@ -19,10 +18,10 @@
             "timeWindowSize": 1,
             "timeWindowUnit": "h",
             "esqlQuery": {
-                "esql": "// Alert when any provider's p99 latency exceeds a threshold in milliseconds.\n// Default: 5000ms (5 seconds). Adjust per your SLO.\nFROM metrics-openrouter.performance-*\n| WHERE openrouter.performance.p99_latency IS NOT NULL AND openrouter.performance.provider IS NOT NULL\n| STATS max_p99_ms = MAX(openrouter.performance.p99_latency) BY openrouter.performance.provider\n| WHERE max_p99_ms > 5000\n| SORT max_p99_ms DESC"
+                "esql": "// Alert when any model's p99 latency exceeds a threshold in milliseconds.\n// Default: 5000ms (5 seconds). Adjust per your SLO.\n// Groups by model, which is always present with the default dimensions.\n// To group by provider instead, add 'provider' to the performance stream dimensions.\nFROM metrics-openrouter.performance-*\n| WHERE openrouter.performance.p99_latency IS NOT NULL AND openrouter.performance.model IS NOT NULL\n| STATS max_p99_ms = MAX(openrouter.performance.p99_latency) BY openrouter.performance.model\n| WHERE max_p99_ms > 5000\n| SORT max_p99_ms DESC"
             },
             "groupBy": "top",
-            "groupByField": "openrouter.performance.provider",
+            "groupByField": "openrouter.performance.model",
             "timeField": "@timestamp"
         },
         "alertDelay": {
@@ -30,7 +29,7 @@
         },
         "artifacts": {
             "investigation_guide": {
-                "blob": "## Provider Latency Regression\n\n### Triage Steps\n1. Open the OpenRouter Performance dashboard and inspect the p99 latency trend per provider.\n2. Identify which provider is degraded:\n   `FROM metrics-openrouter.performance-* | WHERE @timestamp > NOW() - 3 HOURS | STATS p99 = MAX(openrouter.performance.p99_latency) BY openrouter.performance.provider | SORT p99 DESC`\n3. Check whether the affected provider also shows lower throughput:\n   `FROM metrics-openrouter.performance-* | STATS tput = AVG(openrouter.performance.p50_throughput) BY openrouter.performance.provider`\n4. Consider switching to a different provider via OpenRouter's fallback routing.\n\n### Common Causes\n- Provider-side capacity constraints or incidents\n- Large model deployment rollout at the provider\n- Network congestion between OpenRouter and the provider\n- Cold-start latency for low-traffic models\n\n### Tuning\n- Raise the threshold (e.g., `10000` = 10s) if your workload uses large models with inherently high latency.\n- Alert per-model instead of per-provider by replacing `BY openrouter.performance.provider` with `BY openrouter.performance.model`."
+                "blob": "## Model Latency Regression\n\n### Triage Steps\n1. Open the OpenRouter Performance dashboard and inspect the p99 latency trend per model.\n2. Identify which model is degraded:\n   `FROM metrics-openrouter.performance-* | WHERE @timestamp > NOW() - 3 HOURS | STATS p99 = MAX(openrouter.performance.p99_latency) BY openrouter.performance.model | SORT p99 DESC`\n3. Check whether the affected model also shows lower throughput:\n   `FROM metrics-openrouter.performance-* | STATS tput = AVG(openrouter.performance.p50_throughput) BY openrouter.performance.model`\n4. Consider switching to a different model or provider via OpenRouter's fallback routing.\n\n### Common Causes\n- Provider-side capacity constraints or incidents\n- Large model deployment rollout at the provider\n- Network congestion between OpenRouter and the provider\n- Cold-start latency for low-traffic models\n\n### Tuning\n- Raise the threshold (e.g., `10000` = 10s) if your workload uses large models with inherently high latency.\n- To alert per provider instead of per model, add `provider` to the performance stream dimensions and replace `BY openrouter.performance.model` with `BY openrouter.performance.provider`."
             }
         }
     },
