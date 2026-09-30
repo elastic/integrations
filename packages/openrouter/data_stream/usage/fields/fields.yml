@@ -5,6 +5,7 @@
       type: group
       description: OpenRouter daily usage analytics bucket fields.
       fields:
+        # Dimensions
         - name: model
           type: keyword
           description: LLM model identifier (e.g. openai/gpt-4o).
@@ -26,34 +27,37 @@
         - name: user
           type: keyword
           description: User identifier when grouped by user.
+        # Request volume
         - name: request_count
           type: long
           description: Number of API requests in the period.
-          metric_type: counter
+          metric_type: gauge
+        - name: byok_request_count
+          type: long
+          description: Number of requests made using Bring Your Own Key (BYOK).
+          metric_type: gauge
+        # Token consumption
         - name: tokens_prompt
           type: long
           description: Input/prompt tokens consumed in the period.
-          metric_type: counter
+          metric_type: gauge
         - name: tokens_completion
           type: long
           description: Completion tokens generated in the period.
-          metric_type: counter
+          metric_type: gauge
         - name: tokens_total
           type: long
           description: Total tokens (prompt + completion) in the period.
-          metric_type: counter
+          metric_type: gauge
         - name: cached_tokens
           type: long
           description: Tokens served from cache in the period.
-          metric_type: counter
+          metric_type: gauge
         - name: reasoning_tokens
           type: long
           description: Reasoning tokens consumed (for models that expose them).
-          metric_type: counter
-        - name: guardrail_invoked_count
-          type: long
-          description: Number of guardrail invocations in the period.
-          metric_type: counter
+          metric_type: gauge
+        # Cost
         - name: total_usage
           type: double
           description: Total cost in USD credits consumed in the period.
@@ -65,4 +69,25 @@
         - name: openrouter_usage
           type: double
           description: OpenRouter routing fee component of total_usage.
+          metric_type: gauge
+        - name: byok_usage
+          type: double
+          description: Total cost in USD for requests using Bring Your Own Key (BYOK).
+          metric_type: gauge
+        - name: byok_fees
+          type: double
+          description: OpenRouter fees charged for BYOK requests.
+          metric_type: gauge
+        - name: usage_upstream
+          type: double
+          description: Cost paid to the upstream provider in USD.
+          metric_type: gauge
+        - name: usage_cache
+          type: double
+          description: Cost of cache read/write operations in USD.
+          metric_type: gauge
+        # Guardrails
+        - name: guardrail_invoked_count
+          type: long
+          description: Number of guardrail invocations in the period.
           metric_type: gauge

@@ -41,12 +41,12 @@ program: |
   // query span well within the Analytics API's 31-day limit for these metrics.
   state.with(
     (now - duration(state.finalization_delay))
-      .format(time_layout.DateOnly)
-      .parse_time(time_layout.DateOnly).as(today,
+      .format("2006-01-02T15:00:00Z")
+      .parse_time("2006-01-02T15:00:00Z").as(today,
         max(
           state.?cursor.last_end.optMap(ts, timestamp(ts)).orValue(
             now - duration(state.initial_interval)
-          ).format(time_layout.DateOnly).parse_time(time_layout.DateOnly),
+          ).format("2006-01-02T15:00:00Z").parse_time("2006-01-02T15:00:00Z"),
           today - duration(state.max_lookback)
         ).as(start,
           {
@@ -78,14 +78,28 @@ program: |
               "metrics": [
                 "p50_latency",
                 "p90_latency",
+                "p95_latency",
                 "p99_latency",
+                "p50_router_latency",
+                "p90_router_latency",
+                "p99_router_latency",
                 "p50_total_time_to_first_token",
+                "p90_total_time_to_first_token",
+                "p95_total_time_to_first_token",
                 "p99_total_time_to_first_token",
+                "p50_generation_time",
+                "p90_generation_time",
+                "p99_generation_time",
+                "p50_inter_token_latency",
+                "p90_inter_token_latency",
+                "p99_inter_token_latency",
                 "p50_throughput",
+                "p90_throughput",
+                "p95_throughput",
                 "p99_throughput",
                 "cache_hit_rate",
-                "guardrail_invoked_rate",
                 "response_cached_rate",
+                "guardrail_invoked_rate",
               ],
               "limit": 10000,
             }.encode_json(),

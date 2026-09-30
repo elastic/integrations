@@ -6,7 +6,7 @@ streams:
     description: >-
       Collect hourly non-additive performance metrics (latency percentiles, throughput,
       cache hit rate, guardrail rate) from the OpenRouter Analytics API, grouped by
-      model and provider.
+      model and API key.
     template_path: cel.yml.hbs
     vars:
       - name: interval
@@ -15,7 +15,7 @@ streams:
         description: How often the Analytics API is polled for new hourly data.
         required: true
         show_user: true
-        default: 6h
+        default: 1h
       - name: initial_interval
         type: text
         title: Initial lookback interval
@@ -33,7 +33,7 @@ streams:
           partially-finalized hour buckets to settle before being ingested.
         required: true
         show_user: false
-        default: 2h
+        default: 30m
       - name: dimensions
         type: text
         title: Dimensions
@@ -46,7 +46,7 @@ streams:
         show_user: true
         default:
           - model
-          - provider
+          - api_key_id
       - name: http_client_timeout
         type: text
         title: HTTP client timeout
@@ -78,6 +78,14 @@ streams:
         required: true
         show_user: true
         default: false
+      - name: enable_request_tracer
+        type: bool
+        title: Enable request tracing
+        default: false
+        multi: false
+        required: false
+        show_user: false
+        description: The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#_resource_tracer_enable) for details.
       - name: processors
         type: yaml
         title: Processors

@@ -13,8 +13,8 @@ such as OpenAI, Anthropic, Google, Meta, Nvidia, and others.
 
 ### Supported use cases
 
-- **Usage & cost monitoring**: Track daily spend and token consumption by model and provider
-- **Performance observability**: Monitor latency percentiles and throughput per model/provider
+- **Usage & cost monitoring**: Track daily spend and token consumption by model and API key
+- **Performance observability**: Monitor latency percentiles and throughput per model and API key
 - **Cache efficiency**: Measure cache hit rates to optimize prompt caching and reduce cost
 - **Budget alerting**: Surface spend anomalies before they accumulate
 - **SLO tracking**: Alert on provider-level latency regressions
@@ -54,7 +54,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent
 |---------|---------|-------------|
 | Collection interval | `6h` | How often the Analytics API is polled for new daily data. |
 | Initial lookback | `168h` (7 days) | How far back to collect data on the first run. |
-| Dimensions | `model`, `provider` | Up to 2 dimensions to group data by. |
+| Dimensions | `model`, `api_key_id` | Up to 2 dimensions to group data by. |
 
 </details>
 
@@ -63,9 +63,9 @@ Elastic Agent must be installed. For more details, check the Elastic Agent
 
 | Setting | Default | Description |
 |---------|---------|-------------|
-| Collection interval | `6h` | How often the Analytics API is polled for new hourly data. |
+| Collection interval | `1h` | How often the Analytics API is polled for new hourly data. |
 | Initial lookback | `168h` (7 days) | How far back to collect data on the first run. |
-| Dimensions | `model`, `provider` | Up to 2 dimensions to group data by. |
+| Dimensions | `model`, `api_key_id` | Up to 2 dimensions to group data by. |
 
 </details>
 
@@ -104,8 +104,11 @@ to stay safely within the 31-day span limit regardless of dimension selection.
 
 ### Usage
 
-The `usage` data stream collects daily additive metrics (request count, token consumption, cost)
-from the OpenRouter Analytics API.
+The `usage` data stream collects daily snapshot metrics (request count, token consumption, cost)
+from the OpenRouter Analytics API. Each document represents the total for a given day and
+dimension combination. Metrics can be summed across dimensions (e.g. total spend across all models)
+but should not be summed across time — use `MAX` when aggregating across multiple documents
+for the same period.
 
 #### Usage fields
 

@@ -5,7 +5,7 @@ streams:
     title: OpenRouter API usage metrics
     description: >-
       Collect daily additive usage metrics (request counts, token consumption, cost)
-      from the OpenRouter Analytics API, grouped by model and provider.
+      from the OpenRouter Analytics API, grouped by model and API key.
     template_path: cel.yml.hbs
     vars:
       - name: interval
@@ -28,12 +28,12 @@ streams:
         type: text
         title: Finalization delay
         description: >-
-          How far behind "now" the collection window end is kept, to allow
-          partially-finalized day buckets to settle before being ingested.
-          Default is 2h (data 2 hours before now is considered finalized).
+          How far behind "now" the collection window end is kept. Daily usage
+          metrics are running counters that update throughout the day, so a short
+          delay (5m) is sufficient. Increase if you observe missing recent data.
         required: true
         show_user: false
-        default: 2h
+        default: 15m
       - name: dimensions
         type: text
         title: Dimensions
@@ -46,7 +46,7 @@ streams:
         show_user: true
         default:
           - model
-          - provider
+          - api_key_id
       - name: http_client_timeout
         type: text
         title: HTTP client timeout
@@ -78,6 +78,14 @@ streams:
         required: true
         show_user: true
         default: false
+      - name: enable_request_tracer
+        type: bool
+        title: Enable request tracing
+        default: false
+        multi: false
+        required: false
+        show_user: false
+        description: The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#_resource_tracer_enable) for details.
       - name: processors
         type: yaml
         title: Processors

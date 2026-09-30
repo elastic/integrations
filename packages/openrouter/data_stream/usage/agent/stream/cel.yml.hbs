@@ -38,12 +38,12 @@ redact:
     - management_api_key
 program: |
   // Usage stream: daily additive metrics (request count, tokens, cost) grouped by
-  // model and provider. Windowing issues 30-day chunks day by day to stay within
-  // the Analytics API's 31-day per-query span limit.
+  // model and provider. Windowing issues 30-day chunks to stay within the Analytics
+  // API's 31-day per-query span limit. The cursor stores raw RFC3339 timestamps so
+  // today's in-progress bucket is re-polled every interval (fingerprint in the
+  // ingest pipeline deduplicates re-polls for closed days).
   state.with(
-    (now - duration(state.finalization_delay))
-      .format(time_layout.DateOnly)
-      .parse_time(time_layout.DateOnly).as(today,
+    (now - duration(state.finalization_delay)).as(today,
         max(
           state.?cursor.last_end.optMap(ts, timestamp(ts)).orValue(
             now - duration(state.initial_interval)
@@ -58,6 +58,9 @@ program: |
         )
       ).as(w,
         // If we've caught up to today, stop and wait for the next scheduled run.
+        // Note: start is truncated to DateOnly (midnight) on each read, so it is
+        // always < today (raw timestamp) for the current day — today's running
+        // total is re-fetched every interval and fingerprint handles dedup.
         w.start >= w.today ?
           {
             "events": [],
@@ -78,6 +81,7 @@ program: |
               "dimensions": state.dimensions,
               "metrics": [
                 "request_count",
+                "byok_request_count",
                 "tokens_prompt",
                 "tokens_completion",
                 "tokens_total",
@@ -86,6 +90,10 @@ program: |
                 "total_usage",
                 "credits_usage",
                 "openrouter_usage",
+                "byok_usage",
+                "byok_fees",
+                "usage_upstream",
+                "usage_cache",
                 "guardrail_invoked_count",
               ],
               "limit": 10000,

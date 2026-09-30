@@ -14,8 +14,8 @@ such as OpenAI, Anthropic, Google, Meta, Nvidia, and others.
 
 ### Supported use cases
 
-- **Usage & cost monitoring**: Track daily spend and token consumption by model and provider
-- **Performance observability**: Monitor latency percentiles and throughput per model/provider
+- **Usage & cost monitoring**: Track daily spend and token consumption by model and API key
+- **Performance observability**: Monitor latency percentiles and throughput per model and API key
 - **Cache efficiency**: Measure cache hit rates to optimize prompt caching and reduce cost
 - **Budget alerting**: Surface spend anomalies before they accumulate
 - **SLO tracking**: Alert on provider-level latency regressions
@@ -55,7 +55,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent
 |---------|---------|-------------|
 | Collection interval | `6h` | How often the Analytics API is polled for new daily data. |
 | Initial lookback | `168h` (7 days) | How far back to collect data on the first run. |
-| Dimensions | `model`, `provider` | Up to 2 dimensions to group data by. |
+| Dimensions | `model`, `api_key_id` | Up to 2 dimensions to group data by. |
 
 </details>
 
@@ -64,9 +64,9 @@ Elastic Agent must be installed. For more details, check the Elastic Agent
 
 | Setting | Default | Description |
 |---------|---------|-------------|
-| Collection interval | `6h` | How often the Analytics API is polled for new hourly data. |
+| Collection interval | `1h` | How often the Analytics API is polled for new hourly data. |
 | Initial lookback | `168h` (7 days) | How far back to collect data on the first run. |
-| Dimensions | `model`, `provider` | Up to 2 dimensions to group data by. |
+| Dimensions | `model`, `api_key_id` | Up to 2 dimensions to group data by. |
 
 </details>
 
@@ -105,8 +105,11 @@ to stay safely within the 31-day span limit regardless of dimension selection.
 
 ### Usage
 
-The `usage` data stream collects daily additive metrics (request count, token consumption, cost)
-from the OpenRouter Analytics API.
+The `usage` data stream collects daily snapshot metrics (request count, token consumption, cost)
+from the OpenRouter Analytics API. Each document represents the total for a given day and
+dimension combination. Metrics can be summed across dimensions (e.g. total spend across all models)
+but should not be summed across time — use `MAX` when aggregating across multiple documents
+for the same period.
 
 #### Usage fields
 
@@ -123,18 +126,23 @@ from the OpenRouter Analytics API.
 | input.type | Type of input that generated the event. | keyword |  |
 | openrouter.usage.api_key_id | API key identifier when grouped by api_key_id. | keyword |  |
 | openrouter.usage.app | Application identifier when grouped by app. | keyword |  |
-| openrouter.usage.cached_tokens | Tokens served from cache in the period. | long | counter |
+| openrouter.usage.byok_fees | OpenRouter fees charged for BYOK requests. | double | gauge |
+| openrouter.usage.byok_request_count | Number of requests made using Bring Your Own Key (BYOK). | long | gauge |
+| openrouter.usage.byok_usage | Total cost in USD for requests using Bring Your Own Key (BYOK). | double | gauge |
+| openrouter.usage.cached_tokens | Tokens served from cache in the period. | long | gauge |
 | openrouter.usage.credits_usage | Billable credits consumed (may differ from total_usage when BYOK). | double | gauge |
-| openrouter.usage.guardrail_invoked_count | Number of guardrail invocations in the period. | long | counter |
+| openrouter.usage.guardrail_invoked_count | Number of guardrail invocations in the period. | long | gauge |
 | openrouter.usage.model | LLM model identifier (e.g. openai/gpt-4o). | keyword |  |
 | openrouter.usage.openrouter_usage | OpenRouter routing fee component of total_usage. | double | gauge |
 | openrouter.usage.provider | Provider routing the request (e.g. OpenAI, Anthropic). | keyword |  |
-| openrouter.usage.reasoning_tokens | Reasoning tokens consumed (for models that expose them). | long | counter |
-| openrouter.usage.request_count | Number of API requests in the period. | long | counter |
-| openrouter.usage.tokens_completion | Completion tokens generated in the period. | long | counter |
-| openrouter.usage.tokens_prompt | Input/prompt tokens consumed in the period. | long | counter |
-| openrouter.usage.tokens_total | Total tokens (prompt + completion) in the period. | long | counter |
+| openrouter.usage.reasoning_tokens | Reasoning tokens consumed (for models that expose them). | long | gauge |
+| openrouter.usage.request_count | Number of API requests in the period. | long | gauge |
+| openrouter.usage.tokens_completion | Completion tokens generated in the period. | long | gauge |
+| openrouter.usage.tokens_prompt | Input/prompt tokens consumed in the period. | long | gauge |
+| openrouter.usage.tokens_total | Total tokens (prompt + completion) in the period. | long | gauge |
 | openrouter.usage.total_usage | Total cost in USD credits consumed in the period. | double | gauge |
+| openrouter.usage.usage_cache | Cost of cache read/write operations in USD. | double | gauge |
+| openrouter.usage.usage_upstream | Cost paid to the upstream provider in USD. | double | gauge |
 | openrouter.usage.user | User identifier when grouped by user. | keyword |  |
 | openrouter.usage.variant | Model variant identifier when grouped by variant. | keyword |  |
 | openrouter.usage.workspace | Workspace identifier when grouped by workspace. | keyword |  |
@@ -162,14 +170,28 @@ always use `AVG` or `MAX` in ES|QL queries.
 | event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |  |  |
 | input.type | Type of input that generated the event. | keyword |  |  |
 | openrouter.performance.api_key_id | API key identifier when grouped by api_key_id. | keyword |  |  |
-| openrouter.performance.cache_hit_rate | Fraction of requests that were served from prompt cache (0.0–1.0). This is a rate metric — do not sum across time windows. | double | percent | gauge |
+| openrouter.performance.cache_hit_rate | Fraction of requests served from prompt cache (0.0–1.0). This is a rate metric — do not sum across time windows. | double | percent | gauge |
 | openrouter.performance.guardrail_invoked_rate | Fraction of requests for which a guardrail was invoked (0.0–1.0). This is a rate metric — do not sum across time windows. | double | percent | gauge |
 | openrouter.performance.model | LLM model identifier (e.g. openai/gpt-4o). | keyword |  |  |
+| openrouter.performance.p50_generation_time | 50th-percentile model token generation time in milliseconds. This is a rate metric — do not sum across time windows. | double | ms | gauge |
+| openrouter.performance.p50_inter_token_latency | 50th-percentile inter-token latency in milliseconds (streaming responsiveness). This is a rate metric — do not sum across time windows. | double | ms | gauge |
 | openrouter.performance.p50_latency | 50th-percentile end-to-end request latency in milliseconds. This is a rate metric — do not sum across time windows. | double | ms | gauge |
+| openrouter.performance.p50_router_latency | 50th-percentile OpenRouter routing overhead in milliseconds. This is a rate metric — do not sum across time windows. | double | ms | gauge |
 | openrouter.performance.p50_throughput | 50th-percentile streaming throughput in tokens per second. This is a rate metric — do not sum across time windows. | double |  | gauge |
 | openrouter.performance.p50_ttfb | 50th-percentile time-to-first-token (TTFT) in milliseconds. This is a rate metric — do not sum across time windows. | double | ms | gauge |
+| openrouter.performance.p90_generation_time | 90th-percentile model token generation time in milliseconds. This is a rate metric — do not sum across time windows. | double | ms | gauge |
+| openrouter.performance.p90_inter_token_latency | 90th-percentile inter-token latency in milliseconds (streaming responsiveness). This is a rate metric — do not sum across time windows. | double | ms | gauge |
 | openrouter.performance.p90_latency | 90th-percentile end-to-end request latency in milliseconds. This is a rate metric — do not sum across time windows. | double | ms | gauge |
+| openrouter.performance.p90_router_latency | 90th-percentile OpenRouter routing overhead in milliseconds. This is a rate metric — do not sum across time windows. | double | ms | gauge |
+| openrouter.performance.p90_throughput | 90th-percentile streaming throughput in tokens per second. This is a rate metric — do not sum across time windows. | double |  | gauge |
+| openrouter.performance.p90_ttfb | 90th-percentile time-to-first-token (TTFT) in milliseconds. This is a rate metric — do not sum across time windows. | double | ms | gauge |
+| openrouter.performance.p95_latency | 95th-percentile end-to-end request latency in milliseconds. This is a rate metric — do not sum across time windows. | double | ms | gauge |
+| openrouter.performance.p95_throughput | 95th-percentile streaming throughput in tokens per second. This is a rate metric — do not sum across time windows. | double |  | gauge |
+| openrouter.performance.p95_ttfb | 95th-percentile time-to-first-token (TTFT) in milliseconds. This is a rate metric — do not sum across time windows. | double | ms | gauge |
+| openrouter.performance.p99_generation_time | 99th-percentile model token generation time in milliseconds. This is a rate metric — do not sum across time windows. | double | ms | gauge |
+| openrouter.performance.p99_inter_token_latency | 99th-percentile inter-token latency in milliseconds (streaming responsiveness). This is a rate metric — do not sum across time windows. | double | ms | gauge |
 | openrouter.performance.p99_latency | 99th-percentile end-to-end request latency in milliseconds. This is a rate metric — do not sum across time windows. | double | ms | gauge |
+| openrouter.performance.p99_router_latency | 99th-percentile OpenRouter routing overhead in milliseconds. This is a rate metric — do not sum across time windows. | double | ms | gauge |
 | openrouter.performance.p99_throughput | 99th-percentile streaming throughput in tokens per second. This is a rate metric — do not sum across time windows. | double |  | gauge |
 | openrouter.performance.p99_ttfb | 99th-percentile time-to-first-token (TTFT) in milliseconds. This is a rate metric — do not sum across time windows. | double | ms | gauge |
 | openrouter.performance.provider | Provider routing the request (e.g. OpenAI, Anthropic). | keyword |  |  |
