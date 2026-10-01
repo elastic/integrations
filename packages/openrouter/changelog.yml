@@ -1,13 +1,15 @@
 - version: "0.1.0"
   changes:
     - description: >-
-        Initial release. Collect daily usage metrics (request count, token
-        consumption, cost) and hourly performance metrics (latency percentiles,
-        throughput, cache hit rate) from the OpenRouter Analytics API.
-        Two data streams: usage (granularity: day) and performance (granularity: hour),
-        grouped by model and API key by default. Windowed cursor-based collection
-        with MAX→SUM dashboard pattern handles re-polled duplicates without dedup.
-        Includes alerting rule templates for cost anomalies, cache hit rate drops,
-        and provider latency regressions.
+        Initial release. Collect daily usage metrics (requests, tokens, cost split by
+        regular key, BYOK and BYOK fees, cache and tool costs) and hourly performance
+        metrics (latency, time to first token, generation, inter-token and router
+        latency, throughput, cache and guardrail rates, request count) from the
+        OpenRouter Analytics API. Two data streams, usage (granularity: day) and
+        performance (granularity: hour), grouped by model and API key by default.
+        Windowed, cursor-based collection that halves the window when the API reports
+        a truncated result. Includes the Usage & Cost and Performance dashboards and
+        alerting rule templates for daily cost anomalies, cache hit rate drops and
+        model latency regressions. Requires Kibana 9.6 or later.
       type: enhancement
       link: https://github.com/elastic/integrations/pull/21500

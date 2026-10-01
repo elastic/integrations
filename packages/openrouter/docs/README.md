@@ -17,14 +17,15 @@ such as OpenAI, Anthropic, Google, Meta, Nvidia, and others.
 - **Usage & cost monitoring**: Track daily spend and token consumption by model and API key
 - **Performance observability**: Monitor latency percentiles and throughput per model and API key
 - **Cache efficiency**: Measure cache hit rates to optimize prompt caching and reduce cost
+- **BYOK visibility**: Separate spend on your own provider keys (and OpenRouter's BYOK fees) from spend on OpenRouter credits
 - **Budget alerting**: Surface spend anomalies before they accumulate
-- **SLO tracking**: Alert on provider-level latency regressions
+- **SLO tracking**: Alert on model-level latency regressions
 
 ## What do I need to use this integration?
 
 - An OpenRouter **Management API key**. Create one at
   [openrouter.ai/settings/management-keys](https://openrouter.ai/settings/management-keys).
-- Elastic and Kibana ≥ 9.4.0 (basic subscription)
+- Elastic and Kibana ≥ 9.6.0 (basic subscription)
 
 ## How do I deploy this integration?
 
@@ -113,9 +114,13 @@ Supported dimensions are `model`, `variant`, `api_key_id`, `workspace`, `app`, `
 
 The `usage` data stream collects daily snapshot metrics (request count, token consumption, cost)
 from the OpenRouter Analytics API. Each document represents the total for a given day and
-dimension combination. Metrics can be summed across dimensions (e.g. total spend across all models)
-but should not be summed across time — use `MAX` when aggregating across multiple documents
-for the same period.
+dimension combination. Metrics can be summed across dimensions (e.g. total spend across all models).
+
+The current day is polled again on every collection interval, so the same daily bucket can appear
+in several documents with growing totals. When aggregating, first take `MAX` per `@timestamp` and
+per dimension combination (include all dimension fields, because only the configured ones are set),
+then `SUM`. `blended_cost_per_million_tokens` is a rate: do not sum it, derive it from
+`total_usage / tokens_total` instead.
 
 #### Usage fields
 
@@ -161,11 +166,16 @@ for the same period.
 
 ### Performance
 
-The `performance` data stream collects hourly non-additive rate metrics (latency, throughput,
-cache hit rate) from the OpenRouter Analytics API.
+The `performance` data stream collects hourly non-additive metrics from the OpenRouter Analytics
+API: latency, time to first token, generation time, inter-token latency, router overhead and
+throughput (averages and percentiles), plus cache, response-cache and guardrail rates. It also
+collects `request_count`, which is the only additive field.
 
-**Important:** Performance metrics are ratios or percentiles. Never use `SUM` aggregations —
-always use `AVG` or `MAX` in ES|QL queries.
+**Important:** Latency, throughput and rate metrics are averages, percentiles or ratios computed by
+the API for each row (hour and dimension combination). Never use `SUM` on them. To combine rows,
+use `MAX` (for example the worst `p99_latency`) or a request-weighted average,
+`SUM(metric * request_count) / SUM(request_count)`. A plain `AVG` of percentiles is not a true
+percentile of all traffic.
 
 #### Performance fields
 
@@ -222,6 +232,15 @@ always use `AVG` or `MAX` in ES|QL queries.
 | openrouter.performance.variant | Model variant identifier when grouped by variant. | keyword |  |  |
 | openrouter.performance.workspace | Workspace identifier when grouped by workspace. | keyword |  |  |
 
+
+## Dashboards
+
+- **OpenRouter Usage & Cost Overview**: requests, cost (regular keys, BYOK, BYOK fees), tokens,
+  cache, and breakdowns by model, user and API key.
+- **OpenRouter Performance Overview**: latency, TTFT, generation, inter-token and router latency,
+  throughput, cache and guardrail rates, and a per-model comparison.
+
+Both dashboards use pinned controls with ES|QL-backed values, which require Kibana 9.6 or later.
 
 ## Alerting Rule Templates
 Alert rule templates provide pre-defined configurations for creating alert rules in Kibana.
