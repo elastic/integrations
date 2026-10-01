@@ -108,12 +108,12 @@
             },
             {
                 "embeddableConfig": {
-                    "description": "Instance name for the current filter.",
+                    "description": "Name of the Cloud SQL for MySQL instance selected by the current filter.",
                     "esql_query": [
                         "TS metrics-gcp.cloudsql_mysql.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"cloudsql_database\" AND TRANGE(?_tstart, ?_tend)\n| STATS marker = SUM(COUNT_OVER_TIME(`metrics.cloudsql.googleapis.com/database/mysql/queries`)) BY database_id\n| WHERE marker > 0\n| EVAL instance = SUBSTRING(database_id, LOCATE(database_id, \":\") + 1)\n| KEEP instance\n| LIMIT 1"
                     ],
                     "hide_border": true,
-                    "template": "<style>\n  body {\n    margin: 0;\n    padding: var(--cc-space-xs) var(--cc-space-l);\n    box-sizing: border-box;\n    font-family: var(--cc-font-family);\n    color: var(--cc-color-text);\n    background: var(--cc-color-background);\n  }\n  .wrap { display: flex; justify-content: center; align-items: center; min-height: 1.75rem; }\n  .name { font-size: 1.25rem; font-weight: 600; word-break: break-word; text-align: center; }\n  .empty { font-size: 0.875rem; opacity: 0.6; }\n</style>\n<div class=\"wrap\">\n{% if rows.size == 0 %}\n  <div class=\"empty\">No instance matches the current filters.</div>\n{% else %}\n  {% for row in rows %}\n    <div class=\"name\">{{ row[\"instance\"].value }}</div>\n  {% endfor %}\n{% endif %}\n</div>\n"
+                    "template": "<style>\n  body {\n    margin: 0;\n    padding: var(--cc-space-xs) var(--cc-space-l) var(--cc-space-l) var(--cc-space-l);\n    box-sizing: border-box;\n    font-family: var(--cc-font-family);\n    color: var(--cc-color-text);\n    background: var(--cc-color-background);\n  }\n  .wrap {\n    height: auto;\n    display: flex;\n    flex-direction: column;\n    justify-content: flex-start;\n  }\n  .instance-name {\n    font-size: 1.25rem;\n    font-weight: 600;\n    color: var(--cc-color-text);\n    text-align: left;\n    word-break: break-word;\n    margin: 0;\n  }\n  .empty {\n    font-size: 0.875rem;\n    opacity: 0.6;\n    text-align: left;\n  }\n</style>\n<div class=\"wrap\">\n{% if rows.size == 0 %}\n  <div class=\"empty\">No instance matches the current filters.</div>\n{% else %}\n  {% for row in rows %}\n    <div class=\"instance-name\">{{ row[\"instance\"].value }}</div>\n  {% endfor %}\n{% endif %}\n</div>\n"
                 },
                 "gridData": {
                     "x": 7,
@@ -241,7 +241,7 @@
                                                     "columnId": "metric_accessor_metric",
                                                     "customLabel": true,
                                                     "fieldName": "CPU Utilization",
-                                                    "label": "CPU Utilization",
+                                                    "label": " ",
                                                     "meta": {
                                                         "type": "number"
                                                     },
@@ -331,7 +331,9 @@
                         "title": "",
                         "version": 2,
                         "visualizationType": "lnsMetric"
-                    }
+                    },
+                    "title": "CPU Utilization",
+                    "description": "Latest CPU utilization of this instance, as a share of its reserved vCPUs. Green below 60%, amber from 60%, red from 85%."
                 },
                 "gridData": {
                     "x": 0,
@@ -368,7 +370,7 @@
                                                     "columnId": "metric_accessor_metric",
                                                     "customLabel": true,
                                                     "fieldName": "Memory Utilization",
-                                                    "label": "Memory Utilization",
+                                                    "label": " ",
                                                     "meta": {
                                                         "type": "number"
                                                     },
@@ -458,7 +460,9 @@
                         "title": "",
                         "version": 2,
                         "visualizationType": "lnsMetric"
-                    }
+                    },
+                    "title": "Memory Utilization",
+                    "description": "Latest memory utilization of this instance, as a share of its memory quota. Green below 70%, amber from 70%, red from 90%. Values held near 100% risk an out-of-memory restart."
                 },
                 "gridData": {
                     "x": 12,
@@ -495,7 +499,7 @@
                                                     "columnId": "metric_accessor_metric",
                                                     "customLabel": true,
                                                     "fieldName": "Disk Utilization Ratio (%)",
-                                                    "label": "Disk Utilization",
+                                                    "label": " ",
                                                     "meta": {
                                                         "type": "number"
                                                     },
@@ -586,7 +590,9 @@
                         "title": "",
                         "version": 2,
                         "visualizationType": "lnsMetric"
-                    }
+                    },
+                    "title": "Disk Utilization",
+                    "description": "Latest disk usage of this instance: bytes used over the provisioned disk quota. Green below 70%, amber from 70%, red from 90%."
                 },
                 "gridData": {
                     "x": 24,
@@ -623,7 +629,7 @@
                                                     "columnId": "metric_accessor_metric",
                                                     "customLabel": true,
                                                     "fieldName": "Connections",
-                                                    "label": "Network Connections",
+                                                    "label": " ",
                                                     "meta": {
                                                         "type": "number"
                                                     }
@@ -632,33 +638,8 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-gcp.cloudsql_mysql.otel-default-9e1186445aa3f8d7c4e009307974e309eb168d250180d7a02d7f5a38cf799d55",
                                             "query": {
-                                                "esql": "TS metrics-gcp.cloudsql_mysql.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"cloudsql_database\"\n| STATS `Connections` = MAX(LAST_OVER_TIME(cloudsql.googleapis.`com/database/network/connections`)) BY `Time` = TBUCKET(75, ?_tstart, ?_tend)"
+                                                "esql": "TS metrics-gcp.cloudsql_mysql.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"cloudsql_database\"\n| STATS `Connections` = MAX(LAST_OVER_TIME(`metrics.cloudsql.googleapis.com/database/network/connections`))"
                                             }
-                                        },
-                                        "layer_0_trendline": {
-                                            "columns": [
-                                                {
-                                                    "columnId": "x_date_histogram",
-                                                    "fieldName": "Time",
-                                                    "meta": {
-                                                        "type": "date"
-                                                    }
-                                                },
-                                                {
-                                                    "columnId": "metric_accessor_trendline",
-                                                    "customLabel": true,
-                                                    "fieldName": "Connections",
-                                                    "label": "Network Connections",
-                                                    "meta": {
-                                                        "type": "number"
-                                                    }
-                                                }
-                                            ],
-                                            "index": "metrics-gcp.cloudsql_mysql.otel-default-9e1186445aa3f8d7c4e009307974e309eb168d250180d7a02d7f5a38cf799d55",
-                                            "query": {
-                                                "esql": "TS metrics-gcp.cloudsql_mysql.otel-default | WHERE resource.attributes.gcp.resource_type == \"cloudsql_database\" | STATS Connections = MAX(LAST_OVER_TIME(cloudsql.googleapis.`com/database/network/connections`)) BY Time = TBUCKET(75, ?_tstart, ?_tend)"
-                                            },
-                                            "timeField": "@timestamp"
                                         }
                                     }
                                 }
@@ -669,32 +650,25 @@
                                     "id": "metrics-gcp.cloudsql_mysql.otel-default-9e1186445aa3f8d7c4e009307974e309eb168d250180d7a02d7f5a38cf799d55",
                                     "name": "indexpattern-datasource-layer-layer_0",
                                     "type": "index-pattern"
-                                },
-                                {
-                                    "id": "metrics-gcp.cloudsql_mysql.otel-default-9e1186445aa3f8d7c4e009307974e309eb168d250180d7a02d7f5a38cf799d55",
-                                    "name": "indexpattern-datasource-layer-layer_0_trendline",
-                                    "type": "index-pattern"
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-gcp.cloudsql_mysql.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"cloudsql_database\"\n| STATS `Connections` = MAX(LAST_OVER_TIME(cloudsql.googleapis.`com/database/network/connections`)) BY `Time` = TBUCKET(75, ?_tstart, ?_tend)"
+                                "esql": "TS metrics-gcp.cloudsql_mysql.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"cloudsql_database\"\n| STATS `Connections` = MAX(LAST_OVER_TIME(`metrics.cloudsql.googleapis.com/database/network/connections`))"
                             },
                             "visualization": {
                                 "density": "default",
                                 "layerId": "layer_0",
                                 "layerType": "data",
                                 "metricAccessor": "metric_accessor_metric",
-                                "showBar": false,
-                                "trendlineLayerId": "layer_0_trendline",
-                                "trendlineLayerType": "metricTrendline",
-                                "trendlineMetricAccessor": "metric_accessor_trendline",
-                                "trendlineTimeAccessor": "x_date_histogram"
+                                "showBar": false
                             }
                         },
                         "title": "",
                         "version": 2,
                         "visualizationType": "lnsMetric"
-                    }
+                    },
+                    "title": "Network Connections",
+                    "description": "Latest number of open connections to this MySQL server. The connections chart below shows how it changed over the selected range."
                 },
                 "gridData": {
                     "x": 36,
@@ -852,7 +826,8 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "title": "CPU, memory and disk"
+                    "title": "CPU, memory and disk",
+                    "description": "Average CPU, memory and disk utilization of this instance in each time bucket, on one percentage axis, to show which resource is closest to its limit."
                 },
                 "gridData": {
                     "x": 0,
@@ -970,7 +945,8 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "title": "Queries per second"
+                    "title": "Queries per second",
+                    "description": "Statements executed per second, from one-minute delta counts of database/mysql/queries divided by the minutes reported in each bucket. A sudden drop with flat CPU usually means clients cannot connect."
                 },
                 "gridData": {
                     "x": 24,
@@ -1077,7 +1053,8 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "title": "Network connections"
+                    "title": "Network connections",
+                    "description": "Average open connections to this MySQL server in each time bucket. When it reaches the instance's max_connections setting, new connections are refused."
                 },
                 "gridData": {
                     "x": 0,
@@ -1195,7 +1172,8 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "title": "Replica lag"
+                    "title": "Replica lag",
+                    "description": "Average number of seconds this read replica is behind its primary in each time bucket. Only read replicas report replica lag, so the chart is empty for other instances. Near zero is healthy; a steady climb means reads from the replica are increasingly stale."
                 },
                 "gridData": {
                     "x": 0,

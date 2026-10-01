@@ -19,7 +19,8 @@
                     "content": "## ![GCP Cloud SQL MySQL](data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%2048%2048%27%20width%3D%2732%27%20height%3D%2732%27%3E%3Crect%20width%3D%2748%27%20height%3D%2748%27%20rx%3D%278%27%20fill%3D%27%234285F4%27%2F%3E%3Cellipse%20cx%3D%2724%27%20cy%3D%2717%27%20rx%3D%2714%27%20ry%3D%276%27%20fill%3D%27%23ffffff%27%2F%3E%3Cpath%20d%3D%27M10%2017v8c0%203.3%206.3%206%2014%206s14-2.7%2014-6v-8c0%203.3-6.3%206-14%206s-14-2.7-14-6z%27%20fill%3D%27%23ffffff%27%20fill-opacity%3D%270.85%27%2F%3E%3Cpath%20d%3D%27M10%2025v8c0%203.3%206.3%206%2014%206s14-2.7%2014-6v-8c0%203.3-6.3%206-14%206s-14-2.7-14-6z%27%20fill%3D%27%23ffffff%27%20fill-opacity%3D%270.7%27%2F%3E%3C%2Fsvg%3E)&nbsp;&nbsp;[GCP OTel] Cloud SQL MySQL Overview",
                     "settings": {
                         "open_links_in_new_tab": false
-                    }
+                    },
+                    "description": "Fleet view of all Cloud SQL for MySQL instances: availability, restarts, saturation, throughput and connections. Click a hexagon or an instance name in the table to open its detail dashboard."
                 },
                 "gridData": {
                     "x": 0,
@@ -69,7 +70,7 @@
                                                     "customLabel": true,
                                                     "fieldName": "value",
                                                     "inMetricDimension": true,
-                                                    "label": "Browse other GCP dashboards",
+                                                    "label": "Browse other GCP OTel dashboards",
                                                     "meta": {
                                                         "esType": "keyword",
                                                         "type": "string"
@@ -102,7 +103,6 @@
                                 "color": "#61a2ff00",
                                 "colorMode": "background",
                                 "icon": "empty",
-                                "iconAlign": "right",
                                 "layerId": "layer-nav-cs",
                                 "layerType": "data",
                                 "metricAccessor": "col-nav-cs",
@@ -119,15 +119,15 @@
                         "version": 2,
                         "visualizationType": "lnsMetric"
                     },
-                    "description": "Navigation tile \u2014 opens the Kibana dashboards list filtered to the other GCP dashboards in the same tab, carrying the current time range.",
+                    "description": "Navigation tile \u2014 clicking opens the Kibana Dashboards library searched for GCP OTel dashboards, carrying the current panel time range to the destination.",
                     "drilldowns": [
                         {
                             "encode_url": false,
-                            "label": "Browse other GCP dashboards",
+                            "label": "Browse GCP OTel dashboards",
                             "open_in_new_tab": false,
                             "trigger": "on_click_value",
                             "type": "url_drilldown",
-                            "url": "{{kibanaUrl}}/app/dashboards#/list?_g=(filters:!(),time:(from:'{{context.panel.timeRange.from}}',to:'{{context.panel.timeRange.to}}'))&s=GCP"
+                            "url": "{{kibanaUrl}}/app/dashboards#/list?_g=(filters:!(),refreshInterval:(pause:!t,value:60000),time:(from:{{context.panel.timeRange.from}},to:{{context.panel.timeRange.to}}))&s=GCP%20OTel"
                         }
                     ],
                     "hide_border": true
@@ -166,7 +166,7 @@
                                                     "columnId": "metric_accessor_metric",
                                                     "customLabel": true,
                                                     "fieldName": "Cloud SQL Instances",
-                                                    "label": "MySQL instances",
+                                                    "label": " ",
                                                     "meta": {
                                                         "type": "number"
                                                     }
@@ -203,7 +203,9 @@
                         "title": "",
                         "version": 2,
                         "visualizationType": "lnsMetric"
-                    }
+                    },
+                    "title": "MySQL instances",
+                    "description": "Cloud SQL for MySQL instances reporting in the selected range, including instances that are not running. Instances of other engines in the same data stream are left out: an instance counts as MySQL when it reports database/mysql/queries."
                 },
                 "gridData": {
                     "x": 0,
@@ -240,7 +242,7 @@
                                                     "columnId": "metric_accessor_metric",
                                                     "customLabel": true,
                                                     "fieldName": "MySQL Cloud SQL Instances",
-                                                    "label": "Instances not running",
+                                                    "label": " ",
                                                     "meta": {
                                                         "type": "number"
                                                     }
@@ -313,7 +315,9 @@
                         "title": "",
                         "version": 2,
                         "visualizationType": "lnsMetric"
-                    }
+                    },
+                    "title": "Instances not running",
+                    "description": "MySQL instances whose latest Cloud SQL state is anything other than RUNNING (for example MAINTENANCE, SUSPENDED or FAILED), or that are RUNNING but report database/up = 0. Green at 0, red at 1 or more; the instances table shows which instance."
                 },
                 "gridData": {
                     "x": 8,
@@ -350,7 +354,7 @@
                                                     "columnId": "metric_accessor_metric",
                                                     "customLabel": true,
                                                     "fieldName": "Restarts",
-                                                    "label": "Restarts",
+                                                    "label": " ",
                                                     "meta": {
                                                         "type": "number"
                                                     },
@@ -433,7 +437,8 @@
                         "version": 2,
                         "visualizationType": "lnsMetric"
                     },
-                    "description": "Restarts across MySQL instances in the selected range: one-minute uptime samples between 0 and 55 seconds, meaning the server came up part-way through the minute. Samples of 59-61 seconds are collection jitter and are ignored."
+                    "description": "Restarts across MySQL instances in the selected range: one-minute uptime samples between 0 and 55 seconds, meaning the server came up part-way through the minute. Samples of 59-61 seconds are collection jitter and are ignored. Green at 0, red at 1 or more.",
+                    "title": "Restarts"
                 },
                 "gridData": {
                     "x": 16,
@@ -470,7 +475,7 @@
                                                     "columnId": "metric_accessor_metric",
                                                     "customLabel": true,
                                                     "fieldName": "highest_average_cpu",
-                                                    "label": "Highest avg CPU utilization",
+                                                    "label": " ",
                                                     "meta": {
                                                         "type": "number"
                                                     },
@@ -561,7 +566,9 @@
                         "title": "",
                         "version": 2,
                         "visualizationType": "lnsMetric"
-                    }
+                    },
+                    "title": "Highest avg CPU utilization",
+                    "description": "Highest average CPU utilization of any MySQL instance over the selected range, as a share of its reserved vCPUs. Green below 70%, amber from 70%, red from 90%. Sustained high CPU raises query latency; the CPU chart below shows which instance."
                 },
                 "gridData": {
                     "x": 24,
@@ -598,7 +605,7 @@
                                                     "columnId": "metric_accessor_metric",
                                                     "customLabel": true,
                                                     "fieldName": "Highest memory utilization",
-                                                    "label": "Highest memory utilization",
+                                                    "label": " ",
                                                     "meta": {
                                                         "type": "number"
                                                     },
@@ -690,7 +697,8 @@
                         "version": 2,
                         "visualizationType": "lnsMetric"
                     },
-                    "description": "Highest latest memory utilization across MySQL instances, as a share of the instance memory quota. Sustained values near 100% risk an out-of-memory restart."
+                    "description": "Highest latest memory utilization of any MySQL instance, as a share of its memory quota. Green below 70%, amber from 70%, red from 90%. Sustained values near 100% risk an out-of-memory restart.",
+                    "title": "Highest memory utilization"
                 },
                 "gridData": {
                     "x": 32,
@@ -727,7 +735,7 @@
                                                     "columnId": "metric_accessor_metric",
                                                     "customLabel": true,
                                                     "fieldName": "Highest Disk Utilization Ratio (%)",
-                                                    "label": "Highest disk utilization",
+                                                    "label": " ",
                                                     "meta": {
                                                         "type": "number"
                                                     },
@@ -818,7 +826,9 @@
                         "title": "",
                         "version": 2,
                         "visualizationType": "lnsMetric"
-                    }
+                    },
+                    "title": "Highest disk utilization",
+                    "description": "Highest latest disk usage of any MySQL instance: bytes used over the provisioned disk quota. Green below 70%, amber from 70%, red from 90%. An instance that runs out of disk can no longer accept writes, so enable automatic storage increase or resize before it reaches 90%."
                 },
                 "gridData": {
                     "x": 40,
@@ -861,15 +871,6 @@
                                                     }
                                                 },
                                                 {
-                                                    "columnId": "datatable_accessor_row_1",
-                                                    "customLabel": true,
-                                                    "fieldName": "state",
-                                                    "label": "State",
-                                                    "meta": {
-                                                        "type": "string"
-                                                    }
-                                                },
-                                                {
                                                     "columnId": "datatable_accessor_metric_0",
                                                     "customLabel": true,
                                                     "fieldName": "avg cpu utilization",
@@ -887,6 +888,16 @@
                                                             }
                                                         }
                                                     }
+                                                },
+                                                {
+                                                    "columnId": "datatable_accessor_row_1",
+                                                    "customLabel": true,
+                                                    "fieldName": "state",
+                                                    "label": "State",
+                                                    "meta": {
+                                                        "type": "string"
+                                                    },
+                                                    "inMetricDimension": true
                                                 },
                                                 {
                                                     "columnId": "datatable_accessor_metric_1",
@@ -949,7 +960,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "metrics-gcp.cloudsql_mysql.otel-default-189f9efc48f3c2755d2a71d4c5694da2d9d0f63451a0f7200633a594d47c7a88",
                                             "query": {
-                                                "esql": "TS metrics-gcp.cloudsql_mysql.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"cloudsql_database\" AND TRANGE(?_tstart, ?_tend)\n| STATS marker = SUM(COUNT_OVER_TIME(`metrics.cloudsql.googleapis.com/database/mysql/queries`)), `avg cpu utilization` = AVG(AVG_OVER_TIME(`metrics.cloudsql.googleapis.com/database/cpu/utilization`)), `avg memory utilization` = AVG(AVG_OVER_TIME(`metrics.cloudsql.googleapis.com/database/memory/utilization`)), bytes_used = MAX(LAST_OVER_TIME(`metrics.cloudsql.googleapis.com/database/disk/bytes_used`)), quota = MAX(LAST_OVER_TIME(`metrics.cloudsql.googleapis.com/database/disk/quota`)), `avg connections` = AVG(AVG_OVER_TIME(`metrics.cloudsql.googleapis.com/database/network/connections`)), running = MAX(LAST_OVER_TIME(`metrics.cloudsql.googleapis.com/database/instance_state`)) WHERE state == \"RUNNING\", up_val = MAX(LAST_OVER_TIME(`metrics.cloudsql.googleapis.com/database/up`)) BY database_id\n| WHERE marker > 0\n| EVAL `disk utilization ratio` = CASE(quota > 0, TO_DOUBLE(bytes_used) / TO_DOUBLE(quota), 0.0), `state` = CASE(running == 1 AND up_val == 1, \"RUNNING\", \"NOT RUNNING\")\n| KEEP database_id, `state`, `avg cpu utilization`, `avg memory utilization`, `disk utilization ratio`, `avg connections`\n| SORT `avg cpu utilization` DESC\n| LIMIT 100"
+                                                "esql": "TS metrics-gcp.cloudsql_mysql.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"cloudsql_database\" AND TRANGE(?_tstart, ?_tend)\n| STATS marker = SUM(COUNT_OVER_TIME(`metrics.cloudsql.googleapis.com/database/mysql/queries`)), `avg cpu utilization` = AVG(AVG_OVER_TIME(`metrics.cloudsql.googleapis.com/database/cpu/utilization`)), `avg memory utilization` = AVG(AVG_OVER_TIME(`metrics.cloudsql.googleapis.com/database/memory/utilization`)), bytes_used = MAX(LAST_OVER_TIME(`metrics.cloudsql.googleapis.com/database/disk/bytes_used`)), quota = MAX(LAST_OVER_TIME(`metrics.cloudsql.googleapis.com/database/disk/quota`)), `avg connections` = AVG(AVG_OVER_TIME(`metrics.cloudsql.googleapis.com/database/network/connections`)), running = MAX(LAST_OVER_TIME(`metrics.cloudsql.googleapis.com/database/instance_state`)) WHERE state == \"RUNNING\", up_val = MAX(LAST_OVER_TIME(`metrics.cloudsql.googleapis.com/database/up`)) BY database_id\n| WHERE marker > 0\n| EVAL `disk utilization ratio` = CASE(quota > 0, TO_DOUBLE(bytes_used) / TO_DOUBLE(quota), 0.0), `state` = CASE(running == 1 AND up_val == 1, \"RUNNING\", \"NOT RUNNING\")\n| KEEP database_id, `avg cpu utilization`, `state`, `avg memory utilization`, `disk utilization ratio`, `avg connections`\n| SORT `avg cpu utilization` DESC\n| LIMIT 100"
                                             }
                                         }
                                     }
@@ -964,7 +975,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "TS metrics-gcp.cloudsql_mysql.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"cloudsql_database\" AND TRANGE(?_tstart, ?_tend)\n| STATS marker = SUM(COUNT_OVER_TIME(`metrics.cloudsql.googleapis.com/database/mysql/queries`)), `avg cpu utilization` = AVG(AVG_OVER_TIME(`metrics.cloudsql.googleapis.com/database/cpu/utilization`)), `avg memory utilization` = AVG(AVG_OVER_TIME(`metrics.cloudsql.googleapis.com/database/memory/utilization`)), bytes_used = MAX(LAST_OVER_TIME(`metrics.cloudsql.googleapis.com/database/disk/bytes_used`)), quota = MAX(LAST_OVER_TIME(`metrics.cloudsql.googleapis.com/database/disk/quota`)), `avg connections` = AVG(AVG_OVER_TIME(`metrics.cloudsql.googleapis.com/database/network/connections`)), running = MAX(LAST_OVER_TIME(`metrics.cloudsql.googleapis.com/database/instance_state`)) WHERE state == \"RUNNING\", up_val = MAX(LAST_OVER_TIME(`metrics.cloudsql.googleapis.com/database/up`)) BY database_id\n| WHERE marker > 0\n| EVAL `disk utilization ratio` = CASE(quota > 0, TO_DOUBLE(bytes_used) / TO_DOUBLE(quota), 0.0), `state` = CASE(running == 1 AND up_val == 1, \"RUNNING\", \"NOT RUNNING\")\n| KEEP database_id, `state`, `avg cpu utilization`, `avg memory utilization`, `disk utilization ratio`, `avg connections`\n| SORT `avg cpu utilization` DESC\n| LIMIT 100"
+                                "esql": "TS metrics-gcp.cloudsql_mysql.otel-default\n| WHERE resource.attributes.gcp.resource_type == \"cloudsql_database\" AND TRANGE(?_tstart, ?_tend)\n| STATS marker = SUM(COUNT_OVER_TIME(`metrics.cloudsql.googleapis.com/database/mysql/queries`)), `avg cpu utilization` = AVG(AVG_OVER_TIME(`metrics.cloudsql.googleapis.com/database/cpu/utilization`)), `avg memory utilization` = AVG(AVG_OVER_TIME(`metrics.cloudsql.googleapis.com/database/memory/utilization`)), bytes_used = MAX(LAST_OVER_TIME(`metrics.cloudsql.googleapis.com/database/disk/bytes_used`)), quota = MAX(LAST_OVER_TIME(`metrics.cloudsql.googleapis.com/database/disk/quota`)), `avg connections` = AVG(AVG_OVER_TIME(`metrics.cloudsql.googleapis.com/database/network/connections`)), running = MAX(LAST_OVER_TIME(`metrics.cloudsql.googleapis.com/database/instance_state`)) WHERE state == \"RUNNING\", up_val = MAX(LAST_OVER_TIME(`metrics.cloudsql.googleapis.com/database/up`)) BY database_id\n| WHERE marker > 0\n| EVAL `disk utilization ratio` = CASE(quota > 0, TO_DOUBLE(bytes_used) / TO_DOUBLE(quota), 0.0), `state` = CASE(running == 1 AND up_val == 1, \"RUNNING\", \"NOT RUNNING\")\n| KEEP database_id, `avg cpu utilization`, `state`, `avg memory utilization`, `disk utilization ratio`, `avg connections`\n| SORT `avg cpu utilization` DESC\n| LIMIT 100"
                             },
                             "visualization": {
                                 "columns": [
@@ -977,45 +988,66 @@
                                         "oneClickFilter": true
                                     },
                                     {
-                                        "alignment": "center",
-                                        "colorMapping": {
-                                            "assignments": [],
-                                            "colorMode": {
-                                                "type": "categorical"
-                                            },
-                                            "paletteId": "severity",
-                                            "specialAssignments": [
-                                                {
-                                                    "color": {
-                                                        "type": "loop"
-                                                    },
-                                                    "rules": [
-                                                        {
-                                                            "type": "other"
-                                                        }
-                                                    ],
-                                                    "touched": false
-                                                }
-                                            ]
-                                        },
+                                        "alignment": "right",
+                                        "columnId": "datatable_accessor_metric_0",
+                                        "hidden": false,
+                                        "isMetric": true,
+                                        "isTransposed": false,
                                         "colorMode": "badge",
+                                        "palette": {
+                                            "type": "palette",
+                                            "name": "custom",
+                                            "params": {
+                                                "name": "custom",
+                                                "progression": "fixed",
+                                                "reverse": false,
+                                                "rangeMin": null,
+                                                "rangeMax": null,
+                                                "rangeType": "number",
+                                                "stops": [
+                                                    {
+                                                        "color": "#aee8d2",
+                                                        "stop": 0.7
+                                                    },
+                                                    {
+                                                        "color": "#fff3c2",
+                                                        "stop": 0.9
+                                                    },
+                                                    {
+                                                        "color": "#ffc9c2",
+                                                        "stop": null
+                                                    }
+                                                ],
+                                                "colorStops": [
+                                                    {
+                                                        "color": "#aee8d2",
+                                                        "stop": null
+                                                    },
+                                                    {
+                                                        "color": "#fff3c2",
+                                                        "stop": 0.7
+                                                    },
+                                                    {
+                                                        "color": "#ffc9c2",
+                                                        "stop": 0.9
+                                                    }
+                                                ],
+                                                "continuity": "all",
+                                                "steps": 3,
+                                                "maxSteps": 5
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "alignment": "center",
                                         "columnId": "datatable_accessor_row_1",
                                         "hidden": false,
-                                        "isMetric": false,
+                                        "isMetric": true,
                                         "isTransposed": false,
                                         "oneClickFilter": false
                                     },
                                     {
                                         "alignment": "right",
-                                        "colorMode": "badge",
-                                        "columnId": "datatable_accessor_metric_0",
-                                        "hidden": false,
-                                        "isMetric": true,
-                                        "isTransposed": false
-                                    },
-                                    {
-                                        "alignment": "right",
-                                        "colorMode": "badge",
                                         "columnId": "datatable_accessor_metric_1",
                                         "hidden": false,
                                         "isMetric": true,
@@ -1023,7 +1055,6 @@
                                     },
                                     {
                                         "alignment": "right",
-                                        "colorMode": "badge",
                                         "columnId": "datatable_accessor_metric_2",
                                         "hidden": false,
                                         "isMetric": true,
@@ -1078,9 +1109,18 @@
                             "open_in_new_tab": true,
                             "trigger": "on_click_value",
                             "type": "url_drilldown",
-                            "url": "https://console.cloud.google.com/sql/instances/{{event.value}}"
+                            "url": "https://console.cloud.google.com/sql/instances/{{lookup (split event.value \":\") 1}}/overview?project={{lookup (split event.value \":\") 0}}"
+                        },
+                        {
+                            "encode_url": true,
+                            "label": "View in Google Cloud console \u2197",
+                            "open_in_new_tab": true,
+                            "trigger": "on_click_row",
+                            "type": "url_drilldown",
+                            "url": "https://console.cloud.google.com/sql/instances/{{lookup (split (lookup event.values 0) \":\") 1}}/overview?project={{lookup (split (lookup event.values 0) \":\") 0}}"
                         }
-                    ]
+                    ],
+                    "description": "Every MySQL instance in the selected range, sorted by average CPU utilization. The CPU badge is green below 70%, yellow from 70% and red from 90%. State is RUNNING when the latest Cloud SQL state is RUNNING and database/up is 1, otherwise NOT RUNNING. CPU, memory and connections are averages over the range; disk is the latest bytes used over the disk quota. Click an instance name to open its detail dashboard, its metrics in Discover or the Google Cloud console; the console link is also in each row's actions."
                 },
                 "gridData": {
                     "x": 0,
@@ -1212,8 +1252,11 @@
                                 ],
                                 "legend": {
                                     "isVisible": true,
-                                    "layout": "list",
-                                    "position": "bottom"
+                                    "shouldTruncate": true,
+                                    "showSingleSeries": true,
+                                    "position": "right",
+                                    "legendSize": "auto",
+                                    "maxLines": 1
                                 },
                                 "preferredSeriesType": "line",
                                 "yLeftExtent": {
@@ -1226,7 +1269,8 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "title": "Top 10 instances by CPU utilization"
+                    "title": "Top 10 instances by CPU utilization",
+                    "description": "Average CPU utilization of each instance per time bucket, as a share of its reserved vCPUs, for the 10 busiest instances in each bucket. Values held above 70% leave little headroom for spikes; resize the tier or look for expensive queries."
                 },
                 "gridData": {
                     "x": 0,
@@ -1358,8 +1402,11 @@
                                 ],
                                 "legend": {
                                     "isVisible": true,
-                                    "layout": "list",
-                                    "position": "bottom"
+                                    "shouldTruncate": true,
+                                    "showSingleSeries": true,
+                                    "position": "right",
+                                    "legendSize": "auto",
+                                    "maxLines": 1
                                 },
                                 "preferredSeriesType": "line",
                                 "yLeftExtent": {
@@ -1372,7 +1419,8 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "title": "Top 10 instances by memory utilization"
+                    "title": "Top 10 instances by memory utilization",
+                    "description": "Average memory utilization of each instance per time bucket, as a share of its memory quota, for the 10 highest instances in each bucket. Values held near 100% risk an out-of-memory restart."
                 },
                 "gridData": {
                     "x": 24,
@@ -1504,8 +1552,11 @@
                                 ],
                                 "legend": {
                                     "isVisible": true,
-                                    "layout": "list",
-                                    "position": "bottom"
+                                    "shouldTruncate": true,
+                                    "showSingleSeries": true,
+                                    "position": "right",
+                                    "legendSize": "auto",
+                                    "maxLines": 1
                                 },
                                 "preferredSeriesType": "line",
                                 "yLeftExtent": {
@@ -1518,7 +1569,8 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "title": "Top 10 instances by disk utilization"
+                    "title": "Top 10 instances by disk utilization",
+                    "description": "Average disk utilization of each instance per time bucket (bytes used over the disk quota), for the 10 highest instances in each bucket. A steady climb shows how soon the disk will fill."
                 },
                 "gridData": {
                     "x": 0,
@@ -1650,8 +1702,11 @@
                                 ],
                                 "legend": {
                                     "isVisible": true,
-                                    "layout": "list",
-                                    "position": "bottom"
+                                    "shouldTruncate": true,
+                                    "showSingleSeries": true,
+                                    "position": "right",
+                                    "legendSize": "auto",
+                                    "maxLines": 1
                                 },
                                 "preferredSeriesType": "line",
                                 "yLeftExtent": {
@@ -1664,7 +1719,8 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "title": "Top 10 instances by queries per second"
+                    "title": "Top 10 instances by queries per second",
+                    "description": "Statements executed per second by each instance, from one-minute delta counts of database/mysql/queries divided by the minutes reported in each bucket, for the 10 highest instances in each bucket. A sudden drop with flat CPU usually means clients cannot connect."
                 },
                 "gridData": {
                     "x": 0,
@@ -1787,8 +1843,11 @@
                                 ],
                                 "legend": {
                                     "isVisible": true,
-                                    "layout": "list",
-                                    "position": "bottom"
+                                    "shouldTruncate": true,
+                                    "showSingleSeries": true,
+                                    "position": "right",
+                                    "legendSize": "auto",
+                                    "maxLines": 1
                                 },
                                 "preferredSeriesType": "line",
                                 "yLeftExtent": {
@@ -1801,7 +1860,8 @@
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "title": "Top 10 instances by connections"
+                    "title": "Top 10 instances by connections",
+                    "description": "Average open connections to the MySQL server of each instance per time bucket, for the 10 highest instances in each bucket. When an instance reaches its max_connections setting, new connections are refused."
                 },
                 "gridData": {
                     "x": 24,
