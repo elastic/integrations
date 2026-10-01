@@ -222,7 +222,7 @@ Alert rule templates require Elastic Stack version 9.2.0 or later.
 
 | Name | Description |
 |---|---|
-| [OpenRouter] Cache Hit Rate Drop | Alerts when the average cache hit rate across all models drops below a configurable threshold. A sudden drop in cache hit rate can signal prompt changes, model switching, or cache invalidation events that increase effective token cost. |
+| [OpenRouter] Cache Hit Rate Drop | Alerts when the average cache hit rate of any model drops below a configurable threshold. A sudden drop in cache hit rate can signal prompt changes, model switching, or cache invalidation events that increase effective token cost. |
 | [OpenRouter] Daily Cost Anomaly | Alerts when daily cost across all models and providers exceeds a configurable threshold. Catches unexpected spend spikes from runaway workloads or new model adoption before they accumulate. |
 | [OpenRouter] Model Latency Regression | Alerts when the p99 end-to-end latency for any model exceeds a configurable threshold. Detects model or provider degradation before it impacts end-user experience. Works with the default dimensions (model, api_key_id). To alert per provider instead, add 'provider' to the performance stream dimensions. |
 

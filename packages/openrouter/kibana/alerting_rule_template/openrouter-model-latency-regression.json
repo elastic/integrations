@@ -1,5 +1,5 @@
 {
-    "id": "openrouter-provider-latency-regression",
+    "id": "openrouter-model-latency-regression",
     "type": "alerting_rule_template",
     "attributes": {
         "name": "[OpenRouter] Model Latency Regression",
@@ -20,8 +20,7 @@
             "esqlQuery": {
                 "esql": "// Alert when any model's p99 latency exceeds a threshold in milliseconds.\n// Default: 5000ms (5 seconds). Adjust per your SLO.\n// Groups by model, which is always present with the default dimensions.\n// To group by provider instead, add 'provider' to the performance stream dimensions.\nFROM metrics-openrouter.performance-*\n| WHERE openrouter.performance.p99_latency IS NOT NULL AND openrouter.performance.model IS NOT NULL\n| STATS max_p99_ms = MAX(openrouter.performance.p99_latency) BY openrouter.performance.model\n| WHERE max_p99_ms > 5000\n| SORT max_p99_ms DESC"
             },
-            "groupBy": "top",
-            "groupByField": "openrouter.performance.model",
+            "groupBy": "row",
             "timeField": "@timestamp"
         },
         "alertDelay": {

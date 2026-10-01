@@ -3,7 +3,7 @@
     "type": "alerting_rule_template",
     "attributes": {
         "name": "[OpenRouter] Cache Hit Rate Drop",
-        "description": "Alerts when the average cache hit rate across all models drops below a configurable threshold. A sudden drop in cache hit rate can signal prompt changes, model switching, or cache invalidation events that increase effective token cost.",
+        "description": "Alerts when the average cache hit rate of any model drops below a configurable threshold. A sudden drop in cache hit rate can signal prompt changes, model switching, or cache invalidation events that increase effective token cost.",
         "tags": [
             "OpenRouter",
             "Cache",
@@ -18,7 +18,7 @@
             "timeWindowSize": 6,
             "timeWindowUnit": "h",
             "esqlQuery": {
-                "esql": "// Alert when the average cache hit rate drops below a threshold.\n// cache_hit_rate is a ratio (0.0–1.0). Threshold of 0.2 = 20%.\n// Adjust the threshold in the final WHERE clause as needed.\nFROM metrics-openrouter.performance-*\n| WHERE openrouter.performance.cache_hit_rate IS NOT NULL\n| STATS avg_cache_hit_rate = AVG(openrouter.performance.cache_hit_rate)\n| WHERE avg_cache_hit_rate < 0.2"
+                "esql": "// Alert when a model's average cache hit rate drops below a threshold.\n// cache_hit_rate is a ratio (0.0–1.0). Threshold of 0.2 = 20%.\n// Adjust the threshold in the final WHERE clause as needed.\nFROM metrics-openrouter.performance-*\n| WHERE openrouter.performance.cache_hit_rate IS NOT NULL\n| STATS avg_cache_hit_rate = AVG(openrouter.performance.cache_hit_rate) BY openrouter.performance.model\n| WHERE avg_cache_hit_rate < 0.2"
             },
             "groupBy": "row",
             "timeField": "@timestamp"
@@ -28,7 +28,7 @@
         },
         "artifacts": {
             "investigation_guide": {
-                "blob": "## Cache Hit Rate Drop\n\n### Triage Steps\n1. Open the OpenRouter Performance dashboard and inspect the cache hit rate trend.\n2. Check which models experienced the drop:\n   `FROM metrics-openrouter.performance-* | STATS rate = AVG(openrouter.performance.cache_hit_rate) BY openrouter.performance.model | SORT rate ASC`\n3. Correlate with prompt changes in your application — cache hits depend on prompt prefix stability.\n4. Check whether a new model was introduced that does not support prompt caching.\n\n### Common Causes\n- Prompt prefix changes that invalidate the cache (e.g., dynamic system prompts with timestamps)\n- New model rollout where the model does not support prompt caching\n- Shift in traffic to a provider that does not cache\n- Very short prompts below the minimum caching threshold\n\n### Tuning\n- Lower the threshold (e.g., `0.1` = 10%) if your workload naturally has low cache reuse.\n- Add `BY openrouter.performance.model` to the STATS clause for per-model alerting."
+                "blob": "## Cache Hit Rate Drop\n\n### Triage Steps\n1. Open the OpenRouter Performance dashboard and inspect the cache hit rate trend.\n2. Check which models experienced the drop:\n   `FROM metrics-openrouter.performance-* | STATS rate = AVG(openrouter.performance.cache_hit_rate) BY openrouter.performance.model | SORT rate ASC`\n3. Correlate with prompt changes in your application — cache hits depend on prompt prefix stability.\n4. Check whether a new model was introduced that does not support prompt caching.\n\n### Common Causes\n- Prompt prefix changes that invalidate the cache (e.g., dynamic system prompts with timestamps)\n- New model rollout where the model does not support prompt caching\n- Shift in traffic to a provider that does not cache\n- Very short prompts below the minimum caching threshold\n\n### Tuning\n- Lower the threshold (e.g., `0.1` = 10%) if your workload naturally has low cache reuse."
             }
         }
     },
