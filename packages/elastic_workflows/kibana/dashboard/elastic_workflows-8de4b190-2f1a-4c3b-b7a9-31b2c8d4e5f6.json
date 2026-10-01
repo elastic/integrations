@@ -407,7 +407,7 @@
                                             ],
                                             "index": "elastic-workflows-executions-esql",
                                             "query": {
-                                                "esql": "FROM .workflows-executions\n| WHERE startedAt \u003e= ?_tstart AND startedAt \u003c ?_tend\n| WHERE (?space_ids IS NULL OR MV_INTERSECTS(spaceId, ?space_ids)) AND (?run_types IS NULL OR MV_INTERSECTS(CASE(COALESCE(isTestRun, false), \"test\", \"production\"), ?run_types))\n| STATS total = COUNT(*), completed = COUNT(*) WHERE status == \"completed\"\n| EVAL success_rate = CASE(total \u003e 0, TO_DOUBLE(completed) / total, 0.0)\n| KEEP success_rate"
+                                                "esql": "FROM .workflows-executions\n| WHERE startedAt \u003e= ?_tstart AND startedAt \u003c ?_tend\n| WHERE (?space_ids IS NULL OR MV_INTERSECTS(spaceId, ?space_ids)) AND (?run_types IS NULL OR MV_INTERSECTS(CASE(COALESCE(isTestRun, false), \"test\", \"production\"), ?run_types))\n| STATS total = COUNT(*) WHERE status IN (\"completed\", \"failed\", \"cancelled\", \"timed_out\", \"skipped\"), completed = COUNT(*) WHERE status == \"completed\"\n| EVAL success_rate = CASE(total \u003e 0, TO_DOUBLE(completed) / total, 0.0)\n| KEEP success_rate"
                                             },
                                             "timeField": "startedAt"
                                         }
@@ -424,7 +424,7 @@
                             ],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM .workflows-executions\n| WHERE startedAt \u003e= ?_tstart AND startedAt \u003c ?_tend\n| WHERE (?space_ids IS NULL OR MV_INTERSECTS(spaceId, ?space_ids)) AND (?run_types IS NULL OR MV_INTERSECTS(CASE(COALESCE(isTestRun, false), \"test\", \"production\"), ?run_types))\n| STATS total = COUNT(*), completed = COUNT(*) WHERE status == \"completed\"\n| EVAL success_rate = CASE(total \u003e 0, TO_DOUBLE(completed) / total, 0.0)\n| KEEP success_rate"
+                                "esql": "FROM .workflows-executions\n| WHERE startedAt \u003e= ?_tstart AND startedAt \u003c ?_tend\n| WHERE (?space_ids IS NULL OR MV_INTERSECTS(spaceId, ?space_ids)) AND (?run_types IS NULL OR MV_INTERSECTS(CASE(COALESCE(isTestRun, false), \"test\", \"production\"), ?run_types))\n| STATS total = COUNT(*) WHERE status IN (\"completed\", \"failed\", \"cancelled\", \"timed_out\", \"skipped\"), completed = COUNT(*) WHERE status == \"completed\"\n| EVAL success_rate = CASE(total \u003e 0, TO_DOUBLE(completed) / total, 0.0)\n| KEEP success_rate"
                             },
                             "visualization": {
                                 "layerId": "success-rate-main",
@@ -1068,7 +1068,7 @@
                                             ],
                                             "index": "elastic-workflows-executions-esql",
                                             "query": {
-                                                "esql": "FROM .workflows-executions\n| WHERE startedAt \u003e= ?_tstart AND startedAt \u003c ?_tend\n| WHERE (?space_ids IS NULL OR MV_INTERSECTS(spaceId, ?space_ids)) AND (?run_types IS NULL OR MV_INTERSECTS(CASE(COALESCE(isTestRun, false), \"test\", \"production\"), ?run_types))\n| STATS total = COUNT(*), failures = COUNT(*) WHERE status IN (\"failed\", \"timed_out\") BY time_bucket = BUCKET(startedAt, 50, ?_tstart, ?_tend), workflowId\n| EVAL failure_rate = CASE(total \u003e 0, TO_DOUBLE(failures) / total, 0.0)\n| KEEP time_bucket, workflowId, failure_rate\n| SORT time_bucket\n| LIMIT 10000"
+                                                "esql": "FROM .workflows-executions\n| WHERE startedAt \u003e= ?_tstart AND startedAt \u003c ?_tend\n| WHERE (?space_ids IS NULL OR MV_INTERSECTS(spaceId, ?space_ids)) AND (?run_types IS NULL OR MV_INTERSECTS(CASE(COALESCE(isTestRun, false), \"test\", \"production\"), ?run_types))\n| STATS total = COUNT(*) WHERE status IN (\"completed\", \"failed\", \"cancelled\", \"timed_out\", \"skipped\"), failures = COUNT(*) WHERE status IN (\"failed\", \"timed_out\") BY time_bucket = BUCKET(startedAt, 50, ?_tstart, ?_tend), workflowId\n| EVAL failure_rate = CASE(total \u003e 0, TO_DOUBLE(failures) / total, 0.0)\n| KEEP time_bucket, workflowId, failure_rate\n| SORT time_bucket\n| LIMIT 10000"
                                             },
                                             "timeField": "startedAt"
                                         }
@@ -1085,7 +1085,7 @@
                             ],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM .workflows-executions\n| WHERE startedAt \u003e= ?_tstart AND startedAt \u003c ?_tend\n| WHERE (?space_ids IS NULL OR MV_INTERSECTS(spaceId, ?space_ids)) AND (?run_types IS NULL OR MV_INTERSECTS(CASE(COALESCE(isTestRun, false), \"test\", \"production\"), ?run_types))\n| STATS total = COUNT(*), failures = COUNT(*) WHERE status IN (\"failed\", \"timed_out\") BY time_bucket = BUCKET(startedAt, 50, ?_tstart, ?_tend), workflowId\n| EVAL failure_rate = CASE(total \u003e 0, TO_DOUBLE(failures) / total, 0.0)\n| KEEP time_bucket, workflowId, failure_rate\n| SORT time_bucket\n| LIMIT 10000"
+                                "esql": "FROM .workflows-executions\n| WHERE startedAt \u003e= ?_tstart AND startedAt \u003c ?_tend\n| WHERE (?space_ids IS NULL OR MV_INTERSECTS(spaceId, ?space_ids)) AND (?run_types IS NULL OR MV_INTERSECTS(CASE(COALESCE(isTestRun, false), \"test\", \"production\"), ?run_types))\n| STATS total = COUNT(*) WHERE status IN (\"completed\", \"failed\", \"cancelled\", \"timed_out\", \"skipped\"), failures = COUNT(*) WHERE status IN (\"failed\", \"timed_out\") BY time_bucket = BUCKET(startedAt, 50, ?_tstart, ?_tend), workflowId\n| EVAL failure_rate = CASE(total \u003e 0, TO_DOUBLE(failures) / total, 0.0)\n| KEEP time_bucket, workflowId, failure_rate\n| SORT time_bucket\n| LIMIT 10000"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -2109,7 +2109,7 @@
                                             ],
                                             "index": "elastic-workflows-executions-esql",
                                             "query": {
-                                                "esql": "FROM .workflows-executions\n| WHERE startedAt \u003e= ?_tstart AND startedAt \u003c ?_tend\n| WHERE (?space_ids IS NULL OR MV_INTERSECTS(spaceId, ?space_ids)) AND (?run_types IS NULL OR MV_INTERSECTS(CASE(COALESCE(isTestRun, false), \"test\", \"production\"), ?run_types))\n| STATS executions = COUNT(*), failures = COUNT(*) WHERE status IN (\"failed\", \"timed_out\"), completed = COUNT(*) WHERE status == \"completed\", avg_duration_ms = AVG(duration), p95_duration_ms = PERCENTILE(duration, 95) BY workflowId, spaceId\n| EVAL success_rate = CASE(executions \u003e 0, TO_DOUBLE(completed) / executions, 0.0)\n| KEEP workflowId, spaceId, executions, failures, completed, success_rate, avg_duration_ms, p95_duration_ms\n| SORT executions DESC\n| LIMIT 25"
+                                                "esql": "FROM .workflows-executions\n| WHERE startedAt \u003e= ?_tstart AND startedAt \u003c ?_tend\n| WHERE (?space_ids IS NULL OR MV_INTERSECTS(spaceId, ?space_ids)) AND (?run_types IS NULL OR MV_INTERSECTS(CASE(COALESCE(isTestRun, false), \"test\", \"production\"), ?run_types))\n| STATS executions = COUNT(*), failures = COUNT(*) WHERE status IN (\"failed\", \"timed_out\"), completed = COUNT(*) WHERE status == \"completed\", avg_duration_ms = AVG(duration), p95_duration_ms = PERCENTILE(duration, 95), finished = COUNT(*) WHERE status IN (\"completed\", \"failed\", \"cancelled\", \"timed_out\", \"skipped\") BY workflowId, spaceId\n| EVAL success_rate = CASE(finished \u003e 0, TO_DOUBLE(completed) / finished, 0.0)\n| KEEP workflowId, spaceId, executions, failures, completed, success_rate, avg_duration_ms, p95_duration_ms\n| SORT executions DESC\n| LIMIT 25"
                                             },
                                             "timeField": "startedAt"
                                         }
@@ -2126,7 +2126,7 @@
                             ],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM .workflows-executions\n| WHERE startedAt \u003e= ?_tstart AND startedAt \u003c ?_tend\n| WHERE (?space_ids IS NULL OR MV_INTERSECTS(spaceId, ?space_ids)) AND (?run_types IS NULL OR MV_INTERSECTS(CASE(COALESCE(isTestRun, false), \"test\", \"production\"), ?run_types))\n| STATS executions = COUNT(*), failures = COUNT(*) WHERE status IN (\"failed\", \"timed_out\"), completed = COUNT(*) WHERE status == \"completed\", avg_duration_ms = AVG(duration), p95_duration_ms = PERCENTILE(duration, 95) BY workflowId, spaceId\n| EVAL success_rate = CASE(executions \u003e 0, TO_DOUBLE(completed) / executions, 0.0)\n| KEEP workflowId, spaceId, executions, failures, completed, success_rate, avg_duration_ms, p95_duration_ms\n| SORT executions DESC\n| LIMIT 25"
+                                "esql": "FROM .workflows-executions\n| WHERE startedAt \u003e= ?_tstart AND startedAt \u003c ?_tend\n| WHERE (?space_ids IS NULL OR MV_INTERSECTS(spaceId, ?space_ids)) AND (?run_types IS NULL OR MV_INTERSECTS(CASE(COALESCE(isTestRun, false), \"test\", \"production\"), ?run_types))\n| STATS executions = COUNT(*), failures = COUNT(*) WHERE status IN (\"failed\", \"timed_out\"), completed = COUNT(*) WHERE status == \"completed\", avg_duration_ms = AVG(duration), p95_duration_ms = PERCENTILE(duration, 95), finished = COUNT(*) WHERE status IN (\"completed\", \"failed\", \"cancelled\", \"timed_out\", \"skipped\") BY workflowId, spaceId\n| EVAL success_rate = CASE(finished \u003e 0, TO_DOUBLE(completed) / finished, 0.0)\n| KEEP workflowId, spaceId, executions, failures, completed, success_rate, avg_duration_ms, p95_duration_ms\n| SORT executions DESC\n| LIMIT 25"
                             },
                             "visualization": {
                                 "columns": [
