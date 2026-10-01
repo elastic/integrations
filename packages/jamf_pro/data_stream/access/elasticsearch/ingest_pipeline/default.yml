@@ -43,15 +43,6 @@ processors:
       field: event.original
       tag: json_parse_envelope_c1d2e3f4
       target_field: _tmp.envelope
-      on_failure:
-        - append:
-            field: error.message
-            tag: append_json_parse_error_a5b6c7d8
-            value: >-
-              Processor '{{{ _ingest.on_failure_processor_type }}}'
-              with tag '{{{ _ingest.on_failure_processor_tag }}}'
-              in pipeline '{{{ _ingest.pipeline }}}'
-              failed with message '{{{ _ingest.on_failure_message }}}'
   - date:
       field: _tmp.envelope.time
       tag: date_envelope_time_e9f0a1b2
@@ -262,10 +253,6 @@ processors:
         - _tmp
       tag: remove_tmp_fields_e9f0a1b3
       ignore_missing: true
-  - pipeline:
-      name: logs-jamf_pro.access@custom
-      ignore_missing_pipeline: true
-      tag: pipeline_custom_access_c3d4e5f7
   - append:
       field: tags
       tag: append_preserve_original_event_on_error_a7b8c9d1

@@ -14,15 +14,6 @@ processors:
       tag: json_parse_envelope_cm_d1e2f3a4
       target_field: _tmp.envelope
       if: ctx.event?.original != null
-      on_failure:
-        - append:
-            field: error.message
-            tag: append_json_parse_error_cm_b5c6d7e8
-            value: >-
-              Processor '{{{ _ingest.on_failure_processor_type }}}'
-              with tag '{{{ _ingest.on_failure_processor_tag }}}'
-              in pipeline '{{{ _ingest.pipeline }}}'
-              failed with message '{{{ _ingest.on_failure_message }}}'
   - set:
       field: _tmp.raw_message
       tag: set_raw_message_cm_f9a0b1c2
@@ -35,7 +26,7 @@ processors:
       tag: grok_cm_header_d3e4f5a6
       patterns:
         - '^%{DATA:_tmp.cm_prefix} \[%{DATA:_tmp.log_level}\] \[%{DATA:_tmp.thread}\] \[%{DATA:_tmp.logger}\] - \[%{DATA:_tmp.actor_raw} \(ID: %{DATA:_tmp.actor_id}\)\] \[%{DATA:_tmp.operation}\] \[%{DATA:_tmp.object_type}\] \[%{DATA:_tmp.event_time}\](?<_tmp.detail_raw>[\s\S]*)'
-      if: ctx._tmp?.raw_message != null && ctx._tmp.raw_message.startsWith('[CHANGEMANAGEMENT]')
+      if: ctx._tmp?.raw_message instanceof String && ctx._tmp.raw_message.startsWith('[CHANGEMANAGEMENT]')
       on_failure:
         - append:
             field: error.message
@@ -195,10 +186,6 @@ processors:
         - _tmp
       tag: remove_tmp_fields_cm_b1c2d3e5
       ignore_missing: true
-  - pipeline:
-      name: logs-jamf_pro.change_management@custom
-      ignore_missing_pipeline: true
-      tag: pipeline_custom_cm_f5a6b7c9
   - append:
       field: tags
       tag: append_preserve_original_event_on_error_cm_d9e0f1a3
