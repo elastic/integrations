@@ -1,0 +1,565 @@
+---
+description: Pipeline for processing NVIDIA OpenShell OCSF JSON events.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: 8.17.0
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: error message set and no data to process.
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      if: ctx.event?.original == null
+      description: Renames the original `message` field to `event.original` to store a copy of the original message.
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      if: ctx.event?.original != null
+      description: The `message` field is no longer required if the document has an `event.original` field.
+  - json:
+      field: event.original
+      tag: json_event_original
+      target_field: openshell.ocsf
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_on_invalid_json
+      value: pipeline_error
+      if: ctx.openshell?.ocsf == null || !(ctx.openshell.ocsf instanceof Map)
+  - append:
+      field: tags
+      tag: append_preserve_original_event_on_invalid_json
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.openshell?.ocsf == null || !(ctx.openshell.ocsf instanceof Map)
+  - remove:
+      field: openshell
+      tag: remove_non_object_record
+      ignore_missing: true
+      if: ctx.openshell?.ocsf != null && !(ctx.openshell.ocsf instanceof Map)
+  - terminate:
+      tag: terminate_on_invalid_json
+      if: ctx.openshell?.ocsf == null
+      description: Keep records that are not a JSON object as-is, flagged as pipeline errors.
+
+  # ---- Timestamp and event metadata --------------------------------------------
+  - date:
+      field: openshell.ocsf.time
+      tag: date_time
+      formats:
+        - UNIX_MS
+      if: ctx.openshell.ocsf.time != null
+      on_failure:
+        - remove:
+            field: openshell.ocsf.time
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: openshell.ocsf.time
+      tag: set_time_from_timestamp
+      copy_from: '@timestamp'
+      if: ctx.openshell.ocsf.time != null
+      description: Store the record time as a date so it is searchable when duplicate fields are preserved.
+  - set:
+      field: message
+      tag: set_message
+      copy_from: openshell.ocsf.message
+      ignore_empty_value: true
+  - set:
+      field: event.id
+      tag: set_event_id
+      copy_from: openshell.ocsf.metadata.uid
+      ignore_empty_value: true
+  - convert:
+      field: openshell.ocsf.class_uid
+      tag: convert_class_uid_to_event_code
+      target_field: event.code
+      type: string
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: openshell.ocsf.severity_id
+      tag: convert_severity_id_to_event_severity
+      target_field: event.severity
+      type: long
+      ignore_missing: true
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.reason
+      tag: set_event_reason
+      copy_from: openshell.ocsf.status_detail
+      ignore_empty_value: true
+  - set:
+      field: event.action
+      tag: set_event_action
+      copy_from: openshell.ocsf.action
+      ignore_empty_value: true
+  - lowercase:
+      field: event.action
+      tag: lowercase_event_action
+      ignore_missing: true
+
+  # ---- Observer (the OpenShell supervisor / gateway) ----------------------------
+  - set:
+      field: observer.vendor
+      tag: set_observer_vendor
+      copy_from: openshell.ocsf.metadata.product.vendor_name
+      ignore_empty_value: true
+  - set:
+      field: observer.product
+      tag: set_observer_product
+      copy_from: openshell.ocsf.metadata.product.name
+      ignore_empty_value: true
+  - set:
+      field: observer.version
+      tag: set_observer_version
+      copy_from: openshell.ocsf.metadata.product.version
+      ignore_empty_value: true
+  - set:
+      field: observer.hostname
+      tag: set_observer_hostname
+      copy_from: openshell.ocsf.device.hostname
+      ignore_empty_value: true
+  - set:
+      field: observer.os.name
+      tag: set_observer_os_name
+      copy_from: openshell.ocsf.device.os.name
+      ignore_empty_value: true
+
+  # ---- Sandbox container ----------------------------------------------------------
+  - set:
+      field: container.name
+      tag: set_container_name
+      copy_from: openshell.ocsf.container.name
+      ignore_empty_value: true
+  - set:
+      field: container.id
+      tag: set_container_id
+      copy_from: openshell.ocsf.container.uid
+      ignore_empty_value: true
+
+  # ---- Network endpoints ----------------------------------------------------------
+  - set:
+      field: destination.domain
+      tag: set_destination_domain
+      copy_from: openshell.ocsf.dst_endpoint.domain
+      ignore_empty_value: true
+  - convert:
+      field: openshell.ocsf.dst_endpoint.ip
+      tag: convert_dst_endpoint_ip
+      target_field: destination.ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: openshell.ocsf.dst_endpoint.ip
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: openshell.ocsf.dst_endpoint.port
+      tag: convert_dst_endpoint_port
+      target_field: destination.port
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: openshell.ocsf.dst_endpoint.port
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - remove:
+      field:
+        - openshell.ocsf.src_endpoint.ip
+        - openshell.ocsf.src_endpoint.port
+      tag: remove_src_endpoint_placeholder
+      ignore_missing: true
+      if: ctx.openshell.ocsf.src_endpoint?.ip != null && ['0.0.0.0', '::'].contains(ctx.openshell.ocsf.src_endpoint.ip)
+      description: OpenShell emits 0.0.0.0:0 when the source socket is not observed.
+  - convert:
+      field: openshell.ocsf.src_endpoint.ip
+      tag: convert_src_endpoint_ip
+      target_field: source.ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: openshell.ocsf.src_endpoint.ip
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: openshell.ocsf.src_endpoint.port
+      tag: convert_src_endpoint_port
+      target_field: source.port
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: openshell.ocsf.src_endpoint.port
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - convert:
+      field: openshell.ocsf.proxy_endpoint.ip
+      tag: convert_proxy_endpoint_ip
+      type: ip
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: openshell.ocsf.proxy_endpoint.ip
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # ---- Actor process ---------------------------------------------------------------
+  - script:
+      tag: script_map_actor_process
+      lang: painless
+      description: >-
+        Map actor.process to ECS process fields. OpenShell reports the executable path in `name`, and uses
+        `0` / `-` / `/dev/null` as placeholders when the PID or command line is unknown.
+      source: |-
+        void mapProcess(Map src, Map dst) {
+          if (src == null) {
+            return;
+          }
+          def exe = src.name;
+          if (exe instanceof String && exe != '-' && exe != '') {
+            dst.executable = exe;
+            int idx = exe.lastIndexOf('/');
+            if (idx < 0) {
+              idx = exe.lastIndexOf('\\');
+            }
+            dst.name = idx >= 0 ? exe.substring(idx + 1) : exe;
+          }
+          def pid = src.pid;
+          if (pid instanceof Number && pid.longValue() > 0) {
+            dst.pid = pid.longValue();
+          }
+          def cmd = src.cmd_line;
+          if (cmd instanceof String && cmd != '-' && cmd != '/dev/null' && cmd != '') {
+            dst.command_line = cmd;
+          }
+        }
+        def actor = ctx.openshell.ocsf.actor;
+        if (actor == null || actor.process == null) {
+          return;
+        }
+        Map proc = new HashMap();
+        mapProcess(actor.process, proc);
+        if (actor.process.parent_process != null) {
+          Map parent = new HashMap();
+          mapProcess(actor.process.parent_process, parent);
+          if (!parent.isEmpty()) {
+            proc.parent = parent;
+          }
+        }
+        if (!proc.isEmpty()) {
+          ctx.process = proc;
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # ---- HTTP request / response ----------------------------------------------------
+  - set:
+      field: http.request.method
+      tag: set_http_request_method
+      copy_from: openshell.ocsf.http_request.http_method
+      ignore_empty_value: true
+  - convert:
+      field: openshell.ocsf.http_response.code
+      tag: convert_http_response_code
+      target_field: http.response.status_code
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: openshell.ocsf.http_response.code
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: url.domain
+      tag: set_url_domain
+      copy_from: openshell.ocsf.http_request.url.hostname
+      ignore_empty_value: true
+  - set:
+      field: url.path
+      tag: set_url_path
+      copy_from: openshell.ocsf.http_request.url.path
+      ignore_empty_value: true
+  - set:
+      field: url.scheme
+      tag: set_url_scheme
+      copy_from: openshell.ocsf.http_request.url.scheme
+      ignore_empty_value: true
+  - convert:
+      field: openshell.ocsf.http_request.url.port
+      tag: convert_http_request_url_port
+      target_field: url.port
+      type: long
+      ignore_missing: true
+      on_failure:
+        - remove:
+            field: openshell.ocsf.http_request.url.port
+            ignore_missing: true
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # ---- Policy rule -------------------------------------------------------------------
+  - set:
+      field: rule.name
+      tag: set_rule_name
+      copy_from: openshell.ocsf.firewall_rule.name
+      ignore_empty_value: true
+      if: ctx.openshell.ocsf.firewall_rule?.name != null && ctx.openshell.ocsf.firewall_rule.name != '-'
+  - set:
+      field: rule.category
+      tag: set_rule_category
+      copy_from: openshell.ocsf.firewall_rule.type
+      ignore_empty_value: true
+
+  # ---- ECS event categorization and network context -------------------------------
+  - script:
+      tag: script_event_categorization
+      lang: painless
+      description: Derive event.kind, event.category, event.type, event.outcome and network context from the OCSF class, activity and disposition.
+      source: |-
+        def o = ctx.openshell.ocsf;
+        def cls = o.class_uid instanceof Number ? o.class_uid.intValue() : -1;
+        def activity = o.activity_name instanceof String ? o.activity_name : '';
+        def action = o.action;
+        def disposition = o.disposition;
+        def status = o.status;
+        def category = new ArrayList();
+        def type = new ArrayList();
+        def kind = 'event';
+        Map network = new HashMap();
+        boolean denied = action == 'Denied' || disposition == 'Blocked';
+        boolean allowed = action == 'Allowed' || disposition == 'Allowed';
+        if (cls == 4001) {
+          category.add('network');
+          type.add(activity == 'Close' ? 'end' : 'connection');
+          network.direction = 'egress';
+          network.transport = 'tcp';
+        } else if (cls == 4002) {
+          category.add('network');
+          category.add('web');
+          type.add('access');
+          network.direction = 'egress';
+          network.transport = 'tcp';
+          network.protocol = 'http';
+        } else if (cls == 4007) {
+          category.add('network');
+          category.add('session');
+          type.add(activity == 'Close' ? 'end' : 'start');
+          network.direction = 'ingress';
+          network.transport = 'tcp';
+          network.protocol = 'ssh';
+        } else if (cls == 1007) {
+          category.add('process');
+          type.add('start');
+        } else if (cls == 2004) {
+          category.add('intrusion_detection');
+          type.add('info');
+          kind = 'alert';
+        } else if (cls == 5019) {
+          category.add('configuration');
+          type.add('change');
+        } else if (cls == 0 && activity.toLowerCase().startsWith('relay')) {
+          category.add('network');
+          category.add('session');
+          type.add(activity.toLowerCase().contains('closed') ? 'end' : 'start');
+        } else {
+          type.add('info');
+        }
+        if (denied) {
+          type.add('denied');
+          kind = 'alert';
+        } else if (allowed) {
+          type.add('allowed');
+        }
+        if (status == 'Success') {
+          ctx.event.outcome = 'success';
+        } else if (status == 'Failure') {
+          ctx.event.outcome = 'failure';
+        } else if (denied) {
+          ctx.event.outcome = 'failure';
+        } else if (allowed) {
+          ctx.event.outcome = 'success';
+        }
+        ctx.event.kind = kind;
+        if (!category.isEmpty()) {
+          ctx.event.category = category;
+        }
+        ctx.event.type = type;
+        if (!network.isEmpty()) {
+          ctx.network = network;
+        }
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+
+  # ---- Related fields -------------------------------------------------------------------
+  - append:
+      field: related.ip
+      tag: append_destination_ip_to_related_ip
+      value: '{{{destination.ip}}}'
+      if: ctx.destination?.ip != null
+      allow_duplicates: false
+  - append:
+      field: related.ip
+      tag: append_source_ip_to_related_ip
+      value: '{{{source.ip}}}'
+      if: ctx.source?.ip != null
+      allow_duplicates: false
+  - append:
+      field: related.hosts
+      tag: append_destination_domain_to_related_hosts
+      value: '{{{destination.domain}}}'
+      if: ctx.destination?.domain != null
+      allow_duplicates: false
+  - append:
+      field: related.hosts
+      tag: append_url_domain_to_related_hosts
+      value: '{{{url.domain}}}'
+      if: ctx.url?.domain != null
+      allow_duplicates: false
+  - append:
+      field: related.hosts
+      tag: append_observer_hostname_to_related_hosts
+      value: '{{{observer.hostname}}}'
+      if: ctx.observer?.hostname != null
+      allow_duplicates: false
+
+  # ---- Cleanup ------------------------------------------------------------------------------
+  - remove:
+      field:
+        - openshell.ocsf.action
+        - openshell.ocsf.container
+        - openshell.ocsf.device.hostname
+        - openshell.ocsf.device.os.name
+        - openshell.ocsf.dst_endpoint
+        - openshell.ocsf.firewall_rule
+        - openshell.ocsf.http_request
+        - openshell.ocsf.http_response.code
+        - openshell.ocsf.message
+        - openshell.ocsf.metadata.product
+        - openshell.ocsf.metadata.uid
+        - openshell.ocsf.severity_id
+        - openshell.ocsf.src_endpoint
+        - openshell.ocsf.status_detail
+        - openshell.ocsf.time
+      tag: remove_custom_duplicate_fields
+      ignore_missing: true
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+  - script:
+      tag: script_remove_mapped_process_fields
+      lang: painless
+      description: Remove actor.process fields that were mapped to ECS unless duplicate custom fields are preserved.
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_duplicate_custom_fields'))
+      source: |-
+        def actor = ctx.openshell.ocsf.actor;
+        if (actor == null || actor.process == null) {
+          return;
+        }
+        def p = actor.process;
+        p.remove('name');
+        p.remove('pid');
+        p.remove('cmd_line');
+        if (p.parent_process != null) {
+          p.parent_process.remove('name');
+          p.parent_process.remove('pid');
+          p.parent_process.remove('cmd_line');
+        }
+  - remove:
+      field: event.original
+      tag: remove_event_original
+      ignore_missing: true
+      if: ctx.tags == null || !(ctx.tags.contains('preserve_original_event'))
+  - script:
+      tag: script_remove_null_values
+      lang: painless
+      description: Remove null or empty values from the document.
+      source: |-
+        void handleMap(Map map) {
+          map.values().removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        void handleList(List list) {
+          list.removeIf(v -> {
+            if (v instanceof Map) {
+              handleMap(v);
+            } else if (v instanceof List) {
+              handleList(v);
+            }
+            return v == null || v == '' || (v instanceof Map && v.size() == 0) || (v instanceof List && v.size() == 0)
+          });
+        }
+        handleMap(ctx);
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_into_event_kind
+      value: pipeline_error
+      if: ctx.error?.message != null
+  - append:
+      field: tags
+      tag: append_preserve_original_event_on_error
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+on_failure:
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: error.message
+      tag: append_pipeline_failure_message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+  - append:
+      field: tags
+      tag: append_preserve_original_event
+      value: preserve_original_event
+      allow_duplicates: false
