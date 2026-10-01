@@ -15,6 +15,10 @@ This data stream utilizes the Jamf Pro API's `/v1/computers-inventory` endpoint.
 - **`events`** Receives events sent by [Jamf Pro Webhooks](https://developer.jamf.com/developer-guide/docs/webhooks).  
 This data stream requires opening a port on the Elastic Agent host.
 
+- **`access`** Collects Jamf Pro Log Stream access logs (logins, logouts, API token operations) delivered to AWS S3, read directly or via SQS.
+
+- **`change_management`** Receives Jamf Pro Log Stream change management logs. These arrive on the `access` input and are rerouted to this data stream by ingest routing rules; no separate input is configured.
+
 
 ## Requirements
 
