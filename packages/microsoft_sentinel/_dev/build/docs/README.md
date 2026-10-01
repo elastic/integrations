@@ -24,7 +24,7 @@ The Microsoft Sentinel integration collects logs for three types of events: Aler
 
 ## Requirements
 
-Unless you choose Elastic Managed deployment, the Elastic Agent must be installed. Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md). You can install only one Elastic Agent per host.
+Unless you choose Elastic Managed deployment, the Elastic Agent must be installed. For more details, check the Elastic Agent [installation instructions](docs-content://reference/fleet/install-elastic-agents.md). You can install only one Elastic Agent per host.
 
 ## Compatibility
 

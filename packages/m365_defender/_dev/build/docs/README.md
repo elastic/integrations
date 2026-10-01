@@ -204,7 +204,7 @@ Most issues fall into one of the scenarios below. To confirm the integration is 
 
 When debugging a permissions issue or unexpected API responses on the Alerts, Incidents, or Vulnerabilities data streams, enable request tracing and inspect the request trace logs to see the interaction with the server. (The Events data stream is collected over Azure Event Hub and does not offer request tracing.) OAuth2 token values can be decoded using [https://jwt.ms/](https://jwt.ms/) and should include a `roles` section listing the configured permissions.
 
-**Security warning:** request trace files are not redacted. They contain the `Authorization` header and, during OAuth2 token exchange, the client secret in clear text. Only enable request tracing in a controlled debugging session, restrict access to the trace files, disable it as soon as you are finished, and rotate the client secret if a trace file that may contain it was exposed. On agentless deployments this setting is not user-configurable.
+**Security warning:** request trace files are not redacted. They contain the `Authorization` header and, during OAuth2 token exchange, the client secret in clear text. Only enable request tracing in a controlled debugging session, restrict access to the trace files, disable it as soon as you are finished, and rotate the client secret if a trace file that may contain it was exposed. On Elastic Managed deployments this setting is not user-configurable.
 
 ### Authentication failures
 
