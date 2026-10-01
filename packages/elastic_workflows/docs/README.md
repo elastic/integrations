@@ -17,8 +17,8 @@ queries against the workflow execution index.
 - **Avg Duration by Workflow** — duration trend per workflow over time
 - **Status Breakdown** — treemap of execution statuses
 - **Slowest Workflows** — table of workflows ranked by p95 duration
-- **Recent Failures** — table of failing workflows with drilldown to executions
-- **Per-Workflow Summary** — table with executions, failures, success %, avg duration, and p95
+- **Recent Failures** — table of failing workflows and their spaces, with drilldown to executions
+- **Per-Workflow Summary** — table with space, executions, failures, success %, avg duration, and p95
 
 Dashboard-level controls filter every panel by **space** and **run type**. The run type is `production` by default. Select `test` to include test runs.
 

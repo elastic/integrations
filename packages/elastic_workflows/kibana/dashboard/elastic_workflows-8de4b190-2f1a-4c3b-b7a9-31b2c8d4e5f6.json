@@ -1824,6 +1824,16 @@
                                                     }
                                                 },
                                                 {
+                                                    "columnId": "spaceId",
+                                                    "customLabel": true,
+                                                    "fieldName": "spaceId",
+                                                    "label": "Space",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
                                                     "columnId": "status",
                                                     "customLabel": true,
                                                     "fieldName": "status",
@@ -1867,7 +1877,7 @@
                                             ],
                                             "index": "elastic-workflows-executions-esql",
                                             "query": {
-                                                "esql": "FROM .workflows-executions\n| WHERE startedAt \u003e= ?_tstart AND startedAt \u003c ?_tend\n| WHERE (?space_ids IS NULL OR MV_INTERSECTS(spaceId, ?space_ids)) AND (?run_types IS NULL OR MV_INTERSECTS(CASE(COALESCE(isTestRun, false), \"test\", \"production\"), ?run_types))\n| WHERE status IN (\"failed\", \"timed_out\")\n| SORT startedAt DESC\n| KEEP workflowId, status, startedAt, duration\n| LIMIT 20"
+                                                "esql": "FROM .workflows-executions\n| WHERE startedAt \u003e= ?_tstart AND startedAt \u003c ?_tend\n| WHERE (?space_ids IS NULL OR MV_INTERSECTS(spaceId, ?space_ids)) AND (?run_types IS NULL OR MV_INTERSECTS(CASE(COALESCE(isTestRun, false), \"test\", \"production\"), ?run_types))\n| WHERE status IN (\"failed\", \"timed_out\")\n| SORT startedAt DESC\n| KEEP workflowId, spaceId, status, startedAt, duration\n| LIMIT 20"
                                             },
                                             "timeField": "startedAt"
                                         }
@@ -1884,12 +1894,17 @@
                             ],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM .workflows-executions\n| WHERE startedAt \u003e= ?_tstart AND startedAt \u003c ?_tend\n| WHERE (?space_ids IS NULL OR MV_INTERSECTS(spaceId, ?space_ids)) AND (?run_types IS NULL OR MV_INTERSECTS(CASE(COALESCE(isTestRun, false), \"test\", \"production\"), ?run_types))\n| WHERE status IN (\"failed\", \"timed_out\")\n| SORT startedAt DESC\n| KEEP workflowId, status, startedAt, duration\n| LIMIT 20"
+                                "esql": "FROM .workflows-executions\n| WHERE startedAt \u003e= ?_tstart AND startedAt \u003c ?_tend\n| WHERE (?space_ids IS NULL OR MV_INTERSECTS(spaceId, ?space_ids)) AND (?run_types IS NULL OR MV_INTERSECTS(CASE(COALESCE(isTestRun, false), \"test\", \"production\"), ?run_types))\n| WHERE status IN (\"failed\", \"timed_out\")\n| SORT startedAt DESC\n| KEEP workflowId, spaceId, status, startedAt, duration\n| LIMIT 20"
                             },
                             "visualization": {
                                 "columns": [
                                     {
                                         "columnId": "workflowId",
+                                        "isMetric": false,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "spaceId",
                                         "isMetric": false,
                                         "isTransposed": false
                                     },
@@ -1928,7 +1943,7 @@
                             "open_in_new_tab": true,
                             "trigger": "on_click_row",
                             "type": "url_drilldown",
-                            "url": "{{kibanaUrl}}/app/workflows/{{event.values.[0]}}?tab=executions"
+                            "url": "{{lookup (split kibanaUrl \"/s/\") 0}}/s/{{event.values.[1]}}/app/workflows/{{event.values.[0]}}?tab=executions"
                         }
                     ],
                     "hide_title": false,
@@ -1981,6 +1996,16 @@
                                                     "customLabel": true,
                                                     "fieldName": "workflowId",
                                                     "label": "Workflow",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "spaceId",
+                                                    "customLabel": true,
+                                                    "fieldName": "spaceId",
+                                                    "label": "Space",
                                                     "meta": {
                                                         "esType": "keyword",
                                                         "type": "string"
@@ -2084,7 +2109,7 @@
                                             ],
                                             "index": "elastic-workflows-executions-esql",
                                             "query": {
-                                                "esql": "FROM .workflows-executions\n| WHERE startedAt \u003e= ?_tstart AND startedAt \u003c ?_tend\n| WHERE (?space_ids IS NULL OR MV_INTERSECTS(spaceId, ?space_ids)) AND (?run_types IS NULL OR MV_INTERSECTS(CASE(COALESCE(isTestRun, false), \"test\", \"production\"), ?run_types))\n| STATS executions = COUNT(*), failures = COUNT(*) WHERE status IN (\"failed\", \"timed_out\"), completed = COUNT(*) WHERE status == \"completed\", avg_duration_ms = AVG(duration), p95_duration_ms = PERCENTILE(duration, 95) BY workflowId\n| EVAL success_rate = CASE(executions \u003e 0, TO_DOUBLE(completed) / executions, 0.0)\n| KEEP workflowId, executions, failures, completed, success_rate, avg_duration_ms, p95_duration_ms\n| SORT executions DESC\n| LIMIT 25"
+                                                "esql": "FROM .workflows-executions\n| WHERE startedAt \u003e= ?_tstart AND startedAt \u003c ?_tend\n| WHERE (?space_ids IS NULL OR MV_INTERSECTS(spaceId, ?space_ids)) AND (?run_types IS NULL OR MV_INTERSECTS(CASE(COALESCE(isTestRun, false), \"test\", \"production\"), ?run_types))\n| STATS executions = COUNT(*), failures = COUNT(*) WHERE status IN (\"failed\", \"timed_out\"), completed = COUNT(*) WHERE status == \"completed\", avg_duration_ms = AVG(duration), p95_duration_ms = PERCENTILE(duration, 95) BY workflowId, spaceId\n| EVAL success_rate = CASE(executions \u003e 0, TO_DOUBLE(completed) / executions, 0.0)\n| KEEP workflowId, spaceId, executions, failures, completed, success_rate, avg_duration_ms, p95_duration_ms\n| SORT executions DESC\n| LIMIT 25"
                                             },
                                             "timeField": "startedAt"
                                         }
@@ -2101,12 +2126,17 @@
                             ],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM .workflows-executions\n| WHERE startedAt \u003e= ?_tstart AND startedAt \u003c ?_tend\n| WHERE (?space_ids IS NULL OR MV_INTERSECTS(spaceId, ?space_ids)) AND (?run_types IS NULL OR MV_INTERSECTS(CASE(COALESCE(isTestRun, false), \"test\", \"production\"), ?run_types))\n| STATS executions = COUNT(*), failures = COUNT(*) WHERE status IN (\"failed\", \"timed_out\"), completed = COUNT(*) WHERE status == \"completed\", avg_duration_ms = AVG(duration), p95_duration_ms = PERCENTILE(duration, 95) BY workflowId\n| EVAL success_rate = CASE(executions \u003e 0, TO_DOUBLE(completed) / executions, 0.0)\n| KEEP workflowId, executions, failures, completed, success_rate, avg_duration_ms, p95_duration_ms\n| SORT executions DESC\n| LIMIT 25"
+                                "esql": "FROM .workflows-executions\n| WHERE startedAt \u003e= ?_tstart AND startedAt \u003c ?_tend\n| WHERE (?space_ids IS NULL OR MV_INTERSECTS(spaceId, ?space_ids)) AND (?run_types IS NULL OR MV_INTERSECTS(CASE(COALESCE(isTestRun, false), \"test\", \"production\"), ?run_types))\n| STATS executions = COUNT(*), failures = COUNT(*) WHERE status IN (\"failed\", \"timed_out\"), completed = COUNT(*) WHERE status == \"completed\", avg_duration_ms = AVG(duration), p95_duration_ms = PERCENTILE(duration, 95) BY workflowId, spaceId\n| EVAL success_rate = CASE(executions \u003e 0, TO_DOUBLE(completed) / executions, 0.0)\n| KEEP workflowId, spaceId, executions, failures, completed, success_rate, avg_duration_ms, p95_duration_ms\n| SORT executions DESC\n| LIMIT 25"
                             },
                             "visualization": {
                                 "columns": [
                                     {
                                         "columnId": "workflowId",
+                                        "isMetric": false,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "spaceId",
                                         "isMetric": false,
                                         "isTransposed": false
                                     },
@@ -2160,7 +2190,7 @@
                             "open_in_new_tab": true,
                             "trigger": "on_click_row",
                             "type": "url_drilldown",
-                            "url": "{{kibanaUrl}}/app/workflows/{{event.values.[0]}}"
+                            "url": "{{lookup (split kibanaUrl \"/s/\") 0}}/s/{{event.values.[1]}}/app/workflows/{{event.values.[0]}}"
                         }
                     ],
                     "hide_title": false,
