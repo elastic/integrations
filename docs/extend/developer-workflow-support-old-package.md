@@ -25,7 +25,7 @@ When a bug fix needs to be released for an older package version, the backport w
 3. [Create a PR for the bug fix](#step-3-create-a-pr-for-the-bug-fix)
 4. [Update the changelog in main](#step-4-update-changelog-in-main)
 
-> The [backport checklist comment](#backport-checklist-comment) on PRs targeting `main` drives step 3 automatically for most cases — tick the branches you want and the workflow creates the backport PRs on merge.
+> The [backport checklist comment](#backport-checklist-comment) drives step 3 automatically for most cases — after your PR is merged to `main`, a checklist is posted on it; tick the branches you want and the workflow creates the backport PRs.
 
 ### Step 1: Find the git commit for the target package version
 
@@ -163,7 +163,7 @@ When `remove_other_packages: true` is set in `.backports.yml` (the standard case
 
 - **Automatic: via the backport checklist**
 
-  If the fix was merged to `main` with checklist branches ticked, the `auto-backport.yml` workflow creates the backport PR automatically — see [Backport checklist comment](#backport-checklist-comment). If the workflow encounters a conflict or error it marks the branch with ⚠️ in the checklist; use `backport_apply.sh` below to resolve it manually.
+  Once the fix is merged to `main`, tick the branches you want in the checklist comment posted on the merged PR and the `auto-backport.yml` workflow creates the backport PRs automatically — see [Backport checklist comment](#backport-checklist-comment). If the workflow encounters a conflict or error it marks the branch with ⚠️ in the checklist; use `backport_apply.sh` below to resolve it manually.
 
 - **Manual: use `backport_apply.sh`**
 
@@ -262,9 +262,11 @@ The step is currently `soft_fail: true` — a mismatch posts a warning comment b
 
 ## Backport checklist comment
 
-This section describes the backport checklist that appears on eligible pull requests targeting `main` (those that touch at least one package with active backport branches) — not just hotfix flows. If you landed here looking for "what is this comment on my PR?", this is the right place.
+This section describes the backport checklist that appears on eligible pull requests once they are merged to `main` (those that touch at least one package with active backport branches) — not just hotfix flows. If you landed here looking for "what is this comment on my PR?", this is the right place.
 
-When you open or update a pull request targeting `main`, the `post-backport-checklist.yml` workflow automatically posts a comment listing the active backport branches for every package touched by that PR. The comment is recreated (deleted and re-posted) on each push — any manual edits are overwritten, and the PR author receives a fresh notification. It only appears when at least one package in the PR's diff has active backport branches in `.backports.yml`.
+When a pull request is merged to `main`, the `backport-packages-detect.yml` workflow runs on the resulting push to `main`. It finds the merged PR, detects the packages changed by it, and posts a comment on that PR listing the active backport branches for each of those packages. The comment is posted only after merge, so it does not appear while the PR is open. It only appears when at least one package changed by the PR has active backport branches in `.backports.yml`, and it is not posted for sync-changelog PRs (labeled `backport:sync-changelog`).
+
+The comment ends with a `cc` line mentioning the PR author and the person who merged it (just the author if they are the same person), so both are notified.
 
 Example comment:
 
@@ -272,10 +274,9 @@ Example comment:
 ## Backport branches
 
 > [!IMPORTANT]
-> Only branches for packages touched by this PR's current diff are shown.
-> This comment is updated automatically on each push — manual edits will be overwritten.
+> Only active backport branches for packages changed by this PR are shown.
 
-Tick the branches you want to backport to. PRs will be created automatically on merge, or when you update this checklist after merge.
+Tick the branches you want to backport to. A backport PR will be opened automatically for each branch you check.
 
 Backport a change when it fixes behavior a branch already has; leave new behavior on `main`. See [when and why to backport](https://github.com/elastic/integrations/wiki/Package-Backports) if you are unsure.
 
@@ -287,10 +288,18 @@ Backport a change when it fixes behavior a branch already has; leave new behavio
 
 > [!TIP]
 > If a branch above is no longer required, set `archived: true` in its entry in `.backports.yml` to stop it appearing here.
-> If the branch has a known end-of-life date, prefer `maintained_until: "YYYY-MM-DD"` — it will be excluded automatically once that date passes (strictly before today in UTC).
+> If the branch has a known end-of-life date, prefer `maintained_until: "YYYY-MM-DD"` — it will be excluded automatically once that date passes.
+
+cc @pr-author @pr-merger
 ```
 
-Tick a checkbox for each branch you want to backport to. When the PR merges into `main`, the `auto-backport.yml` workflow reads the comment and automatically creates a backport PR for every checked branch, updating the comment in real time (✅ = success, ⚠️ = conflict or error). Each backport PR is automatically assigned to the original PR's author (if they are not a bot and have write/maintain/admin access on the repository) or to the merger (if they are not a bot and have write/maintain/admin access on the repository). Checking a previously-unchecked branch after the PR has already merged also triggers the workflow to create the missing backport PR. If you do not intend to backport, leave all checkboxes unticked.
+Tick a checkbox for each branch you want to backport to. Because the checklist is posted after the PR is merged, nothing is backported until someone ticks a box. Editing the comment triggers the `auto-backport.yml` workflow, which creates a backport PR for each newly checked branch and updates the comment as it goes (✅ = success, ⚠️ = conflict or error). Notes:
+
+- Only edits to the bot-posted checklist comment trigger the workflow, and only by users with write, maintain, or admin access on the repository.
+- Ticking several boxes in quick succession is safe: runs for the same PR are queued rather than cancelled, and a branch that already has a backport PR is not backported twice.
+- A branch you missed can be ticked at any time after the merge; the workflow picks it up and creates the backport PR.
+- Each backport PR is automatically assigned to the original PR's author (if they are not a bot and have write/maintain/admin access on the repository) or to the merger (if they are not a bot and have write/maintain/admin access on the repository).
+- If you do not intend to backport, leave all checkboxes unticked.
 
 **Suppressing a branch from the checklist:**
 
