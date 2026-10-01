@@ -55,8 +55,6 @@ FROM logs-endpoint.vulnerability-*
 | WHERE cisa_kev.vulnerability.date_added IS NOT NULL
 ```
 
-> **Note:** `LOOKUP JOIN` against a lookup-mode index requires Elasticsearch 9.1+. On older stacks, target the concrete destination index `logs-cisa_kevs_latest.dest_vulnerability-1` instead.
-
 ## Upgrading to v1.7.0+
 
 If upgrading from a version of the package before v1.7.0, you will need to re-enter your configuration details and re-enable the package.
