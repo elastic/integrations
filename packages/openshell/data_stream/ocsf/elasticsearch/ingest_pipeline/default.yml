@@ -50,6 +50,41 @@ processors:
       tag: terminate_on_invalid_json
       if: ctx.openshell?.ocsf == null
       description: Keep records that are not a JSON object as-is, flagged as pipeline errors.
+  - script:
+      tag: script_stringify_big_integers
+      lang: painless
+      description: >-
+        OpenShell emits unsigned 64-bit values (for example configuration revisions) that exceed the
+        signed long range. Store them as strings so they survive Painless and mapping on every stack version.
+      source: |-
+        void stringifyBigIntegers(Object node) {
+          if (node instanceof Map) {
+            Map map = (Map) node;
+            for (def key : new ArrayList(map.keySet())) {
+              def value = map.get(key);
+              if (value instanceof BigInteger) {
+                map.put(key, value.toString());
+              } else if (value instanceof Map || value instanceof List) {
+                stringifyBigIntegers(value);
+              }
+            }
+          } else if (node instanceof List) {
+            List list = (List) node;
+            for (int i = 0; i < list.size(); i++) {
+              def value = list.get(i);
+              if (value instanceof BigInteger) {
+                list.set(i, value.toString());
+              } else if (value instanceof Map || value instanceof List) {
+                stringifyBigIntegers(value);
+              }
+            }
+          }
+        }
+        stringifyBigIntegers(ctx.openshell.ocsf);
+      on_failure:
+        - append:
+            field: error.message
+            value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
 
   # ---- Timestamp and event metadata --------------------------------------------
   - date:
