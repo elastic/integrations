@@ -44,7 +44,7 @@ from logs-nessus.vulnerability*
 
 ### Query-time KEV enrichment (LOOKUP JOIN)
 
-The package ships a `latest` transform that maintains the most recent KEV entry per CVE in the lookup index `logs-cisa_kevs_latest.vulnerability`. Because the catalog is re-polled on a schedule, the raw data stream holds duplicate rows for each CVE; the lookup index collapses those into a single deduplicated row per CVE, making it the preferred enrichment path.
+The package ships a `latest` transform that maintains the most recent KEV entry per CVE in the lookup index `logs-cisa_kevs_latest.vulnerability`. Unchanged catalog entries are deduplicated at ingest, while updated entries are retained as new source documents, so the raw data stream can hold multiple historical versions of a CVE. The lookup index collapses those versions into the latest row per CVE, making it the preferred enrichment path.
 
 You can enrich vulnerability findings at query time with the ES|QL [`LOOKUP JOIN`](https://www.elastic.co/guide/en/elasticsearch/reference/current/esql-lookup-join.html) command on `vulnerability.id`:
 
