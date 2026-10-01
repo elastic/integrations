@@ -1,4 +1,7 @@
-# SUCCESS: empty initial_interval → one window sized to the real-time period, one event.
+# FAILURE: first SOQL page publishes, nextRecordsUrl returns HTTP 500 (API v73.0).
+# The window is not committed, but the first page must still be ingested. On the next
+# poll the window re-runs from the same bounds; the stable _id (RequestIdentifier +
+# Timestamp) makes the re-published first page overwrite instead of duplicating.
 input: salesforce
 service: salesforce
 vars:
@@ -11,8 +14,9 @@ vars:
   token_url: http://{{Hostname}}:{{Port}}
 data_stream:
   vars:
-    api_version: "61.0"
+    api_version: "73.0"
     initial_interval: ""
+    real_time_period: 1h
     preserve_original_event: true
     event_log_file: false
     object: true
