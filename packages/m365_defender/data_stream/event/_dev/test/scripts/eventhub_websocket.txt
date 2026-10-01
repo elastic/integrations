@@ -1,0 +1,61 @@
+# Verify that m365_defender events delivered over Event Hub via
+# AMQP-over-WebSockets flow through the ingest pipeline and land
+# in the correct data stream.
+#
+# The fake EventHub server delivers two test events:
+#   - AdvancedHunting-AlertInfo
+#   - AdvancedHunting-AlertEvidence
+#
+# The server speaks AMQP 1.0 on port 5672 and Azure Blob Storage REST
+# on port 10000 (as in the AMQP test), and additionally listens for
+# WebSocket upgrades on port 443 (TLS). The server cert is signed by
+# the elastic-package CA so the agent trusts the connection.
+
+[!external_stack] skip 'Skipping external stack test.'
+
+# Connect to the running stack.
+use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+
+# Install an agent.
+install_agent -profile ${CONFIG_PROFILES}/${PROFILE} -network_name NETWORK_NAME
+
+# Copy the fake EventHub server source and the elastic-package CA
+# into the working directory. The CA key lets the server sign its
+# TLS cert; the agent already has the CA cert in its trust store.
+mkdir azure-eh
+cp ${PACKAGE_ROOT}/_dev/scripts/azure-eh/docker-compose.yml azure-eh/docker-compose.yml
+cp ${PACKAGE_ROOT}/_dev/scripts/azure-eh/go.mod azure-eh/go.mod
+cp ${PACKAGE_ROOT}/_dev/scripts/azure-eh/main.go azure-eh/main.go
+cp ${CONFIG_ROOT}/profiles/${PROFILE}/certs/ca-cert.pem azure-eh/ca-cert.pem
+cp ${CONFIG_ROOT}/profiles/${PROFILE}/certs/ca-key.pem azure-eh/ca-key.pem
+
+# Start the fake EventHub server.
+docker_up -profile ${CONFIG_PROFILES}/${PROFILE} -network ${NETWORK_NAME} azure-eh
+
+# Add the package resources.
+add_package -profile ${CONFIG_PROFILES}/${PROFILE}
+
+# Add the data stream policy with WebSocket transport.
+add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config.yaml EVENT_DS
+
+# Wait for the test events to arrive.
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 2 -confirm 5s -timeout 5m logs-m365_defender.event-*
+
+# Clean up.
+remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${EVENT_DS}
+uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 1m
+docker_down azure-eh
+
+-- test_config.yaml --
+input: azure-eventhub
+data_stream:
+  vars:
+    eventhub: m365-defender-test
+    consumer_group: $Default
+    auth_type: connection_string
+    connection_string: "Endpoint=sb://svc-azure-eh;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;UseDevelopmentEmulator=true;EntityPath=m365-defender-test"
+    storage_account: devstoreaccount1
+    storage_account_connection_string: "DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://svc-azure-eh:10000/devstoreaccount1;"
+    transport: websocket
+    processor_start_position: earliest
+    preserve_original_event: false
