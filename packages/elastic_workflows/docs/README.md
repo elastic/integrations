@@ -4,7 +4,7 @@ Monitor your Elastic Workflows with out-of-the-box dashboards.
 
 ## Dashboards
 
-### Workflows Execution Overview
+### [Elastic Workflows] Execution Overview
 
 Provides a high-level view of workflow execution activity. All panels use ES|QL
 queries against the workflow execution index.
