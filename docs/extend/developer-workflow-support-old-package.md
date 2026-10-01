@@ -16,6 +16,8 @@ When a bug fix needs to be released for an older package version, the backport w
   - [Step 4: Update changelog in main](#step-4-update-changelog-in-main)
 - [Package owner synchronization](#package-owner-synchronization)
 - [Backport checklist comment](#backport-checklist-comment)
+  - [Suppressing a branch from the checklist](#suppressing-a-branch-from-the-checklist)
+  - [Suppressing a package from the checklist](#suppressing-a-package-from-the-checklist)
 - [Known issues](#known-issues)
 
 ## Overview of the process
@@ -146,8 +148,8 @@ The backport branch is created automatically when a new entry is merged into `.b
   * **`branch`** — required. Name of the backport branch to create, following the format `backport-<package_name>-<major>.<minor>`.
   * **`base_version`** — required. The package version to branch from (e.g. `1.19.5`, `1.0.0-beta1`).
   * **`base_commit`** — required. The commit SHA found in the previous step.
-  * **`maintained_until`** — optional. `null` for a new active branch. Set to a `YYYY-MM-DD` date when the branch has a known end-of-life: the branch is automatically excluded from the checklist and branch creation once that date passes (strictly before today in UTC). Prefer this over `archived: true` when the end-of-life date is known in advance.
-  * **`archived`** — required. `false` for a new active branch. Set to `true` to immediately exclude the branch from the checklist and branch creation, with no fixed end-of-life date. Archiving does **not** delete the branch — packages can still be published from it; archiving only removes it from automated tooling.
+  * **`maintained_until`** — optional. `null` for a new active branch. Set to a `YYYY-MM-DD` date when the branch has a known end-of-life: the branch is automatically excluded from the checklist and branch creation once that date passes (strictly before today in UTC). Prefer this over `archived: true` when the end-of-life date is known in advance. See [Suppressing a branch from the checklist](#suppressing-a-branch-from-the-checklist).
+  * **`archived`** — required. `false` for a new active branch. Set to `true` to immediately exclude the branch from the checklist and branch creation, with no fixed end-of-life date. Archiving does **not** delete the branch — packages can still be published from it; archiving only removes it from automated tooling. See [Suppressing a branch from the checklist](#suppressing-a-branch-from-the-checklist).
   * **`remove_other_packages`** — required. `true`: the target package is kept along with its `requires.*` dependencies and `.link` file source packages, transitively expanded; all others are removed from `packages/`. `false`: all packages are kept. Set to `true` for the standard case — it keeps the branch lean and avoids running tests for unrelated packages on every PR.
 
 Once the PR is opened, CI automatically:
@@ -262,9 +264,9 @@ The step is currently `soft_fail: true` — a mismatch posts a warning comment b
 
 ## Backport checklist comment
 
-This section describes the backport checklist that appears on eligible pull requests once they are merged to `main` (those that touch at least one package with active backport branches) — not just hotfix flows. If you landed here looking for "what is this comment on my PR?", this is the right place.
+This section describes the backport checklist that appears on eligible pull requests once they are merged to `main` (those that touch at least one package with active backport branches that is not suppressed) — not just hotfix flows. If you landed here looking for "what is this comment on my PR?", this is the right place.
 
-When a pull request is merged to `main`, the `backport-packages-detect.yml` workflow runs on the resulting push to `main`. It finds the merged PR, detects the packages changed by it, and posts a comment on that PR listing the active backport branches for each of those packages. The comment is posted only after merge, so it does not appear while the PR is open. It only appears when at least one package changed by the PR has active backport branches in `.backports.yml`, and it is not posted for sync-changelog PRs (labeled `backport:sync-changelog`).
+When a pull request is merged to `main`, the `backport-packages-detect.yml` workflow runs on the resulting push to `main`. It finds the merged PR, detects the packages changed by it, and posts a comment on that PR listing the active backport branches for each of those packages. The comment is posted only after merge, so it does not appear while the PR is open. It only appears when at least one package changed by the PR has active backport branches in `.backports.yml`. Packages listed in `skip_checklist_packages` are ignored when making that decision (see [Suppressing a package from the checklist](#suppressing-a-package-from-the-checklist)), and the comment is not posted for sync-changelog PRs (labeled `backport:sync-changelog`).
 
 The comment ends with a `cc` line mentioning the PR author and the person who merged it (just the author if they are the same person), so both are notified.
 
@@ -301,7 +303,7 @@ Tick a checkbox for each branch you want to backport to. Because the checklist i
 - Each backport PR is automatically assigned to the original PR's author (if they are not a bot and have write/maintain/admin access on the repository) or to the merger (if they are not a bot and have write/maintain/admin access on the repository).
 - If you do not intend to backport, leave all checkboxes unticked.
 
-**Suppressing a branch from the checklist:**
+### Suppressing a branch from the checklist
 
 To stop a branch appearing in the checklist, update its entry in `.backports.yml`:
 
@@ -310,7 +312,7 @@ To stop a branch appearing in the checklist, update its entry in `.backports.yml
 
 Archiving a branch does not delete it. Packages can still be published from an archived branch; archiving only removes the branch from the checklist and branch creation.
 
-**Suppressing a package from the checklist:**
+### Suppressing a package from the checklist
 
 To hide all checklist entries for a package across all PRs, add it to the top-level `skip_checklist_packages` list in `.backports.yml`:
 
