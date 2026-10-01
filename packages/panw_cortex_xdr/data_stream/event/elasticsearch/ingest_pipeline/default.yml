@@ -1264,11 +1264,57 @@ processors:
       tag: set_agent_id_from_xdr_event_agent_id_40b6c945
       copy_from: panw_cortex.xdr.event.agent.id
       ignore_empty_value: true
+  - script:
+      tag: script_normalize_interface_map
+      lang: painless
+      description: Convert legacy string interface_map values such as eth0-192.168.1.10 into object records.
+      if: ctx.json?.agent_interface_map instanceof String || ctx.json?.host_metadata_interface_map instanceof String
+      source: |
+        def recordFromString(String v) {
+          if (v == null || v == '') {
+            return null;
+          }
+          int idx = v.lastIndexOf('-');
+          String ip = idx >= 0 ? v.substring(idx + 1) : v;
+          if (ip == '') {
+            return null;
+          }
+          if (ip.contains('.')) {
+            return ['ipv4': [ip]];
+          }
+          if (ip.contains(':')) {
+            return ['ipv6': [ip]];
+          }
+          return null;
+        }
+        def normalize(def v) {
+          if (v instanceof String) {
+            def rec = recordFromString(v);
+            return rec == null ? v : [rec];
+          }
+          return v;
+        }
+        if (ctx.json.agent_interface_map instanceof String) {
+          ctx.json.agent_interface_map = normalize(ctx.json.agent_interface_map);
+        }
+        if (ctx.json.host_metadata_interface_map instanceof String) {
+          ctx.json.host_metadata_interface_map = normalize(ctx.json.host_metadata_interface_map);
+        }
   - rename:
       field: json.agent_interface_map
       tag: rename_agent_interface_map_8937fb22
       target_field: panw_cortex.xdr.event.agent.interface_map
       ignore_missing: true
+  - script:
+      tag: script_wrap_agent_ip_addresses
+      lang: painless
+      if: ctx.json?.agent_ip_addresses != null && !(ctx.json.agent_ip_addresses instanceof List)
+      source: ctx.json.agent_ip_addresses = [ctx.json.agent_ip_addresses];
+  - script:
+      tag: script_wrap_agent_ip_addresses_v6
+      lang: painless
+      if: ctx.json?.agent_ip_addresses_v6 != null && !(ctx.json.agent_ip_addresses_v6 instanceof List)
+      source: ctx.json.agent_ip_addresses_v6 = [ctx.json.agent_ip_addresses_v6];
   - foreach:
       field: json.agent_ip_addresses
       if: ctx.json?.agent_ip_addresses instanceof List
