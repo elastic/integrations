@@ -778,6 +778,9 @@ The following non-ECS fields are used in access documents:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| aws.s3.bucket.arn | ARN of the S3 bucket that this log retrieved from. | keyword |
+| aws.s3.bucket.name | Name of the S3 bucket that this log retrieved from. | keyword |
+| aws.s3.object.key | Name of the S3 object that this log retrieved from. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
@@ -796,6 +799,7 @@ The following non-ECS fields are used in access documents:
 | jamf_pro.access.ip_address | The IP address of the client that performed the access action. | keyword |
 | jamf_pro.access.status | The result status of the access attempt, such as Successful Login or Failed token creation. | keyword |
 | jamf_pro.access.username | The username that performed the access action. | keyword |
+| log.offset | Log offset. | long |
 | message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
 | observer.product | The product name of the observer. | keyword |
 | observer.vendor | Vendor name of the observer. | keyword |
@@ -894,6 +898,9 @@ The following non-ECS fields are used in change management documents:
 | Field | Description | Type |
 |---|---|---|
 | @timestamp | Event timestamp. | date |
+| aws.s3.bucket.arn | ARN of the S3 bucket that this log retrieved from. | keyword |
+| aws.s3.bucket.name | Name of the S3 bucket that this log retrieved from. | keyword |
+| aws.s3.object.key | Name of the S3 object that this log retrieved from. | keyword |
 | data_stream.dataset | Data stream dataset. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
@@ -916,6 +923,7 @@ The following non-ECS fields are used in change management documents:
 | jamf_pro.change_management.object_type | The type of object affected by the change, such as Computer, Policy, or Smart Computer Group. | keyword |
 | jamf_pro.change_management.operation | The change management operation performed (CREATE, READ, UPDATE, DELETE). | keyword |
 | jamf_pro.change_management.thread | The application thread that generated the log entry. | keyword |
+| log.offset | Log offset. | long |
 | observer.product | The product name of the observer. | keyword |
 | observer.vendor | Vendor name of the observer. | keyword |
 | related.user | All the user names or other user identifiers seen on the event. | keyword |
