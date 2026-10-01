@@ -132,6 +132,7 @@ for the same period.
 | input.type | Type of input that generated the event. | keyword |  |
 | openrouter.usage.api_key_id | API key identifier when grouped by api_key_id. | keyword |  |
 | openrouter.usage.app | Application identifier when grouped by app. | keyword |  |
+| openrouter.usage.blended_cost_per_million_tokens | Blended cost in USD per 1M tokens. This is a rate metric — do not sum across rows or time windows. | double | gauge |
 | openrouter.usage.byok_fees | OpenRouter fees charged for BYOK requests. | double | gauge |
 | openrouter.usage.byok_request_count | Number of requests made using Bring Your Own Key (BYOK). | long | gauge |
 | openrouter.usage.byok_usage | Total cost in USD for requests using Bring Your Own Key (BYOK). | double | gauge |
@@ -143,12 +144,16 @@ for the same period.
 | openrouter.usage.provider | Provider routing the request (e.g. OpenAI, Anthropic). | keyword |  |
 | openrouter.usage.reasoning_tokens | Reasoning tokens consumed (for models that expose them). | long | gauge |
 | openrouter.usage.request_count | Number of API requests in the period. | long | gauge |
+| openrouter.usage.response_cached_count | Number of responses served from the response cache in the period. | long | gauge |
 | openrouter.usage.tokens_completion | Completion tokens generated in the period. | long | gauge |
 | openrouter.usage.tokens_prompt | Input/prompt tokens consumed in the period. | long | gauge |
 | openrouter.usage.tokens_total | Total tokens (prompt + completion) in the period. | long | gauge |
 | openrouter.usage.total_usage | Total cost in USD credits consumed in the period. | double | gauge |
 | openrouter.usage.usage_cache | Cost of cache read/write operations in USD. | double | gauge |
+| openrouter.usage.usage_file | Cost of file processing in USD. | double | gauge |
 | openrouter.usage.usage_upstream | Cost paid to the upstream provider in USD. | double | gauge |
+| openrouter.usage.usage_web | Cost of web search in USD. | double | gauge |
+| openrouter.usage.usage_web_fetch | Cost of web fetch in USD. | double | gauge |
 | openrouter.usage.user | User identifier when grouped by user. | keyword |  |
 | openrouter.usage.variant | Model variant identifier when grouped by variant. | keyword |  |
 | openrouter.usage.workspace | Workspace identifier when grouped by workspace. | keyword |  |
@@ -177,6 +182,12 @@ always use `AVG` or `MAX` in ES|QL queries.
 | input.type | Type of input that generated the event. | keyword |  |  |
 | openrouter.performance.api_key_id | API key identifier when grouped by api_key_id. | keyword |  |  |
 | openrouter.performance.app | Application identifier when grouped by app. | keyword |  |  |
+| openrouter.performance.avg_generation_time | Mean model token generation time in milliseconds. This is a rate metric — do not sum across time windows. | double | ms | gauge |
+| openrouter.performance.avg_inter_token_latency | Mean inter-token latency in milliseconds. This is a rate metric — do not sum across time windows. | double | ms | gauge |
+| openrouter.performance.avg_latency | Mean end-to-end request latency in milliseconds. This is a rate metric — do not sum across time windows. | double | ms | gauge |
+| openrouter.performance.avg_router_latency | Mean OpenRouter routing overhead in milliseconds. This is a rate metric — do not sum across time windows. | double | ms | gauge |
+| openrouter.performance.avg_throughput | Mean streaming throughput in tokens per second. This is a rate metric — do not sum across time windows. | double |  | gauge |
+| openrouter.performance.avg_ttfb | Mean time-to-first-token (TTFT) in milliseconds. This is a rate metric — do not sum across time windows. | double | ms | gauge |
 | openrouter.performance.cache_hit_rate | Fraction of requests served from prompt cache (0.0–1.0). This is a rate metric — do not sum across time windows. | double | percent | gauge |
 | openrouter.performance.guardrail_invoked_rate | Fraction of requests for which a guardrail was invoked (0.0–1.0). This is a rate metric — do not sum across time windows. | double | percent | gauge |
 | openrouter.performance.model | LLM model identifier (e.g. openai/gpt-4o). | keyword |  |  |
@@ -192,7 +203,10 @@ always use `AVG` or `MAX` in ES|QL queries.
 | openrouter.performance.p90_router_latency | 90th-percentile OpenRouter routing overhead in milliseconds. This is a rate metric — do not sum across time windows. | double | ms | gauge |
 | openrouter.performance.p90_throughput | 90th-percentile streaming throughput in tokens per second. This is a rate metric — do not sum across time windows. | double |  | gauge |
 | openrouter.performance.p90_ttfb | 90th-percentile time-to-first-token (TTFT) in milliseconds. This is a rate metric — do not sum across time windows. | double | ms | gauge |
+| openrouter.performance.p95_generation_time | 95th-percentile model token generation time in milliseconds. This is a rate metric — do not sum across time windows. | double | ms | gauge |
+| openrouter.performance.p95_inter_token_latency | 95th-percentile inter-token latency in milliseconds. This is a rate metric — do not sum across time windows. | double | ms | gauge |
 | openrouter.performance.p95_latency | 95th-percentile end-to-end request latency in milliseconds. This is a rate metric — do not sum across time windows. | double | ms | gauge |
+| openrouter.performance.p95_router_latency | 95th-percentile OpenRouter routing overhead in milliseconds. This is a rate metric — do not sum across time windows. | double | ms | gauge |
 | openrouter.performance.p95_throughput | 95th-percentile streaming throughput in tokens per second. This is a rate metric — do not sum across time windows. | double |  | gauge |
 | openrouter.performance.p95_ttfb | 95th-percentile time-to-first-token (TTFT) in milliseconds. This is a rate metric — do not sum across time windows. | double | ms | gauge |
 | openrouter.performance.p99_generation_time | 99th-percentile model token generation time in milliseconds. This is a rate metric — do not sum across time windows. | double | ms | gauge |
@@ -202,6 +216,7 @@ always use `AVG` or `MAX` in ES|QL queries.
 | openrouter.performance.p99_throughput | 99th-percentile streaming throughput in tokens per second. This is a rate metric — do not sum across time windows. | double |  | gauge |
 | openrouter.performance.p99_ttfb | 99th-percentile time-to-first-token (TTFT) in milliseconds. This is a rate metric — do not sum across time windows. | double | ms | gauge |
 | openrouter.performance.provider | Provider routing the request (e.g. OpenAI, Anthropic). | keyword |  |  |
+| openrouter.performance.request_count | Number of API requests in the hour bucket. Use it to weight percentile and rate metrics across rows. | long |  | gauge |
 | openrouter.performance.response_cached_rate | Fraction of responses that were cached (0.0–1.0). This is a rate metric — do not sum across time windows. | double | percent | gauge |
 | openrouter.performance.user | User identifier when grouped by user. | keyword |  |  |
 | openrouter.performance.variant | Model variant identifier when grouped by variant. | keyword |  |  |
@@ -222,7 +237,7 @@ Alert rule templates require Elastic Stack version 9.2.0 or later.
 
 | Name | Description |
 |---|---|
-| [OpenRouter] Cache Hit Rate Drop | Alerts when the average cache hit rate of any model drops below a configurable threshold. A sudden drop in cache hit rate can signal prompt changes, model switching, or cache invalidation events that increase effective token cost. |
+| [OpenRouter] Cache Hit Rate Drop | Alerts when the request-weighted cache hit rate of any model drops below a configurable threshold. A sudden drop in cache hit rate can signal prompt changes, model switching, or cache invalidation events that increase effective token cost. |
 | [OpenRouter] Daily Cost Anomaly | Alerts when daily cost across all models and providers exceeds a configurable threshold. Catches unexpected spend spikes from runaway workloads or new model adoption before they accumulate. |
 | [OpenRouter] Model Latency Regression | Alerts when the p99 end-to-end latency for any model exceeds a configurable threshold. Detects model or provider degradation before it impacts end-user experience. Works with the default dimensions (model, api_key_id). To alert per provider instead, add 'provider' to the performance stream dimensions. |
 
