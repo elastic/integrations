@@ -16,6 +16,10 @@ This data stream utilizes the Jamf Pro API's `/v1/computers-inventory` endpoint.
 - **`events`** Receives events sent by [Jamf Pro Webhooks](https://developer.jamf.com/developer-guide/docs/webhooks).  
 This data stream requires opening a port on the Elastic Agent host.
 
+- **`access`** Collects Jamf Pro Log Stream access logs (logins, logouts, API token operations) delivered to AWS S3, read directly or via SQS.
+
+- **`change_management`** Receives Jamf Pro Log Stream change management logs. These arrive on the `access` input and are rerouted to this data stream by ingest routing rules; no separate input is configured.
+
 
 ## Requirements
 
@@ -88,6 +92,25 @@ Note: `9202` is a port and `/jamf-pro-events` are default values and can be chan
 - **Content Type**: `JSON`
 
 - **Webhook Event**: Event to be selected. In case set of events is required, 1:1 webhooks should be created.  
+
+### Setup for Log Stream (AWS S3 / SQS)
+
+The access and change management data streams collect logs from the Jamf Pro
+Log Stream via AWS S3. To set them up:
+
+1. In Jamf Pro, navigate to **Settings > System > Jamf Pro Log Stream** and
+   enable log streaming to **AWS S3**. Select the **Access** and
+   **Change Management** log types.
+2. Create or reuse the S3 bucket that Jamf Pro will write to.
+3. *(SQS mode, default)* Create an SQS queue and add an S3 event notification
+   for `s3:ObjectCreated:*` that targets the queue. In the integration policy,
+   provide the **Queue URL**.
+4. *(S3 polling mode)* Enable **Collect logs via S3 Bucket** in the integration
+   policy and provide the **Bucket ARN** instead.
+5. Grant the credentials used by Elastic Agent the following IAM permissions:
+   - `s3:GetObject` and `s3:ListBucket` on the bucket.
+   - For SQS mode: `sqs:ReceiveMessage`, `sqs:DeleteMessage`, and
+     `sqs:ChangeMessageVisibility` on the queue.
 
 
 ## Logs
@@ -660,3 +683,261 @@ The following non-ECS fields are used in real-time event documents:
 | jamf_pro.events.webhook.name |  | keyword |
 | jamf_pro.events.webhook.webhook_event |  | keyword |
 
+
+### Access
+
+The access data stream collects Jamf Pro Log Stream access logs delivered via
+AWS S3. These logs record authentication events such as user logins, logouts,
+and API token operations. Both access and change management logs arrive on this
+data stream; change management events are automatically rerouted to the
+`change_management` data stream by ingest routing rules.
+
+To collect Jamf Pro Log Stream logs, configure the Jamf Pro Log Stream to deliver
+logs to an AWS S3 bucket, then configure the integration to read from that bucket
+(either directly or via an SQS queue).
+
+Documents from the access data stream can be found with the filter
+`event.dataset: "jamf_pro.access"`.
+
+An example event for `access` looks as following:
+
+```json
+{
+    "@timestamp": "2026-09-23T19:56:19.086595497Z",
+    "ecs": {
+        "version": "9.4.0"
+    },
+    "observer": {
+        "vendor": "Jamf",
+        "product": "Jamf Pro"
+    },
+    "event": {
+        "kind": "event",
+        "category": [
+            "authentication"
+        ],
+        "type": [
+            "start"
+        ],
+        "action": "Successful Login",
+        "outcome": "success",
+        "original": "{\"time\":\"2026-09-23T19:56:19.086595497Z\",\"message\":\"[JSSACCESSLOG] 2026-09-23T19:56:19,086 - username=kftyfgicvdsbhx@buqprrmmj.com, status=Successful Login, ipAddress=89.160.20.128, entryPoint=Single Sign On (OIDC)\"}",
+        "module": "jamf_pro",
+        "dataset": "jamf_pro.access"
+    },
+    "user": {
+        "name": "kftyfgicvdsbhx@buqprrmmj.com"
+    },
+    "source": {
+        "as": {
+            "number": 29518,
+            "organization": {
+                "name": "Bredband2 AB"
+            }
+        },
+        "geo": {
+            "city_name": "Linköping",
+            "continent_name": "Europe",
+            "country_iso_code": "SE",
+            "country_name": "Sweden",
+            "location": {
+                "lat": 58.4167,
+                "lon": 15.6167
+            },
+            "region_iso_code": "SE-E",
+            "region_name": "Östergötland County"
+        },
+        "ip": "89.160.20.128"
+    },
+    "related": {
+        "ip": [
+            "89.160.20.128"
+        ],
+        "user": [
+            "kftyfgicvdsbhx@buqprrmmj.com"
+        ]
+    },
+    "jamf_pro": {
+        "access": {
+            "username": "kftyfgicvdsbhx@buqprrmmj.com",
+            "status": "Successful Login",
+            "ip_address": "89.160.20.128",
+            "entry_point": "Single Sign On (OIDC)"
+        }
+    },
+    "tags": [
+        "forwarded",
+        "jamf_pro-access"
+    ]
+}
+```
+
+The following non-ECS fields are used in access documents:
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| aws.s3.bucket.arn | ARN of the S3 bucket that this log retrieved from. | keyword |
+| aws.s3.bucket.name | Name of the S3 bucket that this log retrieved from. | keyword |
+| aws.s3.object.key | Name of the S3 object that this log retrieved from. | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| error.message | Error message. | match_only_text |
+| event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.dataset | Event dataset. | constant_keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
+| event.module | Event module. | constant_keyword |
+| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
+| event.outcome | This is one of four ECS Categorization Fields, and indicates the lowest level in the ECS category hierarchy. `event.outcome` simply denotes whether the event represents a success or a failure from the perspective of the entity that produced the event. Note that when a single transaction is described in multiple events, each event may populate different values of `event.outcome`, according to their perspective. Also note that in the case of a compound event (a single event that contains multiple logical events), this field should be populated with the value that best captures the overall success or failure from the perspective of the event producer. Further note that not all events will have an associated outcome. For example, this field is generally not populated for metric events, events with `event.type:info`, or any events for which an outcome does not make logical sense. | keyword |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
+| input.type | Type of filebeat input. | keyword |
+| jamf_pro.access.entry_point | The interface through which the access was made, such as Universal API (OAuth), Single Sign On (OIDC), JSS, or Self Service (macOS). | keyword |
+| jamf_pro.access.ip_address | The IP address of the client that performed the access action. | keyword |
+| jamf_pro.access.status | The result status of the access attempt, such as Successful Login or Failed token creation. | keyword |
+| jamf_pro.access.username | The username that performed the access action. | keyword |
+| log.offset | Log offset. | long |
+| message | For log events the message field contains the log message, optimized for viewing in a log viewer. For structured logs without an original message field, other fields can be concatenated to form a human-readable summary of the event. If multiple messages exist, they can be combined into one message. | match_only_text |
+| observer.product | The product name of the observer. | keyword |
+| observer.vendor | Vendor name of the observer. | keyword |
+| related.ip | All of the IPs seen on your event. | ip |
+| related.user | All the user names or other user identifiers seen on the event. | keyword |
+| source.as.number | Unique number allocated to the autonomous system. The autonomous system number (ASN) uniquely identifies each network on the Internet. | long |
+| source.as.organization.name | Organization name. | keyword |
+| source.as.organization.name.text | Multi-field of `source.as.organization.name`. | match_only_text |
+| source.geo.city_name | City name. | keyword |
+| source.geo.continent_name | Name of the continent. | keyword |
+| source.geo.country_iso_code | Country ISO code. | keyword |
+| source.geo.country_name | Country name. | keyword |
+| source.geo.location | Longitude and latitude. | geo_point |
+| source.geo.region_iso_code | Region ISO code. | keyword |
+| source.geo.region_name | Region name. | keyword |
+| source.ip | IP address of the source (IPv4 or IPv6). | ip |
+| tags | List of keywords used to tag each event. | keyword |
+| user.name | Short name or login of the user. | keyword |
+| user.name.text | Multi-field of `user.name`. | match_only_text |
+
+
+### Change Management
+
+The change management data stream collects Jamf Pro Log Stream change management
+logs. These logs record configuration changes such as creating, reading, updating,
+or deleting objects in Jamf Pro (computers, policies, configuration profiles, etc.).
+
+Change management events are automatically rerouted from the access data stream.
+No separate input configuration is required.
+
+Documents from the change management data stream can be found with the filter
+`event.dataset: "jamf_pro.change_management"`.
+
+An example event for `change_management` looks as following:
+
+```json
+{
+    "@timestamp": "2026-09-23T19:56:45.940685642Z",
+    "ecs": {
+        "version": "9.4.0"
+    },
+    "event": {
+        "action": "DELETE",
+        "category": [
+            "configuration"
+        ],
+        "dataset": "jamf_pro.change_management",
+        "kind": "event",
+        "module": "jamf_pro",
+        "original": "{\"time\":\"2026-09-23T19:56:45.940685642Z\",\"message\":\"[CHANGEMANAGEMENT] 2026-09-23T19:56:45,940 [INFO ] [eralPool-47] [file                     ] - [dnopnmcns@buqprrmmj.com (ID: -1)] [DELETE] [Computer] [2026-09-23T19:56:45.940+0000]\\n\\tID             2430\\n\\tName ......... ZO-RFLEIOF03I-Z\"}",
+        "type": [
+            "deletion"
+        ]
+    },
+    "jamf_pro": {
+        "change_management": {
+            "actor": {
+                "id": "-1",
+                "name": "dnopnmcns@buqprrmmj.com"
+            },
+            "detail": "ID             2430\n\tName ......... ZO-RFLEIOF03I-Z",
+            "log_level": "INFO",
+            "object": {
+                "id": "2430",
+                "name": "ZO-RFLEIOF03I-Z"
+            },
+            "object_type": "Computer",
+            "operation": "DELETE",
+            "thread": "eralPool-47"
+        }
+    },
+    "observer": {
+        "product": "Jamf Pro",
+        "vendor": "Jamf"
+    },
+    "related": {
+        "user": [
+            "dnopnmcns@buqprrmmj.com"
+        ]
+    },
+    "user": {
+        "id": "-1",
+        "name": "dnopnmcns@buqprrmmj.com"
+    },
+    "tags": [
+        "forwarded",
+        "jamf_pro-change_management"
+    ]
+}
+```
+
+The following non-ECS fields are used in change management documents:
+
+**Exported fields**
+
+| Field | Description | Type |
+|---|---|---|
+| @timestamp | Event timestamp. | date |
+| aws.s3.bucket.arn | ARN of the S3 bucket that this log retrieved from. | keyword |
+| aws.s3.bucket.name | Name of the S3 bucket that this log retrieved from. | keyword |
+| aws.s3.object.key | Name of the S3 object that this log retrieved from. | keyword |
+| data_stream.dataset | Data stream dataset. | constant_keyword |
+| data_stream.namespace | Data stream namespace. | constant_keyword |
+| data_stream.type | Data stream type. | constant_keyword |
+| ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
+| error.message | Error message. | match_only_text |
+| event.action | The action captured by the event. This describes the information in the event. It is more specific than `event.category`. Examples are `group-add`, `process-started`, `file-created`. The value is normally defined by the implementer. | keyword |
+| event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
+| event.dataset | Event dataset. | constant_keyword |
+| event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
+| event.module | Event module. | constant_keyword |
+| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
+| event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
+| input.type | Type of filebeat input. | keyword |
+| jamf_pro.change_management.actor.id | The Jamf Pro internal ID of the actor (-1 for system, 0 for API clients, positive integers for human users). | keyword |
+| jamf_pro.change_management.actor.name | The name or email of the actor who performed the change. | keyword |
+| jamf_pro.change_management.detail | The full detail block of the change management entry, containing configuration settings or object properties. | text |
+| jamf_pro.change_management.log_level | The log level of the change management entry (typically INFO). | keyword |
+| jamf_pro.change_management.object.id | The ID of the object affected by the change, extracted from the detail block. | keyword |
+| jamf_pro.change_management.object.name | The name of the object affected by the change, extracted from the detail block. | keyword |
+| jamf_pro.change_management.object_type | The type of object affected by the change, such as Computer, Policy, or Smart Computer Group. | keyword |
+| jamf_pro.change_management.operation | The change management operation performed (CREATE, READ, UPDATE, DELETE). | keyword |
+| jamf_pro.change_management.thread | The application thread that generated the log entry. | keyword |
+| log.offset | Log offset. | long |
+| observer.product | The product name of the observer. | keyword |
+| observer.vendor | Vendor name of the observer. | keyword |
+| related.user | All the user names or other user identifiers seen on the event. | keyword |
+| tags | List of keywords used to tag each event. | keyword |
+| user.id | Unique identifier of the user. | keyword |
+| user.name | Short name or login of the user. | keyword |
+| user.name.text | Multi-field of `user.name`. | match_only_text |
+
+
+### Dashboards
+
+The integration ships a **Log Stream Overview** dashboard that summarizes
+access and change management events — event volume over time, top actors,
+and a breakdown of change management operations by object type. It is tagged
+**Security Solution**, so it also appears in the Security app, and can be found
+in Kibana under **Dashboards** after installing the integration.
