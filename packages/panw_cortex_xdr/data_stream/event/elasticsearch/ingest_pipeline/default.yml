@@ -1287,24 +1287,67 @@ processors:
           }
           return null;
         }
-        def normalize(def v) {
-          if (v instanceof String) {
-            def rec = recordFromString(v);
-            return rec == null ? v : [rec];
-          }
-          return v;
-        }
         if (ctx.json.agent_interface_map instanceof String) {
-          ctx.json.agent_interface_map = normalize(ctx.json.agent_interface_map);
+          def rec = recordFromString(ctx.json.agent_interface_map);
+          ctx.json.agent_interface_map = rec == null ? null : [rec];
         }
         if (ctx.json.host_metadata_interface_map instanceof String) {
-          ctx.json.host_metadata_interface_map = normalize(ctx.json.host_metadata_interface_map);
+          def rec = recordFromString(ctx.json.host_metadata_interface_map);
+          ctx.json.host_metadata_interface_map = rec == null ? null : [rec];
         }
   - rename:
       field: json.agent_interface_map
       tag: rename_agent_interface_map_8937fb22
       target_field: panw_cortex.xdr.event.agent.interface_map
       ignore_missing: true
+  - foreach:
+      field: panw_cortex.xdr.event.agent.interface_map
+      if: ctx.panw_cortex?.xdr?.event?.agent?.interface_map instanceof List
+      tag: foreach_agent_interface_map_ipv4
+      processor:
+        foreach:
+          field: _ingest._value.ipv4
+          ignore_missing: true
+          tag: foreach_agent_interface_map_ipv4_values
+          processor:
+            convert:
+              field: _ingest._value
+              tag: convert_agent_interface_map_ipv4
+              type: ip
+              ignore_missing: true
+              on_failure:
+                - remove:
+                    tag: remove_agent_interface_map_ipv4
+                    field: _ingest._value
+                    ignore_missing: true
+                - append:
+                    tag: append_error_message_agent_interface_map_ipv4
+                    field: error.message
+                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: panw_cortex.xdr.event.agent.interface_map
+      if: ctx.panw_cortex?.xdr?.event?.agent?.interface_map instanceof List
+      tag: foreach_agent_interface_map_ipv6
+      processor:
+        foreach:
+          field: _ingest._value.ipv6
+          ignore_missing: true
+          tag: foreach_agent_interface_map_ipv6_values
+          processor:
+            convert:
+              field: _ingest._value
+              tag: convert_agent_interface_map_ipv6
+              type: ip
+              ignore_missing: true
+              on_failure:
+                - remove:
+                    tag: remove_agent_interface_map_ipv6
+                    field: _ingest._value
+                    ignore_missing: true
+                - append:
+                    tag: append_error_message_agent_interface_map_ipv6
+                    field: error.message
+                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - script:
       tag: script_wrap_agent_ip_addresses
       lang: painless
@@ -1576,6 +1619,54 @@ processors:
       tag: rename_host_metadata_interface_map_4000f653
       target_field: panw_cortex.xdr.event.host_metadata.interface_map
       ignore_missing: true
+  - foreach:
+      field: panw_cortex.xdr.event.host_metadata.interface_map
+      if: ctx.panw_cortex?.xdr?.event?.host_metadata?.interface_map instanceof List
+      tag: foreach_host_metadata_interface_map_ipv4
+      processor:
+        foreach:
+          field: _ingest._value.ipv4
+          ignore_missing: true
+          tag: foreach_host_metadata_interface_map_ipv4_values
+          processor:
+            convert:
+              field: _ingest._value
+              tag: convert_host_metadata_interface_map_ipv4
+              type: ip
+              ignore_missing: true
+              on_failure:
+                - remove:
+                    tag: remove_host_metadata_interface_map_ipv4
+                    field: _ingest._value
+                    ignore_missing: true
+                - append:
+                    tag: append_error_message_host_metadata_interface_map_ipv4
+                    field: error.message
+                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
+  - foreach:
+      field: panw_cortex.xdr.event.host_metadata.interface_map
+      if: ctx.panw_cortex?.xdr?.event?.host_metadata?.interface_map instanceof List
+      tag: foreach_host_metadata_interface_map_ipv6
+      processor:
+        foreach:
+          field: _ingest._value.ipv6
+          ignore_missing: true
+          tag: foreach_host_metadata_interface_map_ipv6_values
+          processor:
+            convert:
+              field: _ingest._value
+              tag: convert_host_metadata_interface_map_ipv6
+              type: ip
+              ignore_missing: true
+              on_failure:
+                - remove:
+                    tag: remove_host_metadata_interface_map_ipv6
+                    field: _ingest._value
+                    ignore_missing: true
+                - append:
+                    tag: append_error_message_host_metadata_interface_map_ipv6
+                    field: error.message
+                    value: 'Processor {{{_ingest.on_failure_processor_type}}} with tag {{{_ingest.on_failure_processor_tag}}} in pipeline {{{_ingest.on_failure_pipeline}}} failed with message: {{{_ingest.on_failure_message}}}'
   - convert:
       field: json.os_actor_local_ip
       tag: convert_os_actor_local_ip_to_ip_66d9db76
