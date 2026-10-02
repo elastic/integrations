@@ -1,0 +1,85 @@
+connectors:
+    forward/componentid-0: {}
+exporters:
+    elasticsearch/componentid-0:
+        endpoints:
+            - https://elasticsearch:9200
+inputs: []
+output_permissions:
+    default:
+        _elastic_agent_checks:
+            cluster:
+                - monitor
+        _elastic_agent_monitoring:
+            indices: []
+        uuid-for-permissions-on-related-indices:
+            indices:
+                - names:
+                    - metrics-gcp.compute.otel-ep
+                  privileges:
+                    - auto_configure
+                    - create_doc
+processors:
+    resourcedetection/componentid-0:
+        detectors:
+            - system
+    transform/componentid-1:
+        metric_statements:
+            - context: datapoint
+              statements:
+                - set(attributes["data_stream.type"], "metrics")
+                - set(attributes["data_stream.dataset"], "gcp.compute")
+                - set(attributes["data_stream.namespace"], "ep")
+receivers:
+    googlecloudmonitoring/componentid-0:
+        collection_interval: 300s
+        initial_delay: 1s
+        metrics_list:
+            - metric_name: compute.googleapis.com/instance/cpu/utilization
+            - metric_name: compute.googleapis.com/instance/cpu/usage_time
+            - metric_name: compute.googleapis.com/instance/cpu/reserved_cores
+            - metric_name: compute.googleapis.com/instance/cpu/guest_visible_vcpus
+            - metric_name: compute.googleapis.com/instance/cpu/scheduler_wait_time
+            - metric_name: compute.googleapis.com/instance/disk/read_bytes_count
+            - metric_name: compute.googleapis.com/instance/disk/read_ops_count
+            - metric_name: compute.googleapis.com/instance/disk/write_bytes_count
+            - metric_name: compute.googleapis.com/instance/disk/write_ops_count
+            - metric_name: compute.googleapis.com/instance/disk/average_io_latency
+            - metric_name: compute.googleapis.com/instance/disk/average_io_queue_depth
+            - metric_name: compute.googleapis.com/instance/disk/performance_status
+            - metric_name: compute.googleapis.com/instance/disk/provisioning/iops
+            - metric_name: compute.googleapis.com/instance/disk/provisioning/throughput
+            - metric_name: compute.googleapis.com/instance/disk/provisioning/size
+            - metric_name: compute.googleapis.com/instance/network/received_bytes_count
+            - metric_name: compute.googleapis.com/instance/network/received_packets_count
+            - metric_name: compute.googleapis.com/instance/network/sent_bytes_count
+            - metric_name: compute.googleapis.com/instance/network/sent_packets_count
+            - metric_name: compute.googleapis.com/firewall/dropped_bytes_count
+            - metric_name: compute.googleapis.com/firewall/dropped_packets_count
+            - metric_name: compute.googleapis.com/instance/memory/balloon/ram_size
+            - metric_name: compute.googleapis.com/instance/memory/balloon/ram_used
+            - metric_name: compute.googleapis.com/instance/memory/balloon/swap_in_bytes_count
+            - metric_name: compute.googleapis.com/instance/memory/balloon/swap_out_bytes_count
+            - metric_name: compute.googleapis.com/instance/uptime
+            - metric_name: compute.googleapis.com/instance/uptime_total
+            - metric_name: compute.googleapis.com/instance/interruption_count
+            - metric_name: compute.googleapis.com/instance_group/size
+        project_id: my-gcp-project
+        timeout: 1m
+        universe_domain: googleapis.com
+secret_references: []
+service:
+    pipelines:
+        metrics/componentid-0:
+            exporters:
+                - elasticsearch/componentid-0
+            receivers:
+                - forward/componentid-0
+        metrics/componentid-1:
+            exporters:
+                - forward/componentid-0
+            processors:
+                - resourcedetection/componentid-0
+                - transform/componentid-1
+            receivers:
+                - googlecloudmonitoring/componentid-0
