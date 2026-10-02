@@ -37,7 +37,9 @@ The OpenTelemetry Profiling integration collects the following profiling data:
 
 ## Where is the data stored?
 
-Starting with Elasticsearch 9.6.0, profiles are stored only in OTel-native data streams that follow OpenTelemetry semantic conventions and use data stream lifecycle (DSL) for retention, instead of ILM:
+Starting with Elasticsearch 9.6.0, OpenTelemetry profiles are stored by default in OTel-native data streams that follow OpenTelemetry semantic conventions and use data stream lifecycle (DSL) for retention, instead of ILM. Profiles collected by Universal Profiling keep using the ECS-based indices.
+
+The OTel-native data streams are:
 
 | Data            | Data stream                           |
 | --------------- | ------------------------------------- |
