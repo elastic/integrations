@@ -36,6 +36,40 @@ processors:
       ignore_missing: true
       description: The `message` field is no longer required if the document has an `event.original` field.
       if: ctx.event?.original != null
+  - script:
+      lang: painless
+      tag: extract_ioc_object_from_pretty_json_array_9f1a2b
+      description: >-
+        Live GTI threat_list files are pretty-printed `{"iocs":[ ... ]}` arrays. The filestream
+        multiline parser emits one array element per event (plus one array-wrapper event). Extract
+        the first balanced JSON object so the rest of the pipeline receives a single IOC object,
+        exactly as with NDJSON or CEL input. This is a no-op for input that is already a single
+        JSON object (CEL/NDJSON). Events that contain no object (the array wrapper) get
+        `event.original` removed so they can be dropped by the next processor.
+      if: ctx.event?.original != null
+      source: |-
+        String s = ctx.event.original;
+        int start = s.indexOf("{");
+        if (start < 0) { ctx.event.remove("original"); return; }
+        int depth = 0; boolean inStr = false; boolean esc = false; int end = -1;
+        for (int p = start; p < s.length(); ++p) {
+          char c = s.charAt(p);
+          if (inStr) {
+            if (esc) { esc = false; }
+            else if (c == (char)92) { esc = true; }
+            else if (c == (char)34) { inStr = false; }
+          } else {
+            if (c == (char)34) { inStr = true; }
+            else if (c == (char)123) { ++depth; }
+            else if (c == (char)125) { --depth; if (depth == 0) { end = p; break; } }
+          }
+        }
+        if (end < 0) { ctx.event.remove("original"); }
+        else { ctx.event.original = s.substring(start, end + 1); }
+  - drop:
+      tag: drop_pretty_json_array_wrapper_9f1a2c
+      if: ctx.event?.original == null && ctx.message == null && ctx.error?.message == null
+      description: Drops the `{"iocs":[` / `]}` array-wrapper event produced by the filestream multiline parser.
   - json:
       field: event.original
       tag: json_event_original_a68ecd77
