@@ -264,7 +264,7 @@ The step is currently `soft_fail: true` — a mismatch posts a warning comment b
 
 ## Backport checklist comment
 
-This section describes the backport checklist that appears on eligible pull requests once they are merged to `main` (those that touch at least one package with active backport branches that is not suppressed) — not just hotfix flows. If you landed here looking for "what is this comment on my PR?", this is the right place.
+This section describes the backport checklist comment, which is posted on a pull request after it is merged to `main`. It is only posted for pull requests that change at least one package with active backport branches that is not [suppressed](#suppressing-a-package-from-the-checklist). No checklist comment is posted for pull requests merged into any other branch, such as a `backport-*` branch.
 
 When a pull request is merged to `main`, the `backport-packages-detect.yml` workflow runs on the resulting push to `main`. It finds the merged PR, detects the packages changed by it, and posts a comment on that PR listing the active backport branches for each of those packages. The comment is posted only after merge, so it does not appear while the PR is open. It only appears when at least one package changed by the PR has active backport branches in `.backports.yml`. Packages listed in `skip_checklist_packages` are ignored when making that decision (see [Suppressing a package from the checklist](#suppressing-a-package-from-the-checklist)), and the comment is not posted for sync-changelog PRs (labeled `backport:sync-changelog`).
 
