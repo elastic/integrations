@@ -19,6 +19,8 @@ try:
 except ImportError:  # pragma: no cover
     sys.exit(
         "PyYAML is required.\n"
+        "  uv run <skill-dir>/scripts/audit.py <package>   # installs it on the fly\n"
+        "or:\n"
         "  python3 -m pip install --user pyyaml\n"
         "or use a venv:\n"
         "  python3 -m venv /tmp/columnar-venv && /tmp/columnar-venv/bin/pip install pyyaml\n"

@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+# /// script
+# requires-python = ">=3.9"
+# dependencies = ["pyyaml>=6"]
+# ///
 """Static columnar-readiness audit for Elastic integration packages.
 
 Scans a package (or the whole catalog) for mapping features that Elasticsearch
@@ -13,7 +17,10 @@ or wherever `npx skills add` installed it):
     python3 <skill-dir>/scripts/audit.py packages/ --catalog            # whole catalog
     python3 <skill-dir>/scripts/audit.py packages/ --catalog --format json --out report.json
 
-Requires: Python 3.8+ and PyYAML.
+Requires: Python 3.9+ and PyYAML. `uv run` reads the inline metadata above and
+installs PyYAML on the fly:
+    uv run <skill-dir>/scripts/audit.py packages/nginx
+or, with plain Python:
     python3 -m pip install --user pyyaml
     # or, without touching the system interpreter:
     python3 -m venv /tmp/columnar-venv && /tmp/columnar-venv/bin/pip install pyyaml
