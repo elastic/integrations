@@ -1,0 +1,259 @@
+- name: openrouter
+  type: group
+  fields:
+    - name: performance
+      type: group
+      description: OpenRouter hourly performance analytics bucket fields.
+      fields:
+        # Dimensions
+        - name: model
+          type: keyword
+          description: LLM model identifier (for example openai/gpt-4o).
+        - name: provider
+          type: keyword
+          description: Provider routing the request (for example OpenAI, Anthropic).
+        - name: variant
+          type: keyword
+          description: Model variant identifier when grouped by variant.
+        - name: api_key_id
+          type: keyword
+          description: API key identifier when grouped by api_key_id.
+        - name: workspace
+          type: keyword
+          description: Workspace identifier when grouped by workspace.
+        - name: app
+          type: keyword
+          description: Application identifier when grouped by app.
+        - name: user
+          type: keyword
+          description: User identifier when grouped by user.
+        # End-to-end latency
+        - name: p50_latency
+          type: double
+          description: >-
+            50th-percentile end-to-end request latency in milliseconds.
+            This is a rate metric — do not sum across time windows.
+          unit: ms
+          metric_type: gauge
+        - name: p90_latency
+          type: double
+          description: >-
+            90th-percentile end-to-end request latency in milliseconds.
+            This is a rate metric — do not sum across time windows.
+          unit: ms
+          metric_type: gauge
+        - name: p95_latency
+          type: double
+          description: >-
+            95th-percentile end-to-end request latency in milliseconds.
+            This is a rate metric — do not sum across time windows.
+          unit: ms
+          metric_type: gauge
+        - name: p99_latency
+          type: double
+          description: >-
+            99th-percentile end-to-end request latency in milliseconds.
+            This is a rate metric — do not sum across time windows.
+          unit: ms
+          metric_type: gauge
+        # Router latency (OpenRouter overhead)
+        - name: p50_router_latency
+          type: double
+          description: >-
+            50th-percentile OpenRouter routing overhead in milliseconds.
+            This is a rate metric — do not sum across time windows.
+          unit: ms
+          metric_type: gauge
+        - name: p90_router_latency
+          type: double
+          description: >-
+            90th-percentile OpenRouter routing overhead in milliseconds.
+            This is a rate metric — do not sum across time windows.
+          unit: ms
+          metric_type: gauge
+        - name: p99_router_latency
+          type: double
+          description: >-
+            99th-percentile OpenRouter routing overhead in milliseconds.
+            This is a rate metric — do not sum across time windows.
+          unit: ms
+          metric_type: gauge
+        # Time to first token (TTFT)
+        - name: p50_ttfb
+          type: double
+          description: >-
+            50th-percentile time-to-first-token (TTFT) in milliseconds.
+            This is a rate metric — do not sum across time windows.
+          unit: ms
+          metric_type: gauge
+        - name: p90_ttfb
+          type: double
+          description: >-
+            90th-percentile time-to-first-token (TTFT) in milliseconds.
+            This is a rate metric — do not sum across time windows.
+          unit: ms
+          metric_type: gauge
+        - name: p95_ttfb
+          type: double
+          description: >-
+            95th-percentile time-to-first-token (TTFT) in milliseconds.
+            This is a rate metric — do not sum across time windows.
+          unit: ms
+          metric_type: gauge
+        - name: p99_ttfb
+          type: double
+          description: >-
+            99th-percentile time-to-first-token (TTFT) in milliseconds.
+            This is a rate metric — do not sum across time windows.
+          unit: ms
+          metric_type: gauge
+        # Generation time (model token generation)
+        - name: p50_generation_time
+          type: double
+          description: >-
+            50th-percentile model token generation time in milliseconds.
+            This is a rate metric — do not sum across time windows.
+          unit: ms
+          metric_type: gauge
+        - name: p90_generation_time
+          type: double
+          description: >-
+            90th-percentile model token generation time in milliseconds.
+            This is a rate metric — do not sum across time windows.
+          unit: ms
+          metric_type: gauge
+        - name: p99_generation_time
+          type: double
+          description: >-
+            99th-percentile model token generation time in milliseconds.
+            This is a rate metric — do not sum across time windows.
+          unit: ms
+          metric_type: gauge
+        # Inter-token latency (streaming performance)
+        - name: p50_inter_token_latency
+          type: double
+          description: >-
+            50th-percentile inter-token latency in milliseconds (streaming responsiveness).
+            This is a rate metric — do not sum across time windows.
+          unit: ms
+          metric_type: gauge
+        - name: p90_inter_token_latency
+          type: double
+          description: >-
+            90th-percentile inter-token latency in milliseconds (streaming responsiveness).
+            This is a rate metric — do not sum across time windows.
+          unit: ms
+          metric_type: gauge
+        - name: p99_inter_token_latency
+          type: double
+          description: >-
+            99th-percentile inter-token latency in milliseconds (streaming responsiveness).
+            This is a rate metric — do not sum across time windows.
+          unit: ms
+          metric_type: gauge
+        # Throughput
+        - name: p50_throughput
+          type: double
+          description: >-
+            50th-percentile streaming throughput in tokens per second.
+            This is a rate metric — do not sum across time windows.
+          metric_type: gauge
+        - name: p90_throughput
+          type: double
+          description: >-
+            90th-percentile streaming throughput in tokens per second.
+            This is a rate metric — do not sum across time windows.
+          metric_type: gauge
+        - name: p95_throughput
+          type: double
+          description: >-
+            95th-percentile streaming throughput in tokens per second.
+            This is a rate metric — do not sum across time windows.
+          metric_type: gauge
+        - name: p99_throughput
+          type: double
+          description: >-
+            99th-percentile streaming throughput in tokens per second.
+            This is a rate metric — do not sum across time windows.
+          metric_type: gauge
+        # Cache efficiency
+        - name: cache_hit_rate
+          type: double
+          description: >-
+            Fraction of requests served from prompt cache (0.0–1.0).
+            This is a rate metric — do not sum across time windows.
+          unit: percent
+          metric_type: gauge
+        - name: response_cached_rate
+          type: double
+          description: >-
+            Fraction of responses that were cached (0.0–1.0).
+            This is a rate metric — do not sum across time windows.
+          unit: percent
+          metric_type: gauge
+        # Guardrails
+        - name: guardrail_invoked_rate
+          type: double
+          description: >-
+            Fraction of requests for which a guardrail was invoked (0.0–1.0).
+            This is a rate metric — do not sum across time windows.
+          unit: percent
+          metric_type: gauge
+        - name: request_count
+          type: long
+          description: >-
+            Number of API requests in the hour bucket. Use it to weight average and rate metrics across rows. Percentile metrics cannot be combined this way; use MAX or look at single rows.
+          metric_type: gauge
+        - name: avg_latency
+          type: double
+          description: >-
+            Mean end-to-end request latency in milliseconds. This is a rate metric — do not sum across time windows.
+          unit: ms
+          metric_type: gauge
+        - name: avg_ttfb
+          type: double
+          description: >-
+            Mean time-to-first-token (TTFT) in milliseconds. This is a rate metric — do not sum across time windows.
+          unit: ms
+          metric_type: gauge
+        - name: avg_throughput
+          type: double
+          description: >-
+            Mean streaming throughput in tokens per second. This is a rate metric — do not sum across time windows.
+          metric_type: gauge
+        - name: avg_inter_token_latency
+          type: double
+          description: >-
+            Mean inter-token latency in milliseconds. This is a rate metric — do not sum across time windows.
+          unit: ms
+          metric_type: gauge
+        - name: avg_router_latency
+          type: double
+          description: >-
+            Mean OpenRouter routing overhead in milliseconds. This is a rate metric — do not sum across time windows.
+          unit: ms
+          metric_type: gauge
+        - name: avg_generation_time
+          type: double
+          description: >-
+            Mean model token generation time in milliseconds. This is a rate metric — do not sum across time windows.
+          unit: ms
+          metric_type: gauge
+        - name: p95_router_latency
+          type: double
+          description: >-
+            95th-percentile OpenRouter routing overhead in milliseconds. This is a rate metric — do not sum across time windows.
+          unit: ms
+          metric_type: gauge
+        - name: p95_generation_time
+          type: double
+          description: >-
+            95th-percentile model token generation time in milliseconds. This is a rate metric — do not sum across time windows.
+          unit: ms
+          metric_type: gauge
+        - name: p95_inter_token_latency
+          type: double
+          description: >-
+            95th-percentile inter-token latency in milliseconds. This is a rate metric — do not sum across time windows.
+          unit: ms
+          metric_type: gauge

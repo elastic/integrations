@@ -1,0 +1,98 @@
+title: "usage"
+type: metrics
+streams:
+  - input: cel
+    title: OpenRouter API usage metrics
+    description: >-
+      Collect daily additive usage metrics (request counts, token consumption, cost)
+      from the OpenRouter Analytics API, grouped by model and API key.
+    template_path: cel.yml.hbs
+    vars:
+      - name: interval
+        type: text
+        title: Collection interval
+        description: How often the Analytics API is polled for new daily data.
+        required: true
+        show_user: true
+        default: 6h
+      - name: initial_interval
+        type: text
+        title: Initial lookback interval
+        description: >-
+          How far back to collect data on the first run (for example 168h = 7 days).
+          Must be a valid Go duration string. Longer values mean more requests on
+          the first run (one request per 30 days).
+        required: true
+        show_user: true
+        default: 168h
+      - name: finalization_delay
+        type: text
+        title: Finalization delay
+        description: >-
+          How far behind "now" the collection window end is kept. Daily usage
+          metrics are running counters that update throughout the day, so a short
+          delay is sufficient (15m by default). Increase if you observe missing recent data.
+        required: true
+        show_user: false
+        default: 15m
+      - name: dimensions
+        type: text
+        title: Dimensions
+        description: >-
+          Dimensions to group usage data by. Maximum 2 dimensions.
+          Supported: model, variant, api_key_id, workspace, app, user, provider.
+        multi: true
+        required: true
+        show_user: true
+        default:
+          - model
+          - api_key_id
+      - name: http_client_timeout
+        type: text
+        title: HTTP client timeout
+        description: Duration to wait before declaring a request timed out (for example 60s).
+        required: false
+        show_user: false
+        default: 60s
+      - name: proxy_url
+        type: text
+        title: Proxy URL
+        required: false
+        show_user: false
+      - name: ssl
+        type: yaml
+        title: SSL configuration
+        required: false
+        show_user: false
+      - name: tags
+        type: text
+        title: Tags
+        multi: true
+        required: true
+        show_user: false
+        default:
+          - forwarded
+      - name: preserve_original_event
+        type: bool
+        title: Preserve original event
+        required: true
+        show_user: true
+        default: false
+      - name: enable_request_tracer
+        type: bool
+        title: Enable request tracing
+        default: false
+        multi: false
+        required: false
+        show_user: false
+        description: The request tracer logs requests and responses to the agent's local file-system for debugging configurations. Enabling this request tracing compromises security and should only be used for debugging. See [documentation](https://www.elastic.co/guide/en/beats/filebeat/current/filebeat-input-cel.html#_resource_tracer_enable) for details.
+      - name: processors
+        type: yaml
+        title: Processors
+        required: false
+        show_user: false
+        description: Processors applied to events before ingest pipeline parsing.
+elasticsearch:
+  index_template:
+    mappings:
+      subobjects: false

@@ -1,0 +1,271 @@
+---
+description: Pipeline for parsing OpenRouter daily usage metric events.
+processors:
+  - set:
+      field: ecs.version
+      tag: set_ecs_version
+      value: "9.3.0"
+  - remove:
+      field:
+        - organization
+        - division
+        - team
+      ignore_missing: true
+      tag: remove_agentless_tags
+      description: >-
+        Removes fields added by Agentless as metadata, which can collide with ECS fields.
+        Uses ignore_missing so each field is removed independently if present.
+  - terminate:
+      tag: data_collection_error
+      if: ctx.error?.message != null && ctx.message == null && ctx.event?.original == null
+      description: Error message set and no data to process.
+  - rename:
+      field: message
+      tag: rename_message_to_event_original
+      target_field: event.original
+      ignore_missing: true
+      if: ctx.event?.original == null
+      description: Renames the original `message` field to `event.original` to store a copy of the original message.
+  - remove:
+      field: message
+      tag: remove_message
+      ignore_missing: true
+      if: ctx.event?.original != null
+      description: The `message` field is no longer required if the document has an `event.original` field.
+  - json:
+      field: event.original
+      target_field: json
+      tag: parse_json
+      if: ctx.event?.original != null
+  # The time field name varies by dimension selection:
+  #   date__day     — when dimensions do not include provider (e.g. [model])
+  #   created_at__day — when dimensions include provider (e.g. [model, provider])
+  # Try both patterns; whichever exists sets @timestamp.
+  - date:
+      field: json.date__day
+      target_field: "@timestamp"
+      formats:
+        - "yyyy-MM-dd"
+      timezone: UTC
+      tag: date_from_date__day
+      if: ctx.json?.date__day != null
+  - date:
+      field: json.created_at__day
+      target_field: "@timestamp"
+      formats:
+        - "yyyy-MM-dd"
+        - "yyyy-MM-dd HH:mm:ss"
+      timezone: UTC
+      tag: date_from_created_at__day
+      if: ctx.json?.created_at__day != null
+  # Rename dimension fields to ECS-nested target fields.
+  - rename:
+      field: json.model
+      target_field: openrouter.usage.model
+      ignore_missing: true
+      tag: rename_model
+  - rename:
+      field: json.provider
+      target_field: openrouter.usage.provider
+      ignore_missing: true
+      tag: rename_provider
+  - rename:
+      field: json.variant
+      target_field: openrouter.usage.variant
+      ignore_missing: true
+      tag: rename_variant
+  - rename:
+      field: json.api_key_id
+      target_field: openrouter.usage.api_key_id
+      ignore_missing: true
+      tag: rename_api_key_id
+  - rename:
+      field: json.workspace
+      target_field: openrouter.usage.workspace
+      ignore_missing: true
+      tag: rename_workspace
+  - rename:
+      field: json.app
+      target_field: openrouter.usage.app
+      ignore_missing: true
+      tag: rename_app
+  - rename:
+      field: json.user
+      target_field: openrouter.usage.user
+      ignore_missing: true
+      tag: rename_user
+  # Numeric metrics: the API returns counts as JSON strings ("1", "42896").
+  # Convert to long before mapping.
+  - convert:
+      field: json.request_count
+      target_field: openrouter.usage.request_count
+      type: long
+      ignore_missing: true
+      tag: convert_request_count
+  - convert:
+      field: json.tokens_prompt
+      target_field: openrouter.usage.tokens_prompt
+      type: long
+      ignore_missing: true
+      tag: convert_tokens_prompt
+  - convert:
+      field: json.tokens_completion
+      target_field: openrouter.usage.tokens_completion
+      type: long
+      ignore_missing: true
+      tag: convert_tokens_completion
+  - convert:
+      field: json.tokens_total
+      target_field: openrouter.usage.tokens_total
+      type: long
+      ignore_missing: true
+      tag: convert_tokens_total
+  - convert:
+      field: json.cached_tokens
+      target_field: openrouter.usage.cached_tokens
+      type: long
+      ignore_missing: true
+      tag: convert_cached_tokens
+  - convert:
+      field: json.reasoning_tokens
+      target_field: openrouter.usage.reasoning_tokens
+      type: long
+      ignore_missing: true
+      tag: convert_reasoning_tokens
+  - convert:
+      field: json.guardrail_invoked_count
+      target_field: openrouter.usage.guardrail_invoked_count
+      type: long
+      ignore_missing: true
+      tag: convert_guardrail_invoked_count
+  # total_usage, credits_usage, openrouter_usage are returned as floating-point numbers.
+  - convert:
+      field: json.total_usage
+      target_field: openrouter.usage.total_usage
+      type: double
+      ignore_missing: true
+      tag: convert_total_usage
+  - convert:
+      field: json.credits_usage
+      target_field: openrouter.usage.credits_usage
+      type: double
+      ignore_missing: true
+      tag: convert_credits_usage
+  - convert:
+      field: json.openrouter_usage
+      target_field: openrouter.usage.openrouter_usage
+      type: double
+      ignore_missing: true
+      tag: convert_openrouter_usage
+  - convert:
+      field: json.byok_usage
+      target_field: openrouter.usage.byok_usage
+      type: double
+      ignore_missing: true
+      tag: convert_byok_usage
+  - convert:
+      field: json.byok_fees
+      target_field: openrouter.usage.byok_fees
+      type: double
+      ignore_missing: true
+      tag: convert_byok_fees
+  - convert:
+      field: json.byok_request_count
+      target_field: openrouter.usage.byok_request_count
+      type: long
+      ignore_missing: true
+      tag: convert_byok_request_count
+  - convert:
+      field: json.usage_upstream
+      target_field: openrouter.usage.usage_upstream
+      type: double
+      ignore_missing: true
+      tag: convert_usage_upstream
+  - convert:
+      field: json.usage_cache
+      target_field: openrouter.usage.usage_cache
+      type: double
+      ignore_missing: true
+      tag: convert_usage_cache
+  - convert:
+      field: json.response_cached_count
+      target_field: openrouter.usage.response_cached_count
+      type: long
+      ignore_missing: true
+      tag: convert_response_cached_count
+  - convert:
+      field: json.blended_cost_per_million_tokens
+      target_field: openrouter.usage.blended_cost_per_million_tokens
+      type: double
+      ignore_missing: true
+      tag: convert_blended_cost_per_million_tokens
+  - convert:
+      field: json.usage_web
+      target_field: openrouter.usage.usage_web
+      type: double
+      ignore_missing: true
+      tag: convert_usage_web
+  - convert:
+      field: json.usage_file
+      target_field: openrouter.usage.usage_file
+      type: double
+      ignore_missing: true
+      tag: convert_usage_file
+  - convert:
+      field: json.usage_web_fetch
+      target_field: openrouter.usage.usage_web_fetch
+      type: double
+      ignore_missing: true
+      tag: convert_usage_web_fetch
+  - set:
+      field: event.kind
+      tag: set_event_kind
+      value: metric
+  - set:
+      field: event.module
+      tag: set_event_module
+      value: openrouter
+  - set:
+      field: event.dataset
+      tag: set_event_dataset
+      value: openrouter.usage
+  - append:
+      field: event.category
+      tag: append_event_category_api
+      value: api
+  - append:
+      field: event.type
+      tag: append_event_type_info
+      value: info
+  - remove:
+      field: json
+      tag: remove_json
+      ignore_missing: true
+  - append:
+      field: tags
+      tag: append_preserve_original_event_tag
+      value: preserve_original_event
+      allow_duplicates: false
+      if: ctx.error?.message != null
+  - remove:
+      field: event.original
+      tag: remove_event_original
+      ignore_missing: true
+      if: ctx.tags == null || !ctx.tags.contains('preserve_original_event')
+      description: Removes `event.original` unless `preserve_original_event` is enabled or an error occurred.
+on_failure:
+  - append:
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}'
+        {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+        {{{/_ingest.on_failure_processor_tag}}}failed with message '{{{ _ingest.on_failure_message }}}'
+        in pipeline '{{{ _ingest.pipeline }}}'.
+  - set:
+      field: event.kind
+      tag: set_pipeline_error_to_event_kind
+      value: pipeline_error
+  - append:
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
