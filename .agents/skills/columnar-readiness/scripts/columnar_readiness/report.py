@@ -229,6 +229,21 @@ def detection_rules_line(s: Dict[str, Any]) -> str:
             "KQL are Query DSL underneath) in the performance tests.")
 
 
+def query_templates_line(s: Dict[str, Any]) -> str:
+    """The package's own alerting rule and SLO templates that query the stream."""
+    qt = s.get("query_templates") or {}
+    rules, slos = qt.get("alerting_rule_template", 0), qt.get("slo_template", 0)
+    if not rules and not slos:
+        return ""
+    counts = ", ".join(part for part in (
+        f"{rules} alerting rule template(s)" if rules else "",
+        f"{slos} SLO template(s)" if slos else "") if part)
+    names = qt.get("names") or []
+    return (f"Alerting rule and SLO templates: {counts} shipped by this package query this "
+            f"stream ({', '.join(f'“{n}”' for n in names[:4])}{', …' if len(names) > 4 else ''}). "
+            "They must return the same results on columnar; add them to the query checks.")
+
+
 def lookup_candidates_line(s: Dict[str, Any]) -> str:
     """Lookup candidates for the per-stream `index: true` review."""
     cands = s.get("lookup_candidates") or []
@@ -325,6 +340,9 @@ def md_package(result: Dict[str, Any]) -> str:
         lines.append(f"- Sort: **{s['sort']['recommendation']}** — {s['sort']['reason']}")
         lines.append(f"- {source_consumer_line(result, s)}")
         lines.append(f"- {detection_rules_line(s)}")
+        templates_line = query_templates_line(s)
+        if templates_line:
+            lines.append(f"- {templates_line}")
         lines.append(f"- {lookup_candidates_line(s)}")
         lines.append(f"- {text_subfields_line(s)}")
         body, notes = stream_manifest_block(s)

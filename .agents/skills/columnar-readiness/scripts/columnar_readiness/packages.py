@@ -23,8 +23,10 @@ from .rules import (
     lookup_candidates,
     rule_workload,
     attribute_rules,
+    attribute_templates,
     find_detection_rules_repo,
     load_detection_rules_repo,
+    load_query_templates,
     repo_reader_findings,
     repo_readers_for,
     stream_index_name,
@@ -118,8 +120,10 @@ def audit_package(pkg_dir: str, scan_dashboards: bool = True,
         str(t["name"]): [str(ds) for ds in (t.get("data_streams") or [])]
         for t in (manifest.get("policy_templates") or [])
         if isinstance(t, dict) and t.get("name")}
-    attribution = attribute_rules(rule_set, logs_stream_identities(ds_root, result["package"]),
-                                  result["package"], template_streams)
+    identities = logs_stream_identities(ds_root, result["package"])
+    attribution = attribute_rules(rule_set, identities, result["package"], template_streams)
+    query_templates = attribute_templates(load_query_templates(pkg_dir), identities,
+                                          result["package"])
     repo_dir, looked = (find_detection_rules_repo(detection_rules, packages_root)
                         if rules_dir else (None, []))
     repo = load_detection_rules_repo(repo_dir)
@@ -138,6 +142,7 @@ def audit_package(pkg_dir: str, scan_dashboards: bool = True,
                                    latest=latest, foreign_latest=foreign_latest,
                                    rules=attribution.get(ds_name),
                                    rules_scanned=bool(rule_set["rules"]), repo=repo,
+                                   templates=query_templates.get(ds_name),
                                    pkg_name=result["package"])
         result["data_streams"].append(stream)
         status = worse(status, stream["status"])
@@ -189,6 +194,7 @@ def audit_data_stream(pkg_dir: str, ds_dir: str, ds_name: str,
                       rules: Optional[Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]] = None,
                       rules_scanned: bool = False,
                       repo: Optional[Dict[str, Any]] = None,
+                      templates: Optional[List[Dict[str, Any]]] = None,
                       pkg_name: Optional[str] = None) -> Dict[str, Any]:
     rel = lambda p: os.path.relpath(p, pkg_dir)  # noqa: E731
     stream: Dict[str, Any] = {
@@ -395,6 +401,11 @@ def audit_data_stream(pkg_dir: str, ds_dir: str, ds_name: str,
     stream["detection_rules"] = rule_workload(specific_rules, broad_rules,
                                               scanned=rules_scanned)
     stream["detection_rules"]["repo_readers"] = [r["name"] for r in repo_readers]
+    stream["query_templates"] = {
+        "alerting_rule_template": sum(t["kind"] == "alerting_rule_template" for t in templates or []),
+        "slo_template": sum(t["kind"] == "slo_template" for t in templates or []),
+        "names": [t["name"] for t in templates or []][:25],
+    }
 
     stream["findings"] = findings
     stream["field_count"] = len(field_index)

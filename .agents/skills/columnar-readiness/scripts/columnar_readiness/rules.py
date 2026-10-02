@@ -53,10 +53,10 @@ def stream_index_name(ds_type: str, pkg_name: str, ds_name: str,
 RULES_PACKAGE = "security_detection_engine"
 RULES_SUBDIR = os.path.join("kibana", "security_rule")
 
-# `FROM a, b METADATA _source | ...`, optionally after `SET ...;` directives, and each
-# subquery source of `FROM (FROM a | ...), (FROM b | ...)`.
+# `FROM a, b METADATA _source | ...` (or `TS a`), optionally after `SET ...;`
+# directives, and each subquery source of `FROM (FROM a | ...), (FROM b | ...)`.
 _ESQL_FROM_RE = re.compile(
-    r"(?is)(?:^\s*(?:set\b[^;]*;\s*)*|\(\s*)from\s+([^|()]+?)(?=\s+metadata\b|\||\)|$)")
+    r"(?is)(?:^\s*(?:set\b[^;]*;\s*)*|\(\s*)(?:from|ts)\s+([^|()]+?)(?=\s+metadata\b|\||\)|$)")
 # A double-quoted string (kept) or a `//` / `/* */` comment (dropped), so comments go
 # without touching a `"http://…"` literal.
 _ESQL_STRING_OR_COMMENT_RE = re.compile(r'"(?:\\.|[^"\\])*"|//[^\n]*|/\*.*?\*/', re.S)
@@ -247,6 +247,70 @@ def detection_rule_findings(specific: List[Dict[str, Any]],
             f"packages/{RULES_PACKAGE}/{RULES_SUBDIR.replace(os.sep, '/')}/"
             f"{rule['rule_id']}_<version>.json")
         for rule in specific + broad if rule["source_hits"]]
+
+
+# --------------------------------------------------------------------------- #
+# Alerting rule and SLO templates the package ships
+# --------------------------------------------------------------------------- #
+
+QUERY_TEMPLATE_KINDS = ("alerting_rule_template", "slo_template")
+
+
+def load_query_templates(pkg_dir: str) -> List[Dict[str, Any]]:
+    """The package's alerting rule and SLO templates, with the index patterns they query.
+
+    Alerting rule templates are ES|QL (`params.esqlQuery.esql`); SLO templates name an
+    index and a KQL filter (`indicator.params.index`, `.filter`).
+    """
+    out: List[Dict[str, Any]] = []
+    for kind in QUERY_TEMPLATE_KINDS:
+        root = os.path.join(pkg_dir, "kibana", kind)
+        if not os.path.isdir(root):
+            continue
+        for fname in sorted(f for f in os.listdir(root) if f.endswith(".json")):
+            try:
+                with open(os.path.join(root, fname), encoding="utf-8") as fh:
+                    attrs = (json.load(fh) or {}).get("attributes") or {}
+            except (OSError, ValueError, AttributeError):
+                continue
+            params = ((attrs.get("indicator") or {}).get("params") if kind == "slo_template"
+                      else attrs.get("params")) or {}
+            esql = (params.get("esqlQuery") or {}).get("esql") if isinstance(
+                params.get("esqlQuery"), dict) else None
+            if isinstance(esql, str):
+                patterns, text = esql_from_patterns(esql), esql
+            else:
+                index = params.get("index")
+                parts = index if isinstance(index, list) else [index] if index else []
+                patterns = [p.strip() for part in parts for p in str(part).split(",") if p.strip()]
+                text = json.dumps(params)
+            out.append({"kind": kind, "name": attrs.get("name") or fname[:-5],
+                        "file": f"kibana/{kind}/{fname}", "patterns": patterns, "query": text})
+    return out
+
+
+def attribute_templates(templates: List[Dict[str, Any]],
+                        streams: List[Tuple[str, str, str, str]],
+                        pkg_name: str) -> Dict[str, List[Dict[str, Any]]]:
+    """data stream -> the package's templates that query it.
+
+    A template on a broad pattern (`logs-*`) counts for the streams its query or filter
+    names by dataset (`data_stream.dataset: "nginx.access"`); one on the package's own
+    patterns counts for the named streams too, or for all it matches when it names none.
+    """
+    datasets = {name: dataset for name, _, dataset, _ in streams}
+    out: Dict[str, List[Dict[str, Any]]] = {name: [] for name, _, _, _ in streams}
+    for template in templates:
+        matched = [name for name, _, _, index_name in streams
+                   if any(index_pattern_matches(p, index_name) for p in template["patterns"])]
+        if not matched:
+            continue
+        own = any(strip_cluster(p).startswith(f"{t}-{pkg_name}")
+                  for p in template["patterns"] for _, t, _, _ in streams[:1])
+        named = [n for n in matched if names_dataset(template["query"], datasets[n])]
+        for name in (named or (matched if own else [])):
+            out[name].append(template)
+    return out
 
 
 # --------------------------------------------------------------------------- #
