@@ -215,19 +215,13 @@ def attribute_rules(rule_set: Dict[str, Any], streams: List[Tuple[str, str, str,
     return out
 
 
-def detection_rule_findings(specific: List[Dict[str, Any]],
-                            broad: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-    """`source_consumer_detection_rule`: shipped rules that read this stream's `_source`."""
-    out: List[Dict[str, Any]] = []
-    for rule in specific + broad:
-        if not rule["source_hits"]:
-            continue
-        detail = "; ".join(f"{label} — `{excerpt}`" for label, excerpt in rule["source_hits"][:2])
-        paths = rule["extract_paths"]
-        out.append(finding(
+def _source_reader_finding(subject: str, reader: Dict[str, Any], where: str) -> Dict[str, Any]:
+    """`source_consumer_detection_rule` for a rule or hunting query that reads `_source`."""
+    detail = "; ".join(f"{label} — `{excerpt}`" for label, excerpt in reader["source_hits"][:2])
+    paths = reader["extract_paths"]
+    return finding(
             "source_consumer_detection_rule", "C", "review",
-            f"The shipped detection rule \"{rule['name']}\" ({rule['language']}) reads this "
-            f"stream's `_source`: {detail}"
+            f"{subject} reads this stream's `_source`: {detail}"
             + (f". `JSON_EXTRACT` paths: {', '.join(f'`{p}`' for p in paths[:6])}"
                f"{', …' if len(paths) > 6 else ''}" if paths else "")
             + ". Columnar returns `_source` with dotted top-level keys (`{\"a.b\": …}` rather "
@@ -241,9 +235,131 @@ def detection_rule_findings(specific: List[Dict[str, Any]],
             "missing from one of the patterns. Values inside a `flattened` field cannot be "
             "read as columns: promote the value to its own field in the ingest pipeline, "
             "or wait for elasticsearch#160300 (a `JSON_EXTRACT` that resolves dotted keys).",
+            where)
+
+
+def detection_rule_findings(specific: List[Dict[str, Any]],
+                            broad: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """`source_consumer_detection_rule`: shipped rules that read this stream's `_source`."""
+    return [
+        _source_reader_finding(
+            f"The shipped detection rule \"{rule['name']}\" ({rule['language']})", rule,
             f"packages/{RULES_PACKAGE}/{RULES_SUBDIR.replace(os.sep, '/')}/"
-            f"{rule['rule_id']}_<version>.json"))
+            f"{rule['rule_id']}_<version>.json")
+        for rule in specific + broad if rule["source_hits"]]
+
+
+# --------------------------------------------------------------------------- #
+# elastic/detection-rules checkout (hunting queries, unreleased rules)
+# --------------------------------------------------------------------------- #
+
+# Hunting queries live only in `elastic/detection-rules` (`hunting/`), not in any
+# package, and `rules/` can hold rules the prebuilt snapshot doesn't ship yet. Both are
+# scanned when a checkout is at hand, for `_source` readers only: they are run by hand
+# or not shipped, so they don't count toward the performance workload. A rule that is
+# also in the snapshot is reported once, from the snapshot.
+DETECTION_RULES_ENV = "DETECTION_RULES_PATH"
+_TOML_QUERY_RE = re.compile(
+    r"""^query\s*=\s*(\[.*?^\]|'''.*?'''|\"\"\".*?\"\"\"|"(?:\\.|[^"\\\n])*")""", re.S | re.M)
+_TOML_STRING_RE = re.compile(
+    r"""'''(.*?)'''|\"\"\"(.*?)\"\"\"|"((?:\\.|[^"\\\n])*)"|'([^'\n]*)'""", re.S)
+_TOML_NAME_RE = re.compile(r"""^name\s*=\s*(?:"((?:\\.|[^"\\\n])*)"|'([^'\n]*)')""", re.M)
+_REPO_CACHE: Dict[str, Dict[str, Any]] = {}
+
+
+def find_detection_rules_repo(explicit: Optional[str], packages_root: str
+                              ) -> Tuple[Optional[str], List[str]]:
+    """(checkout to scan or None, the places looked at): `--detection-rules`, then
+    `$DETECTION_RULES_PATH`, then a `detection-rules` checkout next to this repo."""
+    root = os.path.abspath(packages_root)
+    candidates = [c for c in (explicit, os.environ.get(DETECTION_RULES_ENV),
+                              os.path.join(os.path.dirname(os.path.dirname(root)),
+                                           "detection-rules")) if c]
+    for candidate in candidates:
+        if os.path.isdir(os.path.join(candidate, "rules")):
+            return os.path.abspath(candidate), candidates
+    return None, candidates
+
+
+def _toml_string(raw: str) -> str:
+    try:
+        return json.loads(f'"{raw}"')
+    except ValueError:
+        return raw
+
+
+def _toml_queries(text: str) -> List[str]:
+    """The query (rules) or queries (hunting) of a detection-rules TOML file."""
+    match = _TOML_QUERY_RE.search(text)
+    if not match:
+        return []
+    out: List[str] = []
+    for literal3, basic3, basic, literal in _TOML_STRING_RE.findall(match.group(1)):
+        out.append(literal3 or basic3 or (_toml_string(basic) if basic else literal))
+    return [q for q in out if q.strip()]
+
+
+def load_detection_rules_repo(repo: Optional[str]) -> Dict[str, Any]:
+    """The ES|QL rules and hunting queries of a detection-rules checkout that read `_source`."""
+    if not repo:
+        return {"dir": None, "files": 0, "readers": []}
+    if repo in _REPO_CACHE:
+        return _REPO_CACHE[repo]
+    readers: List[Dict[str, Any]] = []
+    files = 0
+    for sub in ("rules", "hunting"):
+        for dirpath, dirnames, filenames in os.walk(os.path.join(repo, sub)):
+            dirnames[:] = sorted(d for d in dirnames if not d.startswith((".", "_")))
+            for fname in sorted(f for f in filenames if f.endswith(".toml")):
+                files += 1
+                path = os.path.join(dirpath, fname)
+                try:
+                    with open(path, encoding="utf-8") as fh:
+                        text = fh.read()
+                except OSError:
+                    continue
+                if "_source" not in text:
+                    continue
+                name_match = _TOML_NAME_RE.search(text)
+                name = (_toml_string(name_match.group(1)) if name_match and name_match.group(1)
+                        else name_match.group(2) if name_match else os.path.splitext(fname)[0])
+                for query in _toml_queries(text):
+                    hits = source_access_hits(query)
+                    patterns = esql_from_patterns(query)
+                    if hits and patterns:
+                        readers.append({
+                            "name": name,
+                            "kind": "hunting query" if sub == "hunting" else "rule",
+                            "file": os.path.relpath(path, repo).replace(os.sep, "/"),
+                            "patterns": patterns,
+                            "source_hits": hits,
+                            "extract_paths": sorted(set(_JSON_EXTRACT_PATH_RE.findall(query))),
+                        })
+    result = {"dir": repo, "files": files, "readers": readers}
+    _REPO_CACHE[repo] = result
+    return result
+
+
+def repo_readers_for(index_name: str, repo: Dict[str, Any],
+                     already: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """The detection-rules readers whose patterns match this stream, minus the rules
+    `already` reported from the prebuilt snapshot (same name)."""
+    seen = {r["name"].strip().lower() for r in already}
+    out: List[Dict[str, Any]] = []
+    for reader in repo.get("readers") or []:
+        key = reader["name"].strip().lower()
+        if key in seen or not any(index_pattern_matches(p, index_name) for p in reader["patterns"]):
+            continue
+        seen.add(key)
+        out.append(reader)
     return out
+
+
+def repo_reader_findings(readers: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """`source_consumer_detection_rule` for detection-rules readers (`repo_readers_for`)."""
+    return [_source_reader_finding(
+        f"The `elastic/detection-rules` {r['kind']} \"{r['name']}\" (`{r['file']}`)",
+        r, f"elastic/detection-rules/{r['file']}") for r in readers]
 
 
 def rule_workload(specific: List[Dict[str, Any]], broad: List[Dict[str, Any]],

@@ -69,12 +69,21 @@ def main(argv: Optional[List[str]] = None) -> int:
                              f"the `{RULES_PACKAGE}` package next to the audited package)")
     parser.add_argument("--no-rules", dest="no_rules", action="store_true",
                         help="do not scan detection rules")
+    parser.add_argument("--detection-rules", metavar="DIR",
+                        help="elastic/detection-rules checkout whose `rules/` and `hunting/` "
+                             "are scanned for `_source` readers (default: "
+                             "$DETECTION_RULES_PATH, then a `detection-rules` checkout next "
+                             "to this repository)")
     args = parser.parse_args(argv)
 
     scan_dashboards = (not args.catalog) if args.dashboards is None else args.dashboards
     rules_dir: Optional[str] = None if args.no_rules else (args.rules or "auto")
     if args.rules and not os.path.isdir(args.rules):
         print(f"error: --rules {args.rules}: not a directory", file=sys.stderr)
+        return 2
+    if args.detection_rules and not os.path.isdir(os.path.join(args.detection_rules, "rules")):
+        print(f"error: --detection-rules {args.detection_rules}: no `rules/` directory; pass "
+              f"an elastic/detection-rules checkout", file=sys.stderr)
         return 2
 
     path = os.path.abspath(args.path.rstrip("/") or args.path)
@@ -90,7 +99,8 @@ def main(argv: Optional[List[str]] = None) -> int:
             print(f"error: {args.path}: no packages (sub-directories with a manifest.yml); "
                   f"pass the packages/ root with --catalog", file=sys.stderr)
             return 2
-        results = [audit_package(p, scan_dashboards, rules_dir) for p in pkg_dirs]
+        results = [audit_package(p, scan_dashboards, rules_dir, args.detection_rules)
+                   for p in pkg_dirs]
         if args.status:
             wanted = {s.upper() for s in args.status}
             results_out = [r for r in results if r["status"] in wanted]
@@ -113,7 +123,7 @@ def main(argv: Optional[List[str]] = None) -> int:
             print(f"error: {args.path}: no manifest.yml; pass a package directory, or the "
                   f"packages/ root with --catalog", file=sys.stderr)
             return 2
-        result = audit_package(path, scan_dashboards, rules_dir)
+        result = audit_package(path, scan_dashboards, rules_dir, args.detection_rules)
         result["ecs_schema_source"] = ecs_source()
         md = md_package(result)
         payload = result

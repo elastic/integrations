@@ -23,6 +23,10 @@ from .rules import (
     lookup_candidates,
     rule_workload,
     attribute_rules,
+    find_detection_rules_repo,
+    load_detection_rules_repo,
+    repo_reader_findings,
+    repo_readers_for,
     stream_index_name,
 )
 from .sorting import recommend_sort
@@ -43,7 +47,12 @@ from .transforms import (
 
 
 def audit_package(pkg_dir: str, scan_dashboards: bool = True,
-                  rules_dir: Optional[str] = "auto") -> Dict[str, Any]:
+                  rules_dir: Optional[str] = "auto",
+                  detection_rules: Optional[str] = None) -> Dict[str, Any]:
+    """Audit one package. `rules_dir` is the prebuilt rules directory ("auto": the
+    `security_detection_engine` sibling; None: no rule scan at all), `detection_rules`
+    an `elastic/detection-rules` checkout (default: `$DETECTION_RULES_PATH`, then a
+    sibling of this repo)."""
     pkg_dir = os.path.abspath(pkg_dir.rstrip("/"))
     pkg_name = os.path.basename(pkg_dir)
     result: Dict[str, Any] = {
@@ -111,6 +120,11 @@ def audit_package(pkg_dir: str, scan_dashboards: bool = True,
         if isinstance(t, dict) and t.get("name")}
     attribution = attribute_rules(rule_set, logs_stream_identities(ds_root, result["package"]),
                                   result["package"], template_streams)
+    repo_dir, looked = (find_detection_rules_repo(detection_rules, packages_root)
+                        if rules_dir else (None, []))
+    repo = load_detection_rules_repo(repo_dir)
+    result["detection_rules_repo"] = {"dir": repo["dir"], "files": repo["files"],
+                                      "looked_at": looked}
 
     status = "OUT_OF_SCOPE"
     for ds_name in sorted(os.listdir(ds_root)):
@@ -123,7 +137,7 @@ def audit_package(pkg_dir: str, scan_dashboards: bool = True,
                                    transforms=transforms, kibana=kibana_consumers,
                                    latest=latest, foreign_latest=foreign_latest,
                                    rules=attribution.get(ds_name),
-                                   rules_scanned=bool(rule_set["rules"]),
+                                   rules_scanned=bool(rule_set["rules"]), repo=repo,
                                    pkg_name=result["package"])
         result["data_streams"].append(stream)
         status = worse(status, stream["status"])
@@ -174,6 +188,7 @@ def audit_data_stream(pkg_dir: str, ds_dir: str, ds_name: str,
                       foreign_latest: Optional[List[Dict[str, Any]]] = None,
                       rules: Optional[Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]] = None,
                       rules_scanned: bool = False,
+                      repo: Optional[Dict[str, Any]] = None,
                       pkg_name: Optional[str] = None) -> Dict[str, Any]:
     rel = lambda p: os.path.relpath(p, pkg_dir)  # noqa: E731
     stream: Dict[str, Any] = {
@@ -357,6 +372,9 @@ def audit_data_stream(pkg_dir: str, ds_dir: str, ds_name: str,
         current_pkg=os.path.basename(pkg_dir)))
     specific_rules, broad_rules = rules or ([], [])
     findings.extend(detection_rule_findings(specific_rules, broad_rules))
+    repo_readers = repo_readers_for(stream["index_name"], repo or {},
+                                    [r for r in specific_rules + broad_rules if r["source_hits"]])
+    findings.extend(repo_reader_findings(repo_readers))
     flattened_exempt: set = set()
     findings.extend(object_array_findings(ds_dir, ds_name, field_index, sample,
                                           flattened_exempt))
@@ -376,6 +394,7 @@ def audit_data_stream(pkg_dir: str, ds_dir: str, ds_name: str,
     }
     stream["detection_rules"] = rule_workload(specific_rules, broad_rules,
                                               scanned=rules_scanned)
+    stream["detection_rules"]["repo_readers"] = [r["name"] for r in repo_readers]
 
     stream["findings"] = findings
     stream["field_count"] = len(field_index)

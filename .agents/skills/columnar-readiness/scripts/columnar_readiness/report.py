@@ -195,6 +195,18 @@ def source_consumer_line(result: Dict[str, Any], s: Dict[str, Any]) -> str:
     return f"`_source` consumers: {head}; object arrays: {arrays}.{tail}"
 
 
+def detection_rules_repo_line(info: Dict[str, Any]) -> str:
+    """Whether an `elastic/detection-rules` checkout was scanned for `_source` readers."""
+    if info.get("dir"):
+        return (f"`elastic/detection-rules`: scanned `{info['dir']}` (`rules/` and `hunting/`, "
+                f"{info.get('files', 0)} files) for `_source` readers")
+    looked = ", ".join(f"`{p}`" for p in info.get("looked_at") or [])
+    return ("`elastic/detection-rules`: no checkout found"
+            + (f" (looked at {looked})" if looked else "")
+            + ", so hunting queries were not scanned for `_source` readers. Pass "
+              "`--detection-rules DIR` or set `DETECTION_RULES_PATH`")
+
+
 def detection_rules_line(s: Dict[str, Any]) -> str:
     """Which shipped rules query the stream: the rule half of the performance workload."""
     dr = s.get("detection_rules") or {}
@@ -210,6 +222,9 @@ def detection_rules_line(s: Dict[str, Any]) -> str:
                      "or a package-wide pattern whose query names another data stream)")
     readers = len(dr.get("reading_source") or [])
     parts.append(f"{readers} read `_source`" if readers else "none reads `_source`")
+    if dr.get("repo_readers"):
+        parts.append(f"{len(dr['repo_readers'])} more `_source` reader(s) in "
+                     f"`elastic/detection-rules` ({', '.join(dr['repo_readers'][:3])})")
     return ("Detection rules: " + "; ".join(parts) + ". Replay the direct ones (EQL and "
             "KQL are Query DSL underneath) in the performance tests.")
 
@@ -267,6 +282,8 @@ def md_package(result: Dict[str, Any]) -> str:
                      f"scanned (latest version of each, from `{RULES_PACKAGE}`)")
     else:
         lines.append("- Detection rules: not scanned")
+    if result.get("detection_rules_scanned") is not None and "detection_rules_repo" in result:
+        lines.append(f"- {detection_rules_repo_line(result['detection_rules_repo'])}")
     if result.get("kibana_condition"):
         if kibana_condition_meets_columnar(result["kibana_condition"]):
             lines.append(f"- Kibana condition: `{result['kibana_condition']}` — already at "
@@ -460,6 +477,10 @@ def md_catalog(results: List[Dict[str, Any]]) -> str:
     lines.append(f"Detection rules: {rules_scanned} shipped rules scanned (latest version of "
                  f"each, from `{RULES_PACKAGE}`)" if rules_scanned
                  else "Detection rules: not scanned")
+    repo_info = next((r["detection_rules_repo"] for r in results if r.get("detection_rules_repo")),
+                     None)
+    if repo_info:
+        lines.append(detection_rules_repo_line(repo_info))
     lines.append("")
     lines.append("| Status | Packages | Logs data streams |")
     lines.append("| --- | --- | --- |")
