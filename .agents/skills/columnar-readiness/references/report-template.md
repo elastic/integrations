@@ -294,7 +294,8 @@ sources):
 
 Findings with a mechanical fix also carry `patch`: `{"file", "position", "lang",
 "body", "note"}`. This is the **Suggested change**: `nested_in_nested` (the
-`type: group` mapping), `keyword_normalizer` (the multi-field), `copy_to` (the
+`type: flattened` mapping), `nested_object_children` (the `script` processor that sends
+the objects as dotted keys), `keyword_normalizer` (the multi-field), `copy_to` (the
 `script` processor), `runtime_field` (a script skeleton, or the mapping change for
 `runtime: true`), and `source_consumer_latest_transform` (the `dot_expander`, for a
 destination pipeline that does not expand dotted keys yet). Pipeline snippets are

@@ -33,9 +33,10 @@
     "expected_behavior": [
       "Names both nested-inside-nested pairs of the audit stream: ExchangeAggregatedFolders -> FolderItems and ExchangeAggregatedMessages -> MessageItems, with the fields file",
       "Explains that columnar supports only one level of nesting, so the index template PUT fails",
-      "Recommends checking that no dashboard or detection rule runs a nested query on the inner path, then changing the inner level to type: group (values kept, per-inner-element matching lost)",
-      "Mentions flattened, or denormalizing in the ingest pipeline, as alternatives, and that the change applies at the next rollover",
-      "Shows the exact fields.yml change for each inner field (type: nested -> type: group, children unchanged)",
+      "Recommends checking that no dashboard or detection rule runs a nested query on the inner path, then mapping the inner level as type: flattened (values kept and still attached to their folder or message; sub-fields become keywords)",
+      "Warns that type: group alone is not enough on columnar: the inner objects get detached from their outer element unless the pipeline sends them as dotted keys",
+      "Mentions denormalizing in the ingest pipeline as the alternative that keeps per-item pairing, and that the change applies at the next rollover",
+      "Shows the exact fields.yml change for each inner field (type: nested -> type: flattened, its fields: children dropped)",
       "Notes that the opt-in is per data stream, so the rest of the package is not held back"
     ]
   },
@@ -46,6 +47,7 @@
     "expected_behavior": [
       "Reports threat_response as BLOCKED by nested inside nested, declared as dotted-name sibling entries (whats -> whats.intel_intra_ids, whats.artifact_activity.relevant_actions)",
       "Reports the other streams separately (endpoint_config needs review for a single-level nested field; the rest are READY)",
+      "Flags that objects inside the whats and match.contexts elements would be split off on columnar (nested_object_children), even after the inner nested levels are fixed",
       "Does not treat the whole package as blocked"
     ]
   },
@@ -102,6 +104,17 @@
       "Still lists the informational finding: event.original imported from ECS with doc_values: false",
       "Does not propose declaring columnar.supported on the input package",
       "Says what would need to change first: package-spec support for input packages"
+    ]
+  },
+  {
+    "skills": ["columnar-readiness"],
+    "query": "Can checkpoint firewall go columnar? What about the packets_dropped field?",
+    "files": ["packages/checkpoint"],
+    "expected_behavior": [
+      "Reports the firewall stream as NEEDS_REVIEW, with the event.original doc_values fix as auto-fixable",
+      "Explains that packets_dropped is nested and its elements hold objects (source, destination, ...), which columnar indexes apart from their element, so nested queries combining them stop matching and _source splits the elements",
+      "Offers the choices: the dotted-key script processor for the default pipeline (shown as a suggested change), accepting it when nothing combines those fields, flattened, or staying on logsdb",
+      "Says this looks like an Elasticsearch bug to re-check on newer builds, not a design difference"
     ]
   }
 ]

@@ -186,6 +186,7 @@ Expected differences **in indexed documents**:
 | `_source` keys are **dotted**, not nested objects | `{"event.id": "abc"}` instead of `{"event": {"id": "abc"}}` | columnar flattens the mapping, so the rebuilt `_source` has no hierarchy. `geo_point` still returns `{lat, lon}` |
 | **Single-element arrays collapse to scalars** | `event.category: ["web"]` reads back as `"web"` | logsdb keeps the array via `index.mapping.synthetic_source_keep: arrays`, a setting columnar does not support |
 | Arrays of objects lose their per-object grouping | `[{a:1,b:2},{a:3,b:4}]` → `{a:[1,3], b:[2,4]}` | object arrays are not retained faithfully |
+| Objects inside a `nested` element split off | `x: [{Id: a, Meta: {Owner: u1}}]` reads back as `[{Meta.Owner: u1}, {Id: a}]`, and `nested` queries over both stop matching | an Elasticsearch bug, not a design difference ([`blockers.md`](blockers.md) C2b); the `columnar_nested_dotted_*` pipeline change avoids it |
 | Multi-value arrays keep ingest order | | columnar preserves the order; plain logsdb synthetic source sorts and dedupes |
 | A field under `dynamic: false` disappears | | Class B data loss — must already have been reviewed |
 | A keyword with `normalizer: lowercase` comes back lowercased | | Class C4 |

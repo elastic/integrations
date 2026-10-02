@@ -112,32 +112,46 @@ def check_field(fdef: Dict[str, Any], flat: str, nested_depth: int,
                 f"index modes support only a single level of nesting\"), so the index "
                 f"template PUT fails.",
                 "First check that no dashboard or detection rule runs a `nested` query on "
-                "this inner path. Then, in order of preference: (1) change the inner level "
-                "to `type: group` (a plain object): every value is kept, you only lose "
-                "matching within a single inner element; (2) map it as `type: flattened` "
-                "if its keys are open-ended; (3) if the pairing inside each inner element "
-                "matters, build a single-level `nested` array in the ingest pipeline, one "
-                "entry per (outer, inner) pair carrying both sets of keys. All three change "
-                "the mapping for logsdb installs too. On an existing data stream the type "
+                "this inner path. Then, in order of preference: (1) map the inner level as "
+                "`type: flattened`: every value is kept and stays with its outer element in "
+                "both modes, but its sub-fields become untyped keywords (no numeric ranges "
+                "or sums; ES|QL reads them with `FIELD_EXTRACT`) and matching within one "
+                "inner element is lost; (2) `type: group` keeps the types, but columnar "
+                "indexes each inner object apart from its outer element unless the ingest "
+                "pipeline sends them as dotted keys (`nested_object_children`), so take it "
+                "only together with that pipeline change; (3) if the pairing inside each "
+                "inner element matters, build a single-level `nested` array in the ingest "
+                "pipeline, one entry per (outer, inner) pair carrying both sets of keys. All "
+                "three change the mapping for logsdb installs too. On an existing data stream the type "
                 "change takes effect at the next rollover: Fleet rolls the stream over when "
                 "the write index rejects the mapping (\"can't merge a non-nested mapping "
                 "... with a nested mapping\"). Or keep this stream on logsdb: the opt-in is "
                 "per stream.",
                 rel_file, flat))
+            children = [str(c.get("name")) for c in fdef.get("fields") or []
+                        if isinstance(c, dict) and c.get("name")]
+            shown = ", ".join(children[:6]) + (", …" if len(children) > 6 else "")
             out[-1]["patch"] = patch(
                 rel_file, f"the definition of `{flat}`",
                 f"- name: {fdef.get('name', flat)}\n"
-                "  type: group   # was: nested (columnar allows one level of nesting)\n"
-                "  # keep its other attributes and its `fields:` children unchanged\n",
-                note="Mapping-only: the documents do not change. Check first that nothing runs "
-                     "a `nested` query on this path.")
+                "  type: flattened   # was: nested (columnar allows one level of nesting)\n"
+                "  # keep its description; drop its `fields:` children"
+                + (f" ({shown})" if shown else "") + ":\n"
+                "  # a flattened field declares none\n",
+                note="Mapping-only: the documents do not change, and the values stay with their "
+                     "outer element in both modes. `type: group` would keep their types, but "
+                     "columnar then detaches the inner objects from their outer element unless "
+                     "the pipeline sends them as dotted keys (`nested_object_children`). Check "
+                     "first that nothing runs a `nested` query on this path, or a numeric or "
+                     "date query on its sub-fields.")
         else:
             # Single level nested is accepted but the flattened shape changes.
             out.append(finding(
                 "nested_single_level", "A", "review",
                 f"`{flat}` is a single-level `nested` field.",
                 "Accepted by columnar mode, and `nested` queries keep matching within one "
-                "element: each element stays its own hidden document. Two things to review: "
+                "element: each element stays its own hidden document (objects inside an "
+                "element are the exception: `nested_object_children`). Two things to review: "
                 "consumers of `_source` see the columnar shape, and any mapping with a "
                 "`nested` field turns off columnar's batch indexing path for the whole "
                 "stream (`ShardBatchMapper`), so it does not get the ingest speed-up. Keep "
@@ -379,6 +393,63 @@ def check_field(fdef: Dict[str, Any], flat: str, nested_depth: int,
 
     for f in out:
         f["line"] = line_of(fdef, CODE_KEYS.get(f["code"]))
+    return out
+
+
+def nested_object_children(entries: List[Tuple[Dict[str, Any], str, int, bool, str, str]]
+                           ) -> List[Dict[str, Any]]:
+    """`nested_object_children`: single-level `nested` fields whose elements hold objects.
+
+    Columnar indexes an object sent as JSON inside a nested element as a nested document
+    of its own, detached from the element's other fields (seen on 9.5.4 and on 9.6
+    snapshots up to 2026-10-01; logsdb is not affected; dotted keys are not affected).
+    `entries` are every field of the stream (`read_field_files`), so objects declared
+    through `fields:` and through dotted names both count. Inner `nested` levels are
+    `nested_in_nested`, and `flattened` children are exempt: both are skipped.
+    """
+    fields = [(fdef, flat, rel_file) for fdef, flat, _, in_mf, rel_file, _ in entries if not in_mf]
+    types = {flat: fdef.get("type") for fdef, flat, _ in fields}
+    nested = sorted(p for p, t in types.items() if t == "nested")
+    out: List[Dict[str, Any]] = []
+    for path in nested:
+        if any(path.startswith(o + ".") for o in nested):
+            continue
+        inner = [p for p in nested if p.startswith(path + ".")]
+        objects = set()
+        for flat in types:
+            if not flat.startswith(path + ".") or any(
+                    flat == q or flat.startswith(q + ".") for q in inner):
+                continue
+            rel = flat[len(path) + 1:]
+            head = rel.split(".", 1)[0]
+            if types.get(f"{path}.{head}") == "flattened":
+                continue
+            if "." in rel or types.get(flat) in ("group", "object"):
+                objects.add(head)
+        if not objects:
+            continue
+        fdef, _, rel_file = next(e for e in fields if e[1] == path)
+        names = sorted(objects)
+        shown = ", ".join(f"`{n}`" for n in names[:4]) + (", …" if len(names) > 4 else "")
+        out.append(finding(
+            "nested_object_children", "C", "review",
+            f"`{path}` is `nested` and its elements hold objects ({shown}). On columnar, an "
+            f"object sent as JSON inside a nested element is indexed as a nested document of "
+            f"its own, detached from the element's other fields (seen on 9.5.4 and on 9.6 "
+            f"snapshots up to 2026-10-01; logsdb is not affected). A `nested` query that "
+            f"combines `{path}.<field>` with `{path}.{names[0]}.<field>` stops matching, and "
+            f"`_source` returns those objects as separate array elements. Values sent as "
+            f"dotted keys are not affected.",
+            "Pick one and record it in the PR: (1) send the objects as dotted keys from the "
+            "ingest pipeline (the suggested change, checked on both modes): `nested` queries "
+            "keep matching, and logsdb rebuilds plain objects in `_source` from the mapping, "
+            "though an array of objects inside an element comes back as one array per leaf; "
+            "(2) accept it, when nothing combines an element's own fields with these objects "
+            "in one `nested` query and nothing reads this part of `_source`; (3) map the "
+            "objects as `type: flattened`, which keeps them with their element but makes "
+            "their sub-fields untyped keywords; (4) keep the stream on logsdb until "
+            "Elasticsearch fixes it.",
+            rel_file, path, line=line_of(fdef, "type")))
     return out
 
 

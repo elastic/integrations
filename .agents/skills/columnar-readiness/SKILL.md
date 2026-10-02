@@ -27,6 +27,12 @@ Last reviewed 2026-10-02.
 - **Fleet support** ships in Kibana 9.6, from the `feat/columnar-index-mode` branch; no
   snapshot has it yet. Kibana's registry `spec.max` is still 3.6, so 3.7.0 packages only
   reach Kibana through `elastic-package install` for now.
+- **Objects inside `nested` fields** lose their link to the element on columnar (9.5.4,
+  and 9.6 snapshots up to 2026-10-01): an object sent as JSON inside a nested element
+  is indexed apart from it. Dotted keys are not affected. The audit flags it
+  (`nested_object_children`), and fixes nested inside nested with `flattened`, not
+  `group` ([`references/blockers.md`](references/blockers.md) C2b). Re-check on newer
+  builds.
 - **Open team decisions** this skill follows a default for:
   - whether manifests may set a columnar `index_mode` (the skill never writes one);
   - how per-field inverted indexes are spelled (the skill prefers `columnar: {index: true}`);
@@ -191,7 +197,8 @@ detection rule and its remediation:
   - **info:** no inverted index on non-`text` fields; the flat source shape;
     dynamically mapped fields; `normalizer: lowercase`; an existing
     `columnar: {index: true}`; object arrays in the stream's example documents.
-  - **review** (the stream becomes NEEDS_REVIEW): anything that reads `_source` —
+  - **review** (the stream becomes NEEDS_REVIEW): objects inside a `nested` field
+    (`nested_object_children`), and anything that reads `_source` —
     a transform script (`source_consumer_transform`), a `latest` transform
     (`source_consumer_latest_transform`), a Kibana asset (`source_consumer_kibana`),
     or a shipped detection rule (`source_consumer_detection_rule`).
@@ -246,7 +253,8 @@ snippet, the file it goes in and where in that file:
 - the `script` processor that replaces `copy_to`;
 - a skeleton for a runtime field's ingest script;
 - the multi-field for a custom normalizer;
-- the `type: group` change for nested inside nested.
+- the `type: flattened` change for nested inside nested;
+- the `script` processor that sends the objects inside a `nested` field as dotted keys.
 
 Pipeline snippets go **inline** in the pipeline that needs them, tagged `columnar_*`
 with a `description` starting "columnar:", so `grep columnar_` finds them all. Do not
@@ -313,8 +321,10 @@ checklist. In short:
    pipeline), `test static`, and re-run the audit.
 
 Blocked streams are not mechanical. For `nested` inside `nested`, the usual fix is to
-turn the inner level into a plain object (`type: group`), after checking that nothing
-runs `nested` queries on it ([`references/blockers.md`](references/blockers.md) A1).
+map the inner level as `type: flattened`, after checking that nothing runs `nested`
+queries on it: the values stay with their outer element, and the sub-fields become
+keywords. `type: group` keeps the types, but on columnar it needs the dotted-key
+pipeline change too ([`references/blockers.md`](references/blockers.md) A1, C2b).
 
 ### 5. Validate against a stack
 

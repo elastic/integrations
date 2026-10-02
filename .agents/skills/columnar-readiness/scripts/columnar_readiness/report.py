@@ -658,7 +658,7 @@ def md_catalog(results: List[Dict[str, Any]], scanned: Optional[int] = None,
     lines.append("")
     lines.extend(code_rows(LOSS_CODES))
 
-    REVIEW_CODES = ["nested_single_level", "runtime_field",
+    REVIEW_CODES = ["nested_single_level", "nested_object_children", "runtime_field",
                     "source_consumer_transform", "source_consumer_kibana"]
     npkg, nds, _ = union(REVIEW_CODES)
     lines.append(f"## Judgement calls — review ({npkg} packages, {nds} data streams)")

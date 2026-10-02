@@ -11,7 +11,7 @@ from .common import finding, is_true, line_of, load_yaml, worse
 from .constants import COLUMNAR_INDEX_MODES, OTEL_INPUTS, TEXT_TYPES
 from .consumers import object_array_findings, source_consumer_findings
 from .ecs import ecs_schema
-from .fields import check_field, check_stream_manifest, walk_fields
+from .fields import check_field, check_stream_manifest, nested_object_children, walk_fields
 from .kibana import scan_kibana_assets
 from .patches import attach_pipeline_patches
 from .pipelines import scan_pipelines
@@ -383,6 +383,7 @@ def audit_data_stream(pkg_dir: str, ds_dir: str, ds_name: str,
         elif not in_mf and fdef.get("external") == "ecs":
             for sub in (ecs_schema().get(flat) or {}).get("text_subfields") or []:
                 text_subfields.add(f"{flat}.{sub}")
+    findings.extend(nested_object_children(entries))
 
     # --- package-spec version gate -------------------------------------- #
     # Both constructs are new in package-spec 3.7.0. Declaring either one under

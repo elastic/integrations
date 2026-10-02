@@ -140,8 +140,8 @@ pipeline runs in every index mode, see SKILL.md).
   standard installs of the same version are unchanged. Look at why the author turned
   doc values off: the override makes the field aggregatable in columnar.
 
-The `copy_to` and normalizer fixes change what the pipeline emits, so pipeline test
-expectations have to be regenerated (step 7). Blocked streams (`nested_in_nested` and
+The `copy_to`, normalizer and nested dotted-key fixes change what the pipeline emits,
+so pipeline test expectations have to be regenerated (step 7). Blocked streams (`nested_in_nested` and
 the other `blocker` findings) are not mechanical: see
 [`blockers.md`](blockers.md) A1 for the nested options, or leave the stream on logsdb.
 

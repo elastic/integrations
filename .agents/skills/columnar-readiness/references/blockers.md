@@ -12,8 +12,9 @@ rule the audit uses and the remediation to apply.
   `copy_to`, A4 normalizer, A5 runtime fields (A5b `dynamic: runtime`), A6 stored
   `_source`, A7 types without doc values
 - Class B — accepted but lossy: B1 `dynamic: false`, B2 `enabled: false`
-- Class C — behaviour changes: C1 no inverted index, C2 source shape, C3 dynamic
-  fields, C4 lowercase normalizer, C5 `columnar: {index: true}`
+- Class C — behaviour changes: C1 no inverted index, C2 source shape (C2b objects
+  inside `nested`), C3 dynamic fields, C4 lowercase normalizer, C5
+  `columnar: {index: true}`
 - C6-C10 `_source` consumers: C6 transform scripts, C7 Kibana assets, C8 object
   arrays, C9 shipped detection rules, C10 `latest` transforms
 
@@ -179,15 +180,22 @@ a single level of nesting" (`NestedObjectMapper`). The index template PUT fails.
 Single-level `nested` is accepted, but it is reported separately as
 `nested_single_level` (severity *review*): `nested` queries still match within one
 element, but `_source` consumers see the columnar shape, and any `nested` field turns
-off columnar's batch indexing for the whole stream (`ShardBatchMapper`).
+off columnar's batch indexing for the whole stream (`ShardBatchMapper`). Objects inside
+an element are the exception: see C2b.
 
 **Remediation.** First check that no dashboard or detection rule runs a `nested`
 query on the inner path. Then, in order of preference:
 
-1. Change the inner level to `type: group` (a plain object). Every value is kept; you
-   only lose matching within a single inner element. The report prints this change
-   for the field as a **Suggested change**.
-2. Map it as `type: flattened` when its keys are open-ended.
+1. Map the inner level as `type: flattened`, and drop its `fields:` children. Every
+   value is kept and stays with its outer element in both modes. Its sub-fields become
+   untyped keywords (no numeric ranges or sums; ES|QL reads them with
+   `FIELD_EXTRACT`), and matching within one inner element is lost. The report prints
+   this change for the field as a **Suggested change**.
+2. Change it to `type: group` (a plain object) to keep the types, but only together
+   with the pipeline change of C2b: on columnar, each inner object sent as JSON is
+   indexed apart from its outer element, so a `nested` query combining an outer field
+   with an inner one stops matching, and `_source` splits the elements (o365: two
+   folders come back as five elements).
 3. If the pairing inside each inner element matters, build a single-level `nested`
    array in the ingest pipeline, one entry per (outer, inner) pair carrying both sets
    of keys.
@@ -203,7 +211,8 @@ and Fleet rolls the stream over at package upgrade.
 `ExchangeAggregatedMessages` → `MessageItems`), `tanium/threat_response`
 (`…match_details.finding.whats` → `intel_intra_ids` and
 `artifact_activity.relevant_actions`). None of them is used by a dashboard or queried
-by a shipped detection rule, so option 1 unblocks all three.
+by a shipped detection rule, so option 1 unblocks all three. `aws/waf` and `tanium`
+also carry C2b findings on the outer levels.
 
 ### A2. `doc_values: false` — `doc_values_false`
 
@@ -695,6 +704,46 @@ two modes — a diff there is a real bug or test nondeterminism, never an expect
 columnar effect. The shape changes above are only observable in a system test or in a
 `GET _search` against documents actually indexed in both modes. See
 [`correctness-and-performance.md`](correctness-and-performance.md).
+
+### C2b. Objects inside a `nested` element — `nested_object_children`
+
+**Rule.** A single-level `nested` field whose elements hold objects: a child declared
+as `group`/`object`, or leaves under a child (`checkpoint.packets_dropped.source.ip`),
+through `fields:` or dotted names. Inner `nested` levels are A1, and `flattened`
+children are exempt. Severity `review`.
+
+**Why.** On columnar, an object sent as JSON inside a nested element is indexed as a
+nested document of its own, detached from the element's other fields. With
+`x: [{Id: "a", Meta: {Owner: "u1"}}, {Id: "b", Meta: {Owner: "u2"}}]`:
+
+| | logsdb | logsdb_columnar |
+| --- | --- | --- |
+| `nested` query `x.Id: a` and `x.Meta.Owner: u1` | 1 hit | 0 hits |
+| `_source` `x` | 2 elements | 4 elements: `{Meta.Owner: u1}`, `{Id: a}`, … |
+| same data sent as `{"Id": "a", "Meta.Owner": "u1"}` | 1 hit | 1 hit, 2 elements |
+
+Seen on 9.5.4 and on 9.6 snapshots up to 2026-10-01. It looks like an Elasticsearch bug
+in columnar's `nested` support (elastic/elasticsearch#152357 added it), so check it
+again on the stack you test with.
+
+**Remediation.** Pick one and record it in the PR:
+
+1. Send the objects as dotted keys from the ingest pipeline. The report prints a
+   `script` processor (tag `columnar_nested_dotted_*`) for the end of the stream's
+   default pipeline. Checked on both modes: `nested` queries keep matching, and logsdb
+   rebuilds plain objects in `_source` from the mapping. An array of objects inside an
+   element comes back as one array per leaf, in both modes. Regenerate the pipeline
+   test expectations (`-g`) and diff them; a `@custom` pipeline sees the dotted keys.
+2. Accept it, when nothing combines an element's own fields with these objects in one
+   `nested` query and nothing reads this part of `_source`.
+3. Map the objects as `type: flattened`: they stay with their element, but their
+   sub-fields become untyped keywords.
+4. Keep the stream on logsdb until Elasticsearch fixes it.
+
+**Known in catalog:** 14 fields in 10 streams, among them `checkpoint/firewall`
+(`packets_dropped`: `source`, `destination`, …), `gcp/audit` (`authorization_info`,
+`binding_deltas`), `crowdstrike` falcon and fdr, `sailpoint_identity_sc/identities`,
+`cilium_tetragon/log`, `wiz/issue`, and the outer levels of `aws/waf` and `tanium`.
 
 ### C3. Dynamically mapped fields
 
