@@ -1,0 +1,78 @@
+- name: mosquitto.log
+  type: group
+  fields:
+    - name: client_id
+      type: keyword
+      description: >-
+        MQTT client identifier the broker used for this client, as supplied in its CONNECT packet.
+    - name: packet_type
+      type: keyword
+      description: >-
+        MQTT control packet the broker sent or received, for example `PUBLISH`, `CONNACK` or `SUBSCRIBE`.
+    - name: topic
+      type: keyword
+      description: MQTT topic name or topic filter the log line refers to.
+    - name: qos
+      type: long
+      description: >-
+        MQTT quality of service level (`0`, `1` or `2`). On subscription lines this is the QoS granted by the broker.
+    - name: message_id
+      type: long
+      description: 'MQTT packet identifier, logged by Mosquitto as `m<n>` or `Mid: <n>`.'
+    - name: payload_size
+      type: long
+      unit: byte
+      description: Size of the MQTT message payload in bytes.
+    - name: dup
+      type: boolean
+      description: Whether the MQTT DUP flag was set, marking a redelivered message.
+    - name: retain
+      type: boolean
+      description: Whether the MQTT retain flag was set on the message.
+    - name: clean_session
+      type: boolean
+      description: >-
+        Whether the client requested a clean session, so the broker discards any previously stored session state.
+    - name: session_present
+      type: boolean
+      description: >-
+        Whether the broker resumed an existing session for the client, taken from the first field of the CONNACK log line.
+    - name: keepalive
+      type: long
+      unit: s
+      description: Keepalive interval negotiated with the client, in seconds.
+    - name: protocol_version
+      type: long
+      description: >-
+        Raw MQTT protocol level the client connected with, as logged by Mosquitto in the `p<n>` field.
+    - name: reason_code
+      type: long
+      description: >-
+        MQTT reason code carried by the packet. The meaning depends on the packet type and on the MQTT version in use.
+    - name: reason
+      type: keyword
+      description: >-
+        Human readable reason the broker gave for a disconnect, a refused connection or a protocol error.
+    - name: auth_method
+      type: keyword
+      description: Authentication method named in an MQTT v5 AUTH packet.
+    - name: version
+      type: keyword
+      description: Mosquitto broker version reported on start-up and shutdown.
+    - name: config_file
+      type: keyword
+      description: Path to the configuration file the broker loaded.
+    - name: socket_path
+      type: keyword
+      description: Filesystem path of the Unix domain socket the broker is listening on.
+    - name: persistence_file
+      type: keyword
+      description: Path the broker wrote its in-memory database to.
+    - name: restored_count
+      type: long
+      description: >-
+        Number of records restored from the persistence database on start-up.
+    - name: restored_type
+      type: keyword
+      description: >-
+        Kind of records the restore count refers to, for example `clients` or `retained messages`.
