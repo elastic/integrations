@@ -350,6 +350,7 @@ processors:
             if(ctx.confluence?.audit?.affected_objects[j]?.type == 'Group') {
               String group_name = ctx.confluence?.audit?.affected_objects[j]?.name;
               String group_id = ctx.confluence?.audit?.affected_objects[j]?.id;
+              String target_user_id = null;
               if(ctx._config?.atlassian_cloud != null && group_name != null) {
                   // Cloud renders groups as '<groupName>:<groupId>'
                   // (https://community.developer.atlassian.com/t/adding-groupid-to-audit-logs/45177).
@@ -364,6 +365,19 @@ processors:
                       group_id = suffix;
                     }
                   }
+                  // Some Cloud membership events carry no group name, only
+                  // '<groupId>; User: <accountId>' (observed, undocumented). Extract both IDs
+                  // and drop the name, which does not exist in the source.
+                  int marker = group_name.indexOf('; User: ');
+                  if (marker == 36) {
+                    String gid = group_name.substring(0, 36);
+                    String uid = group_name.substring(marker + 8);
+                    if (gid ==~ /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/ && uid ==~ /[a-zA-Z0-9:_-]+/) {
+                      group_id = gid;
+                      group_name = null;
+                      target_user_id = uid;
+                    }
+                  }
               }
               if(['audit.logging.summary.group.created', 'audit.logging.summary.group.deleted', 'Group created', 'Group deleted'].contains(ctx.event.action)) {
                 ctx.group.put("name", group_name);
@@ -372,6 +386,11 @@ processors:
               if(['audit.logging.summary.group.membership.added', 'audit.logging.summary.group.membership.removed', 'User added to group','User removed from group'].contains(ctx.event.action)) {
                 ctx.user.target.group.put("name", group_name);
                 ctx.user.target.group.put("id", group_id);
+                // Account ID recovered from a '<groupId>; User: <accountId>' group name; a
+                // User-typed affected object, when present, takes precedence below.
+                if (target_user_id != null && ctx.user.target.id == null) {
+                  ctx.user.target.put("id", target_user_id);
+                }
               }
             }
             if(ctx.confluence?.audit?.affected_objects[j]?.type == 'User') {
