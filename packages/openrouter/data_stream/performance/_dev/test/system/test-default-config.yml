@@ -14,6 +14,7 @@ data_stream:
       - provider
     preserve_original_event: true
 assert:
-  # The mock first answers with a truncated result, so the stream retries with a smaller window and may
-  # collect several windows before the check; the exact number of documents depends on the clock.
+  # The mock first answers with a truncated result whose row has an invalid date. The test fails if that row
+  # is indexed (pipeline error). The retry uses a smaller window, so several windows may be collected before
+  # the check and the exact number of documents depends on the clock.
   min_count: 2

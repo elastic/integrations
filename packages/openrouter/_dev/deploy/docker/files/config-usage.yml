@@ -9,6 +9,8 @@ rules:
     responses:
       # First request: the API reports a truncated result. The integration discards it and retries
       # the same window with a smaller span. The following responses are complete.
+      # The row of this response has an invalid date on purpose: if the integration indexed it, the
+      # ingest pipeline would set error.message and the system test would fail.
       - status_code: 200
         headers:
           Content-Type:
@@ -19,7 +21,7 @@ rules:
             "data": {
               "data": [
                 {
-                  "created_at__day": "2026-09-21",
+                  "created_at__day": "not-a-date",
                   "model": "truncated/discarded-response",
                   "provider": "Truncated",
                   "request_count": "1"

@@ -173,9 +173,10 @@ collects `request_count`, which is the only additive field.
 
 **Important:** Latency, throughput and rate metrics are averages, percentiles or ratios computed by
 the API for each row (hour and dimension combination). Never use `SUM` on them. To combine rows,
-use `MAX` (for example the worst `p99_latency`) or a request-weighted average,
-`SUM(metric * request_count) / SUM(request_count)`. A plain `AVG` of percentiles is not a true
-percentile of all traffic.
+use a request-weighted average, `SUM(metric * request_count) / SUM(request_count)`, for the
+`avg_*` fields and the rates. For percentiles (`p50_*`, `p90_*`, `p95_*`, `p99_*`) use `MAX`,
+for example the worst `p99_latency`, or look at single rows: neither a plain nor a weighted
+average of percentiles is a true percentile of all traffic.
 
 #### Performance fields
 
@@ -226,7 +227,7 @@ percentile of all traffic.
 | openrouter.performance.p99_throughput | 99th-percentile streaming throughput in tokens per second. This is a rate metric — do not sum across time windows. | double |  | gauge |
 | openrouter.performance.p99_ttfb | 99th-percentile time-to-first-token (TTFT) in milliseconds. This is a rate metric — do not sum across time windows. | double | ms | gauge |
 | openrouter.performance.provider | Provider routing the request (for example OpenAI, Anthropic). | keyword |  |  |
-| openrouter.performance.request_count | Number of API requests in the hour bucket. Use it to weight percentile and rate metrics across rows. | long |  | gauge |
+| openrouter.performance.request_count | Number of API requests in the hour bucket. Use it to weight average and rate metrics across rows. Percentile metrics cannot be combined this way; use MAX or look at single rows. | long |  | gauge |
 | openrouter.performance.response_cached_rate | Fraction of responses that were cached (0.0–1.0). This is a rate metric — do not sum across time windows. | double | percent | gauge |
 | openrouter.performance.user | User identifier when grouped by user. | keyword |  |  |
 | openrouter.performance.variant | Model variant identifier when grouped by variant. | keyword |  |  |

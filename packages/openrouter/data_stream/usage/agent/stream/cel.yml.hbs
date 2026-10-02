@@ -26,7 +26,8 @@ state:
   {{#each dimensions as |dim|}}
     - {{dim}}
   {{/each}}
-  # Hard cap on backfill depth (365 days, the API limit for daily granularity).
+  # Cap on the first-run backfill depth (365 days, the API limit for daily granularity).
+  # An existing cursor is never capped, so collection resumes where it stopped.
   max_lookback: "8760h"
   # Each request covers 30 days at daily granularity (safe under the 31-day span limit).
   # If the API reports a truncated result, the span is halved (down to 24h) and
@@ -44,12 +45,11 @@ program: |
   state.with(
     state.?cursor.span.optMap(sp, duration(sp)).orValue(duration(state.window_span)).as(span,
     (now - duration(state.finalization_delay)).as(today,
-        max(
-          state.?cursor.last_end.optMap(ts, timestamp(ts)).orValue(
-            now - duration(state.initial_interval)
-          ).format(time_layout.DateOnly).parse_time(time_layout.DateOnly),
-          (today - duration(state.max_lookback)).format(time_layout.DateOnly).parse_time(time_layout.DateOnly)
-        ).as(start,
+        // An existing cursor is always honored. The lookback cap only limits the
+        // first run (no cursor), where initial_interval could be arbitrarily large.
+        state.?cursor.last_end.optMap(ts, timestamp(ts)).orValue(
+          max(now - duration(state.initial_interval), today - duration(state.max_lookback))
+        ).format(time_layout.DateOnly).parse_time(time_layout.DateOnly).as(start,
           {
             "today": today,
             "start": start,

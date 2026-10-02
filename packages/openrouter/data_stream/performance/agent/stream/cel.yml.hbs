@@ -46,12 +46,11 @@ program: |
     (now - duration(state.finalization_delay))
       .format("2006-01-02T15:00:00Z")
       .parse_time("2006-01-02T15:00:00Z").as(today,
-        max(
-          state.?cursor.last_end.optMap(ts, timestamp(ts)).orValue(
-            now - duration(state.initial_interval)
-          ).format("2006-01-02T15:00:00Z").parse_time("2006-01-02T15:00:00Z"),
-          today - duration(state.max_lookback)
-        ).as(start,
+        // An existing cursor is always honored. The lookback cap only limits the
+        // first run (no cursor), where initial_interval could be arbitrarily large.
+        state.?cursor.last_end.optMap(ts, timestamp(ts)).orValue(
+          max(now - duration(state.initial_interval), today - duration(state.max_lookback))
+        ).format("2006-01-02T15:00:00Z").parse_time("2006-01-02T15:00:00Z").as(start,
           {
             "today": today,
             "start": start,

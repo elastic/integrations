@@ -134,9 +134,10 @@ collects `request_count`, which is the only additive field.
 
 **Important:** Latency, throughput and rate metrics are averages, percentiles or ratios computed by
 the API for each row (hour and dimension combination). Never use `SUM` on them. To combine rows,
-use `MAX` (for example the worst `p99_latency`) or a request-weighted average,
-`SUM(metric * request_count) / SUM(request_count)`. A plain `AVG` of percentiles is not a true
-percentile of all traffic.
+use a request-weighted average, `SUM(metric * request_count) / SUM(request_count)`, for the
+`avg_*` fields and the rates. For percentiles (`p50_*`, `p90_*`, `p95_*`, `p99_*`) use `MAX`,
+for example the worst `p99_latency`, or look at single rows: neither a plain nor a weighted
+average of percentiles is a true percentile of all traffic.
 
 #### Performance fields
 
