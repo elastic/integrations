@@ -36,6 +36,8 @@ from .spec import (
     DECLARATION_CODES,
     columnar_block,
     existing_index_sort,
+    installs_on_8x,
+    spec_min_stack,
     spec_supports_columnar,
 )
 from .transforms import (
@@ -79,6 +81,9 @@ def audit_package(pkg_dir: str, scan_dashboards: bool = True,
     result["kibana_condition"] = (
         ((manifest.get("conditions") or {}).get("kibana") or {}).get("version")
     )
+    result["spec_min_stack"] = spec_min_stack(result["format_version"])
+    result["installs_on_8x"] = installs_on_8x(result["format_version"],
+                                              result["kibana_condition"])
 
     if result["type"] == "input":
         result["out_of_scope_reason"] = "input package (no data_stream directories to opt in)"
@@ -124,11 +129,12 @@ def audit_package(pkg_dir: str, scan_dashboards: bool = True,
     attribution = attribute_rules(rule_set, identities, result["package"], template_streams)
     query_templates = attribute_templates(load_query_templates(pkg_dir), identities,
                                           result["package"])
-    repo_dir, looked = (find_detection_rules_repo(detection_rules, packages_root)
-                        if rules_dir else (None, []))
-    repo = load_detection_rules_repo(repo_dir)
-    result["detection_rules_repo"] = {"dir": repo["dir"], "files": repo["files"],
-                                      "looked_at": looked}
+    repo = {}
+    if rules_dir:  # `--no-rules` skips the checkout too
+        repo_dir, looked = find_detection_rules_repo(detection_rules, packages_root)
+        repo = load_detection_rules_repo(repo_dir)
+        result["detection_rules_repo"] = {"dir": repo["dir"], "files": repo["files"],
+                                          "looked_at": looked}
 
     status = "OUT_OF_SCOPE"
     for ds_name in sorted(os.listdir(ds_root)):

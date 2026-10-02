@@ -160,6 +160,51 @@ def spec_version_tuple(raw: Any) -> Optional[Tuple[int, int]]:
         return None
 
 
+# The stacks whose Fleet installs a package, by `format_version` major.minor: Kibana's
+# `REGISTRY_SPEC_MAX_VERSION` on the 8.11 to 9.5 release branches (the patch number is
+# ignored). 9.0 stops at 3.3, so 3.4 skips it. Serverless needs 3.0 or newer.
+SPEC_MIN_STACK = {
+    (3, 0): "8.11+",
+    (3, 1): "8.16+",
+    (3, 2): "8.16+",
+    (3, 3): "8.16+",
+    (3, 4): "8.19 and 9.1+, not 9.0",
+    (3, 5): "9.2+",
+    (3, 6): "9.4+",
+}
+
+
+def spec_min_stack(raw: Any) -> str:
+    """The stacks whose Fleet installs a package with this `format_version`."""
+    parsed = spec_version_tuple(raw)
+    if parsed is None:
+        return "unknown"
+    if parsed < (3, 0):
+        return "stateful stacks only (serverless needs 3.0+)"
+    if parsed in SPEC_MIN_STACK:
+        return SPEC_MIN_STACK[parsed]
+    return ("no released Kibana yet: the newest accept up to 3.6, and 3.7 needs the 9.6 "
+            "Fleet support")
+
+
+def kibana_allows_8x(condition: Any) -> bool:
+    """Whether any `||` branch of `conditions.kibana.version` starts below 9.0."""
+    if not condition:
+        return True
+    for branch in str(condition).split("||"):
+        match = re.search(r"(\d+)\.", branch)
+        if match and int(match.group(1)) <= 8:
+            return True
+    return False
+
+
+def installs_on_8x(format_version: Any, condition: Any) -> bool:
+    """Whether 8.x stacks can still install the package (spec 3.4 at most, and a
+    `conditions.kibana.version` that admits 8.x); declaring columnar ends that."""
+    parsed = spec_version_tuple(format_version)
+    return parsed is not None and parsed <= (3, 4) and kibana_allows_8x(condition)
+
+
 def spec_supports_columnar(raw: Any) -> bool:
     """True when `format_version` is >= 3.7.0.
 

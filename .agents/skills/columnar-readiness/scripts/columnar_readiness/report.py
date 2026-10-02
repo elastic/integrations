@@ -290,14 +290,15 @@ def md_package(result: Dict[str, Any]) -> str:
     lines.append("")
     lines.append(f"- Status: {status_label(result['status'])}")
     lines.append(f"- Package type: `{result.get('type')}`, version `{result.get('version')}`, "
-                 f"format_version `{result.get('format_version')}`")
+                 f"format_version `{result.get('format_version')}` (Fleet installs it on "
+                 f"{result.get('spec_min_stack', 'unknown')})")
     lines.append(f"- ECS definitions: {ecs_source()}")
     if result.get("detection_rules_scanned"):
         lines.append(f"- Detection rules: {result['detection_rules_scanned']} shipped rules "
                      f"scanned (latest version of each, from `{RULES_PACKAGE}`)")
     else:
         lines.append("- Detection rules: not scanned")
-    if result.get("detection_rules_scanned") is not None and "detection_rules_repo" in result:
+    if result.get("detection_rules_repo"):
         lines.append(f"- {detection_rules_repo_line(result['detection_rules_repo'])}")
     if result.get("kibana_condition"):
         if kibana_condition_meets_columnar(result["kibana_condition"]):
@@ -490,6 +491,11 @@ def md_catalog(results: List[Dict[str, Any]]) -> str:
     lines.append(f"Packages scanned: {len(results)}")
     lines.append(f"Candidate packages (at least one in-scope `type: logs` data stream): "
                  f"{in_scope_pkgs}")
+    on_8x = sum(1 for r in results if r.get("installs_on_8x")
+                and any(s["status"] != "OUT_OF_SCOPE" for s in r["data_streams"]))
+    lines.append(f"Candidate packages still installable on 8.x: {on_8x} (`format_version` 3.4 "
+                 f"or older and a `conditions.kibana.version` that admits 8.x). Declaring "
+                 f"columnar moves each of them to 9.6+.")
     lines.append(f"ECS definitions: {ecs_source()}")
     rules_scanned = max((r.get("detection_rules_scanned") or 0) for r in results) if results else 0
     lines.append(f"Detection rules: {rules_scanned} shipped rules scanned (latest version of "
