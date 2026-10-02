@@ -106,6 +106,9 @@ An example event for `aadgraphactivitylogs` looks as following:
                 "token_issued_at": "2026-05-07T13:50:39.000Z"
             }
         },
+        "tenant": {
+            "id": "ab30785b-417f-42a4-b5dc-8f9051718acb"
+        },
         "tenant_id": "ab30785b-417f-42a4-b5dc-8f9051718acb"
     },
     "client": {
@@ -250,17 +253,23 @@ Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ec
 | azure.aadgraphactivitylogs.properties.type | The name of the table. | keyword |
 | azure.aadgraphactivitylogs.properties.user_agent | The user agent information related to request. | keyword |
 | azure.aadgraphactivitylogs.properties.wids | Denotes the tenant-wide roles assigned to this user. | keyword |
-| azure.correlation_id | Correlation ID. | keyword |
+| azure.correlation.id | Correlation ID for grouping related operations. | keyword |
+| azure.correlation_id | Legacy flat name for the correlation ID, still populated. Prefer `azure.correlation.id`. | keyword |
 | azure.resource.authorization_rule | Authorization rule. | keyword |
-| azure.resource.group | Resource group. | keyword |
-| azure.resource.id | Resource ID. | keyword |
-| azure.resource.name | Name. | keyword |
-| azure.resource.namespace | Resource type/namespace. | keyword |
-| azure.resource.provider | Resource type/namespace. | keyword |
+| azure.resource.group | Legacy name for the resource group, still populated. Prefer `azure.resource_group.name`. | keyword |
+| azure.resource.id | Legacy name for the ARM resource ID, still populated. Prefer `cloud.resource_id`. | keyword |
+| azure.resource.name | Resource name. | keyword |
+| azure.resource.namespace | Event Hub namespace parsed from the ARM resource ID. | keyword |
+| azure.resource.provider | Legacy name for the resource provider namespace, still populated. Prefer `azure.resource_provider.namespace`. | keyword |
+| azure.resource_group.name | Azure resource group name. | keyword |
+| azure.resource_id | Legacy ARM resource ID field, still populated. Prefer `cloud.resource_id`. | keyword |
+| azure.resource_provider.namespace | Azure resource provider namespace (e.g., Microsoft.EventHub). | keyword |
 | azure.subscription_id | Azure subscription ID. | keyword |
-| azure.tenant_id | tenant ID. | keyword |
+| azure.tenant.id | Azure tenant ID. | keyword |
+| azure.tenant_id | Legacy flat name for the tenant ID, still populated. Prefer `azure.tenant.id`. | keyword |
 | client.geo.location | Longitude and latitude. | geo_point |
 | cloud.image.id | Image ID for the cloud instance. | keyword |
+| cloud.resource_id | Fully-qualified Azure Resource Manager (ARM) resource ID. | keyword |
 | data_stream.dataset | Data stream dataset name. | constant_keyword |
 | data_stream.namespace | Data stream namespace. | constant_keyword |
 | data_stream.type | Data stream type. | constant_keyword |
