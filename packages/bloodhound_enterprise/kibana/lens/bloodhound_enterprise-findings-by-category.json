@@ -1,0 +1,216 @@
+{
+    "id": "bloodhound_enterprise-findings-by-category",
+    "type": "lens",
+    "coreMigrationVersion": "8.8.0",
+    "typeMigrationVersion": "8.9.0",
+    "attributes": {
+        "title": "[Logs BloodHound Enterprise] Records by category",
+        "description": "Distribution of BloodHound alerts by finding type",
+        "visualizationType": "lnsPie",
+        "state": {
+            "visualization": {
+                "shape": "donut",
+                "layers": [
+                    {
+                        "layerId": "layer_panel_by_category",
+                        "primaryGroups": [
+                            "terms_panel_by_category"
+                        ],
+                        "metrics": [
+                            "count_panel_by_category"
+                        ],
+                        "numberDisplay": "percent",
+                        "categoryDisplay": "default",
+                        "legendDisplay": "default",
+                        "nestedLegend": false,
+                        "layerType": "data",
+                        "colorMapping": {
+                            "assignments": [
+                                {
+                                    "rules": [
+                                        {
+                                            "type": "matchExactString",
+                                            "value": "AzureT0MGAddOwner"
+                                        }
+                                    ],
+                                    "color": {
+                                        "type": "colorCode",
+                                        "colorCode": "#5465FF"
+                                    },
+                                    "touched": true
+                                },
+                                {
+                                    "rules": [
+                                        {
+                                            "type": "matchExactString",
+                                            "value": "AzureT0MGAddSecret"
+                                        }
+                                    ],
+                                    "color": {
+                                        "type": "colorCode",
+                                        "colorCode": "#4A3BD7"
+                                    },
+                                    "touched": true
+                                },
+                                {
+                                    "rules": [
+                                        {
+                                            "type": "matchExactString",
+                                            "value": "Okta_Finding_ResourceSetContains"
+                                        }
+                                    ],
+                                    "color": {
+                                        "type": "colorCode",
+                                        "colorCode": "#F46036"
+                                    },
+                                    "touched": true
+                                },
+                                {
+                                    "rules": [
+                                        {
+                                            "type": "matchExactString",
+                                            "value": "AzureT0MGAddMember"
+                                        }
+                                    ],
+                                    "color": {
+                                        "type": "colorCode",
+                                        "colorCode": "#05CE8B"
+                                    },
+                                    "touched": true
+                                },
+                                {
+                                    "rules": [
+                                        {
+                                            "type": "matchExactString",
+                                            "value": "AzureT0MGGrantRole"
+                                        }
+                                    ],
+                                    "color": {
+                                        "type": "colorCode",
+                                        "colorCode": "#66A3FF"
+                                    },
+                                    "touched": true
+                                },
+                                {
+                                    "rules": [
+                                        {
+                                            "type": "matchExactString",
+                                            "value": "Okta_Finding_ApiTokenFor"
+                                        }
+                                    ],
+                                    "color": {
+                                        "type": "colorCode",
+                                        "colorCode": "#8E92EB"
+                                    },
+                                    "touched": true
+                                },
+                                {
+                                    "rules": [
+                                        {
+                                            "type": "matchExactString",
+                                            "value": "Okta_Finding_IdentityProviderFor"
+                                        }
+                                    ],
+                                    "color": {
+                                        "type": "colorCode",
+                                        "colorCode": "#17EAD2"
+                                    },
+                                    "touched": true
+                                }
+                            ],
+                            "specialAssignments": [
+                                {
+                                    "rules": [
+                                        {
+                                            "type": "other"
+                                        }
+                                    ],
+                                    "color": {
+                                        "type": "loop"
+                                    },
+                                    "touched": false
+                                }
+                            ],
+                            "paletteId": "eui_amsterdam_color_blind",
+                            "colorMode": {
+                                "type": "categorical"
+                            }
+                        }
+                    }
+                ]
+            },
+            "query": {
+                "language": "kuery",
+                "query": "kibana.alert.rule.name:\"BloodHound Enterprise\""
+            },
+            "filters": [],
+            "datasourceStates": {
+                "formBased": {
+                    "layers": {
+                        "layer_panel_by_category": {
+                            "columns": {
+                                "terms_panel_by_category": {
+                                    "label": "Finding Type",
+                                    "customLabel": true,
+                                    "dataType": "string",
+                                    "operationType": "terms",
+                                    "sourceField": "event.action",
+                                    "isBucketed": true,
+                                    "params": {
+                                        "size": 10,
+                                        "orderBy": {
+                                            "type": "column",
+                                            "columnId": "count_panel_by_category"
+                                        },
+                                        "orderDirection": "desc",
+                                        "otherBucket": true,
+                                        "missingBucket": false,
+                                        "parentFormat": {
+                                            "id": "terms"
+                                        },
+                                        "include": [],
+                                        "exclude": [],
+                                        "includeIsRegex": false,
+                                        "excludeIsRegex": false,
+                                        "accuracyMode": true
+                                    }
+                                },
+                                "count_panel_by_category": {
+                                    "label": "Count of records",
+                                    "dataType": "number",
+                                    "operationType": "count",
+                                    "isBucketed": false,
+                                    "sourceField": "___records___",
+                                    "params": {
+                                        "emptyAsNull": true
+                                    }
+                                }
+                            },
+                            "columnOrder": [
+                                "terms_panel_by_category",
+                                "count_panel_by_category"
+                            ],
+                            "incompleteColumns": {},
+                            "sampling": 1
+                        }
+                    }
+                },
+                "indexpattern": {
+                    "layers": {}
+                },
+                "textBased": {
+                    "layers": {}
+                }
+            },
+            "internalReferences": [],
+            "adHocDataViews": {}
+        }
+    },
+    "references": [
+        {
+            "id": "bloodhound_enterprise-alerts",
+            "name": "indexpattern-datasource-layer-layer_panel_by_category",
+            "type": "index-pattern"
+        }
+    ]
+}
