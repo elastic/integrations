@@ -40,6 +40,11 @@ latest:
     - azure.billing.usage_date
     - azure.billing.currency
     - azure.billing.cost_status
+    # Forecast rows carry the configured subscription ID even when the policy
+    # queries a department or billing account scope, so two policies with
+    # different scopes but the same subscription ID would share a key. The Fleet
+    # namespace lets such policies be kept apart.
+    - data_stream.namespace
   # Azure keeps revising cost rows for up to ~72h, so the most recently collected
   # copy of a row is the authoritative one.
   sort: "@timestamp"
@@ -63,7 +68,10 @@ settings:
   unattended: true
 sync:
   time:
-    field: "@timestamp"
+    # Ingest time, stamped by Fleet's final pipeline on every raw document, so
+    # rows that arrive late or are backfilled with an older event time are still
+    # picked up.
+    field: "event.ingested"
     # 120s instead of the default 60s because of the index refresh delay in
     # Serverless.
     delay: 120s
@@ -73,4 +81,6 @@ _meta:
   # Fleet rebuilds the destination index from scratch on a version bump, and a
   # relative range filter would silently drop all history.
   fleet_transform_version: 0.1.0
+  # Independent of the two usage transforms; installed last.
+  order: 2
   run_as_kibana_system: false

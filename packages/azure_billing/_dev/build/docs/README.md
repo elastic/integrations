@@ -249,42 +249,48 @@ data stream over-reports the cost.
 
 ### The transforms
 
-To solve this, the integration installs two Elasticsearch [transforms](https://www.elastic.co/docs/explore-analyze/transforms/transform-overview)
-that maintain a deduplicated view of the raw data stream:
+To solve this, the integration installs three Elasticsearch [transforms](https://www.elastic.co/docs/explore-analyze/transforms/transform-overview)
+that maintain a deduplicated view of the raw data stream. They use no scripts, so they also run
+on Elasticsearch Serverless.
 
-| Transform | Alias | Deduplicates | How |
-| --- | --- | --- | --- |
-| `usage` | `azure_billing.usage_latest` | Usage detail rows (documents with `azure.billing.pretax_cost`) | A pivot per usage day, meter (`azure.billing.billing_period_id`), and resource. For each bucket it keeps only the rows written by the **most recent fetch** and sums their `pretax_cost`. Older fetches of the same day are discarded, so agent restarts and short collection periods no longer inflate the cost, and the newest fetch carries Azure's latest revision. |
-| `latest_forecast` | `azure_billing.forecast_latest` | Actual and forecast cost rows from the Cost Management forecast API | A `latest` transform keyed on `azure.subscription_id`, `azure.billing.usage_date`, `azure.billing.currency`, and a derived `azure.billing.cost_status` that separates actual rows from forecast rows. The most recently collected row wins. |
+| Transform | Alias | Role |
+| --- | --- | --- |
+| `usage_fetches` | `azure_billing.usage_fetches` | Sums the usage detail rows per usage day, meter (`azure.billing.billing_period_id`), resource, product, currency, and **fetch**. A fetch is identified by the agent process that ran it (`agent.ephemeral_id`) and the minute in which it created its rows. |
+| `usage` | `azure_billing.usage_latest` | Reads the `usage_fetches` output and keeps, for every usage day, meter, and resource, only the document of the **most recent fetch**. Older fetches of the same day are discarded, so agent restarts and short collection periods no longer inflate the cost, and the newest fetch carries Azure's latest revision. The dashboard reads this alias. |
+| `latest_forecast` | `azure_billing.forecast_latest` | A `latest` transform over the actual and forecast cost rows of the Cost Management forecast API, keyed on `azure.subscription_id`, `azure.billing.usage_date`, `azure.billing.currency`, the Fleet namespace, and a derived `azure.billing.cost_status` that separates actual rows from forecast rows. The most recently collected row wins. |
 
-The usage transform does not deduplicate individual rows on purpose. The Azure Usage Details
-API does not give every row a unique ID: rows for the same day, meter, and resource share one
-`id` and legitimately appear more than once, for example one row per VM instance of a scale
-set. The fields that tell those rows apart are not part of the document, so the only safe unit
-of deduplication is the fetch. Each fetch is a complete snapshot of a day, and the newest
-snapshot replaces the previous ones.
+The usage transforms do not deduplicate individual rows on purpose. The Azure Usage Details API
+does not give every row a unique ID: rows for the same day, meter, and resource share one `id` and
+legitimately appear more than once, for example one row per VM instance of a scale set. The fields
+that tell those rows apart are not part of the document, so the only safe unit of deduplication is
+the fetch. Each fetch is a complete snapshot of a day, and the newest snapshot replaces the previous
+ones.
 
 This also makes a longer `Billing Usage Lookback` safe: with `72h`, every fetch re-reads the last
-three days and picks up Azure's late revisions, and the transform replaces each day with the
+three days and picks up Azure's late revisions, and the transforms replace each day with the
 newest snapshot instead of adding the re-read rows to the total.
 
+Forecast rows carry the configured `Subscription ID` even when the integration queries a
+department or billing account scope. If you run several policies with different scopes but the
+same subscription ID, give each policy its own Fleet namespace so that their forecasts are kept
+apart.
+
 ```text
-                                                              ┌───────────────────────────┐
-                                                        ┌────▶│ azure_billing.usage_latest│
-                                                        │     │        <<alias>>          │
-┌────────────────┐    ┌─────────┐    ┌────────────────┐  │     └───────────────────────────┘
-│                │    │         │    │ metrics-azure. │  │
-│   Azure APIs   │───▶│  Agent  │───▶│    billing     │──┤     ┌───────────────────────────┐
-│                │    │         │    │ <<data stream>>│  │     │azure_billing.forecast_    │
-└────────────────┘    └─────────┘    └────────────────┘  └────▶│         latest            │
-                                                               │        <<alias>>          │
-                                                               └───────────────────────────┘
+                                                     ┌─────────────────────────────┐    ┌───────────────────────────┐
+                                               ┌────▶│ azure_billing.usage_fetches │───▶│ azure_billing.usage_latest│
+┌────────────┐   ┌───────┐   ┌────────────────┐│     │  (sum per day and fetch)    │    │   (newest fetch only)     │
+│ Azure APIs │──▶│ Agent │──▶│ metrics-azure. ││     └─────────────────────────────┘    └───────────────────────────┘
+│            │   │       │   │    billing     │┤
+└────────────┘   └───────┘   │ <<data stream>>││     ┌─────────────────────────────┐
+                             └────────────────┘└────▶│ azure_billing.forecast_latest│
+                                                     │   (newest row per day)      │
+                                                     └─────────────────────────────┘
 ```
 
 The raw `metrics-azure.billing-*` data stream is **not** modified and remains the system
 of record: nothing is deleted from it, and no retention policy is applied to the
 transform destination indices. The transforms simply maintain a second, deduplicated copy
-of the data. The destination indices are `azure_billing.usage-v1` and
+of the data. The destination indices are `azure_billing.usage_fetches-v1`, `azure_billing.usage-v1`, and
 `azure_billing.forecast-v1`; they are deliberately named so they do **not** match
 `metrics-*`, otherwise a `metrics-*` data view would count both the raw and the
 deduplicated documents.
