@@ -84,3 +84,9 @@ The `otel` mapping mode requires Elasticsearch 9.6.0 or later. To send profiles 
 Profiles support in the Collector is protected by a feature gate. Start the EDOT Collector with the `service.profilesSupport` feature gate enabled and with elevated privileges (for example, root or `CAP_SYS_ADMIN`), which the eBPF profiler requires.
 
 For more details, refer to [Configure profiles collection](https://www.elastic.co/docs/reference/edot-collector/config/configure-profiles-collection) in the EDOT Collector documentation.
+
+## Kubernetes deployment
+
+In Kubernetes, deploy the collector running the profiling receiver as a DaemonSet, so that every node is profiled.
+
+One of the simplest ways to do this is the [OpenTelemetry Collector Helm Chart](https://github.com/open-telemetry/opentelemetry-helm-charts/tree/main/charts/opentelemetry-collector) with the `profiling` preset enabled. The preset adds the profiling receiver to a `profiles` pipeline and configures the host PID access, security context, and volumes that the eBPF profiler needs. Use a collector image that includes both the profiling receiver and the Elasticsearch exporter, such as the EDOT Collector.
