@@ -141,6 +141,10 @@ def load_detection_rules(rules_dir: Optional[str]) -> Dict[str, Any]:
             "language": language,
             "patterns": patterns,
             "query": query,
+            # (package, policy template) pairs from `related_integrations`.
+            "related": [(str(r["package"]), r.get("integration"))
+                        for r in (attrs.get("related_integrations") or [])
+                        if isinstance(r, dict) and r.get("package")],
             "source_hits": source_access_hits(query),
             "extract_paths": sorted(set(_JSON_EXTRACT_PATH_RE.findall(query))),
         })
@@ -154,27 +158,61 @@ def load_detection_rules(rules_dir: Optional[str]) -> Dict[str, Any]:
     return result
 
 
-def rules_for_stream(rule_set: Dict[str, Any], index_name: str, ds_type: str,
-                     pkg_name: str) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
-    """(rules naming this package's indices, rules reaching it via broad patterns).
+def names_dataset(text: str, dataset: str) -> bool:
+    """True when `text` names the dataset, also as a field prefix (`gcp.audit.method_name`)."""
+    return re.search(rf"(?<![\w.]){re.escape(dataset.lower())}(?!\w)", text.lower()) is not None
 
-    A pattern counts as specific when it starts with `<type>-<package>`
-    (`logs-network_traffic.sip-*`, `logs-network_traffic.*`); `logs-*` and `*` are
-    broad. Both kinds read the stream, so both count for the `_source` check; only
-    the specific ones feed the workload and the lookup candidates.
+
+def attribute_rules(rule_set: Dict[str, Any], streams: List[Tuple[str, str, str, str]],
+                    pkg_name: str, template_streams: Dict[str, List[str]]
+                    ) -> Dict[str, Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]]:
+    """data stream -> (rules about it, rules that only reach it), for one package.
+
+    `streams` holds (name, type, dataset, index name) for the package's logs streams.
+    A rule whose patterns match one of them is about this package when
+    `related_integrations` names the package, or when a pattern starts with
+    `<type>-<package>` (`logs-aws*`, not `logs-*` or `logs-gcp*` for `gcp_vertexai`).
+    Among the matched streams it is then about the ones its query names by dataset
+    (`event.dataset: gcp.audit`, `gcp.audit.method_name`), else the streams of the
+    policy templates `related_integrations` names, else all of them. Every other match
+    still reads the stream, so it counts for the `_source` check, but not for the
+    workload or the lookup candidates.
     """
     rules = rule_set.get("rules") or []
-    prefix = f"{ds_type}-{pkg_name}"
-    specific: Dict[int, None] = {}
-    broad: Dict[int, None] = {}
-    for pattern, idxs in (rule_set.get("by_pattern") or {}).items():
-        if not index_pattern_matches(pattern, index_name):
+    by_pattern = rule_set.get("by_pattern") or {}
+    datasets = {name: dataset for name, _, dataset, _ in streams}
+    matched: Dict[int, List[str]] = {}
+    for name, _, _, index_name in streams:
+        for pattern, idxs in by_pattern.items():
+            if index_pattern_matches(pattern, index_name):
+                for idx in idxs:
+                    names = matched.setdefault(idx, [])
+                    if name not in names:
+                        names.append(name)
+
+    about: Dict[int, set] = {}
+    for idx, names in matched.items():
+        rule = rules[idx]
+        named = any(p == pkg_name for p, _ in rule["related"])
+        templates = [t for p, t in rule["related"] if p == pkg_name and t]
+        ds_type = next(t for n, t, _, _ in streams if n == names[0])
+        prefix = f"{ds_type}-{pkg_name}"
+        if not named and not any(strip_cluster(pt).startswith(prefix) for pt in rule["patterns"]):
+            about[idx] = set()
             continue
-        target = specific if strip_cluster(pattern).startswith(prefix) else broad
-        for idx in idxs:
-            target[idx] = None
-    return ([rules[i] for i in specific],
-            [rules[i] for i in broad if i not in specific])
+        if len(names) == 1:
+            about[idx] = set(names)
+            continue
+        by_dataset = {n for n in names if names_dataset(rule["query"], datasets[n])}
+        via_templates = {ds for t in templates for ds in (template_streams.get(t) or [t])}
+        about[idx] = by_dataset or (via_templates & set(names)) or set(names)
+
+    out: Dict[str, Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]] = {
+        name: ([], []) for name, _, _, _ in streams}
+    for idx in sorted(matched):
+        for name in matched[idx]:
+            out[name][0 if name in about[idx] else 1].append(rules[idx])
+    return out
 
 
 def detection_rule_findings(specific: List[Dict[str, Any]],

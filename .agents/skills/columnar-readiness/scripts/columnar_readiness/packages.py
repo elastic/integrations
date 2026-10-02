@@ -22,7 +22,7 @@ from .rules import (
     load_detection_rules,
     lookup_candidates,
     rule_workload,
-    rules_for_stream,
+    attribute_rules,
     stream_index_name,
 )
 from .sorting import recommend_sort
@@ -105,6 +105,12 @@ def audit_package(pkg_dir: str, scan_dashboards: bool = True,
     rule_set = load_detection_rules(rules_dir)
     result["detection_rules_dir"] = rule_set["dir"]
     result["detection_rules_scanned"] = len(rule_set["rules"])
+    template_streams = {
+        str(t["name"]): [str(ds) for ds in (t.get("data_streams") or [])]
+        for t in (manifest.get("policy_templates") or [])
+        if isinstance(t, dict) and t.get("name")}
+    attribution = attribute_rules(rule_set, logs_stream_identities(ds_root, result["package"]),
+                                  result["package"], template_streams)
 
     status = "OUT_OF_SCOPE"
     for ds_name in sorted(os.listdir(ds_root)):
@@ -116,7 +122,9 @@ def audit_package(pkg_dir: str, scan_dashboards: bool = True,
                                    format_version_line=line_of(manifest, "format_version"),
                                    transforms=transforms, kibana=kibana_consumers,
                                    latest=latest, foreign_latest=foreign_latest,
-                                   rule_set=rule_set, pkg_name=result["package"])
+                                   rules=attribution.get(ds_name),
+                                   rules_scanned=bool(rule_set["rules"]),
+                                   pkg_name=result["package"])
         result["data_streams"].append(stream)
         status = worse(status, stream["status"])
     result["status"] = status
@@ -136,6 +144,26 @@ def audit_package(pkg_dir: str, scan_dashboards: bool = True,
     return result
 
 
+def logs_stream_identities(ds_root: str, pkg_name: str) -> List[Tuple[str, str, str, str]]:
+    """(name, type, dataset, index name) of each logs data stream, for rule attribution."""
+    out: List[Tuple[str, str, str, str]] = []
+    for ds_name in sorted(os.listdir(ds_root)):
+        path = os.path.join(ds_root, ds_name, "manifest.yml")
+        if not os.path.isfile(path):
+            continue
+        try:
+            manifest = load_yaml(path) or {}
+        except RuntimeError:
+            continue
+        if not isinstance(manifest, dict) or manifest.get("type") != "logs":
+            continue
+        dataset = manifest.get("dataset")
+        dataset = dataset if isinstance(dataset, str) else f"{pkg_name}.{ds_name}"
+        out.append((ds_name, "logs", dataset,
+                    stream_index_name("logs", pkg_name, ds_name, manifest)))
+    return out
+
+
 def audit_data_stream(pkg_dir: str, ds_dir: str, ds_name: str,
                       dash_fields: Counter, filter_fields: Counter,
                       format_version: Any = None,
@@ -144,7 +172,8 @@ def audit_data_stream(pkg_dir: str, ds_dir: str, ds_name: str,
                       kibana: Optional[List[Dict[str, Any]]] = None,
                       latest: Optional[List[Dict[str, Any]]] = None,
                       foreign_latest: Optional[List[Dict[str, Any]]] = None,
-                      rule_set: Optional[Dict[str, Any]] = None,
+                      rules: Optional[Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]] = None,
+                      rules_scanned: bool = False,
                       pkg_name: Optional[str] = None) -> Dict[str, Any]:
     rel = lambda p: os.path.relpath(p, pkg_dir)  # noqa: E731
     stream: Dict[str, Any] = {
@@ -326,9 +355,7 @@ def audit_data_stream(pkg_dir: str, ds_dir: str, ds_name: str,
     findings.extend(latest_transform_findings(
         stream["index_name"], (latest or []) + (foreign_latest or []),
         current_pkg=os.path.basename(pkg_dir)))
-    rule_set = rule_set or {}
-    specific_rules, broad_rules = rules_for_stream(rule_set, stream["index_name"],
-                                                   stream["type"], pkg_name)
+    specific_rules, broad_rules = rules or ([], [])
     findings.extend(detection_rule_findings(specific_rules, broad_rules))
     flattened_exempt: set = set()
     findings.extend(object_array_findings(ds_dir, ds_name, field_index, sample,
@@ -348,7 +375,7 @@ def audit_data_stream(pkg_dir: str, ds_dir: str, ds_name: str,
         "flattened_exempt": sorted(flattened_exempt),
     }
     stream["detection_rules"] = rule_workload(specific_rules, broad_rules,
-                                              scanned=bool(rule_set.get("rules")))
+                                              scanned=rules_scanned)
 
     stream["findings"] = findings
     stream["field_count"] = len(field_index)

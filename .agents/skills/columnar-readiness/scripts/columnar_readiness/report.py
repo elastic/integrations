@@ -206,7 +206,8 @@ def detection_rules_line(s: Dict[str, Any]) -> str:
     parts = [f"{dr['specific']} shipped rule(s) query this stream directly"
              + (f" ({langs})" if langs else "")]
     if dr.get("broad"):
-        parts.append(f"{dr['broad']} more reach it through broad patterns such as `logs-*`")
+        parts.append(f"{dr['broad']} more match its indices without targeting it (`logs-*`, "
+                     "or a package-wide pattern whose query names another data stream)")
     readers = len(dr.get("reading_source") or [])
     parts.append(f"{readers} read `_source`" if readers else "none reads `_source`")
     return ("Detection rules: " + "; ".join(parts) + ". Replay the direct ones (EQL and "
