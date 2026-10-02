@@ -30,6 +30,23 @@
       external: ecs
     - name: dashboard_id
       external: ecs
+# The Ticura feed's dns object is merged into the document root by the ingest
+# pipeline's json processor (add_to_root). dns.answers is ECS `nested`, but
+# without an explicit declaration here it falls back to dynamic (object)
+# mapping instead of picking up the ecs@mappings nested definition.
+- name: dns.answers
+  type: group
+  external: ecs
+- name: dns.answers.class
+  external: ecs
+- name: dns.answers.data
+  external: ecs
+- name: dns.answers.name
+  external: ecs
+- name: dns.answers.ttl
+  external: ecs
+- name: dns.answers.type
+  external: ecs
 # labels.is_ioc_transform_source marks raw-stream docs (true) vs the transform's
 # deduplicated _latest destination (false). Kibana/Security query the latest set
 # by filtering labels.is_ioc_transform_source: "false".
