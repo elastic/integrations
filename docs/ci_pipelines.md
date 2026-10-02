@@ -6,7 +6,7 @@ The following pipelines are available in this repository:
 - https://buildkite.com/elastic/integrations: pipeline in charge of testing all packages using a local Elastic stack. More info at [section](#pull-requests-and-pushes-to-specific-branches).
 - https://buildkite.com/elastic/integrations-serverless: pipeline in charge of testing all packages using an Elastic Serverless project. More info at [section](#serverless-pipeline).
 - https://buildkite.com/elastic/integrations-publish: pipeline to publish the new versions of packages. More info at [section](#publish-packages).
-- https://buildkite.com/elastic/integrations-schedule-daily: pipeline running every night to test packages in different scenarios. More info at [section](#daily-job).
+- https://buildkite.com/elastic/integrations-schedule-daily: pipeline running on weekdays to test packages in different scenarios. More info at [section](#daily-job).
 - https://buildkite.com/elastic/integrations-schedule-weekly: pipeline running once per week to test packages in different scenarios. More info at [section](#weekly-job).
 - https://buildkite.com/elastic/integrations-backport: pipeline to create backport branches. Triggered automatically by the dispatch pipeline when a new entry is merged into `.backports.yml`, or manually from the UI by members of the `ecosystem` team. More info at [section](#backport-branch-creation-pipelines).
 - https://buildkite.com/elastic/integrations-backport-dispatch: pipeline that triggers `integrations-backport` on merges to `main` where `.backports.yml` changed. More info at [section](#backport-branch-creation-pipelines).
@@ -152,9 +152,9 @@ This environment variable can be defined at:
 
 **Note**: Available only to Elastic employees.
 
-Every night it is configured to run a daily job that will be in charge of testing all packages with different scenarios: https://buildkite.com/elastic/integrations-schedule-daily
+On weekdays (Monday to Friday) it is configured to run a daily job that will be in charge of testing all packages with different scenarios: https://buildkite.com/elastic/integrations-schedule-daily
 
-The schedules of this job can be checked [here](https://github.com/elastic/integrations/blob/27d5cd9bb5eee76ce4229312271ceddaba7ebc2c/catalog-info.yaml#L178-L204).
+The schedules of this job are defined in the `schedules` section of the `integrations-schedule-daily` pipeline in [`catalog-info.yaml`](https://github.com/elastic/integrations/blob/main/catalog-info.yaml).
 
 In these daily jobs, the environment variable `FORCE_CHECK_ALL` is set to `true` ensuring that all packages that fulfill all the requirements set in the pipeline are tested. Those other requirements are related to setting `STACK_VERSION`, `STACK_LOGSDB_ENABLED`, etc... or other environment variables. More details about these environments variables [here](#pull-requests-and-pushes-to-specific-branches).
 
