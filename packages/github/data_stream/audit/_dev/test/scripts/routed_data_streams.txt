@@ -1,0 +1,77 @@
+# Verify that GitHub audit log events with event.action api.request are routed to
+# github.api_requests when route_api_request_events is enabled on a streaming input.
+#
+# The GCS mock serves two NDJSON events: one api.request and one repo.create.
+
+[!external_stack] skip 'Skipping external stack test.'
+[!exec:jq] skip 'Skipping test requiring absent jq command'
+
+use_stack -profile ${CONFIG_PROFILES}/${PROFILE}
+install_agent -profile ${CONFIG_PROFILES}/${PROFILE} -network_name NETWORK_NAME
+docker_up -profile ${CONFIG_PROFILES}/${PROFILE} -network ${NETWORK_NAME} github-audit-gcs-mock
+add_package -profile ${CONFIG_PROFILES}/${PROFILE}
+add_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} test_config.yaml DATA_STREAM_NAME
+
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -confirm 15s -timeout 5m logs-github.api_requests-*
+cp stdout api_request_docs.json
+exec jq '[.hits.hits[]._source | select(.event.action == "api.request")] | length' api_request_docs.json
+stdout '^1$'
+exec jq -r '[.hits.hits[]._source.event.id] | unique[]' api_request_docs.json
+stdout 'Zt3XoecTsz6kAS-87bAEzQ'
+
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 1 -confirm 15s -timeout 5m logs-github.audit-*
+cp stdout audit_docs.json
+exec jq '[.hits.hits[]._source | select(.event.action == "api.request")] | length' audit_docs.json
+stdout '^0$'
+exec jq '[.hits.hits[]._source | select(.event.action == "repo.create")] | length' audit_docs.json
+stdout '^1$'
+exec jq -r '[.hits.hits[]._source.event.id] | unique[]' audit_docs.json
+stdout 'Nm4EoecTsz6kAS-87bAEfA'
+
+get_docs -profile ${CONFIG_PROFILES}/${PROFILE} -want 2 -confirm 15s -timeout 5m logs-github.audit-*,logs-github.api_requests-*
+cp stdout all_docs.json
+exec jq '.hits.total.value' all_docs.json
+stdout '^2$'
+
+remove_package_policy -profile ${CONFIG_PROFILES}/${PROFILE} ${DATA_STREAM_NAME}
+uninstall_agent -profile ${CONFIG_PROFILES}/${PROFILE} -timeout 1m
+docker_down github-audit-gcs-mock
+
+-- test_config.yaml --
+input: gcs
+data_stream:
+  vars:
+    project_id: fake-gcs-project
+    alternative_host: "http://svc-github-audit-gcs-mock:4443"
+    service_account_key: '{"type":"service_account","project_id":"fake-gcs-project"}'
+    number_of_workers: 1
+    poll: true
+    poll_interval: 15s
+    buckets: |
+      - name: routing-test-bucket
+    route_api_request_events: true
+    preserve_original_event: false
+-- github-audit-gcs-mock/docker-compose.yml --
+services:
+  github-audit-gcs-mock:
+    image: shourieg/gcs-mock-service:latest
+    hostname: github-audit-gcs-mock
+    ports:
+      - '4443/tcp'
+    volumes:
+      - ./files/manifest.yml:/app/manifest.yml
+      - ./files/testbucket:/app/testbucket
+    healthcheck:
+      test: 'wget --no-verbose --tries=1 --spider http://localhost:4443/health || exit 1'
+      interval: 10s
+      timeout: 5s
+    command: ['./gcs-mock-service', '--manifest', '/app/manifest.yml']
+-- github-audit-gcs-mock/files/manifest.yml --
+buckets:
+  routing-test-bucket:
+    files:
+      - path: ./testbucket/routing-data.log
+        content-type: application/x-ndjson
+-- github-audit-gcs-mock/files/testbucket/routing-data.log --
+{"@timestamp":1741611465102,"_document_id":"Zt3XoecTsz6kAS-87bAEzQ","action":"api.request","actor":"user_actor","actor_id":11111,"actor_is_bot":false,"actor_location":{"country_code":"IN"},"business":"enterprise-account","business_id":222222,"created_at":1741611465102,"hashed_token":"E8Fzcgs3TQXqhrKKC/qNR+2XZnaK3ykQBSAt1kPMiJs=","org":"user-delete","org_id":3333333,"request_category":"api","request_method":"GET","route":"/repos/{owner}/{repo}/pulls","status_code":200,"token_id":555555,"token_scopes":"repo,read:org","user_agent":"curl/7.79.1"}
+{"@timestamp":1741611463961,"_document_id":"Nm4EoecTsz6kAS-87bAEfA","action":"repo.create","actor":"user_actor","actor_id":11111,"actor_is_bot":false,"actor_location":{"country_code":"IN"},"business":"enterprise-account","business_id":222222,"created_at":1741611463961,"operation_type":"create","org":"user-delete","org_id":3333333,"public_repo":false,"repo":"user-delete/private-repo","repo_id":4444444,"request_category":"other","user_agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36","visibility":"internal"}
