@@ -36,7 +36,7 @@
     "params": {
       "searchType": "esqlQuery",
       "esqlQuery": {
-        "esql": "FROM metrics-traefik.otel-*\n// Limit to router-level request counters (counter requires TS + INCREASE)\n| WHERE traefik_router_requests_total IS NOT NULL\n// Aggregate total and 5xx requests per router over the time window\n| STATS\n    total = SUM(traefik_router_requests_total),\n    errors_5xx = SUM(traefik_router_requests_total) WHERE attributes.code LIKE \"5*\"\n  BY attributes.router\n// Minimum sample size; adjust based on expected traffic per router\n| WHERE total > 50\n| EVAL error_rate_pct = ROUND(errors_5xx / total * 100.0, 2)\n// Alert threshold: tune for sensitivity\n| WHERE error_rate_pct > 5.0\n| SORT error_rate_pct DESC\n| LIMIT 10"
+        "esql": "TS metrics-traefik.otel-*\n// Limit to router-level request counters (counter fields require TS + INCREASE)\n| WHERE traefik_router_requests_total IS NOT NULL\n// Aggregate total and 5xx requests per router over the time window\n| STATS\n    total = SUM(INCREASE(traefik_router_requests_total)),\n    errors_5xx = SUM(INCREASE(traefik_router_requests_total)) WHERE attributes.code LIKE \"5*\"\n  BY attributes.router\n// Minimum sample size; adjust based on expected traffic per router\n| WHERE total > 50\n| EVAL error_rate_pct = ROUND(errors_5xx / total * 100.0, 2)\n// Alert threshold: tune for sensitivity\n| WHERE error_rate_pct > 5.0\n| SORT error_rate_pct DESC\n| LIMIT 10"
       },
       "size": 0,
       "threshold": [
