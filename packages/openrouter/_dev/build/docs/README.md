@@ -44,7 +44,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent
 ### Onboard / configure
 
 1. Create a Management API key at [openrouter.ai/settings/management-keys](https://openrouter.ai/settings/management-keys).
-2. In Kibana, navigate to **Management > Integrations** and search for **OpenRouter**.
+2. In Kibana, navigate to **Management → Integrations** and search for **OpenRouter**.
 3. Click **Add OpenRouter** and enter the Management API key.
 4. Configure the data streams using the settings below, then deploy.
 
@@ -102,10 +102,10 @@ Supported dimensions are `model`, `variant`, `api_key_id`, `workspace`, `app`, `
 - **No data / empty results**: The account may have no recent traffic. The `openrouter.usage.request_count`
   field will be `0` or absent. Data appears only for time windows where requests were made.
 - **`limit: Too big`**: The integration uses `limit: 10000` (the API maximum). If this error
-  appears, it is a bug — please report it.
+  appears, it is a bug. Report it.
 - **`time_range exceeds maximum of 31 days`**: The integration's windowing ensures queries
   never span more than 30 days (`usage`) or 24 hours (`performance`). If this error appears,
-  it is a bug — please report it.
+  it is a bug. Report it.
 
 ## Reference
 
@@ -113,7 +113,7 @@ Supported dimensions are `model`, `variant`, `api_key_id`, `workspace`, `app`, `
 
 The `usage` data stream collects daily snapshot metrics (request count, token consumption, cost)
 from the OpenRouter Analytics API. Each document represents the total for a given day and
-dimension combination. Metrics can be summed across dimensions (e.g. total spend across all models).
+dimension combination. Metrics can be summed across dimensions (for example, total spend across all models).
 
 The current day is polled again on every collection interval, so the same daily bucket can appear
 in several documents with growing totals. When aggregating, first take `MAX` per `@timestamp` and
