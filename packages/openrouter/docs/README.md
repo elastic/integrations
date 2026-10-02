@@ -235,9 +235,9 @@ percentile of all traffic.
 
 ## Dashboards
 
-- **[OpenRouter] Usage & Cost Overview**: requests, cost (regular keys, BYOK, BYOK fees), tokens,
+- **[Metrics OpenRouter] Usage & Cost Overview**: requests, cost (regular keys, BYOK, BYOK fees), tokens,
   cache, and breakdowns by model and API key.
-- **[OpenRouter] Performance Overview**: latency, TTFT, generation, inter-token and router latency,
+- **[Metrics OpenRouter] Performance Overview**: latency, TTFT, generation, inter-token and router latency,
   throughput, cache and guardrail rates, and a per-model comparison.
 
 Both dashboards use pinned controls with ES|QL-backed values, which require Kibana 9.6 or later.
