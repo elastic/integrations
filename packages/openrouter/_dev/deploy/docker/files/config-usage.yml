@@ -7,6 +7,32 @@ rules:
       Content-Type:
         - 'application/json'
     responses:
+      # First request: the API reports a truncated result. The integration discards it and retries
+      # the same window with a smaller span. The following responses are complete.
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {{ minify_json `
+          {
+            "data": {
+              "data": [
+                {
+                  "created_at__day": "2026-09-21",
+                  "model": "truncated/discarded-response",
+                  "provider": "Truncated",
+                  "request_count": "1"
+                }
+              ],
+              "metadata": {
+                "query_time_ms": 45,
+                "row_count": 1,
+                "truncated": true
+              }
+            }
+          }
+          ` }}
       - status_code: 200
         headers:
           Content-Type:
