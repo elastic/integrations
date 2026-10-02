@@ -7,6 +7,7 @@ one cause.
 
 ## Contents
 
+- When a stream counts as ready
 - Checklist
 - 1. Baseline `lint`
 - 2. Bump `format_version`, `lint` again (the spec-jump findings)
@@ -17,6 +18,29 @@ one cause.
 - 7. Build and check
 - The cost of declaring readiness
 - Local tooling
+
+## When a stream counts as ready
+
+`columnar.supported: true` is a claim about the stream, so write it only when all of
+these hold:
+
+1. **No blocker, and every review item looked at**: the audit's `_source` consumers and
+   Detection rules lines are quoted in the PR, including the negative results.
+2. **Index sort settled**, from the queries the stream's dashboards and rules run. The
+   sort applies to logsdb installs too, at their next rollover, so say so.
+3. **Indexed fields decided**: an explicit list of `columnar: {index: true}` fields,
+   possibly empty, each with the query that needs it (rollout rule 2).
+4. **Tests pass in both modes**: `test pipeline` and `test static` as usual, and system
+   tests on a columnar index (routes A to C in
+   [`correctness-and-performance.md`](correctness-and-performance.md)).
+5. **Existing queries still work** on columnar: the dashboards, the stream's direct
+   detection rules, and the package's alerting rule and SLO templates return the same
+   results as on logsdb. Automated where a test exists, otherwise a manual check
+   recorded in the PR.
+
+Performance numbers are not part of this bar; they decide whether columnar becomes a
+default later, not whether the opt-in may be offered. A package can declare its ready
+streams and leave the others for a later PR.
 
 ## Checklist
 

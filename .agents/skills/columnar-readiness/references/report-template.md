@@ -86,10 +86,17 @@ any `flattened` field that held an object array as exempt. When the detection ru
 could not be scanned it says so. JSON: `source_consumers`.
 
 **Detection rules** states how many shipped rules query the stream directly (by
-language), how many reach it through broad patterns such as `logs-*`, and how many
-read `_source`: "71 shipped rule(s) query this stream directly (10 esql, 61 kuery); 10
-more reach it through broad patterns such as `logs-*`; 1 read `_source`". Quote it in
-the PR with both numbers. JSON: `detection_rules`.
+language), how many only match its indices, and how many read `_source`: "71 shipped
+rule(s) query this stream directly (10 esql, 61 kuery); 10 more match its indices
+without targeting it (…); 1 read `_source`". A rule is direct for the streams its query
+names by dataset, else the policy templates `related_integrations` lists, else every
+stream its patterns match. With an `elastic/detection-rules` checkout the line adds the
+`_source` readers found there. Quote it in the PR with both numbers. JSON:
+`detection_rules` (`repo_readers` for the checkout).
+
+**Alerting rule and SLO templates** lists the package's own query templates that query
+the stream, attributed the same way; the line is omitted when there are none. JSON:
+`query_templates`.
 
 **Lookup candidates** lists the `keyword`/`ip` fields the stream's direct rules and
 scanned dashboard filters reference outside the sort key, high-risk lookup fields
@@ -121,10 +128,11 @@ proposed at all.
 ```markdown
 # Columnar readiness: `<package>`
 
-- Status: **<STATUS>** (<gloss, for READY>)
-- Package type: `integration`, version `X.Y.Z`, format_version `3.x.y`
+- Status: **<STATUS>** (<gloss, for READY>) — <n> logs streams: <n> blocked (`<ds>`), <n> need review, <n> ready   ← the split only when there are 2+ streams
+- Package type: `integration`, version `X.Y.Z`, format_version `3.x.y` (Fleet installs it on 8.19 and 9.1+, not 9.0)
 - ECS definitions: elastic-package ECS cache v9.3.0 (`…`) | built-in fallback: …
 - Detection rules: <n> shipped rules scanned (latest version of each, from `security_detection_engine`) | not scanned
+- `elastic/detection-rules`: scanned `<dir>` (`rules/` and `hunting/`, <n> files) for `_source` readers | no checkout found (looked at `…`), so hunting queries were not scanned …
 - Kibana condition: `^8.19.0 || ^9.1.0` — declaring readiness means **replacing the whole range** with `conditions.kibana.version: "^9.6.0"` …
 - **Cost:** … raises this package's **minimum stack version to 9.6** …
 
@@ -139,7 +147,8 @@ proposed at all.
 - Columnar opt-in: <declared ready | columnar forced via `index_mode` | not declared>. Plumbing: …
 - Sort: **<recommendation>** — <why>
 - `_source` consumers: <none found (…) | **<n> … (`<code>`)** — see the Class C findings below>; object arrays: …
-- Detection rules: <n> shipped rule(s) query this stream directly (…); <n> more reach it through broad patterns such as `logs-*`; <none reads | n read> `_source`. …
+- Detection rules: <n> shipped rule(s) query this stream directly (…); <n> more match its indices without targeting it (…); <none reads | n read> `_source`. …
+- Alerting rule and SLO templates: <n> alerting rule template(s), <n> SLO template(s) shipped by this package query this stream (“<name>”, …). …
 - Lookup candidates for the `index: true` review, a starting point and not a recommendation ("none" is a valid decision): `source.ip` (high-risk lookup): 12 rules; …
 - Text sub-fields (they keep an inverted index in columnar; …): <n>, `user_agent.original.text`, …
 - Stream manifest: <merge … | add …>.
@@ -159,7 +168,7 @@ proposed at all.
 ### Class A — rejected by Elasticsearch
 
 - `<code>` (auto-fixable) — <what and where>
-  - Where: `data_stream/<ds>/fields/fields.yml`
+  - Where: `data_stream/<ds>/fields/fields.yml:<line>`   ← the line of the attribute, e.g. `doc_values: false`
   - <remediation>
   - **Suggested change** in `<file>`, <position>:
 
@@ -172,13 +181,13 @@ proposed at all.
 ### Class B — accepted but lossy
 
 - `<code>` — <what and where>
-  - Where: `data_stream/<ds>/manifest.yml`
+  - Where: `data_stream/<ds>/manifest.yml:<line>`
   - <remediation>
 
 ### Class C — behaviour change
 
 - `source_consumer_latest_transform` — the `<name>` transform is a `latest` transform: … <destination pipeline note>
-  - Where: `elasticsearch/transform/<name>/transform.yml`
+  - Where: `elasticsearch/transform/<name>/transform.yml:<line>`   ← `source.index`
   - <remediation>
 - `source_consumer_detection_rule` — the shipped detection rule "<name>" (esql) reads this stream's `_source`: …
   - Where: `packages/security_detection_engine/kibana/security_rule/<rule_id>_<version>.json`
@@ -189,6 +198,16 @@ proposed at all.
 
 - `<ds>`: data stream type is `metrics` (logs only)
 - `<ds>`: OpenTelemetry input (`otelcol`): OTel log streams stay on LogsDB until …
+- `<template>`: input package policy template (dataset `<dataset>` by default): assessed for information only
+
+## Input package findings (for information)   ← input packages only
+
+These change no status: …
+
+### `<template>` (dataset `<dataset>`)
+
+- `<code>` — <what and where>
+  - Where: `fields/<file>.yml:<line>`
 
 ## Dashboard fields (benchmark workload)
 
@@ -213,9 +232,12 @@ Record the per-stream **Detection rules** lines above in the PR, with both numbe
 # Columnar readiness — catalog audit
 
 Packages scanned: <n>
+Showing only packages with status `<STATUS>`: <n>. …   ← only with `--status`
 Candidate packages (at least one in-scope `type: logs` data stream): <n>
+Candidate packages still installable on 8.x: <n> (…). Declaring columnar moves each of them to 9.6+.
 ECS definitions: …
 Detection rules: <n> shipped rules scanned …
+`elastic/detection-rules`: scanned `<dir>` … | no checkout found …
 
 | Status | Packages | Logs data streams |
 | --- | --- | --- |
@@ -236,7 +258,8 @@ OTel log streams out of scope until derived fields land (<n>): `<pkg>`/<ds>, …
 ## Judgement calls — review (<n> packages, <n> data streams)
 ## `_source` readers outside the mappings — review (<n> packages, <n> data streams)
 ## Informational — Class C (<n> packages, <n> data streams)
-## Packages by status
+## Packages by status   ← BLOCKED and NEEDS_REVIEW: one line per package with its stream split, rule and template counts
+## Input packages — out of scope, assessed for information
 ## Index sort
 ```
 
@@ -249,8 +272,11 @@ a previous one even when the status rules change.
 `--format json` emits the same data with stable keys. The top level carries
 `ecs_schema_source`; each package carries `latest_transforms` (each with `streams`,
 the package's own streams it reads, and, when that is empty, `flagged_on`, the
-`<package>/<ds>` streams elsewhere that carry its finding), `detection_rules_dir` and
-`detection_rules_scanned`. Per finding:
+`<package>/<ds>` streams elsewhere that carry its finding), `detection_rules_dir`,
+`detection_rules_scanned`, `detection_rules_repo` (`{"dir", "files", "looked_at"}`; absent
+with `--no-rules`), `spec_min_stack` (the stacks whose Fleet installs the package today)
+and `installs_on_8x`. Per finding (`line` is `null` when unknown, e.g. for JSON
+sources):
 
 ```json
 {
@@ -260,6 +286,7 @@ the package's own streams it reads, and, when that is empty, `flagged_on`, the
   "auto_fixable": true,
   "field": "event.original",
   "where": "data_stream/incidents/fields/ecs.yml",
+  "line": 12,
   "message": "...",
   "remediation": "..."
 }
@@ -287,12 +314,17 @@ Per data stream, alongside `index_mode`:
   "detection_rules": { "scanned": true, "specific": 71, "broad": 10,
                        "by_language": {"esql": 10, "kuery": 61},
                        "reading_source": ["GKE Certificate Signing Request for Privileged Identity"],
-                       "names": ["…"] },
+                       "names": ["…"], "repo_readers": [] },
+  "query_templates": { "alerting_rule_template": 0, "slo_template": 0, "names": [] },
   "lookup_candidates": [ { "field": "source.ip", "type": "ip", "rules": 12,
                            "dashboard_filters": 0, "high_risk": true } ],
   "text_subfields": ["user_agent.original.text"]
 }
 ```
+
+An input package's policy templates appear as `OUT_OF_SCOPE` data streams with
+`dataset` and `informational_findings` (the same finding records, kept apart so they
+never move a status or a count).
 
 `existing_index_sort` is `null` when the manifest declares no sort. `source_consumers`
 is the C6-C10 scan result, including when every count is zero. `severity` is one of

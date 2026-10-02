@@ -1,7 +1,7 @@
 ---
 name: columnar-readiness
 description: Audits and migrates Elastic integration packages to the logsdb_columnar Elasticsearch index mode. Use for "columnar readiness", "logsdb_columnar", "migrate to columnar", "columnar audit", "index sorting for columnar", "is this package columnar-ready", "columnar blockers", or when asked which integrations can adopt columnar index mode, why a package is blocked, what index sort a data stream should use, which fields need an inverted index, or what columnar `_source` does to transforms, detection rules, runtime fields and other `_source` consumers.
-compatibility: Designed for packages in elastic/integrations. scripts/audit.py needs Python 3.8+ and PyYAML. Migrations also need elastic-package built against package-spec 3.7.0, and stack tests a Kibana with the Fleet columnar support.
+compatibility: Designed for packages in elastic/integrations. scripts/audit.py needs Python 3.9+ and PyYAML (`uv run` installs it from the script's inline metadata). Migrations also need elastic-package built against package-spec 3.7.0, and stack tests a Kibana with the Fleet columnar support.
 license: Apache-2.0
 metadata:
   origin: elastic/integrations
@@ -16,7 +16,7 @@ through the package.
 ## Current status
 
 The facts in this section change between releases; update them here, not elsewhere.
-Last reviewed 2026-09-28.
+Last reviewed 2026-10-02.
 
 - **Elasticsearch:** `logsdb_columnar` is tech preview since 9.5; GA is targeted for
   9.7 (January 27). Keyword doc-value skippers are still pending and bloom filters
@@ -51,6 +51,8 @@ and falls back to `@timestamp` alone if an existing one cannot be sorted), plus
 1. **Logs data streams only.** Metrics, traces and synthetics streams, `type: input`
    packages, and streams fed by an OpenTelemetry input (`otelcol`) are out of scope —
    OTel log streams wait for derived fields (clustering logs by resource attributes).
+   Input packages cannot declare columnar under package-spec 3.7.0; the audit still
+   checks their logs policy templates and lists the findings for information.
 2. **Per-field inverted indexes are a per-stream human decision**, from the queries
    the stream's dashboards and detection rules run, and "none" is a valid answer. The
    audit lists **lookup candidates**; it never writes `index: true` or
@@ -119,8 +121,9 @@ root of the integrations repository, which is where `packages/` is:
 ```bash
 # one package — `kibana/` assets and the shipped detection rules are scanned
 python3 <skill-dir>/scripts/audit.py packages/<pkg>
+uv run <skill-dir>/scripts/audit.py packages/<pkg>    # same, installs PyYAML on the fly
 
-# whole catalog (~15 s over ~490 packages); dashboards are off by default here
+# whole catalog (~20 s over ~500 packages); dashboards are off by default here
 python3 <skill-dir>/scripts/audit.py packages/ --catalog
 python3 <skill-dir>/scripts/audit.py packages/ --catalog \
   --status READY --status READY_AFTER_AUTO_FIX --out /tmp/columnar-ready.md
@@ -133,17 +136,22 @@ python3 <skill-dir>/scripts/audit.py packages/<pkg> --format json
 | --- | --- | --- |
 | `--catalog` | off | PATH is the `packages/` root; prints the catalog summary |
 | `--dashboards` / `--no-dashboards` | on for one package, off for `--catalog` | count the fields in `kibana/` saved objects, for sort hints, lookup candidates and the benchmark workload. The `_source` consumer scan runs either way |
-| `--rules DIR` / `--no-rules` | `packages/security_detection_engine/kibana/security_rule` next to the package | where to read the shipped detection rules, or skip them |
+| `--rules DIR` / `--no-rules` | `packages/security_detection_engine/kibana/security_rule` next to the package | where to read the shipped detection rules, or skip them (and the checkout below) |
+| `--detection-rules DIR` | `$DETECTION_RULES_PATH`, then a `detection-rules` checkout next to this repository | an `elastic/detection-rules` checkout whose `rules/` and `hunting/` queries are scanned for `_source` readers; the report says when none was found |
 | `--format markdown\|json\|both` | `markdown` | JSON has stable keys |
 | `--out FILE` | stdout | write the report to FILE |
 | `--status STATUS` | all | catalog mode only, repeatable |
 
-Needs PyYAML (`python3 -m pip install --user pyyaml`, or a venv). The script is
+Needs Python 3.9+ and PyYAML: `uv run` installs it, otherwise
+`python3 -m pip install --user pyyaml` or a venv. `audit.py` only parses the command
+line; the checks live in the `scripts/columnar_readiness/` package next to it, one
+module per concern (fields, sort, `_source` consumers, rules, report). It is
 deterministic and static and never contacts Elasticsearch. It reads:
 
 - the manifests and `fields/*.yml`;
 - the ingest pipelines, `sample_event.json`, pipeline test expectations and transforms;
-- the `kibana/` assets and the shipped detection rules.
+- the `kibana/` assets, including the alerting rule and SLO templates;
+- the shipped detection rules, and an `elastic/detection-rules` checkout when one is found.
 
 It exits with code 2 on a path that is not a package (or not a `packages/` root with
 `--catalog`).
@@ -157,7 +165,11 @@ sort checks are more conservative, and the report header says so. Run
 
 Statuses per data stream: `READY` (no mapping blocker found — not a validation
 result), `READY_AFTER_AUTO_FIX`, `NEEDS_REVIEW`, `BLOCKED`, `OUT_OF_SCOPE`. Package
-status is the worst of its streams. Report shape:
+status is the worst of its streams, so the report prints the split next to it
+(`20 logs streams: 1 blocked (waf), 3 need review, 16 ready`): the other streams can
+still go ahead. Every finding gives `file:line`. The header also says which stacks can
+install the package today, from its `format_version` (3.4: 8.19 and 9.1+), which
+declaring readiness raises to 9.6. Report shape:
 [`references/report-template.md`](references/report-template.md). Every finding, its
 detection rule and its remediation:
 [`references/blockers.md`](references/blockers.md). Short version:
@@ -214,10 +226,12 @@ ingest pipelines on the stream (they run before indexing). Anything that reads
   Fix: a leading `dot_expander` with `field: "*"`;
 - **Kibana assets:** scripted and runtime fields, ES|QL `METADATA _source`,
   `JSON_EXTRACT(_source, …)`;
-- **shipped detection rules** (`packages/security_detection_engine`, scanned
-  automatically). A rule that does `JSON_EXTRACT(_source, "a.b")` gets null on
-  columnar and silently stops matching. Hold the stream back until the rule reads
-  columns instead ([`references/blockers.md`](references/blockers.md) C9).
+- **detection rules**: the shipped ones (`packages/security_detection_engine`,
+  scanned automatically) and, with a checkout, `elastic/detection-rules` rules and
+  hunting queries. A query that does `JSON_EXTRACT(_source, "a.b")` gets null on
+  columnar and silently stops matching. Hold the stream back until it reads columns,
+  or `FIELD_EXTRACT` for a `flattened` field, instead
+  ([`references/blockers.md`](references/blockers.md) C9).
 
 **Do not declare a stream `columnar.supported: true` until that review is done.** A
 negative result is printed too: every stream gets a `_source` consumers line, and a
@@ -241,7 +255,7 @@ mode a document lands in, so these processors run in every mode anyway, and they
 different positions (a `dot_expander` first, a `copy_to` replacement after the
 processors that set its source).
 
-Three more per-stream lines feed decisions, not statuses:
+More per-stream lines feed decisions, not statuses:
 
 - **Lookup candidates** — the `keyword`/`ip` fields the stream's rules and dashboard
   filters reference outside the sort key, high-risk lookups (`source.ip`, `user.name`,
@@ -249,7 +263,11 @@ Three more per-stream lines feed decisions, not statuses:
 - **Text sub-fields** — `.text`-style multi-fields that keep an inverted index in
   columnar; input for the ECS `.text` review.
 - **Detection rules** — the rule half of the performance workload (EQL and KQL run as
-  Query DSL).
+  Query DSL). A rule counts for the streams its query names by dataset, else the
+  policy templates its `related_integrations` lists, so a package-wide `logs-aws*`
+  rule lands on `cloudtrail`, not on all twenty aws streams.
+- **Alerting rule and SLO templates** — the package's own query templates that query
+  the stream. They must return the same results on columnar.
 
 ### 3. Decide the index sort
 
@@ -335,14 +353,17 @@ Everything, with commands:
 | `elasticsearch/transform/<name>/transform.yml` | `latest` transforms and transform scripts: `_source` consumers |
 | `elasticsearch/ingest_pipeline/*.yml` | package-level pipelines, including transform destination pipelines |
 | `kibana/dashboard\|lens\|search\|ml_module/*.json` | sort hints, lookup candidates, benchmark workload, `_source` consumers |
+| `kibana/alerting_rule_template\|slo_template/*.json` | the package's own query templates, per stream |
+| `fields/*.yml` at the package root, `policy_templates` | an input package's streams (assessed for information only) |
 | `../security_detection_engine/kibana/security_rule/*.json` | the shipped detection rules that query the package's streams |
+| an `elastic/detection-rules` checkout: `rules/`, `hunting/` | hunting queries and unreleased rules, scanned for `_source` readers |
 | `changelog.yml`, `_dev/build/docs/README.md`, `validation.yml` | release plumbing |
 
 ## Reporting back
 
 Lead with the status and the one-line reason. Name the specific field and file for
 every finding — "`o365.audit.ExchangeAggregatedFolders.FolderItems` is `nested` inside
-`nested` (`data_stream/audit/fields/fields.yml`)", not "has nested fields". Quote the
+`nested` (`data_stream/audit/fields/fields.yml:291`)", not "has nested fields". Quote the
 `_source` consumers and Detection rules lines, and the lookup candidates when the user
 is deciding on indexes. For a catalog run, give the counts per status and the package
 list per blocker code, and call out anything that changed since the last run.

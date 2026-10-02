@@ -81,5 +81,27 @@
       "Explains that OTel log streams wait for derived fields (clustering by resource attributes) per the rollout strategy",
       "Does not propose a sort or a migration"
     ]
+  },
+  {
+    "skills": ["columnar-readiness"],
+    "query": "Which aws data streams can go columnar, and which carry the detection-rule testing work?",
+    "files": ["packages/aws", "packages/security_detection_engine"],
+    "expected_behavior": [
+      "Reports the package as BLOCKED only because of the waf stream (nested inside nested), and says the other aws logs streams can be declared on their own",
+      "Gives the per-stream split (20 logs streams: 1 blocked, the rest needing review or ready) rather than treating the whole package as blocked",
+      "Says the prebuilt aws rules land on cloudtrail (about 213), not on every aws stream, because rules are attributed by the dataset their query names",
+      "Points at the exact file and line of the waf nested field (file:line)"
+    ]
+  },
+  {
+    "skills": ["columnar-readiness"],
+    "query": "Can the filestream input package use columnar?",
+    "files": ["packages/filestream"],
+    "expected_behavior": [
+      "Reports filestream as OUT_OF_SCOPE because package-spec 3.7.0 only adds elasticsearch.columnar to integration data streams, not to input packages",
+      "Still lists the informational finding: event.original imported from ECS with doc_values: false",
+      "Does not propose declaring columnar.supported on the input package",
+      "Says what would need to change first: package-spec support for input packages"
+    ]
   }
 ]

@@ -19,11 +19,12 @@ There is no built-in runner. For each scenario:
    answer states it; a report that implies it does not count.
 
 Run them on every model the skill is used with (Haiku, Sonnet, Opus), and after every
-change to `SKILL.md`, the references or `scripts/audit.py`.
+change to `SKILL.md`, the references or the scripts (`scripts/audit.py` and the
+`scripts/columnar_readiness/` package).
 
 ## Keeping them current
 
-The expected behaviours reflect the catalog as of 2026-09-28. When a package changes
+The expected behaviours reflect the catalog as of 2026-10-02. When a package changes
 (o365 fixes its nested mapping, a detection rule stops reading `_source`), update the
 scenario rather than the skill. `python3 <skill-dir>/scripts/audit.py packages/<pkg>`,
 run from the repo root, shows the current state of each package.

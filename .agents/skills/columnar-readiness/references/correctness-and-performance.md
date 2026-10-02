@@ -234,8 +234,9 @@ documents. Specifically not expected: values changing, numeric precision loss,
 `ignore_malformed` behaviour differences.
 
 **Query-level correctness is still manual.** The rollout asks whether the same queries
-return the same answers in both modes. Replay the stream's dashboard queries and the
-rules on its **Detection rules** line against both copies and compare the hits.
+return the same answers in both modes. Replay the stream's dashboard queries, the
+rules on its **Detection rules** line and its alerting rule and SLO templates against
+both copies and compare the hits.
 
 ---
 
@@ -252,6 +253,9 @@ Manual for now. There is no harness in this skill; the audit extracts the worklo
 - **Detection rules:** each stream's **Detection rules** line says how many shipped
   rules query it directly, by language (JSON: `detection_rules.names`). Take those rule
   queries from `packages/security_detection_engine/kibana/security_rule/`.
+- **Alerting rule and SLO templates:** the stream's templates line names the package's
+  own query templates (JSON: `query_templates.names`), in `kibana/alerting_rule_template/`
+  and `kibana/slo_template/`.
 - **Lookup candidates:** each stream's **Lookup candidates** line names the
   exact-value filter fields to measure first.
 
