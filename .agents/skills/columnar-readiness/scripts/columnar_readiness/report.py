@@ -284,11 +284,46 @@ def status_label(status: str) -> str:
     return f"**{status}** ({gloss})" if gloss else f"**{status}**"
 
 
+STREAM_STATUS_WORDS = (("BLOCKED", "blocked", "blocked"),
+                       ("NEEDS_REVIEW", "needs review", "need review"),
+                       ("READY_AFTER_AUTO_FIX", "ready after auto-fix", "ready after auto-fix"),
+                       ("READY", "ready", "ready"))
+
+
+def count_of(n: int, word: str) -> str:
+    return f"{n} {word}{'' if n == 1 else 's'}"
+
+
+def stream_breakdown(result: Dict[str, Any], names_for: Tuple[str, ...] = ("BLOCKED",),
+                     max_names: int = 3) -> str:
+    """`20 logs streams: 1 blocked (`waf`), 4 need review, 15 ready`: the package status is
+    its worst stream, so this keeps one blocked stream from hiding the ready ones."""
+    in_scope = [ds for ds in result.get("data_streams") or [] if ds["status"] != "OUT_OF_SCOPE"]
+    if not in_scope:
+        return ""
+    parts = []
+    for status, one, many in STREAM_STATUS_WORDS:
+        names = [ds["data_stream"] for ds in in_scope if ds["status"] == status]
+        if not names:
+            continue
+        words = one if len(names) == 1 else many
+        shown = ""
+        if status in names_for:
+            shown = ", ".join(f"`{n}`" for n in names[:max_names])
+            shown = f" ({shown}{', …' if len(names) > max_names else ''})"
+        parts.append(f"{len(names)} {words}{shown}")
+    return f"{count_of(len(in_scope), 'logs stream')}: " + ", ".join(parts)
+
+
 def md_package(result: Dict[str, Any]) -> str:
     lines: List[str] = []
     lines.append(f"# Columnar readiness: `{result['package']}`")
     lines.append("")
-    lines.append(f"- Status: {status_label(result['status'])}")
+    in_scope_count = sum(1 for ds in result.get("data_streams") or []
+                         if ds["status"] != "OUT_OF_SCOPE")
+    breakdown = stream_breakdown(result) if in_scope_count > 1 else ""
+    lines.append(f"- Status: {status_label(result['status'])}"
+                 + (f" — {breakdown}" if breakdown else ""))
     lines.append(f"- Package type: `{result.get('type')}`, version `{result.get('version')}`, "
                  f"format_version `{result.get('format_version')}` (Fleet installs it on "
                  f"{result.get('spec_min_stack', 'unknown')})")
@@ -669,12 +704,27 @@ def md_catalog(results: List[Dict[str, Any]]) -> str:
 
     lines.append("## Packages by status")
     lines.append("")
+    lines.append("The package status is its worst stream. For the first two groups, each line "
+                 "says how the package's logs streams split, and how many shipped detection "
+                 "rules and package templates query them (the testing workload).")
+    lines.append("")
+    by_name = {r["package"]: r for r in results}
     for st in ("BLOCKED", "NEEDS_REVIEW", "READY_AFTER_AUTO_FIX", "READY"):
         pkgs = sorted(by_status[st])
         gloss = f" — {STATUS_GLOSS[st]}" if st in STATUS_GLOSS else ""
         lines.append(f"### {st} ({len(pkgs)}){gloss}")
         lines.append("")
-        lines.append(", ".join(f"`{p}`" for p in pkgs) or "(none)")
+        if st in ("BLOCKED", "NEEDS_REVIEW") and pkgs:
+            for name in pkgs:
+                r = by_name[name]
+                streams = [ds for ds in r["data_streams"] if ds["status"] != "OUT_OF_SCOPE"]
+                rules = sum((ds.get("detection_rules") or {}).get("specific", 0) for ds in streams)
+                templates = sum((ds.get("query_templates") or {}).get(k, 0) for ds in streams
+                                for k in ("alerting_rule_template", "slo_template"))
+                lines.append(f"- `{name}`: {stream_breakdown(r, ('BLOCKED', 'NEEDS_REVIEW'))}; "
+                             f"{count_of(rules, 'rule')}, {count_of(templates, 'template')}")
+        else:
+            lines.append(", ".join(f"`{p}`" for p in pkgs) or "(none)")
         lines.append("")
 
     sort_class: Counter = Counter()
