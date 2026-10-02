@@ -93,4 +93,31 @@ For more details, refer to [Configure profiles collection](https://www.elastic.c
 
 In Kubernetes, deploy the collector running the profiling receiver as a DaemonSet, so that every node is profiled.
 
-One of the simplest ways to do this is the [OpenTelemetry Collector Helm Chart](https://github.com/open-telemetry/opentelemetry-helm-charts/tree/main/charts/opentelemetry-collector) with the `profiling` preset enabled. The preset adds the profiling receiver to a `profiles` pipeline and configures the host PID access, security context, and volumes that the eBPF profiler needs. Use a collector image that includes both the profiling receiver and the Elasticsearch exporter, such as the EDOT Collector.
+One of the simplest ways to do this is the [OpenTelemetry Collector Helm Chart](https://github.com/open-telemetry/opentelemetry-helm-charts/tree/opentelemetry-collector-0.175.0/charts/opentelemetry-collector) with the `profiling` preset enabled. The preset adds the profiling receiver to a `profiles` pipeline and configures the host PID access, security context, and volumes that the eBPF profiler needs. Use a collector image that includes both the profiling receiver and the Elasticsearch exporter, such as the EDOT Collector:
+
+```yaml
+mode: daemonset
+
+image:
+  repository: <COLLECTOR_IMAGE>
+
+presets:
+  profiling:
+    enabled: true
+
+command:
+  extraArgs:
+    - --feature-gates=service.profilesSupport
+
+config:
+  exporters:
+    elasticsearch:
+      endpoint: <ELASTICSEARCH_ENDPOINT>
+      api_key: <ELASTICSEARCH_API_KEY>
+      mapping:
+        mode: otel
+  service:
+    pipelines:
+      profiles:
+        exporters: [ elasticsearch ]
+```
