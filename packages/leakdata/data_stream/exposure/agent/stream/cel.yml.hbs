@@ -1,0 +1,60 @@
+config_version: 2
+interval: {{interval}}
+resource.url: {{url}}
+resource.timeout: 30s
+
+state:
+  token: {{token}}
+  batch_size: {{batch_size}}
+  want_more: false
+redact:
+  fields:
+    - token
+
+program: |-
+  request(
+    "GET",
+    state.url.trim_right("/") + "/api/integrations/elastic-security/v1/events?" + {
+      "limit": [string(state.batch_size)],
+      "cursor": [state.?cursor.value.orValue("")],
+    }.format_query()
+  ).with({
+    "Header": {
+      "Authorization": ["Bearer " + state.token],
+      "Accept": ["application/json"],
+    },
+  }).do_request().as(resp, resp.StatusCode != 200 ?
+    state.with({
+      "events": {
+        "error": {
+          "code": string(resp.StatusCode),
+          "id": string(resp.Status),
+          "message": "GET LeakData feed: " + (
+            size(resp.Body) != 0 ? string(resp.Body) : string(resp.Status)
+          ),
+        },
+      },
+      "want_more": false,
+    })
+  :
+    bytes(resp.Body).decode_json().as(body,
+      state.with({
+        "events": body.events.map(e, {"json": e}),
+        "cursor": {"value": body.next_cursor},
+        "want_more": body.has_more && size(body.events) > 0,
+      })
+    )
+  )
+
+tags:
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+
+{{#if processors}}
+processors:
+{{processors}}
+{{/if}}
