@@ -1,0 +1,2225 @@
+{
+    "attributes": {
+        "controlGroupInput": {
+            "panelsJSON": {
+                "run-type-control": {
+                    "explicitInput": {
+                        "available_options": [],
+                        "control_type": "VALUES_FROM_QUERY",
+                        "enhancements": {},
+                        "esql_query": "FROM .workflows-executions\n| WHERE startedAt \u003e= ?_tstart AND startedAt \u003c ?_tend\n| EVAL run_type = CASE(COALESCE(isTestRun, false), \"test\", \"production\")\n| STATS BY run_type\n| SORT run_type",
+                        "id": "run-type-control",
+                        "selected_options": [
+                            "production"
+                        ],
+                        "single_select": false,
+                        "title": "Run type",
+                        "variable_name": "run_types",
+                        "variable_type": "values"
+                    },
+                    "order": 0,
+                    "type": "esqlControl",
+                    "width": "medium"
+                },
+                "space-control": {
+                    "explicitInput": {
+                        "available_options": [],
+                        "control_type": "VALUES_FROM_QUERY",
+                        "enhancements": {},
+                        "esql_query": "FROM .workflows-executions\n| WHERE startedAt \u003e= ?_tstart AND startedAt \u003c ?_tend\n| STATS BY spaceId\n| SORT spaceId",
+                        "id": "space-control",
+                        "selected_options": [],
+                        "single_select": false,
+                        "title": "Space",
+                        "variable_name": "space_ids",
+                        "variable_type": "values"
+                    },
+                    "order": 1,
+                    "type": "esqlControl",
+                    "width": "medium"
+                }
+            }
+        },
+        "description": "Monitor Elastic Workflows executions, failures, success rates, and duration with ES|QL.",
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "query": {
+                    "language": "kuery",
+                    "query": ""
+                }
+            }
+        },
+        "optionsJSON": {
+            "autoApplyFilters": true,
+            "hidePanelBorders": false,
+            "hidePanelTitles": false,
+            "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
+            "useMargins": true
+        },
+        "panelsJSON": [
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "elastic-workflows-executions-esql": {
+                                    "allowHidden": true,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "elastic-workflows-executions-esql",
+                                    "managed": false,
+                                    "name": ".workflows-executions",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "startedAt",
+                                    "title": ".workflows-executions",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "elastic-workflows-executions-esql",
+                                            "timeField": "startedAt",
+                                            "title": ".workflows-executions"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "total-executions-main": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "executions",
+                                                    "customLabel": true,
+                                                    "fieldName": "executions",
+                                                    "inMetricDimension": true,
+                                                    "label": "Total Executions",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "elastic-workflows-executions-esql",
+                                            "query": {
+                                                "esql": "FROM .workflows-executions\n| WHERE startedAt \u003e= ?_tstart AND startedAt \u003c ?_tend\n| WHERE (?space_ids IS NULL OR MV_INTERSECTS(spaceId, ?space_ids)) AND (?run_types IS NULL OR MV_INTERSECTS(CASE(COALESCE(isTestRun, false), \"test\", \"production\"), ?run_types))\n| STATS executions = COUNT(*)"
+                                            },
+                                            "timeField": "startedAt"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "elastic-workflows-executions-esql",
+                                    "name": "indexpattern-datasource-layer-total-executions-main",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "FROM .workflows-executions\n| WHERE startedAt \u003e= ?_tstart AND startedAt \u003c ?_tend\n| WHERE (?space_ids IS NULL OR MV_INTERSECTS(spaceId, ?space_ids)) AND (?run_types IS NULL OR MV_INTERSECTS(CASE(COALESCE(isTestRun, false), \"test\", \"production\"), ?run_types))\n| STATS executions = COUNT(*)"
+                            },
+                            "visualization": {
+                                "layerId": "total-executions-main",
+                                "layerType": "data",
+                                "metricAccessor": "executions",
+                                "showBar": false,
+                                "subtitle": "",
+                                "valueFontMode": "fit"
+                            }
+                        },
+                        "title": "Total Executions",
+                        "version": 2,
+                        "visualizationType": "lnsMetric"
+                    },
+                    "hide_title": true,
+                    "title": "Total Executions"
+                },
+                "gridData": {
+                    "h": 8,
+                    "i": "total-executions",
+                    "w": 7,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "total-executions",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "elastic-workflows-executions-esql": {
+                                    "allowHidden": true,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "elastic-workflows-executions-esql",
+                                    "managed": false,
+                                    "name": ".workflows-executions",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "startedAt",
+                                    "title": ".workflows-executions",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "elastic-workflows-executions-esql",
+                                            "timeField": "startedAt",
+                                            "title": ".workflows-executions"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "average-duration-main": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "avg_duration_ms",
+                                                    "customLabel": true,
+                                                    "fieldName": "avg_duration_ms",
+                                                    "inMetricDimension": true,
+                                                    "label": "Avg Duration",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "duration",
+                                                            "params": {
+                                                                "decimals": 1,
+                                                                "fromUnit": "milliseconds",
+                                                                "toUnit": "humanizePrecise"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "index": "elastic-workflows-executions-esql",
+                                            "query": {
+                                                "esql": "FROM .workflows-executions\n| WHERE startedAt \u003e= ?_tstart AND startedAt \u003c ?_tend\n| WHERE (?space_ids IS NULL OR MV_INTERSECTS(spaceId, ?space_ids)) AND (?run_types IS NULL OR MV_INTERSECTS(CASE(COALESCE(isTestRun, false), \"test\", \"production\"), ?run_types))\n| STATS avg_duration_ms = AVG(duration)"
+                                            },
+                                            "timeField": "startedAt"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "elastic-workflows-executions-esql",
+                                    "name": "indexpattern-datasource-layer-average-duration-main",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "FROM .workflows-executions\n| WHERE startedAt \u003e= ?_tstart AND startedAt \u003c ?_tend\n| WHERE (?space_ids IS NULL OR MV_INTERSECTS(spaceId, ?space_ids)) AND (?run_types IS NULL OR MV_INTERSECTS(CASE(COALESCE(isTestRun, false), \"test\", \"production\"), ?run_types))\n| STATS avg_duration_ms = AVG(duration)"
+                            },
+                            "visualization": {
+                                "layerId": "average-duration-main",
+                                "layerType": "data",
+                                "metricAccessor": "avg_duration_ms",
+                                "showBar": false,
+                                "subtitle": "",
+                                "valueFontMode": "fit"
+                            }
+                        },
+                        "title": "Avg Duration",
+                        "version": 2,
+                        "visualizationType": "lnsMetric"
+                    },
+                    "hide_title": true,
+                    "title": "Avg Duration"
+                },
+                "gridData": {
+                    "h": 8,
+                    "i": "average-duration",
+                    "w": 7,
+                    "x": 7,
+                    "y": 0
+                },
+                "panelIndex": "average-duration",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "elastic-workflows-executions-esql": {
+                                    "allowHidden": true,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "elastic-workflows-executions-esql",
+                                    "managed": false,
+                                    "name": ".workflows-executions",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "startedAt",
+                                    "title": ".workflows-executions",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "elastic-workflows-executions-esql",
+                                            "timeField": "startedAt",
+                                            "title": ".workflows-executions"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "slowest-execution-main": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "max_duration_ms",
+                                                    "customLabel": true,
+                                                    "fieldName": "max_duration_ms",
+                                                    "inMetricDimension": true,
+                                                    "label": "Longest Execution",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "duration",
+                                                            "params": {
+                                                                "decimals": 1,
+                                                                "fromUnit": "milliseconds",
+                                                                "toUnit": "humanizePrecise"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "index": "elastic-workflows-executions-esql",
+                                            "query": {
+                                                "esql": "FROM .workflows-executions\n| WHERE startedAt \u003e= ?_tstart AND startedAt \u003c ?_tend\n| WHERE (?space_ids IS NULL OR MV_INTERSECTS(spaceId, ?space_ids)) AND (?run_types IS NULL OR MV_INTERSECTS(CASE(COALESCE(isTestRun, false), \"test\", \"production\"), ?run_types))\n| STATS max_duration_ms = MAX(duration)"
+                                            },
+                                            "timeField": "startedAt"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "elastic-workflows-executions-esql",
+                                    "name": "indexpattern-datasource-layer-slowest-execution-main",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "FROM .workflows-executions\n| WHERE startedAt \u003e= ?_tstart AND startedAt \u003c ?_tend\n| WHERE (?space_ids IS NULL OR MV_INTERSECTS(spaceId, ?space_ids)) AND (?run_types IS NULL OR MV_INTERSECTS(CASE(COALESCE(isTestRun, false), \"test\", \"production\"), ?run_types))\n| STATS max_duration_ms = MAX(duration)"
+                            },
+                            "visualization": {
+                                "layerId": "slowest-execution-main",
+                                "layerType": "data",
+                                "metricAccessor": "max_duration_ms",
+                                "showBar": false,
+                                "subtitle": "",
+                                "valueFontMode": "fit"
+                            }
+                        },
+                        "title": "Longest Execution",
+                        "version": 2,
+                        "visualizationType": "lnsMetric"
+                    },
+                    "hide_title": true,
+                    "title": "Longest Execution"
+                },
+                "gridData": {
+                    "h": 8,
+                    "i": "slowest-execution",
+                    "w": 7,
+                    "x": 14,
+                    "y": 0
+                },
+                "panelIndex": "slowest-execution",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "elastic-workflows-executions-esql": {
+                                    "allowHidden": true,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "elastic-workflows-executions-esql",
+                                    "managed": false,
+                                    "name": ".workflows-executions",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "startedAt",
+                                    "title": ".workflows-executions",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "elastic-workflows-executions-esql",
+                                            "timeField": "startedAt",
+                                            "title": ".workflows-executions"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "success-rate-main": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "success_rate",
+                                                    "customLabel": true,
+                                                    "fieldName": "success_rate",
+                                                    "inMetricDimension": true,
+                                                    "label": "Success Rate",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "percent",
+                                                            "params": {
+                                                                "compact": true,
+                                                                "decimals": 1
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "index": "elastic-workflows-executions-esql",
+                                            "query": {
+                                                "esql": "FROM .workflows-executions\n| WHERE startedAt \u003e= ?_tstart AND startedAt \u003c ?_tend\n| WHERE (?space_ids IS NULL OR MV_INTERSECTS(spaceId, ?space_ids)) AND (?run_types IS NULL OR MV_INTERSECTS(CASE(COALESCE(isTestRun, false), \"test\", \"production\"), ?run_types))\n| STATS total = COUNT(*) WHERE status IN (\"completed\", \"failed\", \"cancelled\", \"timed_out\", \"skipped\"), completed = COUNT(*) WHERE status == \"completed\"\n| EVAL success_rate = CASE(total \u003e 0, TO_DOUBLE(completed) / total, 0.0)\n| KEEP success_rate"
+                                            },
+                                            "timeField": "startedAt"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "elastic-workflows-executions-esql",
+                                    "name": "indexpattern-datasource-layer-success-rate-main",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "FROM .workflows-executions\n| WHERE startedAt \u003e= ?_tstart AND startedAt \u003c ?_tend\n| WHERE (?space_ids IS NULL OR MV_INTERSECTS(spaceId, ?space_ids)) AND (?run_types IS NULL OR MV_INTERSECTS(CASE(COALESCE(isTestRun, false), \"test\", \"production\"), ?run_types))\n| STATS total = COUNT(*) WHERE status IN (\"completed\", \"failed\", \"cancelled\", \"timed_out\", \"skipped\"), completed = COUNT(*) WHERE status == \"completed\"\n| EVAL success_rate = CASE(total \u003e 0, TO_DOUBLE(completed) / total, 0.0)\n| KEEP success_rate"
+                            },
+                            "visualization": {
+                                "layerId": "success-rate-main",
+                                "layerType": "data",
+                                "metricAccessor": "success_rate",
+                                "showBar": false,
+                                "subtitle": "",
+                                "valueFontMode": "fit"
+                            }
+                        },
+                        "title": "Success Rate",
+                        "version": 2,
+                        "visualizationType": "lnsMetric"
+                    },
+                    "hide_title": true,
+                    "title": "Success Rate"
+                },
+                "gridData": {
+                    "h": 8,
+                    "i": "success-rate",
+                    "w": 9,
+                    "x": 21,
+                    "y": 0
+                },
+                "panelIndex": "success-rate",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "elastic-workflows-executions-esql": {
+                                    "allowHidden": true,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "elastic-workflows-executions-esql",
+                                    "managed": false,
+                                    "name": ".workflows-executions",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "startedAt",
+                                    "title": ".workflows-executions",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "elastic-workflows-executions-esql",
+                                            "timeField": "startedAt",
+                                            "title": ".workflows-executions"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "timed-out-count-main": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "timed_out",
+                                                    "customLabel": true,
+                                                    "fieldName": "timed_out",
+                                                    "inMetricDimension": true,
+                                                    "label": "Timed Out",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "elastic-workflows-executions-esql",
+                                            "query": {
+                                                "esql": "FROM .workflows-executions\n| WHERE startedAt \u003e= ?_tstart AND startedAt \u003c ?_tend\n| WHERE (?space_ids IS NULL OR MV_INTERSECTS(spaceId, ?space_ids)) AND (?run_types IS NULL OR MV_INTERSECTS(CASE(COALESCE(isTestRun, false), \"test\", \"production\"), ?run_types))\n| WHERE status == \"timed_out\"\n| STATS timed_out = COUNT(*)"
+                                            },
+                                            "timeField": "startedAt"
+                                        },
+                                        "timed-out-count-trend": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "timed_out",
+                                                    "customLabel": true,
+                                                    "fieldName": "timed_out",
+                                                    "inMetricDimension": true,
+                                                    "label": "Timed Out",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "time_bucket",
+                                                    "customLabel": true,
+                                                    "fieldName": "time_bucket",
+                                                    "label": "Time",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "elastic-workflows-executions-esql",
+                                            "query": {
+                                                "esql": "FROM .workflows-executions\n| WHERE startedAt \u003e= ?_tstart AND startedAt \u003c ?_tend\n| WHERE (?space_ids IS NULL OR MV_INTERSECTS(spaceId, ?space_ids)) AND (?run_types IS NULL OR MV_INTERSECTS(CASE(COALESCE(isTestRun, false), \"test\", \"production\"), ?run_types))\n| WHERE status == \"timed_out\"\n| STATS timed_out = COUNT(*) BY time_bucket = BUCKET(startedAt, 50, ?_tstart, ?_tend)\n| SORT time_bucket"
+                                            },
+                                            "timeField": "startedAt"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "elastic-workflows-executions-esql",
+                                    "name": "indexpattern-datasource-layer-timed-out-count-main",
+                                    "type": "index-pattern"
+                                },
+                                {
+                                    "id": "elastic-workflows-executions-esql",
+                                    "name": "indexpattern-datasource-layer-timed-out-count-trend",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "FROM .workflows-executions\n| WHERE startedAt \u003e= ?_tstart AND startedAt \u003c ?_tend\n| WHERE (?space_ids IS NULL OR MV_INTERSECTS(spaceId, ?space_ids)) AND (?run_types IS NULL OR MV_INTERSECTS(CASE(COALESCE(isTestRun, false), \"test\", \"production\"), ?run_types))\n| WHERE status == \"timed_out\"\n| STATS timed_out = COUNT(*)"
+                            },
+                            "visualization": {
+                                "applyColorTo": "background",
+                                "color": "#FCD883",
+                                "layerId": "timed-out-count-main",
+                                "layerType": "data",
+                                "metricAccessor": "timed_out",
+                                "showBar": false,
+                                "subtitle": "",
+                                "trendlineLayerId": "timed-out-count-trend",
+                                "trendlineLayerType": "metricTrendline",
+                                "trendlineMetricAccessor": "timed_out",
+                                "trendlineTimeAccessor": "time_bucket",
+                                "valueFontMode": "fit"
+                            }
+                        },
+                        "title": "Timed Out",
+                        "version": 2,
+                        "visualizationType": "lnsMetric"
+                    },
+                    "hide_title": true,
+                    "title": "Timed Out"
+                },
+                "gridData": {
+                    "h": 8,
+                    "i": "timed-out-count",
+                    "w": 9,
+                    "x": 30,
+                    "y": 0
+                },
+                "panelIndex": "timed-out-count",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "elastic-workflows-executions-esql": {
+                                    "allowHidden": true,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "elastic-workflows-executions-esql",
+                                    "managed": false,
+                                    "name": ".workflows-executions",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "startedAt",
+                                    "title": ".workflows-executions",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "elastic-workflows-executions-esql",
+                                            "timeField": "startedAt",
+                                            "title": ".workflows-executions"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "failure-count-main": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "failures",
+                                                    "customLabel": true,
+                                                    "fieldName": "failures",
+                                                    "inMetricDimension": true,
+                                                    "label": "Failures",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "elastic-workflows-executions-esql",
+                                            "query": {
+                                                "esql": "FROM .workflows-executions\n| WHERE startedAt \u003e= ?_tstart AND startedAt \u003c ?_tend\n| WHERE (?space_ids IS NULL OR MV_INTERSECTS(spaceId, ?space_ids)) AND (?run_types IS NULL OR MV_INTERSECTS(CASE(COALESCE(isTestRun, false), \"test\", \"production\"), ?run_types))\n| WHERE status IN (\"failed\", \"timed_out\")\n| STATS failures = COUNT(*)"
+                                            },
+                                            "timeField": "startedAt"
+                                        },
+                                        "failure-count-trend": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "failures",
+                                                    "customLabel": true,
+                                                    "fieldName": "failures",
+                                                    "inMetricDimension": true,
+                                                    "label": "Failures",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "time_bucket",
+                                                    "customLabel": true,
+                                                    "fieldName": "time_bucket",
+                                                    "label": "Time",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "elastic-workflows-executions-esql",
+                                            "query": {
+                                                "esql": "FROM .workflows-executions\n| WHERE startedAt \u003e= ?_tstart AND startedAt \u003c ?_tend\n| WHERE (?space_ids IS NULL OR MV_INTERSECTS(spaceId, ?space_ids)) AND (?run_types IS NULL OR MV_INTERSECTS(CASE(COALESCE(isTestRun, false), \"test\", \"production\"), ?run_types))\n| WHERE status IN (\"failed\", \"timed_out\")\n| STATS failures = COUNT(*) BY time_bucket = BUCKET(startedAt, 50, ?_tstart, ?_tend)\n| SORT time_bucket"
+                                            },
+                                            "timeField": "startedAt"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "elastic-workflows-executions-esql",
+                                    "name": "indexpattern-datasource-layer-failure-count-main",
+                                    "type": "index-pattern"
+                                },
+                                {
+                                    "id": "elastic-workflows-executions-esql",
+                                    "name": "indexpattern-datasource-layer-failure-count-trend",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "FROM .workflows-executions\n| WHERE startedAt \u003e= ?_tstart AND startedAt \u003c ?_tend\n| WHERE (?space_ids IS NULL OR MV_INTERSECTS(spaceId, ?space_ids)) AND (?run_types IS NULL OR MV_INTERSECTS(CASE(COALESCE(isTestRun, false), \"test\", \"production\"), ?run_types))\n| WHERE status IN (\"failed\", \"timed_out\")\n| STATS failures = COUNT(*)"
+                            },
+                            "visualization": {
+                                "applyColorTo": "background",
+                                "color": "#BD271E",
+                                "layerId": "failure-count-main",
+                                "layerType": "data",
+                                "metricAccessor": "failures",
+                                "showBar": false,
+                                "subtitle": "",
+                                "trendlineLayerId": "failure-count-trend",
+                                "trendlineLayerType": "metricTrendline",
+                                "trendlineMetricAccessor": "failures",
+                                "trendlineTimeAccessor": "time_bucket",
+                                "valueFontMode": "fit"
+                            }
+                        },
+                        "title": "Failures",
+                        "version": 2,
+                        "visualizationType": "lnsMetric"
+                    },
+                    "hide_title": true,
+                    "title": "Failures"
+                },
+                "gridData": {
+                    "h": 8,
+                    "i": "failure-count",
+                    "w": 9,
+                    "x": 39,
+                    "y": 0
+                },
+                "panelIndex": "failure-count",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "elastic-workflows-executions-esql": {
+                                    "allowHidden": true,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "elastic-workflows-executions-esql",
+                                    "managed": false,
+                                    "name": ".workflows-executions",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "startedAt",
+                                    "title": ".workflows-executions",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "elastic-workflows-executions-esql",
+                                            "timeField": "startedAt",
+                                            "title": ".workflows-executions"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "executions-over-time-layer": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "executions",
+                                                    "customLabel": true,
+                                                    "fieldName": "executions",
+                                                    "inMetricDimension": true,
+                                                    "label": "Executions",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "time_bucket",
+                                                    "customLabel": true,
+                                                    "fieldName": "time_bucket",
+                                                    "label": "Time",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "workflowId",
+                                                    "customLabel": true,
+                                                    "fieldName": "workflowId",
+                                                    "label": "Workflow",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "elastic-workflows-executions-esql",
+                                            "query": {
+                                                "esql": "FROM .workflows-executions\n| WHERE startedAt \u003e= ?_tstart AND startedAt \u003c ?_tend\n| WHERE (?space_ids IS NULL OR MV_INTERSECTS(spaceId, ?space_ids)) AND (?run_types IS NULL OR MV_INTERSECTS(CASE(COALESCE(isTestRun, false), \"test\", \"production\"), ?run_types))\n| STATS executions = COUNT(*) BY time_bucket = BUCKET(startedAt, 50, ?_tstart, ?_tend), workflowId\n| SORT time_bucket\n| LIMIT 10000"
+                                            },
+                                            "timeField": "startedAt"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "elastic-workflows-executions-esql",
+                                    "name": "indexpattern-datasource-layer-executions-over-time-layer",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "FROM .workflows-executions\n| WHERE startedAt \u003e= ?_tstart AND startedAt \u003c ?_tend\n| WHERE (?space_ids IS NULL OR MV_INTERSECTS(spaceId, ?space_ids)) AND (?run_types IS NULL OR MV_INTERSECTS(CASE(COALESCE(isTestRun, false), \"test\", \"production\"), ?run_types))\n| STATS executions = COUNT(*) BY time_bucket = BUCKET(startedAt, 50, ?_tstart, ?_tend), workflowId\n| SORT time_bucket\n| LIMIT 10000"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": false
+                                },
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "executions"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "elastic_line_optimized",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "executions-over-time-layer",
+                                        "layerType": "data",
+                                        "seriesType": "bar_stacked",
+                                        "splitAccessors": [
+                                            "workflowId"
+                                        ],
+                                        "xAccessor": "time_bucket"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": false,
+                                    "position": "bottom"
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                }
+                            }
+                        },
+                        "title": "Executions Over Time",
+                        "version": 2,
+                        "visualizationType": "lnsXY"
+                    },
+                    "hide_title": false,
+                    "title": "Executions Over Time"
+                },
+                "gridData": {
+                    "h": 14,
+                    "i": "executions-over-time",
+                    "w": 32,
+                    "x": 0,
+                    "y": 8
+                },
+                "panelIndex": "executions-over-time",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "elastic-workflows-executions-esql": {
+                                    "allowHidden": true,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "elastic-workflows-executions-esql",
+                                    "managed": false,
+                                    "name": ".workflows-executions",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "startedAt",
+                                    "title": ".workflows-executions",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "elastic-workflows-executions-esql",
+                                            "timeField": "startedAt",
+                                            "title": ".workflows-executions"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "trigger-breakdown-layer": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "executions",
+                                                    "customLabel": true,
+                                                    "fieldName": "executions",
+                                                    "inMetricDimension": true,
+                                                    "label": "Executions",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "triggeredBy",
+                                                    "customLabel": true,
+                                                    "fieldName": "triggeredBy",
+                                                    "label": "Trigger",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "elastic-workflows-executions-esql",
+                                            "query": {
+                                                "esql": "FROM .workflows-executions\n| WHERE startedAt \u003e= ?_tstart AND startedAt \u003c ?_tend\n| WHERE (?space_ids IS NULL OR MV_INTERSECTS(spaceId, ?space_ids)) AND (?run_types IS NULL OR MV_INTERSECTS(CASE(COALESCE(isTestRun, false), \"test\", \"production\"), ?run_types))\n| STATS executions = COUNT(*) BY triggeredBy\n| SORT executions DESC\n| LIMIT 10"
+                                            },
+                                            "timeField": "startedAt"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "elastic-workflows-executions-esql",
+                                    "name": "indexpattern-datasource-layer-trigger-breakdown-layer",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "FROM .workflows-executions\n| WHERE startedAt \u003e= ?_tstart AND startedAt \u003c ?_tend\n| WHERE (?space_ids IS NULL OR MV_INTERSECTS(spaceId, ?space_ids)) AND (?run_types IS NULL OR MV_INTERSECTS(CASE(COALESCE(isTestRun, false), \"test\", \"production\"), ?run_types))\n| STATS executions = COUNT(*) BY triggeredBy\n| SORT executions DESC\n| LIMIT 10"
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "allowMultipleMetrics": false,
+                                        "categoryDisplay": "default",
+                                        "collapseFns": {},
+                                        "layerId": "trigger-breakdown-layer",
+                                        "layerType": "data",
+                                        "legendDisplay": "default",
+                                        "metrics": [
+                                            "executions"
+                                        ],
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "triggeredBy"
+                                        ]
+                                    }
+                                ],
+                                "shape": "treemap"
+                            }
+                        },
+                        "title": "Trigger Breakdown",
+                        "version": 2,
+                        "visualizationType": "lnsPie"
+                    },
+                    "hide_title": false,
+                    "title": "Trigger Breakdown"
+                },
+                "gridData": {
+                    "h": 14,
+                    "i": "trigger-breakdown",
+                    "w": 16,
+                    "x": 32,
+                    "y": 8
+                },
+                "panelIndex": "trigger-breakdown",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "elastic-workflows-executions-esql": {
+                                    "allowHidden": true,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "elastic-workflows-executions-esql",
+                                    "managed": false,
+                                    "name": ".workflows-executions",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "startedAt",
+                                    "title": ".workflows-executions",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "elastic-workflows-executions-esql",
+                                            "timeField": "startedAt",
+                                            "title": ".workflows-executions"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "failure-rate-by-workflow-layer": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "time_bucket",
+                                                    "customLabel": true,
+                                                    "fieldName": "time_bucket",
+                                                    "label": "Time",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "workflowId",
+                                                    "customLabel": true,
+                                                    "fieldName": "workflowId",
+                                                    "label": "Workflow",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "failure_rate",
+                                                    "customLabel": true,
+                                                    "fieldName": "failure_rate",
+                                                    "inMetricDimension": true,
+                                                    "label": "Failure Rate",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "percent",
+                                                            "params": {
+                                                                "compact": true,
+                                                                "decimals": 1
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "index": "elastic-workflows-executions-esql",
+                                            "query": {
+                                                "esql": "FROM .workflows-executions\n| WHERE startedAt \u003e= ?_tstart AND startedAt \u003c ?_tend\n| WHERE (?space_ids IS NULL OR MV_INTERSECTS(spaceId, ?space_ids)) AND (?run_types IS NULL OR MV_INTERSECTS(CASE(COALESCE(isTestRun, false), \"test\", \"production\"), ?run_types))\n| STATS total = COUNT(*) WHERE status IN (\"completed\", \"failed\", \"cancelled\", \"timed_out\", \"skipped\"), failures = COUNT(*) WHERE status IN (\"failed\", \"timed_out\") BY time_bucket = BUCKET(startedAt, 50, ?_tstart, ?_tend), workflowId\n| EVAL failure_rate = CASE(total \u003e 0, TO_DOUBLE(failures) / total, 0.0)\n| KEEP time_bucket, workflowId, failure_rate\n| SORT time_bucket\n| LIMIT 10000"
+                                            },
+                                            "timeField": "startedAt"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "elastic-workflows-executions-esql",
+                                    "name": "indexpattern-datasource-layer-failure-rate-by-workflow-layer",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "FROM .workflows-executions\n| WHERE startedAt \u003e= ?_tstart AND startedAt \u003c ?_tend\n| WHERE (?space_ids IS NULL OR MV_INTERSECTS(spaceId, ?space_ids)) AND (?run_types IS NULL OR MV_INTERSECTS(CASE(COALESCE(isTestRun, false), \"test\", \"production\"), ?run_types))\n| STATS total = COUNT(*) WHERE status IN (\"completed\", \"failed\", \"cancelled\", \"timed_out\", \"skipped\"), failures = COUNT(*) WHERE status IN (\"failed\", \"timed_out\") BY time_bucket = BUCKET(startedAt, 50, ?_tstart, ?_tend), workflowId\n| EVAL failure_rate = CASE(total \u003e 0, TO_DOUBLE(failures) / total, 0.0)\n| KEEP time_bucket, workflowId, failure_rate\n| SORT time_bucket\n| LIMIT 10000"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": false
+                                },
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "failure_rate"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "elastic_line_optimized",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "failure-rate-by-workflow-layer",
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "splitAccessors": [
+                                            "workflowId"
+                                        ],
+                                        "xAccessor": "time_bucket"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": false,
+                                    "position": "bottom"
+                                },
+                                "preferredSeriesType": "line",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                }
+                            }
+                        },
+                        "title": "Failure Rate by Workflow",
+                        "version": 2,
+                        "visualizationType": "lnsXY"
+                    },
+                    "hide_title": false,
+                    "title": "Failure Rate by Workflow"
+                },
+                "gridData": {
+                    "h": 14,
+                    "i": "failure-rate-by-workflow",
+                    "w": 24,
+                    "x": 0,
+                    "y": 22
+                },
+                "panelIndex": "failure-rate-by-workflow",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "elastic-workflows-executions-esql": {
+                                    "allowHidden": true,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "elastic-workflows-executions-esql",
+                                    "managed": false,
+                                    "name": ".workflows-executions",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "startedAt",
+                                    "title": ".workflows-executions",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "elastic-workflows-executions-esql",
+                                            "timeField": "startedAt",
+                                            "title": ".workflows-executions"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "duration-distribution-layer": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "under_1s",
+                                                    "customLabel": true,
+                                                    "fieldName": "under_1s",
+                                                    "inMetricDimension": true,
+                                                    "label": "\u003c 1s",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "between_1s_and_5s",
+                                                    "customLabel": true,
+                                                    "fieldName": "between_1s_and_5s",
+                                                    "inMetricDimension": true,
+                                                    "label": "1s - 5s",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "between_5s_and_30s",
+                                                    "customLabel": true,
+                                                    "fieldName": "between_5s_and_30s",
+                                                    "inMetricDimension": true,
+                                                    "label": "5s - 30s",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "over_30s",
+                                                    "customLabel": true,
+                                                    "fieldName": "over_30s",
+                                                    "inMetricDimension": true,
+                                                    "label": "\u003e 30s",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "time_bucket",
+                                                    "customLabel": true,
+                                                    "fieldName": "time_bucket",
+                                                    "label": "Time",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "elastic-workflows-executions-esql",
+                                            "query": {
+                                                "esql": "FROM .workflows-executions\n| WHERE startedAt \u003e= ?_tstart AND startedAt \u003c ?_tend\n| WHERE (?space_ids IS NULL OR MV_INTERSECTS(spaceId, ?space_ids)) AND (?run_types IS NULL OR MV_INTERSECTS(CASE(COALESCE(isTestRun, false), \"test\", \"production\"), ?run_types))\n| STATS under_1s = COUNT(*) WHERE duration \u003c 1000, between_1s_and_5s = COUNT(*) WHERE duration \u003e= 1000 AND duration \u003c 5000, between_5s_and_30s = COUNT(*) WHERE duration \u003e= 5000 AND duration \u003c 30000, over_30s = COUNT(*) WHERE duration \u003e= 30000 BY time_bucket = BUCKET(startedAt, 50, ?_tstart, ?_tend)\n| SORT time_bucket"
+                                            },
+                                            "timeField": "startedAt"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "elastic-workflows-executions-esql",
+                                    "name": "indexpattern-datasource-layer-duration-distribution-layer",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "FROM .workflows-executions\n| WHERE startedAt \u003e= ?_tstart AND startedAt \u003c ?_tend\n| WHERE (?space_ids IS NULL OR MV_INTERSECTS(spaceId, ?space_ids)) AND (?run_types IS NULL OR MV_INTERSECTS(CASE(COALESCE(isTestRun, false), \"test\", \"production\"), ?run_types))\n| STATS under_1s = COUNT(*) WHERE duration \u003c 1000, between_1s_and_5s = COUNT(*) WHERE duration \u003e= 1000 AND duration \u003c 5000, between_5s_and_30s = COUNT(*) WHERE duration \u003e= 5000 AND duration \u003c 30000, over_30s = COUNT(*) WHERE duration \u003e= 30000 BY time_bucket = BUCKET(startedAt, 50, ?_tstart, ?_tend)\n| SORT time_bucket"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": false
+                                },
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "under_1s",
+                                            "between_1s_and_5s",
+                                            "between_5s_and_30s",
+                                            "over_30s"
+                                        ],
+                                        "layerId": "duration-distribution-layer",
+                                        "layerType": "data",
+                                        "seriesType": "bar_stacked",
+                                        "xAccessor": "time_bucket",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "color": "#23be8f",
+                                                "forAccessor": "under_1s"
+                                            },
+                                            {
+                                                "axisMode": "left",
+                                                "color": "#fcd279",
+                                                "forAccessor": "between_1s_and_5s"
+                                            },
+                                            {
+                                                "axisMode": "left",
+                                                "color": "#f5a623",
+                                                "forAccessor": "between_5s_and_30s"
+                                            },
+                                            {
+                                                "axisMode": "left",
+                                                "color": "#BD271E",
+                                                "forAccessor": "over_30s"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": false,
+                                    "position": "bottom"
+                                },
+                                "preferredSeriesType": "bar_stacked",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                }
+                            }
+                        },
+                        "title": "Duration Distribution",
+                        "version": 2,
+                        "visualizationType": "lnsXY"
+                    },
+                    "hide_title": false,
+                    "title": "Duration Distribution"
+                },
+                "gridData": {
+                    "h": 14,
+                    "i": "duration-distribution",
+                    "w": 24,
+                    "x": 24,
+                    "y": 22
+                },
+                "panelIndex": "duration-distribution",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "elastic-workflows-executions-esql": {
+                                    "allowHidden": true,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "elastic-workflows-executions-esql",
+                                    "managed": false,
+                                    "name": ".workflows-executions",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "startedAt",
+                                    "title": ".workflows-executions",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "elastic-workflows-executions-esql",
+                                            "timeField": "startedAt",
+                                            "title": ".workflows-executions"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "average-duration-by-workflow-layer": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "avg_duration_ms",
+                                                    "customLabel": true,
+                                                    "fieldName": "avg_duration_ms",
+                                                    "inMetricDimension": true,
+                                                    "label": "Avg Duration",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "duration",
+                                                            "params": {
+                                                                "decimals": 1,
+                                                                "fromUnit": "milliseconds",
+                                                                "toUnit": "humanizePrecise"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "time_bucket",
+                                                    "customLabel": true,
+                                                    "fieldName": "time_bucket",
+                                                    "label": "Time",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "workflowId",
+                                                    "customLabel": true,
+                                                    "fieldName": "workflowId",
+                                                    "label": "Workflow",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "elastic-workflows-executions-esql",
+                                            "query": {
+                                                "esql": "FROM .workflows-executions\n| WHERE startedAt \u003e= ?_tstart AND startedAt \u003c ?_tend\n| WHERE (?space_ids IS NULL OR MV_INTERSECTS(spaceId, ?space_ids)) AND (?run_types IS NULL OR MV_INTERSECTS(CASE(COALESCE(isTestRun, false), \"test\", \"production\"), ?run_types))\n| STATS avg_duration_ms = AVG(duration) BY time_bucket = BUCKET(startedAt, 50, ?_tstart, ?_tend), workflowId\n| SORT time_bucket\n| LIMIT 10000"
+                                            },
+                                            "timeField": "startedAt"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "elastic-workflows-executions-esql",
+                                    "name": "indexpattern-datasource-layer-average-duration-by-workflow-layer",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "FROM .workflows-executions\n| WHERE startedAt \u003e= ?_tstart AND startedAt \u003c ?_tend\n| WHERE (?space_ids IS NULL OR MV_INTERSECTS(spaceId, ?space_ids)) AND (?run_types IS NULL OR MV_INTERSECTS(CASE(COALESCE(isTestRun, false), \"test\", \"production\"), ?run_types))\n| STATS avg_duration_ms = AVG(duration) BY time_bucket = BUCKET(startedAt, 50, ?_tstart, ?_tend), workflowId\n| SORT time_bucket\n| LIMIT 10000"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": false
+                                },
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "avg_duration_ms"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "elastic_line_optimized",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "average-duration-by-workflow-layer",
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "splitAccessors": [
+                                            "workflowId"
+                                        ],
+                                        "xAccessor": "time_bucket"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": false,
+                                    "position": "bottom"
+                                },
+                                "preferredSeriesType": "line",
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                }
+                            }
+                        },
+                        "title": "Avg Duration by Workflow",
+                        "version": 2,
+                        "visualizationType": "lnsXY"
+                    },
+                    "hide_title": false,
+                    "title": "Avg Duration by Workflow"
+                },
+                "gridData": {
+                    "h": 14,
+                    "i": "average-duration-by-workflow",
+                    "w": 24,
+                    "x": 0,
+                    "y": 36
+                },
+                "panelIndex": "average-duration-by-workflow",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "elastic-workflows-executions-esql": {
+                                    "allowHidden": true,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "elastic-workflows-executions-esql",
+                                    "managed": false,
+                                    "name": ".workflows-executions",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "startedAt",
+                                    "title": ".workflows-executions",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "elastic-workflows-executions-esql",
+                                            "timeField": "startedAt",
+                                            "title": ".workflows-executions"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "status-breakdown-layer": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "executions",
+                                                    "customLabel": true,
+                                                    "fieldName": "executions",
+                                                    "inMetricDimension": true,
+                                                    "label": "Executions",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "status",
+                                                    "customLabel": true,
+                                                    "fieldName": "status",
+                                                    "label": "Status",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "elastic-workflows-executions-esql",
+                                            "query": {
+                                                "esql": "FROM .workflows-executions\n| WHERE startedAt \u003e= ?_tstart AND startedAt \u003c ?_tend\n| WHERE (?space_ids IS NULL OR MV_INTERSECTS(spaceId, ?space_ids)) AND (?run_types IS NULL OR MV_INTERSECTS(CASE(COALESCE(isTestRun, false), \"test\", \"production\"), ?run_types))\n| STATS executions = COUNT(*) BY status\n| SORT executions DESC"
+                                            },
+                                            "timeField": "startedAt"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "elastic-workflows-executions-esql",
+                                    "name": "indexpattern-datasource-layer-status-breakdown-layer",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "FROM .workflows-executions\n| WHERE startedAt \u003e= ?_tstart AND startedAt \u003c ?_tend\n| WHERE (?space_ids IS NULL OR MV_INTERSECTS(spaceId, ?space_ids)) AND (?run_types IS NULL OR MV_INTERSECTS(CASE(COALESCE(isTestRun, false), \"test\", \"production\"), ?run_types))\n| STATS executions = COUNT(*) BY status\n| SORT executions DESC"
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "allowMultipleMetrics": false,
+                                        "categoryDisplay": "default",
+                                        "collapseFns": {},
+                                        "layerId": "status-breakdown-layer",
+                                        "layerType": "data",
+                                        "legendDisplay": "default",
+                                        "metrics": [
+                                            "executions"
+                                        ],
+                                        "numberDisplay": "percent",
+                                        "primaryGroups": [
+                                            "status"
+                                        ]
+                                    }
+                                ],
+                                "shape": "treemap"
+                            }
+                        },
+                        "title": "Status Breakdown",
+                        "version": 2,
+                        "visualizationType": "lnsPie"
+                    },
+                    "hide_title": false,
+                    "title": "Status Breakdown"
+                },
+                "gridData": {
+                    "h": 14,
+                    "i": "status-breakdown",
+                    "w": 12,
+                    "x": 24,
+                    "y": 36
+                },
+                "panelIndex": "status-breakdown",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "elastic-workflows-executions-esql": {
+                                    "allowHidden": true,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "elastic-workflows-executions-esql",
+                                    "managed": false,
+                                    "name": ".workflows-executions",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "startedAt",
+                                    "title": ".workflows-executions",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "elastic-workflows-executions-esql",
+                                            "timeField": "startedAt",
+                                            "title": ".workflows-executions"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "slowest-workflows-layer": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "p95_duration_ms",
+                                                    "customLabel": true,
+                                                    "fieldName": "p95_duration_ms",
+                                                    "inMetricDimension": true,
+                                                    "label": "p95 Duration",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "duration",
+                                                            "params": {
+                                                                "decimals": 1,
+                                                                "fromUnit": "milliseconds",
+                                                                "toUnit": "humanizePrecise"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "runs",
+                                                    "customLabel": true,
+                                                    "fieldName": "runs",
+                                                    "inMetricDimension": true,
+                                                    "label": "Runs",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "workflowId",
+                                                    "customLabel": true,
+                                                    "fieldName": "workflowId",
+                                                    "label": "Workflow",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "elastic-workflows-executions-esql",
+                                            "query": {
+                                                "esql": "FROM .workflows-executions\n| WHERE startedAt \u003e= ?_tstart AND startedAt \u003c ?_tend\n| WHERE (?space_ids IS NULL OR MV_INTERSECTS(spaceId, ?space_ids)) AND (?run_types IS NULL OR MV_INTERSECTS(CASE(COALESCE(isTestRun, false), \"test\", \"production\"), ?run_types))\n| STATS p95_duration_ms = PERCENTILE(duration, 95), runs = COUNT(*) BY workflowId\n| SORT p95_duration_ms DESC\n| LIMIT 10"
+                                            },
+                                            "timeField": "startedAt"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "elastic-workflows-executions-esql",
+                                    "name": "indexpattern-datasource-layer-slowest-workflows-layer",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "FROM .workflows-executions\n| WHERE startedAt \u003e= ?_tstart AND startedAt \u003c ?_tend\n| WHERE (?space_ids IS NULL OR MV_INTERSECTS(spaceId, ?space_ids)) AND (?run_types IS NULL OR MV_INTERSECTS(CASE(COALESCE(isTestRun, false), \"test\", \"production\"), ?run_types))\n| STATS p95_duration_ms = PERCENTILE(duration, 95), runs = COUNT(*) BY workflowId\n| SORT p95_duration_ms DESC\n| LIMIT 10"
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "p95_duration_ms",
+                                        "isMetric": true,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "runs",
+                                        "isMetric": true,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "workflowId",
+                                        "isMetric": false,
+                                        "isTransposed": false
+                                    }
+                                ],
+                                "layerId": "slowest-workflows-layer",
+                                "layerType": "data",
+                                "paging": {
+                                    "enabled": true,
+                                    "size": 20
+                                }
+                            }
+                        },
+                        "title": "Slowest Workflows",
+                        "version": 2,
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "hide_title": false,
+                    "title": "Slowest Workflows"
+                },
+                "gridData": {
+                    "h": 14,
+                    "i": "slowest-workflows",
+                    "w": 12,
+                    "x": 36,
+                    "y": 36
+                },
+                "panelIndex": "slowest-workflows",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "elastic-workflows-executions-esql": {
+                                    "allowHidden": true,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "elastic-workflows-executions-esql",
+                                    "managed": false,
+                                    "name": ".workflows-executions",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "startedAt",
+                                    "title": ".workflows-executions",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "elastic-workflows-executions-esql",
+                                            "timeField": "startedAt",
+                                            "title": ".workflows-executions"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "recent-failures-layer": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "workflowId",
+                                                    "customLabel": true,
+                                                    "fieldName": "workflowId",
+                                                    "label": "Workflow",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "spaceId",
+                                                    "customLabel": true,
+                                                    "fieldName": "spaceId",
+                                                    "label": "Space",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "status",
+                                                    "customLabel": true,
+                                                    "fieldName": "status",
+                                                    "label": "Status",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "startedAt",
+                                                    "customLabel": true,
+                                                    "fieldName": "startedAt",
+                                                    "label": "Started",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "duration",
+                                                    "customLabel": true,
+                                                    "fieldName": "duration",
+                                                    "inMetricDimension": true,
+                                                    "label": "Duration",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "duration",
+                                                            "params": {
+                                                                "decimals": 1,
+                                                                "fromUnit": "milliseconds",
+                                                                "toUnit": "humanizePrecise"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "index": "elastic-workflows-executions-esql",
+                                            "query": {
+                                                "esql": "FROM .workflows-executions\n| WHERE startedAt \u003e= ?_tstart AND startedAt \u003c ?_tend\n| WHERE (?space_ids IS NULL OR MV_INTERSECTS(spaceId, ?space_ids)) AND (?run_types IS NULL OR MV_INTERSECTS(CASE(COALESCE(isTestRun, false), \"test\", \"production\"), ?run_types))\n| WHERE status IN (\"failed\", \"timed_out\")\n| SORT startedAt DESC\n| KEEP workflowId, spaceId, status, startedAt, duration\n| LIMIT 20"
+                                            },
+                                            "timeField": "startedAt"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "elastic-workflows-executions-esql",
+                                    "name": "indexpattern-datasource-layer-recent-failures-layer",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "FROM .workflows-executions\n| WHERE startedAt \u003e= ?_tstart AND startedAt \u003c ?_tend\n| WHERE (?space_ids IS NULL OR MV_INTERSECTS(spaceId, ?space_ids)) AND (?run_types IS NULL OR MV_INTERSECTS(CASE(COALESCE(isTestRun, false), \"test\", \"production\"), ?run_types))\n| WHERE status IN (\"failed\", \"timed_out\")\n| SORT startedAt DESC\n| KEEP workflowId, spaceId, status, startedAt, duration\n| LIMIT 20"
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "workflowId",
+                                        "isMetric": false,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "spaceId",
+                                        "isMetric": false,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "status",
+                                        "isMetric": false,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "startedAt",
+                                        "isMetric": false,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "duration",
+                                        "isMetric": true,
+                                        "isTransposed": false
+                                    }
+                                ],
+                                "layerId": "recent-failures-layer",
+                                "layerType": "data",
+                                "paging": {
+                                    "enabled": true,
+                                    "size": 20
+                                }
+                            }
+                        },
+                        "title": "Recent Failures",
+                        "version": 2,
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "drilldowns": [
+                        {
+                            "encode_url": true,
+                            "label": "Open workflow",
+                            "open_in_new_tab": true,
+                            "trigger": "on_click_row",
+                            "type": "url_drilldown",
+                            "url": "{{lookup (split kibanaUrl \"/s/\") 0}}/s/{{event.values.[1]}}/app/workflows/{{event.values.[0]}}?tab=executions"
+                        }
+                    ],
+                    "hide_title": false,
+                    "title": "Recent Failures"
+                },
+                "gridData": {
+                    "h": 16,
+                    "i": "recent-failures",
+                    "w": 48,
+                    "x": 0,
+                    "y": 50
+                },
+                "panelIndex": "recent-failures",
+                "type": "lens"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "elastic-workflows-executions-esql": {
+                                    "allowHidden": true,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "elastic-workflows-executions-esql",
+                                    "managed": false,
+                                    "name": ".workflows-executions",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "startedAt",
+                                    "title": ".workflows-executions",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "elastic-workflows-executions-esql",
+                                            "timeField": "startedAt",
+                                            "title": ".workflows-executions"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "per-workflow-summary-layer": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "workflowId",
+                                                    "customLabel": true,
+                                                    "fieldName": "workflowId",
+                                                    "label": "Workflow",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "spaceId",
+                                                    "customLabel": true,
+                                                    "fieldName": "spaceId",
+                                                    "label": "Space",
+                                                    "meta": {
+                                                        "esType": "keyword",
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "executions",
+                                                    "customLabel": true,
+                                                    "fieldName": "executions",
+                                                    "inMetricDimension": true,
+                                                    "label": "Executions",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "failures",
+                                                    "customLabel": true,
+                                                    "fieldName": "failures",
+                                                    "inMetricDimension": true,
+                                                    "label": "Failures",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "completed",
+                                                    "customLabel": true,
+                                                    "fieldName": "completed",
+                                                    "inMetricDimension": true,
+                                                    "label": "Completed",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "success_rate",
+                                                    "customLabel": true,
+                                                    "fieldName": "success_rate",
+                                                    "inMetricDimension": true,
+                                                    "label": "Success Rate",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "percent",
+                                                            "params": {
+                                                                "compact": true,
+                                                                "decimals": 1
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "avg_duration_ms",
+                                                    "customLabel": true,
+                                                    "fieldName": "avg_duration_ms",
+                                                    "inMetricDimension": true,
+                                                    "label": "Avg Duration",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "duration",
+                                                            "params": {
+                                                                "decimals": 1,
+                                                                "fromUnit": "milliseconds",
+                                                                "toUnit": "humanizePrecise"
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "p95_duration_ms",
+                                                    "customLabel": true,
+                                                    "fieldName": "p95_duration_ms",
+                                                    "inMetricDimension": true,
+                                                    "label": "p95 Duration",
+                                                    "meta": {
+                                                        "esType": "double",
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "duration",
+                                                            "params": {
+                                                                "decimals": 1,
+                                                                "fromUnit": "milliseconds",
+                                                                "toUnit": "humanizePrecise"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "index": "elastic-workflows-executions-esql",
+                                            "query": {
+                                                "esql": "FROM .workflows-executions\n| WHERE startedAt \u003e= ?_tstart AND startedAt \u003c ?_tend\n| WHERE (?space_ids IS NULL OR MV_INTERSECTS(spaceId, ?space_ids)) AND (?run_types IS NULL OR MV_INTERSECTS(CASE(COALESCE(isTestRun, false), \"test\", \"production\"), ?run_types))\n| STATS executions = COUNT(*), failures = COUNT(*) WHERE status IN (\"failed\", \"timed_out\"), completed = COUNT(*) WHERE status == \"completed\", avg_duration_ms = AVG(duration), p95_duration_ms = PERCENTILE(duration, 95), finished = COUNT(*) WHERE status IN (\"completed\", \"failed\", \"cancelled\", \"timed_out\", \"skipped\") BY workflowId, spaceId\n| EVAL success_rate = CASE(finished \u003e 0, TO_DOUBLE(completed) / finished, 0.0)\n| KEEP workflowId, spaceId, executions, failures, completed, success_rate, avg_duration_ms, p95_duration_ms\n| SORT executions DESC\n| LIMIT 25"
+                                            },
+                                            "timeField": "startedAt"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "elastic-workflows-executions-esql",
+                                    "name": "indexpattern-datasource-layer-per-workflow-summary-layer",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "FROM .workflows-executions\n| WHERE startedAt \u003e= ?_tstart AND startedAt \u003c ?_tend\n| WHERE (?space_ids IS NULL OR MV_INTERSECTS(spaceId, ?space_ids)) AND (?run_types IS NULL OR MV_INTERSECTS(CASE(COALESCE(isTestRun, false), \"test\", \"production\"), ?run_types))\n| STATS executions = COUNT(*), failures = COUNT(*) WHERE status IN (\"failed\", \"timed_out\"), completed = COUNT(*) WHERE status == \"completed\", avg_duration_ms = AVG(duration), p95_duration_ms = PERCENTILE(duration, 95), finished = COUNT(*) WHERE status IN (\"completed\", \"failed\", \"cancelled\", \"timed_out\", \"skipped\") BY workflowId, spaceId\n| EVAL success_rate = CASE(finished \u003e 0, TO_DOUBLE(completed) / finished, 0.0)\n| KEEP workflowId, spaceId, executions, failures, completed, success_rate, avg_duration_ms, p95_duration_ms\n| SORT executions DESC\n| LIMIT 25"
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "workflowId",
+                                        "isMetric": false,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "spaceId",
+                                        "isMetric": false,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "executions",
+                                        "isMetric": true,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "failures",
+                                        "isMetric": true,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "completed",
+                                        "isMetric": true,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "success_rate",
+                                        "isMetric": true,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "avg_duration_ms",
+                                        "isMetric": true,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "p95_duration_ms",
+                                        "isMetric": true,
+                                        "isTransposed": false
+                                    }
+                                ],
+                                "layerId": "per-workflow-summary-layer",
+                                "layerType": "data",
+                                "paging": {
+                                    "enabled": true,
+                                    "size": 20
+                                }
+                            }
+                        },
+                        "title": "Per-Workflow Summary",
+                        "version": 2,
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "drilldowns": [
+                        {
+                            "encode_url": true,
+                            "label": "Open workflow",
+                            "open_in_new_tab": true,
+                            "trigger": "on_click_row",
+                            "type": "url_drilldown",
+                            "url": "{{lookup (split kibanaUrl \"/s/\") 0}}/s/{{event.values.[1]}}/app/workflows/{{event.values.[0]}}"
+                        }
+                    ],
+                    "hide_title": false,
+                    "title": "Per-Workflow Summary"
+                },
+                "gridData": {
+                    "h": 16,
+                    "i": "per-workflow-summary",
+                    "w": 48,
+                    "x": 0,
+                    "y": 66
+                },
+                "panelIndex": "per-workflow-summary",
+                "type": "lens"
+            }
+        ],
+        "refreshInterval": {
+            "pause": true,
+            "value": 30000
+        },
+        "timeFrom": "now-7d/d",
+        "timeRestore": true,
+        "timeTo": "now",
+        "title": "[Elastic Workflows] Execution Overview"
+    },
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2026-10-01T06:24:14.062Z",
+    "id": "elastic_workflows-8de4b190-2f1a-4c3b-b7a9-31b2c8d4e5f6",
+    "references": [],
+    "type": "dashboard",
+    "typeMigrationVersion": "10.3.0"
+}
