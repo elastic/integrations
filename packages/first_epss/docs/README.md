@@ -21,7 +21,7 @@ EPSS scores are retrieved via the First EPSS API (`https://api.first.org/data/v1
 
 ## Query-time EPSS enrichment (LOOKUP JOIN)
 
-The package ships a `latest` transform that maintains the most recent EPSS score per CVE in the lookup index `logs-first_epss_latest.vulnerability`. The full EPSS catalog is re-ingested on every poll cycle, so the same CVE is re-ingested repeatedly with updated scores; the transform collapses those snapshots into the latest row per CVE, making it the preferred enrichment path.
+The package ships a `latest` transform that maintains the most recent EPSS score per CVE in the lookup index `logs-first_epss_latest.vulnerability`. The full EPSS catalog is re-ingested on every poll cycle, so the same CVE is re-ingested repeatedly with updated scores. The transform collapses those snapshots into the latest row per CVE, making it the preferred enrichment path.
 
 You can enrich vulnerability findings at query time with the ES|QL [`LOOKUP JOIN`](https://www.elastic.co/docs/reference/query-languages/esql/commands/lookup-join) command on `vulnerability.id`:
 
