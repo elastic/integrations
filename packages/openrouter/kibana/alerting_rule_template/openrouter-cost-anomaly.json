@@ -27,6 +27,11 @@
             "active": 1
         },
         "artifacts": {
+            "dashboards": [
+                {
+                    "id": "openrouter-usage-and-cost-overview-e4c812d7-a471-4c93-a58a-6e6e9504c97d"
+                }
+            ],
             "investigation_guide": {
                 "blob": "## Daily Cost Anomaly\n\n## How to read this alert\n\nKibana describes every ES|QL rule alert the same way: \"Document count is 1 in the last 8d for <day>. Alert when greater than 0.\" It only means that the rule query returned one row for this day, so the condition was met. The alert does not show the numbers itself.\n\nTo see them, open the alert in Discover with the link in the alert details (the `kibana.alert.url` field). The query result has the values that triggered the alert: `today_cost` (USD so far today) and `baseline_cost` (average daily USD of the previous days).\n\nFor notifications, add a rule action and use the context variables `{{context.title}}`, `{{context.hits}}` (the result rows with those values) and `{{context.link}}` (Discover link).\n\nFires when the cost of the current day exceeds 1.5x the average daily cost of the previous days in the rule window (8 days, so 7 days of baseline) and is above 10 USD. Today's total grows while the day is polled, so the alert can appear later in the day.\n\n### Triage Steps\n1. Open the OpenRouter Usage & Cost dashboard and review the daily cost trend.\n2. Identify the models and keys behind the spike:\n   `FROM metrics-openrouter.usage-* | WHERE @timestamp >= DATE_TRUNC(1 day, NOW()) | STATS cost = MAX(openrouter.usage.total_usage) BY @timestamp, openrouter.usage.model, openrouter.usage.api_key_id | STATS cost = SUM(cost) BY openrouter.usage.model, openrouter.usage.api_key_id | SORT cost DESC`\n3. Compare request counts and tokens to see whether volume or price per request changed.\n\n### Common Causes\n- A runaway or newly deployed batch workload\n- A switch to a more expensive model\n- A provider routing change that resulted in higher prices\n\n### Tuning\nThe constants are at the top of the query: multiple of the baseline (1.5) and minimum cost (10 USD)."
             }
