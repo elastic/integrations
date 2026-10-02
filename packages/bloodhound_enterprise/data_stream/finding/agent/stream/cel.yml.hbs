@@ -1,0 +1,270 @@
+config_version: 1
+interval: {{interval}}
+{{#if enable_request_tracer}}
+resource.tracer:
+  enabled: {{enable_request_tracer}}
+  filename: "../../logs/cel/http-request-trace-*.ndjson"
+  maxbackups: 5
+{{/if}}
+resource:
+  url: {{base_url}}
+{{#if ssl}}
+  ssl: {{ssl}}
+{{/if}}
+state:
+  token_id: {{token_id}}
+  token_key: {{token_key}}
+  base_url: {{base_url}}
+  selected_environment: {{selected_environment}}
+  bhe_zones: {{bhe_zones}}
+  details_limit: {{details_limit}}
+  step: 1
+  domains: []
+  domain_index: 0
+  tag_index: 0
+  types: []
+  type_index: 0
+  skip: 0
+  want_more: true
+redact:
+  fields:
+    - token_key
+# Collect findings: discover domains, list types, paginate details.
+# HMAC signing is required by the BloodHound API and cannot be done in an ingest pipeline.
+# Parent type/domain/zone are attached when splitting detail rows because those values
+# come from earlier API steps and are not present on the details document.
+program: |-
+  int(state.?step.orValue(1)).as(step,
+    (
+      (has(state.types) && size(state.types) > 0) ?
+        state.types[int(state.?type_index.orValue(0))]
+      :
+        {"type": "", "domain_id": "", "domain_name": "", "tag_id": "", "tag_name": ""}
+    ).as(cur,
+      (
+        (step == 1) ?
+          "/api/v2/available-domains"
+        : (step == 2) ?
+          "/api/v2/domains/" + string(state.domains[int(state.domain_index)].id) + "/available-types?" + {
+            "asset_group_tag_id": [string(state.domains[int(state.domain_index)].tags[int(state.tag_index)].id)],
+          }.format_query()
+        :
+          "/api/v2/domains/" + string(cur.domain_id) + "/details?" + {
+            "finding": [string(cur.type)],
+            "skip": [string(int(state.?skip.orValue(0)))],
+            "limit": [string(int(state.details_limit))],
+            "Accepted": ["eq:false"],
+            "asset_group_tag_id": [string(cur.tag_id)],
+          }.format_query()
+      ).as(uri,
+        now.format("2006-01-02T15:04:05Z07:00").as(ts,
+          state.with(
+            request("GET", state.base_url.trim_right("/") + uri).with({
+              "Header": {
+                "Authorization": ["bhesignature " + state.token_id],
+                "RequestDate": [ts],
+                "Signature": [base64(hmac(bytes(""), "sha256", hmac(ts.substring(0, 13), "sha256", hmac("GET" + uri, "sha256", bytes(state.token_key)))))],
+                "Content-Type": ["application/json"],
+              },
+            }).do_request().as(resp,
+              (int(resp.StatusCode) == 200) ?
+                resp.Body.decode_json().as(body,
+                  (step == 1) ?
+                    (
+                      (has(body.data) && size(body.data) > 0) ?
+                        body.data.map(d, {
+                          "id": string(d.id),
+                          "name": string(d.name),
+                          "tags": (has(d.exposures) && size(d.exposures) > 0) ?
+                            d.exposures.map(e, {"id": string(e.asset_group_tag.id), "name": string(e.asset_group_tag.name)})
+                          :
+                            [{"id": "1", "name": "default"}],
+                        }).as(all_domains,
+                          state.?selected_environment.orValue("").as(env,
+                            state.?bhe_zones.orValue("").as(zones,
+                              (
+                                env == "" || env == "*" || env.lowerAscii() == "all" ||
+                                !all_domains.exists(d, env.contains(string(d.name)))
+                              ).as(env_all,
+                                (
+                                  zones == "" || zones == "*" || zones.lowerAscii() == "all" ||
+                                  !all_domains.exists(d, d.tags.exists(t, zones.contains(string(t.name))))
+                                ).as(zones_all,
+                                  all_domains.filter(d, env_all || env.contains(string(d.name))).map(d, d.with({
+                                    "tags": d.tags.filter(t, zones_all || zones.contains(string(t.name))),
+                                  })).filter(d, size(d.tags) > 0).as(domains,
+                                    (size(domains) > 0) ?
+                                      {
+                                        "step": 2,
+                                        "domains": domains,
+                                        "domain_index": 0,
+                                        "tag_index": 0,
+                                        "types": [],
+                                        "type_index": 0,
+                                        "skip": 0,
+                                        "want_more": true,
+                                        "events": [{"retry": true}],
+                                      }
+                                    :
+                                      {
+                                        "events": {"error": {"message": "GET " + uri + ": no domains after selected_environment/bhe_zones filters"}},
+                                        "want_more": false,
+                                      }
+                                  )
+                                )
+                              )
+                            )
+                          )
+                        )
+                      :
+                        {
+                          "events": {"error": {"message": "GET " + uri + ": no domains found"}},
+                          "want_more": false,
+                        }
+                    )
+                  : (step == 2) ?
+                    (
+                      (has(body.data) ? body.data : ((type(body) == list) ? body : [])).as(raw_types,
+                        (
+                          (type(raw_types) == list) ?
+                            raw_types.map(t, (type(t) == string) ? t : string(t.?finding_type.orValue(t.?id.orValue(t))))
+                          :
+                            []
+                        ).as(type_names,
+                          (
+                            state.types + type_names.map(t, {
+                              "type": t,
+                              "domain_id": string(state.domains[int(state.domain_index)].id),
+                              "domain_name": string(state.domains[int(state.domain_index)].name),
+                              "tag_id": string(state.domains[int(state.domain_index)].tags[int(state.tag_index)].id),
+                              "tag_name": string(state.domains[int(state.domain_index)].tags[int(state.tag_index)].name),
+                            })
+                          ).as(types,
+                            (int(state.tag_index) + 1 < size(state.domains[int(state.domain_index)].tags)) ?
+                              {
+                                "step": 2,
+                                "tag_index": int(state.tag_index) + 1,
+                                "types": types,
+                                "want_more": true,
+                                "events": [{"retry": true}],
+                              }
+                            : (int(state.domain_index) + 1 < size(state.domains)) ?
+                              {
+                                "step": 2,
+                                "domain_index": int(state.domain_index) + 1,
+                                "tag_index": 0,
+                                "types": types,
+                                "want_more": true,
+                                "events": [{"retry": true}],
+                              }
+                            : (size(types) > 0) ?
+                              {
+                                "step": 3,
+                                "types": types,
+                                "type_index": 0,
+                                "skip": 0,
+                                "want_more": true,
+                                "events": [{"retry": true}],
+                              }
+                            :
+                              {
+                                "step": 1,
+                                "want_more": false,
+                                "types": [],
+                                "events": [{"retry": true}],
+                              }
+                          )
+                        )
+                      )
+                    )
+                  :
+                    (has(body.data) && type(body.data) == list ? body.data : []).as(page,
+                      page.map(inst, {
+                        "message": inst.with({
+                          "finding_type": string(cur.type),
+                          "domain_name": string(cur.domain_name),
+                          "category": string(cur.tag_name),
+                        }).encode_json(),
+                      }).as(events,
+                        (int(state.?skip.orValue(0)) + size(page) < int(body.?count.orValue(int(state.?skip.orValue(0)) + size(page)))).as(more_pages,
+                          more_pages ?
+                            {
+                              "step": 3,
+                              "skip": int(state.?skip.orValue(0)) + size(page),
+                              "want_more": true,
+                              "events": (size(events) > 0) ? dyn(events) : dyn([{"retry": true}]),
+                            }
+                          : (int(state.type_index) + 1 < size(state.types)) ?
+                            {
+                              "step": 3,
+                              "type_index": int(state.type_index) + 1,
+                              "skip": 0,
+                              "want_more": true,
+                              "events": (size(events) > 0) ? dyn(events) : dyn([{"retry": true}]),
+                            }
+                          :
+                            {
+                              "step": 1,
+                              "want_more": false,
+                              "types": [],
+                              "type_index": 0,
+                              "skip": 0,
+                              "domain_index": 0,
+                              "tag_index": 0,
+                              "events": (size(events) > 0) ? dyn(events) : dyn([{"retry": true}]),
+                            }
+                        )
+                      )
+                    )
+                )
+              : (int(resp.StatusCode) == 401 || int(resp.StatusCode) == 403) ?
+                {
+                  "events": {
+                    "error": {
+                      "code": string(resp.StatusCode),
+                      "message": "GET " + uri + ": " + string(resp.Status) + " (" + string(resp.StatusCode) + ")",
+                    },
+                  },
+                  "want_more": false,
+                }
+              :
+                {
+                  "events": {
+                    "error": {
+                      "code": string(resp.StatusCode),
+                      "message": "GET " + uri + ": " + (
+                        (size(resp.Body) != 0) ? string(resp.Body) : string(resp.Status) + " (" + string(resp.StatusCode) + ")"
+                      ),
+                    },
+                  },
+                  "want_more": false,
+                }
+            )
+          )
+        )
+      )
+    )
+  )
+{{#if preserve_original_event}}
+tags:
+  - preserve_original_event
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{else}}
+tags:
+{{#each tags as |tag|}}
+  - {{tag}}
+{{/each}}
+{{/if}}
+{{#contains "forwarded" tags}}
+publisher_pipeline.disable_host: true
+{{/contains}}
+processors:
+  - drop_event:
+      when:
+        equals:
+          retry: true
+{{#if processors}}
+{{processors}}
+{{/if}}
