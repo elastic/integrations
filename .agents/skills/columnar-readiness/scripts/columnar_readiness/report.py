@@ -6,6 +6,7 @@ import re
 from collections import Counter
 from typing import Any, Dict, List, Tuple
 
+from .common import location
 from .constants import COLUMNAR_INDEX_MODES, STATUS_ORDER
 from .ecs import ecs_source
 from .rules import RULES_PACKAGE
@@ -337,7 +338,7 @@ def md_package(result: Dict[str, Any]) -> str:
             for f in group:
                 tag = " (auto-fixable)" if f["auto_fixable"] else ""
                 lines.append(f"- `{f['code']}`{tag} — {f['message']}")
-                lines.append(f"  - Where: `{f['where']}`")
+                lines.append(f"  - Where: `{location(f)}`")
                 for idx, ln in enumerate(f["remediation"].split("\n")):
                     lines.append(f"  - {ln}" if idx == 0 else f"    {ln}")
                 p = f.get("patch")

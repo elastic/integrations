@@ -7,7 +7,7 @@ import os
 from collections import Counter
 from typing import Any, Dict, List, Optional, Tuple
 
-from .common import finding, is_true, load_yaml, worse
+from .common import finding, is_true, line_of, load_yaml, worse
 from .constants import COLUMNAR_INDEX_MODES, OTEL_INPUTS, TEXT_TYPES
 from .consumers import object_array_findings, source_consumer_findings
 from .ecs import ecs_schema
@@ -113,6 +113,7 @@ def audit_package(pkg_dir: str, scan_dashboards: bool = True,
             continue
         stream = audit_data_stream(pkg_dir, ds_dir, ds_name, dash_fields, filter_fields,
                                    format_version=result.get("format_version"),
+                                   format_version_line=line_of(manifest, "format_version"),
                                    transforms=transforms, kibana=kibana_consumers,
                                    latest=latest, foreign_latest=foreign_latest,
                                    rule_set=rule_set, pkg_name=result["package"])
@@ -138,6 +139,7 @@ def audit_package(pkg_dir: str, scan_dashboards: bool = True,
 def audit_data_stream(pkg_dir: str, ds_dir: str, ds_name: str,
                       dash_fields: Counter, filter_fields: Counter,
                       format_version: Any = None,
+                      format_version_line: Optional[int] = None,
                       transforms: Optional[List[Dict[str, Any]]] = None,
                       kibana: Optional[List[Dict[str, Any]]] = None,
                       latest: Optional[List[Dict[str, Any]]] = None,
@@ -285,7 +287,7 @@ def audit_data_stream(pkg_dir: str, ds_dir: str, ds_name: str,
             "Prefer FIXING them when the fix is cheap — `on_failure` handlers do not change "
             "pipeline test expectations — and use `validation.yml` exclusions only for the "
             "rest, one comment each. Never exclude a columnar validator error.",
-            "manifest.yml"))
+            "manifest.yml", line=format_version_line))
 
     # --- `columnar.supported: true` with unresolved Class A findings ----- #
     # The 3.7.0 validator rejects the declaration while a blocker remains, so
@@ -307,7 +309,8 @@ def audit_data_stream(pkg_dir: str, ds_dir: str, ds_name: str,
             "`elasticsearch.columnar.supported: true` from this data stream's manifest "
             "until they are fixed. The flag is per data stream, so the other streams in "
             "the package can keep it.",
-            f"data_stream/{ds_name}/manifest.yml"))
+            f"data_stream/{ds_name}/manifest.yml",
+            line=line_of(manifest.get("elasticsearch"), "columnar")))
 
     sample = load_sample_event(ds_dir)
     pipeline_arrays = scan_pipelines(ds_dir)

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any, Dict, Iterator, List, Tuple
 
-from .common import finding, is_false, is_true
+from .common import finding, is_false, is_true, line_of
 from .constants import ECS_DOC_VALUES_FALSE, FIELD_CHILD_KEYS, UNSUPPORTED_TYPES
 from .patches import patch
 from .spec import columnar_block
@@ -50,6 +50,28 @@ def has_runtime(fdef: Dict[str, Any]) -> bool:
 # --------------------------------------------------------------------------- #
 # Checks
 # --------------------------------------------------------------------------- #
+
+# The field attribute each check_field finding is about, so `file:line` points at it
+# (`doc_values: false`, not the `- name:` line). Codes not listed use the entry line.
+CODE_KEYS = {
+    "columnar_doc_values_false": "columnar",
+    "columnar_index_true": "columnar",
+    "columnar_override_misplaced": "columnar",
+    "copy_to": "copy_to",
+    "doc_values_false": "doc_values",
+    "doc_values_false_ecs": "external",
+    "dynamic_false_field": "dynamic",
+    "dynamic_runtime": "dynamic",
+    "enabled_false": "enabled",
+    "keyword_normalizer": "normalizer",
+    "keyword_normalizer_lowercase": "normalizer",
+    "nested_in_nested": "type",
+    "nested_single_level": "type",
+    "runtime_field": "runtime",
+    "store_true": "store",
+    "unsupported_type": "type",
+}
+
 
 def check_field(fdef: Dict[str, Any], flat: str, nested_depth: int,
                 in_multi_field: bool, rel_file: str) -> List[Dict[str, Any]]:
@@ -355,6 +377,8 @@ def check_field(fdef: Dict[str, Any], flat: str, nested_depth: int,
                    "mode."),
                 rel_file, flat))
 
+    for f in out:
+        f["line"] = line_of(fdef, CODE_KEYS.get(f["code"]))
     return out
 
 
@@ -382,12 +406,12 @@ def check_stream_manifest(manifest: Dict[str, Any], rel_file: str) -> List[Dict[
             out.append(finding(
                 "source_disabled", "A", "blocker",
                 "`_source.enabled: false` is incompatible with columnar mode.",
-                "Remove the `_source` override.", rel_file))
+                "Remove the `_source` override.", rel_file, line=line_of(source, "enabled")))
         if source.get("mode") == "stored":
             out.append(finding(
                 "source_mode_stored", "A", "blocker",
                 "`_source.mode: stored` is incompatible with columnar mode.",
-                "Remove the `_source` override.", rel_file))
+                "Remove the `_source` override.", rel_file, line=line_of(source, "mode")))
 
     if is_false(mappings.get("dynamic")):
         out.append(finding(
@@ -396,7 +420,7 @@ def check_stream_manifest(manifest: Dict[str, Any], rel_file: str) -> List[Dict[
             "every unmapped field in this data stream is permanently lost.",
             "Confirm the unmapped fields are expendable, add explicit mappings, or switch to "
             "`dynamic: true` / `dynamic: strict`.",
-            rel_file))
+            rel_file, line=line_of(mappings, "dynamic")))
 
     if str(mappings.get("dynamic", "")).strip().lower() == "runtime":
         out.append(finding(
@@ -407,7 +431,7 @@ def check_stream_manifest(manifest: Dict[str, Any], rel_file: str) -> List[Dict[
             "is indexed.",
             "Use `dynamic: true` (unmapped leaves become non-indexed doc values) or map the "
             "fields explicitly.",
-            rel_file))
+            rel_file, line=line_of(mappings, "dynamic")))
 
     dts = mappings.get("dynamic_templates")
     if dts:
@@ -417,7 +441,7 @@ def check_stream_manifest(manifest: Dict[str, Any], rel_file: str) -> List[Dict[
                 "A `dynamic_templates` entry sets `dynamic: false`; objects it matches lose "
                 "their unmapped sub-fields.",
                 "Review the template; prefer `dynamic: true` or explicit mappings.",
-                rel_file))
+                rel_file, line=line_of(mappings, "dynamic_templates")))
     return out
 
 

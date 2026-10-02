@@ -16,10 +16,39 @@ def worse(a: str, b: str) -> str:
 YAML_LOADER = getattr(yaml, "CSafeLoader", yaml.SafeLoader)
 
 
+class LineDict(dict):
+    """A YAML mapping that remembers its own line and the line of each key (1-based)."""
+
+    line: Optional[int] = None
+
+    def line_of(self, key: Optional[str] = None) -> Optional[int]:
+        lines = getattr(self, "key_lines", None) or {}
+        return lines.get(key, self.line) if key else self.line
+
+
+class LineLoader(YAML_LOADER):  # type: ignore[misc,valid-type]
+    """The fast loader, building `LineDict`s so findings can point at `file:line`."""
+
+
+def _construct_line_dict(loader: Any, node: Any) -> LineDict:
+    mapping = LineDict(loader.construct_mapping(node, deep=True))
+    mapping.line = node.start_mark.line + 1
+    mapping.key_lines = {str(key.value): key.start_mark.line + 1 for key, _ in node.value}
+    return mapping
+
+
+LineLoader.add_constructor(yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG, _construct_line_dict)
+
+
+def line_of(node: Any, key: Optional[str] = None) -> Optional[int]:
+    """Source line of `key` in a mapping from `load_yaml`, else of the mapping; None if unknown."""
+    return node.line_of(key) if isinstance(node, LineDict) else None
+
+
 def load_yaml(path: str) -> Any:
     try:
         with open(path, "r", encoding="utf-8") as fh:
-            return yaml.load(fh, Loader=YAML_LOADER)
+            return yaml.load(fh, Loader=LineLoader)
     except Exception as exc:  # unparseable file: surfaced as a finding by the caller
         raise RuntimeError(f"{path}: {exc}") from exc
 
@@ -45,7 +74,8 @@ SEVERITIES = ("blocker", "review", "auto_fix", "info")
 
 
 def finding(code: str, klass: str, severity: str, message: str,
-            remediation: str, where: str, field: Optional[str] = None) -> Dict[str, Any]:
+            remediation: str, where: str, field: Optional[str] = None,
+            line: Optional[int] = None) -> Dict[str, Any]:
     assert severity in SEVERITIES, severity
     return {
         "code": code,
@@ -54,6 +84,12 @@ def finding(code: str, klass: str, severity: str, message: str,
         "auto_fixable": severity == "auto_fix",
         "field": field,
         "where": where,
+        "line": line,
         "message": message,
         "remediation": remediation,
     }
+
+
+def location(f: Dict[str, Any]) -> str:
+    """`file:line` for a finding, or just the file when the line is unknown."""
+    return f"{f['where']}:{f['line']}" if f.get("line") else f["where"]

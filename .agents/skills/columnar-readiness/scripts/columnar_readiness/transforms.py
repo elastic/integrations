@@ -6,7 +6,7 @@ import os
 import re
 from typing import Any, Dict, Iterator, List, Optional, Tuple
 
-from .common import finding, load_yaml
+from .common import finding, line_of, load_yaml
 from .constants import OTEL_INPUTS
 from .consumers import source_access_hits
 from .patches import DOT_EXPANDER_JSON, DOT_EXPANDER_YAML, patch
@@ -167,6 +167,7 @@ def latest_transforms(pkg_dir: str) -> List[Dict[str, Any]]:
         out.append({
             "name": name,
             "file": os.path.relpath(path, pkg_dir),
+            "line": line_of(source, "index"),
             "patterns": patterns,
             "unique_key": unique_key if isinstance(unique_key, list) else [unique_key],
             "dest_index": dest.get("index"),
@@ -297,7 +298,8 @@ def latest_transform_findings(index_name: str, transforms: List[Dict[str, Any]],
             + (f" The fix belongs in the `{owner}` package, which owns the transform; "
                f"coordinate with its owners before this stream declares readiness."
                if foreign else ""),
-            f"packages/{owner}/{tr['file']}" if foreign else tr["file"]))
+            f"packages/{owner}/{tr['file']}" if foreign else tr["file"],
+            line=tr.get("line")))
         # A resolved pipeline file that does not expand dotted keys yet gets the exact
         # processor to add, in the owner's file.
         if tr["dest_pipeline"] and "/" in tr["dest_pipeline"] and not tr["expands_dotted"]:
