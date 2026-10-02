@@ -106,7 +106,8 @@ def main(argv: Optional[List[str]] = None) -> int:
             results_out = [r for r in results if r["status"] in wanted]
         else:
             results_out = results
-        md = md_catalog(results)
+        md = md_catalog(results_out, scanned=len(results),
+                        only=sorted({s.upper() for s in args.status}) if args.status else None)
         payload: Any = {
             "mode": "catalog",
             "root": root,

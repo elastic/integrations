@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import re
 from collections import Counter
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 from .common import location
 from .constants import COLUMNAR_INDEX_MODES, STATUS_ORDER
@@ -475,7 +475,10 @@ def md_package(result: Dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
-def md_catalog(results: List[Dict[str, Any]]) -> str:
+def md_catalog(results: List[Dict[str, Any]], scanned: Optional[int] = None,
+               only: Optional[List[str]] = None) -> str:
+    """The catalog report. With `--status`, `results` holds only the selected packages;
+    `scanned` is then the size of the whole run and `only` the selected statuses."""
     by_status: Dict[str, List[str]] = {st: [] for st in STATUS_ORDER}
     for r in results:
         by_status[r["status"]].append(r["package"])
@@ -523,7 +526,10 @@ def md_catalog(results: List[Dict[str, Any]]) -> str:
     lines.append("")
     in_scope_pkgs = sum(1 for r in results
                         if any(s["status"] != "OUT_OF_SCOPE" for s in r["data_streams"]))
-    lines.append(f"Packages scanned: {len(results)}")
+    lines.append(f"Packages scanned: {len(results) if scanned is None else scanned}")
+    if only:
+        lines.append(f"Showing only packages with status {', '.join(f'`{s}`' for s in only)}: "
+                     f"{len(results)}. Every count below is about those packages.")
     lines.append(f"Candidate packages (at least one in-scope `type: logs` data stream): "
                  f"{in_scope_pkgs}")
     on_8x = sum(1 for r in results if r.get("installs_on_8x")
