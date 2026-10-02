@@ -14,10 +14,6 @@ resource.ssl: {{ssl}}
 resource.timeout: {{http_client_timeout}}
 {{/if}}
 resource.url: {{url}}/analytics/query
-# OpenRouter Analytics API rate limit: 64 req/min (account-level, shared across all streams).
-# With two streams running, set each to 0.4/s so combined ≤ 48/min — safely under the limit.
-resource.rate_limit.limit: 0.4
-resource.rate_limit.burst: 2
 state:
   management_api_key: {{management_api_key}}
   initial_interval: {{initial_interval}}
@@ -26,9 +22,6 @@ state:
   {{#each dimensions as |dim|}}
     - {{dim}}
   {{/each}}
-  # Cap on the first-run backfill depth (365 days, the API limit for daily granularity).
-  # An existing cursor is never capped, so collection resumes where it stopped.
-  max_lookback: "8760h"
   # Each request covers 30 days at daily granularity (safe under the 31-day span limit).
   # If the API reports a truncated result, the span is halved (down to 24h) and
   # persisted in the cursor.
@@ -45,10 +38,10 @@ program: |
   state.with(
     state.?cursor.span.optMap(sp, duration(sp)).orValue(duration(state.window_span)).as(span,
     (now - duration(state.finalization_delay)).as(today,
-        // An existing cursor is always honored. The lookback cap only limits the
-        // first run (no cursor), where initial_interval could be arbitrarily large.
+        // Resume from the cursor; on the first run start initial_interval ago. A long
+        // initial_interval is backfilled window by window.
         state.?cursor.last_end.optMap(ts, timestamp(ts)).orValue(
-          max(now - duration(state.initial_interval), today - duration(state.max_lookback))
+          now - duration(state.initial_interval)
         ).format(time_layout.DateOnly).parse_time(time_layout.DateOnly).as(start,
           {
             "today": today,

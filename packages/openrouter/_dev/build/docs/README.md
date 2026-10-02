@@ -80,14 +80,15 @@ After deploying, verify data is flowing in **Discover**:
 
 | Constraint | Value |
 |---|---|
-| Rate limit | 64 requests per minute |
 | Maximum rows per query | 10,000 |
 | Maximum dimensions per query | 2 |
 | Maximum query time span (latency/rate metrics or `provider` dimension) | 31 days |
 | Maximum query time span (volume/cost metrics, long-window dimensions only) | 365 days |
 
 The integration issues windowed requests (30 days for `usage`, 24 hours for `performance`)
-to stay safely within the 31-day span limit regardless of dimension selection.
+to stay safely within the 31-day span limit regardless of dimension selection. The first run
+backfills the whole initial lookback window by window, so a long lookback means many requests
+(for example, 90 days of `performance` data is 90 requests).
 If the API reports a truncated result (`metadata.truncated`), the window is halved and
 retried (down to 1 day for `usage`, 1 hour for `performance`). If a result is still
 truncated at the minimum window, the returned rows are ingested and the remainder is lost;

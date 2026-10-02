@@ -81,14 +81,15 @@ After deploying, verify data is flowing in **Discover**:
 
 | Constraint | Value |
 |---|---|
-| Rate limit | 64 requests per minute |
 | Maximum rows per query | 10,000 |
 | Maximum dimensions per query | 2 |
 | Maximum query time span (latency/rate metrics or `provider` dimension) | 31 days |
 | Maximum query time span (volume/cost metrics, long-window dimensions only) | 365 days |
 
 The integration issues windowed requests (30 days for `usage`, 24 hours for `performance`)
-to stay safely within the 31-day span limit regardless of dimension selection.
+to stay safely within the 31-day span limit regardless of dimension selection. The first run
+backfills the whole initial lookback window by window, so a long lookback means many requests
+(for example, 90 days of `performance` data is 90 requests).
 If the API reports a truncated result (`metadata.truncated`), the window is halved and
 retried (down to 1 day for `usage`, 1 hour for `performance`). If a result is still
 truncated at the minimum window, the returned rows are ingested and the remainder is lost;
@@ -258,7 +259,7 @@ Alert rule templates require Elastic Stack version 9.2.0 or later.
 | Name | Description |
 |---|---|
 | [OpenRouter] Cache Hit Rate Drop | Alerts when the request-weighted cache hit rate of a model over the last 6 hours falls below half of its own rate over the preceding days. Models that do not use prompt caching are ignored. A sudden drop can signal prompt changes, model switching, or cache invalidation that increases effective token cost. |
-| [OpenRouter] Daily Cost Anomaly | Alerts when today's total cost exceeds 1.5 times the average daily cost of the previous days and is above 10 USD. Catches unexpected spend spikes from runaway workloads or new model adoption. |
+| [OpenRouter] Daily Cost Anomaly | Alerts when today's total cost exceeds 1.5 times the average daily cost of the previous days with usage and is above 10 USD. Catches unexpected spend spikes from runaway workloads or new model adoption. |
 | [OpenRouter] Model Latency Regression | Alerts when a model's worst p99 end-to-end latency over the last 6 hours is more than twice its median p99 latency over the preceding days. Detects model or provider degradation relative to each model's own normal. Works with the default dimensions (model, api_key_id). |
 
 </details>
