@@ -1,0 +1,46 @@
+title: "Nginx Error Logs"
+type: logs
+dataset: nginx.error
+streams:
+  - package: filelog_otel
+    title: Nginx Error Logs
+    description: >-
+      Tail Nginx error logs using the OTel Collector filelogreceiver, with multiline support for entries that span multiple lines.
+    template_path: processors.yml.hbs
+    vars:
+      - name: include
+        type: text
+        title: Error log paths
+        required: true
+        multi: true
+        description: File glob patterns that match Nginx error log files.
+        default:
+          - /var/log/nginx/error.log
+        show_user: true
+      - name: start_at
+        type: select
+        title: Start at
+        required: false
+        description: At startup, where to start reading logs from the file.
+        default: end
+        show_user: true
+        options:
+          - text: Beginning of files.
+            value: beginning
+          - text: End of files.
+            value: end
+      - name: include_file_path
+        type: bool
+        title: Include file path
+        required: false
+        description: Add the file path as the attribute log.file.path.
+        default: true
+        show_user: false
+      - name: multiline_line_start_pattern
+        type: text
+        title: Multiline line start pattern
+        required: false
+        description: >-
+          Regular expression that matches the beginning of a new Nginx error log entry.
+        default: '^\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2}'
+        show_user: true
