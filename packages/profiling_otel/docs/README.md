@@ -35,11 +35,25 @@ The OpenTelemetry Profiling integration collects the following profiling data:
 - **Root cause analysis**: Understand application behavior during incidents and errors
 - **Capacity planning**: Analyze resource consumption trends over time
 
+## Where is the data stored?
+
+Starting with Elasticsearch 9.6.0, profiles are stored only in OTel-native data streams that follow OpenTelemetry semantic conventions and use data stream lifecycle (DSL) for retention, instead of ILM:
+
+| Data            | Data stream                           |
+| --------------- | ------------------------------------- |
+| Profile events  | `profiling-events-*.otel-default`     |
+| Stack traces    | `profiling-stacktraces.otel-default`  |
+| Stack frames    | `profiling-stackframes.otel-default`  |
+| Executables     | `profiling-executables.otel-default`  |
+| Host metadata   | `profiling-hosts.otel-default`        |
+
+The index templates for these data streams are installed by default, so no Universal Profiling setup is needed. Data stored in the ECS-based profiling indices used by earlier versions is not migrated. For more details, refer to [elastic/elasticsearch#155831](https://github.com/elastic/elasticsearch/pull/155831).
+
 ## Run the profiling receiver with a standalone EDOT Collector
 
 As an alternative to running this integration through Fleet, you can run the profiling receiver directly with the [Elastic Distribution of OpenTelemetry (EDOT) Collector](https://www.elastic.co/docs/reference/edot-collector) and send the profiles to Elasticsearch using the Elasticsearch exporter.
 
-Before you start, make sure that [Universal Profiling](https://www.elastic.co/docs/solutions/observability/infra-and-hosts/get-started-with-universal-profiling#profiling-configure-data-ingestion) is configured for ingestion in your Elasticsearch cluster.
+For Elasticsearch versions earlier than 9.6.0, make sure that [Universal Profiling](https://www.elastic.co/docs/solutions/observability/infra-and-hosts/get-started-with-universal-profiling#profiling-configure-data-ingestion) is configured for ingestion in your Elasticsearch cluster.
 
 Save the following configuration as `otel.yml`, replacing `<ELASTICSEARCH_ENDPOINT>` with your Elasticsearch URL (for example, `https://my-deployment.es.us-central1.gcp.cloud.es.io:443`) and `<ELASTICSEARCH_API_KEY>` with an encoded Elasticsearch API key:
 
@@ -64,6 +78,8 @@ service:
       receivers: [ profiling ]
       exporters: [ elasticsearch ]
 ```
+
+The `otel` mapping mode requires Elasticsearch 9.6.0 or later. To send profiles to an earlier version, set `mapping.allowed_modes: [ecs]` in the exporter instead.
 
 Profiles support in the Collector is protected by a feature gate. Start the EDOT Collector with the `service.profilesSupport` feature gate enabled and with elevated privileges (for example, root or `CAP_SYS_ADMIN`), which the eBPF profiler requires.
 
