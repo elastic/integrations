@@ -22,6 +22,31 @@ processors:
   - set:
       field: event.ingested
       copy_from: _ingest.timestamp
+  # REQUEST_ID is the Salesforce transaction id, not a row id. One request can
+  # emit several ApexCallout, ApexTrigger, or ExternalCustomApexCallout rows that
+  # share EVENT_TYPE, REQUEST_ID, TIMESTAMP_DERIVED, and ORGANIZATION_ID. Include
+  # the per-event discriminators (ignored when a type does not have the field)
+  # so those rows do not collapse onto one _id and get silently dropped.
+  - fingerprint:
+      fields:
+        - json.EVENT_TYPE
+        - json.REQUEST_ID
+        - json.TIMESTAMP_DERIVED
+        - json.ORGANIZATION_ID
+        - json.URI
+        - json.URL
+        - json.TRIGGER_ID
+        - json.TRIGGER_TYPE
+        - json.ENTITY_NAME
+        - json.ENTITY
+        - json.CLASS_NAME
+        - json.METHOD_NAME
+        - json.METHOD
+        - json.ENTRY_POINT
+        - json.ACTION
+      target_field: _id
+      ignore_failure: true
+      ignore_missing: true
   - date:
       field: json.TIMESTAMP_DERIVED
       target_field: "@timestamp"

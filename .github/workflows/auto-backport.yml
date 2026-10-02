@@ -2,9 +2,6 @@
 name: Backport — auto create PRs
 
 on:
-  push:
-    branches:
-      - main
   issue_comment:
     types: [edited]
 
@@ -14,38 +11,48 @@ permissions:
 jobs:
   auto-backport:
     runs-on: ubuntu-latest
-    # Skip bot-authored edits to break the infinite self-trigger loop:
-    # patching the checklist comment (✅ / ⚠️ suffix) fires another
-    # issue_comment edited event — filtering on actor stops it here.
-    # For issue_comment events also require:
+    # Guards (all from the event payload — no API call needed):
+    #   - comment was originally posted by github-actions[bot] (it's our checklist)
+    #     → github.event.comment.user.login
+    #   - the editor is not github-actions[bot] (breaks the self-trigger loop:
+    #     patching the checklist comment with ✅ / ⚠️ fires another edited event)
+    #     → github.actor (== github.event.sender.login)
     #   - the event is on a pull request (not a plain issue)
-    #   - the edited comment contains the checklist marker (zero-cost body check,
-    #     no API call needed — the full comment body is in the event payload)
+    #     → github.event.issue.pull_request
+    #   - the edited comment contains the checklist marker
+    #     → github.event.comment.body
     if: >-
       ${{
+        github.event.comment.user.login == 'github-actions[bot]' &&
         github.actor != 'github-actions[bot]' &&
-        (
-          github.event_name == 'push' ||
-          (
-            github.event.issue.pull_request != null &&
-            contains(github.event.comment.body, '<!-- backport-checklist -->')
-          )
-        )
+        github.event.issue.pull_request != null &&
+        contains(github.event.comment.body, '<!-- backport-checklist -->')
       }}
     concurrency:
-      # Serialise runs per PR:
-      # - push to main:          keyed on merge SHA (one run per merge)
-      # - issue_comment edited:  keyed on PR number (serialises re-checklist runs)
-      group: auto-backport-${{ github.event_name == 'push' && github.sha || github.event.issue.number }}
-      cancel-in-progress: true
+      # Serialise runs per PR. cancel-in-progress is false so that a second
+      # checkbox edit (which cancels and restarts) cannot interrupt a run that is
+      # mid-cherry-pick or mid-push, leaving a branch in a partial state.
+      # Runs are idempotent (deduplication via gh pr list), so queuing is safe.
+      group: auto-backport|${{ github.event.issue.number }}
+      cancel-in-progress: false
     permissions:
       contents: write
       pull-requests: write
 
     steps:
+      - name: Debug event context
+        env:
+          COMMENT_AUTHOR: ${{ github.event.comment.user.login }}
+          EDITED_BY: ${{ github.actor }}
+          PR_NUMBER: ${{ github.event.issue.number }}
+          COMMENT_ID: ${{ github.event.comment.id }}
+        run: |
+          echo "Comment #$COMMENT_ID on PR #$PR_NUMBER"
+          echo "  originally posted by: $COMMENT_AUTHOR"
+          echo "  edited by:            $EDITED_BY"
+
       - name: Check PR is merged
         id: pr-check
-        if: github.event_name == 'issue_comment'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPOSITORY: ${{ github.repository }}
@@ -60,7 +67,7 @@ jobs:
 
       - name: Check actor permission
         id: actor-check
-        if: github.event_name == 'issue_comment' && steps.pr-check.outputs.merged == 'true'
+        if: steps.pr-check.outputs.merged == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPOSITORY: ${{ github.repository }}
@@ -76,37 +83,18 @@ jobs:
 
       - name: Resolve merge SHA and PR metadata
         id: resolve
-        if: >-
-          ${{
-            github.event_name == 'push' ||
-            steps.actor-check.outputs.permitted == 'true'
-          }}
+        if: steps.actor-check.outputs.permitted == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPOSITORY: ${{ github.repository }}
-          EVENT_NAME: ${{ github.event_name }}
-          PUSH_SHA: ${{ github.sha }}
           ISSUE_NUMBER: ${{ github.event.issue.number }}
         run: |
-          if [[ "$EVENT_NAME" == "push" ]]; then
-            MERGE_SHA="$PUSH_SHA"
-            PR_DATA=$(gh api "repos/$REPOSITORY/commits/$MERGE_SHA/pulls" \
-              --jq 'map(select(.base.ref == "main")) | first // empty')
-            if [[ -z "$PR_DATA" ]]; then
-              echo "No PR found for commit $MERGE_SHA — skipping"
-              exit 0
-            fi
-            PR_NUMBER=$(jq -r '.number'          <<< "$PR_DATA")
-            LABELS=$(jq -r  '[.labels[].name] | join(",")' <<< "$PR_DATA")
-            PR_AUTHOR=$(jq -r '.user.login'      <<< "$PR_DATA")
-          else
-            PR_NUMBER="$ISSUE_NUMBER"
-            PR_DATA=$(gh pr view "$PR_NUMBER" --repo "$REPOSITORY" \
-              --json mergeCommit,labels,author)
-            MERGE_SHA=$(jq -r '.mergeCommit.oid'            <<< "$PR_DATA")
-            LABELS=$(jq -r   '[.labels[].name] | join(",")' <<< "$PR_DATA")
-            PR_AUTHOR=$(jq -r '.author.login'               <<< "$PR_DATA")
-          fi
+          PR_NUMBER="$ISSUE_NUMBER"
+          PR_DATA=$(gh pr view "$PR_NUMBER" --repo "$REPOSITORY" \
+            --json mergeCommit,labels,author)
+          MERGE_SHA=$(jq -r '.mergeCommit.oid'            <<< "$PR_DATA")
+          LABELS=$(jq -r   '[.labels[].name] | join(",")' <<< "$PR_DATA")
+          PR_AUTHOR=$(jq -r '.author.login'               <<< "$PR_DATA")
 
           if [[ "$LABELS" == *"backport:sync-changelog"* ]]; then
             echo "PR carries backport:sync-changelog label — skipping"
@@ -171,6 +159,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPOSITORY: ${{ github.repository }}
           MERGE_SHA: ${{ steps.resolve.outputs.merge_sha }}
+          PR_NUMBER: ${{ steps.resolve.outputs.pr_number }}
           PR_AUTHOR: ${{ steps.resolve.outputs.pr_author }}
           COMMENT_ID: ${{ steps.find-comment.outputs.comment_id }}
           BODY_FILE: ${{ steps.find-comment.outputs.body_file }}

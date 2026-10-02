@@ -298,6 +298,20 @@
       fields:
         - name: data
           type: keyword
+          description: Free-form description of the configuration change, as rendered by Cisco ISE.
+        # Nested: attribute names are unbounded (they include UUIDs and port labels such
+        # as 135-tcp), a name may repeat within one change, and ISE's ordering is
+        # meaningful. A nested list keeps each name/value pair queryable as a
+        # unit without either growing the mapping or collapsing duplicates.
+        - name: attributes
+          type: nested
+          description: Endpoint attributes carried in the configuration change, when it renders them. Absent for changes that do not. Stored as a list of name/value pairs because attribute names are unbounded.
+        - name: attributes.name
+          type: keyword
+          description: Attribute name.
+        - name: attributes.value
+          type: keyword
+          description: Attribute value.
     - name: config_version
       type: group
       fields:

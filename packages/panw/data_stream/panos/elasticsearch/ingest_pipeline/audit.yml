@@ -11,7 +11,30 @@ processors:
         - panw.panos.cmd_source
         - user.name
         - panw.panos.cmd
-        - event.outcome
+        - panw.panos.result
+  - set:
+      tag: set_event_outcome_6e30f0a1
+      description: >-
+        Audit logs report the result as success, failed or none, and ECS restricts
+        event.outcome to success, failure and unknown, so the vendor value is kept in
+        panw.panos.result and event.outcome is derived from it.
+      field: event.outcome
+      value: success
+      if: ctx.panw?.panos?.result instanceof String && ctx.panw.panos.result.equalsIgnoreCase('success')
+  - set:
+      tag: set_event_outcome_0b4c9d27
+      field: event.outcome
+      value: failure
+      if: ctx.panw?.panos?.result instanceof String && (ctx.panw.panos.result.equalsIgnoreCase('failed') || ctx.panw.panos.result.equalsIgnoreCase('failure'))
+  - set:
+      tag: set_event_outcome_f5a8c413
+      description: >-
+        Any result the two processors above did not recognise, such as the none PAN-OS
+        reports for read-only GUI navigation, maps to unknown; the vendor value stays in
+        panw.panos.result.
+      field: event.outcome
+      value: unknown
+      if: ctx.panw?.panos?.result != null && ctx.event?.outcome == null
   - uppercase:
       tag: uppercase_panw_panos_type_ec638369
       field: panw.panos.type

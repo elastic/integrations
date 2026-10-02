@@ -1,0 +1,173 @@
+{
+    "attributes": {
+        "author": [
+            "Elastic"
+        ],
+        "description": "Identifies a Microsoft Entra ID device registration by the same user within 15 minutes of a phishing-resistant, device-bound credential (Windows Hello for Business, FIDO2 security key, or passkey) signing in with no device identifier. In the \"borrowing Windows Hello keys\" technique, an adversary reuses a WHfB/NGC key or passkey away from its bound device to mint device-agnostic tokens, then uses those tokens to register an attacker-controlled device and obtain a Primary Refresh Token (PRT) for long-lived persistence. Timing is taken from the authentication step on the sign-in, not the sign-in document timestamp, because Entra can emit the sign-in record after the Register device audit event. This chain is distinct from device-code-flow phishing kits.",
+        "false_positives": [
+            "A user completing initial passwordless enrollment and registering their first device in the same session can match. Validate against expected onboarding and the device's provenance (managed/compliant, expected name, expected source).",
+            "Authorized red team or research engagements that borrow a WHfB/passkey and register a device will match. Document the engagement and add scoped exceptions for the involved principals or source addresses."
+        ],
+        "from": "now-30m",
+        "interval": "10m",
+        "language": "esql",
+        "license": "Elastic License v2",
+        "name": "Entra ID Deviceless Windows Hello Sign-in Followed by Device Registration",
+        "note": "## Triage and analysis\n\n### Investigating Entra ID Deviceless Windows Hello Sign-in Followed by Device Registration\n\nThis rule correlates, within 15 minutes for the same user: (1) a successful member sign-in satisfied by a device-bound credential (WHfB, FIDO2, or passkey) with an empty `device_detail.device_id`, and (2) a successful device registration (`Register device`, `Add registered owner to device`, or `Add device`). The alert is the sign-in document enriched with the matching registration. `Esql.signin_time` is the authentication step time from flattened `authentication_details` (falling back to `@timestamp`); use it and `Esql.signin_to_register_s` for sequencing, since Entra can write the sign-in record after the `Register device` audit event, making `@timestamp` unreliable for ordering.\n\nThis is the escalation step of the \"borrowing Windows Hello keys\" technique: an adversary mints a device-agnostic token from a deviceless WHfB/passkey assertion, then immediately registers an attacker-controlled device to obtain a Primary Refresh Token that survives `revokeSignInSessions` and password resets.\n\n### Possible investigation steps\n\n- Identify the user (`user_principal_name` / `Esql.actor_user_id`) and confirm `Esql.auth_method` is WHfB/FIDO2/passkey with an empty `device_detail.device_id` and `cross_tenant_access_type` of `none` - a device-bound method presenting without its device is the first-stage signal.\n- Compare `Esql.signin_time` to `Esql.register_time` via `Esql.signin_to_register_s`; a gap of seconds to minutes is the expected attacker cadence. `Esql.registered_device_name`/`Esql.register_operation` for tooling-registered devices are often generic (`DESKTOP-*`) and absent from inventory/unmanaged.\n- Check `app_display_name`/`resource_display_name` for non-interactive clients (Azure CLI, ROADtools/roadtx) against Graph or the Device Registration Service, `source.address`/`source.geo.country_name`/`user_agent.original` for hosting/VPS or automation, and pivot on `Esql.actor_user_id` for a follow-on `primaryRefreshToken` `incoming_token_type` from the new device or an `Add Windows Hello for Business credential` event (backdoor enrollment).\n\n### False positive analysis\n\n- Initial passwordless onboarding can produce a sign-in and first device registration in the same session; validate the device against inventory and confirm it is managed/compliant and named as expected.\n- Authorized security assessments that replay a key and register a device will also match; document the engagement and add scoped exceptions.\n\n### Response and remediation\n\n- Remove the rogue device BEFORE revoking sessions (`GET /v1.0/users/{id}/registeredDevices` and `/ownedDevices`, then `DELETE /v1.0/devices/{deviceObjectId}` for unrecognized devices) - a device-bound PRT survives `revokeSignInSessions`, and a device left in place re-establishes access.\n- Treat the key/passkey as compromised: delete the affected authentication methods, revoke refresh tokens and sessions (`POST /v1.0/users/{id}/revokeSignInSessions`), reset credentials, and re-enroll from a trusted device.\n- Hunt for additional persistence in the same window (attacker-registered MFA methods, extra device registrations, PRT use from the new device), and restrict device registration/join via Conditional Access requiring a compliant device.\n",
+        "query": "FROM logs-azure.signinlogs-*, logs-azure.auditlogs-* METADATA _id, _version, _index\n| WHERE\n    (\n      azure.signinlogs.result_signature == \"SUCCESS\" AND\n      azure.signinlogs.properties.user_type == \"Member\" AND\n      azure.signinlogs.properties.user_id IS NOT NULL AND\n      azure.signinlogs.properties.cross_tenant_access_type == \"none\" AND\n      (\n        azure.signinlogs.properties.device_detail.device_id IS NULL OR\n        azure.signinlogs.properties.device_detail.device_id == \"\"\n      )\n    ) OR\n    (\n      azure.auditlogs.operation_name IN (\"Register device\", \"Add registered owner to device\", \"Add device\") AND\n      event.outcome == \"success\" AND\n      azure.auditlogs.properties.initiated_by.user.id IS NOT NULL\n    )\n| EVAL\n    Esql.sequence_stage = CASE(data_stream.dataset == \"azure.signinlogs\", \"signin\", \"register\"),\n    Esql.actor_user_id = COALESCE(azure.signinlogs.properties.user_id, azure.auditlogs.properties.initiated_by.user.id),\n    Esql.auth_method = FIELD_EXTRACT(azure.signinlogs.properties.authentication_details, \"authentication_method\"),\n    Esql.auth_step_time = MV_MIN(TO_DATETIME(FIELD_EXTRACT(azure.signinlogs.properties.authentication_details, \"authentication_step_date_time\"))),\n    Esql.register_candidate = CASE(\n      data_stream.dataset == \"azure.auditlogs\",\n      CONCAT(\n        TO_STRING(@timestamp),\n        \"|\",\n        COALESCE(`azure.auditlogs.properties.target_resources.0.display_name`, \"\"),\n        \"|\",\n        azure.auditlogs.operation_name\n      ),\n      null\n    )\n| EVAL Esql.signin_time = COALESCE(Esql.auth_step_time, @timestamp)\n| WHERE\n    Esql.sequence_stage == \"register\" OR\n    (\n      MV_COUNT(Esql.auth_method) == 1 AND\n      (\n        Esql.auth_method == \"Windows Hello for Business\" OR\n        TO_LOWER(Esql.auth_method) LIKE \"fido2*\" OR\n        TO_LOWER(Esql.auth_method) LIKE \"*passkey*\"\n      )\n    )\n| KEEP\n    @timestamp,\n    Esql.signin_time,\n    Esql.actor_user_id,\n    Esql.sequence_stage,\n    Esql.auth_method,\n    Esql.register_candidate,\n    azure.signinlogs.properties.user_id,\n    azure.signinlogs.properties.user_principal_name,\n    azure.signinlogs.properties.device_detail.device_id,\n    azure.signinlogs.properties.device_detail.is_managed,\n    azure.signinlogs.properties.cross_tenant_access_type,\n    azure.signinlogs.properties.app_id,\n    azure.signinlogs.properties.app_display_name,\n    azure.signinlogs.properties.resource_display_name,\n    azure.signinlogs.properties.incoming_token_type,\n    source.address,\n    source.geo.country_name,\n    user_agent.original,\n    _id,\n    _version,\n    _index\n| WHERE Esql.actor_user_id IS NOT NULL\n| INLINE STATS\n    Esql.register_count = COUNT(*) WHERE Esql.sequence_stage == \"register\",\n    Esql.register_candidates = VALUES(Esql.register_candidate) WHERE Esql.sequence_stage == \"register\"\n  BY Esql.actor_user_id\n| DROP Esql.register_candidate\n| WHERE Esql.sequence_stage == \"signin\" AND Esql.register_count > 0\n| MV_EXPAND Esql.register_candidates\n| EVAL\n    Esql.register_time = TO_DATETIME(MV_FIRST(SPLIT(Esql.register_candidates, \"|\"))),\n    Esql.registered_device_name = MV_SLICE(SPLIT(Esql.register_candidates, \"|\"), 1, 1),\n    Esql.register_operation = MV_LAST(SPLIT(Esql.register_candidates, \"|\")),\n    Esql.signin_to_register_s = DATE_DIFF(\"second\", Esql.signin_time, Esql.register_time)\n| DROP Esql.register_candidates, Esql.sequence_stage, Esql.register_count\n| WHERE\n    Esql.signin_to_register_s >= 0 AND\n    Esql.signin_to_register_s <= 900\n| SORT Esql.register_time ASC, Esql.signin_to_register_s ASC, _id ASC\n| LIMIT 1 BY Esql.actor_user_id\n",
+        "references": [
+            "https://dirkjanm.io/borrowing-windows-hello-keys/",
+            "https://dirkjanm.io/phishing-for-microsoft-entra-primary-refresh-tokens/"
+        ],
+        "related_integrations": [
+            {
+                "package": "azure",
+                "version": ">=1.22.0"
+            }
+        ],
+        "required_fields": [
+            {
+                "ecs": true,
+                "name": "@timestamp",
+                "type": "date"
+            },
+            {
+                "ecs": false,
+                "name": "_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "_index",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "_version",
+                "type": "long"
+            },
+            {
+                "ecs": false,
+                "name": "azure.signinlogs.properties.app_display_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.signinlogs.properties.app_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.signinlogs.properties.cross_tenant_access_type",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.signinlogs.properties.device_detail.device_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.signinlogs.properties.device_detail.is_managed",
+                "type": "boolean"
+            },
+            {
+                "ecs": false,
+                "name": "azure.signinlogs.properties.incoming_token_type",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.signinlogs.properties.resource_display_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.signinlogs.properties.user_id",
+                "type": "keyword"
+            },
+            {
+                "ecs": false,
+                "name": "azure.signinlogs.properties.user_principal_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.address",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "source.geo.country_name",
+                "type": "keyword"
+            },
+            {
+                "ecs": true,
+                "name": "user_agent.original",
+                "type": "keyword"
+            }
+        ],
+        "risk_score": 73,
+        "rule_id": "62848597-595c-4cc3-8d24-6c47a5fee9a9",
+        "setup": "#### Required Microsoft Entra ID Sign-In and Audit Logs\nThis rule requires the Azure integration with Microsoft Entra ID Sign-In logs and Audit logs enabled and collected via Azure Event Hub. Both data streams are required: the sign-in supplies the deviceless WHfB/passkey assertion, and the audit log supplies the follow-on device registration.\n",
+        "severity": "high",
+        "tags": [
+            "Domain: Cloud",
+            "Domain: Identity",
+            "Platform: Entra ID",
+            "Use Case: Threat Detection",
+            "Tactic: Persistence",
+            "Rule Type: ES|QL",
+            "Data Source: Azure",
+            "Data Source: Microsoft Entra ID",
+            "Data Source: Microsoft Entra ID Sign-In Logs",
+            "Data Source: Microsoft Entra ID Audit Logs",
+            "Resources: Investigation Guide",
+            "Tactic: Lateral Movement"
+        ],
+        "threat": [
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0003",
+                    "name": "Persistence",
+                    "reference": "https://attack.mitre.org/tactics/TA0003/"
+                },
+                "technique": [
+                    {
+                        "id": "T1098",
+                        "name": "Account Manipulation",
+                        "reference": "https://attack.mitre.org/techniques/T1098/",
+                        "subtechnique": [
+                            {
+                                "id": "T1098.005",
+                                "name": "Device Registration",
+                                "reference": "https://attack.mitre.org/techniques/T1098/005/"
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "framework": "MITRE ATT&CK",
+                "tactic": {
+                    "id": "TA0008",
+                    "name": "Lateral Movement",
+                    "reference": "https://attack.mitre.org/tactics/TA0008/"
+                },
+                "technique": [
+                    {
+                        "id": "T1550",
+                        "name": "Use Alternate Authentication Material",
+                        "reference": "https://attack.mitre.org/techniques/T1550/"
+                    }
+                ]
+            }
+        ],
+        "timestamp_override": "event.ingested",
+        "type": "esql",
+        "version": 3
+    },
+    "id": "62848597-595c-4cc3-8d24-6c47a5fee9a9_3",
+    "type": "security-rule"
+}

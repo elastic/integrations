@@ -1,4 +1,30 @@
+# Request headers are matched as regular expressions, so the Authorization rules below
+# accept either the EPM logon token or the CyberArk Identity bearer token, letting the
+# same rule set serve the system tests for both authentication methods.
 rules:
+  # CyberArk Identity (ISPSS) OAuth2 client credentials token endpoint.
+  #
+  # The credentials below are percent-encoded because the oauth2 client in the CEL input
+  # encodes them per RFC 6749 2.3.1 before building the Basic authorization header. The
+  # unencoded values are 'svc_elastic@cyberark.cloud.1234' and 'p@ss"w/ord\test'.
+  - path: /oauth2/token/elastic_epm_api
+    methods: ['POST']
+    user: 'svc_elastic%40cyberark.cloud.1234'
+    password: 'p%40ss%22w%2Ford%5Ctest'
+    query_params:
+      grant_type: client_credentials
+    responses:
+      - status_code: 200
+        headers:
+          Content-Type:
+            - 'application/json'
+        body: |-
+          {
+            "access_token": "identity-token",
+            "token_type": "Bearer",
+            "expires_in": 900,
+            "scope": "epm"
+          }
   - path: /EPM/API/24.12.0.4372/Auth/EPM/Logon
     methods: ['POST']
     request_headers:
@@ -23,7 +49,7 @@ rules:
       Offset: 0
     request_headers:
       Authorization:
-        - "basic token"
+        - '^(?:basic token|Bearer identity-token)$'
     responses:
       - status_code: 200
         headers:
@@ -58,7 +84,7 @@ rules:
       Offset: 2
     request_headers:
       Authorization:
-        - "basic token"
+        - '^(?:basic token|Bearer identity-token)$'
     responses:
       - status_code: 200
         headers:
@@ -80,7 +106,7 @@ rules:
       Content-Type:
         - "application/json"
       Authorization:
-        - "basic token"
+        - '^(?:basic token|Bearer identity-token)$'
     responses:
       - status_code: 200
         headers:
@@ -253,7 +279,7 @@ rules:
       Content-Type:
         - "application/json"
       Authorization:
-        - "basic token"
+        - '^(?:basic token|Bearer identity-token)$'
     responses:
       - status_code: 200
         headers:
@@ -352,7 +378,7 @@ rules:
       Content-Type:
         - "application/json"
       Authorization:
-        - "basic token"
+        - '^(?:basic token|Bearer identity-token)$'
     responses:
       - status_code: 200
         headers:
@@ -376,7 +402,7 @@ rules:
       Content-Type:
         - "application/json"
       Authorization:
-        - "basic token"
+        - '^(?:basic token|Bearer identity-token)$'
     responses:
       - status_code: 200
         headers:
@@ -400,7 +426,7 @@ rules:
       Content-Type:
         - "application/json"
       Authorization:
-        - "basic token"
+        - '^(?:basic token|Bearer identity-token)$'
     responses:
       - status_code: 200
         headers:
@@ -533,7 +559,7 @@ rules:
       Content-Type:
         - "application/json"
       Authorization:
-        - "basic token"
+        - '^(?:basic token|Bearer identity-token)$'
     responses:
       - status_code: 200
         headers:
@@ -612,7 +638,7 @@ rules:
       Content-Type:
         - "application/json"
       Authorization:
-        - "basic token"
+        - '^(?:basic token|Bearer identity-token)$'
     responses:
       - status_code: 200
         headers:
@@ -636,7 +662,7 @@ rules:
       Content-Type:
         - "application/json"
       Authorization:
-        - "basic token"
+        - '^(?:basic token|Bearer identity-token)$'
     responses:
       - status_code: 200
         headers:
@@ -715,7 +741,7 @@ rules:
       Content-Type:
         - "application/json"
       Authorization:
-        - "basic token"
+        - '^(?:basic token|Bearer identity-token)$'
     responses:
       - status_code: 200
         headers:
@@ -739,7 +765,7 @@ rules:
       Content-Type:
         - "application/json"
       Authorization:
-        - "basic token"
+        - '^(?:basic token|Bearer identity-token)$'
     responses:
       - status_code: 200
         headers:
@@ -855,7 +881,7 @@ rules:
       Content-Type:
         - "application/json"
       Authorization:
-        - "basic token"
+        - '^(?:basic token|Bearer identity-token)$'
     responses:
       - status_code: 200
         headers:
@@ -879,7 +905,7 @@ rules:
       Content-Type:
         - "application/json"
       Authorization:
-        - "basic token"
+        - '^(?:basic token|Bearer identity-token)$'
     responses:
       - status_code: 200
         headers:
@@ -903,7 +929,7 @@ rules:
       Content-Type:
         - "application/json"
       Authorization:
-        - "basic token"
+        - '^(?:basic token|Bearer identity-token)$'
     responses:
       - status_code: 200
         headers:
@@ -973,7 +999,7 @@ rules:
       Content-Type:
         - "application/json"
       Authorization:
-        - "basic token"
+        - '^(?:basic token|Bearer identity-token)$'
     responses:
       - status_code: 200
         headers:
@@ -997,7 +1023,7 @@ rules:
       Content-Type:
         - "application/json"
       Authorization:
-        - "basic token"
+        - '^(?:basic token|Bearer identity-token)$'
     responses:
       - status_code: 200
         headers:
@@ -1077,7 +1103,7 @@ rules:
       Content-Type:
         - "application/json"
       Authorization:
-        - "basic token"
+        - '^(?:basic token|Bearer identity-token)$'
     responses:
       - status_code: 200
         headers:
@@ -1101,7 +1127,7 @@ rules:
       Offset: 0
     request_headers:
       Authorization:
-        - "basic token"
+        - '^(?:basic token|Bearer identity-token)$'
     responses:
       - status_code: 200
         headers:
@@ -1148,7 +1174,7 @@ rules:
       Offset: 2
     request_headers:
       Authorization:
-        - "basic token"
+        - '^(?:basic token|Bearer identity-token)$'
     responses:
       - status_code: 200
         headers:
@@ -1183,7 +1209,7 @@ rules:
       Offset: 3
     request_headers:
       Authorization:
-        - "basic token"
+        - '^(?:basic token|Bearer identity-token)$'
     responses:
       - status_code: 200
         headers:
@@ -1205,7 +1231,7 @@ rules:
       Offset: 0
     request_headers:
       Authorization:
-        - "basic token"
+        - '^(?:basic token|Bearer identity-token)$'
     responses:
       - status_code: 200
         headers:

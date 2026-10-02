@@ -451,7 +451,10 @@ The following table lists the exported fields for this data stream:
 | cisco_ise.log.client.latency |  | long |
 | cisco_ise.log.cmdset |  | keyword |
 | cisco_ise.log.component |  | keyword |
-| cisco_ise.log.config_change.data |  | keyword |
+| cisco_ise.log.config_change.attributes | Endpoint attributes carried in the configuration change, when it renders them. Absent for changes that do not. Stored as a list of name/value pairs because attribute names are unbounded. | nested |
+| cisco_ise.log.config_change.attributes.name | Attribute name. | keyword |
+| cisco_ise.log.config_change.attributes.value | Attribute value. | keyword |
+| cisco_ise.log.config_change.data | Free-form description of the configuration change, as rendered by Cisco ISE. | keyword |
 | cisco_ise.log.config_version.id |  | long |
 | cisco_ise.log.connectivity |  | keyword |
 | cisco_ise.log.cpm.session.id |  | keyword |
