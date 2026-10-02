@@ -25,7 +25,7 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 
 ## Compatibility
 
-This integration is compatible with Palo Alto Cortex XDR version **V3.13**. For the REST API, it has been tested with versions **v1** and **v2**.
+This integration is compatible with Palo Alto Cortex XDR **3.x through 3.19**. For the REST API, it has been tested with versions **v1** and **v2**.
 
 ## Setup
 
@@ -711,7 +711,11 @@ This is the `Event` dataset.
 | panw_cortex.xdr.event.agent.content_version |  | keyword |
 | panw_cortex.xdr.event.agent.hostname |  | keyword |
 | panw_cortex.xdr.event.agent.id |  | keyword |
-| panw_cortex.xdr.event.agent.interface_map |  | keyword |
+| panw_cortex.xdr.event.agent.interface_map.ipv4 |  | ip |
+| panw_cortex.xdr.event.agent.interface_map.ipv4_subnet_mask |  | keyword |
+| panw_cortex.xdr.event.agent.interface_map.ipv6 |  | ip |
+| panw_cortex.xdr.event.agent.interface_map.ipv6_subnet_mask |  | keyword |
+| panw_cortex.xdr.event.agent.interface_map.mac |  | keyword |
 | panw_cortex.xdr.event.agent.ip_addresses |  | ip |
 | panw_cortex.xdr.event.agent.ip_addresses_v6 |  | ip |
 | panw_cortex.xdr.event.agent.os_sub_type |  | keyword |
@@ -726,7 +730,11 @@ This is the `Event` dataset.
 | panw_cortex.xdr.event.event_version |  | keyword |
 | panw_cortex.xdr.event.host_metadata.domain |  | keyword |
 | panw_cortex.xdr.event.host_metadata.hostname |  | keyword |
-| panw_cortex.xdr.event.host_metadata.interface_map |  | keyword |
+| panw_cortex.xdr.event.host_metadata.interface_map.ipv4 |  | ip |
+| panw_cortex.xdr.event.host_metadata.interface_map.ipv4_subnet_mask |  | keyword |
+| panw_cortex.xdr.event.host_metadata.interface_map.ipv6 |  | ip |
+| panw_cortex.xdr.event.host_metadata.interface_map.ipv6_subnet_mask |  | keyword |
+| panw_cortex.xdr.event.host_metadata.interface_map.mac |  | keyword |
 | panw_cortex.xdr.event.id |  | keyword |
 | panw_cortex.xdr.event.os_actor.local_ip |  | ip |
 | panw_cortex.xdr.event.os_actor.local_port |  | long |
