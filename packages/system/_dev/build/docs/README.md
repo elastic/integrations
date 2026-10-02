@@ -41,7 +41,7 @@ without removing the original XML in `winlog.event_data.param2`. `winlog.user`
 identifies the account that emits the audit, often the AD FS service account;
 `user.name` identifies the user in the audited request, when available. Password
 change requests use `event.category: iam`, sign-outs use `event.type: end`. A UPN
-(`user@domain`) or down-level logon name (`DOMAIN\\user`) is split into
+(`user@domain`) or down-level logon name (`DOMAIN\user`) is split into
 `user.name` and `user.domain`. `winlog.adfs.user_id` retains the original value.
 
 The `IpAddress` audit field can contain multiple IPs. The first candidate is

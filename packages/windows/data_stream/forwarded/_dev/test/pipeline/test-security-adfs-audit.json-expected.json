@@ -1,30 +1,114 @@
 {
-  "expected": [
-    {
-      "ecs": {"version": "8.17.0"},
-      "event": {"code": "1203", "kind": "event", "outcome": "failure", "action": "adfs-authentication-failed", "category": ["authentication"], "type": ["start"]},
-      "host": {"os": {"type": "windows", "family": "windows"}},
-      "user": {"name": "alice", "domain": "lab.local"},
-      "source": {"ip": "10.10.10.1"},
-      "related": {"user": ["alice", "alice@lab.local"], "ip": ["10.10.10.1"]},
-      "winlog": {
-        "channel": "sEcUrItY", "provider_name": "AD FS Auditing", "event_id": "1203", "user": {"name": "svc_adfs_lab"},
-        "event_data": {"param1": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa", "param2": "<AuditBase><AuditResult>Failure</AuditResult><ContextComponents><Component><UserId>alice@lab.local</UserId><IpAddress>10.10.10.1</IpAddress></Component></ContextComponents></AuditBase>"},
-        "adfs": {"activity_id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa", "audit_result": "Failure", "user_id": "alice@lab.local", "ip_address": "10.10.10.1"}
-      }
-    },
-    {
-      "ecs": {"version": "8.17.0"},
-      "event": {"code": "1210", "kind": "event", "action": "adfs-extranet-lockout", "category": ["authentication"], "type": ["info"]},
-      "host": {"os": {"type": "windows", "family": "windows"}},
-      "user": {"name": "bob", "domain": "lab.local"},
-      "source": {"ip": "10.10.10.2"},
-      "related": {"user": ["bob", "bob@lab.local"], "ip": ["10.10.10.2"]},
-      "winlog": {
-        "channel": "Security", "provider_name": "AD FS Auditing", "event_id": "1210",
-        "event_data": {"param1": "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb", "param2": "<AuditBase><UserId>bob@lab.local</UserId><IpAddress>10.10.10.2</IpAddress><CurrentBadPasswordCount>7</CurrentBadPasswordCount></AuditBase>"},
-        "adfs": {"activity_id": "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb", "user_id": "bob@lab.local", "ip_address": "10.10.10.2", "current_bad_password_count": 7}
-      }
-    }
-  ]
+    "expected": [
+        {
+            "ecs": {
+                "version": "8.17.0"
+            },
+            "event": {
+                "action": "adfs-authentication-failed",
+                "category": [
+                    "authentication"
+                ],
+                "code": "1203",
+                "kind": "event",
+                "outcome": "failure",
+                "type": [
+                    "start"
+                ]
+            },
+            "host": {
+                "os": {
+                    "family": "windows",
+                    "type": "windows"
+                }
+            },
+            "related": {
+                "ip": [
+                    "10.10.10.1"
+                ],
+                "user": [
+                    "alice",
+                    "alice@lab.local"
+                ]
+            },
+            "source": {
+                "ip": "10.10.10.1"
+            },
+            "user": {
+                "domain": "lab.local",
+                "name": "alice"
+            },
+            "winlog": {
+                "adfs": {
+                    "activity_id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+                    "audit_result": "Failure",
+                    "ip_address": "10.10.10.1",
+                    "user_id": "alice@lab.local"
+                },
+                "channel": "sEcUrItY",
+                "event_data": {
+                    "param1": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+                    "param2": "<AuditBase><AuditResult>Failure</AuditResult><ContextComponents><Component><UserId>alice@lab.local</UserId><IpAddress>10.10.10.1</IpAddress></Component></ContextComponents></AuditBase>"
+                },
+                "event_id": "1203",
+                "provider_name": "AD FS Auditing",
+                "user": {
+                    "name": "svc_adfs_lab"
+                }
+            }
+        },
+        {
+            "ecs": {
+                "version": "8.17.0"
+            },
+            "event": {
+                "action": "adfs-extranet-lockout",
+                "category": [
+                    "authentication"
+                ],
+                "code": "1210",
+                "kind": "event",
+                "type": [
+                    "info"
+                ]
+            },
+            "host": {
+                "os": {
+                    "family": "windows",
+                    "type": "windows"
+                }
+            },
+            "related": {
+                "ip": [
+                    "10.10.10.2"
+                ],
+                "user": [
+                    "bob",
+                    "bob@lab.local"
+                ]
+            },
+            "source": {
+                "ip": "10.10.10.2"
+            },
+            "user": {
+                "domain": "lab.local",
+                "name": "bob"
+            },
+            "winlog": {
+                "adfs": {
+                    "activity_id": "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb",
+                    "current_bad_password_count": 7,
+                    "ip_address": "10.10.10.2",
+                    "user_id": "bob@lab.local"
+                },
+                "channel": "Security",
+                "event_data": {
+                    "param1": "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb",
+                    "param2": "<AuditBase><UserId>bob@lab.local</UserId><IpAddress>10.10.10.2</IpAddress><CurrentBadPasswordCount>7</CurrentBadPasswordCount></AuditBase>"
+                },
+                "event_id": "1210",
+                "provider_name": "AD FS Auditing"
+            }
+        }
+    ]
 }

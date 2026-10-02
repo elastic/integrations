@@ -41,7 +41,7 @@ without removing the original XML in `winlog.event_data.param2`. `winlog.user`
 identifies the account that emits the audit, often the AD FS service account;
 `user.name` identifies the user in the audited request, when available. Password
 change requests use `event.category: iam`, sign-outs use `event.type: end`. A UPN
-(`user@domain`) or down-level logon name (`DOMAIN\\user`) is split into
+(`user@domain`) or down-level logon name (`DOMAIN\user`) is split into
 `user.name` and `user.domain`. `winlog.adfs.user_id` retains the original value.
 
 The `IpAddress` audit field can contain multiple IPs. The first candidate is
@@ -670,7 +670,7 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | winlog.adfs.primary_auth | PrimaryAuth method from the AD FS XML, if present. | keyword |
 | winlog.adfs.relying_party | Relying party to which the audit relates. | keyword |
 | winlog.adfs.user_agent | User agent string from the AD FS request component. | keyword |
-| winlog.adfs.user_id | Original UserId in the AD FS XML (UPN, DOMAIN\\user, or another identifier). | keyword |
+| winlog.adfs.user_id | Original UserId in the AD FS XML (UPN, DOMAIN\user, or another identifier). | keyword |
 | winlog.api | The event log API type used to read the record. The possible values are "wineventlog" for the Windows Event Log API or "eventlogging" for the Event Logging API. The Event Logging API was designed for Windows Server 2003 or Windows 2000 operating systems. In Windows Vista, the event logging infrastructure was redesigned. On Windows Vista or later operating systems, the Windows Event Log API is used. Winlogbeat automatically detects which API to use for reading event logs. | keyword |
 | winlog.channel | The name of the channel from which this record was read. This value is one of the names from the `event_logs` collection in the configuration. | keyword |
 | winlog.computerObject.domain |  | keyword |
