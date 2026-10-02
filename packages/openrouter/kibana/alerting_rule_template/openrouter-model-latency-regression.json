@@ -3,7 +3,7 @@
     "type": "alerting_rule_template",
     "attributes": {
         "name": "[OpenRouter] Model Latency Regression",
-        "description": "Alerts when the p99 end-to-end latency for any model exceeds a configurable threshold. Detects model or provider degradation before it impacts end-user experience. Works with the default dimensions (model, api_key_id). To alert per provider instead, add 'provider' to the performance stream dimensions.",
+        "description": "Alerts when a model's worst p99 end-to-end latency over the last 6 hours is more than twice its median p99 latency over the preceding days. Detects model or provider degradation relative to each model's own normal. Works with the default dimensions (model, api_key_id).",
         "tags": [
             "OpenRouter",
             "Latency",
@@ -15,10 +15,10 @@
         },
         "params": {
             "searchType": "esqlQuery",
-            "timeWindowSize": 6,
-            "timeWindowUnit": "h",
+            "timeWindowSize": 7,
+            "timeWindowUnit": "d",
             "esqlQuery": {
-                "esql": "// Alert when any model's p99 latency exceeds a threshold in milliseconds.\n// Default: 5000ms (5 seconds). Adjust per your SLO.\n// Groups by model, which is always present with the default dimensions.\n// To group by provider instead, add 'provider' to the performance stream dimensions.\nFROM metrics-openrouter.performance-*\n| WHERE openrouter.performance.p99_latency IS NOT NULL AND openrouter.performance.model IS NOT NULL\n| STATS max_p99_ms = MAX(openrouter.performance.p99_latency) BY openrouter.performance.model\n| WHERE max_p99_ms > 5000\n| SORT max_p99_ms DESC"
+                "esql": "// Alert when a model's worst p99 end-to-end latency over the last 6 hours is more than twice the\n// median p99 latency of the same model over the rest of the rule window (the preceding days).\n// Quiet models (fewer than 20 requests in the last 6 hours) are ignored.\n// Tuning: 6 hours = recent period, 20 = minimum recent requests, 2 = multiple of the baseline.\nFROM metrics-openrouter.performance-*\n| WHERE openrouter.performance.p99_latency IS NOT NULL AND openrouter.performance.request_count > 0\n| EVAL recent = @timestamp >= NOW() - 6 hours\n| STATS recent_p99 = MAX(openrouter.performance.p99_latency) WHERE recent, recent_req = SUM(openrouter.performance.request_count) WHERE recent,\n        baseline_p99 = MEDIAN(openrouter.performance.p99_latency) WHERE NOT recent\n  BY openrouter.performance.model\n| WHERE recent_req >= 20 AND recent_p99 > baseline_p99 * 2\n| KEEP openrouter.performance.model, recent_p99, baseline_p99, recent_req"
             },
             "groupBy": "row",
             "timeField": "@timestamp"
@@ -28,7 +28,7 @@
         },
         "artifacts": {
             "investigation_guide": {
-                "blob": "## Model Latency Regression\n\n### Triage Steps\n1. Open the OpenRouter Performance dashboard and inspect the p99 latency trend per model.\n2. Identify which model is degraded:\n   `FROM metrics-openrouter.performance-* | WHERE @timestamp > NOW() - 3 HOURS | STATS p99 = MAX(openrouter.performance.p99_latency) BY openrouter.performance.model | SORT p99 DESC`\n3. Check whether the affected model also shows lower throughput:\n   `FROM metrics-openrouter.performance-* | STATS tput = AVG(openrouter.performance.p50_throughput) BY openrouter.performance.model`\n4. Consider switching to a different model or provider via OpenRouter's fallback routing.\n\n### Common Causes\n- Provider-side capacity constraints or incidents\n- Large model deployment rollout at the provider\n- Network congestion between OpenRouter and the provider\n- Cold-start latency for low-traffic models\n\n### Tuning\n- Raise the threshold (e.g., `10000` = 10s) if your workload uses large models with inherently high latency.\n- To alert per provider instead of per model, add `provider` to the performance stream dimensions and replace `BY openrouter.performance.model` with `BY openrouter.performance.provider`."
+                "blob": "## Model Latency Regression\n\n## How to read this alert\n\nKibana describes every ES|QL rule alert the same way: \"Document count is 1 in the last 7d for <model>. Alert when greater than 0.\" It only means that the rule query returned one row for this model, so the condition was met. The alert does not show the numbers itself.\n\nTo see them, open the alert in Discover with the link in the alert details (the `kibana.alert.url` field). The query result has the values that triggered the alert: `recent_p99` (worst p99 in the last 6 hours), `baseline_p99` (median p99 of the preceding days) and `recent_req`.\n\nFor notifications, add a rule action and use the context variables `{{context.title}}`, `{{context.hits}}` (the result rows with those values) and `{{context.link}}` (Discover link).\n\nFires per model when the highest p99 latency of the last 6 hours is more than 2x the median p99 latency of the same model over the preceding days of the rule window (7 days). Models with fewer than 20 requests in the last 6 hours are ignored.\n\n### Triage Steps\n1. Open the OpenRouter Performance dashboard and inspect the latency, TTFT, generation and inter-token charts for the model.\n2. Find the affected hours:\n   `FROM metrics-openrouter.performance-* | WHERE @timestamp > NOW() - 12 HOURS | STATS p99 = MAX(openrouter.performance.p99_latency) BY openrouter.performance.model, hour = BUCKET(@timestamp, 1 hour) | SORT p99 DESC`\n3. Check whether throughput also dropped:\n   `FROM metrics-openrouter.performance-* | STATS tput = AVG(openrouter.performance.avg_throughput) BY openrouter.performance.model`\n4. Consider routing to a different model or provider with OpenRouter's fallback routing.\n\n### Common Causes\n- Provider-side capacity constraints or incidents\n- Network congestion between OpenRouter and the provider\n- Cold-start latency for low-traffic models\n\n### Tuning\nThe constants are at the top of the query: recent period (6 hours), minimum recent requests (20) and the multiple of the baseline (2). Add `provider` to the performance dimensions and group by it to alert per provider."
             }
         }
     },
