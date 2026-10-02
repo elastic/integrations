@@ -4,7 +4,7 @@
 
 The Claude Code integration collects [OpenTelemetry](https://opentelemetry.io/) log events and traces emitted by [Anthropic Claude Code](https://code.claude.com/), the AI coding agent. It provides typed field mappings, ingest pipelines for structured queries, and security-focused dashboards for tool invocation auditing, cost monitoring, and permission analysis.
 
-Claude Code exports telemetry as OTLP (OpenTelemetry Protocol) logs and, optionally, traces. Each log event represents an action in an agentic session: tool calls (shell commands, file operations, MCP tool invocations), API requests, user prompts, permission decisions, and lifecycle events. Trace spans connect interactions, LLM requests, and tool calls into one trace per user turn. Trace export is in beta.
+Claude Code exports telemetry as OTLP (OpenTelemetry Protocol) logs and/or traces. Each log event represents an action in an agentic session: tool calls (shell commands, file operations, MCP tool invocations), API requests, user prompts, permission decisions, and lifecycle events. Trace spans connect interactions, LLM requests, and tool calls into one trace per user turn. Trace export is in beta.
 
 ### Compatibility
 
@@ -49,6 +49,8 @@ And these span types:
 | `llm_request` | A model request (tokens, latency, stop reason). | `api` |
 | `tool` | A tool invocation within an interaction. | `process` |
 
+Claude Code also emits other span types (for example `hook`, and nested `tool.blocked_on_user`/`tool.execution` spans). These are indexed into the `traces` data stream but aren't ECS-categorized by the ingest pipeline.
+
 ## What do I need to use this integration?
 
 - An Elastic deployment running version 9.4.0 or later.
@@ -70,7 +72,7 @@ Enabling these gates provides richer forensic data but indexes potentially sensi
 
 ### Managed settings
 
-Organizations can enforce telemetry and verbosity gates fleet-wide via MDM profiles, the admin console, or a `managed-settings.json`/`remote-settings.json` file (which overwrites any local `.claude/settings.json`). Managed settings cannot be overridden by user environment variables. This ensures telemetry cannot be silently redirected or disabled on managed devices.
+Organizations can enforce telemetry and verbosity gates fleet-wide via a `managed-settings.json` file, MDM profiles, or server-managed settings delivered through the claude.ai console. Claude Code ignores `OTEL_*` keys in local `.claude/settings.json` and `.claude/settings.local.json` entirely, regardless of whether managed settings are configured — telemetry can only be configured via environment variables or managed settings. This ensures telemetry cannot be silently redirected or disabled on managed devices.
 
 ## How do I deploy this integration?
 
@@ -269,13 +271,13 @@ It also extracts:
 **Tool invocation auditing** — query all Bash commands executed by a user:
 
 ```
-gen_ai.tool.name: "Bash" AND event.action: "tool_result"
+claude_code.tool_name: "Bash" AND event.action: "tool_result"
 ```
 
 **Permission decision analysis** — find `user_permanent` auto-approvals (potential risk signal):
 
 ```
-event.action: "tool_decision" AND claude_code.events.source: "user_permanent"
+event.action: "tool_decision" AND claude_code.decision_source: "user_permanent"
 ```
 
 **Cost anomaly detection** — aggregate `cost_usd` per user per day to detect unusual spending patterns.
@@ -283,7 +285,7 @@ event.action: "tool_decision" AND claude_code.events.source: "user_permanent"
 **MCP server access monitoring** — track which MCP servers users connect to and which tools they invoke:
 
 ```
-event.action: "mcp_server_connection" OR (event.action: "tool_result" AND claude_code.events.mcp_server_name: *)
+event.action: "mcp_server_connection" OR (event.action: "tool_result" AND claude_code.tool_name: "mcp_tool")
 ```
 
 ### Logs reference
