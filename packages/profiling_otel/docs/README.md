@@ -34,3 +34,37 @@ The OpenTelemetry Profiling integration collects the following profiling data:
 - **Continuous observability**: Maintain always-on profiling for production environments with minimal overhead
 - **Root cause analysis**: Understand application behavior during incidents and errors
 - **Capacity planning**: Analyze resource consumption trends over time
+
+## Run the profiling receiver with a standalone EDOT Collector
+
+As an alternative to running this integration through Fleet, you can run the profiling receiver directly with the [Elastic Distribution of OpenTelemetry (EDOT) Collector](https://www.elastic.co/docs/reference/edot-collector) and send the profiles to Elasticsearch using the Elasticsearch exporter.
+
+Before you start, make sure that [Universal Profiling](https://www.elastic.co/docs/solutions/observability/infra-and-hosts/get-started-with-universal-profiling#profiling-configure-data-ingestion) is configured for ingestion in your Elasticsearch cluster.
+
+Save the following configuration as `otel.yml`, replacing `<ELASTICSEARCH_ENDPOINT>` with your Elasticsearch URL (for example, `https://my-deployment.es.us-central1.gcp.cloud.es.io:443`) and `<ELASTICSEARCH_API_KEY>` with an encoded Elasticsearch API key:
+
+```yaml
+receivers:
+  profiling:
+    # Optional: sampling frequency, equivalent to the integration's
+    # "samples_per_second" setting.
+    samples_per_second: 19
+
+exporters:
+  elasticsearch:
+    endpoint: <ELASTICSEARCH_ENDPOINT>
+    api_key: <ELASTICSEARCH_API_KEY>
+    # Profiles are only supported in the OTel mapping mode.
+    mapping:
+      mode: otel
+
+service:
+  pipelines:
+    profiles:
+      receivers: [ profiling ]
+      exporters: [ elasticsearch ]
+```
+
+Profiles support in the Collector is protected by a feature gate. Start the EDOT Collector with the `service.profilesSupport` feature gate enabled and with elevated privileges (for example, root or `CAP_SYS_ADMIN`), which the eBPF profiler requires.
+
+For more details, refer to [Configure profiles collection](https://www.elastic.co/docs/reference/edot-collector/config/configure-profiles-collection) in the EDOT Collector documentation.
