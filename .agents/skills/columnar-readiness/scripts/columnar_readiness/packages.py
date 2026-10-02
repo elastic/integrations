@@ -86,7 +86,8 @@ def audit_package(pkg_dir: str, scan_dashboards: bool = True,
                                               result["kibana_condition"])
 
     if result["type"] == "input":
-        result["out_of_scope_reason"] = "input package (no data_stream directories to opt in)"
+        result["out_of_scope_reason"] = INPUT_PACKAGE_REASON
+        result["data_streams"] = input_package_streams(pkg_dir, manifest)
         return result
 
     ds_root = os.path.join(pkg_dir, "data_stream")
@@ -167,6 +168,83 @@ def audit_package(pkg_dir: str, scan_dashboards: bool = True,
                                 if pkg != own_dir
                                 and any(index_pattern_matches(p, idx) for p in tr["patterns"])]
     return result
+
+
+FieldEntry = Tuple[Dict[str, Any], str, int, bool, str, str]
+
+INPUT_PACKAGE_REASON = (
+    "input package: package-spec 3.7.0 adds `elasticsearch.columnar` to integration data "
+    "streams only, so Fleet has nothing to offer an opt-in on. Its policy templates are "
+    "assessed for information")
+
+
+def input_package_streams(pkg_dir: str, manifest: Dict[str, Any]) -> List[Dict[str, Any]]:
+    """One out-of-scope stream per policy template of an input package, for information.
+
+    An input package has no `data_stream/`: each policy template is a stream, mapped
+    from the root `fields/`, whose dataset is the `data_stream.dataset` variable's
+    default (users can override it). The mapping checks run so the work is known if
+    input packages come into scope; their results go to `informational_findings`,
+    never `findings`, so they cannot move a status or a catalog count.
+    """
+    rel = lambda p: os.path.relpath(p, pkg_dir)  # noqa: E731
+    errors: List[str] = []
+    entries = read_field_files(os.path.join(pkg_dir, "fields"), rel, errors)
+    nested_paths = {flat for fdef, flat, _, in_mf, _, _ in entries
+                    if not in_mf and fdef.get("type") == "nested"}
+    info: List[Dict[str, Any]] = []
+    for fdef, flat, depth, in_mf, rel_file, _ in entries:
+        path_depth = sum(1 for p in nested_paths if flat.startswith(p + "."))
+        info.extend(check_field(fdef, flat, max(depth, path_depth), in_mf, rel_file))
+
+    streams: List[Dict[str, Any]] = []
+    for template in manifest.get("policy_templates") or []:
+        if not isinstance(template, dict) or not template.get("name"):
+            continue
+        name = str(template["name"])
+        ttype = template.get("type") or "logs"
+        inputs = [str(template["input"])] if template.get("input") else []
+        dataset = next((str(v["default"]) for v in template.get("vars") or []
+                        if isinstance(v, dict) and v.get("name") == "data_stream.dataset"
+                        and v.get("default")), f"{manifest.get('name', os.path.basename(pkg_dir))}.{name}")
+        stream: Dict[str, Any] = {
+            "data_stream": name, "status": "OUT_OF_SCOPE", "type": ttype, "dataset": dataset,
+            "inputs": inputs, "findings": [], "informational_findings": [],
+            "errors": list(errors)}
+        if ttype != "logs":
+            stream["out_of_scope_reason"] = f"policy template type is `{ttype}` (logs only)"
+        elif any(i in OTEL_INPUTS for i in inputs):
+            stream["out_of_scope_reason"] = (
+                f"OpenTelemetry input ({', '.join(f'`{i}`' for i in inputs)}): OTel log "
+                f"streams stay on LogsDB until logs sharing the same resource attributes can "
+                f"be clustered (derived fields), per the rollout strategy")
+        else:
+            stream["out_of_scope_reason"] = (
+                f"input package policy template (dataset `{dataset}` by default): "
+                "assessed for information only")
+            stream["informational_findings"] = [dict(f) for f in info]
+        streams.append(stream)
+    return streams
+
+
+def read_field_files(fields_dir: str, rel: Any, errors: List[str]) -> List[FieldEntry]:
+    """(definition, flat name, nested depth, in multi-field, file, file name) for every
+    field of a `fields/` directory, in file order; parse errors go to `errors`."""
+    entries: List[FieldEntry] = []
+    if not os.path.isdir(fields_dir):
+        return entries
+    for fname in sorted(os.listdir(fields_dir)):
+        if not fname.endswith((".yml", ".yaml")):
+            continue
+        fpath = os.path.join(fields_dir, fname)
+        try:
+            defs = load_yaml(fpath)
+        except RuntimeError as exc:
+            errors.append(str(exc))
+            continue
+        for fdef, flat, depth, in_mf in walk_fields(defs):
+            entries.append((fdef, flat, depth, in_mf, rel(fpath), fname))
+    return entries
 
 
 def logs_stream_identities(ds_root: str, pkg_name: str) -> List[Tuple[str, str, str, str]]:
@@ -286,20 +364,7 @@ def audit_data_stream(pkg_dir: str, ds_dir: str, ds_name: str,
     # separate entries with dotted names (tanium: `whats` nested, then
     # `whats.intel_intra_ids` nested next to it), and Fleet expands both into the
     # same hierarchy.
-    entries: List[Tuple[Dict[str, Any], str, int, bool, str, str]] = []
-    fields_dir = os.path.join(ds_dir, "fields")
-    if os.path.isdir(fields_dir):
-        for fname in sorted(os.listdir(fields_dir)):
-            if not fname.endswith((".yml", ".yaml")):
-                continue
-            fpath = os.path.join(fields_dir, fname)
-            try:
-                defs = load_yaml(fpath)
-            except RuntimeError as exc:
-                stream["errors"].append(str(exc))
-                continue
-            for fdef, flat, depth, in_mf in walk_fields(defs):
-                entries.append((fdef, flat, depth, in_mf, rel(fpath), fname))
+    entries = read_field_files(os.path.join(ds_dir, "fields"), rel, stream["errors"])
     nested_paths = {flat for fdef, flat, _, in_mf, _, _ in entries
                     if not in_mf and fdef.get("type") == "nested"}
     text_subfields: set = set()

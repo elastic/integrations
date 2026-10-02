@@ -432,6 +432,24 @@ def md_package(result: Dict[str, Any]) -> str:
         for s in skipped:
             lines.append(f"- `{s['data_stream']}`: {s.get('out_of_scope_reason', 'skipped')}")
         lines.append("")
+    informational = [s for s in skipped if s.get("informational_findings")]
+    if informational:
+        lines.append("## Input package findings (for information)")
+        lines.append("")
+        lines.append("These change no status: an input package cannot declare columnar under "
+                     "package-spec 3.7.0. They are what its mappings would need if the spec "
+                     "adds columnar support for input packages. The field-level `columnar:` "
+                     "override already validates in their `fields/` (input packages share the "
+                     "integration fields spec), but without the stream-level flag nothing "
+                     "turns it on.")
+        lines.append("")
+        for s in informational:
+            lines.append(f"### `{s['data_stream']}` (dataset `{s.get('dataset')}`)")
+            lines.append("")
+            for f in s["informational_findings"]:
+                lines.append(f"- `{f['code']}` — {f['message']}")
+                lines.append(f"  - Where: `{location(f)}`")
+            lines.append("")
     if result.get("dashboard_top_fields"):
         lines.append("## Dashboard fields (benchmark workload)")
         lines.append("")
@@ -555,8 +573,10 @@ def md_catalog(results: List[Dict[str, Any]], scanned: Optional[int] = None,
     lines.append(f"| OUT_OF_SCOPE (input package / no logs streams / OTel input) | "
                  f"{len(by_status['OUT_OF_SCOPE'])} | {stream_status['OUT_OF_SCOPE']} |")
     lines.append("")
+    # Integration streams only: an input package is out of scope with or without OTel.
     otel_streams = [(r["package"], s_["data_stream"]) for r in results for s_ in r["data_streams"]
-                    if "OpenTelemetry input" in (s_.get("out_of_scope_reason") or "")]
+                    if r.get("type") != "input"
+                    and "OpenTelemetry input" in (s_.get("out_of_scope_reason") or "")]
     if otel_streams:
         lines.append(f"OTel log streams out of scope until derived fields land "
                      f"({len(otel_streams)}): "
@@ -731,6 +751,21 @@ def md_catalog(results: List[Dict[str, Any]], scanned: Optional[int] = None,
                              f"{count_of(rules, 'rule')}, {count_of(templates, 'template')}")
         else:
             lines.append(", ".join(f"`{p}`" for p in pkgs) or "(none)")
+        lines.append("")
+
+    inputs = [(r["package"], s) for r in results for s in r["data_streams"]
+              if s.get("informational_findings")]
+    if inputs:
+        lines.append("## Input packages — out of scope, assessed for information")
+        lines.append("")
+        lines.append("Input packages cannot declare columnar under package-spec 3.7.0 (no "
+                     "`elasticsearch.columnar` for them). These are the mapping findings their "
+                     "logs policy templates would need fixed if the spec adds that support.")
+        lines.append("")
+        for name, s in inputs:
+            found = ", ".join(sorted({f"`{f['code']}` on `{f['field']}`"
+                                      for f in s["informational_findings"]}))
+            lines.append(f"- `{name}` (`{s['data_stream']}`): {found}")
         lines.append("")
 
     sort_class: Counter = Counter()
