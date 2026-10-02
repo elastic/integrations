@@ -235,9 +235,9 @@ percentile of all traffic.
 
 ## Dashboards
 
-- **OpenRouter Usage & Cost Overview**: requests, cost (regular keys, BYOK, BYOK fees), tokens,
-  cache, and breakdowns by model, user and API key.
-- **OpenRouter Performance Overview**: latency, TTFT, generation, inter-token and router latency,
+- **[OpenRouter] Usage & Cost Overview**: requests, cost (regular keys, BYOK, BYOK fees), tokens,
+  cache, and breakdowns by model and API key.
+- **[OpenRouter] Performance Overview**: latency, TTFT, generation, inter-token and router latency,
   throughput, cache and guardrail rates, and a per-model comparison.
 
 Both dashboards use pinned controls with ES|QL-backed values, which require Kibana 9.6 or later.
@@ -256,9 +256,9 @@ Alert rule templates require Elastic Stack version 9.2.0 or later.
 
 | Name | Description |
 |---|---|
-| [OpenRouter] Cache Hit Rate Drop | Alerts when the request-weighted cache hit rate of any model drops below a configurable threshold. A sudden drop in cache hit rate can signal prompt changes, model switching, or cache invalidation events that increase effective token cost. |
-| [OpenRouter] Daily Cost Anomaly | Alerts when daily cost across all models and providers exceeds a configurable threshold. Catches unexpected spend spikes from runaway workloads or new model adoption before they accumulate. |
-| [OpenRouter] Model Latency Regression | Alerts when the p99 end-to-end latency for any model exceeds a configurable threshold. Detects model or provider degradation before it impacts end-user experience. Works with the default dimensions (model, api_key_id). To alert per provider instead, add 'provider' to the performance stream dimensions. |
+| [OpenRouter] Cache Hit Rate Drop | Alerts when the request-weighted cache hit rate of a model over the last 6 hours falls below half of its own rate over the preceding days. Models that do not use prompt caching are ignored. A sudden drop can signal prompt changes, model switching, or cache invalidation that increases effective token cost. |
+| [OpenRouter] Daily Cost Anomaly | Alerts when today's total cost exceeds 1.5 times the average daily cost of the previous days and is above 10 USD. Catches unexpected spend spikes from runaway workloads or new model adoption. |
+| [OpenRouter] Model Latency Regression | Alerts when a model's worst p99 end-to-end latency over the last 6 hours is more than twice its median p99 latency over the preceding days. Detects model or provider degradation relative to each model's own normal. Works with the default dimensions (model, api_key_id). |
 
 </details>
 
