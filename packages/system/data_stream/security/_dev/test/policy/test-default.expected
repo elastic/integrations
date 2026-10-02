@@ -40,6 +40,20 @@ inputs:
                             - winlog.event_data.TaskContentNew
                         - equals:
                             winlog.provider_name: Microsoft-Windows-Security-Auditing
+            - decode_xml:
+                field: winlog.event_data.param2
+                ignore_failure: true
+                ignore_missing: true
+                target_field: winlog._tmp.adfs.audit_base
+                to_lower: true
+                when:
+                    and:
+                        - has_fields:
+                            - winlog.event_data.param2
+                        - equals:
+                            winlog.provider_name: AD FS Auditing
+                        - regexp:
+                            winlog.event_id: ^(120[0-9]|1210)$
           tags: null
       type: winlog
       use_output: default

@@ -1,0 +1,227 @@
+---
+# Keep this pipeline byte-identical in:
+# - packages/system/data_stream/security/elasticsearch/ingest_pipeline/adfs.yml
+# - packages/windows/data_stream/forwarded/elasticsearch/ingest_pipeline/security_adfs.yml
+description: Normalize AD FS Security audit events after agent-side XML decoding.
+processors:
+  - script:
+      tag: normalize_adfs_security_audit
+      description: Extract a bounded set of AD FS audit fields from agent-side decode_xml output.
+      lang: painless
+      params:
+        actions:
+          "1200": adfs-token-issued
+          "1201": adfs-token-issuance-failed
+          "1202": adfs-authentication-success
+          "1203": adfs-authentication-failed
+          "1204": adfs-password-change-success
+          "1205": adfs-password-change-failed
+          "1206": adfs-sign-out-success
+          "1207": adfs-sign-out-failed
+          "1210": adfs-extranet-lockout
+      source: |-
+        Map asMap(def value) {
+          return value instanceof Map ? value : null;
+        }
+
+        String text(def value) {
+          if (value instanceof Map) {
+            value = value.get('#text');
+          }
+          if (value == null) {
+            return null;
+          }
+          String result = value.toString().trim();
+          if (result.length() == 0 || result.equals('-') || result.equalsIgnoreCase('N/A')) {
+            return null;
+          }
+          return result;
+        }
+
+        void copy(Map from, String name, Map to, String target) {
+          if (from != null) {
+            String value = text(from.get(name));
+            if (value != null && !to.containsKey(target)) {
+              to.put(target, value);
+            }
+          }
+        }
+
+        String code = ctx.event.code.toString();
+        Map eventData = asMap(ctx.winlog.event_data);
+        if (eventData == null) {
+          return;
+        }
+        Map adfs = asMap(ctx.winlog.adfs);
+        if (adfs == null) {
+          adfs = new HashMap();
+          ctx.winlog.put('adfs', adfs);
+        }
+        copy(eventData, 'param1', adfs, 'activity_id');
+
+        Map decoded = asMap(ctx.winlog._tmp?.adfs?.audit_base);
+        Map audit = decoded == null ? null : asMap(decoded.get('auditbase'));
+        if (audit != null) {
+          copy(audit, 'audittype', adfs, 'audit_type');
+          copy(audit, 'auditresult', adfs, 'audit_result');
+          copy(audit, 'failuretype', adfs, 'failure_type');
+          copy(audit, 'errorcode', adfs, 'error_code');
+          copy(audit, 'userid', adfs, 'user_id');
+          copy(audit, 'ipaddress', adfs, 'ip_address');
+          copy(audit, 'currentbadpasswordcount', adfs, 'current_bad_password_count_raw');
+
+          Map components = asMap(audit.get('contextcomponents'));
+          def children = components == null ? null : components.get('component');
+          ArrayList items = new ArrayList();
+          if (children instanceof List) {
+            items.addAll(children);
+          } else if (children != null) {
+            items.add(children);
+          }
+          for (def item : items) {
+            Map component = asMap(item);
+            if (component == null) {
+              continue;
+            }
+            copy(component, 'userid', adfs, 'user_id');
+            copy(component, 'relyingparty', adfs, 'relying_party');
+            copy(component, 'claimsprovider', adfs, 'claims_provider');
+            copy(component, 'primaryauth', adfs, 'primary_auth');
+            copy(component, 'mfamethod', adfs, 'mfa_method');
+            copy(component, 'authprotocol', adfs, 'auth_protocol');
+            copy(component, 'oauthclientid', adfs, 'oauth_client_id');
+            copy(component, 'oauthgrant', adfs, 'oauth_grant');
+            copy(component, 'networklocation', adfs, 'network_location');
+            copy(component, 'endpoint', adfs, 'endpoint');
+            copy(component, 'useragentstring', adfs, 'user_agent');
+            copy(component, 'ipaddress', adfs, 'ip_address');
+            copy(component, 'currentbadpasswordcount', adfs, 'current_bad_password_count_raw');
+            if (!adfs.containsKey('mfa_performed')) {
+              String performed = text(component.get('mfaperformed'));
+              if (performed != null && (performed.equalsIgnoreCase('true') || performed.equals('1'))) {
+                adfs.put('mfa_performed', true);
+              } else if (performed != null && (performed.equalsIgnoreCase('false') || performed.equals('0'))) {
+                adfs.put('mfa_performed', false);
+              }
+            }
+          }
+          String result = text(audit.get('auditresult'));
+          // Keep the Windows event's outcome when it is already populated.
+          if (ctx.event.outcome == null && result != null && (result.equalsIgnoreCase('success') || result.equalsIgnoreCase('failure'))) {
+            ctx.event.put('outcome', result.toLowerCase());
+          }
+        }
+
+        String userId = text(adfs.get('user_id'));
+        if (userId != null) {
+          Map user = asMap(ctx.user);
+          if (user == null) {
+            user = new HashMap();
+            ctx.put('user', user);
+          }
+          if (userId.startsWith('S-1-')) {
+            user.put('id', userId);
+          } else {
+            String name = userId;
+            String domain = null;
+            int slash = userId.indexOf('\\');
+            int at = userId.lastIndexOf('@');
+            if (slash > 0 && slash < userId.length() - 1) {
+              domain = userId.substring(0, slash);
+              name = userId.substring(slash + 1);
+            } else if (at > 0 && at < userId.length() - 1) {
+              domain = userId.substring(at + 1);
+              name = userId.substring(0, at);
+            }
+            user.put('name', name);
+            if (domain != null) {
+              user.put('domain', domain);
+            }
+            Map related = asMap(ctx.related);
+            if (related == null) {
+              related = new HashMap();
+              ctx.put('related', related);
+            }
+            def existing = related.get('user');
+            ArrayList users = existing instanceof List ? new ArrayList(existing) : new ArrayList();
+            if (existing instanceof String) {
+              users.add(existing);
+            }
+            if (!users.contains(name)) {
+              users.add(name);
+            }
+            if (!users.contains(userId)) {
+              users.add(userId);
+            }
+            related.put('user', users);
+          }
+        }
+
+        String ipAddress = text(adfs.get('ip_address'));
+        if (ipAddress != null && ctx.source?.ip == null) {
+          for (String candidate : ipAddress.splitOnToken(',')) {
+            String ip = text(candidate);
+            if (ip != null) {
+              Map source = asMap(ctx.source);
+              if (source == null) {
+                source = new HashMap();
+                ctx.put('source', source);
+              }
+              source.put('ip', ip);
+              break;
+            }
+          }
+        }
+
+        String badCount = text(adfs.remove('current_bad_password_count_raw'));
+        if (badCount != null) {
+          try {
+            adfs.put('current_bad_password_count', Long.parseLong(badCount));
+          } catch (NumberFormatException e) {
+            // Non-numeric lockout counters are not mapped as long; raw XML remains available.
+          }
+        }
+        String action = params.actions.get(code);
+        if (action != null) {
+          ctx.event.put('action', action);
+          ctx.event.put('category', ['1204', '1205'].contains(code) ? ['iam'] : ['authentication']);
+          ctx.event.put('type', ['1204', '1205'].contains(code) ? ['change'] :
+            ['1206', '1207'].contains(code) ? ['end'] :
+            code.equals('1210') ? ['info'] : ['start']);
+          if (ctx.event.kind == null) {
+            ctx.event.put('kind', 'event');
+          }
+        }
+        if (adfs.isEmpty()) {
+          ctx.winlog.remove('adfs');
+        }
+  - convert:
+      tag: validate_adfs_source_ip
+      field: source.ip
+      type: ip
+      ignore_missing: true
+      # An invalid client-supplied address is recoverable; keep the raw XML and
+      # winlog.adfs.ip_address instead of marking the entire audit as an error.
+      on_failure:
+        - remove:
+            tag: discard_invalid_adfs_source_ip
+            field: source.ip
+            ignore_missing: true
+on_failure:
+  - append:
+      tag: report_adfs_audit_normalization_failure
+      field: error.message
+      value: >-
+        Processor '{{{ _ingest.on_failure_processor_type }}}' with tag
+        '{{{ _ingest.on_failure_processor_tag }}}' in pipeline
+        '{{{ _ingest.on_failure_pipeline }}}' failed with message
+        '{{{ _ingest.on_failure_message }}}'
+  - set:
+      tag: mark_adfs_audit_pipeline_error
+      field: event.kind
+      value: pipeline_error
+  - append:
+      tag: preserve_original_adfs_audit_on_error
+      field: tags
+      value: preserve_original_event
+      allow_duplicates: false
