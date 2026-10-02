@@ -53,8 +53,13 @@ def stream_index_name(ds_type: str, pkg_name: str, ds_name: str,
 RULES_PACKAGE = "security_detection_engine"
 RULES_SUBDIR = os.path.join("kibana", "security_rule")
 
-# `FROM a, b METADATA _source | ...`, optionally after `SET ...;` directives.
-_ESQL_FROM_RE = re.compile(r"(?is)^\s*(?:set\b[^;]*;\s*)*from\s+(.+?)(?=\s+metadata\b|\||$)")
+# `FROM a, b METADATA _source | ...`, optionally after `SET ...;` directives, and each
+# subquery source of `FROM (FROM a | ...), (FROM b | ...)`.
+_ESQL_FROM_RE = re.compile(
+    r"(?is)(?:^\s*(?:set\b[^;]*;\s*)*|\(\s*)from\s+([^|()]+?)(?=\s+metadata\b|\||\)|$)")
+# A double-quoted string (kept) or a `//` / `/* */` comment (dropped), so comments go
+# without touching a `"http://…"` literal.
+_ESQL_STRING_OR_COMMENT_RE = re.compile(r'"(?:\\.|[^"\\])*"|//[^\n]*|/\*.*?\*/', re.S)
 _JSON_EXTRACT_PATH_RE = re.compile(r'(?i)json_extract\s*\(\s*_source\s*,\s*"([^"]+)"')
 # Dotted identifiers in a query text. Only names that resolve to a field of the stream
 # are kept, so values that happen to contain dots (`"cmd.exe"`) drop out.
@@ -68,6 +73,24 @@ def default_rules_dir(pkg_dir: str) -> Optional[str]:
     candidate = os.path.join(os.path.dirname(os.path.abspath(pkg_dir)),
                              RULES_PACKAGE, RULES_SUBDIR)
     return candidate if os.path.isdir(candidate) else None
+
+
+def esql_from_patterns(query: str) -> List[str]:
+    """Index patterns of an ES|QL query's source command (`FROM a, b METADATA …`).
+
+    Comments are dropped first: a `// note` between `FROM logs-x-*` and the first pipe
+    used to become part of the last pattern, so the rule matched nothing. The list may
+    span several lines, and subqueries (`FROM (FROM a | …), (FROM b | …)`) count too.
+    """
+    text = _ESQL_STRING_OR_COMMENT_RE.sub(
+        lambda m: m.group(0) if m.group(0).startswith('"') else " ", query)
+    names: List[str] = []
+    for match in _ESQL_FROM_RE.finditer(text):
+        for part in match.group(1).split(","):
+            name = part.strip().strip("`\"'")
+            if name and name not in names:
+                names.append(name)
+    return names
 
 
 def load_detection_rules(rules_dir: Optional[str]) -> Dict[str, Any]:
@@ -109,9 +132,7 @@ def load_detection_rules(rules_dir: Optional[str]) -> Dict[str, Any]:
         language = attrs.get("language") or attrs.get("type")
         patterns = [p for p in (attrs.get("index") or []) if isinstance(p, str)]
         if language == "esql" or attrs.get("type") == "esql":
-            match = _ESQL_FROM_RE.search(query)
-            if match:
-                patterns = [p.strip() for p in match.group(1).split(",") if p.strip()]
+            patterns = esql_from_patterns(query) or patterns
         # Indicator match rules also read the threat intel indices they match against.
         patterns += [p for p in (attrs.get("threat_index") or []) if isinstance(p, str)]
         rules.append({
