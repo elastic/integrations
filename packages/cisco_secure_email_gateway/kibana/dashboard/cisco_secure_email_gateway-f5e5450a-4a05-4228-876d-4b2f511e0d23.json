@@ -1,0 +1,3080 @@
+{
+    "accessControl": {
+        "accessMode": "default",
+        "owner": "u_3727848238_cloud"
+    },
+    "attributes": {
+        "description": "Site reliability view of the Cisco Secure Email Gateway: gateway health KPIs, mail flow and delivery rates, resource utilization trends, and per-host fleet status. Source: metrics-cisco_secure_email_gateway* (datasets: system_status, metrics, delivery_status).",
+        "esqlApproximation": false,
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "query": {
+                    "language": "kuery",
+                    "query": ""
+                }
+            }
+        },
+        "optionsJSON": {
+            "autoApplyFilters": true,
+            "hidePanelBorders": false,
+            "hidePanelTitles": false,
+            "syncColors": true,
+            "syncCursor": true,
+            "syncTooltips": false,
+            "useMargins": true
+        },
+        "panelsJSON": [
+            {
+                "embeddableConfig": {
+                    "content": "## Cisco Secure Email Gateway — Overview Dashboard\n\nReliability view of the email gateway fleet: **health KPIs**, **mail flow \u0026 delivery**, and **resource trends**.",
+                    "settings": {
+                        "open_links_in_new_tab": true
+                    }
+                },
+                "gridData": {
+                    "h": 4,
+                    "i": "ca644852-1c0f-457e-8dcd-d30d1f369783",
+                    "w": 48,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "ca644852-1c0f-457e-8dcd-d30d1f369783",
+                "type": "markdown"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "metrics-cisco_secure_email_gateway*-@timestamp": {
+                                    "allowNoIndex": false,
+                                    "id": "metrics-cisco_secure_email_gateway*-@timestamp",
+                                    "name": "metrics-cisco_secure_email_gateway*",
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "metrics-cisco_secure_email_gateway*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "metrics-cisco_secure_email_gateway*-@timestamp",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics-cisco_secure_email_gateway*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "f7bffeda-090c-4ccd-ac25-2b65a06e49b6": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "575efb04-6231-4165-a10b-dbbdffcf28db",
+                                                    "fieldName": "BUCKET(@timestamp, 75, ?_tstart, ?_tend)",
+                                                    "meta": {
+                                                        "type": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "946317e1-cc72-4f7b-a1c5-8fd46fe3dc34",
+                                                    "customLabel": true,
+                                                    "fieldName": "AVG(`CPU load %`)",
+                                                    "label": "CPU load",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0,
+                                                                "suffix": "%"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "index": "metrics-cisco_secure_email_gateway*-@timestamp",
+                                            "query": {
+                                                "esql": "FROM metrics-cisco_secure_email_gateway* | WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c ?_tend AND cisco_secure_email_gateway.system_status.gauges.overall_cpu_load_pct IS NOT NULL | SORT @timestamp DESC | LIMIT 1 | EVAL `CPU load %` = cisco_secure_email_gateway.system_status.gauges.overall_cpu_load_pct | KEEP `CPU load %`, @timestamp | STATS AVG(`CPU load %`) BY BUCKET(@timestamp, 75, ?_tstart, ?_tend)"
+                                            },
+                                            "timeField": "@timestamp"
+                                        },
+                                        "layer_0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "metric_accessor_metric",
+                                                    "customLabel": true,
+                                                    "fieldName": "CPU load %",
+                                                    "label": "CPU load",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0,
+                                                                "suffix": "%"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "ignoreGlobalFilters": false,
+                                            "index": "metrics-cisco_secure_email_gateway*-@timestamp",
+                                            "query": {
+                                                "esql": "FROM metrics-cisco_secure_email_gateway*\n| WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c ?_tend AND cisco_secure_email_gateway.system_status.gauges.overall_cpu_load_pct IS NOT NULL\n| SORT @timestamp DESC\n| LIMIT 1\n| EVAL `CPU load %` = cisco_secure_email_gateway.system_status.gauges.overall_cpu_load_pct\n| KEEP `CPU load %`"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "metrics-cisco_secure_email_gateway*-@timestamp",
+                                    "name": "indexpattern-datasource-layer-layer_0",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM metrics-cisco_secure_email_gateway*\n| WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c ?_tend AND cisco_secure_email_gateway.system_status.gauges.overall_cpu_load_pct IS NOT NULL\n| SORT @timestamp DESC\n| LIMIT 1\n| EVAL `CPU load %` = cisco_secure_email_gateway.system_status.gauges.overall_cpu_load_pct\n| KEEP `CPU load %`"
+                            },
+                            "visualization": {
+                                "applyColorTo": "background",
+                                "density": "default",
+                                "layerId": "layer_0",
+                                "layerType": "data",
+                                "metricAccessor": "metric_accessor_metric",
+                                "palette": {
+                                    "name": "custom",
+                                    "params": {
+                                        "colorStops": [
+                                            {
+                                                "color": "#24c292",
+                                                "stop": null
+                                            },
+                                            {
+                                                "color": "#fcd883",
+                                                "stop": 60
+                                            },
+                                            {
+                                                "color": "#f6726a",
+                                                "stop": 85
+                                            }
+                                        ],
+                                        "continuity": "all",
+                                        "maxSteps": 5,
+                                        "name": "custom",
+                                        "progression": "fixed",
+                                        "rangeMax": null,
+                                        "rangeMin": null,
+                                        "rangeType": "number",
+                                        "reverse": false,
+                                        "steps": 3,
+                                        "stops": [
+                                            {
+                                                "color": "#24c292",
+                                                "stop": 60
+                                            },
+                                            {
+                                                "color": "#fcd883",
+                                                "stop": 85
+                                            },
+                                            {
+                                                "color": "#f6726a",
+                                                "stop": null
+                                            }
+                                        ]
+                                    },
+                                    "type": "palette"
+                                },
+                                "primaryAlign": "right",
+                                "primaryPosition": "bottom",
+                                "showBar": false,
+                                "titlesTextAlign": "left",
+                                "trendlineLayerId": "f7bffeda-090c-4ccd-ac25-2b65a06e49b6",
+                                "trendlineLayerType": "metricTrendline",
+                                "trendlineMetricAccessor": "946317e1-cc72-4f7b-a1c5-8fd46fe3dc34",
+                                "trendlineTimeAccessor": "575efb04-6231-4165-a10b-dbbdffcf28db",
+                                "valueFontMode": "default"
+                            }
+                        },
+                        "title": "",
+                        "version": 2,
+                        "visualizationType": "lnsMetric"
+                    }
+                },
+                "gridData": {
+                    "h": 5,
+                    "i": "eb0e469e-8e53-4456-b357-8d8cb3d0c2ec",
+                    "sectionId": "85e07f92-d0cb-4ec4-8722-640011ca888d",
+                    "w": 6,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "eb0e469e-8e53-4456-b357-8d8cb3d0c2ec",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "metrics-cisco_secure_email_gateway*-@timestamp": {
+                                    "allowNoIndex": false,
+                                    "id": "metrics-cisco_secure_email_gateway*-@timestamp",
+                                    "name": "metrics-cisco_secure_email_gateway*",
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "metrics-cisco_secure_email_gateway*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "metrics-cisco_secure_email_gateway*-@timestamp",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics-cisco_secure_email_gateway*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "f1747ecb-288f-4d37-b6b0-16fc4160d651": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "ea24904d-2d8a-4200-b8cd-af698f64e6b0",
+                                                    "fieldName": "BUCKET(@timestamp, 75, ?_tstart, ?_tend)",
+                                                    "meta": {
+                                                        "type": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "f230ca4c-ee1f-4e3d-8bcd-88ab99229d39",
+                                                    "customLabel": true,
+                                                    "fieldName": "AVG(`RAM utilization %`)",
+                                                    "label": "RAM utilization %",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0,
+                                                                "suffix": "%"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "index": "metrics-cisco_secure_email_gateway*-@timestamp",
+                                            "query": {
+                                                "esql": "FROM metrics-cisco_secure_email_gateway* | WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c ?_tend | SORT @timestamp DESC | EVAL `RAM utilization %` = cisco_secure_email_gateway.system_status.gauges.ram_utilization_pct | KEEP `RAM utilization %`, @timestamp | LIMIT 1 | STATS AVG(`RAM utilization %`) BY BUCKET(@timestamp, 75, ?_tstart, ?_tend)"
+                                            },
+                                            "timeField": "@timestamp"
+                                        },
+                                        "layer_0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "metric_accessor_metric",
+                                                    "customLabel": true,
+                                                    "fieldName": "RAM utilization %",
+                                                    "label": "RAM utilization %",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 0,
+                                                                "suffix": "%"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "ignoreGlobalFilters": false,
+                                            "index": "metrics-cisco_secure_email_gateway*-@timestamp",
+                                            "query": {
+                                                "esql": "FROM metrics-cisco_secure_email_gateway*\n| WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c ?_tend\n| SORT @timestamp DESC\n| EVAL `RAM utilization %` = cisco_secure_email_gateway.system_status.gauges.ram_utilization_pct\n| KEEP `RAM utilization %`\n| LIMIT 1"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "metrics-cisco_secure_email_gateway*-@timestamp",
+                                    "name": "indexpattern-datasource-layer-layer_0",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM metrics-cisco_secure_email_gateway*\n| WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c ?_tend\n| SORT @timestamp DESC\n| EVAL `RAM utilization %` = cisco_secure_email_gateway.system_status.gauges.ram_utilization_pct\n| KEEP `RAM utilization %`\n| LIMIT 1"
+                            },
+                            "visualization": {
+                                "applyColorTo": "background",
+                                "density": "default",
+                                "layerId": "layer_0",
+                                "layerType": "data",
+                                "metricAccessor": "metric_accessor_metric",
+                                "palette": {
+                                    "name": "custom",
+                                    "params": {
+                                        "colorStops": [
+                                            {
+                                                "color": "#24c292",
+                                                "stop": null
+                                            },
+                                            {
+                                                "color": "#fcd883",
+                                                "stop": 70
+                                            },
+                                            {
+                                                "color": "#f6726a",
+                                                "stop": 90
+                                            }
+                                        ],
+                                        "continuity": "all",
+                                        "maxSteps": 5,
+                                        "name": "custom",
+                                        "progression": "fixed",
+                                        "rangeMax": null,
+                                        "rangeMin": null,
+                                        "rangeType": "number",
+                                        "reverse": false,
+                                        "steps": 3,
+                                        "stops": [
+                                            {
+                                                "color": "#24c292",
+                                                "stop": 70
+                                            },
+                                            {
+                                                "color": "#fcd883",
+                                                "stop": 90
+                                            },
+                                            {
+                                                "color": "#f6726a",
+                                                "stop": null
+                                            }
+                                        ]
+                                    },
+                                    "type": "palette"
+                                },
+                                "primaryAlign": "right",
+                                "primaryPosition": "bottom",
+                                "showBar": false,
+                                "titlesTextAlign": "left",
+                                "trendlineLayerId": "f1747ecb-288f-4d37-b6b0-16fc4160d651",
+                                "trendlineLayerType": "metricTrendline",
+                                "trendlineMetricAccessor": "f230ca4c-ee1f-4e3d-8bcd-88ab99229d39",
+                                "trendlineTimeAccessor": "ea24904d-2d8a-4200-b8cd-af698f64e6b0",
+                                "valueFontMode": "default"
+                            }
+                        },
+                        "title": "",
+                        "version": 2,
+                        "visualizationType": "lnsMetric"
+                    }
+                },
+                "gridData": {
+                    "h": 5,
+                    "i": "85efecb0-1cab-482a-b9f0-9b9eacf7714b",
+                    "sectionId": "85e07f92-d0cb-4ec4-8722-640011ca888d",
+                    "w": 6,
+                    "x": 6,
+                    "y": 0
+                },
+                "panelIndex": "85efecb0-1cab-482a-b9f0-9b9eacf7714b",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "metrics-cisco_secure_email_gateway*-@timestamp": {
+                                    "allowNoIndex": false,
+                                    "id": "metrics-cisco_secure_email_gateway*-@timestamp",
+                                    "name": "metrics-cisco_secure_email_gateway*",
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "metrics-cisco_secure_email_gateway*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "metrics-cisco_secure_email_gateway*-@timestamp",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics-cisco_secure_email_gateway*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "8fa98be6-24ba-4cd6-9cc5-ca3bd83fc487": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "6a6fbcd6-0e9c-4d2e-9f05-c0ea530acc11",
+                                                    "fieldName": "BUCKET(@timestamp, 75, ?_tstart, ?_tend)",
+                                                    "meta": {
+                                                        "type": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "2dac0770-3191-4b92-be47-ac65e4465c4b",
+                                                    "customLabel": true,
+                                                    "fieldName": "AVG(`Disk I/O %`)",
+                                                    "label": "Disk I/O %",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "percent",
+                                                            "params": {
+                                                                "compact": true,
+                                                                "decimals": 1
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "index": "metrics-cisco_secure_email_gateway*-@timestamp",
+                                            "query": {
+                                                "esql": "FROM metrics-cisco_secure_email_gateway* | WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c ?_tend AND cisco_secure_email_gateway.system_status.gauges.disk_io_utilization_pct IS NOT NULL | SORT @timestamp DESC | KEEP cisco_secure_email_gateway.system_status.gauges.disk_io_utilization_pct, @timestamp | RENAME cisco_secure_email_gateway.system_status.gauges.disk_io_utilization_pct AS `Disk I/O %` | LIMIT 1 | STATS AVG(`Disk I/O %`) BY BUCKET(@timestamp, 75, ?_tstart, ?_tend)"
+                                            },
+                                            "timeField": "@timestamp"
+                                        },
+                                        "layer_0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "metric_accessor_metric",
+                                                    "customLabel": true,
+                                                    "fieldName": "Disk I/O %",
+                                                    "label": "Disk I/O %",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 1,
+                                                                "suffix": "%"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "ignoreGlobalFilters": false,
+                                            "index": "metrics-cisco_secure_email_gateway*-@timestamp",
+                                            "query": {
+                                                "esql": "FROM metrics-cisco_secure_email_gateway*\n| WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c ?_tend AND cisco_secure_email_gateway.system_status.gauges.disk_io_utilization_pct IS NOT NULL\n| SORT @timestamp DESC\n| KEEP cisco_secure_email_gateway.system_status.gauges.disk_io_utilization_pct\n| RENAME cisco_secure_email_gateway.system_status.gauges.disk_io_utilization_pct AS `Disk I/O %`\n| LIMIT 1"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "metrics-cisco_secure_email_gateway*-@timestamp",
+                                    "name": "indexpattern-datasource-layer-layer_0",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM metrics-cisco_secure_email_gateway*\n| WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c ?_tend AND cisco_secure_email_gateway.system_status.gauges.disk_io_utilization_pct IS NOT NULL\n| SORT @timestamp DESC\n| KEEP cisco_secure_email_gateway.system_status.gauges.disk_io_utilization_pct\n| RENAME cisco_secure_email_gateway.system_status.gauges.disk_io_utilization_pct AS `Disk I/O %`\n| LIMIT 1"
+                            },
+                            "visualization": {
+                                "applyColorTo": "background",
+                                "density": "default",
+                                "layerId": "layer_0",
+                                "layerType": "data",
+                                "metricAccessor": "metric_accessor_metric",
+                                "palette": {
+                                    "name": "custom",
+                                    "params": {
+                                        "colorStops": [
+                                            {
+                                                "color": "#24c292",
+                                                "stop": null
+                                            },
+                                            {
+                                                "color": "#fcd883",
+                                                "stop": 60
+                                            },
+                                            {
+                                                "color": "#f6726a",
+                                                "stop": 85
+                                            }
+                                        ],
+                                        "continuity": "all",
+                                        "maxSteps": 5,
+                                        "name": "custom",
+                                        "progression": "fixed",
+                                        "rangeMax": null,
+                                        "rangeMin": null,
+                                        "rangeType": "number",
+                                        "reverse": false,
+                                        "steps": 3,
+                                        "stops": [
+                                            {
+                                                "color": "#24c292",
+                                                "stop": 60
+                                            },
+                                            {
+                                                "color": "#fcd883",
+                                                "stop": 85
+                                            },
+                                            {
+                                                "color": "#f6726a",
+                                                "stop": null
+                                            }
+                                        ]
+                                    },
+                                    "type": "palette"
+                                },
+                                "primaryAlign": "right",
+                                "primaryPosition": "bottom",
+                                "showBar": false,
+                                "titlesTextAlign": "left",
+                                "trendlineLayerId": "8fa98be6-24ba-4cd6-9cc5-ca3bd83fc487",
+                                "trendlineLayerType": "metricTrendline",
+                                "trendlineMetricAccessor": "2dac0770-3191-4b92-be47-ac65e4465c4b",
+                                "trendlineTimeAccessor": "6a6fbcd6-0e9c-4d2e-9f05-c0ea530acc11",
+                                "valueFontMode": "default"
+                            }
+                        },
+                        "title": "",
+                        "version": 2,
+                        "visualizationType": "lnsMetric"
+                    }
+                },
+                "gridData": {
+                    "h": 5,
+                    "i": "b762e6bc-b777-4296-80d0-2fca74f5a8c7",
+                    "sectionId": "85e07f92-d0cb-4ec4-8722-640011ca888d",
+                    "w": 6,
+                    "x": 12,
+                    "y": 0
+                },
+                "panelIndex": "b762e6bc-b777-4296-80d0-2fca74f5a8c7",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "metrics-cisco_secure_email_gateway*-@timestamp": {
+                                    "allowNoIndex": false,
+                                    "id": "metrics-cisco_secure_email_gateway*-@timestamp",
+                                    "name": "metrics-cisco_secure_email_gateway*",
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "metrics-cisco_secure_email_gateway*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "metrics-cisco_secure_email_gateway*-@timestamp",
+                                            "timeField": "@timestamp",
+                                            "title": "metrics-cisco_secure_email_gateway*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "layer_0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "metric_accessor_metric",
+                                                    "customLabel": true,
+                                                    "fieldName": "Mail Queue Utilization %",
+                                                    "label": "Mail Queue Utilization",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "decimals": 2,
+                                                                "suffix": "%"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "ignoreGlobalFilters": false,
+                                            "index": "metrics-cisco_secure_email_gateway*-@timestamp",
+                                            "query": {
+                                                "esql": "FROM metrics-cisco_secure_email_gateway*\n| WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c ?_tend\n| WHERE cisco_secure_email_gateway.system_status.gauges.total_queue_utilized_pct IS NOT NULL\n| SORT @timestamp DESC\n| LIMIT 1\n| EVAL `Mail Queue Utilization %` = cisco_secure_email_gateway.system_status.gauges.total_queue_utilized_pct\n| KEEP `Mail Queue Utilization %`"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "metrics-cisco_secure_email_gateway*-@timestamp",
+                                    "name": "indexpattern-datasource-layer-layer_0",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM metrics-cisco_secure_email_gateway*\n| WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c ?_tend\n| WHERE cisco_secure_email_gateway.system_status.gauges.total_queue_utilized_pct IS NOT NULL\n| SORT @timestamp DESC\n| LIMIT 1\n| EVAL `Mail Queue Utilization %` = cisco_secure_email_gateway.system_status.gauges.total_queue_utilized_pct\n| KEEP `Mail Queue Utilization %`"
+                            },
+                            "visualization": {
+                                "applyColorTo": "background",
+                                "density": "default",
+                                "layerId": "layer_0",
+                                "layerType": "data",
+                                "metricAccessor": "metric_accessor_metric",
+                                "palette": {
+                                    "name": "custom",
+                                    "params": {
+                                        "colorStops": [
+                                            {
+                                                "color": "#24c292",
+                                                "stop": null
+                                            },
+                                            {
+                                                "color": "#fcd883",
+                                                "stop": 0.7
+                                            },
+                                            {
+                                                "color": "#f6726a",
+                                                "stop": 0.9
+                                            }
+                                        ],
+                                        "continuity": "all",
+                                        "maxSteps": 5,
+                                        "name": "custom",
+                                        "progression": "fixed",
+                                        "rangeMax": null,
+                                        "rangeMin": null,
+                                        "rangeType": "number",
+                                        "reverse": false,
+                                        "steps": 3,
+                                        "stops": [
+                                            {
+                                                "color": "#24c292",
+                                                "stop": 0.7
+                                            },
+                                            {
+                                                "color": "#fcd883",
+                                                "stop": 0.9
+                                            },
+                                            {
+                                                "color": "#f6726a",
+                                                "stop": null
+                                            }
+                                        ]
+                                    },
+                                    "type": "palette"
+                                },
+                                "primaryAlign": "right",
+                                "primaryPosition": "bottom",
+                                "showBar": false,
+                                "titlesTextAlign": "left",
+                                "valueFontMode": "default"
+                            }
+                        },
+                        "title": "",
+                        "version": 2,
+                        "visualizationType": "lnsMetric"
+                    }
+                },
+                "gridData": {
+                    "h": 5,
+                    "i": "c2308be9-bc94-4a21-b372-9c55655244db",
+                    "sectionId": "85e07f92-d0cb-4ec4-8722-640011ca888d",
+                    "w": 6,
+                    "x": 18,
+                    "y": 0
+                },
+                "panelIndex": "c2308be9-bc94-4a21-b372-9c55655244db",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "metrics-cisco_secure_email_gateway*-@timestamp": {
+                                    "allowNoIndex": false,
+                                    "id": "metrics-cisco_secure_email_gateway*-@timestamp",
+                                    "name": "metrics-cisco_secure_email_gateway*",
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "metrics-cisco_secure_email_gateway*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "layer_0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "metric_accessor_metric",
+                                                    "customLabel": true,
+                                                    "fieldName": "Messages in Work Queue",
+                                                    "label": "Messages in Work Queue",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "ignoreGlobalFilters": false,
+                                            "index": "metrics-cisco_secure_email_gateway*-@timestamp",
+                                            "query": {
+                                                "esql": "FROM metrics-cisco_secure_email_gateway*\n| WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c ?_tend\n| SORT @timestamp DESC\n| KEEP cisco_secure_email_gateway.system_status.gauges.msgs_in_work_queue\n| RENAME cisco_secure_email_gateway.system_status.gauges.msgs_in_work_queue AS `Messages in Work Queue`\n| LIMIT 1"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "metrics-cisco_secure_email_gateway*-@timestamp",
+                                    "name": "indexpattern-datasource-layer-layer_0",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM metrics-cisco_secure_email_gateway*\n| WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c ?_tend\n| SORT @timestamp DESC\n| KEEP cisco_secure_email_gateway.system_status.gauges.msgs_in_work_queue\n| RENAME cisco_secure_email_gateway.system_status.gauges.msgs_in_work_queue AS `Messages in Work Queue`\n| LIMIT 1"
+                            },
+                            "visualization": {
+                                "density": "default",
+                                "layerId": "layer_0",
+                                "layerType": "data",
+                                "metricAccessor": "metric_accessor_metric",
+                                "primaryAlign": "right",
+                                "primaryPosition": "bottom",
+                                "showBar": false,
+                                "titlesTextAlign": "left",
+                                "valueFontMode": "default"
+                            }
+                        },
+                        "title": "",
+                        "version": 2,
+                        "visualizationType": "lnsMetric"
+                    }
+                },
+                "gridData": {
+                    "h": 5,
+                    "i": "63868690-79b8-4338-889a-ced945701d9d",
+                    "sectionId": "85e07f92-d0cb-4ec4-8722-640011ca888d",
+                    "w": 6,
+                    "x": 24,
+                    "y": 0
+                },
+                "panelIndex": "63868690-79b8-4338-889a-ced945701d9d",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "metrics-cisco_secure_email_gateway*-@timestamp": {
+                                    "allowNoIndex": false,
+                                    "id": "metrics-cisco_secure_email_gateway*-@timestamp",
+                                    "name": "metrics-cisco_secure_email_gateway*",
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "metrics-cisco_secure_email_gateway*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "layer_0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "metric_accessor_metric",
+                                                    "customLabel": true,
+                                                    "fieldName": "Messages in quarantine",
+                                                    "label": "Messages in quarantine",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "ignoreGlobalFilters": false,
+                                            "index": "metrics-cisco_secure_email_gateway*-@timestamp",
+                                            "query": {
+                                                "esql": "FROM metrics-cisco_secure_email_gateway*\n| WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c ?_tend\n  AND cisco_secure_email_gateway.system_status.gauges.msgs_in_quarantine IS NOT NULL\n| SORT @timestamp DESC\n| LIMIT 1\n| KEEP cisco_secure_email_gateway.system_status.gauges.msgs_in_quarantine\n| RENAME cisco_secure_email_gateway.system_status.gauges.msgs_in_quarantine AS `Messages in quarantine`"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "metrics-cisco_secure_email_gateway*-@timestamp",
+                                    "name": "indexpattern-datasource-layer-layer_0",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM metrics-cisco_secure_email_gateway*\n| WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c ?_tend\n  AND cisco_secure_email_gateway.system_status.gauges.msgs_in_quarantine IS NOT NULL\n| SORT @timestamp DESC\n| LIMIT 1\n| KEEP cisco_secure_email_gateway.system_status.gauges.msgs_in_quarantine\n| RENAME cisco_secure_email_gateway.system_status.gauges.msgs_in_quarantine AS `Messages in quarantine`"
+                            },
+                            "visualization": {
+                                "applyColorTo": "value",
+                                "density": "default",
+                                "layerId": "layer_0",
+                                "layerType": "data",
+                                "metricAccessor": "metric_accessor_metric",
+                                "primaryAlign": "right",
+                                "primaryPosition": "bottom",
+                                "showBar": false,
+                                "titlesTextAlign": "left",
+                                "valueFontMode": "default"
+                            }
+                        },
+                        "title": "",
+                        "version": 2,
+                        "visualizationType": "lnsMetric"
+                    }
+                },
+                "gridData": {
+                    "h": 5,
+                    "i": "f9730a12-e96e-4795-8563-016aab650d2d",
+                    "sectionId": "85e07f92-d0cb-4ec4-8722-640011ca888d",
+                    "w": 6,
+                    "x": 30,
+                    "y": 0
+                },
+                "panelIndex": "f9730a12-e96e-4795-8563-016aab650d2d",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "metrics-cisco_secure_email_gateway*-@timestamp": {
+                                    "allowNoIndex": false,
+                                    "id": "metrics-cisco_secure_email_gateway*-@timestamp",
+                                    "name": "metrics-cisco_secure_email_gateway*",
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "metrics-cisco_secure_email_gateway*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "layer_0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "metric_accessor_metric",
+                                                    "customLabel": true,
+                                                    "fieldName": "Current incoming SMTP connections",
+                                                    "label": "Current incoming SMTP connections",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "ignoreGlobalFilters": false,
+                                            "index": "metrics-cisco_secure_email_gateway*-@timestamp",
+                                            "query": {
+                                                "esql": "FROM metrics-cisco_secure_email_gateway*\n| WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c ?_tend\n| SORT @timestamp DESC\n| LIMIT 1\n| KEEP cisco_secure_email_gateway.system_status.gauges.current_incoming_connections\n| RENAME cisco_secure_email_gateway.system_status.gauges.current_incoming_connections AS `Current incoming SMTP connections`"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "metrics-cisco_secure_email_gateway*-@timestamp",
+                                    "name": "indexpattern-datasource-layer-layer_0",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM metrics-cisco_secure_email_gateway*\n| WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c ?_tend\n| SORT @timestamp DESC\n| LIMIT 1\n| KEEP cisco_secure_email_gateway.system_status.gauges.current_incoming_connections\n| RENAME cisco_secure_email_gateway.system_status.gauges.current_incoming_connections AS `Current incoming SMTP connections`"
+                            },
+                            "visualization": {
+                                "applyColorTo": "value",
+                                "density": "default",
+                                "layerId": "layer_0",
+                                "layerType": "data",
+                                "metricAccessor": "metric_accessor_metric",
+                                "primaryAlign": "right",
+                                "primaryPosition": "bottom",
+                                "showBar": false,
+                                "titlesTextAlign": "left",
+                                "valueFontMode": "default"
+                            }
+                        },
+                        "title": "",
+                        "version": 2,
+                        "visualizationType": "lnsMetric"
+                    }
+                },
+                "gridData": {
+                    "h": 5,
+                    "i": "321ddb0b-407a-4028-916a-ca3245dd6724",
+                    "sectionId": "85e07f92-d0cb-4ec4-8722-640011ca888d",
+                    "w": 6,
+                    "x": 36,
+                    "y": 0
+                },
+                "panelIndex": "321ddb0b-407a-4028-916a-ca3245dd6724",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "metrics-cisco_secure_email_gateway*-@timestamp": {
+                                    "allowNoIndex": false,
+                                    "id": "metrics-cisco_secure_email_gateway*-@timestamp",
+                                    "name": "metrics-cisco_secure_email_gateway*",
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "metrics-cisco_secure_email_gateway*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "layer_0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "metric_accessor_metric",
+                                                    "customLabel": true,
+                                                    "fieldName": "Current Outgoing SMTP Connections",
+                                                    "label": "Current Outgoing SMTP Connections",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "ignoreGlobalFilters": false,
+                                            "index": "metrics-cisco_secure_email_gateway*-@timestamp",
+                                            "query": {
+                                                "esql": "FROM metrics-cisco_secure_email_gateway*\n| WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c ?_tend\n| WHERE cisco_secure_email_gateway.system_status.gauges.current_outgoing_connections IS NOT NULL\n| SORT @timestamp DESC\n| LIMIT 1\n| RENAME cisco_secure_email_gateway.system_status.gauges.current_outgoing_connections AS `Current Outgoing SMTP Connections`\n| KEEP `Current Outgoing SMTP Connections`"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "metrics-cisco_secure_email_gateway*-@timestamp",
+                                    "name": "indexpattern-datasource-layer-layer_0",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM metrics-cisco_secure_email_gateway*\n| WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c ?_tend\n| WHERE cisco_secure_email_gateway.system_status.gauges.current_outgoing_connections IS NOT NULL\n| SORT @timestamp DESC\n| LIMIT 1\n| RENAME cisco_secure_email_gateway.system_status.gauges.current_outgoing_connections AS `Current Outgoing SMTP Connections`\n| KEEP `Current Outgoing SMTP Connections`"
+                            },
+                            "visualization": {
+                                "applyColorTo": "value",
+                                "density": "default",
+                                "layerId": "layer_0",
+                                "layerType": "data",
+                                "metricAccessor": "metric_accessor_metric",
+                                "primaryAlign": "right",
+                                "primaryPosition": "bottom",
+                                "showBar": false,
+                                "titlesTextAlign": "left",
+                                "valueFontMode": "default"
+                            }
+                        },
+                        "title": "",
+                        "version": 2,
+                        "visualizationType": "lnsMetric"
+                    }
+                },
+                "gridData": {
+                    "h": 5,
+                    "i": "e8a8859c-3a2c-4a87-9e5d-13f1fb3c241d",
+                    "sectionId": "85e07f92-d0cb-4ec4-8722-640011ca888d",
+                    "w": 6,
+                    "x": 42,
+                    "y": 0
+                },
+                "panelIndex": "e8a8859c-3a2c-4a87-9e5d-13f1fb3c241d",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "metrics-cisco_secure_email_gateway*-@timestamp": {
+                                    "allowNoIndex": false,
+                                    "id": "metrics-cisco_secure_email_gateway*-@timestamp",
+                                    "name": "metrics-cisco_secure_email_gateway*",
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "metrics-cisco_secure_email_gateway*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "layer_0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "metric_accessor_metric",
+                                                    "customLabel": true,
+                                                    "fieldName": "Messages Received Per Minute",
+                                                    "label": "Messages Received Per Minute",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "ignoreGlobalFilters": false,
+                                            "index": "metrics-cisco_secure_email_gateway*-@timestamp",
+                                            "query": {
+                                                "esql": "FROM metrics-cisco_secure_email_gateway*\n| WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c ?_tend AND cisco_secure_email_gateway.system_status.rates.messages_received.one_min IS NOT NULL\n| SORT @timestamp DESC\n| KEEP cisco_secure_email_gateway.system_status.rates.messages_received.one_min\n| RENAME cisco_secure_email_gateway.system_status.rates.messages_received.one_min AS `Messages Received Per Minute`\n| LIMIT 1"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "metrics-cisco_secure_email_gateway*-@timestamp",
+                                    "name": "indexpattern-datasource-layer-layer_0",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM metrics-cisco_secure_email_gateway*\n| WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c ?_tend AND cisco_secure_email_gateway.system_status.rates.messages_received.one_min IS NOT NULL\n| SORT @timestamp DESC\n| KEEP cisco_secure_email_gateway.system_status.rates.messages_received.one_min\n| RENAME cisco_secure_email_gateway.system_status.rates.messages_received.one_min AS `Messages Received Per Minute`\n| LIMIT 1"
+                            },
+                            "visualization": {
+                                "density": "default",
+                                "layerId": "layer_0",
+                                "layerType": "data",
+                                "metricAccessor": "metric_accessor_metric",
+                                "primaryAlign": "right",
+                                "primaryPosition": "bottom",
+                                "showBar": false,
+                                "titlesTextAlign": "left",
+                                "valueFontMode": "default"
+                            }
+                        },
+                        "title": "",
+                        "version": 2,
+                        "visualizationType": "lnsMetric"
+                    }
+                },
+                "gridData": {
+                    "h": 5,
+                    "i": "8d00a9a7-92ce-4fc7-b976-7c5f0326a76b",
+                    "sectionId": "55cc9902-fc61-4e46-8f32-86c72e024888",
+                    "w": 6,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "8d00a9a7-92ce-4fc7-b976-7c5f0326a76b",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "metrics-cisco_secure_email_gateway*-@timestamp": {
+                                    "allowNoIndex": false,
+                                    "id": "metrics-cisco_secure_email_gateway*-@timestamp",
+                                    "name": "metrics-cisco_secure_email_gateway*",
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "metrics-cisco_secure_email_gateway*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "layer_0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "metric_accessor_metric",
+                                                    "customLabel": true,
+                                                    "fieldName": "Delivered Recipients per Minute",
+                                                    "label": "Delivered recipients per minute",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "ignoreGlobalFilters": false,
+                                            "index": "metrics-cisco_secure_email_gateway*-@timestamp",
+                                            "query": {
+                                                "esql": "FROM metrics-cisco_secure_email_gateway*\n| WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c ?_tend\n| WHERE cisco_secure_email_gateway.system_status.rates.delivered_recipients.one_min IS NOT NULL\n| SORT @timestamp DESC\n| EVAL `Delivered Recipients per Minute` = cisco_secure_email_gateway.system_status.rates.delivered_recipients.one_min\n| KEEP `Delivered Recipients per Minute`, @timestamp\n| LIMIT 1"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "metrics-cisco_secure_email_gateway*-@timestamp",
+                                    "name": "indexpattern-datasource-layer-layer_0",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM metrics-cisco_secure_email_gateway*\n| WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c ?_tend\n| WHERE cisco_secure_email_gateway.system_status.rates.delivered_recipients.one_min IS NOT NULL\n| SORT @timestamp DESC\n| EVAL `Delivered Recipients per Minute` = cisco_secure_email_gateway.system_status.rates.delivered_recipients.one_min\n| KEEP `Delivered Recipients per Minute`, @timestamp\n| LIMIT 1"
+                            },
+                            "visualization": {
+                                "applyColorTo": "value",
+                                "density": "default",
+                                "layerId": "layer_0",
+                                "layerType": "data",
+                                "metricAccessor": "metric_accessor_metric",
+                                "primaryAlign": "right",
+                                "primaryPosition": "bottom",
+                                "showBar": false,
+                                "titlesTextAlign": "left",
+                                "valueFontMode": "default"
+                            }
+                        },
+                        "title": "",
+                        "version": 2,
+                        "visualizationType": "lnsMetric"
+                    }
+                },
+                "gridData": {
+                    "h": 5,
+                    "i": "1987212c-1030-415c-81b7-433769eb5398",
+                    "sectionId": "55cc9902-fc61-4e46-8f32-86c72e024888",
+                    "w": 6,
+                    "x": 6,
+                    "y": 0
+                },
+                "panelIndex": "1987212c-1030-415c-81b7-433769eb5398",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "metrics-cisco_secure_email_gateway*-@timestamp": {
+                                    "allowNoIndex": false,
+                                    "id": "metrics-cisco_secure_email_gateway*-@timestamp",
+                                    "name": "metrics-cisco_secure_email_gateway*",
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "metrics-cisco_secure_email_gateway*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "layer_0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "metric_accessor_metric",
+                                                    "customLabel": true,
+                                                    "fieldName": "Hard Bounced Recipients per Minute",
+                                                    "label": "Hard Bounced Recipients per Minute",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "ignoreGlobalFilters": false,
+                                            "index": "metrics-cisco_secure_email_gateway*-@timestamp",
+                                            "query": {
+                                                "esql": "FROM metrics-cisco_secure_email_gateway*\n| WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c ?_tend AND cisco_secure_email_gateway.system_status.rates.hard_bounced_recipients.one_min IS NOT NULL\n| SORT @timestamp DESC\n| EVAL `Hard Bounced Recipients per Minute` = cisco_secure_email_gateway.system_status.rates.hard_bounced_recipients.one_min\n| KEEP `Hard Bounced Recipients per Minute`\n| LIMIT 1"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "metrics-cisco_secure_email_gateway*-@timestamp",
+                                    "name": "indexpattern-datasource-layer-layer_0",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM metrics-cisco_secure_email_gateway*\n| WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c ?_tend AND cisco_secure_email_gateway.system_status.rates.hard_bounced_recipients.one_min IS NOT NULL\n| SORT @timestamp DESC\n| EVAL `Hard Bounced Recipients per Minute` = cisco_secure_email_gateway.system_status.rates.hard_bounced_recipients.one_min\n| KEEP `Hard Bounced Recipients per Minute`\n| LIMIT 1"
+                            },
+                            "visualization": {
+                                "applyColorTo": "value",
+                                "density": "default",
+                                "layerId": "layer_0",
+                                "layerType": "data",
+                                "metricAccessor": "metric_accessor_metric",
+                                "primaryAlign": "right",
+                                "primaryPosition": "bottom",
+                                "showBar": false,
+                                "titlesTextAlign": "left",
+                                "valueFontMode": "default"
+                            }
+                        },
+                        "title": "",
+                        "version": 2,
+                        "visualizationType": "lnsMetric"
+                    }
+                },
+                "gridData": {
+                    "h": 5,
+                    "i": "044f333b-7f28-4d12-b834-9040c5a070d1",
+                    "sectionId": "55cc9902-fc61-4e46-8f32-86c72e024888",
+                    "w": 6,
+                    "x": 12,
+                    "y": 0
+                },
+                "panelIndex": "044f333b-7f28-4d12-b834-9040c5a070d1",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "metrics-cisco_secure_email_gateway*-@timestamp": {
+                                    "allowNoIndex": false,
+                                    "id": "metrics-cisco_secure_email_gateway*-@timestamp",
+                                    "name": "metrics-cisco_secure_email_gateway*",
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "metrics-cisco_secure_email_gateway*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "layer_0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "metric_accessor_metric",
+                                                    "customLabel": true,
+                                                    "fieldName": "Soft Bounce Events Per Minute",
+                                                    "label": "Soft bounce events per minute",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "ignoreGlobalFilters": false,
+                                            "index": "metrics-cisco_secure_email_gateway*-@timestamp",
+                                            "query": {
+                                                "esql": "FROM metrics-cisco_secure_email_gateway*\n| WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c ?_tend\n| SORT @timestamp DESC\n| KEEP `cisco_secure_email_gateway.system_status.rates.soft_bounced_events.one_min`\n| RENAME `cisco_secure_email_gateway.system_status.rates.soft_bounced_events.one_min` AS `Soft Bounce Events Per Minute`\n| LIMIT 1"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "metrics-cisco_secure_email_gateway*-@timestamp",
+                                    "name": "indexpattern-datasource-layer-layer_0",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM metrics-cisco_secure_email_gateway*\n| WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c ?_tend\n| SORT @timestamp DESC\n| KEEP `cisco_secure_email_gateway.system_status.rates.soft_bounced_events.one_min`\n| RENAME `cisco_secure_email_gateway.system_status.rates.soft_bounced_events.one_min` AS `Soft Bounce Events Per Minute`\n| LIMIT 1"
+                            },
+                            "visualization": {
+                                "applyColorTo": "value",
+                                "density": "default",
+                                "layerId": "layer_0",
+                                "layerType": "data",
+                                "metricAccessor": "metric_accessor_metric",
+                                "primaryAlign": "right",
+                                "primaryPosition": "bottom",
+                                "showBar": false,
+                                "titlesTextAlign": "left",
+                                "valueFontMode": "default"
+                            }
+                        },
+                        "title": "",
+                        "version": 2,
+                        "visualizationType": "lnsMetric"
+                    }
+                },
+                "gridData": {
+                    "h": 5,
+                    "i": "2179bc29-1734-41a9-ac88-23d37f050330",
+                    "sectionId": "55cc9902-fc61-4e46-8f32-86c72e024888",
+                    "w": 6,
+                    "x": 18,
+                    "y": 0
+                },
+                "panelIndex": "2179bc29-1734-41a9-ac88-23d37f050330",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "metrics-cisco_secure_email_gateway*-@timestamp": {
+                                    "allowNoIndex": false,
+                                    "id": "metrics-cisco_secure_email_gateway*-@timestamp",
+                                    "name": "metrics-cisco_secure_email_gateway*",
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "metrics-cisco_secure_email_gateway*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "layer_0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "metric_accessor_metric",
+                                                    "customLabel": true,
+                                                    "fieldName": "Messages Received Since Boot",
+                                                    "label": "Messages received since boot",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "ignoreGlobalFilters": false,
+                                            "index": "metrics-cisco_secure_email_gateway*-@timestamp",
+                                            "query": {
+                                                "esql": "FROM metrics-cisco_secure_email_gateway*\n| WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c ?_tend\n  AND cisco_secure_email_gateway.system_status.counters.messages_received_uptime IS NOT NULL\n| SORT @timestamp DESC\n| EVAL `Messages Received Since Boot` = cisco_secure_email_gateway.system_status.counters.messages_received_uptime\n| KEEP `Messages Received Since Boot`\n| LIMIT 1"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "metrics-cisco_secure_email_gateway*-@timestamp",
+                                    "name": "indexpattern-datasource-layer-layer_0",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM metrics-cisco_secure_email_gateway*\n| WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c ?_tend\n  AND cisco_secure_email_gateway.system_status.counters.messages_received_uptime IS NOT NULL\n| SORT @timestamp DESC\n| EVAL `Messages Received Since Boot` = cisco_secure_email_gateway.system_status.counters.messages_received_uptime\n| KEEP `Messages Received Since Boot`\n| LIMIT 1"
+                            },
+                            "visualization": {
+                                "applyColorTo": "value",
+                                "density": "default",
+                                "layerId": "layer_0",
+                                "layerType": "data",
+                                "metricAccessor": "metric_accessor_metric",
+                                "primaryAlign": "right",
+                                "primaryPosition": "bottom",
+                                "showBar": false,
+                                "titlesTextAlign": "left",
+                                "valueFontMode": "default"
+                            }
+                        },
+                        "title": "",
+                        "version": 2,
+                        "visualizationType": "lnsMetric"
+                    }
+                },
+                "gridData": {
+                    "h": 5,
+                    "i": "2ddb2af7-131c-49ca-8575-e54625f18fad",
+                    "sectionId": "55cc9902-fc61-4e46-8f32-86c72e024888",
+                    "w": 6,
+                    "x": 24,
+                    "y": 0
+                },
+                "panelIndex": "2ddb2af7-131c-49ca-8575-e54625f18fad",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "metrics-cisco_secure_email_gateway*-@timestamp": {
+                                    "allowNoIndex": false,
+                                    "id": "metrics-cisco_secure_email_gateway*-@timestamp",
+                                    "name": "metrics-cisco_secure_email_gateway*",
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "metrics-cisco_secure_email_gateway*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "layer_0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "metric_accessor_metric",
+                                                    "customLabel": true,
+                                                    "fieldName": "Total Delivered Recipients Since Boot",
+                                                    "label": "Total Delivered Recipients Since Boot",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "ignoreGlobalFilters": false,
+                                            "index": "metrics-cisco_secure_email_gateway*-@timestamp",
+                                            "query": {
+                                                "esql": "FROM metrics-cisco_secure_email_gateway*\n| WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c ?_tend\n| WHERE cisco_secure_email_gateway.system_status.counters.delivered_recipients_uptime IS NOT NULL\n| SORT @timestamp DESC\n| LIMIT 1\n| EVAL `Total Delivered Recipients Since Boot` = cisco_secure_email_gateway.system_status.counters.delivered_recipients_uptime\n| KEEP `Total Delivered Recipients Since Boot`"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "metrics-cisco_secure_email_gateway*-@timestamp",
+                                    "name": "indexpattern-datasource-layer-layer_0",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM metrics-cisco_secure_email_gateway*\n| WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c ?_tend\n| WHERE cisco_secure_email_gateway.system_status.counters.delivered_recipients_uptime IS NOT NULL\n| SORT @timestamp DESC\n| LIMIT 1\n| EVAL `Total Delivered Recipients Since Boot` = cisco_secure_email_gateway.system_status.counters.delivered_recipients_uptime\n| KEEP `Total Delivered Recipients Since Boot`"
+                            },
+                            "visualization": {
+                                "applyColorTo": "value",
+                                "density": "default",
+                                "layerId": "layer_0",
+                                "layerType": "data",
+                                "metricAccessor": "metric_accessor_metric",
+                                "primaryAlign": "right",
+                                "primaryPosition": "bottom",
+                                "showBar": false,
+                                "titlesTextAlign": "left",
+                                "valueFontMode": "default"
+                            }
+                        },
+                        "title": "",
+                        "version": 2,
+                        "visualizationType": "lnsMetric"
+                    }
+                },
+                "gridData": {
+                    "h": 5,
+                    "i": "8f5c8392-acfe-47a3-a4ce-0f7ad821e113",
+                    "sectionId": "55cc9902-fc61-4e46-8f32-86c72e024888",
+                    "w": 6,
+                    "x": 30,
+                    "y": 0
+                },
+                "panelIndex": "8f5c8392-acfe-47a3-a4ce-0f7ad821e113",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "metrics-cisco_secure_email_gateway*-@timestamp": {
+                                    "allowNoIndex": false,
+                                    "id": "metrics-cisco_secure_email_gateway*-@timestamp",
+                                    "name": "metrics-cisco_secure_email_gateway*",
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "metrics-cisco_secure_email_gateway*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "layer_0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "metric_accessor_metric",
+                                                    "customLabel": true,
+                                                    "fieldName": "Total Dropped Messages Since Boot",
+                                                    "label": "Total Dropped Messages Since Boot",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "ignoreGlobalFilters": false,
+                                            "index": "metrics-cisco_secure_email_gateway*-@timestamp",
+                                            "query": {
+                                                "esql": "FROM metrics-cisco_secure_email_gateway*\n| WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c ?_tend\n| WHERE cisco_secure_email_gateway.system_status.counters.dropped_messages_uptime IS NOT NULL\n| SORT @timestamp DESC\n| LIMIT 1\n| KEEP cisco_secure_email_gateway.system_status.counters.dropped_messages_uptime\n| RENAME cisco_secure_email_gateway.system_status.counters.dropped_messages_uptime AS `Total Dropped Messages Since Boot`"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "metrics-cisco_secure_email_gateway*-@timestamp",
+                                    "name": "indexpattern-datasource-layer-layer_0",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM metrics-cisco_secure_email_gateway*\n| WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c ?_tend\n| WHERE cisco_secure_email_gateway.system_status.counters.dropped_messages_uptime IS NOT NULL\n| SORT @timestamp DESC\n| LIMIT 1\n| KEEP cisco_secure_email_gateway.system_status.counters.dropped_messages_uptime\n| RENAME cisco_secure_email_gateway.system_status.counters.dropped_messages_uptime AS `Total Dropped Messages Since Boot`"
+                            },
+                            "visualization": {
+                                "applyColorTo": "value",
+                                "density": "default",
+                                "layerId": "layer_0",
+                                "layerType": "data",
+                                "metricAccessor": "metric_accessor_metric",
+                                "primaryAlign": "right",
+                                "primaryPosition": "bottom",
+                                "showBar": false,
+                                "titlesTextAlign": "left",
+                                "valueFontMode": "default"
+                            }
+                        },
+                        "title": "",
+                        "version": 2,
+                        "visualizationType": "lnsMetric"
+                    }
+                },
+                "gridData": {
+                    "h": 5,
+                    "i": "a4fe9691-b759-49d3-8a13-18bcaef9841d",
+                    "sectionId": "55cc9902-fc61-4e46-8f32-86c72e024888",
+                    "w": 6,
+                    "x": 36,
+                    "y": 0
+                },
+                "panelIndex": "a4fe9691-b759-49d3-8a13-18bcaef9841d",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "metrics-cisco_secure_email_gateway*-@timestamp": {
+                                    "allowNoIndex": false,
+                                    "id": "metrics-cisco_secure_email_gateway*-@timestamp",
+                                    "name": "metrics-cisco_secure_email_gateway*",
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "metrics-cisco_secure_email_gateway*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "layer_0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "metric_accessor_metric",
+                                                    "customLabel": true,
+                                                    "fieldName": "Rejected Recipients Since Boot",
+                                                    "label": "Rejected Recipients Since Boot",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "ignoreGlobalFilters": false,
+                                            "index": "metrics-cisco_secure_email_gateway*-@timestamp",
+                                            "query": {
+                                                "esql": "FROM metrics-cisco_secure_email_gateway*\n| WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c ?_tend AND cisco_secure_email_gateway.system_status.counters.rejected_recipients_uptime IS NOT NULL\n| SORT @timestamp DESC\n| LIMIT 1\n| KEEP cisco_secure_email_gateway.system_status.counters.rejected_recipients_uptime\n| RENAME cisco_secure_email_gateway.system_status.counters.rejected_recipients_uptime AS `Rejected Recipients Since Boot`"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "metrics-cisco_secure_email_gateway*-@timestamp",
+                                    "name": "indexpattern-datasource-layer-layer_0",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM metrics-cisco_secure_email_gateway*\n| WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c ?_tend AND cisco_secure_email_gateway.system_status.counters.rejected_recipients_uptime IS NOT NULL\n| SORT @timestamp DESC\n| LIMIT 1\n| KEEP cisco_secure_email_gateway.system_status.counters.rejected_recipients_uptime\n| RENAME cisco_secure_email_gateway.system_status.counters.rejected_recipients_uptime AS `Rejected Recipients Since Boot`"
+                            },
+                            "visualization": {
+                                "applyColorTo": "value",
+                                "density": "default",
+                                "layerId": "layer_0",
+                                "layerType": "data",
+                                "metricAccessor": "metric_accessor_metric",
+                                "primaryAlign": "right",
+                                "primaryPosition": "bottom",
+                                "showBar": false,
+                                "titlesTextAlign": "left",
+                                "valueFontMode": "default"
+                            }
+                        },
+                        "title": "",
+                        "version": 2,
+                        "visualizationType": "lnsMetric"
+                    }
+                },
+                "gridData": {
+                    "h": 5,
+                    "i": "be993165-0055-4d07-b66a-ce8e42a3a84e",
+                    "sectionId": "55cc9902-fc61-4e46-8f32-86c72e024888",
+                    "w": 6,
+                    "x": 42,
+                    "y": 0
+                },
+                "panelIndex": "be993165-0055-4d07-b66a-ce8e42a3a84e",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "metrics-cisco_secure_email_gateway*-@timestamp": {
+                                    "allowNoIndex": false,
+                                    "id": "metrics-cisco_secure_email_gateway*-@timestamp",
+                                    "name": "metrics-cisco_secure_email_gateway*",
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "metrics-cisco_secure_email_gateway*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "line_0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "line_0_x",
+                                                    "fieldName": "bucket",
+                                                    "meta": {
+                                                        "type": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "line_0_y_0",
+                                                    "customLabel": true,
+                                                    "fieldName": "Received Rate",
+                                                    "label": "Received Rate",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "line_0_y_1",
+                                                    "customLabel": true,
+                                                    "fieldName": "Delivered Rate",
+                                                    "label": "Delivered Rate",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "ignoreGlobalFilters": false,
+                                            "index": "metrics-cisco_secure_email_gateway*-@timestamp",
+                                            "query": {
+                                                "esql": "FROM metrics-cisco_secure_email_gateway*\n| STATS `Received Rate` = AVG(cisco_secure_email_gateway.system_status.rates.messages_received.five_min), `Delivered Rate` = AVG(cisco_secure_email_gateway.system_status.rates.delivered_recipients.five_min) BY bucket = BUCKET(@timestamp, 75, ?_tstart, ?_tend)\n| SORT bucket"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "metrics-cisco_secure_email_gateway*-@timestamp",
+                                    "name": "indexpattern-datasource-layer-line_0",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM metrics-cisco_secure_email_gateway*\n| STATS `Received Rate` = AVG(cisco_secure_email_gateway.system_status.rates.messages_received.five_min), `Delivered Rate` = AVG(cisco_secure_email_gateway.system_status.rates.delivered_recipients.five_min) BY bucket = BUCKET(@timestamp, 75, ?_tstart, ?_tend)\n| SORT bucket"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "curveType": "LINEAR",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "hideEndzones": true,
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "line_0_y_0",
+                                            "line_0_y_1"
+                                        ],
+                                        "layerId": "line_0",
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "line_0_x",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "forAccessor": "line_0_y_0"
+                                            },
+                                            {
+                                                "axisMode": "left",
+                                                "forAccessor": "line_0_y_1"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": false,
+                                    "maxLines": 1,
+                                    "position": "right"
+                                },
+                                "pointVisibility": "auto",
+                                "preferredSeriesType": "line",
+                                "showCurrentTimeMarker": false,
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "xExtent": {
+                                    "mode": "dataBounds",
+                                    "niceValues": false
+                                },
+                                "yLeftExtent": {
+                                    "mode": "full",
+                                    "niceValues": true
+                                },
+                                "yLeftScale": "linear"
+                            }
+                        },
+                        "title": "Email gateway message rates over time",
+                        "version": 2,
+                        "visualizationType": "lnsXY"
+                    },
+                    "title": "Email gateway message rates over time"
+                },
+                "gridData": {
+                    "h": 10,
+                    "i": "ce4a16dc-821a-4e4b-b0f7-1d6ad77b21f4",
+                    "sectionId": "55cc9902-fc61-4e46-8f32-86c72e024888",
+                    "w": 24,
+                    "x": 0,
+                    "y": 5
+                },
+                "panelIndex": "ce4a16dc-821a-4e4b-b0f7-1d6ad77b21f4",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "metrics-cisco_secure_email_gateway*-@timestamp": {
+                                    "allowNoIndex": false,
+                                    "id": "metrics-cisco_secure_email_gateway*-@timestamp",
+                                    "name": "metrics-cisco_secure_email_gateway*",
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "metrics-cisco_secure_email_gateway*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "line_0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "line_0_x",
+                                                    "fieldName": "bucket",
+                                                    "meta": {
+                                                        "type": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "line_0_y_0",
+                                                    "customLabel": true,
+                                                    "fieldName": "Hard Bounce Rate",
+                                                    "label": "Hard",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "line_0_y_1",
+                                                    "customLabel": true,
+                                                    "fieldName": "Soft Bounce Rate",
+                                                    "label": "Soft",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "ignoreGlobalFilters": false,
+                                            "index": "metrics-cisco_secure_email_gateway*-@timestamp",
+                                            "query": {
+                                                "esql": "FROM metrics-cisco_secure_email_gateway*\n| STATS `Hard Bounce Rate` = AVG(cisco_secure_email_gateway.system_status.rates.hard_bounced_recipients.five_min), `Soft Bounce Rate` = AVG(cisco_secure_email_gateway.system_status.rates.soft_bounced_events.five_min) BY bucket = BUCKET(@timestamp, 75, ?_tstart, ?_tend)"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "metrics-cisco_secure_email_gateway*-@timestamp",
+                                    "name": "indexpattern-datasource-layer-line_0",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM metrics-cisco_secure_email_gateway*\n| STATS `Hard Bounce Rate` = AVG(cisco_secure_email_gateway.system_status.rates.hard_bounced_recipients.five_min), `Soft Bounce Rate` = AVG(cisco_secure_email_gateway.system_status.rates.soft_bounced_events.five_min) BY bucket = BUCKET(@timestamp, 75, ?_tstart, ?_tend)"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "curveType": "LINEAR",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "hideEndzones": true,
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "line_0_y_0",
+                                            "line_0_y_1"
+                                        ],
+                                        "layerId": "line_0",
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "line_0_x",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "forAccessor": "line_0_y_0"
+                                            },
+                                            {
+                                                "axisMode": "left",
+                                                "forAccessor": "line_0_y_1"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": false,
+                                    "maxLines": 1,
+                                    "position": "right"
+                                },
+                                "pointVisibility": "auto",
+                                "preferredSeriesType": "line",
+                                "showCurrentTimeMarker": false,
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "xExtent": {
+                                    "mode": "dataBounds",
+                                    "niceValues": false
+                                },
+                                "yLeftExtent": {
+                                    "mode": "full",
+                                    "niceValues": true
+                                },
+                                "yLeftScale": "linear"
+                            }
+                        },
+                        "title": "Average email bounce rates over time",
+                        "version": 2,
+                        "visualizationType": "lnsXY"
+                    },
+                    "title": "Average email bounce rates over time"
+                },
+                "gridData": {
+                    "h": 10,
+                    "i": "e719b5f0-abc8-41ff-8aa0-b3bf3f614eec",
+                    "sectionId": "55cc9902-fc61-4e46-8f32-86c72e024888",
+                    "w": 24,
+                    "x": 24,
+                    "y": 5
+                },
+                "panelIndex": "e719b5f0-abc8-41ff-8aa0-b3bf3f614eec",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "metrics-cisco_secure_email_gateway*-@timestamp": {
+                                    "allowNoIndex": false,
+                                    "id": "metrics-cisco_secure_email_gateway*-@timestamp",
+                                    "name": "metrics-cisco_secure_email_gateway*",
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "metrics-cisco_secure_email_gateway*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "layer_0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "datatable_accessor_row_0",
+                                                    "customLabel": true,
+                                                    "fieldName": "Destination Domain",
+                                                    "label": "Destination Domain",
+                                                    "meta": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "datatable_accessor_metric_0",
+                                                    "customLabel": true,
+                                                    "fieldName": "Delivered Recipients",
+                                                    "inMetricDimension": true,
+                                                    "label": "Delivered Recipients",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "datatable_accessor_metric_1",
+                                                    "customLabel": true,
+                                                    "fieldName": "Hard Bounces",
+                                                    "inMetricDimension": true,
+                                                    "label": "Hard Bounces",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "datatable_accessor_metric_2",
+                                                    "customLabel": true,
+                                                    "fieldName": "Soft Bounces",
+                                                    "inMetricDimension": true,
+                                                    "label": "Soft Bounces",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "datatable_accessor_metric_3",
+                                                    "customLabel": true,
+                                                    "fieldName": "Latest Host Status",
+                                                    "inMetricDimension": true,
+                                                    "label": "Latest Host Status",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "ignoreGlobalFilters": false,
+                                            "index": "metrics-cisco_secure_email_gateway*-@timestamp",
+                                            "query": {
+                                                "esql": "FROM metrics-cisco_secure_email_gateway*\n| WHERE @timestamp \u003e= ?_tstart\n  AND @timestamp \u003c ?_tend\n  AND cisco_secure_email_gateway.delivery_status.destination_domain IS NOT NULL\n| STATS `Delivered Recipients` = TOP(@timestamp, 1, \"desc\", cisco_secure_email_gateway.delivery_status.delivered_recipients), `Hard Bounces` = TOP(@timestamp, 1, \"desc\", cisco_secure_email_gateway.delivery_status.hard_bounces), `Soft Bounces` = TOP(@timestamp, 1, \"desc\", cisco_secure_email_gateway.delivery_status.soft_bounces), `Latest Host Status` = TOP(@timestamp, 1, \"desc\", cisco_secure_email_gateway.delivery_status.latest_host_status) BY `Destination Domain` = cisco_secure_email_gateway.delivery_status.destination_domain\n| EVAL `Delivered Recipients` = MV_FIRST(`Delivered Recipients`), `Hard Bounces` = MV_FIRST(`Hard Bounces`), `Soft Bounces` = MV_FIRST(`Soft Bounces`), `Latest Host Status` = MV_FIRST(`Latest Host Status`)\n| KEEP `Destination Domain`, `Delivered Recipients`, `Hard Bounces`, `Soft Bounces`, `Latest Host Status`\n| SORT `Delivered Recipients` DESC NULLS LAST\n| LIMIT 20"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "metrics-cisco_secure_email_gateway*-@timestamp",
+                                    "name": "indexpattern-datasource-layer-layer_0",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM metrics-cisco_secure_email_gateway*\n| WHERE @timestamp \u003e= ?_tstart\n  AND @timestamp \u003c ?_tend\n  AND cisco_secure_email_gateway.delivery_status.destination_domain IS NOT NULL\n| STATS `Delivered Recipients` = TOP(@timestamp, 1, \"desc\", cisco_secure_email_gateway.delivery_status.delivered_recipients), `Hard Bounces` = TOP(@timestamp, 1, \"desc\", cisco_secure_email_gateway.delivery_status.hard_bounces), `Soft Bounces` = TOP(@timestamp, 1, \"desc\", cisco_secure_email_gateway.delivery_status.soft_bounces), `Latest Host Status` = TOP(@timestamp, 1, \"desc\", cisco_secure_email_gateway.delivery_status.latest_host_status) BY `Destination Domain` = cisco_secure_email_gateway.delivery_status.destination_domain\n| EVAL `Delivered Recipients` = MV_FIRST(`Delivered Recipients`), `Hard Bounces` = MV_FIRST(`Hard Bounces`), `Soft Bounces` = MV_FIRST(`Soft Bounces`), `Latest Host Status` = MV_FIRST(`Latest Host Status`)\n| KEEP `Destination Domain`, `Delivered Recipients`, `Hard Bounces`, `Soft Bounces`, `Latest Host Status`\n| SORT `Delivered Recipients` DESC NULLS LAST\n| LIMIT 20"
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "datatable_accessor_row_0",
+                                        "isMetric": false,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "datatable_accessor_metric_0",
+                                        "isMetric": true,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "datatable_accessor_metric_1",
+                                        "isMetric": true,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "datatable_accessor_metric_2",
+                                        "isMetric": true,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "datatable_accessor_metric_3",
+                                        "isMetric": true,
+                                        "isTransposed": false
+                                    }
+                                ],
+                                "layerId": "layer_0",
+                                "layerType": "data"
+                            }
+                        },
+                        "title": "",
+                        "version": 2,
+                        "visualizationType": "lnsDatatable"
+                    }
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "4b4c8bfc-5ae1-4b9c-ae57-2031969622f0",
+                    "sectionId": "55cc9902-fc61-4e46-8f32-86c72e024888",
+                    "w": 48,
+                    "x": 0,
+                    "y": 15
+                },
+                "panelIndex": "4b4c8bfc-5ae1-4b9c-ae57-2031969622f0",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "metrics-cisco_secure_email_gateway*-@timestamp": {
+                                    "allowNoIndex": false,
+                                    "id": "metrics-cisco_secure_email_gateway*-@timestamp",
+                                    "name": "metrics-cisco_secure_email_gateway*",
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "metrics-cisco_secure_email_gateway*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "line_0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "line_0_x",
+                                                    "fieldName": "Time",
+                                                    "meta": {
+                                                        "type": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "line_0_y_0",
+                                                    "fieldName": "Average Overall CPU Load",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "percent",
+                                                            "params": {
+                                                                "compact": true,
+                                                                "decimals": 1
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "line_0_breakdown",
+                                                    "fieldName": "Host Name",
+                                                    "meta": {
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ],
+                                            "ignoreGlobalFilters": false,
+                                            "index": "metrics-cisco_secure_email_gateway*-@timestamp",
+                                            "query": {
+                                                "esql": "FROM metrics-cisco_secure_email_gateway*\n| STATS `Average Overall CPU Load` = AVG(cisco_secure_email_gateway.system_status.gauges.overall_cpu_load_pct) BY `Time` = BUCKET(@timestamp, 75, ?_tstart, ?_tend), `Host Name` = host.name"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "metrics-cisco_secure_email_gateway*-@timestamp",
+                                    "name": "indexpattern-datasource-layer-line_0",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM metrics-cisco_secure_email_gateway*\n| STATS `Average Overall CPU Load` = AVG(cisco_secure_email_gateway.system_status.gauges.overall_cpu_load_pct) BY `Time` = BUCKET(@timestamp, 75, ?_tstart, ?_tend), `Host Name` = host.name"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "curveType": "LINEAR",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "hideEndzones": true,
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "line_0_y_0"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "elastic_line_optimized",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "line_0",
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "splitAccessors": [
+                                            "line_0_breakdown"
+                                        ],
+                                        "xAccessor": "line_0_x",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "forAccessor": "line_0_y_0"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": false,
+                                    "maxLines": 1,
+                                    "position": "right"
+                                },
+                                "pointVisibility": "auto",
+                                "preferredSeriesType": "line",
+                                "showCurrentTimeMarker": false,
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "xExtent": {
+                                    "mode": "dataBounds",
+                                    "niceValues": false
+                                },
+                                "yLeftExtent": {
+                                    "mode": "full",
+                                    "niceValues": true
+                                },
+                                "yLeftScale": "linear"
+                            }
+                        },
+                        "title": "Average Overall CPU Load over Time by Host Name",
+                        "version": 2,
+                        "visualizationType": "lnsXY"
+                    },
+                    "title": "Average Overall CPU Load over Time by Host Name"
+                },
+                "gridData": {
+                    "h": 10,
+                    "i": "ae5b3c68-c3fa-4a33-aaba-a6d7a0673b75",
+                    "sectionId": "729c6a45-361a-4017-b2bc-77299247722d",
+                    "w": 24,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "ae5b3c68-c3fa-4a33-aaba-a6d7a0673b75",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "metrics-cisco_secure_email_gateway*-@timestamp": {
+                                    "allowNoIndex": false,
+                                    "id": "metrics-cisco_secure_email_gateway*-@timestamp",
+                                    "name": "metrics-cisco_secure_email_gateway*",
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "metrics-cisco_secure_email_gateway*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "line_0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "line_0_x",
+                                                    "fieldName": "bucket",
+                                                    "meta": {
+                                                        "type": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "line_0_y_0",
+                                                    "customLabel": true,
+                                                    "fieldName": "RAM %",
+                                                    "label": "RAM %",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "percent",
+                                                            "params": {
+                                                                "compact": true,
+                                                                "decimals": 1
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "line_0_y_1",
+                                                    "customLabel": true,
+                                                    "fieldName": "Disk I/O %",
+                                                    "label": "Disk I/O %",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "percent",
+                                                            "params": {
+                                                                "compact": true,
+                                                                "decimals": 1
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "ignoreGlobalFilters": false,
+                                            "index": "metrics-cisco_secure_email_gateway*-@timestamp",
+                                            "query": {
+                                                "esql": "FROM metrics-cisco_secure_email_gateway*\n| WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c ?_tend\n| STATS `RAM %` = AVG(cisco_secure_email_gateway.system_status.gauges.ram_utilization_pct), `Disk I/O %` = AVG(cisco_secure_email_gateway.system_status.gauges.disk_io_utilization_pct) BY bucket = BUCKET(@timestamp, 75, ?_tstart, ?_tend)"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "metrics-cisco_secure_email_gateway*-@timestamp",
+                                    "name": "indexpattern-datasource-layer-line_0",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM metrics-cisco_secure_email_gateway*\n| WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c ?_tend\n| STATS `RAM %` = AVG(cisco_secure_email_gateway.system_status.gauges.ram_utilization_pct), `Disk I/O %` = AVG(cisco_secure_email_gateway.system_status.gauges.disk_io_utilization_pct) BY bucket = BUCKET(@timestamp, 75, ?_tstart, ?_tend)"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "curveType": "LINEAR",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "hideEndzones": true,
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "line_0_y_0",
+                                            "line_0_y_1"
+                                        ],
+                                        "layerId": "line_0",
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "line_0_x",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "forAccessor": "line_0_y_0"
+                                            },
+                                            {
+                                                "axisMode": "left",
+                                                "forAccessor": "line_0_y_1"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": false,
+                                    "maxLines": 1,
+                                    "position": "right"
+                                },
+                                "pointVisibility": "auto",
+                                "preferredSeriesType": "line",
+                                "showCurrentTimeMarker": false,
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "xExtent": {
+                                    "mode": "dataBounds",
+                                    "niceValues": false
+                                },
+                                "yLeftExtent": {
+                                    "mode": "full",
+                                    "niceValues": true
+                                },
+                                "yLeftScale": "linear"
+                            }
+                        },
+                        "title": "Average system utilization over time",
+                        "version": 2,
+                        "visualizationType": "lnsXY"
+                    },
+                    "title": "Average system utilization over time"
+                },
+                "gridData": {
+                    "h": 10,
+                    "i": "fe04aa35-3038-43db-8926-f6e62301e70f",
+                    "sectionId": "729c6a45-361a-4017-b2bc-77299247722d",
+                    "w": 24,
+                    "x": 24,
+                    "y": 0
+                },
+                "panelIndex": "fe04aa35-3038-43db-8926-f6e62301e70f",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "metrics-cisco_secure_email_gateway*-@timestamp": {
+                                    "allowNoIndex": false,
+                                    "id": "metrics-cisco_secure_email_gateway*-@timestamp",
+                                    "name": "metrics-cisco_secure_email_gateway*",
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "metrics-cisco_secure_email_gateway*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "line_0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "line_0_x",
+                                                    "fieldName": "bucket",
+                                                    "meta": {
+                                                        "type": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "line_0_y_0",
+                                                    "fieldName": "Work Queue Depth",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "line_0_y_1",
+                                                    "fieldName": "Quarantine Depth",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "ignoreGlobalFilters": false,
+                                            "index": "metrics-cisco_secure_email_gateway*-@timestamp",
+                                            "query": {
+                                                "esql": "FROM metrics-cisco_secure_email_gateway*\n| WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c ?_tend\n| STATS `Work Queue Depth` = MAX(`cisco_secure_email_gateway.system_status.gauges.msgs_in_work_queue`), `Quarantine Depth` = MAX(`cisco_secure_email_gateway.system_status.gauges.msgs_in_quarantine`) BY bucket = BUCKET(@timestamp, 75, ?_tstart, ?_tend)"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "metrics-cisco_secure_email_gateway*-@timestamp",
+                                    "name": "indexpattern-datasource-layer-line_0",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM metrics-cisco_secure_email_gateway*\n| WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c ?_tend\n| STATS `Work Queue Depth` = MAX(`cisco_secure_email_gateway.system_status.gauges.msgs_in_work_queue`), `Quarantine Depth` = MAX(`cisco_secure_email_gateway.system_status.gauges.msgs_in_quarantine`) BY bucket = BUCKET(@timestamp, 75, ?_tstart, ?_tend)"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "curveType": "LINEAR",
+                                "gridlinesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "hideEndzones": true,
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "line_0_y_0",
+                                            "line_0_y_1"
+                                        ],
+                                        "layerId": "line_0",
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "line_0_x",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "forAccessor": "line_0_y_0"
+                                            },
+                                            {
+                                                "axisMode": "left",
+                                                "forAccessor": "line_0_y_1"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": false,
+                                    "maxLines": 1,
+                                    "position": "right"
+                                },
+                                "pointVisibility": "auto",
+                                "preferredSeriesType": "line",
+                                "showCurrentTimeMarker": false,
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "xExtent": {
+                                    "mode": "dataBounds",
+                                    "niceValues": false
+                                },
+                                "yLeftExtent": {
+                                    "mode": "full",
+                                    "niceValues": true
+                                },
+                                "yLeftScale": "linear"
+                            }
+                        },
+                        "title": "Cisco Secure Email Gateway message queues over time",
+                        "version": 2,
+                        "visualizationType": "lnsXY"
+                    },
+                    "title": "Cisco Secure Email Gateway message queues over time"
+                },
+                "gridData": {
+                    "h": 10,
+                    "i": "2098962a-56b9-4dec-9f5f-af85c57b12b1",
+                    "sectionId": "729c6a45-361a-4017-b2bc-77299247722d",
+                    "w": 24,
+                    "x": 0,
+                    "y": 10
+                },
+                "panelIndex": "2098962a-56b9-4dec-9f5f-af85c57b12b1",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "metrics-cisco_secure_email_gateway*-@timestamp": {
+                                    "allowNoIndex": false,
+                                    "id": "metrics-cisco_secure_email_gateway*-@timestamp",
+                                    "name": "metrics-cisco_secure_email_gateway*",
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "metrics-cisco_secure_email_gateway*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "layer_0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "gauge_accessor_metric",
+                                                    "customLabel": true,
+                                                    "fieldName": "Total Queue Utilized %",
+                                                    "label": "Total Queue Utilized %",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "percent",
+                                                            "params": {
+                                                                "compact": true,
+                                                                "decimals": 1
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "ignoreGlobalFilters": false,
+                                            "index": "metrics-cisco_secure_email_gateway*-@timestamp",
+                                            "query": {
+                                                "esql": "FROM metrics-cisco_secure_email_gateway*\n| WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c ?_tend AND cisco_secure_email_gateway.system_status.gauges.total_queue_utilized_pct IS NOT NULL\n| SORT @timestamp DESC\n| EVAL `Total Queue Utilized %` = cisco_secure_email_gateway.system_status.gauges.total_queue_utilized_pct\n| KEEP `Total Queue Utilized %`\n| LIMIT 1"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "metrics-cisco_secure_email_gateway*-@timestamp",
+                                    "name": "indexpattern-datasource-layer-layer_0",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM metrics-cisco_secure_email_gateway*\n| WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c ?_tend AND cisco_secure_email_gateway.system_status.gauges.total_queue_utilized_pct IS NOT NULL\n| SORT @timestamp DESC\n| EVAL `Total Queue Utilized %` = cisco_secure_email_gateway.system_status.gauges.total_queue_utilized_pct\n| KEEP `Total Queue Utilized %`\n| LIMIT 1"
+                            },
+                            "visualization": {
+                                "colorMode": "palette",
+                                "labelMajorMode": "auto",
+                                "layerId": "layer_0",
+                                "layerType": "data",
+                                "metricAccessor": "gauge_accessor_metric",
+                                "palette": {
+                                    "name": "custom",
+                                    "params": {
+                                        "colorStops": [
+                                            {
+                                                "color": "#24c292",
+                                                "stop": 0
+                                            },
+                                            {
+                                                "color": "#aee8d2",
+                                                "stop": 25
+                                            },
+                                            {
+                                                "color": "#ffc9c2",
+                                                "stop": 50
+                                            },
+                                            {
+                                                "color": "#f6726a",
+                                                "stop": 75
+                                            }
+                                        ],
+                                        "continuity": "none",
+                                        "maxSteps": 5,
+                                        "name": "custom",
+                                        "progression": "fixed",
+                                        "rangeMax": 100,
+                                        "rangeMin": 0,
+                                        "rangeType": "percent",
+                                        "reverse": false,
+                                        "steps": 4,
+                                        "stops": [
+                                            {
+                                                "color": "#24c292",
+                                                "stop": 25
+                                            },
+                                            {
+                                                "color": "#aee8d2",
+                                                "stop": 50
+                                            },
+                                            {
+                                                "color": "#ffc9c2",
+                                                "stop": 75
+                                            },
+                                            {
+                                                "color": "#f6726a",
+                                                "stop": 100
+                                            }
+                                        ]
+                                    },
+                                    "type": "palette"
+                                },
+                                "shape": "horizontalBullet",
+                                "ticksPosition": "bands"
+                            }
+                        },
+                        "title": "",
+                        "version": 2,
+                        "visualizationType": "lnsGauge"
+                    }
+                },
+                "gridData": {
+                    "h": 10,
+                    "i": "0fa88c8b-5ef3-4b29-9d08-d5fc0e8c6b37",
+                    "sectionId": "729c6a45-361a-4017-b2bc-77299247722d",
+                    "w": 12,
+                    "x": 24,
+                    "y": 10
+                },
+                "panelIndex": "0fa88c8b-5ef3-4b29-9d08-d5fc0e8c6b37",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "metrics-cisco_secure_email_gateway*-@timestamp": {
+                                    "allowNoIndex": false,
+                                    "id": "metrics-cisco_secure_email_gateway*-@timestamp",
+                                    "name": "metrics-cisco_secure_email_gateway*",
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "metrics-cisco_secure_email_gateway*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "layer_0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "metric_accessor_metric",
+                                                    "customLabel": true,
+                                                    "fieldName": "Total Active Recipients",
+                                                    "label": "Total Active Recipients",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "ignoreGlobalFilters": false,
+                                            "index": "metrics-cisco_secure_email_gateway*-@timestamp",
+                                            "query": {
+                                                "esql": "FROM metrics-cisco_secure_email_gateway*\n| WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c ?_tend\n| SORT @timestamp DESC\n| EVAL `Total Active Recipients` = cisco_secure_email_gateway.system_status.gauges.total_active_recipients\n| KEEP `Total Active Recipients`\n| LIMIT 1"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "metrics-cisco_secure_email_gateway*-@timestamp",
+                                    "name": "indexpattern-datasource-layer-layer_0",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM metrics-cisco_secure_email_gateway*\n| WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c ?_tend\n| SORT @timestamp DESC\n| EVAL `Total Active Recipients` = cisco_secure_email_gateway.system_status.gauges.total_active_recipients\n| KEEP `Total Active Recipients`\n| LIMIT 1"
+                            },
+                            "visualization": {
+                                "density": "default",
+                                "layerId": "layer_0",
+                                "layerType": "data",
+                                "metricAccessor": "metric_accessor_metric",
+                                "primaryAlign": "right",
+                                "primaryPosition": "bottom",
+                                "showBar": false,
+                                "titlesTextAlign": "left",
+                                "valueFontMode": "default"
+                            }
+                        },
+                        "title": "",
+                        "version": 2,
+                        "visualizationType": "lnsMetric"
+                    }
+                },
+                "gridData": {
+                    "h": 10,
+                    "i": "a1dfc1d1-aefb-4a0f-b509-13aa353df580",
+                    "sectionId": "729c6a45-361a-4017-b2bc-77299247722d",
+                    "w": 12,
+                    "x": 36,
+                    "y": 10
+                },
+                "panelIndex": "a1dfc1d1-aefb-4a0f-b509-13aa353df580",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "metrics-cisco_secure_email_gateway*-@timestamp": {
+                                    "allowNoIndex": false,
+                                    "id": "metrics-cisco_secure_email_gateway*-@timestamp",
+                                    "name": "metrics-cisco_secure_email_gateway*",
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "metrics-cisco_secure_email_gateway*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "layer_0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "datatable_accessor_row_0",
+                                                    "fieldName": "Host Name",
+                                                    "meta": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "datatable_accessor_metric_0",
+                                                    "fieldName": "System Status",
+                                                    "inMetricDimension": true,
+                                                    "meta": {
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "datatable_accessor_metric_1",
+                                                    "fieldName": "Up Since",
+                                                    "inMetricDimension": true,
+                                                    "meta": {
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "datatable_accessor_metric_2",
+                                                    "fieldName": "Model",
+                                                    "inMetricDimension": true,
+                                                    "meta": {
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "datatable_accessor_metric_3",
+                                                    "fieldName": "Operating System",
+                                                    "inMetricDimension": true,
+                                                    "meta": {
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "datatable_accessor_metric_4",
+                                                    "fieldName": "RAID Status",
+                                                    "inMetricDimension": true,
+                                                    "meta": {
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "ignoreGlobalFilters": false,
+                                            "index": "metrics-cisco_secure_email_gateway*-@timestamp",
+                                            "query": {
+                                                "esql": "FROM metrics-cisco_secure_email_gateway*\n| WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c ?_tend\n| SORT @timestamp DESC\n| STATS `System Status` = MV_FIRST(VALUES(cisco_secure_email_gateway.system_status.mail_system_status.system_status)), `Up Since` = MV_FIRST(VALUES(cisco_secure_email_gateway.system_status.mail_system_status.up_since)), `Model` = MV_FIRST(VALUES(cisco_secure_email_gateway.system_status.version.model)), `Operating System` = MV_FIRST(VALUES(cisco_secure_email_gateway.system_status.version.operating_system)), `RAID Status` = MV_FIRST(VALUES(cisco_secure_email_gateway.system_status.version.raid_status)) BY `Host Name` = host.name\n| LIMIT 100"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "metrics-cisco_secure_email_gateway*-@timestamp",
+                                    "name": "indexpattern-datasource-layer-layer_0",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM metrics-cisco_secure_email_gateway*\n| WHERE @timestamp \u003e= ?_tstart AND @timestamp \u003c ?_tend\n| SORT @timestamp DESC\n| STATS `System Status` = MV_FIRST(VALUES(cisco_secure_email_gateway.system_status.mail_system_status.system_status)), `Up Since` = MV_FIRST(VALUES(cisco_secure_email_gateway.system_status.mail_system_status.up_since)), `Model` = MV_FIRST(VALUES(cisco_secure_email_gateway.system_status.version.model)), `Operating System` = MV_FIRST(VALUES(cisco_secure_email_gateway.system_status.version.operating_system)), `RAID Status` = MV_FIRST(VALUES(cisco_secure_email_gateway.system_status.version.raid_status)) BY `Host Name` = host.name\n| LIMIT 100"
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "columnId": "datatable_accessor_row_0",
+                                        "isMetric": false,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "datatable_accessor_metric_0",
+                                        "isMetric": true,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "datatable_accessor_metric_1",
+                                        "isMetric": true,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "datatable_accessor_metric_2",
+                                        "isMetric": true,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "datatable_accessor_metric_3",
+                                        "isMetric": true,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "columnId": "datatable_accessor_metric_4",
+                                        "isMetric": true,
+                                        "isTransposed": false
+                                    }
+                                ],
+                                "layerId": "layer_0",
+                                "layerType": "data",
+                                "paging": {
+                                    "enabled": true,
+                                    "size": 20
+                                },
+                                "showRowNumbers": false,
+                                "sorting": {
+                                    "columnId": "datatable_accessor_row_0",
+                                    "direction": "asc"
+                                }
+                            }
+                        },
+                        "title": "Latest gateway status per host",
+                        "version": 2,
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "title": "Latest gateway status per host"
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "23b189b0-3f4b-46ee-a149-fcbd56a43c55",
+                    "sectionId": "729c6a45-361a-4017-b2bc-77299247722d",
+                    "w": 48,
+                    "x": 0,
+                    "y": 20
+                },
+                "panelIndex": "23b189b0-3f4b-46ee-a149-fcbd56a43c55",
+                "type": "vis"
+            }
+        ],
+        "pinned_panels": {
+            "panels": {
+                "3110f155-2ab2-4be2-9c85-a9440ee1de0c": {
+                    "config": {
+                        "esql_query": "FROM metrics-cisco_secure_email_gateway* | STATS BY `host.name`",
+                        "exclude": false,
+                        "exists_selected": false,
+                        "ignore_validations": false,
+                        "run_past_timeout": false,
+                        "search_technique": "wildcard",
+                        "selected_options": [],
+                        "single_select": false,
+                        "sort": {
+                            "by": "_key",
+                            "direction": "desc"
+                        },
+                        "title": "Gateway host",
+                        "use_global_filters": true,
+                        "values_source": "esql"
+                    },
+                    "grow": true,
+                    "order": 0,
+                    "type": "options_list_control",
+                    "width": "medium"
+                },
+                "f12dbc2b-a0d6-4252-bb02-f5de7f0ee022": {
+                    "config": {
+                        "esql_query": "FROM metrics-cisco_secure_email_gateway* | STATS BY `cisco_secure_email_gateway.delivery_status.destination_domain`",
+                        "exclude": false,
+                        "exists_selected": false,
+                        "ignore_validations": false,
+                        "run_past_timeout": false,
+                        "search_technique": "wildcard",
+                        "selected_options": [],
+                        "single_select": false,
+                        "sort": {
+                            "by": "_key",
+                            "direction": "desc"
+                        },
+                        "title": "Destination domain",
+                        "use_global_filters": true,
+                        "values_source": "esql"
+                    },
+                    "grow": true,
+                    "order": 1,
+                    "type": "options_list_control",
+                    "width": "medium"
+                }
+            }
+        },
+        "sections": [
+            {
+                "collapsed": false,
+                "gridData": {
+                    "i": "85e07f92-d0cb-4ec4-8722-640011ca888d",
+                    "y": 4
+                },
+                "title": "Gateway health — KPIs (latest values)"
+            },
+            {
+                "collapsed": false,
+                "gridData": {
+                    "i": "55cc9902-fc61-4e46-8f32-86c72e024888",
+                    "y": 5
+                },
+                "title": "Mail flow \u0026 delivery"
+            },
+            {
+                "collapsed": false,
+                "gridData": {
+                    "i": "729c6a45-361a-4017-b2bc-77299247722d",
+                    "y": 6
+                },
+                "title": "Resource trends \u0026 fleet status"
+            }
+        ],
+        "timeRestore": false,
+        "title": "Cisco Secure Email Gateway — Overview"
+    },
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2026-09-18T10:49:04.725Z",
+    "created_by": "u_3727848238_cloud",
+    "id": "cisco_secure_email_gateway-f5e5450a-4a05-4228-876d-4b2f511e0d23",
+    "references": [
+        {
+            "id": "cisco_secure_email_gateway-57af144b-82fe-4e21-bb5a-2063d3ec7d02",
+            "name": "tag-ref-57af144b-82fe-4e21-bb5a-2063d3ec7d02",
+            "type": "tag"
+        },
+        {
+            "id": "cisco_secure_email_gateway-3bd63df6-f817-4351-ad4d-1e7f641ef665",
+            "name": "tag-ref-3bd63df6-f817-4351-ad4d-1e7f641ef665",
+            "type": "tag"
+        }
+    ],
+    "type": "dashboard",
+    "typeMigrationVersion": "10.3.0",
+    "updated_by": "u_3727848238_cloud"
+}
