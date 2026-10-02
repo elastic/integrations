@@ -879,29 +879,42 @@ plain ECS arrays such as `dns.answers` (`aws/route53_resolver_logs`).
 (latest version of each `rule_id`) whose index patterns match the stream — `index`,
 the ES|QL `FROM` clause, or an indicator match rule's `threat_index` — and whose query
 reads `_source`: `METADATA _source`, `JSON_EXTRACT(_source, …)`, `params._source`.
-Severity `review`.
+With an `elastic/detection-rules` checkout (`--detection-rules`, `DETECTION_RULES_PATH`,
+or a `detection-rules` directory next to this repository), its `rules/` and `hunting/`
+queries are scanned the same way; hunting queries exist nowhere else. Severity `review`.
 
 **Why.** Columnar returns `_source` with dotted top-level keys, so
 `JSON_EXTRACT(_source, "a.b")` looks for an `a` object, finds none, and returns null.
 Rules filter on the extracted value, so they stop matching, with no error. Nothing
 fails at install either: this is silent detection loss.
 
-**Remediation.** Hold the stream back from the tech preview until the rule is fixed
-in `elastic/detection-rules` (the rules are generated there):
+**Remediation.** Hold the stream back from the tech preview until the query is fixed
+in `elastic/detection-rules` (the rules are generated there). These rewrites work on
+both `_source` shapes:
 
-- Reference the mapped fields as columns instead of `_source`. Cast with `TO_STRING`
-  where the index patterns disagree on a type.
-- Add `SET unmapped_fields = "nullify";` when a field may be missing from one of the
-  patterns (the usual reason the rule reached for `JSON_EXTRACT`).
-- Values inside a `flattened` field cannot be read as ES|QL columns (`LOAD` does not
-  support flattened subfields either): promote the value to its own field in the
-  ingest pipeline, or wait for elasticsearch#160300, a `JSON_EXTRACT` that resolves
-  dotted keys.
+| Query reads | Rewrite |
+| --- | --- |
+| A mapped field through `JSON_EXTRACT(_source, "sip.method")` | The column: `sip.method`, or `COALESCE(network_traffic.sip.method, sip.method)` when the index patterns name it differently; `TO_STRING` where they disagree on a type |
+| A value inside a `flattened` field (`$.gcp.audit.request.spec.request`) | `FIELD_EXTRACT(gcp.audit.request, "spec.request")`. A tech-preview ES|QL function: check the rule's target stacks have it |
 
-The same scan feeds the **Detection rules** line of each stream: how many rules query
-it directly (by language), how many reach it through broad patterns such as `logs-*`,
-and how many read `_source`. The direct ones are the rule half of the performance
-workload; EQL and KQL run as Query DSL.
+- A field mapped on some of the queried indices already returns null on the others.
+  `SET unmapped_fields = "nullify";` is only needed when it is mapped on none of them.
+- `SET unmapped_fields = "load"` is not a fix: it reads `_source`, the document
+  columnar changes, and it cannot reach `flattened` subfields.
+- No `JSON_EXTRACT` path matches both shapes: `"$.a.b"` misses columnar's literal
+  `"a.b"` key and `"['a.b']"` misses LogsDB's nested object. elasticsearch#160300 asks
+  for a lenient one.
+
+All of the above was checked on a 9.6 snapshot with both index modes.
+
+The same scan feeds the **Detection rules** line of each stream. A rule is about the
+stream when `related_integrations` names the package or a pattern names it (`logs-aws*`,
+not `logs-*`), narrowed to the streams its query names by dataset (`event.dataset:
+gcp.audit`, `gcp.audit.method_name`), else to the policy templates
+`related_integrations` lists, else every stream it matches. Those direct rules, by
+language, are the rule half of the performance workload (EQL and KQL run as Query
+DSL). The line also counts the rules that only match the stream's indices, and the
+`_source` readers; both kinds read the stream, so both count for this check.
 
 **Known in catalog:** 4 rules on 3 streams — "Potential SIP Extension Enumeration" and
 "Potential SIP REGISTER Brute Force" (`network_traffic/sip`), "Potential NFS

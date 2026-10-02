@@ -228,13 +228,19 @@ def _source_reader_finding(subject: str, reader: Dict[str, Any], where: str) -> 
               "than `{\"a\": {\"b\": …}}`), so a nested lookup such as "
               "`JSON_EXTRACT(_source, \"a.b\")` returns null and the rule stops matching, with "
               "no error.",
-            "Hold this stream back from the tech preview until the rule is fixed in "
-            "`elastic/detection-rules`. The fix: reference the mapped fields as columns "
-            "instead of `_source` (cast with `TO_STRING` where the index patterns disagree "
-            "on a type), and add `SET unmapped_fields = \"nullify\";` when a field may be "
-            "missing from one of the patterns. Values inside a `flattened` field cannot be "
-            "read as columns: promote the value to its own field in the ingest pipeline, "
-            "or wait for elasticsearch#160300 (a `JSON_EXTRACT` that resolves dotted keys).",
+            "Hold this stream back from the tech preview until the query is fixed in "
+            "`elastic/detection-rules`. Fixes that work on both `_source` shapes: reference the "
+            "mapped fields as columns instead of `_source` (`COALESCE(network_traffic.sip.method, "
+            "sip.method)` where the index patterns name the field differently, `TO_STRING` where "
+            "they disagree on a type). A value inside a `flattened` field is not a column; read it "
+            "with `FIELD_EXTRACT(<flattened field>, \"<sub.key>\")`, e.g. "
+            "`FIELD_EXTRACT(gcp.audit.request, \"spec.request\")` (an ES|QL tech-preview "
+            "function: check the rule's target stacks have it). A field mapped on some of the "
+            "queried indices already returns null on the others; `SET unmapped_fields = "
+            "\"nullify\";` is only needed when it is mapped on none. `SET unmapped_fields = "
+            "\"load\"` is not a fix: it reads `_source`, which is what columnar changes, and "
+            "cannot reach `flattened` subfields. No `JSON_EXTRACT` path matches both shapes "
+            "(elasticsearch#160300 asks for one).",
             where)
 
 
