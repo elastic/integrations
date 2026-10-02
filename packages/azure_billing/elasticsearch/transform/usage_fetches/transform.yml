@@ -1,0 +1,137 @@
+source:
+  index:
+    - "metrics-azure.billing-*"
+  # Only the usage detail rows. The forecast rows produced by the same metricset
+  # have no `pretax_cost` and are handled by the `latest_forecast` transform.
+  query:
+    bool:
+      filter:
+        - exists:
+            field: azure.billing.pretax_cost
+        - exists:
+            field: azure.billing.usage_date
+# First of two chained transforms that deduplicate usage details without scripts,
+# so that they also run on Elasticsearch Serverless.
+#
+# The Azure Usage Details API does not give every cost row a unique ID. Rows for
+# the same day, meter, and resource share one `id` and legitimately appear more
+# than once, for example one row per VM instance of a scale set or one row per
+# storage billing event. The fields that tell those rows apart (`additionalInfo`)
+# are not part of the indexed document, so a per-row unique key does not exist.
+#
+# What is unique is the collection run: the metricset re-fetches whole days, and
+# every fetch is a complete snapshot of a day at that moment. This transform
+# therefore sums the rows per day, meter, resource, and fetch. A fetch is
+# identified by the agent process that ran it (`agent.ephemeral_id`, which
+# changes on every restart) and the minute in which its rows were created; the
+# metricset creates all rows of a fetch within milliseconds of each other.
+# The chained `usage` transform then keeps only the newest fetch per bucket.
+pivot:
+  group_by:
+    azure.billing.usage_date:
+      date_histogram:
+        field: azure.billing.usage_date
+        calendar_interval: 1d
+    azure.billing.billing_period_id:
+      terms:
+        field: azure.billing.billing_period_id
+        missing_bucket: true
+    azure.billing.currency:
+      terms:
+        field: azure.billing.currency
+        missing_bucket: true
+    azure.subscription_id:
+      terms:
+        field: azure.subscription_id
+        missing_bucket: true
+    azure.billing.account_name:
+      terms:
+        field: azure.billing.account_name
+        missing_bucket: true
+    azure.billing.department_name:
+      terms:
+        field: azure.billing.department_name
+        missing_bucket: true
+    azure.resource.group:
+      terms:
+        field: azure.resource.group
+        missing_bucket: true
+    azure.resource.name:
+      terms:
+        field: azure.resource.name
+        missing_bucket: true
+    azure.resource.type:
+      terms:
+        field: azure.resource.type
+        missing_bucket: true
+    azure.billing.product:
+      terms:
+        field: azure.billing.product
+        missing_bucket: true
+    cloud.region:
+      terms:
+        field: cloud.region
+        missing_bucket: true
+    data_stream.namespace:
+      terms:
+        field: data_stream.namespace
+        missing_bucket: true
+    # Fetch identity: the agent process and the minute the rows were created in.
+    agent.ephemeral_id:
+      terms:
+        field: agent.ephemeral_id
+        missing_bucket: true
+    azure.billing.fetch_time:
+      date_histogram:
+        field: "@timestamp"
+        fixed_interval: 1m
+  aggregations:
+    # Newest row of the fetch. The chained `usage` transform sorts on it, and
+    # Kibana applies the dashboard time picker to it.
+    "@timestamp":
+      max:
+        field: "@timestamp"
+    azure.billing.pretax_cost:
+      sum:
+        field: azure.billing.pretax_cost
+    # Number of usage detail rows that make up `pretax_cost` in this fetch.
+    azure.billing.row_count:
+      value_count:
+        field: azure.billing.pretax_cost
+dest:
+  # The destination index must not match `metrics-*`, so that a `metrics-*` data
+  # view never counts both the raw and the deduplicated documents.
+  index: "azure_billing.usage_fetches-v1"
+  # Stamps `event.ingested`, the sync field of the chained `usage` transform.
+  pipeline: '{{ ingestPipelineName "usage_fetches_ingested" }}'
+  aliases:
+    - alias: "azure_billing.usage_fetches"
+      move_on_creation: true
+description: >-
+  Azure billing usage details summed per day, meter, resource, and fetch. First stage of the deduplication: the chained usage transform keeps only the newest fetch per bucket.
+# Billing data arrives once a day, so there is nothing to gain from a faster
+# checkpoint interval.
+frequency: 1h
+settings:
+  # This is required to prevent the transform from clobbering the Fleet-managed
+  # mappings.
+  deduce_mappings: false
+  unattended: true
+sync:
+  time:
+    # Ingest time, stamped by Fleet's final pipeline on every raw document. Syncing
+    # on it instead of `@timestamp` means rows that arrive late or are backfilled
+    # with an older event time are still picked up.
+    field: "event.ingested"
+    # 120s instead of the default 60s because of the index refresh delay in
+    # Serverless.
+    delay: 120s
+_meta:
+  # Bump this version to delete, reinstall, and restart the transform during
+  # package installation. The source has no `@timestamp` range filter on purpose:
+  # Fleet rebuilds the destination index from scratch on a version bump, and a
+  # relative range filter would silently drop all history.
+  fleet_transform_version: 0.1.0
+  # Installed before the chained `usage` transform.
+  order: 0
+  run_as_kibana_system: false
