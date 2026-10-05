@@ -87,8 +87,6 @@ This is the `eks_audit` dataset.
 
 An example event for `eks_audit` looks as following:
 
-An example event for `eks_audit` looks as following:
-
 ```json
 {
     "@timestamp": "2026-08-05T08:00:00.000Z",
