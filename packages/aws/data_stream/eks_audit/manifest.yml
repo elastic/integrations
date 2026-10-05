@@ -1,9 +1,5 @@
 title: Amazon EKS audit logs
 type: logs
-elasticsearch:
-  index_template:
-    mappings:
-      dynamic: false
 streams:
   - input: aws-cloudwatch
     template_path: aws-cloudwatch.yml.hbs
@@ -46,7 +42,7 @@ streams:
         multi: false
         required: false
         show_user: true
-        description: AWS Region containing the EKS control-plane log groups. Required when collection uses the log group name or the log group name prefix, including the default /aws/eks/ prefix. Not used when a log group ARN is set, because the ARN already carries the Region.
+        description: AWS Region containing the EKS control-plane log groups. Required when collection uses the log group name or the log group name prefix, including the default /aws/eks/ prefix; falls back to the integration-level Default AWS Region when empty. Not used when a log group ARN is set, because the ARN already carries the Region.
       - name: number_of_workers
         type: integer
         title: Number of Workers

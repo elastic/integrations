@@ -1,22 +1,5 @@
 ---
 description: Parse EKS audit JSON into aws.eks.audit and ECS.
-on_failure:
-- append:
-    tag: append_pipeline_error
-    field: error.message
-    value: >-
-      Processor '{{{ _ingest.on_failure_processor_type }}}'
-      {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
-      {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}' failed with message '{{{ _ingest.on_failure_message }}}'
-- set:
-    tag: set_pipeline_error
-    field: event.kind
-    value: pipeline_error
-- append:
-    tag: preserve_original_event_on_failure
-    allow_duplicates: false
-    field: tags
-    value: preserve_original_event
 processors:
 - rename:
     tag: rename_message_to_event_original
@@ -78,20 +61,6 @@ processors:
       boolean isBoolean(def value) {
         return value instanceof Boolean || (value instanceof String && (value == 'true' || value == 'false'));
       }
-      boolean isInteger(def value) {
-        if (value instanceof Number) {
-          return true;
-        }
-        if (!(value instanceof String)) {
-          return false;
-        }
-        try {
-          Long.parseLong(value);
-          return true;
-        } catch (Exception e) {
-          return false;
-        }
-      }
       void keepMap(Map parent, String key) {
         if (parent.containsKey(key) && !(parent.get(key) instanceof Map)) {
           parent.remove(key);
@@ -107,13 +76,49 @@ processors:
           parent.remove(key);
         }
       }
+      // Numeric strings are coerced so later comparisons such as responseStatus.code < 400
+      // never see a String; anything else non-numeric is dropped.
       void keepInteger(Map parent, String key) {
-        if (parent.containsKey(key) && !isInteger(parent.get(key))) {
+        if (!parent.containsKey(key)) {
+          return;
+        }
+        def value = parent.get(key);
+        if (value instanceof Number) {
+          return;
+        }
+        if (value instanceof String) {
+          try {
+            parent.put(key, Long.parseLong(value));
+            return;
+          } catch (Exception e) {
+            // fall through to removal
+          }
+        }
+        parent.remove(key);
+      }
+      // Fields mapped as lists of keywords accept a bare scalar from the mapper, but the
+      // normalizers below only iterate Lists, so wrap singletons here.
+      void keepScalarList(Map parent, String key) {
+        if (!parent.containsKey(key)) {
+          return;
+        }
+        def value = parent.get(key);
+        if (isScalar(value)) {
+          parent.put(key, [value]);
+        } else if (!isScalarOrList(value)) {
           parent.remove(key);
         }
       }
+      // Object collections are always Lists after this call: a single Map is wrapped and
+      // anything else is dropped, so every consumer can iterate without re-checking shape.
       void keepObjectCollection(Map parent, String key) {
-        if (parent.containsKey(key) && !isMapOrListOfMaps(parent.get(key))) {
+        if (!parent.containsKey(key)) {
+          return;
+        }
+        def value = parent.get(key);
+        if (value instanceof Map) {
+          parent.put(key, [value]);
+        } else if (!isMapOrListOfMaps(value)) {
           parent.remove(key);
         }
       }
@@ -143,7 +148,15 @@ processors:
         keepInteger(securityContext, 'runAsGroup');
         keepScalar(securityContext, 'procMount');
         keepMap(securityContext, 'capabilities');
+        def capabilities = securityContext.get('capabilities');
+        if (capabilities instanceof Map) {
+          keepScalar(capabilities, 'add');
+        }
         keepMap(securityContext, 'seccompProfile');
+        def seccompProfile = securityContext.get('seccompProfile');
+        if (seccompProfile instanceof Map) {
+          keepScalar(seccompProfile, 'type');
+        }
       }
       void sanitizeContainers(def value) {
         List containers = value instanceof List ? value : [value];
@@ -217,10 +230,16 @@ processors:
         keepMap(body, 'spec');
         sanitizeSpec(body.get('spec'));
         keepObjectCollection(body, 'rules');
-        sanitizeObjectCollection(
-          body.get('rules'),
-          ['apiGroups', 'resources', 'resourceNames', 'verbs', 'nonResourceURLs']
-        );
+        def rules = body.get('rules');
+        if (rules instanceof List) {
+          for (def rule : rules) {
+            if (rule instanceof Map) {
+              for (String key : ['apiGroups', 'resources', 'resourceNames', 'verbs', 'nonResourceURLs']) {
+                keepScalarList(rule, key);
+              }
+            }
+          }
+        }
         keepObjectCollection(body, 'subjects');
         sanitizeObjectCollection(body.get('subjects'), ['kind', 'name', 'namespace']);
         keepObjectCollection(body, 'items');
@@ -304,11 +323,13 @@ processors:
           }
         }
       }
+      // The audit API serialises request and response bodies as a single object
+      // (runtime.Unknown); any other shape would bypass sanitizeBody, so drop it.
       for (String key : ['requestObject', 'responseObject']) {
         def body = audit.get(key);
         if (body instanceof Map) {
           sanitizeBody(body);
-        } else if (body != null && !isMapOrListOfMaps(body)) {
+        } else if (body != null) {
           audit.remove(key);
         }
       }
@@ -348,9 +369,14 @@ processors:
         }
       }
       Map audit = ctx.aws.eks.audit;
+      // ObjectReference.apiGroup is omitempty, so core-group resources arrive with the
+      // key absent rather than empty; both shapes mean the core API group.
       def objectRef = audit.get('objectRef');
-      if (objectRef instanceof Map && objectRef.get('apiGroup') == '') {
-        objectRef.put('apiGroup', 'core');
+      if (objectRef instanceof Map && objectRef.get('resource') != null) {
+        def group = objectRef.get('apiGroup');
+        if (group == null || group == '') {
+          objectRef.put('apiGroup', 'core');
+        }
       }
       def requestObject = audit.get('requestObject');
       if (requestObject instanceof Map) {
@@ -430,44 +456,45 @@ processors:
     if: ctx.aws?.eks?.audit?.apiVersion == 'audit.k8s.io/v1' && ctx.aws?.eks?.audit?.kind == 'Event' && ctx.aws?.eks?.audit?.auditID != null && ctx.aws?.eks?.audit?.verb != null && !['create', 'delete', 'deletecollection', 'update', 'patch', 'get', 'list', 'watch'].contains(ctx.aws?.eks?.audit?.verb) && !['exec', 'attach', 'portforward', 'proxy'].contains(ctx.aws?.eks?.audit?.objectRef?.subresource)
     allow_duplicates: false
 - script:
-    if: ctx.aws?.eks?.audit?.user?.extra instanceof Map
-    lang: painless
-    source: 'Map extra = ctx.aws.eks.audit.user.extra; Map normalized = new HashMap(); for (def entry : extra.entrySet()) { normalized[entry.getKey().replace(''.'', ''_'')] = entry.getValue(); } ctx.aws.eks.audit.user.extra = normalized;'
-    tag: normalize_user_extra_keys
-- script:
-    if: ctx.aws?.eks?.audit?.impersonatedUser?.extra instanceof Map
-    lang: painless
-    source: 'Map extra = ctx.aws.eks.audit.impersonatedUser.extra; Map normalized = new HashMap(); for (def entry : extra.entrySet()) { normalized[entry.getKey().replace(''.'', ''_'')] = entry.getValue(); } ctx.aws.eks.audit.impersonatedUser.extra = normalized;'
-    tag: normalize_impersonated_user_extra_keys
-- script:
+    tag: normalize_dotted_map_keys
+    description: Replace dots in free-form map keys so they index as leaf keywords instead of nested objects.
     if: ctx.aws?.eks?.audit instanceof Map
     lang: painless
     source: |
-      Map audit = ctx.aws.eks.audit;
-      for (String bodyName : ['requestObject', 'responseObject']) {
-        def body = audit.get(bodyName);
-        if (!(body instanceof Map)) {
-          continue;
-        }
-        def spec = body.get('spec');
-        if (!(spec instanceof Map) || !(spec.get('extra') instanceof Map)) {
-          continue;
+      void normalizeKeys(Map parent, String key) {
+        def value = parent.get(key);
+        if (!(value instanceof Map)) {
+          return;
         }
         Map normalized = new HashMap();
-        for (def entry : spec.extra.entrySet()) {
+        for (def entry : value.entrySet()) {
           normalized[entry.getKey().replace('.', '_')] = entry.getValue();
         }
-        spec.extra = normalized;
+        parent.put(key, normalized);
       }
-    tag: normalize_authorization_review_extra_keys
-- script:
-    tag: normalize_annotation_keys_and_set_outcome
-    if: ctx.aws?.eks?.audit?.annotations != null
-    lang: painless
-    source: 'Map annotations = ctx[''aws''][''eks''][''audit''][''annotations'']; Map updatedAnnotation = new HashMap(); for (String key: annotations.keySet()) {
-      updatedAnnotation[key.replace(''.'', ''_'')] = annotations[key]; if (key == ''authorization.k8s.io/decision'') { if (annotations[''authorization.k8s.io/decision'']
-      == ''allow'') { ctx.event.outcome = ''success''; } else if (annotations[''authorization.k8s.io/decision''] == ''forbid'') { ctx.event.outcome = ''failure'';
-      } } } ctx[''aws''][''eks''][''audit''][''annotations''] = updatedAnnotation'
+      Map audit = ctx.aws.eks.audit;
+      normalizeKeys(audit, 'annotations');
+      for (String identity : ['user', 'impersonatedUser']) {
+        if (audit.get(identity) instanceof Map) {
+          normalizeKeys(audit.get(identity), 'extra');
+        }
+      }
+      for (String bodyName : ['requestObject', 'responseObject']) {
+        def body = audit.get(bodyName);
+        if (body instanceof Map && body.get('spec') instanceof Map) {
+          normalizeKeys(body.get('spec'), 'extra');
+        }
+      }
+- set:
+    tag: set_success_outcome_from_authorization_decision
+    field: event.outcome
+    value: success
+    if: ctx.aws?.eks?.audit?.annotations instanceof Map && ctx.aws.eks.audit.annotations['authorization_k8s_io/decision'] == 'allow'
+- set:
+    tag: set_failure_outcome_from_authorization_decision
+    field: event.outcome
+    value: failure
+    if: ctx.aws?.eks?.audit?.annotations instanceof Map && ctx.aws.eks.audit.annotations['authorization_k8s_io/decision'] == 'forbid'
 - set:
     tag: set_success_outcome_from_status
     field: event.outcome
@@ -653,3 +680,20 @@ processors:
       }
       handleMap(ctx);
     tag: script_to_drop_empty_values
+on_failure:
+- append:
+    tag: append_pipeline_error
+    field: error.message
+    value: >-
+      Processor '{{{ _ingest.on_failure_processor_type }}}'
+      {{{#_ingest.on_failure_processor_tag}}}with tag '{{{ _ingest.on_failure_processor_tag }}}'
+      {{{/_ingest.on_failure_processor_tag}}}in pipeline '{{{ _ingest.pipeline }}}' failed with message '{{{ _ingest.on_failure_message }}}'
+- set:
+    tag: set_pipeline_error
+    field: event.kind
+    value: pipeline_error
+- append:
+    tag: preserve_original_event_on_failure
+    allow_duplicates: false
+    field: tags
+    value: preserve_original_event

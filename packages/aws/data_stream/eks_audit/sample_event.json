@@ -1,84 +1,93 @@
 {
     "@timestamp": "2026-08-05T08:00:00.000Z",
+    "agent": {
+        "ephemeral_id": "03c3e093-a959-4d8d-8bae-d4db50c5a032",
+        "id": "46a4ee56-4f3e-486c-a54d-56bdd55b168f",
+        "name": "elastic-agent-17248",
+        "type": "filebeat",
+        "version": "9.6.0"
+    },
     "aws": {
         "cloudwatch": {
-            "log_group": "/aws/eks/prod-cluster/cluster",
-            "log_stream": "kube-apiserver-audit-123",
-            "region": "us-east-1",
-            "account_id": "123456789012"
+            "ingestion_time": "2026-10-05T10:52:45.844Z",
+            "log_group": "arn:aws:logs:us-east-1:419095191026:log-group:/aws/eks/test-60382/cluster",
+            "log_stream": "kube-apiserver-audit-60382"
         },
         "eks": {
-            "cluster": {
-                "name": "prod-cluster"
-            },
-            "log_type": "audit",
-            "component": "kube-apiserver",
             "audit": {
-                "apiVersion": "audit.k8s.io/v1",
-                "kind": "Event",
-                "level": "RequestResponse",
-                "stage": "ResponseComplete",
-                "requestReceivedTimestamp": "2026-08-05T08:00:00Z",
-                "stageTimestamp": "2026-08-05T08:00:01Z",
-                "sourceIPs": [
-                    "198.51.100.10"
-                ],
-                "userAgent": "kubectl/v1.31.0",
-                "user": {
-                    "username": "arn:aws:iam::123456789012:user/alice",
-                    "uid": "aws-iam-authenticator:123456789012:alice",
-                    "groups": [
-                        "system:authenticated"
-                    ]
-                },
-                "auditID": "allowed-secret",
-                "verb": "get",
-                "requestURI": "/api/v1/secrets",
-                "objectRef": {
-                    "resource": "secrets",
-                    "namespace": "default",
-                    "name": "app-secret"
-                },
-                "responseStatus": {
-                    "code": 200
-                },
                 "annotations": {
                     "authorization_k8s_io/decision": "allow",
                     "authorization_k8s_io/reason": "RBAC decision"
-                }
-            }
+                },
+                "apiVersion": "audit.k8s.io/v1",
+                "auditID": "allowed-secret",
+                "kind": "Event",
+                "level": "RequestResponse",
+                "objectRef": {
+                    "apiGroup": "core",
+                    "name": "app-secret",
+                    "namespace": "default",
+                    "resource": "secrets"
+                },
+                "requestReceivedTimestamp": "2026-08-05T08:00:00.000Z",
+                "requestURI": "/api/v1/secrets",
+                "responseStatus": {
+                    "code": 200
+                },
+                "sourceIPs": "198.51.100.10",
+                "stage": "ResponseComplete",
+                "stageTimestamp": "2026-08-05T08:00:01.000Z",
+                "user": {
+                    "groups": "system:authenticated",
+                    "uid": "aws-iam-authenticator:123456789012:alice",
+                    "username": "arn:aws:iam::123456789012:user/alice"
+                },
+                "userAgent": "kubectl/v1.31.0",
+                "verb": "get"
+            },
+            "cluster": {
+                "name": "test-60382"
+            },
+            "component": "kube-apiserver",
+            "log_type": "audit"
         }
     },
     "client": {
-        "ip": [
-            "198.51.100.10"
-        ]
+        "ip": "198.51.100.10"
     },
     "cloud": {
         "account": {
-            "id": "123456789012"
+            "id": "419095191026"
         },
         "provider": "aws",
         "region": "us-east-1"
     },
     "data_stream": {
         "dataset": "aws.eks_audit",
-        "namespace": "default",
+        "namespace": "82781",
         "type": "logs"
     },
     "ecs": {
-        "version": "8.11.0"
+        "version": "8.0.0"
+    },
+    "elastic_agent": {
+        "id": "46a4ee56-4f3e-486c-a54d-56bdd55b168f",
+        "snapshot": true,
+        "version": "9.6.0"
     },
     "event": {
         "action": "get",
+        "agent_id_status": "verified",
         "category": [
             "configuration"
         ],
         "dataset": "aws.eks_audit",
         "end": "2026-08-05T08:00:01.000Z",
         "id": "allowed-secret",
-        "ingested": "2026-08-05T08:00:02.000Z",
+        "ingested": "2026-10-05T10:53:13Z",
         "kind": "event",
+        "module": "aws",
+        "original": "{\"apiVersion\":\"audit.k8s.io/v1\",\"kind\":\"Event\",\"level\":\"RequestResponse\",\"stage\":\"ResponseComplete\",\"requestReceivedTimestamp\":\"2026-08-05T08:00:00Z\",\"stageTimestamp\":\"2026-08-05T08:00:01Z\",\"sourceIPs\":[\"198.51.100.10\"],\"userAgent\":\"kubectl/v1.31.0\",\"user\":{\"username\":\"arn:aws:iam::123456789012:user/alice\",\"uid\":\"aws-iam-authenticator:123456789012:alice\",\"groups\":[\"system:authenticated\"]},\"auditID\":\"allowed-secret\",\"verb\":\"get\",\"requestURI\":\"/api/v1/secrets\",\"objectRef\":{\"resource\":\"secrets\",\"namespace\":\"default\",\"name\":\"app-secret\"},\"responseStatus\":{\"code\":200},\"annotations\":{\"authorization.k8s.io/decision\":\"allow\",\"authorization.k8s.io/reason\":\"RBAC decision\"}}",
         "outcome": "success",
         "type": [
             "access"
@@ -87,10 +96,15 @@
     "input": {
         "type": "aws-cloudwatch"
     },
+    "log": {
+        "file": {
+            "path": "arn:aws:logs:us-east-1:419095191026:log-group:/aws/eks/test-60382/cluster/kube-apiserver-audit-60382"
+        }
+    },
     "orchestrator": {
         "api_version": "audit.k8s.io/v1",
         "cluster": {
-            "name": "prod-cluster"
+            "name": "test-60382"
         },
         "namespace": "default",
         "resource": {
@@ -109,19 +123,16 @@
         ]
     },
     "source": {
-        "ip": [
-            "198.51.100.10"
-        ]
+        "ip": "198.51.100.10"
     },
     "tags": [
+        "preserve_original_event",
         "forwarded",
         "aws-eks-audit"
     ],
     "user": {
         "group": {
-            "name": [
-                "system:authenticated"
-            ]
+            "name": "system:authenticated"
         },
         "id": "aws-iam-authenticator:123456789012:alice",
         "name": "arn:aws:iam::123456789012:user/alice"

@@ -22,18 +22,14 @@ processors:
     tag: set_eks_component
     field: aws.eks.component
     value: kube-apiserver
-- set:
-    tag: set_cloud_region
-    field: cloud.region
-    copy_from: aws.cloudwatch.region
-    if: ctx.aws?.cloudwatch?.region != null
-    ignore_empty_value: true
-- set:
-    tag: set_cloud_account_id
-    field: cloud.account.id
-    copy_from: aws.cloudwatch.account_id
-    if: ctx.aws?.cloudwatch?.account_id != null
-    ignore_empty_value: true
+- grok:
+    tag: grok_cloud_account_id_from_log_group_arn
+    description: In log_group_arn mode the input reports the ARN as the log group; take the account ID from it.
+    field: aws.cloudwatch.log_group
+    if: ctx.aws?.cloudwatch?.log_group instanceof String && ctx.aws.cloudwatch.log_group.startsWith('arn:')
+    patterns:
+      - '^arn:[^:]+:logs:[^:]*:%{NUMBER:cloud.account.id}:log-group:'
+    ignore_failure: true
 - script:
     tag: extract_eks_cluster_name
     description: Extract the EKS cluster name from the CloudWatch log group.
@@ -48,7 +44,7 @@ processors:
     if: ctx.aws?.eks?.cluster?.name != null
     ignore_empty_value: true
 - pipeline:
-    tag: route_to_audit_pipeline
+    tag: run_audit_pipeline
     name: '{{ IngestPipeline "audit" }}'
 - set:
     tag: set_timestamp_from_ingest
