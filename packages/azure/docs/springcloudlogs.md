@@ -164,7 +164,6 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | azure.resource.namespace | Event Hub namespace parsed from the ARM resource ID. | keyword |
 | azure.resource.provider | Legacy name for the resource provider namespace, still populated. Prefer `azure.resource_provider.namespace`. | keyword |
 | azure.resource_group.name | Azure resource group name. | keyword |
-| azure.resource_id | Legacy ARM resource ID field, still populated. Prefer `cloud.resource_id`. | keyword |
 | azure.resource_provider.namespace | Azure resource provider namespace (e.g., Microsoft.EventHub). | keyword |
 | azure.springcloudlogs.category | Category | keyword |
 | azure.springcloudlogs.event_category | Event Category | keyword |

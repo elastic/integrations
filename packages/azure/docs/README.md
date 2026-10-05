@@ -590,7 +590,6 @@ This release is **additive**: the semantic-convention field names above were add
 
 | Legacy field (still populated) | Semconv equivalent |
 |---|---|
-| `azure.resource_id` | `cloud.resource_id` |
 | `azure.resource.id` | `cloud.resource_id` |
 | `azure.resource.group` | `azure.resource_group.name` |
 | `azure.resource.provider` | `azure.resource_provider.namespace` |
