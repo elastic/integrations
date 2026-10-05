@@ -377,6 +377,9 @@ processors:
       value: '{{{user.full_name}}}'
       allow_duplicates: false
       if: ctx.user?.full_name != null
+  - pipeline:
+      tag: pipeline_azure_shared_pipeline_7877e1a4
+      name: '{{ IngestPipeline "azure-shared-pipeline-tenant" }}'
   - set:
       tag: set-cloud_account_id_3e7d9f2b
       field: cloud.account.id
@@ -388,9 +391,6 @@ processors:
         `cloud.account.id` means the Azure subscription, which these tenant-scoped
         Entra ID logs do not carry; aligning that is deferred to the next major
         version. Use `azure.tenant.id` for the tenant.
-  - pipeline:
-      tag: pipeline_azure_shared_pipeline_7877e1a4
-      name: '{{ IngestPipeline "azure-shared-pipeline-tenant" }}'
   - set:
       tag: set_event_kind_92954dfa
       field: event.kind

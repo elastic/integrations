@@ -449,6 +449,9 @@ processors:
       value: '{{{ azure.signinlogs.properties.device_detail.device_id }}}'
       allow_duplicates: false
       if: ctx.azure?.signinlogs?.properties?.device_detail?.device_id != null && ctx.azure.signinlogs.properties.device_detail.device_id != ''
+  - pipeline:
+      tag: pipeline_azure_shared_pipeline_7877e1a4
+      name: '{{ IngestPipeline "azure-shared-pipeline-tenant" }}'
   - set:
       tag: set-cloud_account_id_7a2f5d1c
       field: cloud.account.id
@@ -460,9 +463,6 @@ processors:
         `cloud.account.id` means the Azure subscription, which these tenant-scoped
         Entra ID logs do not carry; aligning that is deferred to the next major
         version. Use `azure.tenant.id` for the tenant.
-  - pipeline:
-      tag: pipeline_azure_shared_pipeline_7877e1a4
-      name: '{{ IngestPipeline "azure-shared-pipeline-tenant" }}'
   - script:
       tag: script_drops_null_empty_values_recursively_a3eb5add
       description: Drops null/empty values recursively.
