@@ -12,9 +12,9 @@ queries against the workflow execution index.
 - **KPI strip** — Total Executions, Avg Duration (with the longest execution as a progress bar), Success Rate, Timed Out (with trendline), Failures (with trendline)
 - **Executions Over Time** — stacked bar chart of runs per workflow
 - **Trigger Breakdown** — treemap of execution trigger sources
-- **Failure Rate by Workflow** — failure rate trend per workflow over time
+- **Failure Rate Over Time** — overall failure rate trend
 - **Duration Distribution** — execution counts bucketed by duration (< 1s, 1s–5s, 5s–30s, > 30s)
-- **Avg Duration by Workflow** — duration trend per workflow over time
+- **Avg Duration Over Time** — overall average duration trend
 - **Status Breakdown** — treemap of execution statuses
 - **Slowest Workflows** — table of workflows ranked by p95 duration
 - **Recent Failures** — table of failing workflows and their spaces, with drilldown to executions

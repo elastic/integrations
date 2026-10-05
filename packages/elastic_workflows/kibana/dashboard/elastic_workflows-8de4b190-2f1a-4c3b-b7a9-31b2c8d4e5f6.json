@@ -769,21 +769,12 @@
                                                             }
                                                         }
                                                     }
-                                                },
-                                                {
-                                                    "columnId": "line_0_breakdown",
-                                                    "customLabel": true,
-                                                    "fieldName": "workflowId",
-                                                    "label": "Workflow",
-                                                    "meta": {
-                                                        "type": "string"
-                                                    }
                                                 }
                                             ],
                                             "ignoreGlobalFilters": false,
                                             "index": ".workflows-executions-startedAt",
                                             "query": {
-                                                "esql": "FROM .workflows-executions\n| WHERE startedAt \u003e= ?_tstart AND startedAt \u003c ?_tend\n| WHERE (?space_ids IS NULL OR MV_INTERSECTS(spaceId, ?space_ids)) AND (?run_types IS NULL OR MV_INTERSECTS(CASE(COALESCE(isTestRun, false), \"test\", \"production\"), ?run_types))\n| STATS total = COUNT(*) WHERE status IN (\"completed\", \"failed\", \"cancelled\", \"timed_out\", \"skipped\"), failures = COUNT(*) WHERE status IN (\"failed\", \"timed_out\") BY time_bucket = BUCKET(startedAt, 50, ?_tstart, ?_tend), workflowId\n| EVAL failure_rate = CASE(total \u003e 0, TO_DOUBLE(failures) / total, 0.0)\n| KEEP time_bucket, workflowId, failure_rate\n| SORT time_bucket\n| LIMIT 10000"
+                                                "esql": "FROM .workflows-executions\n| WHERE startedAt \u003e= ?_tstart AND startedAt \u003c ?_tend\n| WHERE (?space_ids IS NULL OR MV_INTERSECTS(spaceId, ?space_ids)) AND (?run_types IS NULL OR MV_INTERSECTS(CASE(COALESCE(isTestRun, false), \"test\", \"production\"), ?run_types))\n| STATS total = COUNT(*) WHERE status IN (\"completed\", \"failed\", \"cancelled\", \"timed_out\", \"skipped\"), failures = COUNT(*) WHERE status IN (\"failed\", \"timed_out\") BY time_bucket = BUCKET(startedAt, 50, ?_tstart, ?_tend)\n| EVAL failure_rate = CASE(total \u003e 0, TO_DOUBLE(failures) / total, 0.0)\n| KEEP time_bucket, failure_rate\n| SORT time_bucket\n| LIMIT 10000"
                                             },
                                             "timeField": "startedAt"
                                         }
@@ -799,7 +790,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "FROM .workflows-executions\n| WHERE startedAt \u003e= ?_tstart AND startedAt \u003c ?_tend\n| WHERE (?space_ids IS NULL OR MV_INTERSECTS(spaceId, ?space_ids)) AND (?run_types IS NULL OR MV_INTERSECTS(CASE(COALESCE(isTestRun, false), \"test\", \"production\"), ?run_types))\n| STATS total = COUNT(*) WHERE status IN (\"completed\", \"failed\", \"cancelled\", \"timed_out\", \"skipped\"), failures = COUNT(*) WHERE status IN (\"failed\", \"timed_out\") BY time_bucket = BUCKET(startedAt, 50, ?_tstart, ?_tend), workflowId\n| EVAL failure_rate = CASE(total \u003e 0, TO_DOUBLE(failures) / total, 0.0)\n| KEEP time_bucket, workflowId, failure_rate\n| SORT time_bucket\n| LIMIT 10000"
+                                "esql": "FROM .workflows-executions\n| WHERE startedAt \u003e= ?_tstart AND startedAt \u003c ?_tend\n| WHERE (?space_ids IS NULL OR MV_INTERSECTS(spaceId, ?space_ids)) AND (?run_types IS NULL OR MV_INTERSECTS(CASE(COALESCE(isTestRun, false), \"test\", \"production\"), ?run_types))\n| STATS total = COUNT(*) WHERE status IN (\"completed\", \"failed\", \"cancelled\", \"timed_out\", \"skipped\"), failures = COUNT(*) WHERE status IN (\"failed\", \"timed_out\") BY time_bucket = BUCKET(startedAt, 50, ?_tstart, ?_tend)\n| EVAL failure_rate = CASE(total \u003e 0, TO_DOUBLE(failures) / total, 0.0)\n| KEEP time_bucket, failure_rate\n| SORT time_bucket\n| LIMIT 10000"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -824,32 +815,9 @@
                                         "accessors": [
                                             "line_0_y_0"
                                         ],
-                                        "colorMapping": {
-                                            "assignments": [],
-                                            "colorMode": {
-                                                "type": "categorical"
-                                            },
-                                            "paletteId": "elastic_line_optimized",
-                                            "specialAssignments": [
-                                                {
-                                                    "color": {
-                                                        "type": "loop"
-                                                    },
-                                                    "rules": [
-                                                        {
-                                                            "type": "other"
-                                                        }
-                                                    ],
-                                                    "touched": false
-                                                }
-                                            ]
-                                        },
                                         "layerId": "line_0",
                                         "layerType": "data",
                                         "seriesType": "line",
-                                        "splitAccessors": [
-                                            "line_0_breakdown"
-                                        ],
                                         "xAccessor": "line_0_x",
                                         "yConfig": [
                                             {
@@ -889,7 +857,7 @@
                     },
                     "drilldowns": [],
                     "hide_title": false,
-                    "title": "Failure Rate by Workflow"
+                    "title": "Failure Rate Over Time"
                 },
                 "gridData": {
                     "h": 14,
@@ -1135,21 +1103,12 @@
                                                             }
                                                         }
                                                     }
-                                                },
-                                                {
-                                                    "columnId": "line_0_breakdown",
-                                                    "customLabel": true,
-                                                    "fieldName": "workflowId",
-                                                    "label": "Workflow",
-                                                    "meta": {
-                                                        "type": "string"
-                                                    }
                                                 }
                                             ],
                                             "ignoreGlobalFilters": false,
                                             "index": ".workflows-executions-startedAt",
                                             "query": {
-                                                "esql": "FROM .workflows-executions\n| WHERE startedAt \u003e= ?_tstart AND startedAt \u003c ?_tend\n| WHERE (?space_ids IS NULL OR MV_INTERSECTS(spaceId, ?space_ids)) AND (?run_types IS NULL OR MV_INTERSECTS(CASE(COALESCE(isTestRun, false), \"test\", \"production\"), ?run_types))\n| STATS avg_duration_ms = AVG(duration) BY time_bucket = BUCKET(startedAt, 50, ?_tstart, ?_tend), workflowId\n| SORT time_bucket\n| LIMIT 10000"
+                                                "esql": "FROM .workflows-executions\n| WHERE startedAt \u003e= ?_tstart AND startedAt \u003c ?_tend\n| WHERE (?space_ids IS NULL OR MV_INTERSECTS(spaceId, ?space_ids)) AND (?run_types IS NULL OR MV_INTERSECTS(CASE(COALESCE(isTestRun, false), \"test\", \"production\"), ?run_types))\n| STATS avg_duration_ms = AVG(duration) BY time_bucket = BUCKET(startedAt, 50, ?_tstart, ?_tend)\n| SORT time_bucket\n| LIMIT 10000"
                                             },
                                             "timeField": "startedAt"
                                         }
@@ -1165,7 +1124,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "FROM .workflows-executions\n| WHERE startedAt \u003e= ?_tstart AND startedAt \u003c ?_tend\n| WHERE (?space_ids IS NULL OR MV_INTERSECTS(spaceId, ?space_ids)) AND (?run_types IS NULL OR MV_INTERSECTS(CASE(COALESCE(isTestRun, false), \"test\", \"production\"), ?run_types))\n| STATS avg_duration_ms = AVG(duration) BY time_bucket = BUCKET(startedAt, 50, ?_tstart, ?_tend), workflowId\n| SORT time_bucket\n| LIMIT 10000"
+                                "esql": "FROM .workflows-executions\n| WHERE startedAt \u003e= ?_tstart AND startedAt \u003c ?_tend\n| WHERE (?space_ids IS NULL OR MV_INTERSECTS(spaceId, ?space_ids)) AND (?run_types IS NULL OR MV_INTERSECTS(CASE(COALESCE(isTestRun, false), \"test\", \"production\"), ?run_types))\n| STATS avg_duration_ms = AVG(duration) BY time_bucket = BUCKET(startedAt, 50, ?_tstart, ?_tend)\n| SORT time_bucket\n| LIMIT 10000"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -1190,32 +1149,9 @@
                                         "accessors": [
                                             "line_0_y_0"
                                         ],
-                                        "colorMapping": {
-                                            "assignments": [],
-                                            "colorMode": {
-                                                "type": "categorical"
-                                            },
-                                            "paletteId": "elastic_line_optimized",
-                                            "specialAssignments": [
-                                                {
-                                                    "color": {
-                                                        "type": "loop"
-                                                    },
-                                                    "rules": [
-                                                        {
-                                                            "type": "other"
-                                                        }
-                                                    ],
-                                                    "touched": false
-                                                }
-                                            ]
-                                        },
                                         "layerId": "line_0",
                                         "layerType": "data",
                                         "seriesType": "line",
-                                        "splitAccessors": [
-                                            "line_0_breakdown"
-                                        ],
                                         "xAccessor": "line_0_x",
                                         "yConfig": [
                                             {
@@ -1255,7 +1191,7 @@
                     },
                     "drilldowns": [],
                     "hide_title": false,
-                    "title": "Avg Duration by Workflow"
+                    "title": "Avg Duration Over Time"
                 },
                 "gridData": {
                     "h": 14,
