@@ -2,7 +2,7 @@
 
 ## Overview
 
-The [Cloudflare Logpush](https://developers.cloudflare.com/logs/logpush/) integration allows you to monitor Access Request, Audit, CASB, Device Posture, DLP Forensic Copies, DNS, DNS Firewall, Email Security Alerts, Firewall Event, Gateway DNS, Gateway HTTP, Gateway Network, HTTP Request, Magic IDS, NEL Report, Network Analytics, Page Shield, Sinkhole HTTP, Spectrum Event, Zero Trust Network Session, and Workers Trace Events logs.
+The [Cloudflare Logpush](https://developers.cloudflare.com/logs/logpush/) integration allows you to monitor Access Request, Audit, CASB, Device Posture, DEX Application Tests, DEX Device State Events, DLP Forensic Copies, DNS, DNS Firewall, Email Security Alerts, Firewall Event, Gateway DNS, Gateway HTTP, Gateway Network, HTTP Request, Magic IDS, NEL Report, Network Analytics, Page Shield, Sinkhole HTTP, Spectrum Event, Zero Trust Network Session, and Workers Trace Events logs.
 
 Cloudflare is a content delivery network and DDoS mitigation company. Cloudflare provides a network designed to make everything you connect to the Internet secure, private, fast, and reliable; secure your websites, APIs, and Internet applications; protect corporate networks, employees, and devices; and write and deploy code that runs on the network edge.
 
@@ -41,6 +41,8 @@ The Cloudflare Logpush integration collects logs for the following Cloudflare [d
 - `audit`: Authentication events through Cloudflare Access, plus account-level configuration and administrative actions. See [Audit Logs schema](https://developers.cloudflare.com/logs/reference/log-fields/account/audit_logs/).
 - `casb`: Security issues detected by Cloudflare CASB in connected SaaS applications. See [CASB Findings schema](https://developers.cloudflare.com/logs/reference/log-fields/account/casb_findings/).
 - `device_posture`: Device posture status from the Cloudflare One Client (WARP). See [Device Posture Results schema](https://developers.cloudflare.com/logs/reference/log-fields/account/device_posture_results/).
+- `dex_application_tests`: Cloudflare DEX synthetic application monitoring (HTTP and traceroute) test results from the Cloudflare One Client (WARP). See [DEX Application Tests schema](https://developers.cloudflare.com/logs/logpush/logpush-job/datasets/account/dex_application_tests/).
+- `dex_device_state_events`: Cloudflare DEX device state telemetry (connectivity, resource usage, and WARP status) from the Cloudflare One Client (WARP). See [DEX Device State Events schema](https://developers.cloudflare.com/logs/logpush/logpush-job/datasets/account/dex_device_state_events/).
 - `gateway_dns`: DNS queries inspected by Cloudflare Gateway. See [Gateway DNS schema](https://developers.cloudflare.com/logs/reference/log-fields/account/gateway_dns/).
 - `gateway_http`: HTTP requests inspected by Cloudflare Gateway. See [Gateway HTTP schema](https://developers.cloudflare.com/logs/reference/log-fields/account/gateway_http/).
 - `gateway_network`: Network packets inspected by Cloudflare Gateway. See [Gateway Network schema](https://developers.cloudflare.com/logs/reference/log-fields/account/gateway_network/).
@@ -68,6 +70,7 @@ Integrating Cloudflare Logpush with Elastic provides centralized visibility acro
 
 - Investigating traffic, WAF, and DDoS-mitigation events from the Cloudflare edge (`http_request`, `firewall_event`, `network_analytics`).
 - Monitoring Zero Trust user activity, policy decisions, and device posture (`gateway_http`, `gateway_dns`, `gateway_network`, `access_request`, `device_posture`, `network_session`).
+- Monitoring Cloudflare DEX digital experience, synthetic test results, and device health (`dex_application_tests`, `dex_device_state_events`).
 - Detecting data exfiltration and SaaS misconfigurations (`dlp_forensic_copies`, `casb`, `email_security_alerts`).
 - Auditing administrative activity on the Cloudflare account (`audit`).
 - Troubleshooting DNS and client-side performance issues (`dns`, `dns_firewall`, `nel_report`, `workers_trace`).
@@ -116,29 +119,31 @@ Configure one of the following delivery pipelines before enabling the integratio
 - Configure [Cloudflare Logpush to Amazon S3](https://developers.cloudflare.com/logs/logpush/logpush-job/enable-destinations/aws-s3/) to send Cloudflare's data to an AWS S3 bucket.
 - The default values of the **Bucket Prefix** are listed below. However, users can set the parameter **Bucket Prefix** according to their requirements.
 
-  | Data Stream Name           | Bucket Prefix          |
-  | -------------------------- | ---------------------- |
-  | Access Request             | access_request         |
-  | Audit Logs                 | audit_logs             |
-  | CASB findings              | casb                   |
-  | Device Posture Results     | device_posture         |
-  | DLP Forensic Copies        | dlp_forensic_copies    |
-  | DNS                        | dns                    |
-  | DNS Firewall               | dns_firewall           |
-  | Email Security Alerts      | email_security_alerts  |
-  | Firewall Event             | firewall_event         |
-  | Gateway DNS                | gateway_dns            |
-  | Gateway HTTP               | gateway_http           |
-  | Gateway Network            | gateway_network        |
-  | HTTP Request               | http_request           |
-  | Magic IDS                  | magic_ids              |
-  | NEL Report                 | nel_report             |
-  | Network Analytics          | network_analytics_logs |
-  | Page Shield Events         | page_shield_events     |
-  | Zero Trust Network Session | network_session        |
-  | Sinkhole HTTP              | sinkhole_http          |
-  | Spectrum Event             | spectrum_event         |
-  | Workers Trace Events       | workers_trace          |
+  | Data Stream Name           | Bucket Prefix           |
+  | -------------------------- | ----------------------- |
+  | Access Request             | access_request          |
+  | Audit Logs                 | audit_logs              |
+  | CASB findings              | casb                    |
+  | Device Posture Results     | device_posture          |
+  | DEX Application Tests      | dex_application_tests   |
+  | DEX Device State Events    | dex_device_state_events |
+  | DLP Forensic Copies        | dlp_forensic_copies     |
+  | DNS                        | dns                     |
+  | DNS Firewall               | dns_firewall            |
+  | Email Security Alerts      | email_security_alerts   |
+  | Firewall Event             | firewall_event          |
+  | Gateway DNS                | gateway_dns             |
+  | Gateway HTTP               | gateway_http            |
+  | Gateway Network            | gateway_network         |
+  | HTTP Request               | http_request            |
+  | Magic IDS                  | magic_ids               |
+  | NEL Report                 | nel_report              |
+  | Network Analytics          | network_analytics_logs  |
+  | Page Shield Events         | page_shield_events      |
+  | Zero Trust Network Session | network_session         |
+  | Sinkhole HTTP              | sinkhole_http           |
+  | Spectrum Event             | spectrum_event          |
+  | Workers Trace Events       | workers_trace           |
 
 #### Collect data from AWS SQS
 
@@ -950,6 +955,546 @@ An example event for `device_posture` looks as following:
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
 | log.source.address | Source address from which the log event was read / sent from. | keyword |
+
+
+#### dex_application_tests
+
+This is the `dex_application_tests` dataset.
+
+##### Example
+
+An example event for `dex_application_tests` looks as following:
+
+```json
+{
+    "@timestamp": "2023-10-11T00:00:00.000Z",
+    "agent": {
+        "ephemeral_id": "a3773afd-3e7d-4286-ae3c-398d8b9b9a1a",
+        "id": "f17965c6-6913-4dff-ba47-07cb6cf3ec5c",
+        "name": "elastic-agent-48129",
+        "type": "filebeat",
+        "version": "8.17.1"
+    },
+    "cloudflare_logpush": {
+        "dex_application_tests": {
+            "account_id": "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6",
+            "colo": {
+                "code": "SJC"
+            },
+            "device": {
+                "registration_id": "f174e90a-fafe-4643-bbbc-4a0ed4fc8415"
+            },
+            "execution_context": "inTunnel",
+            "http": {
+                "client_ip": {
+                    "netmask": "255.255.255.0",
+                    "version": "IPv4"
+                },
+                "response": {
+                    "header_bytes": 320,
+                    "headers": [
+                        {
+                            "name": "content-type",
+                            "value": "application/json"
+                        }
+                    ]
+                },
+                "server_ip": {
+                    "netmask": "255.255.255.0",
+                    "version": "IPv4"
+                },
+                "timings": {
+                    "connect_end_ms": 120,
+                    "connect_start_ms": 90,
+                    "domain_lookup_end_ms": 40,
+                    "domain_lookup_start_ms": 20,
+                    "redirect_end_ms": 0,
+                    "redirect_start_ms": 0,
+                    "request_start_ms": 130,
+                    "response_end_ms": 210,
+                    "response_start_ms": 180,
+                    "secure_connection_start_ms": 100
+                }
+            },
+            "test": {
+                "id": "5b2c1a90-1111-4a2b-8c3d-aaaabbbbcccc",
+                "type": "http"
+            },
+            "tunnel_type": "wireguard",
+            "version": "2024.6.415.0"
+        }
+    },
+    "data_stream": {
+        "dataset": "cloudflare_logpush.dex_application_tests",
+        "namespace": "94893",
+        "type": "logs"
+    },
+    "destination": {
+        "as": {
+            "number": 64501,
+            "organization": {
+                "name": "Example Hosting"
+            }
+        },
+        "geo": {
+            "city_name": "Ashburn",
+            "country_iso_code": "US",
+            "postal_code": "20147",
+            "region_iso_code": "US-VA"
+        },
+        "ip": "198.51.100.25"
+    },
+    "device": {
+        "id": "083a8354-d56c-11ed-9771-abcdef123456"
+    },
+    "ecs": {
+        "version": "9.3.0"
+    },
+    "elastic_agent": {
+        "id": "f17965c6-6913-4dff-ba47-07cb6cf3ec5c",
+        "snapshot": false,
+        "version": "8.17.1"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "network"
+        ],
+        "dataset": "cloudflare_logpush.dex_application_tests",
+        "ingested": "2026-10-05T15:27:38Z",
+        "kind": "event",
+        "original": "{\"AccountID\":\"a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6\",\"ClientPlatform\":\"mac\",\"ClientVersion\":\"2024.6.415.0\",\"ColoCode\":\"SJC\",\"DeviceID\":\"083a8354-d56c-11ed-9771-abcdef123456\",\"DeviceRegistrationID\":\"f174e90a-fafe-4643-bbbc-4a0ed4fc8415\",\"ExecutionContext\":\"inTunnel\",\"HTTPClientIPASN\":64500,\"HTTPClientIPASO\":\"Example ISP\",\"HTTPClientIPAddress\":\"203.0.113.10\",\"HTTPClientIPCity\":\"San Jose\",\"HTTPClientIPCountryISO\":\"US\",\"HTTPClientIPNetmask\":\"255.255.255.0\",\"HTTPClientIPStateISO\":\"US-CA\",\"HTTPClientIPVersion\":\"IPv4\",\"HTTPClientIPZip\":\"95113\",\"HTTPConnectEndMs\":120,\"HTTPConnectStartMs\":90,\"HTTPDomainLookupEndMs\":40,\"HTTPDomainLookupStartMs\":20,\"HTTPMethod\":\"GET\",\"HTTPRedirectEndMs\":0,\"HTTPRedirectStartMs\":0,\"HTTPRequestStartMs\":130,\"HTTPResponseBody\":\"\",\"HTTPResponseBodyBytes\":5120,\"HTTPResponseEndMs\":210,\"HTTPResponseHeaderBytes\":320,\"HTTPResponseHeaders\":[{\"name\":\"content-type\",\"value\":\"application/json\"}],\"HTTPResponseStartMs\":180,\"HTTPSecureConnectionStartMs\":100,\"HTTPServerIPASN\":64501,\"HTTPServerIPASO\":\"Example Hosting\",\"HTTPServerIPAddress\":\"198.51.100.25\",\"HTTPServerIPCity\":\"Ashburn\",\"HTTPServerIPCountryISO\":\"US\",\"HTTPServerIPNetmask\":\"255.255.255.0\",\"HTTPServerIPStateISO\":\"US-VA\",\"HTTPServerIPVersion\":\"IPv4\",\"HTTPServerIPZip\":\"20147\",\"HTTPStatusCode\":200,\"HTTPURL\":\"https://dash.example.com/api/v4/health\",\"TestID\":\"5b2c1a90-1111-4a2b-8c3d-aaaabbbbcccc\",\"TestType\":\"http\",\"Timestamp\":\"2023-10-11T00:00:00Z\",\"TunnelType\":\"wireguard\",\"UserEmail\":\"user@example.com\",\"UserID\":\"d2e3f4a5-6b7c-8d9e-0f1a-2b3c4d5e6f70\"}",
+        "type": [
+            "info"
+        ]
+    },
+    "host": {
+        "id": "083a8354-d56c-11ed-9771-abcdef123456",
+        "os": {
+            "name": "mac",
+            "type": "macos"
+        }
+    },
+    "http": {
+        "request": {
+            "method": "GET"
+        },
+        "response": {
+            "body": {
+                "bytes": 5120
+            },
+            "status_code": 200
+        }
+    },
+    "input": {
+        "type": "http_endpoint"
+    },
+    "related": {
+        "hosts": [
+            "083a8354-d56c-11ed-9771-abcdef123456",
+            "dash.example.com"
+        ],
+        "ip": [
+            "203.0.113.10",
+            "198.51.100.25"
+        ],
+        "user": [
+            "user@example.com",
+            "d2e3f4a5-6b7c-8d9e-0f1a-2b3c4d5e6f70"
+        ]
+    },
+    "source": {
+        "as": {
+            "number": 64500,
+            "organization": {
+                "name": "Example ISP"
+            }
+        },
+        "geo": {
+            "city_name": "San Jose",
+            "country_iso_code": "US",
+            "postal_code": "95113",
+            "region_iso_code": "US-CA"
+        },
+        "ip": "203.0.113.10"
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "cloudflare_logpush-dex_application_tests"
+    ],
+    "url": {
+        "domain": "dash.example.com",
+        "original": "https://dash.example.com/api/v4/health",
+        "path": "/api/v4/health",
+        "scheme": "https"
+    },
+    "user": {
+        "email": "user@example.com",
+        "id": "d2e3f4a5-6b7c-8d9e-0f1a-2b3c4d5e6f70"
+    },
+    "user_agent": {
+        "version": "2024.6.415.0"
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |  |  |
+| aws.s3.bucket.arn | The AWS S3 bucket ARN. | keyword |  |  |
+| aws.s3.bucket.name | The AWS S3 bucket name. | keyword |  |  |
+| aws.s3.object.key | The AWS S3 Object key. | keyword |  |  |
+| azure.storage.blob.content_type | The content type of the Azure Blob Storage blob object | keyword |  |  |
+| azure.storage.blob.name | The name of the Azure Blob Storage blob object | keyword |  |  |
+| azure.storage.container.name | The name of the Azure Blob Storage container | keyword |  |  |
+| cloudflare_logpush.dex_application_tests.account_id | The Cloudflare account ID that owns the device under test. | keyword |  |  |
+| cloudflare_logpush.dex_application_tests.colo.code | Cloudflare data center (colo) that served the test. | keyword |  |  |
+| cloudflare_logpush.dex_application_tests.device.registration_id | Device registration ID. | keyword |  |  |
+| cloudflare_logpush.dex_application_tests.execution_context | Whether the test ran inside or outside the WARP tunnel (for example `inTunnel` or `outOfTunnel`). | keyword |  |  |
+| cloudflare_logpush.dex_application_tests.http.client_ip.netmask | Netmask of the client IP address observed during the HTTP test. | keyword |  |  |
+| cloudflare_logpush.dex_application_tests.http.client_ip.version | IP version of the client IP address observed during the HTTP test. | keyword |  |  |
+| cloudflare_logpush.dex_application_tests.http.error_message | Error message returned by the HTTP test, if any. | keyword |  |  |
+| cloudflare_logpush.dex_application_tests.http.response.header_bytes | Size in bytes of the HTTP response headers. | long | byte | gauge |
+| cloudflare_logpush.dex_application_tests.http.response.headers.name | HTTP response header name. | keyword |  |  |
+| cloudflare_logpush.dex_application_tests.http.response.headers.value | HTTP response header value. | keyword |  |  |
+| cloudflare_logpush.dex_application_tests.http.server_ip.netmask | Netmask of the server IP address observed during the HTTP test. | keyword |  |  |
+| cloudflare_logpush.dex_application_tests.http.server_ip.version | IP version of the server IP address observed during the HTTP test. | keyword |  |  |
+| cloudflare_logpush.dex_application_tests.http.timings.connect_end_ms | Time in milliseconds when the connection completed. | long | ms | gauge |
+| cloudflare_logpush.dex_application_tests.http.timings.connect_start_ms | Time in milliseconds when the connection started. | long | ms | gauge |
+| cloudflare_logpush.dex_application_tests.http.timings.domain_lookup_end_ms | Time in milliseconds when the DNS lookup completed. | long | ms | gauge |
+| cloudflare_logpush.dex_application_tests.http.timings.domain_lookup_start_ms | Time in milliseconds when the DNS lookup started. | long | ms | gauge |
+| cloudflare_logpush.dex_application_tests.http.timings.redirect_end_ms | Time in milliseconds when the redirect completed. | long | ms | gauge |
+| cloudflare_logpush.dex_application_tests.http.timings.redirect_start_ms | Time in milliseconds when the redirect started. | long | ms | gauge |
+| cloudflare_logpush.dex_application_tests.http.timings.request_start_ms | Time in milliseconds when the request started. | long | ms | gauge |
+| cloudflare_logpush.dex_application_tests.http.timings.response_end_ms | Time in milliseconds when the response completed. | long | ms | gauge |
+| cloudflare_logpush.dex_application_tests.http.timings.response_start_ms | Time in milliseconds when the response started. | long | ms | gauge |
+| cloudflare_logpush.dex_application_tests.http.timings.secure_connection_start_ms | Time in milliseconds when the TLS handshake started. | long | ms | gauge |
+| cloudflare_logpush.dex_application_tests.test.id | Unique identifier of the DEX test. | keyword |  |  |
+| cloudflare_logpush.dex_application_tests.test.type | Type of the DEX test (for example `http` or `traceroute`). | keyword |  |  |
+| cloudflare_logpush.dex_application_tests.traceroute.destination_ip.netmask | Netmask of the traceroute destination IP address. | keyword |  |  |
+| cloudflare_logpush.dex_application_tests.traceroute.destination_ip.version | IP version of the traceroute destination IP address. | keyword |  |  |
+| cloudflare_logpush.dex_application_tests.traceroute.duration_ms | Total duration of the traceroute test in milliseconds. | long | ms | gauge |
+| cloudflare_logpush.dex_application_tests.traceroute.hops.errors | Errors encountered when probing the hop. | keyword |  |  |
+| cloudflare_logpush.dex_application_tests.traceroute.hops.ip.address | IP address of the hop. | ip |  |  |
+| cloudflare_logpush.dex_application_tests.traceroute.hops.ip.asn | Autonomous system number of the hop IP. | long |  |  |
+| cloudflare_logpush.dex_application_tests.traceroute.hops.ip.aso | Autonomous system organization of the hop IP. | keyword |  |  |
+| cloudflare_logpush.dex_application_tests.traceroute.hops.ip.location.city | City associated with the hop IP. | keyword |  |  |
+| cloudflare_logpush.dex_application_tests.traceroute.hops.ip.location.countryISO | Country ISO code associated with the hop IP. | keyword |  |  |
+| cloudflare_logpush.dex_application_tests.traceroute.hops.ip.location.stateISO | State or region ISO code associated with the hop IP. | keyword |  |  |
+| cloudflare_logpush.dex_application_tests.traceroute.hops.ip.location.zip | Postal code associated with the hop IP. | keyword |  |  |
+| cloudflare_logpush.dex_application_tests.traceroute.hops.ip.netmask | Netmask of the hop IP. | keyword |  |  |
+| cloudflare_logpush.dex_application_tests.traceroute.hops.ip.version | IP version of the hop IP. | keyword |  |  |
+| cloudflare_logpush.dex_application_tests.traceroute.hops.name | Hostname of the hop, if resolved. | keyword |  |  |
+| cloudflare_logpush.dex_application_tests.traceroute.hops.pathID | Identifier of the path the hop belongs to. | long |  |  |
+| cloudflare_logpush.dex_application_tests.traceroute.hops.received | Number of probe responses received from the hop. | long |  |  |
+| cloudflare_logpush.dex_application_tests.traceroute.hops.rtts | Round-trip times measured for the hop, in milliseconds. | long | ms |  |
+| cloudflare_logpush.dex_application_tests.traceroute.hops.sent | Number of probe packets sent to the hop. | long |  |  |
+| cloudflare_logpush.dex_application_tests.traceroute.hops.ttl | Time-to-live (hop number) of the hop. | long |  |  |
+| cloudflare_logpush.dex_application_tests.traceroute.max_ttl | Maximum time-to-live (number of hops) allowed for the traceroute test. | long |  |  |
+| cloudflare_logpush.dex_application_tests.traceroute.size | Size in bytes of the traceroute probe packets. | long | byte | gauge |
+| cloudflare_logpush.dex_application_tests.traceroute.source_ip.netmask | Netmask of the traceroute source IP address. | keyword |  |  |
+| cloudflare_logpush.dex_application_tests.traceroute.source_ip.version | IP version of the traceroute source IP address. | keyword |  |  |
+| cloudflare_logpush.dex_application_tests.traceroute.status | Final status of the traceroute test (for example `destinationReached`, `lastHopFailed` or `maxHopsExhausted`). | keyword |  |  |
+| cloudflare_logpush.dex_application_tests.traceroute.time_end | Time when the traceroute test finished. | date |  |  |
+| cloudflare_logpush.dex_application_tests.traceroute.version | Version of the traceroute test schema. | keyword |  |  |
+| cloudflare_logpush.dex_application_tests.tunnel_type | Tunnel protocol used during the test (for example `wireguard`, `masque` or `http2`). | keyword |  |  |
+| cloudflare_logpush.dex_application_tests.version | Version of the WARP client that ran the test. | keyword |  |  |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |  |  |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |  |  |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |  |  |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |  |  |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |  |  |
+| gcs.storage.bucket.name | The name of the Google Cloud Storage Bucket. | keyword |  |  |
+| gcs.storage.object.content_type | The content type of the Google Cloud Storage object. | keyword |  |  |
+| gcs.storage.object.json_data | When parse_json is true, the resulting JSON data is stored in this field. | keyword |  |  |
+| gcs.storage.object.name | The content type of the Google Cloud Storage object. | keyword |  |  |
+| input.type | Input type | keyword |  |  |
+| log.offset | Log offset | long |  |  |
+| log.source.address | Source address from which the log event was read / sent from. | keyword |  |  |
+
+
+#### dex_device_state_events
+
+This is the `dex_device_state_events` dataset.
+
+##### Example
+
+An example event for `dex_device_state_events` looks as following:
+
+```json
+{
+    "@timestamp": "2023-10-11T00:00:00.000Z",
+    "agent": {
+        "ephemeral_id": "f826f0b8-f2cd-40b8-8b2e-28c5fb9dac4f",
+        "id": "566c60bd-92cb-4686-bb38-1d92db046329",
+        "name": "elastic-agent-54155",
+        "type": "filebeat",
+        "version": "8.17.1"
+    },
+    "cloudflare_logpush": {
+        "dex_device_state_events": {
+            "account_id": "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6",
+            "always_on": true,
+            "app_firewall_enabled": true,
+            "battery": {
+                "charging": true,
+                "cycles": 120,
+                "percentage": 0.875
+            },
+            "cpu": {
+                "percentage": 0.124,
+                "percentage_by_app": [
+                    {
+                        "name": "com.cloudflare.warp",
+                        "percentage": 0.03
+                    }
+                ]
+            },
+            "device": {
+                "ipv4": {
+                    "netmask": "255.255.255.0"
+                },
+                "ipv6": {
+                    "netmask": "ffff:ffff:ffff:ffff::"
+                },
+                "registration_id": "f174e90a-fafe-4643-bbbc-4a0ed4fc8415",
+                "registration_profile_id": "11111111-2222-3333-4444-555555555555"
+            },
+            "disk": {
+                "read_bps": 1048576,
+                "usage_percentage": 0.642,
+                "write_bps": 524288
+            },
+            "doh_subdomain": "abc123.cloudflare-gateway.example.com",
+            "experimental_extra": {
+                "beta_metric": 1
+            },
+            "firewall_enabled": true,
+            "gateway": {
+                "ipv4": {
+                    "address": "192.0.2.1",
+                    "netmask": "255.255.255.0"
+                },
+                "ipv6": {
+                    "address": "2001:db8::1",
+                    "netmask": "ffff:ffff:ffff:ffff::"
+                }
+            },
+            "handshake_latency_ms": 28,
+            "isp": {
+                "ipv4": {
+                    "netmask": "255.255.255.0"
+                },
+                "ipv6": {
+                    "asn": 64500,
+                    "aso": "Example ISP",
+                    "city": "San Jose",
+                    "country_iso": "US",
+                    "netmask": "ffff:ffff:ffff:ffff::",
+                    "state_iso": "US-CA",
+                    "zip": "95113"
+                }
+            },
+            "mode": "warp",
+            "network": {
+                "connection_type": "wifi",
+                "received_bps": 204800,
+                "sent_bps": 102400,
+                "ssid": "ExampleCorp-WiFi"
+            },
+            "ram": {
+                "available_kb": 4194304,
+                "used_percentage": 0.486,
+                "used_percentage_by_app": [
+                    {
+                        "name": "com.cloudflare.warp",
+                        "percentage": 0.01
+                    }
+                ]
+            },
+            "status": "connected",
+            "switch_locked": false,
+            "tunnel_stats": {
+                "downstream": {
+                    "Bytes": 10485760,
+                    "Packets": 8192
+                },
+                "upstream": {
+                    "Bytes": 5242880,
+                    "Packets": 4096
+                }
+            },
+            "tunnel_type": "wireguard",
+            "version": "2024.6.415.0",
+            "warp_colo": {
+                "code": "SJC"
+            },
+            "wifi_strength_dbm": -55
+        }
+    },
+    "data_stream": {
+        "dataset": "cloudflare_logpush.dex_device_state_events",
+        "namespace": "81851",
+        "type": "logs"
+    },
+    "device": {
+        "id": "083a8354-d56c-11ed-9771-abcdef123456"
+    },
+    "ecs": {
+        "version": "9.3.0"
+    },
+    "elastic_agent": {
+        "id": "566c60bd-92cb-4686-bb38-1d92db046329",
+        "snapshot": false,
+        "version": "8.17.1"
+    },
+    "event": {
+        "agent_id_status": "verified",
+        "category": [
+            "host"
+        ],
+        "dataset": "cloudflare_logpush.dex_device_state_events",
+        "ingested": "2026-10-05T15:29:50Z",
+        "kind": "event",
+        "original": "{\"AccountID\":\"a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6\",\"AlwaysOn\":true,\"AppFirewallEnabled\":true,\"BatteryCharging\":true,\"BatteryCycles\":120,\"BatteryPercentage\":0.875,\"CPUPercentage\":0.124,\"CPUPercentageByApp\":[{\"name\":\"com.cloudflare.warp\",\"percentage\":0.03}],\"ClientPlatform\":\"mac\",\"ClientVersion\":\"2024.6.415.0\",\"ConnectionType\":\"wifi\",\"DeviceID\":\"083a8354-d56c-11ed-9771-abcdef123456\",\"DeviceIPv4Address\":\"203.0.113.10\",\"DeviceIPv4Netmask\":\"255.255.255.0\",\"DeviceIPv6Address\":\"2001:db8::10\",\"DeviceIPv6Netmask\":\"ffff:ffff:ffff:ffff::\",\"DeviceRegistrationID\":\"f174e90a-fafe-4643-bbbc-4a0ed4fc8415\",\"DeviceRegistrationProfileID\":\"11111111-2222-3333-4444-555555555555\",\"DiskReadBPS\":1048576,\"DiskUsagePercentage\":0.642,\"DiskWriteBPS\":524288,\"DoHSubdomain\":\"abc123.cloudflare-gateway.example.com\",\"ExperimentalExtra\":{\"beta_metric\":1},\"FirewallEnabled\":true,\"GatewayIPv4Address\":\"192.0.2.1\",\"GatewayIPv4Netmask\":\"255.255.255.0\",\"GatewayIPv6Address\":\"2001:db8::1\",\"GatewayIPv6Netmask\":\"ffff:ffff:ffff:ffff::\",\"HandshakeLatencyMs\":28,\"ISPIPv4ASN\":64500,\"ISPIPv4ASO\":\"Example ISP\",\"ISPIPv4Address\":\"198.51.100.20\",\"ISPIPv4City\":\"San Jose\",\"ISPIPv4CountryISO\":\"US\",\"ISPIPv4Netmask\":\"255.255.255.0\",\"ISPIPv4StateISO\":\"US-CA\",\"ISPIPv4Zip\":\"95113\",\"ISPIPv6ASN\":64500,\"ISPIPv6ASO\":\"Example ISP\",\"ISPIPv6Address\":\"2001:db8:abcd::20\",\"ISPIPv6City\":\"San Jose\",\"ISPIPv6CountryISO\":\"US\",\"ISPIPv6Netmask\":\"ffff:ffff:ffff:ffff::\",\"ISPIPv6StateISO\":\"US-CA\",\"ISPIPv6Zip\":\"95113\",\"Mode\":\"warp\",\"NetworkReceivedBPS\":204800,\"NetworkSSID\":\"ExampleCorp-WiFi\",\"NetworkSentBPS\":102400,\"RAMAvailableKB\":4194304,\"RAMUsedPercentage\":0.486,\"RAMUsedPercentageByApp\":[{\"name\":\"com.cloudflare.warp\",\"percentage\":0.01}],\"Status\":\"connected\",\"SwitchLocked\":false,\"Timestamp\":\"2023-10-11T00:00:00Z\",\"TunnelStatsDownstream\":{\"Bytes\":10485760,\"Packets\":8192},\"TunnelStatsUpstream\":{\"Bytes\":5242880,\"Packets\":4096},\"TunnelType\":\"wireguard\",\"WarpColoCode\":\"SJC\",\"WiFiStrengthDBM\":-55}",
+        "type": [
+            "info"
+        ]
+    },
+    "host": {
+        "cpu": {
+            "usage": 0.124
+        },
+        "id": "083a8354-d56c-11ed-9771-abcdef123456",
+        "ip": [
+            "203.0.113.10",
+            "2001:db8::10"
+        ],
+        "os": {
+            "name": "mac",
+            "type": "macos"
+        }
+    },
+    "input": {
+        "type": "http_endpoint"
+    },
+    "related": {
+        "hosts": [
+            "083a8354-d56c-11ed-9771-abcdef123456"
+        ],
+        "ip": [
+            "198.51.100.20",
+            "2001:db8:abcd::20",
+            "203.0.113.10",
+            "2001:db8::10",
+            "192.0.2.1",
+            "2001:db8::1"
+        ]
+    },
+    "source": {
+        "as": {
+            "number": 64500,
+            "organization": {
+                "name": "Example ISP"
+            }
+        },
+        "geo": {
+            "city_name": "San Jose",
+            "country_iso_code": "US",
+            "postal_code": "95113",
+            "region_iso_code": "US-CA"
+        },
+        "ip": [
+            "198.51.100.20",
+            "2001:db8:abcd::20"
+        ]
+    },
+    "tags": [
+        "preserve_original_event",
+        "forwarded",
+        "cloudflare_logpush-dex_device_state_events"
+    ],
+    "user_agent": {
+        "version": "2024.6.415.0"
+    }
+}
+```
+
+**Exported fields**
+
+| Field | Description | Type | Unit | Metric Type |
+|---|---|---|---|---|
+| @timestamp | Date/time when the event originated. This is the date/time extracted from the event, typically representing when the event was generated by the source. If the event source has no original timestamp, this value is typically populated by the first time the event was received by the pipeline. Required field for all events. | date |  |  |
+| aws.s3.bucket.arn | The AWS S3 bucket ARN. | keyword |  |  |
+| aws.s3.bucket.name | The AWS S3 bucket name. | keyword |  |  |
+| aws.s3.object.key | The AWS S3 Object key. | keyword |  |  |
+| azure.storage.blob.content_type | The content type of the Azure Blob Storage blob object | keyword |  |  |
+| azure.storage.blob.name | The name of the Azure Blob Storage blob object | keyword |  |  |
+| azure.storage.container.name | The name of the Azure Blob Storage container | keyword |  |  |
+| cloudflare_logpush.dex_device_state_events.account_id | The Cloudflare account ID that owns the device. | keyword |  |  |
+| cloudflare_logpush.dex_device_state_events.always_on | Whether the WARP client is configured in always-on mode. | boolean |  |  |
+| cloudflare_logpush.dex_device_state_events.app_firewall_enabled | Whether the application firewall is enabled on the device. | boolean |  |  |
+| cloudflare_logpush.dex_device_state_events.battery.charging | Whether the device battery is currently charging. | boolean |  |  |
+| cloudflare_logpush.dex_device_state_events.battery.cycles | Number of battery charge cycles. | long |  |  |
+| cloudflare_logpush.dex_device_state_events.battery.percentage | Battery charge level, as a fraction from 0 to 1. | float | percent | gauge |
+| cloudflare_logpush.dex_device_state_events.cpu.percentage | Overall CPU utilization, as a fraction from 0 to 1. | float | percent | gauge |
+| cloudflare_logpush.dex_device_state_events.cpu.percentage_by_app.name | Application name. | keyword |  |  |
+| cloudflare_logpush.dex_device_state_events.cpu.percentage_by_app.percentage | CPU utilization for the application, as a fraction from 0 to 1. | float | percent | gauge |
+| cloudflare_logpush.dex_device_state_events.device.ipv4.netmask | Netmask of the device IPv4 address. | keyword |  |  |
+| cloudflare_logpush.dex_device_state_events.device.ipv6.netmask | Netmask of the device IPv6 address. | keyword |  |  |
+| cloudflare_logpush.dex_device_state_events.device.registration_id | Device registration ID. | keyword |  |  |
+| cloudflare_logpush.dex_device_state_events.device.registration_profile_id | Device registration profile ID. | keyword |  |  |
+| cloudflare_logpush.dex_device_state_events.disk.read_bps | Disk read throughput in bytes per second. | long |  |  |
+| cloudflare_logpush.dex_device_state_events.disk.usage_percentage | Disk usage, as a fraction from 0 to 1. | float | percent | gauge |
+| cloudflare_logpush.dex_device_state_events.disk.write_bps | Disk write throughput in bytes per second. | long |  |  |
+| cloudflare_logpush.dex_device_state_events.doh_subdomain | DNS-over-HTTPS subdomain assigned to the device. | keyword |  |  |
+| cloudflare_logpush.dex_device_state_events.experimental_extra | Additional experimental device state fields emitted by the WARP client. | flattened |  |  |
+| cloudflare_logpush.dex_device_state_events.firewall_enabled | Whether the device firewall is enabled. | boolean |  |  |
+| cloudflare_logpush.dex_device_state_events.gateway.ipv4.address | IPv4 address of the device default gateway. | ip |  |  |
+| cloudflare_logpush.dex_device_state_events.gateway.ipv4.netmask | Netmask of the gateway IPv4 address. | keyword |  |  |
+| cloudflare_logpush.dex_device_state_events.gateway.ipv6.address | IPv6 address of the device default gateway. | ip |  |  |
+| cloudflare_logpush.dex_device_state_events.gateway.ipv6.netmask | Netmask of the gateway IPv6 address. | keyword |  |  |
+| cloudflare_logpush.dex_device_state_events.handshake_latency_ms | WARP handshake latency in milliseconds. A value of -1 indicates the device is disconnected. | long | ms | gauge |
+| cloudflare_logpush.dex_device_state_events.isp.ipv4.netmask | Netmask of the ISP-assigned IPv4 address. | keyword |  |  |
+| cloudflare_logpush.dex_device_state_events.isp.ipv6.asn | Autonomous system number of the ISP IPv6 address. | long |  |  |
+| cloudflare_logpush.dex_device_state_events.isp.ipv6.aso | Autonomous system organization of the ISP IPv6 address. | keyword |  |  |
+| cloudflare_logpush.dex_device_state_events.isp.ipv6.city | City associated with the ISP IPv6 address. | keyword |  |  |
+| cloudflare_logpush.dex_device_state_events.isp.ipv6.country_iso | Country ISO code associated with the ISP IPv6 address. | keyword |  |  |
+| cloudflare_logpush.dex_device_state_events.isp.ipv6.netmask | Netmask of the ISP-assigned IPv6 address. | keyword |  |  |
+| cloudflare_logpush.dex_device_state_events.isp.ipv6.state_iso | State or region ISO code associated with the ISP IPv6 address. | keyword |  |  |
+| cloudflare_logpush.dex_device_state_events.isp.ipv6.zip | Postal code associated with the ISP IPv6 address. | keyword |  |  |
+| cloudflare_logpush.dex_device_state_events.mode | Operating mode of the WARP client. | keyword |  |  |
+| cloudflare_logpush.dex_device_state_events.network.connection_type | Type of network connection (for example `wifi`, `ethernet` or `cellular`). | keyword |  |  |
+| cloudflare_logpush.dex_device_state_events.network.received_bps | Network throughput received in bytes per second. | long |  |  |
+| cloudflare_logpush.dex_device_state_events.network.sent_bps | Network throughput sent in bytes per second. | long |  |  |
+| cloudflare_logpush.dex_device_state_events.network.ssid | SSID of the connected Wi-Fi network. | keyword |  |  |
+| cloudflare_logpush.dex_device_state_events.ram.available_kb | Available RAM in kilobytes. | long |  |  |
+| cloudflare_logpush.dex_device_state_events.ram.used_percentage | RAM utilization, as a fraction from 0 to 1. | float | percent | gauge |
+| cloudflare_logpush.dex_device_state_events.ram.used_percentage_by_app.name | Application name. | keyword |  |  |
+| cloudflare_logpush.dex_device_state_events.ram.used_percentage_by_app.percentage | RAM utilization for the application, as a fraction from 0 to 1. | float | percent | gauge |
+| cloudflare_logpush.dex_device_state_events.status | Connection status of the WARP client (for example `connected` or `paused`). | keyword |  |  |
+| cloudflare_logpush.dex_device_state_events.switch_locked | Whether the ability to toggle the WARP switch is locked. | boolean |  |  |
+| cloudflare_logpush.dex_device_state_events.tunnel_stats.downstream | Downstream tunnel statistics. | flattened |  |  |
+| cloudflare_logpush.dex_device_state_events.tunnel_stats.upstream | Upstream tunnel statistics. | flattened |  |  |
+| cloudflare_logpush.dex_device_state_events.tunnel_type | Tunnel protocol in use (for example `wireguard`, `masque` or `http2`). | keyword |  |  |
+| cloudflare_logpush.dex_device_state_events.version | Version of the WARP client running on the device. | keyword |  |  |
+| cloudflare_logpush.dex_device_state_events.warp_colo.code | Cloudflare data center (colo) the WARP client is connected to. | keyword |  |  |
+| cloudflare_logpush.dex_device_state_events.wifi_strength_dbm | Wi-Fi signal strength in dBm. | long |  |  |
+| data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |  |  |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |  |  |
+| data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |  |  |
+| event.dataset | Name of the dataset. If an event source publishes more than one type of log or events (e.g. access log, error log), the dataset is used to specify which one the event comes from. It's recommended but not required to start the dataset name with the module name, followed by a dot, then the dataset name. | constant_keyword |  |  |
+| event.module | Name of the module this data is coming from. If your monitoring agent supports the concept of modules or plugins to process events of a given source (e.g. Apache logs), `event.module` should contain the name of this module. | constant_keyword |  |  |
+| gcs.storage.bucket.name | The name of the Google Cloud Storage Bucket. | keyword |  |  |
+| gcs.storage.object.content_type | The content type of the Google Cloud Storage object. | keyword |  |  |
+| gcs.storage.object.json_data | When parse_json is true, the resulting JSON data is stored in this field. | keyword |  |  |
+| gcs.storage.object.name | The content type of the Google Cloud Storage object. | keyword |  |  |
+| input.type | Input type | keyword |  |  |
+| log.offset | Log offset | long |  |  |
+| log.source.address | Source address from which the log event was read / sent from. | keyword |  |  |
 
 
 #### dlp_forensic_copies
