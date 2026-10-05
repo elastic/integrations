@@ -71,6 +71,11 @@ processors:
           parent.remove(key);
         }
       }
+      void keepSingleScalar(Map parent, String key) {
+        if (parent.containsKey(key) && !isScalar(parent.get(key))) {
+          parent.remove(key);
+        }
+      }
       void keepBoolean(Map parent, String key) {
         if (parent.containsKey(key) && !isBoolean(parent.get(key))) {
           parent.remove(key);
@@ -244,12 +249,20 @@ processors:
         sanitizeObjectCollection(body.get('subjects'), ['kind', 'name', 'namespace']);
         keepObjectCollection(body, 'items');
         def items = body.get('items');
-        if (items != null) {
-          List itemList = items instanceof List ? items : [items];
-          for (def item : itemList) {
-            if (item instanceof Map) {
-              keepMap(item, 'metadata');
-              sanitizeObjectCollection(item.get('metadata'), ['name']);
+        if (items instanceof List) {
+          for (def item : items) {
+            if (!(item instanceof Map)) {
+              continue;
+            }
+            // Only the item name is mapped; replacing metadata outright keeps labels,
+            // annotations, managedFields and ownerReferences out of _source, matching the
+            // top-level metadata removal below.
+            def metadata = item.get('metadata');
+            def name = metadata instanceof Map ? metadata.get('name') : null;
+            if (isScalar(name)) {
+              item.put('metadata', ['name': name]);
+            } else {
+              item.remove('metadata');
             }
           }
         }
@@ -290,11 +303,20 @@ processors:
         }
       }
       sanitizeScalarMap(audit.get('annotations'));
+      // objectRef values must be single scalars: the Secret redaction below keys on an
+      // exact objectRef.resource comparison, so a list such as ["secrets"] must not survive.
       def objectRef = audit.get('objectRef');
       if (objectRef instanceof Map) {
         for (String key : ['resource', 'namespace', 'name', 'uid', 'apiGroup', 'apiVersion', 'resourceVersion', 'subresource']) {
-          keepScalar(objectRef, key);
+          keepSingleScalar(objectRef, key);
         }
+      }
+      // Request and response bodies are only retained when objectRef.resource identifies
+      // what they contain; otherwise they cannot be redacted safely.
+      def resource = objectRef instanceof Map ? objectRef.get('resource') : null;
+      if (!(resource instanceof String)) {
+        audit.remove('requestObject');
+        audit.remove('responseObject');
       }
       def responseStatus = audit.get('responseStatus');
       if (responseStatus instanceof Map) {
@@ -406,7 +428,6 @@ processors:
         field:
         - _ingest._value.data
         - _ingest._value.stringData
-        - _ingest._value.metadata.annotations
         ignore_missing: true
         tag: redact_secret_list_item_payload_values
 - set:
