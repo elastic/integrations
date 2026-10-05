@@ -69,7 +69,7 @@ When a candidate or prospect is rejected, Greenhouse records a `Candidate or Pro
 2. Enable the **Enrich rejected application events** setting on the integration.
 3. If you use the **Event Types Filter**, make sure it includes both `action` and `data_change_create`. The correlation depends on the `RejectionDetails` events, which are `data_change_create` events.
 
-When enrichment succeeds, `greenhouse.audit.event.rejection` is populated with `application_id`, `candidate_id`, `reason.id`/`reason.name`/`reason.type`, `notes`, and `rejected_at`. The notes are also copied to `event.reason`.
+When enrichment succeeds, `greenhouse.audit.event.rejection` is populated with `application_id`, `reason.id`/`reason.name`/`reason.type`, `notes`, and `rejected_at`. The reason name is also copied to `event.reason`.
 
 If correlation fails (no matching `RejectionDetails` event found, or an ambiguous bulk-reject), the event is still indexed with `greenhouse.audit.event.rejection.error` and the `greenhouse-rejection-enrichment-failed` tag rather than being dropped.
 
