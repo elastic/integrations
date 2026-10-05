@@ -575,10 +575,10 @@ Every data stream in this integration emits a consistent set of Azure metadata f
 | Field | Type | Description | Available in |
 |---|---|---|---|
 | `cloud.provider` | keyword | Always `azure`. | All streams |
-| `cloud.account.id` | keyword | Azure subscription ID. | Streams with ARM resource IDs (activitylogs, platformlogs, springcloudlogs, application_gateway, firewall_logs, eventhub) |
+| `cloud.account.id` | keyword | Azure subscription ID for ARM-scoped streams (activitylogs, platformlogs, springcloudlogs, application_gateway, firewall_logs, eventhub). Entra ID tenant ID for tenant-scoped streams (auditlogs, signinlogs, identity_protection, provisioning, graphactivitylogs, aadgraphactivitylogs). | All streams |
 | `cloud.resource_id` | keyword | Fully-qualified Azure Resource Manager (ARM) resource ID, for example `/subscriptions/{id}/resourceGroups/{rg}/providers/...`. | All streams that receive an ARM resource path |
-| `cloud.region` | keyword | Azure region, taken from the envelope `location` field. | activitylogs and eventhub (newly populated); graphactivitylogs and aadgraphactivitylogs (unchanged) |
-| `azure.subscription_id` | keyword | Azure subscription ID. | Same as `cloud.account.id` |
+| `cloud.region` | keyword | Azure region, taken from the envelope `location` field. | activitylogs and eventhub (newly populated), plus graphactivitylogs and aadgraphactivitylogs (unchanged) |
+| `azure.subscription_id` | keyword | Azure subscription ID. | ARM-scoped streams only |
 | `azure.tenant.id` | keyword | Azure tenant (directory) ID. | Entra ID streams (auditlogs, signinlogs, identity_protection, provisioning, graphactivitylogs, aadgraphactivitylogs), activitylogs, platformlogs, springcloudlogs, application_gateway, firewall_logs, eventhub |
 | `azure.correlation.id` | keyword | Correlation ID for grouping related operations. | All streams |
 | `azure.resource_group.name` | keyword | Azure resource group name parsed from the ARM resource ID. | Full ARM streams |
@@ -590,6 +590,7 @@ This release is **additive**: the semantic-convention field names above were add
 
 | Legacy field (still populated) | Semconv equivalent |
 |---|---|
+| `azure.resource_id` | `cloud.resource_id` |
 | `azure.resource.id` | `cloud.resource_id` |
 | `azure.resource.group` | `azure.resource_group.name` |
 | `azure.resource.provider` | `azure.resource_provider.namespace` |
@@ -597,13 +598,12 @@ This release is **additive**: the semantic-convention field names above were add
 | `azure.activitylogs.tenant_id` | `azure.tenant.id` |
 | `azure.correlation_id` | `azure.correlation.id` |
 
-New integrations and queries should prefer the semconv names on the right. The legacy names are retained for compatibility and may be removed in a future major version.
+New integrations and queries should prefer the semconv names. The legacy names are retained for compatibility and might be removed in a future major version.
 
 Three fields were declared in earlier releases but never actually populated by any pipeline. Because no document ever carried them, they are now `type: alias` fields rather than concrete ones, which keeps them queryable at no storage cost:
 
 | Alias | Points to |
 |---|---|
-| `azure.resource_id` | `cloud.resource_id` |
 | `azure.auditlogs.tenant_id` | `azure.tenant.id` |
 | `azure.provisioning.tenant_id` | `azure.tenant.id` |
 | `azure.signinlogs.tenant_id` | `azure.tenant.id` |
