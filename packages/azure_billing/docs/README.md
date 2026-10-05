@@ -255,9 +255,9 @@ on Elasticsearch Serverless.
 
 | Transform | Alias | Role |
 | --- | --- | --- |
-| `usage_fetches` | `azure_billing.usage_fetches` | Sums the usage detail rows per usage day, meter (`azure.billing.billing_period_id`), resource, product, currency, and **fetch**. A fetch is identified by the agent process that ran it (`agent.ephemeral_id`) and the minute in which it created its rows. |
+| `usage_fetches` | `azure_billing.usage_fetches` | Sums the usage detail rows per usage day, meter (`azure.billing.billing_period_id`), resource, product, currency, and **fetch**. Agents that emit `azure.billing.fetch_id` identify a fetch exactly; rows from older agents are grouped by the agent process that produced them (`agent.ephemeral_id`) and the minute in which they were created. |
 | `usage` | `azure_billing.usage_latest` | Reads the `usage_fetches` output and keeps, for every usage day, meter, and resource, only the document of the **most recent fetch**. Older fetches of the same day are discarded, so agent restarts and short collection periods no longer inflate the cost, and the newest fetch carries Azure's latest revision. The dashboard reads this alias. |
-| `latest_forecast` | `azure_billing.forecast_latest` | A `latest` transform over the actual and forecast cost rows of the Cost Management forecast API, keyed on `azure.subscription_id`, `azure.billing.usage_date`, `azure.billing.currency`, the Fleet namespace, and a derived `azure.billing.cost_status` that separates actual rows from forecast rows. The most recently collected row wins. |
+| `latest_forecast` | `azure_billing.forecast_latest` | A `latest` transform over the actual and forecast cost rows of the Cost Management forecast API, keyed on `azure.subscription_id`, `azure.billing.scope`, `azure.billing.usage_date`, `azure.billing.currency`, and a derived `azure.billing.cost_status` that separates actual rows from forecast rows. The most recently collected row wins. |
 
 The usage transforms do not deduplicate individual rows on purpose. The Azure Usage Details API
 does not give every row a unique ID: rows for the same day, meter, and resource share one `id` and
@@ -271,9 +271,10 @@ three days and picks up Azure's late revisions, and the transforms replace each 
 newest snapshot instead of adding the re-read rows to the total.
 
 Forecast rows carry the configured `Subscription ID` even when the integration queries a
-department or billing account scope. If you run several policies with different scopes but the
-same subscription ID, give each policy its own Fleet namespace so that their forecasts are kept
-apart.
+department or billing account scope. Agents that emit `azure.billing.scope` keep the forecasts
+of different scopes apart. With older agents, several policies that query different scopes with
+the same subscription ID overwrite each other's forecast, and only the most recently collected
+one is shown.
 
 ```text
                                                      ┌─────────────────────────────┐    ┌───────────────────────────┐
@@ -420,9 +421,11 @@ Please refer to the following [document](https://www.elastic.co/guide/en/ecs/cur
 | azure.billing.billing_period_id | The billing period id | keyword |
 | azure.billing.currency | The currency | keyword |
 | azure.billing.department_name | The department name | keyword |
+| azure.billing.fetch_id | Identifier of the metricset run that produced the event. All usage detail and forecast events of one run share it. | keyword |
 | azure.billing.forecast_cost | The forecast cost | float |
 | azure.billing.pretax_cost | Cost | float |
 | azure.billing.product | The product type | keyword |
+| azure.billing.scope | The Azure scope the data was queried for: the subscription, department, or billing account. | keyword |
 | azure.billing.usage_date | The usage date | date |
 | azure.billing.usage_end | The usage end date | date |
 | azure.billing.usage_start | The usage start date | date |

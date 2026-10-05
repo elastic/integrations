@@ -21,9 +21,11 @@ source:
 #
 # What is unique is the collection run: the metricset re-fetches whole days, and
 # every fetch is a complete snapshot of a day at that moment. This transform
-# therefore sums the rows per day, meter, resource, and fetch. A fetch is
-# identified by the agent process that ran it (`agent.ephemeral_id`, which
-# changes on every restart) and the minute in which its rows were created; the
+# therefore sums the rows per day, meter, resource, and fetch. Agents that emit
+# `azure.billing.fetch_id` identify the fetch exactly: every row of a run carries
+# the same ID and the same `@timestamp`. Rows from older agents have neither, and
+# are grouped by the agent process that produced them (`agent.ephemeral_id`,
+# which changes on every restart) and the minute in which they were created; the
 # metricset creates all rows of a fetch within milliseconds of each other.
 # The chained `usage` transform then keeps only the newest fetch per bucket.
 pivot:
@@ -76,7 +78,13 @@ pivot:
       terms:
         field: data_stream.namespace
         missing_bucket: true
-    # Fetch identity: the agent process and the minute the rows were created in.
+    # Fetch identity: the fetch ID when the agent emits one, otherwise the agent
+    # process and the minute the rows were created in. With a fetch ID all rows
+    # share one @timestamp, so the minute can never split a fetch.
+    azure.billing.fetch_id:
+      terms:
+        field: azure.billing.fetch_id
+        missing_bucket: true
     agent.ephemeral_id:
       terms:
         field: agent.ephemeral_id

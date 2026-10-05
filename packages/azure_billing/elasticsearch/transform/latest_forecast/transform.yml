@@ -41,10 +41,10 @@ latest:
     - azure.billing.currency
     - azure.billing.cost_status
     # Forecast rows carry the configured subscription ID even when the policy
-    # queries a department or billing account scope, so two policies with
-    # different scopes but the same subscription ID would share a key. The Fleet
-    # namespace lets such policies be kept apart.
-    - data_stream.namespace
+    # queries a department or billing account scope. Agents that emit
+    # `azure.billing.scope` keep forecasts of different scopes apart; rows from
+    # older agents have no scope and fall back to the subscription ID alone.
+    - azure.billing.scope
   # Azure keeps revising cost rows for up to ~72h, so the most recently collected
   # copy of a row is the authoritative one.
   sort: "@timestamp"
