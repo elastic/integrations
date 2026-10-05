@@ -4,7 +4,7 @@
 
 The Claude Code integration collects [OpenTelemetry](https://opentelemetry.io/) log events and traces emitted by [Anthropic Claude Code](https://code.claude.com/), the AI coding agent. It provides typed field mappings, ingest pipelines for structured queries, and security-focused dashboards for tool invocation auditing, cost monitoring, and permission analysis.
 
-Claude Code exports telemetry as OTLP (OpenTelemetry Protocol) logs and/or traces. Each log event represents an action in an agentic session: tool calls (shell commands, file operations, MCP tool invocations), API requests, user prompts, permission decisions, and lifecycle events. Trace spans connect interactions, LLM requests, and tool calls into one trace per user turn. Trace export is in beta.
+Claude Code exports telemetry as OTLP (OpenTelemetry Protocol) logs or traces. Each log event represents an action in an agentic session: tool calls (shell commands, file operations, MCP tool invocations), API requests, user prompts, permission decisions, and lifecycle events. Trace spans connect interactions, LLM requests, and tool calls into one trace per user turn. Trace export is in beta.
 
 ### Compatibility
 
@@ -271,13 +271,13 @@ It also extracts:
 **Tool invocation auditing** — query all Bash commands executed by a user:
 
 ```
-claude_code.tool_name: "Bash" AND event.action: "tool_result"
+gen_ai.tool.name: "Bash" AND event.action: "tool_result"
 ```
 
 **Permission decision analysis** — find `user_permanent` auto-approvals (potential risk signal):
 
 ```
-event.action: "tool_decision" AND claude_code.decision_source: "user_permanent"
+event.action: "tool_decision" AND claude_code.events.source: "user_permanent"
 ```
 
 **Cost anomaly detection** — aggregate `cost_usd` per user per day to detect unusual spending patterns.
@@ -285,7 +285,7 @@ event.action: "tool_decision" AND claude_code.decision_source: "user_permanent"
 **MCP server access monitoring** — track which MCP servers users connect to and which tools they invoke:
 
 ```
-event.action: "mcp_server_connection" OR (event.action: "tool_result" AND claude_code.tool_name: "mcp_tool")
+event.action: "mcp_server_connection" OR (event.action: "tool_result" AND claude_code.events.mcp_server_name: *)
 ```
 
 ### Logs reference
