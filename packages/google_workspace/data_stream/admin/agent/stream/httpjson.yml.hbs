@@ -37,7 +37,39 @@ request.transforms:
       default: '[[formatDate (now (parseDuration "-{{initial_interval}}{{lag_time}}"))]]'
   - set:
       target: url.params.endTime
+{{#if chunk_duration}}
+      # Chunked collection: bound each interval to at most chunk_duration of
+      # activity, starting from the same point startTime resolves to. The
+      # window is clamped to now-lag_time so it never runs ahead of the lag
+      # margin. A non-positive or unparsable chunk_duration disables
+      # chunking and behaves like the unchunked value.
+      value: >-
+        [[- $start := "" -]]
+        [[- if eq .cursor.pagination_finished "true" -]]
+          [[- $start = .cursor.next_start_date -]]
+        [[- else -]]
+          [[- $start = .cursor.last_response_date -]]
+        [[- end -]]
+        [[- $cap := now (parseDuration "-{{lag_time}}") -]]
+        [[- $chunkEnd := (parseDate $start "RFC3339").Add (parseDuration "{{chunk_duration}}") -]]
+        [[- if or (le (parseDuration "{{chunk_duration}}") 0) ($chunkEnd.After $cap) -]]
+          [[- formatDate $cap -]]
+        [[- else -]]
+          [[- formatDate $chunkEnd -]]
+        [[- end -]]
+      # Fresh start (no cursor): chunk the initial interval too, otherwise a
+      # large initial_interval would be requested as a single window.
+      default: >-
+        [[- $cap := now (parseDuration "-{{lag_time}}") -]]
+        [[- $chunkEnd := (now (parseDuration "-{{initial_interval}}{{lag_time}}")).Add (parseDuration "{{chunk_duration}}") -]]
+        [[- if or (le (parseDuration "{{chunk_duration}}") 0) ($chunkEnd.After $cap) -]]
+          [[- formatDate $cap -]]
+        [[- else -]]
+          [[- formatDate $chunkEnd -]]
+        [[- end -]]
+{{else}}
       value: '[[formatDate (now (parseDuration "-{{lag_time}}"))]]'
+{{/if}}
 response.split:
   target: body.items
   ignore_empty_value: true
@@ -62,6 +94,11 @@ cursor:
     # Use this value to be able to resume from an interrupted pagination cycle.
     value: '[[.last_response.url.params.Get "startTime"]]'
   next_start_date:
+{{#if chunk_duration}}
+    # With chunking, the next window starts where the completed chunk ended.
+    # This does not depend on event ordering or event timestamp format.
+    value: '[[.last_response.url.params.Get "endTime"]]'
+{{else}}
     # The API returns records sorted from newest to oldest,
     # in order to pick the next startDate we keep the first event (newest) time.
     value: >-
@@ -83,6 +120,7 @@ cursor:
       [[- else -]]
         [[- .last_response.url.params.Get "endTime" -]]
       [[- end -]]
+{{/if}}
 tags:
 {{#if preserve_original_event}}
   - preserve_original_event

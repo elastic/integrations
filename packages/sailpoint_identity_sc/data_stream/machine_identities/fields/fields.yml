@@ -1,0 +1,90 @@
+- name: sailpoint_identity_sc.machine_identity
+  type: group
+  fields:
+    - name: native_identity
+      type: keyword
+      description: Account name assigned to the machine identity on the source system.
+    - name: description
+      type: text
+      description: Free-text description of the machine identity.
+    - name: attributes
+      type: flattened
+      description: Dynamic attribute map from the machine identity record (tenant-specific keys).
+    - name: source
+      type: group
+      fields:
+        - name: id
+          type: keyword
+          description: ID of the source system associated with this machine identity.
+        - name: name
+          type: keyword
+          description: Name of the source system associated with this machine identity.
+    - name: source_id
+      type: keyword
+      description: Plain source ID string from the machine identity record.
+    - name: uuid
+      type: keyword
+      description: UUID of the machine identity on the source system.
+    - name: dataset_id
+      type: keyword
+      description: Dataset ID associated with this machine identity record.
+    - name: manually_edited
+      type: boolean
+      description: Indicates whether the machine identity was manually edited.
+    - name: manually_created
+      type: boolean
+      description: Indicates whether the machine identity was manually created.
+    - name: created
+      type: date
+      description: Timestamp when the machine identity was created.
+    - name: modified
+      type: date
+      description: Timestamp when the machine identity was last modified.
+    - name: owners
+      type: group
+      fields:
+        - name: primary
+          type: group
+          fields:
+            - name: id
+              type: keyword
+              description: ID of the primary owner identity.
+            - name: name
+              type: keyword
+              description: Account name of the primary owner identity.
+        - name: secondary
+          type: group
+          fields:
+            - name: type
+              type: keyword
+              description: Type of the secondary owner reference.
+            - name: id
+              type: keyword
+              description: ID of the secondary owner identity.
+            - name: name
+              type: keyword
+              description: Account name of the secondary owner identity.
+    - name: user_entitlements
+      type: group
+      fields:
+        - name: source_id
+          type: keyword
+          description: ID of the source system providing this entitlement.
+        - name: entitlement_id
+          type: keyword
+          description: ID of the entitlement held by this machine identity.
+        - name: display_name
+          type: keyword
+          description: Display name of the entitlement.
+        - name: source
+          type: group
+          fields:
+            - name: type
+              type: keyword
+              description: Type of the entitlement source.
+            - name: id
+              type: keyword
+              description: ID of the entitlement source.
+            - name: name
+              type: keyword
+              description: Name of the entitlement source.

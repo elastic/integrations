@@ -1,0 +1,85 @@
+- name: openai_chatgpt_enterprise
+  type: group
+  description: OpenAI Compliance Logs Platform event fields.
+  fields:
+    - name: conversation_message
+      type: group
+      fields:
+        - name: actor
+          type: group
+          fields:
+            - name: type
+              type: keyword
+              description: Type of actor that performed the action (for example ACCOUNT_USER or API_KEY).
+        - name: conversation
+          type: group
+          fields:
+            - name: created_at
+              type: date
+              description: ISO 8601 timestamp for conversation creation.
+            - name: id
+              type: keyword
+              description: Conversation identifier.
+            - name: is_pinned
+              type: boolean
+              description: Whether the conversation was pinned at the time of the event.
+            - name: is_temporary_chat
+              type: boolean
+              description: Whether the conversation was a temporary chat at the time of the event.
+            - name: title
+              type: keyword
+              description: Conversation title.
+        - name: message
+          type: group
+          fields:
+            - name: author
+              type: group
+              fields:
+                - name: client_type
+                  type: keyword
+                  description: Client surface associated with a user message.
+                - name: skills_used
+                  type: keyword
+                  description: Skill IDs associated with the message.
+                - name: tools_used
+                  type: keyword
+                  description: Assistant tools invoked for the response.
+                - name: type
+                  type: keyword
+                  description: Author variant discriminator (for example user or assistant).
+            - name: content
+              type: group
+              fields:
+                - name: annotations
+                  type: group
+                  fields:
+                    - name: type
+                      type: keyword
+                      description: Annotation type on text content (for example url_citation).
+                    - name: urls
+                      type: keyword
+                      description: URLs cited in the text.
+                - name: type
+                  type: keyword
+                  description: Content payload discriminator (for example text).
+                - name: value
+                  type: keyword
+                  description: Message text/value; may be null when no displayable text exists.
+            - name: created_at
+              type: date
+              description: ISO 8601 timestamp for when the message was created, when available.
+            - name: id
+              type: keyword
+              description: Stable message identifier.
+        - name: previous_message_id
+          type: keyword
+          description: The message.id of the previous message in the conversation. Omitted for the first message.
+        - name: principal
+          type: group
+          fields:
+            - name: type
+              type: keyword
+              description: Principal that owns the event (for example CHATGPT_WORKSPACE).
+        - name: type
+          type: keyword
+          description: Top-level event category. Always CONVERSATION_MESSAGE for this data stream.

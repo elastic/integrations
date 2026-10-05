@@ -1779,7 +1779,7 @@ An example event for `firewall_event` looks as following:
             "number": 15169
         },
         "geo": {
-            "country_iso_code": "us"
+            "country_iso_code": "US"
         },
         "ip": "175.16.199.0"
     },
@@ -3017,7 +3017,7 @@ An example event for `http_request` looks as following:
             "number": 43766
         },
         "geo": {
-            "country_iso_code": "sa"
+            "country_iso_code": "SA"
         },
         "ip": "175.16.199.0",
         "port": 0
@@ -4627,7 +4627,7 @@ An example event for `spectrum_event` looks as following:
         },
         "bytes": 0,
         "geo": {
-            "country_iso_code": "bg"
+            "country_iso_code": "BG"
         },
         "ip": "67.43.156.0",
         "port": 40456
@@ -4793,7 +4793,6 @@ An example event for `workers_trace` looks as following:
         "original": "{\"DispatchNamespace\":\"my-worker-dispatch\",\"Event\":{\"RayID\":\"7e9ae7157ac0c33a\",\"Request\":{\"Method\":\"GET\",\"URL\":\"http://chat-gpt-little-butterfly-0c3d.example.workers.dev/v2/_catalog\"},\"Response\":{\"Status\":404}},\"EventTimestampMs\":1689852946804,\"EventType\":\"fetch\",\"Exceptions\":[{\"Message\":\"Uncaught TypeError: Cannot read property 'x' of undefined\",\"Stack\":\"TypeError: Cannot read property 'x' of undefined\\n    at fetchHandler (/workers/script.js:12:27)\\n    at handleRequest (/workers/script.js:6:13)\"}],\"Logs\":[{\"level\":\"info\",\"message\":\"Request received for /api/data\"},{\"level\":\"error\",\"message\":\"Something went wrong\"}],\"Outcome\":\"exception\",\"ScriptName\":\"chat-gpt-little-butterfly-0c3d\",\"ScriptTags\":[\"api\",\"chatgpt\"]}",
         "outcome": "failure",
         "type": [
-            "info",
             "error"
         ]
     },

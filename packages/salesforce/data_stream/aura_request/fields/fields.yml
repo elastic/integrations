@@ -1,0 +1,80 @@
+- name: salesforce
+  type: group
+  fields:
+    - name: instance_url
+      type: keyword
+      description: The Salesforce instance URL.
+    - name: aura_request
+      type: group
+      fields:
+        - name: action_message
+          type: keyword
+          description: "The action (Apex method) names and times for all the actions in the request. Salesforce documents the format as `1action1Name=action1Time;action2Name=action2Time...`, and observed values take the form `<actionId>$<scheme>://<controller>/ACTION$<method>=<milliseconds>` with `;` between actions. The parsed form is available under `salesforce.aura_request.actions`."
+        - name: action_message_length
+          type: long
+        - name: actions
+          type: nested
+          description: The actions invoked by the request, parsed by this integration from `ACTION_MESSAGE`. One object per action. Salesforce does not document the compound format, so these subfields are derived rather than documented.
+          fields:
+            - name: id
+              type: keyword
+              description: The Aura client-assigned identifier of the action within the request. This is an identifier rather than a positional index, so the identifiers of a multi-action request are frequently out of order.
+            - name: scheme
+              type: keyword
+              description: The Aura descriptor scheme of the action. Observed values are `serviceComponent`, `aura`, and `java`.
+            - name: controller
+              type: keyword
+              description: The Aura or Apex controller that handled the action, either a fully qualified path or a bare class name.
+            - name: method
+              type: keyword
+              description: The name of the controller method invoked by the action.
+            - name: duration
+              type: long
+              unit: ms
+              metric_type: gauge
+              description: The time the action took, in milliseconds, as reported in `ACTION_MESSAGE`. Zero is a common and valid value.
+        - name: client_ip
+          type: keyword
+          description: The IP address of the client that's using Salesforce services. A Salesforce internal IP (such as a login from AppExchange) is shown as `Salesforce.com IP`. Values that are usable IP addresses are mapped to `source.ip` instead, so only the non-address values remain here.
+        - name: cpu_time
+          type: long
+          unit: ms
+          metric_type: gauge
+          description: The CPU time in milliseconds used to complete the request. This field indicates the amount of activity taking place in the app server layer.
+        - name: db_total_time
+          type: long
+          unit: nanos
+          metric_type: gauge
+          description: The time in nanoseconds for a database round trip. Includes time spent in the JDBC driver, network to the database, and `DB_CPU_TIME`. Compare this field to `salesforce.aura_request.cpu_time` to determine whether performance issues are occurring in the database layer or in your own code.
+        - name: easy_suite_value
+          type: keyword
+          description: "The org's Small Business Suite Edition, if applicable. This field populates only for Small Business Suite editions and Salesforce Foundations. Otherwise, it will be empty. Documented values: `Freemium` (Salesforce Free Suite), `Starter` (Salesforce Starter Suite), `Pro` (Salesforce Pro Suite), and `C360SuiteEE` (Salesforce Foundations). Available in API version 66.0 and later."
+        - name: id
+          type: keyword
+          description: The record ID of the `AuraRequestEventLog` object on the real-time collection path.
+        - name: login_key
+          type: keyword
+          description: The string that ties together all events in a given user's login session. It starts with a login event and ends with either a logout event or the user session expiring.
+        - name: request_status
+          type: keyword
+          description: "The status of the request for a page view or user interface action: `S` Success, which is also returned when an Apex controller throws an exception; `F` Failure, typically 4xx or 5xx HTTP codes; `U` Undefined; `A` Authorization Error; `R` Redirect, typically a 3xx HTTP code; `N` Not Found, a 404 error. This field can have a blank value."
+        - name: run_time
+          type: long
+          unit: ms
+          metric_type: gauge
+          description: The amount of time that the request took in milliseconds.
+        - name: session_key
+          type: keyword
+          description: The user's unique session ID. You can use this value to identify all user events within a session. When a user logs out and logs in again, a new session is started.
+        - name: uri_id
+          type: keyword
+          description: The 18-character case insensitive ID of the URI of the page that's receiving the request.
+        - name: user_agent_code
+          type: keyword
+          description: The numeric code for the type of client used to make the request, for example the browser, application, or API. `AuraRequest` rows now carry the raw User-Agent header, which is mapped to `user_agent.original` instead, so only legacy numeric codes remain here.
+        - name: user_id
+          type: keyword
+          description: The 15-character ID of the user who's using Salesforce services through the UI or the API. The 18-character case insensitive form of the same ID is mapped to `user.id`.
+        - name: user_type
+          type: keyword
+          description: "The category of user license. Documented values: `CsnOnly`, `CspLitePortal`, `CustomerSuccess`, `Guest`, `PowerCustomerSuccess`, `PowerPartner`, `SelfService`, and `Standard`."
