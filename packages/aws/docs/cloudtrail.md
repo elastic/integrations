@@ -14,7 +14,9 @@ For example, you could use the data from this integration to spot unusual activi
 
 This integration collects CloudTrail management events, data events, [CloudTrail Insights](https://docs.aws.amazon.com/awscloudtrail/latest/userguide/logging-insights-events-with-cloudtrail.html) events, and [digest logs](https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-log-file-validation-intro.html) delivered by any AWS CloudTrail trail. No specific CloudTrail version is required.
 
-> Important: Starting January 13, 2025, certain fields are no longer available in AWS CloudTrail events for IAM Identity Center. For more details, refer to the [AWS Security Blog](https://aws.amazon.com/blogs/security/modifications-to-aws-cloudtrail-event-data-of-iam-identity-center/).
+::::{important}
+Starting January 13, 2025, certain fields are no longer available in AWS CloudTrail events for IAM Identity Center. For more details, refer to the [AWS Security Blog](https://aws.amazon.com/blogs/security/modifications-to-aws-cloudtrail-event-data-of-iam-identity-center/).
+::::
 
 ### How it works
 
@@ -67,27 +69,32 @@ Elastic Agent must be installed. For more details, check the Elastic Agent [inst
 
 ### Onboard and configure
 
-Configure one of the following delivery pipelines before enabling the integration in Elastic.
+This integration offers two collection methods: **Collect CloudTrail logs from S3** and **Collect CloudTrail logs from CloudWatch**. Configure the AWS side for whichever method you choose before enabling the integration in Elastic.
 
-#### Collect logs from AWS SQS (recommended)
+#### Collect CloudTrail logs from S3
+
+The **Collect CloudTrail logs from S3** method reads CloudTrail log files from an S3 bucket. It can either receive S3 object notifications from an SQS queue (recommended) or poll the bucket directly. These two modes are mutually exclusive and are controlled by the **Collect logs via S3 Bucket** toggle.
+
+**Receive notifications from an SQS queue (recommended)**
 
 1. Configure CloudTrail to [deliver log files to an S3 bucket](https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-create-and-update-a-trail.html).
 2. To set up an SQS queue, follow "Step 1: Create an Amazon SQS queue" in the [Amazon documentation](https://docs.aws.amazon.com/AmazonS3/latest/userguide/ways-to-add-notification-config-to-bucket.html). While creating the SQS queue, provide the same bucket ARN generated when you created the S3 bucket.
 3. Set up event notification for the S3 bucket using the instructions [here](https://docs.aws.amazon.com/AmazonS3/latest/userguide/enable-event-notifications.html). Use the event type `s3:ObjectCreated:*`, set the destination to the SQS queue created above, and, if needed, set the prefix to match the CloudTrail log path.
+4. In the integration configuration, keep **Collect logs via S3 Bucket** disabled and set the **[SQS] Queue URL**.
 
-In the integration configuration, keep **Collect logs via S3 Bucket** disabled and set the **[SQS] Queue URL**.
-
-#### Collect logs from an AWS S3 bucket (polling)
+**Poll the S3 bucket directly**
 
 1. Configure CloudTrail to [deliver log files to an S3 bucket](https://docs.aws.amazon.com/awscloudtrail/latest/userguide/cloudtrail-create-and-update-a-trail.html).
 2. In the integration configuration, enable **Collect logs via S3 Bucket** and set the **[S3] Bucket ARN** (or the **[S3] Access Point ARN**). Optionally set the **[S3] Bucket Prefix** to limit which objects are read.
 
-> **Note:** Data collection via AWS S3 Bucket and AWS SQS are mutually exclusive. If you provide both a Bucket ARN and an SQS Queue URL, the integration ignores the SQS URL and operates in polling mode.
+::::{note}
+Data collection via the S3 bucket (polling) and SQS modes are mutually exclusive. If you provide both a **[S3] Bucket ARN** and an **[SQS] Queue URL**, the integration ignores the SQS URL and operates in polling mode, attempting to process the entire bucket. To use SQS mode, disable **Collect logs via S3 Bucket** and provide only the **[SQS] Queue URL**.
+::::
 
-#### Collect logs from AWS CloudWatch
+#### Collect CloudTrail logs from CloudWatch
 
 1. Configure CloudTrail to [send events to a CloudWatch Logs log group](https://docs.aws.amazon.com/awscloudtrail/latest/userguide/send-cloudtrail-events-to-cloudwatch-logs.html).
-2. Enable the **AWS CloudTrail Logs** CloudWatch input and set the **Log Group ARN** (or the **Log Group Name** together with the **Region Name**).
+2. Select the **Collect CloudTrail logs from CloudWatch** collection method and set the **Log Group ARN** (or the **Log Group Name** together with the **Region Name**).
 
 #### Advanced: IAM Roles Anywhere
 
@@ -116,7 +123,9 @@ If your Elastic Agent runs outside AWS (for example, on on-premises servers), yo
 
 3. In the CloudTrail integration configuration, set the **Credential Profile Name** field to the profile name you defined (for example, `elastic-agent`). If you configure the profile as `[default]`, you can leave the field blank.
 
-> **Note:** If **Shared Credential File** is set, the integration loads credentials only from that file and stops reading the default AWS shared config file; ensure the profile with the `credential_process` entry is present in whichever file you specify, or leave the field blank to use the default config file location. **Credential Profile Name** and **Shared Credential File** are integration-wide settings: any value you set here applies to all AWS data streams in this integration, not just CloudTrail.
+::::{note}
+If **Shared Credential File** is set, the integration loads credentials only from that file and stops reading the default AWS shared config file; ensure the profile with the `credential_process` entry is present in whichever file you specify, or leave the field blank to use the default config file location. **Credential Profile Name** and **Shared Credential File** are integration-wide settings: any value you set here applies to all AWS data streams in this integration, not just CloudTrail.
+::::
 
 The credentials are refreshed automatically before they expire. For the full list of `aws_signing_helper` options and examples, see the [IAM Roles Anywhere credential helper documentation](https://docs.aws.amazon.com/rolesanywhere/latest/userguide/credential-helper.html).
 
@@ -126,7 +135,7 @@ The credentials are refreshed automatically before they expire. For the full lis
 2. In the search bar, type **AWS CloudTrail**.
 3. Select the **AWS CloudTrail** integration from the search results.
 4. Select **Add AWS CloudTrail** to add the integration.
-5. Configure credentials and enable only the collection method (S3 SQS, S3 polling, or CloudWatch) that you set up above.
+5. Configure credentials and enable only the collection method (**Collect CloudTrail logs from S3** or **Collect CloudTrail logs from CloudWatch**) that you set up above.
 6. Select **Save and continue** to save the integration.
 
 ### Validation
@@ -145,7 +154,7 @@ For help with Elastic ingest tools, check [Common problems](https://www.elastic.
 
 - **`ThrottlingException: Rate exceeded` when using CloudWatch.** The CloudWatch Logs APIs (`DescribeLogGroups`, `FilterLogEvents`) are limited to 5 transactions per second (TPS) per AWS account and per region; this limit is shared across all API callers in that account and region. If you run multiple integrations or data streams that collect CloudWatch logs from the same account and region, their workers share the same 5 TPS. Set `number_of_workers` to **5 or less** and `scan_frequency` to **5m or more**, regardless of how many log groups match `log_group_name_prefix`.
 
-- **High memory usage or out-of-memory (OOM) errors in S3 polling mode.** When using the "Collect logs via S3 Bucket" option in polling mode, the integration lists and processes all objects in the bucket. For buckets containing large volumes of historical logs, this can cause high memory usage. Prefer SQS mode when possible. If you must use polling mode, limit which objects are processed with **Ignore Older Timespan** (`ignore_older`, for example `48h` or `30d`) and **Start Timestamp** (`start_timestamp`, `YYYY-MM-DDTHH:MM:SSZ`).
+- **High memory usage or out-of-memory (OOM) errors in S3 polling mode.** When using the **Collect logs via S3 Bucket** option in polling mode, the integration lists and processes all objects in the bucket. For buckets containing large volumes of historical logs, this can cause high memory usage. A common cause of *unintended* polling is enabling **Collect logs via S3 Bucket** (or providing a **[S3] Bucket ARN**) while also setting an **[SQS] Queue URL**: the SQS URL is ignored and the integration polls the entire bucket. Prefer SQS mode when possible. If you must use polling mode, limit which objects are processed with **Ignore Older Timespan** (`ignore_older`, for example `48h` or `30d`) and **Start Timestamp** (`start_timestamp`, `YYYY-MM-DDTHH:MM:SSZ`).
 
 - **`ListObjectsV2, context canceled` timeouts in S3 polling mode.** Increase the **[S3] Interval** to reduce listing frequency.
 
@@ -165,7 +174,9 @@ Additional considerations:
 
 The `cloudtrail` data stream collects AWS CloudTrail events. CloudTrail records user activity and API usage across AWS services. When you create a trail, CloudTrail delivers those events as log files to a specific Amazon S3 bucket (and, optionally, to a CloudWatch Logs log group).
 
-> Note: Use the *CloudTrail Digest Logs regex* setting to define a regex to match the path of the CloudTrail Digest S3 Objects you'd like to read. If blank, CloudTrail Digest logs will be skipped.
+::::{note}
+Use the **CloudTrail Digest Logs regex** setting to define a regex to match the path of the CloudTrail Digest S3 objects you'd like to read. If blank, CloudTrail Digest logs will be skipped.
+::::
 
 **ECS Field Reference**
 
