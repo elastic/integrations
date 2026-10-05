@@ -71,16 +71,16 @@ An example event for `vulnerability` looks as following:
 {
     "@timestamp": "2024-02-15T00:00:00.000Z",
     "agent": {
-        "ephemeral_id": "fc07fa12-f549-40b8-b71a-d49f02d4941d",
-        "id": "5f9e8c36-28d7-4df6-bdeb-68a9e24bfdc0",
-        "name": "elastic-agent-37763",
+        "ephemeral_id": "a0d090d4-72c3-4da1-9edd-dd1f21f73ea5",
+        "id": "56c73d5d-f002-455d-b986-38250ca0f4b5",
+        "name": "elastic-agent-16901",
         "type": "filebeat",
-        "version": "8.13.0"
+        "version": "9.5.4"
     },
     "cisa_kev": {
         "vulnerability": {
-            "date_added": "2024-02-15",
-            "due_date": "2024-03-07",
+            "date_added": "2024-02-15T00:00:00.000Z",
+            "due_date": "2024-03-07T00:00:00.000Z",
             "known_ransomware_campaign_use": "Known",
             "name": "Cisco ASA and FTD Information Disclosure Vulnerability",
             "notes": "https://tools.cisco.com/security/center/content/CiscoSecurityAdvisory/cisco-sa-asaftd-info-disclose-9eJtycMB",
@@ -91,16 +91,16 @@ An example event for `vulnerability` looks as following:
     },
     "data_stream": {
         "dataset": "cisa_kevs.vulnerability",
-        "namespace": "77864",
+        "namespace": "22597",
         "type": "logs"
     },
     "ecs": {
         "version": "8.11.0"
     },
     "elastic_agent": {
-        "id": "5f9e8c36-28d7-4df6-bdeb-68a9e24bfdc0",
+        "id": "56c73d5d-f002-455d-b986-38250ca0f4b5",
         "snapshot": false,
-        "version": "8.13.0"
+        "version": "9.5.4"
     },
     "event": {
         "agent_id_status": "verified",
@@ -108,8 +108,9 @@ An example event for `vulnerability` looks as following:
             "vulnerability"
         ],
         "dataset": "cisa_kevs.vulnerability",
-        "ingested": "2025-08-05T05:37:31Z",
+        "ingested": "2026-10-05T10:41:14Z",
         "kind": "enrichment",
+        "module": "cisa_kevs",
         "original": "{\"cveID\":\"CVE-2020-3259\",\"dateAdded\":\"2024-02-15\",\"dueDate\":\"2024-03-07\",\"knownRansomwareCampaignUse\":\"Known\",\"notes\":\"https://tools.cisco.com/security/center/content/CiscoSecurityAdvisory/cisco-sa-asaftd-info-disclose-9eJtycMB\",\"product\":\"Adaptive Security Appliance (ASA) and Firepower Threat Defense (FTD)\",\"requiredAction\":\"Apply mitigations per vendor instructions or discontinue use of the product if mitigations are unavailable.\",\"shortDescription\":\"Cisco Adaptive Security Appliance (ASA) and Firepower Threat Defense (FTD) contain an information disclosure vulnerability. An attacker could retrieve memory contents on an affected device, which could lead to the disclosure of confidential information due to a buffer tracking issue when the software parses invalid URLs that are requested from the web services interface. This vulnerability affects only specific AnyConnect and WebVPN configurations.\",\"vendorProject\":\"Cisco\",\"vulnerabilityName\":\"Cisco ASA and FTD Information Disclosure Vulnerability\"}",
         "type": [
             "info"
@@ -117,6 +118,9 @@ An example event for `vulnerability` looks as following:
     },
     "input": {
         "type": "cel"
+    },
+    "labels": {
+        "is_transform_source": "true"
     },
     "tags": [
         "preserve_original_event",
@@ -149,7 +153,7 @@ An example event for `vulnerability` looks as following:
 | cisa_kev.vulnerability.required_action | The required action to address the vulnerability | keyword |
 | cisa_kev.vulnerability.vendor_project | The vendor or project name for the vulnerability | keyword |
 | data_stream.dataset | The field can contain anything that makes sense to signify the source of the data. Examples include `nginx.access`, `prometheus`, `endpoint` etc. For data streams that otherwise fit, but that do not have dataset set we use the value "generic" for the dataset value. `event.dataset` should have the same value as `data_stream.dataset`. Beyond the Elasticsearch data stream naming criteria noted above, the `dataset` value has additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
-| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | constant_keyword |
+| data_stream.namespace | A user defined namespace. Namespaces are useful to allow grouping of data. Many users already organize their indices this way, and the data stream naming scheme now provides this best practice as a default. Many users will populate this field with `default`. If no value is used, it falls back to `default`. Beyond the Elasticsearch index naming criteria noted above, `namespace` value has the additional restrictions:   \* Must not contain `-`   \* No longer than 100 characters | keyword |
 | data_stream.type | An overarching type for the data stream. Currently allowed values are "logs" and "metrics". We expect to also add "traces" and "synthetics" in the near future. | constant_keyword |
 | ecs.version | ECS version this event conforms to. `ecs.version` is a required field and must exist in all events. When querying across multiple indices -- which may conform to slightly different ECS versions -- this field lets integrations adjust to the schema version of the events. | keyword |
 | error.message | Error message. | match_only_text |
@@ -162,6 +166,7 @@ An example event for `vulnerability` looks as following:
 | event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | input.type | Type of Filebeat input. | keyword |
+| labels.is_transform_source | Distinguishes between documents that are a source for a transform and documents that are an output of a transform, to facilitate easier filtering. | constant_keyword |
 | tags | List of keywords used to tag each event. | keyword |
 | vulnerability.description | The description of the vulnerability that provides additional context of the vulnerability. For example (https://cve.mitre.org/about/faqs.html#cve_entry_descriptions_created[Common Vulnerabilities and Exposure CVE description]) | keyword |
 | vulnerability.description.text | Multi-field of `vulnerability.description`. | match_only_text |
