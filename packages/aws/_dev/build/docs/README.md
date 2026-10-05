@@ -24,7 +24,7 @@ For a complete list of all AWS services and the data streams available for each,
 
 ### Data retention
 
-The data streams below collect a full snapshot of AWS Config rule evaluations and Amazon Inspector findings on every polling interval, so their backing indices hold one copy of each record per interval. Only these two data streams ship a retention; the other AWS data streams follow the default lifecycle.
+The data streams below collect a full snapshot of AWS Config rule evaluations and Amazon Inspector findings on every polling interval, so their backing indices hold one copy of each record per interval. Only these two data streams ship a retention. The other AWS data streams follow the default lifecycle.
 
 The package bounds the growth of these source data streams with a retention that depends on the deployment type:
 
@@ -33,11 +33,11 @@ The package bounds the growth of these source data streams with a retention that
 | `logs-aws.config-*` | `logs-aws.config-default_policy`: roll over after 7d, delete 7d after rollover | delete 7d after ingestion |
 | `logs-aws.inspector-*` | `logs-aws.inspector-default_policy`: roll over after 7d, delete 7d after rollover | delete 7d after ingestion |
 
-On self-managed and Elastic Cloud Hosted deployments the ILM policy applies; the data stream lifecycle shipped with the package is not used there. ILM counts the delete age from the rollover of a backing index, so a document can remain for up to the rollover age plus the delete age. On Serverless, ILM is not available and the data stream lifecycle applies instead: documents are deleted the stated time after they are ingested. Where the package installs a transform, the transform's destination indices are not affected by either.
+On self-managed and Elastic Cloud Hosted deployments the ILM policy applies. The data stream lifecycle shipped with the package is not used there. ILM counts the delete age from the rollover of a backing index, so a document can remain for up to the rollover age plus the delete age. On Serverless, ILM is not available and the data stream lifecycle applies instead: documents are deleted the stated time after they are ingested. Where the package installs a transform, the transform's destination indices are not affected by either.
 
 To keep data for a different period:
 
-- Self-managed and Elastic Cloud Hosted: edit the ILM policy in Kibana under **Stack Management > Index Lifecycle Policies**, or with `PUT _ilm/policy/<policy name>`. A package upgrade reinstalls the package's ILM policies, so check your change after upgrading.
+- Self-managed and Elastic Cloud Hosted: edit the ILM policy in Kibana under **Stack Management → Index Lifecycle Policies**, or with `PUT _ilm/policy/<policy name>`. A package upgrade reinstalls the package's ILM policies, so check your change after upgrading.
 - Serverless: set the retention on the data stream, for example `PUT _data_stream/logs-aws.config-default/_lifecycle` with the body `{"data_retention": "90d"}`. Replace `default` with your namespace.
 
 ## API requests

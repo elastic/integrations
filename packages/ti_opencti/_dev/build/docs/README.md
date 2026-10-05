@@ -150,13 +150,13 @@ The package bounds the growth of these source data streams with a retention that
 
 | Data stream | Self-managed and Elastic Cloud Hosted (ILM policy) | Serverless (data stream lifecycle) |
 |---|---|---|
-| `logs-ti_opencti.indicator-*` | none; the default `logs` policy applies (no deletion) | delete 5d after ingestion |
+| `logs-ti_opencti.indicator-*` | none, so the default `logs` policy applies (no deletion) | delete 5d after ingestion |
 
-On self-managed and Elastic Cloud Hosted deployments this version of the package does not attach an ILM policy to the source data stream, so the default `logs` policy applies and documents are not deleted; the data stream lifecycle shipped with the package is not used there. On Serverless, ILM is not available and the data stream lifecycle applies instead: documents are deleted the stated time after they are ingested. Where the package installs a transform, the transform's destination indices are not affected by either.
+On self-managed and Elastic Cloud Hosted deployments this version of the package does not attach an ILM policy to the source data stream, so the default `logs` policy applies and documents are not deleted. The data stream lifecycle shipped with the package is not used there. On Serverless, ILM is not available and the data stream lifecycle applies instead: documents are deleted the stated time after they are ingested. Where the package installs a transform, the transform's destination indices are not affected by either.
 
 To keep data for a different period:
 
-- Self-managed and Elastic Cloud Hosted: edit the ILM policy in Kibana under **Stack Management > Index Lifecycle Policies**, or with `PUT _ilm/policy/<policy name>`. A package upgrade reinstalls the package's ILM policies, so check your change after upgrading.
+- Self-managed and Elastic Cloud Hosted: edit the ILM policy in Kibana under **Stack Management → Index Lifecycle Policies**, or with `PUT _ilm/policy/<policy name>`. A package upgrade reinstalls the package's ILM policies, so check your change after upgrading.
 - Serverless: set the retention on the data stream, for example `PUT _data_stream/logs-ti_opencti.indicator-default/_lifecycle` with the body `{"data_retention": "90d"}`. Replace `default` with your namespace.
 
 #### Example

@@ -53,7 +53,7 @@ transform creates a destination index named
 unexpired IOCs. The destination index also has an alias
 `logs-ti_recordedfuture_latest.threat`. When setting up indicator match rules,
 use this latest destination index to avoid false positives from expired IOCs.
-Please refer to the [Data retention](#data-retention) section below for information on
+See [Data retention](#data-retention) for information on
 how source indices are managed to prevent unbounded growth.
 
 [elasticsearch_transforms]: https://www.elastic.co/docs/explore-analyze/transforms
@@ -68,11 +68,11 @@ The package bounds the growth of these source data streams with a retention that
 |---|---|---|
 | `logs-ti_recordedfuture.threat-*` | `logs-ti_recordedfuture.threat-default_policy`: roll over after 2d, delete 3d after rollover | delete 5d after ingestion |
 
-On self-managed and Elastic Cloud Hosted deployments the ILM policy applies; the data stream lifecycle shipped with the package is not used there. ILM counts the delete age from the rollover of a backing index, so a document can remain for up to the rollover age plus the delete age. On Serverless, ILM is not available and the data stream lifecycle applies instead: documents are deleted the stated time after they are ingested. Where the package installs a transform, the transform's destination indices are not affected by either.
+On self-managed and Elastic Cloud Hosted deployments the ILM policy applies. The data stream lifecycle shipped with the package is not used there. ILM counts the delete age from the rollover of a backing index, so a document can remain for up to the rollover age plus the delete age. On Serverless, ILM is not available and the data stream lifecycle applies instead: documents are deleted the stated time after they are ingested. Where the package installs a transform, the transform's destination indices are not affected by either.
 
 To keep data for a different period:
 
-- Self-managed and Elastic Cloud Hosted: edit the ILM policy in Kibana under **Stack Management > Index Lifecycle Policies**, or with `PUT _ilm/policy/<policy name>`. A package upgrade reinstalls the package's ILM policies, so check your change after upgrading.
+- Self-managed and Elastic Cloud Hosted: edit the ILM policy in Kibana under **Stack Management → Index Lifecycle Policies**, or with `PUT _ilm/policy/<policy name>`. A package upgrade reinstalls the package's ILM policies, so check your change after upgrading.
 - Serverless: set the retention on the data stream, for example `PUT _data_stream/logs-ti_recordedfuture.threat-default/_lifecycle` with the body `{"data_retention": "90d"}`. Replace `default` with your namespace.
 
 **NOTE:** For large risklist downloads, adjust the timeout setting so that the
