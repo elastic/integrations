@@ -38,22 +38,30 @@ Destinations indices are aliased to `logs-ti_eset_latest.<feed name>`.
 | `logs-ti_eset.ip-*`                 | logs-ti_eset_latest.dest_ip-*                 | logs-ti_eset_latest.ip                 |
 | `logs-ti_eset.url-*`                | logs-ti_eset_latest.dest_url-*                | logs-ti_eset_latest.url                |
 
-### ILM Policy
+### Data retention
 
-ILM policy is added to the source indices, so it doesn't lead to unbounded growth.
-Data in these source indices will be deleted after a certain number of days from ingested days:
+Threat indicators are re-collected across polling intervals, and the latest transform keeps the active, deduplicated view in its destination index. The source data streams therefore hold repeated copies of the same indicators. Indicators also expire from the latest view after 48 hours (`apt`: 365 days).
 
-|                             Index | Deleted after | Expired after |
-|----------------------------------:|:--------------|---------------|
-| `logs-ti_eset.androidinfostealer` | 7d            | 48h           |
-|                `logs-ti_eset.apt` | 365d          | 365d          |
-|             `logs-ti_eset.botnet` | 7d            | 48h           |
-|                 `logs-ti_eset.cc` | 7d            | 48h           |
-|            `logs-ti_eset.domains` | 7d            | 48h           |
-|   `logs-ti_eset.emailattachments` | 7d            | 48h           |
-|              `logs-ti_eset.files` | 7d            | 48h           |
-|                 `logs-ti_eset.ip` | 7d            | 48h           |
-|                `logs-ti_eset.url` | 7d            | 48h           |
+The package bounds the growth of these source data streams with a retention that depends on the deployment type:
+
+| Data stream | Self-managed and Elastic Cloud Hosted (ILM policy) | Serverless (data stream lifecycle) |
+|---|---|---|
+| `logs-ti_eset.androidinfostealer-*` | `logs-ti_eset.androidinfostealer-default_policy`: roll over after 2d, delete 7d after rollover | delete 7d after ingestion |
+| `logs-ti_eset.apt-*` | `logs-ti_eset.apt-default_policy`: roll over after 2d, delete 365d after rollover | delete 365d after ingestion |
+| `logs-ti_eset.botnet-*` | `logs-ti_eset.botnet-default_policy`: roll over after 2d, delete 7d after rollover | delete 7d after ingestion |
+| `logs-ti_eset.cc-*` | `logs-ti_eset.cc-default_policy`: roll over after 2d, delete 7d after rollover | delete 7d after ingestion |
+| `logs-ti_eset.domains-*` | `logs-ti_eset.domains-default_policy`: roll over after 2d, delete 7d after rollover | delete 7d after ingestion |
+| `logs-ti_eset.emailattachments-*` | `logs-ti_eset.emailattachments-default_policy`: roll over after 2d, delete 7d after rollover | delete 7d after ingestion |
+| `logs-ti_eset.files-*` | `logs-ti_eset.files-default_policy`: roll over after 2d, delete 7d after rollover | delete 7d after ingestion |
+| `logs-ti_eset.ip-*` | `logs-ti_eset.ip-default_policy`: roll over after 2d, delete 7d after rollover | delete 7d after ingestion |
+| `logs-ti_eset.url-*` | `logs-ti_eset.url-default_policy`: roll over after 2d, delete 7d after rollover | delete 7d after ingestion |
+
+On self-managed and Elastic Cloud Hosted deployments the ILM policy applies; the data stream lifecycle shipped with the package is not used there. ILM counts the delete age from the rollover of a backing index, so a document can remain for up to the rollover age plus the delete age. On Serverless, ILM is not available and the data stream lifecycle applies instead: documents are deleted the stated time after they are ingested. Where the package installs a transform, the transform's destination indices are not affected by either.
+
+To keep data for a different period:
+
+- Self-managed and Elastic Cloud Hosted: edit the ILM policy in Kibana under **Stack Management > Index Lifecycle Policies**, or with `PUT _ilm/policy/<policy name>`. A package upgrade reinstalls the package's ILM policies, so check your change after upgrading.
+- Serverless: set the retention on the data stream, for example `PUT _data_stream/logs-ti_eset.androidinfostealer-default/_lifecycle` with the body `{"data_retention": "90d"}`. Replace `default` with your namespace.
 
 ## Requirements
 

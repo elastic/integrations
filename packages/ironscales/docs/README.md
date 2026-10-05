@@ -486,6 +486,19 @@ This integration dataset uses the following API:
 * Incident List (endpoint: `/appapi/incident/{company_id}/list/`)
 * Incident Details (endpoint: `/appapi/incident/{company_id}/details/{incident_id}`)
 
-#### ILM Policy
+#### Data retention
 
-To facilitate incident data, source data stream-backed indices `.ds-logs-ironscales.incident-*` is allowed to contain duplicates from each polling interval. ILM policy `logs-ironscales.incident-default_policy` is added to these source indices, so it doesn't lead to unbounded growth. This means that in these source indices data will be deleted after `30 days` from ingested date.
+The data streams below collect a full snapshot of IRONSCALES incidents on every polling interval, so their backing indices hold one copy of each record per interval.
+
+The package bounds the growth of these source data streams with a retention that depends on the deployment type:
+
+| Data stream | Self-managed and Elastic Cloud Hosted (ILM policy) | Serverless (data stream lifecycle) |
+|---|---|---|
+| `logs-ironscales.incident-*` | `logs-ironscales.incident-default_policy`: roll over after 15d, delete 15d after rollover | delete 30d after ingestion |
+
+On self-managed and Elastic Cloud Hosted deployments the ILM policy applies; the data stream lifecycle shipped with the package is not used there. ILM counts the delete age from the rollover of a backing index, so a document can remain for up to the rollover age plus the delete age. On Serverless, ILM is not available and the data stream lifecycle applies instead: documents are deleted the stated time after they are ingested. Where the package installs a transform, the transform's destination indices are not affected by either.
+
+To keep data for a different period:
+
+- Self-managed and Elastic Cloud Hosted: edit the ILM policy in Kibana under **Stack Management > Index Lifecycle Policies**, or with `PUT _ilm/policy/<policy name>`. A package upgrade reinstalls the package's ILM policies, so check your change after upgrading.
+- Serverless: set the retention on the data stream, for example `PUT _data_stream/logs-ironscales.incident-default/_lifecycle` with the body `{"data_retention": "90d"}`. Replace `default` with your namespace.

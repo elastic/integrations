@@ -221,8 +221,22 @@ These XM Cyber REST API endpoints are used by this integration:
 | `/api/v2/vrm/public/vrmReport/products` | GET | `product` | Paginated product-level exposure aggregates (counts and OS list per product) |
 | `/api/v2/vrm/public/vrmReport/vulnerabilityInstances` | GET | `vulnerability_instance` | Paginated device records with per-product-version active CVEs and safe versions |
 
-### ILM Policy
+### Data retention
 
-The `device`, `product`, `vulnerability` and `vulnerability_instance` data streams collect a full snapshot of the XM Cyber VRM report on every polling interval. Each new report (identified by its `lastDataUpdate` timestamp) is indexed as a new set of documents, so the backing indices `.ds-logs-xm_cyber.device-*`, `.ds-logs-xm_cyber.product-*`, `.ds-logs-xm_cyber.vulnerability-*` and `.ds-logs-xm_cyber.vulnerability_instance-*` accumulate one copy of each record per report.
+The `device`, `product`, `vulnerability` and `vulnerability_instance` data streams collect a full snapshot of the XM Cyber VRM report on every polling interval. Each new report (identified by its `lastDataUpdate` timestamp) is indexed as a new set of documents, so the backing indices accumulate one copy of each record per report. The `latest_vulnerability` transform maintains the current view of each CVE in its own destination index.
 
-To prevent unbounded growth, each of these data streams ships with its own ILM policy (`logs-xm_cyber.device-default_policy`, `logs-xm_cyber.product-default_policy`, `logs-xm_cyber.vulnerability-default_policy` and `logs-xm_cyber.vulnerability_instance-default_policy`) and a matching data stream lifecycle. Documents in these source indices are deleted `30 days` after they are ingested. The `latest_vulnerability` transform maintains the current view of each CVE in its own destination index, which is not affected by this retention.
+The package bounds the growth of these source data streams with a retention that depends on the deployment type:
+
+| Data stream | Self-managed and Elastic Cloud Hosted (ILM policy) | Serverless (data stream lifecycle) |
+|---|---|---|
+| `logs-xm_cyber.device-*` | `logs-xm_cyber.device-default_policy`: roll over after 2d, delete 30d after rollover | delete 30d after ingestion |
+| `logs-xm_cyber.product-*` | `logs-xm_cyber.product-default_policy`: roll over after 2d, delete 30d after rollover | delete 30d after ingestion |
+| `logs-xm_cyber.vulnerability-*` | `logs-xm_cyber.vulnerability-default_policy`: roll over after 2d, delete 30d after rollover | delete 30d after ingestion |
+| `logs-xm_cyber.vulnerability_instance-*` | `logs-xm_cyber.vulnerability_instance-default_policy`: roll over after 2d, delete 30d after rollover | delete 30d after ingestion |
+
+On self-managed and Elastic Cloud Hosted deployments the ILM policy applies; the data stream lifecycle shipped with the package is not used there. ILM counts the delete age from the rollover of a backing index, so a document can remain for up to the rollover age plus the delete age. On Serverless, ILM is not available and the data stream lifecycle applies instead: documents are deleted the stated time after they are ingested. Where the package installs a transform, the transform's destination indices are not affected by either.
+
+To keep data for a different period:
+
+- Self-managed and Elastic Cloud Hosted: edit the ILM policy in Kibana under **Stack Management > Index Lifecycle Policies**, or with `PUT _ilm/policy/<policy name>`. A package upgrade reinstalls the package's ILM policies, so check your change after upgrading.
+- Serverless: set the retention on the data stream, for example `PUT _data_stream/logs-xm_cyber.device-default/_lifecycle` with the body `{"data_retention": "90d"}`. Replace `default` with your namespace.

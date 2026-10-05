@@ -1078,6 +1078,19 @@ These PingDirectory REST API endpoints are used by this integration:
 | `/scim/v2/Users` | GET | user | Retrieve paginated user identity records |
 | `/scim/v2/Groups` | GET | group | Retrieve paginated group membership records |
 
-### ILM Policy
+### Data retention
 
-To facilitate user identity data, the source data stream-backed index `.ds-logs-ping_directory.user-*` is allowed to contain duplicates from each polling interval. The ILM policy `logs-ping_directory.user-default_policy` is added to this source index so it doesn't lead to unbounded growth. This means that in this source index data will be deleted after `30 days` from ingested date.
+The data streams below collect a full snapshot of PingDirectory user identities on every polling interval, so their backing indices hold one copy of each record per interval.
+
+The package bounds the growth of these source data streams with a retention that depends on the deployment type:
+
+| Data stream | Self-managed and Elastic Cloud Hosted (ILM policy) | Serverless (data stream lifecycle) |
+|---|---|---|
+| `logs-ping_directory.user-*` | `logs-ping_directory.user-default_policy`: roll over after 2d, delete 30d after rollover | delete 30d after ingestion |
+
+On self-managed and Elastic Cloud Hosted deployments the ILM policy applies; the data stream lifecycle shipped with the package is not used there. ILM counts the delete age from the rollover of a backing index, so a document can remain for up to the rollover age plus the delete age. On Serverless, ILM is not available and the data stream lifecycle applies instead: documents are deleted the stated time after they are ingested. Where the package installs a transform, the transform's destination indices are not affected by either.
+
+To keep data for a different period:
+
+- Self-managed and Elastic Cloud Hosted: edit the ILM policy in Kibana under **Stack Management > Index Lifecycle Policies**, or with `PUT _ilm/policy/<policy name>`. A package upgrade reinstalls the package's ILM policies, so check your change after upgrading.
+- Serverless: set the retention on the data stream, for example `PUT _data_stream/logs-ping_directory.user-default/_lifecycle` with the body `{"data_retention": "90d"}`. Replace `default` with your namespace.

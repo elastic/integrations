@@ -500,6 +500,20 @@ This integration datasets use the following APIs:
 - `Detections`: [RevealX 360 API](https://docs.extrahop.com/current/rx360-rest-api/#detections).
 - `Investigation`: [RevealX 360 API](https://docs.extrahop.com/current/rx360-rest-api/#investigations).
 
-#### ILM Policy
+#### Data retention
 
-To facilitate investigation data, source data stream-backed indices `.ds-logs-extrahop.investigation-*` are allowed to contain duplicates from each polling interval. ILM policy `logs-extrahop.investigation-default_policy` is added to these source indices, so it doesn't lead to unbounded growth. This means that in these source indices data will be deleted after `30 days` from ingested date.
+The data streams below collect a full snapshot of ExtraHop investigations on every polling interval, so their backing indices hold one copy of each record per interval. The package-level data stream lifecycle also covers the `detection` data stream on Serverless, although it collects incrementally.
+
+The package bounds the growth of these source data streams with a retention that depends on the deployment type:
+
+| Data stream | Self-managed and Elastic Cloud Hosted (ILM policy) | Serverless (data stream lifecycle) |
+|---|---|---|
+| `logs-extrahop.investigation-*` | `logs-extrahop.investigation-default_policy`: roll over after 30d, delete 30d after rollover | delete 30d after ingestion |
+| `logs-extrahop.detection-*` | none; the default `logs` policy applies (no deletion) | delete 30d after ingestion |
+
+On self-managed and Elastic Cloud Hosted deployments the ILM policy applies; the data stream lifecycle shipped with the package is not used there. ILM counts the delete age from the rollover of a backing index, so a document can remain for up to the rollover age plus the delete age. On Serverless, ILM is not available and the data stream lifecycle applies instead: documents are deleted the stated time after they are ingested. Where the package installs a transform, the transform's destination indices are not affected by either.
+
+To keep data for a different period:
+
+- Self-managed and Elastic Cloud Hosted: edit the ILM policy in Kibana under **Stack Management > Index Lifecycle Policies**, or with `PUT _ilm/policy/<policy name>`. A package upgrade reinstalls the package's ILM policies, so check your change after upgrading.
+- Serverless: set the retention on the data stream, for example `PUT _data_stream/logs-extrahop.investigation-default/_lifecycle` with the body `{"data_retention": "90d"}`. Replace `default` with your namespace.
