@@ -85,8 +85,6 @@ This is the `eks_audit` dataset.
 
 #### Example
 
-An example event for `eks_audit` looks as following:
-
 {{event "eks_audit"}}
 
 **ECS Field Reference**
