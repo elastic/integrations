@@ -577,7 +577,7 @@ Every data stream in this integration emits a consistent set of Azure metadata f
 | `cloud.provider` | keyword | Always `azure`. | All streams |
 | `cloud.account.id` | keyword | Azure subscription ID for ARM-scoped streams (activitylogs, platformlogs, springcloudlogs, application_gateway, firewall_logs, eventhub). Entra ID tenant ID for tenant-scoped streams (auditlogs, signinlogs, identity_protection, provisioning, graphactivitylogs, aadgraphactivitylogs). | All streams |
 | `cloud.resource_id` | keyword | Fully-qualified Azure Resource Manager (ARM) resource ID, for example `/subscriptions/{id}/resourceGroups/{rg}/providers/...`. | All streams that receive an ARM resource path |
-| `cloud.region` | keyword | Azure region, taken from the envelope `location` field. | activitylogs and eventhub (newly populated), plus graphactivitylogs and aadgraphactivitylogs (unchanged) |
+| `cloud.region` | keyword | Azure region, taken from the envelope `location` field (`Region` for platformlogs, springcloudlogs and some eventhub payloads). | activitylogs and eventhub (newly populated), plus graphactivitylogs, aadgraphactivitylogs, platformlogs and springcloudlogs (unchanged) |
 | `azure.subscription_id` | keyword | Azure subscription ID. | ARM-scoped streams only |
 | `azure.tenant.id` | keyword | Azure tenant (directory) ID. | Entra ID streams (auditlogs, signinlogs, identity_protection, provisioning, graphactivitylogs, aadgraphactivitylogs), activitylogs, platformlogs, springcloudlogs, application_gateway, firewall_logs, eventhub |
 | `azure.correlation.id` | keyword | Correlation ID for grouping related operations. | All streams |
