@@ -323,19 +323,6 @@ elastic_package_verbosity() {
 
 ELASTIC_PACKAGE_VERBOSITY=$(elastic_package_verbosity)
 
-is_already_published() {
-    local packageZip=$1
-
-    # Avoid using "-q" in grep in this pipe, it could cause some weird behavior in some scenarios due to SIGPIPE errors when "set -o pipefail"
-    # https://tldp.org/LDP/lpg/node20.html
-    if curl -s --head "https://package-storage.elastic.co/artifacts/packages/${packageZip}" | grep "HTTP/2 200" > /dev/null; then
-        echo "- Already published ${packageZip}"
-        return 0
-    fi
-    echo "- Not published ${packageZip}"
-    return 1
-}
-
 create_kind_cluster() {
     echo "--- Create kind cluster"
     kind create cluster --config "${WORKSPACE}/kind-config.yaml" --image "kindest/node:${K8S_VERSION}"
@@ -352,6 +339,11 @@ delete_kind_cluster() {
 is_stack_created() {
     local files=0
     files=$(find ~/.elastic-package -type f -name "docker-compose.yml" | wc -l)
+    if [ "${files}" -gt 0 ]; then
+        return 0
+    fi
+    # snapshot.yml was the name used before elastic-package v0.101.0 renamed it to docker-compose.yml
+    files=$(find ~/.elastic-package -type f -name "snapshot.yml" | wc -l)
     if [ "${files}" -gt 0 ]; then
         return 0
     fi

@@ -1,7 +1,7 @@
 format_version: 3.6.4
 name: aws
 title: AWS
-version: 8.3.0
+version: 8.8.0
 description: Collect logs and metrics from Amazon Web Services (AWS) with Elastic Agent.
 type: integration
 categories:
@@ -122,7 +122,7 @@ var_groups:
         vars: [role_arn, supports_identity_federation]
         hide_in_deployment_modes: [default]
         provider: aws
-        iac_template_url: https://console.aws.amazon.com/cloudformation/home#/stacks/quickcreate?templateURL=https://elastic-cspm-cft.s3.eu-central-1.amazonaws.com/cloudformation-federated-identity-aws-9.6.0.yml
+        iac_template_url: https://console.aws.amazon.com/cloudformation/home#/stacks/quickcreate?templateURL=https://elastic-cspm-cft.s3.eu-central-1.amazonaws.com/cloudformation-federated-identity-wii-aws-9.6.0.yml&param_ElasticOrganizationId=ORGANIZATION_ID&param_ElasticCloudProvider=CLOUD_PROVIDER&param_ElasticCloudRegion=CLOUD_REGION&param_ElasticCloudEnvironment=CLOUD_ENVIRONMENT&param_ElasticResourceType=RESOURCE_TYPE&param_ElasticResourceId=RESOURCE_ID
       - name: direct_access_key
         title: Direct Access Keys
         vars: [access_key_id, secret_access_key]
@@ -228,9 +228,9 @@ policy_templates:
         size: 32x32
         type: image/svg+xml
     screenshots:
-      - src: /img/filebeat-aws-cloudtrail.png
-        title: filebeat aws cloudtrail
-        size: 1702x1063
+      - src: /img/cloudtrail-overview-dashboard.png
+        title: aws cloudtrail dashboard overview
+        size: 1690x3999
         type: image/png
   - name: cloudwatch
     title: AWS CloudWatch
@@ -560,14 +560,25 @@ policy_templates:
         title: Collect Network Firewall logs from S3
         description: Collecting logs from Network Firewall using aws-s3 input
         input_group: logs
+        deployment_modes: ["default"]
       - type: aws-cloudwatch
         title: Collect Network Firewall logs from CloudWatch
         description: Collecting logs from Network Firewall using aws-cloudwatch input
         input_group: logs
+        deployment_modes: ["default"]
       - type: aws/metrics
         title: Collect Network Firewall metrics
         description: Collecting AWS Network Firewall metrics using AWS CloudWatch
         input_group: metrics
+    deployment_modes:
+      default:
+        enabled: true
+      agentless:
+        enabled: true
+        release: beta
+        organization: security
+        division: engineering
+        team: security-service-integrations
     icons:
       - src: /img/logo_firewall.svg
         title: AWS Network Firewall logo
