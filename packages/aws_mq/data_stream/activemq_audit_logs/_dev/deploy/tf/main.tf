@@ -18,7 +18,7 @@ provider "aws" {
 
       division = "engineering"
       org      = "obs"
-      team     = "obs-infraobs-integrations" # owner.github in manifest.yml
+      team     = "obs-signals-integrations-approvers" # owner.github in manifest.yml
       project  = "integrations-aws_mq-package" # name in manifest.yml
     }
   }
