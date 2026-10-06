@@ -521,12 +521,13 @@ processors:
     tag: set_success_outcome_from_status
     field: event.outcome
     value: success
-    if: ctx.aws?.eks?.audit?.responseStatus?.code != null && ctx.aws.eks.audit.responseStatus.code < 400
+    description: Kubernetes reports code 0 when no HTTP status was set, so only positive codes count as a response.
+    if: ctx.aws?.eks?.audit?.responseStatus?.code instanceof Number && ctx.aws.eks.audit.responseStatus.code > 0 && ctx.aws.eks.audit.responseStatus.code < 400
 - set:
     tag: set_failure_outcome_from_status
     field: event.outcome
     value: failure
-    if: ctx.aws?.eks?.audit?.responseStatus?.code != null && ctx.aws.eks.audit.responseStatus.code >= 400
+    if: ctx.aws?.eks?.audit?.responseStatus?.code instanceof Number && ctx.aws.eks.audit.responseStatus.code >= 400
 - set:
     tag: set_user_name
     copy_from: aws.eks.audit.user.username

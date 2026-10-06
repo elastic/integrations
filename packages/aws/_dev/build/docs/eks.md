@@ -54,7 +54,7 @@ Alternatively, run `aws eks update-cluster-config --name <cluster-name> --loggin
 2. In "Search for integrations" top bar, search for `Amazon EKS`.
 3. Select the "Amazon EKS" integration from the search results.
 4. Select "Add Amazon EKS" to add the integration.
-5. Configure how the EKS log groups are selected: a single **Log Group ARN**, a single **Log Group Name**, or the **Log Group Name Prefix** (default `/aws/eks/`, which discovers every EKS cluster in the Region). ARN takes precedence over name, and name over prefix.
+5. Configure how the EKS log groups are selected: a single **Log Group ARN**, a single **Log Group Name** (under **Advanced options**), or the **Log Group Name Prefix** (default `/aws/eks/`, which discovers every EKS cluster in the Region). ARN takes precedence over name, and name over prefix.
 6. Set the **Region Name** when collecting by name or prefix, including the default prefix. If it is left empty, the integration-level **Default AWS Region** is used. ARN mode ignores the Region because the ARN already identifies it.
 7. Keep the **Log Stream Prefix** at `kube-apiserver-audit` unless the stream naming in the target account differs; other control-plane streams are not Kubernetes audit events and are reported as `pipeline_error` documents.
 8. Select "Save and continue" to save the integration.
@@ -65,7 +65,7 @@ Do not enable this data stream and `kubernetes.audit_logs` against the same EKS 
 
 `cloud.region` is populated by the input in every mode. `cloud.account.id` is populated only when collecting by **Log Group ARN**, because the ARN is the only place the input exposes the account ID; name and prefix modes do not carry it.
 
-`event.outcome` is derived from the HTTP response status when `responseStatus.code` is present: codes below 400 are `success` and codes of 400 or above are `failure`. This takes precedence over the `authorization.k8s.io/decision` annotation, because an authorized request can still fail with a 404, 409, or 5xx response. The annotation is used only when no response status is recorded, such as `RequestReceived` stage events.
+`event.outcome` is derived from the HTTP response status when `responseStatus.code` is a positive value: codes below 400 are `success` and codes of 400 or above are `failure`. A code of `0`, which Kubernetes reports when no HTTP status was set, is ignored. This takes precedence over the `authorization.k8s.io/decision` annotation, because an authorized request can still fail with a 404, 409, or 5xx response. The annotation is used only when no response status is recorded, such as `RequestReceived` stage events.
 
 The Kubernetes core API group is reported as `core` in `aws.eks.audit.objectRef.apiGroup` and in RBAC `rules[].apiGroups`, where the API server emits an absent key or an empty string respectively.
 

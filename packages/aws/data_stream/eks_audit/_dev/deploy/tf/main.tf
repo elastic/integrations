@@ -64,6 +64,7 @@ resource "null_resource" "push_eks_audit_logs" {
   depends_on = [aws_cloudwatch_log_stream.eks_audit]
 
   triggers = {
+    run_id    = var.TEST_RUN_ID
     logs_hash = filemd5("${path.module}/files/eks_audit.log")
   }
 
