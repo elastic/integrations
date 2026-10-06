@@ -1,0 +1,2384 @@
+{
+    "accessControl": {
+        "accessMode": "default",
+        "owner": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0"
+    },
+    "attributes": {
+        "description": "Overview of Claude Code OTel traces: request volume, token usage, latency, tool call activity, and errors.",
+        "kibanaSavedObjectMeta": {
+            "searchSourceJSON": {
+                "query": {
+                    "language": "kuery",
+                    "query": ""
+                }
+            }
+        },
+        "optionsJSON": {
+            "autoApplyFilters": true,
+            "hidePanelBorders": false,
+            "hidePanelTitles": false,
+            "syncColors": false,
+            "syncCursor": true,
+            "syncTooltips": false,
+            "useMargins": true
+        },
+        "panelsJSON": [
+            {
+                "embeddableConfig": {
+                    "content": "### Claude Code \u2014 Traces Overview\nReal-time observability for Claude Code OTel traces (data stream: `traces-claude_code.otel-*`). Monitor LLM token usage & latency, request volume, tool call activity, and success rates \u2014 all in one place."
+                },
+                "gridData": {
+                    "h": 4,
+                    "i": "bd1a0497-1c42-49b1-9093-565a4ccfca22",
+                    "w": 48,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "bd1a0497-1c42-49b1-9093-565a4ccfca22",
+                "type": "markdown"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "traces-claude_code.otel-*-3877208ba26afe90d86660b827378fe9a353488bee60b3d6356033a17de671ee": {
+                                    "allowNoIndex": false,
+                                    "id": "traces-claude_code.otel-*-3877208ba26afe90d86660b827378fe9a353488bee60b3d6356033a17de671ee",
+                                    "name": "traces-claude_code.otel-*",
+                                    "sourceFilters": [],
+                                    "title": "traces-claude_code.otel-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "layer_0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "metric_accessor_metric",
+                                                    "customLabel": true,
+                                                    "fieldName": "Total Count",
+                                                    "label": "Total Count",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "ignoreGlobalFilters": false,
+                                            "index": "traces-claude_code.otel-*-3877208ba26afe90d86660b827378fe9a353488bee60b3d6356033a17de671ee",
+                                            "query": {
+                                                "esql": "FROM traces-claude_code.otel-*\n| WHERE span.name == \"claude_code.llm_request\"\n| STATS `Total Count` = COUNT(*)"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "traces-claude_code.otel-*-3877208ba26afe90d86660b827378fe9a353488bee60b3d6356033a17de671ee",
+                                    "name": "indexpattern-datasource-layer-layer_0",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM traces-claude_code.otel-*\n| WHERE span.name == \"claude_code.llm_request\"\n| STATS `Total Count` = COUNT(*)"
+                            },
+                            "visualization": {
+                                "density": "default",
+                                "layerId": "layer_0",
+                                "layerType": "data",
+                                "metricAccessor": "metric_accessor_metric",
+                                "primaryAlign": "right",
+                                "primaryPosition": "bottom",
+                                "showBar": false,
+                                "titlesTextAlign": "left",
+                                "valueFontMode": "default"
+                            }
+                        },
+                        "title": "",
+                        "version": 2,
+                        "visualizationType": "lnsMetric"
+                    }
+                },
+                "gridData": {
+                    "h": 5,
+                    "i": "7cd9d4ba-1d0e-4ab6-82be-7dd7b50d80b9",
+                    "sectionId": "bb09bf33-1a90-472d-b0d0-2fc0eceb411b",
+                    "w": 12,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "7cd9d4ba-1d0e-4ab6-82be-7dd7b50d80b9",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "traces-claude_code.otel-*-@timestamp": {
+                                    "allowNoIndex": false,
+                                    "id": "traces-claude_code.otel-*-@timestamp",
+                                    "name": "traces-claude_code.otel-*",
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "traces-claude_code.otel-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "layer_0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "metric_accessor_metric",
+                                                    "fieldName": "Total Count",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "ignoreGlobalFilters": false,
+                                            "index": "traces-claude_code.otel-*-@timestamp",
+                                            "query": {
+                                                "esql": "FROM traces-claude_code.otel-*\n| WHERE span.name == \"claude_code.tool.execution\" AND @timestamp >= ?_tstart AND @timestamp < ?_tend\n| STATS `Total Count` = COUNT(*)"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "traces-claude_code.otel-*-@timestamp",
+                                    "name": "indexpattern-datasource-layer-layer_0",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM traces-claude_code.otel-*\n| WHERE span.name == \"claude_code.tool.execution\" AND @timestamp >= ?_tstart AND @timestamp < ?_tend\n| STATS `Total Count` = COUNT(*)"
+                            },
+                            "visualization": {
+                                "density": "default",
+                                "layerId": "layer_0",
+                                "layerType": "data",
+                                "metricAccessor": "metric_accessor_metric",
+                                "primaryAlign": "right",
+                                "primaryPosition": "bottom",
+                                "showBar": false,
+                                "titlesTextAlign": "left",
+                                "valueFontMode": "default"
+                            }
+                        },
+                        "title": "",
+                        "version": 2,
+                        "visualizationType": "lnsMetric"
+                    }
+                },
+                "gridData": {
+                    "h": 5,
+                    "i": "63b6e887-38d5-411c-824c-c368dce128a2",
+                    "sectionId": "bb09bf33-1a90-472d-b0d0-2fc0eceb411b",
+                    "w": 12,
+                    "x": 12,
+                    "y": 0
+                },
+                "panelIndex": "63b6e887-38d5-411c-824c-c368dce128a2",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "traces-claude_code.otel-*-fd5b8d69a792c2dbb1da05bcf9473c7fed642747d2b50db48eb85b1b9c5d4f44": {
+                                    "allowNoIndex": false,
+                                    "id": "traces-claude_code.otel-*-fd5b8d69a792c2dbb1da05bcf9473c7fed642747d2b50db48eb85b1b9c5d4f44",
+                                    "name": "traces-claude_code.otel-*",
+                                    "sourceFilters": [],
+                                    "title": "traces-claude_code.otel-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "layer_0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "metric_accessor_metric",
+                                                    "customLabel": true,
+                                                    "fieldName": "Unique Users",
+                                                    "label": "Unique Users",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "ignoreGlobalFilters": false,
+                                            "index": "traces-claude_code.otel-*-fd5b8d69a792c2dbb1da05bcf9473c7fed642747d2b50db48eb85b1b9c5d4f44",
+                                            "query": {
+                                                "esql": "FROM \"traces-claude_code.otel-*\"\n| STATS `Unique Users` = COUNT_DISTINCT(`user.email`)"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "traces-claude_code.otel-*-fd5b8d69a792c2dbb1da05bcf9473c7fed642747d2b50db48eb85b1b9c5d4f44",
+                                    "name": "indexpattern-datasource-layer-layer_0",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM \"traces-claude_code.otel-*\"\n| STATS `Unique Users` = COUNT_DISTINCT(`user.email`)"
+                            },
+                            "visualization": {
+                                "density": "default",
+                                "layerId": "layer_0",
+                                "layerType": "data",
+                                "metricAccessor": "metric_accessor_metric",
+                                "primaryAlign": "right",
+                                "primaryPosition": "bottom",
+                                "showBar": false,
+                                "titlesTextAlign": "left",
+                                "valueFontMode": "default"
+                            }
+                        },
+                        "title": "",
+                        "version": 2,
+                        "visualizationType": "lnsMetric"
+                    }
+                },
+                "gridData": {
+                    "h": 5,
+                    "i": "32333ecb-0051-4b28-88b7-21f76e6dc606",
+                    "sectionId": "bb09bf33-1a90-472d-b0d0-2fc0eceb411b",
+                    "w": 12,
+                    "x": 24,
+                    "y": 0
+                },
+                "panelIndex": "32333ecb-0051-4b28-88b7-21f76e6dc606",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "traces-claude_code.otel-*-@timestamp": {
+                                    "allowNoIndex": false,
+                                    "id": "traces-claude_code.otel-*-@timestamp",
+                                    "name": "traces-claude_code.otel-*",
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "traces-claude_code.otel-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "layer_0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "metric_accessor_metric",
+                                                    "fieldName": "Success rate percentage",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": false,
+                                                                "decimals": 1,
+                                                                "suffix": "%"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "ignoreGlobalFilters": false,
+                                            "index": "traces-claude_code.otel-*-@timestamp",
+                                            "query": {
+                                                "esql": "FROM \"traces-claude_code.otel-*\"\n| WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend\n| STATS `Success rate percentage` = AVG(CASE(success == true, 100.0, success == false, 0.0, NULL))"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "traces-claude_code.otel-*-@timestamp",
+                                    "name": "indexpattern-datasource-layer-layer_0",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM \"traces-claude_code.otel-*\"\n| WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend\n| STATS `Success rate percentage` = AVG(CASE(success == true, 100.0, success == false, 0.0, NULL))"
+                            },
+                            "visualization": {
+                                "applyColorTo": "value",
+                                "density": "default",
+                                "layerId": "layer_0",
+                                "layerType": "data",
+                                "metricAccessor": "metric_accessor_metric",
+                                "palette": {
+                                    "name": "custom",
+                                    "params": {
+                                        "colorStops": [
+                                            {
+                                                "color": "#f6726a",
+                                                "stop": null
+                                            },
+                                            {
+                                                "color": "#fcd883",
+                                                "stop": 70
+                                            },
+                                            {
+                                                "color": "#24c292",
+                                                "stop": 90
+                                            }
+                                        ],
+                                        "continuity": "below",
+                                        "maxSteps": 5,
+                                        "name": "custom",
+                                        "progression": "fixed",
+                                        "rangeMax": 100,
+                                        "rangeMin": null,
+                                        "rangeType": "number",
+                                        "reverse": false,
+                                        "steps": 3,
+                                        "stops": [
+                                            {
+                                                "color": "#f6726a",
+                                                "stop": 70
+                                            },
+                                            {
+                                                "color": "#fcd883",
+                                                "stop": 90
+                                            },
+                                            {
+                                                "color": "#24c292",
+                                                "stop": 100
+                                            }
+                                        ]
+                                    },
+                                    "type": "palette"
+                                },
+                                "primaryAlign": "right",
+                                "primaryPosition": "bottom",
+                                "showBar": false,
+                                "titlesTextAlign": "left",
+                                "valueFontMode": "default"
+                            }
+                        },
+                        "title": "",
+                        "version": 2,
+                        "visualizationType": "lnsMetric"
+                    }
+                },
+                "gridData": {
+                    "h": 5,
+                    "i": "a7141df2-7d9f-4572-b1e4-0c2e86e7b634",
+                    "sectionId": "bb09bf33-1a90-472d-b0d0-2fc0eceb411b",
+                    "w": 12,
+                    "x": 36,
+                    "y": 0
+                },
+                "panelIndex": "a7141df2-7d9f-4572-b1e4-0c2e86e7b634",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "traces-claude_code.otel-*-fb5aa37b68571f48d7e389d54607d1335e4001f202b3fa821d57624d4d974bfc": {
+                                    "allowNoIndex": false,
+                                    "id": "traces-claude_code.otel-*-fb5aa37b68571f48d7e389d54607d1335e4001f202b3fa821d57624d4d974bfc",
+                                    "name": "traces-claude_code.otel-*",
+                                    "sourceFilters": [],
+                                    "title": "traces-claude_code.otel-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "layer_0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "datatable_accessor_row_0",
+                                                    "customLabel": true,
+                                                    "fieldName": "span.name",
+                                                    "label": "Span Name",
+                                                    "meta": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "datatable_accessor_metric_0",
+                                                    "customLabel": true,
+                                                    "fieldName": "count of spans",
+                                                    "inMetricDimension": true,
+                                                    "label": "Count of Spans",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "datatable_accessor_metric_1",
+                                                    "customLabel": true,
+                                                    "fieldName": "average duration_ms",
+                                                    "inMetricDimension": true,
+                                                    "label": "Average Duration (ms)",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "duration",
+                                                            "params": {
+                                                                "compact": true,
+                                                                "decimals": 1,
+                                                                "fromUnit": "milliseconds",
+                                                                "toUnit": "humanizePrecise"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "ignoreGlobalFilters": false,
+                                            "index": "traces-claude_code.otel-*-fb5aa37b68571f48d7e389d54607d1335e4001f202b3fa821d57624d4d974bfc",
+                                            "query": {
+                                                "esql": "FROM traces-claude_code.otel-*\n| STATS `count of spans` = COUNT(), `average duration_ms` = AVG(duration_ms) BY `span.name`\n| SORT `count of spans` DESC\n| LIMIT 100"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "traces-claude_code.otel-*-fb5aa37b68571f48d7e389d54607d1335e4001f202b3fa821d57624d4d974bfc",
+                                    "name": "indexpattern-datasource-layer-layer_0",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM traces-claude_code.otel-*\n| STATS `count of spans` = COUNT(), `average duration_ms` = AVG(duration_ms) BY `span.name`\n| SORT `count of spans` DESC\n| LIMIT 100"
+                            },
+                            "visualization": {
+                                "columns": [
+                                    {
+                                        "alignment": "left",
+                                        "columnId": "datatable_accessor_row_0",
+                                        "hidden": false,
+                                        "isMetric": false,
+                                        "isTransposed": false,
+                                        "oneClickFilter": false
+                                    },
+                                    {
+                                        "alignment": "right",
+                                        "colorMode": "badge",
+                                        "columnId": "datatable_accessor_metric_0",
+                                        "hidden": false,
+                                        "isMetric": true,
+                                        "isTransposed": false
+                                    },
+                                    {
+                                        "alignment": "right",
+                                        "columnId": "datatable_accessor_metric_1",
+                                        "hidden": false,
+                                        "isMetric": true,
+                                        "isTransposed": false
+                                    }
+                                ],
+                                "layerId": "layer_0",
+                                "layerType": "data",
+                                "paging": {
+                                    "enabled": true,
+                                    "size": 20
+                                },
+                                "sorting": {
+                                    "columnId": "datatable_accessor_metric_0",
+                                    "direction": "desc"
+                                }
+                            }
+                        },
+                        "title": "Span Count and Average Duration by Span Name",
+                        "version": 2,
+                        "visualizationType": "lnsDatatable"
+                    },
+                    "title": "Span Count and Average Duration by Span Name"
+                },
+                "gridData": {
+                    "h": 12,
+                    "i": "3701aef8-1e93-466e-99e6-5b77ce1f2e59",
+                    "sectionId": "bb09bf33-1a90-472d-b0d0-2fc0eceb411b",
+                    "w": 48,
+                    "x": 0,
+                    "y": 5
+                },
+                "panelIndex": "3701aef8-1e93-466e-99e6-5b77ce1f2e59",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "traces-claude_code.otel-*-@timestamp": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "traces-claude_code.otel-*-@timestamp",
+                                    "managed": false,
+                                    "name": "traces-claude_code.otel-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "traces-claude_code.otel-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "traces-claude_code.otel-*-@timestamp",
+                                            "timeField": "@timestamp",
+                                            "title": "traces-claude_code.otel-*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "layer_0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "metric_accessor_metric",
+                                                    "customLabel": true,
+                                                    "fieldName": "Total tokens",
+                                                    "label": "Total tokens",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "ignoreGlobalFilters": false,
+                                            "index": "traces-claude_code.otel-*-@timestamp",
+                                            "query": {
+                                                "esql": "FROM traces-claude_code.otel-*\n| WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend\n  AND attributes.span.type == \"llm_request\"\n| STATS input = SUM(attributes.input_tokens),\n        cache_read = SUM(attributes.cache_read_tokens),\n        cache_creation = SUM(attributes.cache_creation_tokens),\n        output = SUM(attributes.output_tokens)\n| EVAL `Total tokens` = input + cache_read + cache_creation + output\n| KEEP `Total tokens`"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "FROM traces-claude_code.otel-*\n| WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend\n  AND attributes.span.type == \"llm_request\"\n| STATS input = SUM(attributes.input_tokens),\n        cache_read = SUM(attributes.cache_read_tokens),\n        cache_creation = SUM(attributes.cache_creation_tokens),\n        output = SUM(attributes.output_tokens)\n| EVAL `Total tokens` = input + cache_read + cache_creation + output\n| KEEP `Total tokens`"
+                            },
+                            "visualization": {
+                                "density": "default",
+                                "layerId": "layer_0",
+                                "layerType": "data",
+                                "metricAccessor": "metric_accessor_metric",
+                                "primaryAlign": "right",
+                                "primaryPosition": "bottom",
+                                "showBar": false,
+                                "titlesTextAlign": "left",
+                                "valueFontMode": "default"
+                            }
+                        },
+                        "title": "",
+                        "version": 2,
+                        "visualizationType": "lnsMetric"
+                    },
+                    "drilldowns": []
+                },
+                "gridData": {
+                    "h": 5,
+                    "i": "e2ff07cb-3303-4ea6-92a0-bac37dd6806e",
+                    "sectionId": "ae0f6b31-e1ff-4ca3-ba2d-eb3233ce3f24",
+                    "w": 24,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "e2ff07cb-3303-4ea6-92a0-bac37dd6806e",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "traces-claude_code.otel-*-1736dfdccbabe1d89a86fa69675a0947433fb34b4812360e44737202ea125a43": {
+                                    "allowNoIndex": false,
+                                    "id": "traces-claude_code.otel-*-1736dfdccbabe1d89a86fa69675a0947433fb34b4812360e44737202ea125a43",
+                                    "name": "traces-claude_code.otel-*",
+                                    "sourceFilters": [],
+                                    "title": "traces-claude_code.otel-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "layer_0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "metric_accessor_metric",
+                                                    "customLabel": true,
+                                                    "fieldName": "Average LLM Request Duration",
+                                                    "label": "Average LLM Request Duration",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "duration",
+                                                            "params": {
+                                                                "compact": true,
+                                                                "decimals": 0,
+                                                                "fromUnit": "milliseconds",
+                                                                "toUnit": "humanizePrecise"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "ignoreGlobalFilters": false,
+                                            "index": "traces-claude_code.otel-*-1736dfdccbabe1d89a86fa69675a0947433fb34b4812360e44737202ea125a43",
+                                            "query": {
+                                                "esql": "FROM traces-claude_code.otel-*\n| WHERE span.name == \"claude_code.llm_request\"\n| STATS `Average LLM Request Duration` = ROUND(AVG(duration_ms))"
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "traces-claude_code.otel-*-1736dfdccbabe1d89a86fa69675a0947433fb34b4812360e44737202ea125a43",
+                                    "name": "indexpattern-datasource-layer-layer_0",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM traces-claude_code.otel-*\n| WHERE span.name == \"claude_code.llm_request\"\n| STATS `Average LLM Request Duration` = ROUND(AVG(duration_ms))"
+                            },
+                            "visualization": {
+                                "density": "default",
+                                "layerId": "layer_0",
+                                "layerType": "data",
+                                "metricAccessor": "metric_accessor_metric",
+                                "primaryAlign": "right",
+                                "primaryPosition": "bottom",
+                                "showBar": false,
+                                "titlesTextAlign": "left",
+                                "valueFontMode": "default"
+                            }
+                        },
+                        "title": "",
+                        "version": 2,
+                        "visualizationType": "lnsMetric"
+                    }
+                },
+                "gridData": {
+                    "h": 5,
+                    "i": "5dbf9a1a-15c9-486a-934a-5d5c7e2272f2",
+                    "sectionId": "ae0f6b31-e1ff-4ca3-ba2d-eb3233ce3f24",
+                    "w": 24,
+                    "x": 24,
+                    "y": 0
+                },
+                "panelIndex": "5dbf9a1a-15c9-486a-934a-5d5c7e2272f2",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "traces-claude_code.otel-*-@timestamp": {
+                                    "allowNoIndex": false,
+                                    "id": "traces-claude_code.otel-*-@timestamp",
+                                    "name": "traces-claude_code.otel-*",
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "traces-claude_code.otel-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "bar_0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "bar_0_x",
+                                                    "fieldName": "bucket",
+                                                    "meta": {
+                                                        "type": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "bar_0_y_0",
+                                                    "fieldName": "Span Count",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "ignoreGlobalFilters": false,
+                                            "index": "traces-claude_code.otel-*-@timestamp",
+                                            "query": {
+                                                "esql": "FROM traces-claude_code.otel-*\n| WHERE span.name == \"claude_code.llm_request\" AND @timestamp >= ?_tstart AND @timestamp < ?_tend\n| STATS `Span Count` = COUNT() BY bucket = BUCKET(@timestamp, 75, ?_tstart, ?_tend)"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "traces-claude_code.otel-*-@timestamp",
+                                    "name": "indexpattern-datasource-layer-bar_0",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM traces-claude_code.otel-*\n| WHERE span.name == \"claude_code.llm_request\" AND @timestamp >= ?_tstart AND @timestamp < ?_tend\n| STATS `Span Count` = COUNT() BY bucket = BUCKET(@timestamp, 75, ?_tstart, ?_tend)"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "curveType": "LINEAR",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "hideEndzones": true,
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "bar_0_y_0"
+                                        ],
+                                        "layerId": "bar_0",
+                                        "layerType": "data",
+                                        "seriesType": "bar",
+                                        "xAccessor": "bar_0_x",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "forAccessor": "bar_0_y_0"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "legendStats": [
+                                        "average",
+                                        "min",
+                                        "max"
+                                    ],
+                                    "maxLines": 1,
+                                    "position": "bottom",
+                                    "showSingleSeries": true
+                                },
+                                "minBarHeight": 1,
+                                "preferredSeriesType": "bar",
+                                "showCurrentTimeMarker": false,
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "xExtent": {
+                                    "mode": "dataBounds",
+                                    "niceValues": false
+                                },
+                                "yLeftExtent": {
+                                    "mode": "full",
+                                    "niceValues": true
+                                },
+                                "yLeftScale": "linear"
+                            }
+                        },
+                        "title": "Span Count over Time (claude_code.llm_request)",
+                        "version": 2,
+                        "visualizationType": "lnsXY"
+                    },
+                    "title": "Span Count over Time (claude_code.llm_request)"
+                },
+                "gridData": {
+                    "h": 10,
+                    "i": "d7f88ab0-a3f5-4a08-a80a-d12e51513626",
+                    "sectionId": "ae0f6b31-e1ff-4ca3-ba2d-eb3233ce3f24",
+                    "w": 48,
+                    "x": 0,
+                    "y": 5
+                },
+                "panelIndex": "d7f88ab0-a3f5-4a08-a80a-d12e51513626",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "traces-claude_code.otel-*-@timestamp": {
+                                    "allowHidden": false,
+                                    "allowNoIndex": false,
+                                    "fieldFormats": {},
+                                    "id": "traces-claude_code.otel-*-@timestamp",
+                                    "managed": false,
+                                    "name": "traces-claude_code.otel-*",
+                                    "runtimeFieldMap": {},
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "traces-claude_code.otel-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "indexPatternRefs": [
+                                        {
+                                            "id": "traces-claude_code.otel-*-@timestamp",
+                                            "timeField": "@timestamp",
+                                            "title": "traces-claude_code.otel-*"
+                                        }
+                                    ],
+                                    "layers": {
+                                        "8b83da99-980d-4931-9fb7-1e43909b796b": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "bucket",
+                                                    "customLabel": false,
+                                                    "fieldName": "bucket",
+                                                    "label": "bucket",
+                                                    "meta": {
+                                                        "esType": "date",
+                                                        "type": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "Input tokens",
+                                                    "customLabel": false,
+                                                    "fieldName": "Input tokens",
+                                                    "inMetricDimension": true,
+                                                    "label": "Input tokens",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "Output tokens",
+                                                    "customLabel": false,
+                                                    "fieldName": "Output tokens",
+                                                    "inMetricDimension": true,
+                                                    "label": "Output tokens",
+                                                    "meta": {
+                                                        "esType": "long",
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "index": "traces-claude_code.otel-*-@timestamp",
+                                            "query": {
+                                                "esql": "FROM traces-claude_code.otel-*\n| WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend\n  AND attributes.span.type == \"llm_request\"\n| STATS input = SUM(attributes.input_tokens),\n        cache_read = SUM(attributes.cache_read_tokens),\n        cache_creation = SUM(attributes.cache_creation_tokens),\n        `Output tokens` = SUM(attributes.output_tokens)\n    BY bucket = BUCKET(@timestamp, 75, ?_tstart, ?_tend)\n| EVAL `Input tokens` = input + cache_read + cache_creation\n| KEEP bucket, `Input tokens`, `Output tokens`"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "needsRefresh": false,
+                            "query": {
+                                "esql": "FROM traces-claude_code.otel-*\n| WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend\n  AND attributes.span.type == \"llm_request\"\n| STATS input = SUM(attributes.input_tokens),\n        cache_read = SUM(attributes.cache_read_tokens),\n        cache_creation = SUM(attributes.cache_creation_tokens),\n        `Output tokens` = SUM(attributes.output_tokens)\n    BY bucket = BUCKET(@timestamp, 75, ?_tstart, ?_tend)\n| EVAL `Input tokens` = input + cache_read + cache_creation\n| KEEP bucket, `Input tokens`, `Output tokens`"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "curveType": "LINEAR",
+                                "fillOpacity": 0.3,
+                                "fittingFunction": "Linear",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "hideEndzones": true,
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "Input tokens",
+                                            "Output tokens"
+                                        ],
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "default",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "8b83da99-980d-4931-9fb7-1e43909b796b",
+                                        "layerType": "data",
+                                        "seriesType": "area_stacked",
+                                        "xAccessor": "bucket"
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "layout": "list",
+                                    "position": "bottom"
+                                },
+                                "pointVisibility": "auto",
+                                "preferredSeriesType": "area_stacked",
+                                "showCurrentTimeMarker": false,
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "yLeftExtent": {
+                                    "mode": "full",
+                                    "niceValues": true
+                                },
+                                "yLeftScale": "linear"
+                            }
+                        },
+                        "title": "",
+                        "version": 2,
+                        "visualizationType": "lnsXY"
+                    },
+                    "drilldowns": [],
+                    "title": "Sum of Input/Output Tokens over Time"
+                },
+                "gridData": {
+                    "h": 10,
+                    "i": "87f9ed8a-b1ec-45b5-9227-082bc2d3e293",
+                    "sectionId": "ae0f6b31-e1ff-4ca3-ba2d-eb3233ce3f24",
+                    "w": 24,
+                    "x": 0,
+                    "y": 15
+                },
+                "panelIndex": "87f9ed8a-b1ec-45b5-9227-082bc2d3e293",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "traces-claude_code.otel-*-@timestamp": {
+                                    "allowNoIndex": false,
+                                    "id": "traces-claude_code.otel-*-@timestamp",
+                                    "name": "traces-claude_code.otel-*",
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "traces-claude_code.otel-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "line_0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "line_0_x",
+                                                    "fieldName": "Bucket",
+                                                    "meta": {
+                                                        "type": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "line_0_y_0",
+                                                    "fieldName": "Average Duration",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "duration",
+                                                            "params": {
+                                                                "compact": true,
+                                                                "decimals": 0,
+                                                                "fromUnit": "milliseconds",
+                                                                "toUnit": "humanizePrecise"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "ignoreGlobalFilters": false,
+                                            "index": "traces-claude_code.otel-*-@timestamp",
+                                            "query": {
+                                                "esql": "FROM traces-claude_code.otel-*\n| WHERE span.name == \"claude_code.llm_request\" AND @timestamp >= ?_tstart AND @timestamp < ?_tend\n| STATS `Average Duration` = AVG(duration_ms) BY `Bucket` = BUCKET(@timestamp, 75, ?_tstart, ?_tend)"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "traces-claude_code.otel-*-@timestamp",
+                                    "name": "indexpattern-datasource-layer-line_0",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM traces-claude_code.otel-*\n| WHERE span.name == \"claude_code.llm_request\" AND @timestamp >= ?_tstart AND @timestamp < ?_tend\n| STATS `Average Duration` = AVG(duration_ms) BY `Bucket` = BUCKET(@timestamp, 75, ?_tstart, ?_tend)"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "curveType": "LINEAR",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "hideEndzones": true,
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "line_0_y_0"
+                                        ],
+                                        "layerId": "line_0",
+                                        "layerType": "data",
+                                        "seriesType": "line",
+                                        "xAccessor": "line_0_x",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "forAccessor": "line_0_y_0"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "layout": "list",
+                                    "position": "bottom"
+                                },
+                                "pointVisibility": "auto",
+                                "preferredSeriesType": "line",
+                                "showCurrentTimeMarker": false,
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "xExtent": {
+                                    "mode": "dataBounds",
+                                    "niceValues": false
+                                },
+                                "yLeftExtent": {
+                                    "mode": "full",
+                                    "niceValues": true
+                                },
+                                "yLeftScale": "linear"
+                            }
+                        },
+                        "title": "Average Duration by Time (claude_code.llm_request)",
+                        "version": 2,
+                        "visualizationType": "lnsXY"
+                    },
+                    "title": "Average Duration by Time (claude_code.llm_request)"
+                },
+                "gridData": {
+                    "h": 10,
+                    "i": "86ea6036-fcdb-4f2c-985f-cbc448a9be1e",
+                    "sectionId": "ae0f6b31-e1ff-4ca3-ba2d-eb3233ce3f24",
+                    "w": 24,
+                    "x": 24,
+                    "y": 15
+                },
+                "panelIndex": "86ea6036-fcdb-4f2c-985f-cbc448a9be1e",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "traces-claude_code.otel-*-@timestamp": {
+                                    "allowNoIndex": false,
+                                    "id": "traces-claude_code.otel-*-@timestamp",
+                                    "name": "traces-claude_code.otel-*",
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "traces-claude_code.otel-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "layer_0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "partition_value_accessor_metric_0",
+                                                    "fieldName": "Request Count",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "partition_value_accessor_group_by_0",
+                                                    "fieldName": "Model",
+                                                    "meta": {
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ],
+                                            "ignoreGlobalFilters": false,
+                                            "index": "traces-claude_code.otel-*-@timestamp",
+                                            "query": {
+                                                "esql": "FROM traces-claude_code.otel-*\n| WHERE span.name == \"claude_code.llm_request\" AND @timestamp >= ?_tstart AND @timestamp < ?_tend\n| STATS `Request Count` = COUNT(*) BY `Model` = gen_ai.request.model\n| SORT `Request Count` DESC\n| LIMIT 10"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "traces-claude_code.otel-*-@timestamp",
+                                    "name": "indexpattern-datasource-layer-layer_0",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM traces-claude_code.otel-*\n| WHERE span.name == \"claude_code.llm_request\" AND @timestamp >= ?_tstart AND @timestamp < ?_tend\n| STATS `Request Count` = COUNT(*) BY `Model` = gen_ai.request.model\n| SORT `Request Count` DESC\n| LIMIT 10"
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "allowMultipleMetrics": false,
+                                        "categoryDisplay": "default",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "default",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "layer_0",
+                                        "layerType": "data",
+                                        "legendDisplay": "default",
+                                        "metrics": [
+                                            "partition_value_accessor_metric_0"
+                                        ],
+                                        "numberDisplay": "percent",
+                                        "percentDecimals": 2,
+                                        "primaryGroups": [
+                                            "partition_value_accessor_group_by_0"
+                                        ]
+                                    }
+                                ],
+                                "shape": "pie"
+                            }
+                        },
+                        "title": "LLM Request Count by Model",
+                        "version": 2,
+                        "visualizationType": "lnsPie"
+                    },
+                    "title": "LLM Request Count by Model"
+                },
+                "gridData": {
+                    "h": 10,
+                    "i": "8d611a7a-c98c-48ec-b515-60502c96f45e",
+                    "sectionId": "ae0f6b31-e1ff-4ca3-ba2d-eb3233ce3f24",
+                    "w": 24,
+                    "x": 0,
+                    "y": 25
+                },
+                "panelIndex": "8d611a7a-c98c-48ec-b515-60502c96f45e",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "traces-claude_code.otel-*-@timestamp": {
+                                    "allowNoIndex": false,
+                                    "id": "traces-claude_code.otel-*-@timestamp",
+                                    "name": "traces-claude_code.otel-*",
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "traces-claude_code.otel-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "layer_0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "partition_value_accessor_metric_0",
+                                                    "fieldName": "Count",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "partition_value_accessor_group_by_0",
+                                                    "fieldName": "Stop Reason",
+                                                    "meta": {
+                                                        "type": "string"
+                                                    }
+                                                }
+                                            ],
+                                            "ignoreGlobalFilters": false,
+                                            "index": "traces-claude_code.otel-*-@timestamp",
+                                            "query": {
+                                                "esql": "FROM traces-claude_code.otel-*\n| WHERE span.name == \"claude_code.llm_request\" AND @timestamp >= ?_tstart AND @timestamp < ?_tend\n| STATS `Count` = COUNT(*) BY `Stop Reason` = stop_reason\n| SORT `Count` DESC\n| LIMIT 10"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "traces-claude_code.otel-*-@timestamp",
+                                    "name": "indexpattern-datasource-layer-layer_0",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM traces-claude_code.otel-*\n| WHERE span.name == \"claude_code.llm_request\" AND @timestamp >= ?_tstart AND @timestamp < ?_tend\n| STATS `Count` = COUNT(*) BY `Stop Reason` = stop_reason\n| SORT `Count` DESC\n| LIMIT 10"
+                            },
+                            "visualization": {
+                                "layers": [
+                                    {
+                                        "allowMultipleMetrics": false,
+                                        "categoryDisplay": "default",
+                                        "colorMapping": {
+                                            "assignments": [],
+                                            "colorMode": {
+                                                "type": "categorical"
+                                            },
+                                            "paletteId": "default",
+                                            "specialAssignments": [
+                                                {
+                                                    "color": {
+                                                        "type": "loop"
+                                                    },
+                                                    "rules": [
+                                                        {
+                                                            "type": "other"
+                                                        }
+                                                    ],
+                                                    "touched": false
+                                                }
+                                            ]
+                                        },
+                                        "layerId": "layer_0",
+                                        "layerType": "data",
+                                        "legendDisplay": "default",
+                                        "metrics": [
+                                            "partition_value_accessor_metric_0"
+                                        ],
+                                        "numberDisplay": "percent",
+                                        "percentDecimals": 2,
+                                        "primaryGroups": [
+                                            "partition_value_accessor_group_by_0"
+                                        ]
+                                    }
+                                ],
+                                "shape": "pie"
+                            }
+                        },
+                        "title": "LLM Request Count by Stop Reason",
+                        "version": 2,
+                        "visualizationType": "lnsPie"
+                    },
+                    "title": "LLM Request Count by Stop Reason"
+                },
+                "gridData": {
+                    "h": 10,
+                    "i": "4ec96e95-7733-4787-99ef-b42b33803926",
+                    "sectionId": "ae0f6b31-e1ff-4ca3-ba2d-eb3233ce3f24",
+                    "w": 24,
+                    "x": 24,
+                    "y": 25
+                },
+                "panelIndex": "4ec96e95-7733-4787-99ef-b42b33803926",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "traces-claude_code.otel-*-@timestamp": {
+                                    "allowNoIndex": false,
+                                    "id": "traces-claude_code.otel-*-@timestamp",
+                                    "name": "traces-claude_code.otel-*",
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "traces-claude_code.otel-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "bar_0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "bar_0_x",
+                                                    "fieldName": "Model",
+                                                    "meta": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "bar_0_y_0",
+                                                    "fieldName": "Average Duration",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "duration",
+                                                            "params": {
+                                                                "compact": true,
+                                                                "decimals": 0,
+                                                                "fromUnit": "nanoseconds",
+                                                                "toUnit": "asMilliseconds"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "ignoreGlobalFilters": false,
+                                            "index": "traces-claude_code.otel-*-@timestamp",
+                                            "query": {
+                                                "esql": "FROM traces-claude_code.otel-*\n| WHERE span.name == \"claude_code.llm_request\" AND @timestamp >= ?_tstart AND @timestamp < ?_tend\n| STATS `Average Duration` = AVG(duration) BY `Model` = gen_ai.request.model\n| SORT `Average Duration` DESC\n| LIMIT 10"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "traces-claude_code.otel-*-@timestamp",
+                                    "name": "indexpattern-datasource-layer-bar_0",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM traces-claude_code.otel-*\n| WHERE span.name == \"claude_code.llm_request\" AND @timestamp >= ?_tstart AND @timestamp < ?_tend\n| STATS `Average Duration` = AVG(duration) BY `Model` = gen_ai.request.model\n| SORT `Average Duration` DESC\n| LIMIT 10"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "curveType": "LINEAR",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "hideEndzones": true,
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "bar_0_y_0"
+                                        ],
+                                        "layerId": "bar_0",
+                                        "layerType": "data",
+                                        "seriesType": "bar",
+                                        "xAccessor": "bar_0_x",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "forAccessor": "bar_0_y_0"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "layout": "list",
+                                    "position": "bottom"
+                                },
+                                "minBarHeight": 1,
+                                "preferredSeriesType": "bar",
+                                "showCurrentTimeMarker": false,
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "xExtent": {
+                                    "mode": "dataBounds",
+                                    "niceValues": false
+                                },
+                                "yLeftExtent": {
+                                    "mode": "full",
+                                    "niceValues": true
+                                },
+                                "yLeftScale": "linear"
+                            }
+                        },
+                        "title": "Average LLM Request Duration by Model",
+                        "version": 2,
+                        "visualizationType": "lnsXY"
+                    },
+                    "title": "Average LLM Request Duration by Model"
+                },
+                "gridData": {
+                    "h": 10,
+                    "i": "9d8132b6-100b-4a5a-abd4-3378db7adf89",
+                    "sectionId": "ae0f6b31-e1ff-4ca3-ba2d-eb3233ce3f24",
+                    "w": 24,
+                    "x": 0,
+                    "y": 35
+                },
+                "panelIndex": "9d8132b6-100b-4a5a-abd4-3378db7adf89",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "traces-claude_code.otel-*-@timestamp": {
+                                    "allowNoIndex": false,
+                                    "id": "traces-claude_code.otel-*-@timestamp",
+                                    "name": "traces-claude_code.otel-*",
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "traces-claude_code.otel-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "bar_stacked_0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "bar_stacked_0_x",
+                                                    "fieldName": "Model",
+                                                    "meta": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "bar_stacked_0_y_0",
+                                                    "customLabel": true,
+                                                    "fieldName": "Input Tokens",
+                                                    "label": "Input Tokens",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "bar_stacked_0_y_1",
+                                                    "customLabel": true,
+                                                    "fieldName": "Output Tokens",
+                                                    "label": "Output Tokens",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "ignoreGlobalFilters": false,
+                                            "index": "traces-claude_code.otel-*-@timestamp",
+                                            "query": {
+                                                "esql": "FROM \"traces-claude_code.otel-*\"\n| WHERE span.name == \"claude_code.llm_request\" AND @timestamp >= ?_tstart AND @timestamp < ?_tend\n| STATS `Input Tokens` = SUM(input_tokens), `Output Tokens` = SUM(output_tokens) BY `Model` = gen_ai.request.model\n| SORT `Input Tokens` DESC\n| LIMIT 10"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "traces-claude_code.otel-*-@timestamp",
+                                    "name": "indexpattern-datasource-layer-bar_stacked_0",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM \"traces-claude_code.otel-*\"\n| WHERE span.name == \"claude_code.llm_request\" AND @timestamp >= ?_tstart AND @timestamp < ?_tend\n| STATS `Input Tokens` = SUM(input_tokens), `Output Tokens` = SUM(output_tokens) BY `Model` = gen_ai.request.model\n| SORT `Input Tokens` DESC\n| LIMIT 10"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "curveType": "LINEAR",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "hideEndzones": true,
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "bar_stacked_0_y_0",
+                                            "bar_stacked_0_y_1"
+                                        ],
+                                        "layerId": "bar_stacked_0",
+                                        "layerType": "data",
+                                        "seriesType": "bar_stacked",
+                                        "xAccessor": "bar_stacked_0_x",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "forAccessor": "bar_stacked_0_y_0"
+                                            },
+                                            {
+                                                "axisMode": "left",
+                                                "forAccessor": "bar_stacked_0_y_1"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "layout": "list",
+                                    "position": "bottom"
+                                },
+                                "minBarHeight": 1,
+                                "preferredSeriesType": "bar_stacked",
+                                "showCurrentTimeMarker": false,
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "xExtent": {
+                                    "mode": "dataBounds",
+                                    "niceValues": false
+                                },
+                                "yLeftExtent": {
+                                    "mode": "full",
+                                    "niceValues": true
+                                },
+                                "yLeftScale": "linear"
+                            }
+                        },
+                        "title": "Token Usage by Model",
+                        "version": 2,
+                        "visualizationType": "lnsXY"
+                    },
+                    "title": "Token Usage by Model"
+                },
+                "gridData": {
+                    "h": 10,
+                    "i": "94deab26-5168-438a-9011-410ed2d5d53f",
+                    "sectionId": "ae0f6b31-e1ff-4ca3-ba2d-eb3233ce3f24",
+                    "w": 24,
+                    "x": 24,
+                    "y": 35
+                },
+                "panelIndex": "94deab26-5168-438a-9011-410ed2d5d53f",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "traces-claude_code.otel-*-@timestamp": {
+                                    "allowNoIndex": false,
+                                    "id": "traces-claude_code.otel-*-@timestamp",
+                                    "name": "traces-claude_code.otel-*",
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "traces-claude_code.otel-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "bar_horizontal_0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "bar_horizontal_0_x",
+                                                    "fieldName": "Tool Name",
+                                                    "meta": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "bar_horizontal_0_y_0",
+                                                    "fieldName": "Execution Count",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "ignoreGlobalFilters": false,
+                                            "index": "traces-claude_code.otel-*-@timestamp",
+                                            "query": {
+                                                "esql": "FROM traces-claude_code.otel-*\n| WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend AND tool_name != \"\"\n| STATS `Execution Count` = COUNT(*) BY `Tool Name` = tool_name\n| SORT `Execution Count` DESC\n| LIMIT 10"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "traces-claude_code.otel-*-@timestamp",
+                                    "name": "indexpattern-datasource-layer-bar_horizontal_0",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM traces-claude_code.otel-*\n| WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend AND tool_name != \"\"\n| STATS `Execution Count` = COUNT(*) BY `Tool Name` = tool_name\n| SORT `Execution Count` DESC\n| LIMIT 10"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "curveType": "LINEAR",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "hideEndzones": true,
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "bar_horizontal_0_y_0"
+                                        ],
+                                        "layerId": "bar_horizontal_0",
+                                        "layerType": "data",
+                                        "seriesType": "bar_horizontal",
+                                        "xAccessor": "bar_horizontal_0_x",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "forAccessor": "bar_horizontal_0_y_0"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "layout": "list",
+                                    "position": "bottom"
+                                },
+                                "minBarHeight": 1,
+                                "preferredSeriesType": "bar_horizontal",
+                                "showCurrentTimeMarker": false,
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "xExtent": {
+                                    "mode": "dataBounds",
+                                    "niceValues": false
+                                },
+                                "yLeftExtent": {
+                                    "mode": "full",
+                                    "niceValues": true
+                                },
+                                "yLeftScale": "linear"
+                            }
+                        },
+                        "title": "Top 10 Tool Names by Execution Count",
+                        "version": 2,
+                        "visualizationType": "lnsXY"
+                    },
+                    "title": "Top 10 Tool Names by Execution Count"
+                },
+                "gridData": {
+                    "h": 10,
+                    "i": "8515e746-7042-4069-ade7-7d26d196c052",
+                    "sectionId": "d8ff8f2f-22c2-44d2-abd2-1f75cb1d7215",
+                    "w": 24,
+                    "x": 0,
+                    "y": 15
+                },
+                "panelIndex": "8515e746-7042-4069-ade7-7d26d196c052",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "traces-claude_code.otel-*-@timestamp": {
+                                    "allowNoIndex": false,
+                                    "id": "traces-claude_code.otel-*-@timestamp",
+                                    "name": "traces-claude_code.otel-*",
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "traces-claude_code.otel-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "layer_0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "metric_accessor_metric",
+                                                    "customLabel": true,
+                                                    "fieldName": "Tool Success Rate",
+                                                    "label": "Tool Success Rate",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "number",
+                                                            "params": {
+                                                                "compact": false,
+                                                                "decimals": 1,
+                                                                "suffix": "%"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "ignoreGlobalFilters": false,
+                                            "index": "traces-claude_code.otel-*-@timestamp",
+                                            "query": {
+                                                "esql": "FROM traces-claude_code.otel-*\n| WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend AND span.name == \"claude_code.tool.execution\"\n| STATS `Tool Success Rate` = (SUM(CASE(success == true, 1, 0)) * 100.0) / COUNT(*)"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "traces-claude_code.otel-*-@timestamp",
+                                    "name": "indexpattern-datasource-layer-layer_0",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM traces-claude_code.otel-*\n| WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend AND span.name == \"claude_code.tool.execution\"\n| STATS `Tool Success Rate` = (SUM(CASE(success == true, 1, 0)) * 100.0) / COUNT(*)"
+                            },
+                            "visualization": {
+                                "applyColorTo": "value",
+                                "density": "default",
+                                "layerId": "layer_0",
+                                "layerType": "data",
+                                "metricAccessor": "metric_accessor_metric",
+                                "palette": {
+                                    "name": "custom",
+                                    "params": {
+                                        "colorStops": [
+                                            {
+                                                "color": "#f6726a",
+                                                "stop": null
+                                            },
+                                            {
+                                                "color": "#fcd883",
+                                                "stop": 80
+                                            },
+                                            {
+                                                "color": "#24c292",
+                                                "stop": 95
+                                            }
+                                        ],
+                                        "continuity": "all",
+                                        "maxSteps": 5,
+                                        "name": "custom",
+                                        "progression": "fixed",
+                                        "rangeMax": null,
+                                        "rangeMin": null,
+                                        "rangeType": "number",
+                                        "reverse": false,
+                                        "steps": 3,
+                                        "stops": [
+                                            {
+                                                "color": "#f6726a",
+                                                "stop": 80
+                                            },
+                                            {
+                                                "color": "#fcd883",
+                                                "stop": 95
+                                            },
+                                            {
+                                                "color": "#24c292",
+                                                "stop": null
+                                            }
+                                        ]
+                                    },
+                                    "type": "palette"
+                                },
+                                "primaryAlign": "right",
+                                "primaryPosition": "bottom",
+                                "showBar": false,
+                                "titlesTextAlign": "left",
+                                "valueFontMode": "default"
+                            }
+                        },
+                        "title": "",
+                        "version": 2,
+                        "visualizationType": "lnsMetric"
+                    }
+                },
+                "gridData": {
+                    "h": 5,
+                    "i": "8856e438-7001-482c-aa17-842a36c92ebf",
+                    "sectionId": "d8ff8f2f-22c2-44d2-abd2-1f75cb1d7215",
+                    "w": 24,
+                    "x": 0,
+                    "y": 0
+                },
+                "panelIndex": "8856e438-7001-482c-aa17-842a36c92ebf",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "traces-claude_code.otel-*-@timestamp": {
+                                    "allowNoIndex": false,
+                                    "id": "traces-claude_code.otel-*-@timestamp",
+                                    "name": "traces-claude_code.otel-*",
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "traces-claude_code.otel-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "layer_0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "metric_accessor_metric",
+                                                    "customLabel": true,
+                                                    "fieldName": "Average Tool Execution Duration",
+                                                    "label": "Average Tool Execution Duration",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "duration",
+                                                            "params": {
+                                                                "compact": true,
+                                                                "decimals": 1,
+                                                                "fromUnit": "milliseconds",
+                                                                "toUnit": "humanizePrecise"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "ignoreGlobalFilters": false,
+                                            "index": "traces-claude_code.otel-*-@timestamp",
+                                            "query": {
+                                                "esql": "FROM traces-claude_code.otel-*\n| WHERE span.name == \"claude_code.tool.execution\" AND @timestamp >= ?_tstart AND @timestamp < ?_tend\n| STATS `Average Tool Execution Duration` = AVG(duration_ms)"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "traces-claude_code.otel-*-@timestamp",
+                                    "name": "indexpattern-datasource-layer-layer_0",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM traces-claude_code.otel-*\n| WHERE span.name == \"claude_code.tool.execution\" AND @timestamp >= ?_tstart AND @timestamp < ?_tend\n| STATS `Average Tool Execution Duration` = AVG(duration_ms)"
+                            },
+                            "visualization": {
+                                "density": "default",
+                                "layerId": "layer_0",
+                                "layerType": "data",
+                                "metricAccessor": "metric_accessor_metric",
+                                "primaryAlign": "right",
+                                "primaryPosition": "bottom",
+                                "showBar": false,
+                                "titlesTextAlign": "left",
+                                "valueFontMode": "default"
+                            }
+                        },
+                        "title": "",
+                        "version": 2,
+                        "visualizationType": "lnsMetric"
+                    }
+                },
+                "gridData": {
+                    "h": 5,
+                    "i": "087af924-359f-41e9-96fb-b727c6cb4949",
+                    "sectionId": "d8ff8f2f-22c2-44d2-abd2-1f75cb1d7215",
+                    "w": 24,
+                    "x": 24,
+                    "y": 0
+                },
+                "panelIndex": "087af924-359f-41e9-96fb-b727c6cb4949",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "traces-claude_code.otel-*-@timestamp": {
+                                    "allowNoIndex": false,
+                                    "id": "traces-claude_code.otel-*-@timestamp",
+                                    "name": "traces-claude_code.otel-*",
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "traces-claude_code.otel-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "bar_0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "bar_0_x",
+                                                    "fieldName": "bucket",
+                                                    "meta": {
+                                                        "type": "date"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "bar_0_y_0",
+                                                    "fieldName": "Span Count",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    }
+                                                }
+                                            ],
+                                            "ignoreGlobalFilters": false,
+                                            "index": "traces-claude_code.otel-*-@timestamp",
+                                            "query": {
+                                                "esql": "FROM traces-claude_code.otel-*\n| WHERE span.name == \"claude_code.tool.execution\" AND @timestamp >= ?_tstart AND @timestamp < ?_tend\n| STATS `Span Count` = COUNT() BY bucket = BUCKET(@timestamp, 75, ?_tstart, ?_tend)"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "traces-claude_code.otel-*-@timestamp",
+                                    "name": "indexpattern-datasource-layer-bar_0",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM traces-claude_code.otel-*\n| WHERE span.name == \"claude_code.tool.execution\" AND @timestamp >= ?_tstart AND @timestamp < ?_tend\n| STATS `Span Count` = COUNT() BY bucket = BUCKET(@timestamp, 75, ?_tstart, ?_tend)"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "curveType": "LINEAR",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "hideEndzones": true,
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "bar_0_y_0"
+                                        ],
+                                        "layerId": "bar_0",
+                                        "layerType": "data",
+                                        "seriesType": "bar",
+                                        "xAccessor": "bar_0_x",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "forAccessor": "bar_0_y_0"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "legendStats": [
+                                        "average",
+                                        "min",
+                                        "max"
+                                    ],
+                                    "maxLines": 1,
+                                    "position": "bottom",
+                                    "showSingleSeries": true
+                                },
+                                "minBarHeight": 1,
+                                "preferredSeriesType": "bar",
+                                "showCurrentTimeMarker": false,
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "xExtent": {
+                                    "mode": "dataBounds",
+                                    "niceValues": false
+                                },
+                                "yLeftExtent": {
+                                    "mode": "full",
+                                    "niceValues": true
+                                },
+                                "yLeftScale": "linear"
+                            }
+                        },
+                        "title": "Span Count Over Time (claude_code.tool.execution)",
+                        "version": 2,
+                        "visualizationType": "lnsXY"
+                    },
+                    "title": "Span Count Over Time (claude_code.tool.execution)"
+                },
+                "gridData": {
+                    "h": 10,
+                    "i": "7018171d-2e43-498c-97ea-d967d5beba0a",
+                    "sectionId": "d8ff8f2f-22c2-44d2-abd2-1f75cb1d7215",
+                    "w": 48,
+                    "x": 0,
+                    "y": 5
+                },
+                "panelIndex": "7018171d-2e43-498c-97ea-d967d5beba0a",
+                "type": "vis"
+            },
+            {
+                "embeddableConfig": {
+                    "attributes": {
+                        "references": [],
+                        "state": {
+                            "adHocDataViews": {
+                                "traces-claude_code.otel-*-@timestamp": {
+                                    "allowNoIndex": false,
+                                    "id": "traces-claude_code.otel-*-@timestamp",
+                                    "name": "traces-claude_code.otel-*",
+                                    "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
+                                    "title": "traces-claude_code.otel-*",
+                                    "type": "esql"
+                                }
+                            },
+                            "datasourceStates": {
+                                "textBased": {
+                                    "layers": {
+                                        "bar_horizontal_0": {
+                                            "columns": [
+                                                {
+                                                    "columnId": "bar_horizontal_0_x",
+                                                    "fieldName": "Tool Name",
+                                                    "meta": {
+                                                        "type": "string"
+                                                    }
+                                                },
+                                                {
+                                                    "columnId": "bar_horizontal_0_y_0",
+                                                    "fieldName": "Average Duration",
+                                                    "meta": {
+                                                        "type": "number"
+                                                    },
+                                                    "params": {
+                                                        "format": {
+                                                            "id": "duration",
+                                                            "params": {
+                                                                "compact": true,
+                                                                "decimals": 0,
+                                                                "fromUnit": "milliseconds",
+                                                                "toUnit": "humanizePrecise"
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            ],
+                                            "ignoreGlobalFilters": false,
+                                            "index": "traces-claude_code.otel-*-@timestamp",
+                                            "query": {
+                                                "esql": "FROM traces-claude_code.otel-*\n| WHERE span.name == \"claude_code.tool\" AND tool_name IS NOT NULL AND @timestamp >= ?_tstart AND @timestamp < ?_tend\n| STATS `Average Duration` = AVG(duration_ms) BY `Tool Name` = tool_name\n| SORT `Average Duration` DESC\n| LIMIT 10"
+                                            },
+                                            "timeField": "@timestamp"
+                                        }
+                                    }
+                                }
+                            },
+                            "filters": [],
+                            "internalReferences": [
+                                {
+                                    "id": "traces-claude_code.otel-*-@timestamp",
+                                    "name": "indexpattern-datasource-layer-bar_horizontal_0",
+                                    "type": "index-pattern"
+                                }
+                            ],
+                            "query": {
+                                "esql": "FROM traces-claude_code.otel-*\n| WHERE span.name == \"claude_code.tool\" AND tool_name IS NOT NULL AND @timestamp >= ?_tstart AND @timestamp < ?_tend\n| STATS `Average Duration` = AVG(duration_ms) BY `Tool Name` = tool_name\n| SORT `Average Duration` DESC\n| LIMIT 10"
+                            },
+                            "visualization": {
+                                "axisTitlesVisibilitySettings": {
+                                    "x": false,
+                                    "yLeft": false,
+                                    "yRight": true
+                                },
+                                "curveType": "LINEAR",
+                                "gridlinesVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "hideEndzones": true,
+                                "labelsOrientation": {
+                                    "x": 0,
+                                    "yLeft": 0,
+                                    "yRight": 0
+                                },
+                                "layers": [
+                                    {
+                                        "accessors": [
+                                            "bar_horizontal_0_y_0"
+                                        ],
+                                        "layerId": "bar_horizontal_0",
+                                        "layerType": "data",
+                                        "seriesType": "bar_horizontal",
+                                        "xAccessor": "bar_horizontal_0_x",
+                                        "yConfig": [
+                                            {
+                                                "axisMode": "left",
+                                                "forAccessor": "bar_horizontal_0_y_0"
+                                            }
+                                        ]
+                                    }
+                                ],
+                                "legend": {
+                                    "isVisible": true,
+                                    "layout": "list",
+                                    "position": "bottom"
+                                },
+                                "minBarHeight": 1,
+                                "preferredSeriesType": "bar_horizontal",
+                                "showCurrentTimeMarker": false,
+                                "tickLabelsVisibilitySettings": {
+                                    "x": true,
+                                    "yLeft": true,
+                                    "yRight": true
+                                },
+                                "valueLabels": "hide",
+                                "xExtent": {
+                                    "mode": "dataBounds",
+                                    "niceValues": false
+                                },
+                                "yLeftExtent": {
+                                    "mode": "full",
+                                    "niceValues": true
+                                },
+                                "yLeftScale": "linear"
+                            }
+                        },
+                        "title": "Average Tool Execution Duration by Tool",
+                        "version": 2,
+                        "visualizationType": "lnsXY"
+                    },
+                    "title": "Average Tool Execution Duration by Tool"
+                },
+                "gridData": {
+                    "h": 10,
+                    "i": "f824e915-38cb-4002-98fb-916d9c361d4a",
+                    "sectionId": "d8ff8f2f-22c2-44d2-abd2-1f75cb1d7215",
+                    "w": 24,
+                    "x": 24,
+                    "y": 15
+                },
+                "panelIndex": "f824e915-38cb-4002-98fb-916d9c361d4a",
+                "type": "vis"
+            }
+        ],
+        "refreshInterval": {
+            "pause": true,
+            "value": 0
+        },
+        "sections": [
+            {
+                "collapsed": false,
+                "gridData": {
+                    "i": "bb09bf33-1a90-472d-b0d0-2fc0eceb411b",
+                    "y": 4
+                },
+                "title": "Overview"
+            },
+            {
+                "collapsed": false,
+                "gridData": {
+                    "i": "ae0f6b31-e1ff-4ca3-ba2d-eb3233ce3f24",
+                    "y": 5
+                },
+                "title": "LLM Usage"
+            },
+            {
+                "collapsed": false,
+                "gridData": {
+                    "i": "d8ff8f2f-22c2-44d2-abd2-1f75cb1d7215",
+                    "y": 6
+                },
+                "title": "Tool Activity"
+            }
+        ],
+        "timeFrom": "now-90d/d",
+        "timeRestore": true,
+        "timeTo": "now",
+        "title": "[Claude Code] Traces Overview"
+    },
+    "coreMigrationVersion": "8.8.0",
+    "created_at": "2026-10-06T18:53:44.248Z",
+    "created_by": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0",
+    "id": "claude_code-traces-overview",
+    "references": [],
+    "type": "dashboard",
+    "typeMigrationVersion": "10.3.0",
+    "updated_by": "u_mGBROF_q5bmFCATbLXAcCwKa0k8JvONAwSruelyKA5E_0"
+}

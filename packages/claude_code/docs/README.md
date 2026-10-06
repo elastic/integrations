@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Claude Code integration collects [OpenTelemetry](https://opentelemetry.io/) log events and traces emitted by [Anthropic Claude Code](https://code.claude.com/), the AI coding agent. It provides typed field mappings, ingest pipelines for structured queries, and security-focused dashboards for tool invocation auditing, cost monitoring, and permission analysis.
+The Claude Code integration collects [OpenTelemetry](https://opentelemetry.io/) log events and traces emitted by [Anthropic Claude Code](https://code.claude.com/), the AI coding agent. It provides typed field mappings, ingest pipelines for structured queries, security-focused dashboards for tool invocation auditing, cost monitoring, and permission analysis, and a traces overview dashboard for LLM usage, latency, and tool activity.
 
 Claude Code exports telemetry as OTLP (OpenTelemetry Protocol) logs or traces. Each log event represents an action in an agentic session: tool calls (shell commands, file operations, MCP tool invocations), API requests, user prompts, permission decisions, and lifecycle events. Trace spans connect interactions, LLM requests, and tool calls into one trace per user turn. Trace export is in beta.
 

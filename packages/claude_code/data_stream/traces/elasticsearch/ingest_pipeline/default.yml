@@ -1,26 +1,6 @@
 ---
 description: Pipeline for processing Claude Code OTel trace spans.
 processors:
-  - script:
-      tag: set_event_original
-      lang: painless
-      description: Preserve the raw OTel span for forensic analysis.
-      if: >-
-        (ctx.tags instanceof List && ctx.tags.contains('preserve_original_event'))
-        || (ctx.attributes instanceof Map && ctx.attributes.containsKey('elastic.preserve_original_event') && ctx.attributes.get('elastic.preserve_original_event') == 'true')
-      source: >
-        ctx.event = ctx.event ?: [:];
-        ctx.event.original = Json.dump(ctx);
-        ctx.tags = ctx.tags ?: [];
-        if (!ctx.tags.contains('preserve_original_event')) {
-          ctx.tags.add('preserve_original_event');
-        }
-
-  - remove:
-      tag: remove_preserve_original_event_marker
-      field: attributes.elastic.preserve_original_event
-      ignore_missing: true
-
   - set:
       tag: set_ecs_version
       field: ecs.version
@@ -110,12 +90,6 @@ processors:
       field: event.kind
       value: pipeline_error
       if: ctx.error?.message != null
-  - append:
-      tag: append_preserve_original_event_on_error
-      field: tags
-      value: preserve_original_event
-      allow_duplicates: false
-      if: ctx.error?.message != null
 on_failure:
   - append:
       tag: append_pipeline_error_message
@@ -130,8 +104,3 @@ on_failure:
       tag: set_pipeline_error_kind
       field: event.kind
       value: pipeline_error
-  - append:
-      tag: append_preserve_original_event_on_failure
-      field: tags
-      value: preserve_original_event
-      allow_duplicates: false
