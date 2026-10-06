@@ -80,7 +80,59 @@ For general instructions on installing integrations and deploying Elastic Agent,
 
 **Prerequisites:** Install this integration in Fleet before sending data. The installation creates the ingest pipelines, field mappings, and dashboards required for processing Claude Code events and spans.
 
-Claude Code exports telemetry via OTLP. The Elastic Agent exposes an OTLP HTTP receiver for each data stream on its configured HTTP endpoint (default port: 4318 for events, 4320 for traces). Configure Claude Code to send events and spans to the agent:
+Claude Code exports telemetry via OTLP. There are three deployment paths.
+
+### Option A: Managed OTLP (mOTLP) (recommended)
+
+If your Elastic Cloud deployment supports managed OTLP ingestion, point Claude Code directly at the Elastic Cloud OTLP endpoint, no agent or collector infrastructure required. Configure the environment:
+
+```bash
+export CLAUDE_CODE_ENABLE_TELEMETRY=1
+export CLAUDE_CODE_ENHANCED_TELEMETRY_BETA=1
+export OTEL_LOGS_EXPORTER=otlp
+export OTEL_TRACES_EXPORTER=otlp
+export OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+export OTEL_EXPORTER_OTLP_ENDPOINT="<your-elastic-cloud-otlp-endpoint>"
+export OTEL_RESOURCE_ATTRIBUTES="data_stream.dataset=claude_code.events.otel"
+```
+
+`OTEL_RESOURCE_ATTRIBUTES` applies to both logs and traces, so spans also arrive with the events dataset, in `traces-claude_code.events.otel-*`. Run the following in Kibana Dev Tools to reroute them to `traces-claude_code.otel-*`. The same pipeline handles Claude Code Desktop spans, which land in `traces-generic.otel-*` (see [Claude Code Desktop traces](#claude-code-desktop-traces)).
+
+```console
+PUT _ingest/pipeline/traces-claude-code-reroute
+{
+  "processors": [
+    {
+      "reroute": {
+        "if": "['claude-code', 'claude-code-desktop'].contains(ctx.resource?.attributes?.get('service.name'))",
+        "dataset": "claude_code.otel",
+        "namespace": ["{{`{{data_stream.namespace}}`}}", "default"]
+      }
+    }
+  ]
+}
+
+PUT _index_template/traces-claude-code-reroute
+{
+  "index_patterns": ["traces-claude_code.events.otel-*", "traces-generic.otel-*"],
+  "priority": 150,
+  "composed_of": ["traces@mappings", "traces@settings", "otel@mappings", "otel@settings", "traces-otel@mappings", "semconv-resource-to-ecs@mappings", "traces@custom", "traces-otel@custom", "ecs@mappings"],
+  "ignore_missing_component_templates": ["traces@custom", "traces-otel@custom"],
+  "template": {
+    "settings": { "index.default_pipeline": "traces-claude-code-reroute" },
+    "mappings": { "properties": { "data_stream.type": { "type": "constant_keyword", "value": "traces" } } }
+  },
+  "data_stream": { "hidden": false, "allow_custom_routing": false },
+  "allow_auto_create": true
+}
+```
+
+If either data stream already exists, roll it over so it picks up the new template, for example `POST traces-generic.otel-default/_rollover`. Run a rollover for each namespace you use.
+
+
+### Option B: Elastic Agent OTLP receiver
+
+The Elastic Agent exposes an OTLP HTTP receiver for each data stream on its configured HTTP endpoint (default port: 4318 for events, 4320 for traces). Configure Claude Code to send events and spans to the agent:
 
 ```bash
 export CLAUDE_CODE_ENABLE_TELEMETRY=1
@@ -93,13 +145,82 @@ export OTEL_EXPORTER_OTLP_TRACES_ENDPOINT="http://<agent-host>:4320/v1/traces"
 export OTEL_RESOURCE_ATTRIBUTES="data_stream.dataset=claude_code.events.otel"
 ```
 
+### Option C: EDOT Collector
+
+Run the [Elastic Distribution of the OpenTelemetry Collector](https://www.elastic.co/docs/reference/edot-collector) as a gateway for your Claude Code clients. The collector sets the dataset for each signal, so Claude Code doesn't need `OTEL_RESOURCE_ATTRIBUTES` or auth headers. Configure Claude Code to send events and spans to the collector:
+
+```bash
+export CLAUDE_CODE_ENABLE_TELEMETRY=1
+export CLAUDE_CODE_ENHANCED_TELEMETRY_BETA=1
+export OTEL_LOGS_EXPORTER=otlp
+export OTEL_TRACES_EXPORTER=otlp
+export OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+export OTEL_EXPORTER_OTLP_ENDPOINT="http://<collector-host>:4318"
+```
+
+Example collector configuration:
+
+```yaml
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+connectors:
+  elasticapm:
+
+processors:
+  elasticapm:
+  transform/claude_code_logs:
+    log_statements:
+      - context: log
+        statements:
+          - set(attributes["data_stream.dataset"], "claude_code.events")
+  transform/claude_code_traces:
+    trace_statements:
+      - context: span
+        statements:
+          - set(attributes["data_stream.dataset"], "claude_code")
+      - context: spanevent
+        statements:
+          - set(attributes["data_stream.dataset"], "claude_code.events")
+
+exporters:
+  otlphttp/elasticsearch:
+    endpoint: ${env:ELASTIC_ENDPOINT}/_otlp
+    headers:
+      Authorization: "ApiKey ${env:ELASTIC_API_KEY}"
+
+service:
+  pipelines:
+    logs:
+      receivers: [otlp]
+      processors: [transform/claude_code_logs]
+      exporters: [otlphttp/elasticsearch]
+    traces:
+      receivers: [otlp]
+      processors: [transform/claude_code_traces, elasticapm]
+      exporters: [elasticapm, otlphttp/elasticsearch]
+    metrics/aggregated-otel-metrics:
+      receivers: [elasticapm]
+      processors: []
+      exporters: [otlphttp/elasticsearch]
+```
+
+Without the `transform` processors, data goes to `logs-generic.otel-*` and `traces-generic.otel-*`. Elasticsearch adds the `.otel` suffix to the dataset.
+
 ### Validation
 
 After deploying, run a short Claude Code session with telemetry enabled and confirm events appear in the `logs-claude_code.events.otel-*` data stream. For example, in Kibana Discover, filter on `data_stream.dataset: claude_code.events.otel`. For traces, filter on `data_stream.dataset: claude_code.otel`.
 
 *Note: to use a namespace other than `default`, add `data_stream.namespace` to `OTEL_RESOURCE_ATTRIBUTES`.*
 
-Claude Code Desktop ignores `OTEL_RESOURCE_ATTRIBUTES` ([open issue](https://github.com/anthropics/claude-code/issues/95269)). Point Desktop at the agent's traces endpoint above. The traces data stream sets the dataset, so those spans are indexed into `traces-claude_code.otel-*`.
+### Claude Code Desktop traces
+
+Claude Code Desktop ignores `OTEL_RESOURCE_ATTRIBUTES` ([open issue](https://github.com/anthropics/claude-code/issues/95269)) and reports `resource.attributes.service.name: claude-code-desktop`. When Desktop sends traces directly to Elasticsearch, its spans go to `traces-generic.otel-*`. Option B and Option C set the dataset for you. For Option A, the reroute pipeline in [Option A](#option-a-managed-otlp-motlp-recommended) moves Desktop spans to `traces-claude_code.otel-*` by `service.name`.
 
 ## Troubleshooting
 
@@ -113,7 +234,7 @@ Claude Code Desktop ignores `OTEL_RESOURCE_ATTRIBUTES` ([open issue](https://git
 
 - Verify `CLAUDE_CODE_ENHANCED_TELEMETRY_BETA=1` and `OTEL_TRACES_EXPORTER=otlp` are set.
 - Check that the traces endpoint is reachable (`curl -v http://<agent-host>:<port>/v1/traces`, default port `4320`).
-- Claude Code Desktop ignores `OTEL_RESOURCE_ATTRIBUTES`.
+- For Option A, check `traces-claude_code.events.otel-*` and `traces-generic.otel-*`. If Claude Code spans are there, confirm the reroute pipeline and template from [Option A](#option-a-managed-otlp-motlp-recommended) are installed and that the data streams were rolled over.
 
 ### Missing tool parameters or prompt text
 
@@ -125,7 +246,7 @@ Events and spans with `event.kind: pipeline_error` and a `preserve_original_even
 
 ## Performance and scaling
 
-Data volume grows with usage: each user turn produces several log events and spans. Verbosity gates and **Preserve original event** increase document size.
+Data volume grows with usage: each user turn produces several log events and spans. Verbosity gates and **Preserve original event** increase document size. For many clients, use an [EDOT Collector](#option-c-edot-collector) gateway, which batches data and can be scaled horizontally.
 
 ## Reference
 
