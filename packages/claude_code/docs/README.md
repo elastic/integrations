@@ -242,11 +242,11 @@ Tool parameters, tool input, and prompt text are gated by environment variables 
 
 ### Pipeline errors
 
-Events and spans with `event.kind: pipeline_error` and a `preserve_original_event` tag indicate an ingest pipeline encountered an error (typically malformed JSON in `tool_parameters` or `tool_input`). The original event is preserved for inspection.
+Events with `event.kind: pipeline_error` and a `preserve_original_event` tag indicate the events ingest pipeline encountered an error (typically malformed JSON in `tool_parameters` or `tool_input`). The original event is preserved for inspection. Spans with `event.kind: pipeline_error` indicate the traces ingest pipeline encountered an error. The failure details are in `error.message`.
 
 ## Performance and scaling
 
-Data volume grows with usage: each user turn produces several log events and spans. Verbosity gates and **Preserve original event** increase document size. For many clients, use an [EDOT Collector](#option-c-edot-collector) gateway, which batches data and can be scaled horizontally.
+Data volume grows with usage: each user turn produces several log events and spans. Verbosity gates and **Preserve original event** (events data stream only) increase document size. For many clients, use an [EDOT Collector](#option-c-edot-collector) gateway, which batches data and can be scaled horizontally.
 
 ## Reference
 
@@ -594,7 +594,6 @@ An example event for `traces` looks as following:
 | error.message | Error message. | match_only_text |
 | event.category | This is one of four ECS Categorization Fields, and indicates the second level in the ECS category hierarchy. `event.category` represents the "big buckets" of ECS categories. For example, filtering on `event.category:process` yields all events relating to process activity. This field is closely related to `event.type`, which is used as a subcategory. This field is an array. This will allow proper categorization of some events that fall in multiple categories. | keyword |
 | event.kind | This is one of four ECS Categorization Fields, and indicates the highest level in the ECS category hierarchy. `event.kind` gives high-level information about what type of information the event contains, without being specific to the contents of the event. For example, values of this field distinguish alert events from metric events. The value of this field can be used to inform how these kinds of events should be handled. They may warrant different retention, different access control, it may also help understand whether the data is coming in at a regular interval or not. | keyword |
-| event.original | Raw text message of entire event. Used to demonstrate log integrity or where the full log message (before splitting it up in multiple parts) may be required, e.g. for reindex. This field is not indexed and doc_values are disabled. It cannot be searched, but it can be retrieved from `_source`. If users wish to override this and index this field, please see `Field data types` in the `Elasticsearch Reference`. | keyword |
 | event.type | This is one of four ECS Categorization Fields, and indicates the third level in the ECS category hierarchy. `event.type` represents a categorization "sub-bucket" that, when used along with the `event.category` field values, enables filtering events down to a level appropriate for single visualization. This field is an array. This will allow proper categorization of some events that fall in multiple event types. | keyword |
 | file.path | Full path to the file, including the file name. It should include the drive letter, when appropriate. | keyword |
 | file.path.text | Multi-field of `file.path`. | match_only_text |
