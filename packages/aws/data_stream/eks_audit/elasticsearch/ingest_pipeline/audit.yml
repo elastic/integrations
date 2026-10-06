@@ -394,7 +394,8 @@ processors:
       // ObjectReference.apiGroup is omitempty, so core-group resources arrive with the
       // key absent rather than empty; both shapes mean the core API group.
       def objectRef = audit.get('objectRef');
-      if (objectRef instanceof Map && objectRef.get('resource') != null) {
+      def resource = objectRef instanceof Map ? objectRef.get('resource') : null;
+      if (resource instanceof String && !resource.isEmpty()) {
         def group = objectRef.get('apiGroup');
         if (group == null || group == '') {
           objectRef.put('apiGroup', 'core');
@@ -674,6 +675,12 @@ processors:
     field: error.message
     value: 'Unsupported Amazon EKS audit record: expected a Kubernetes audit.k8s.io Event with an audit ID.'
     tag: report_unsupported_audit_record
+- remove:
+    if: ctx.event?.kind == 'pipeline_error'
+    description: Unsupported records are not Kubernetes audit events; keep them only in event.original.
+    field: aws.eks.audit
+    ignore_missing: true
+    tag: remove_unsupported_audit_record
 - script:
     description: Drops null/empty values recursively
     ignore_failure: true

@@ -73,7 +73,7 @@ The Kubernetes core API group is reported as `core` in `aws.eks.audit.objectRef.
 
 Kubernetes audit request and response objects are retained in document `_source` and can contain sensitive API payloads. The top-level `metadata` block is removed from every request and response object, and each item of a list response keeps only its `metadata.name`; labels, annotations, managed fields, and owner references are not retained. For Secret resources, this integration also removes `data` and `stringData` from parsed request and response objects and from every item returned by Secret list/watch responses. Request and response bodies are kept only when `objectRef.resource` identifies the resource as a single value; records whose `objectRef.resource` is missing or malformed have their bodies dropped because they cannot be redacted reliably. The `preserve_original_event` option is disabled by default; enabling it retains the unredacted raw audit JSON in `event.original`, including Secret values removed from parsed fields. Unsupported records also retain `event.original` for troubleshooting. Restrict access to `_source` and enable original-event preservation only when its diagnostic value outweighs the exposure and storage costs.
 
-Authorization decision, authorization reason, and Pod Security audit-violation annotations have explicit searchable mappings. Other string-valued Kubernetes audit annotations are indexed as keywords after dots in annotation keys are replaced by underscores; the same applies to `user.extra` and `impersonatedUser.extra` keys.
+Authorization decision, authorization reason, and Pod Security audit-violation annotations have explicit searchable mappings. Other Kubernetes audit annotations are retained in `_source` with dots in annotation keys replaced by underscores, but are not indexed; to search an additional annotation, map it in a `logs-aws.eks_audit@custom` component template. `user.extra` and `impersonatedUser.extra` are mapped as `flattened` fields, with the same key normalization, so their keys stay searchable without growing the mapping.
 
 Request and response objects are not dynamically mapped. Only the security-relevant `aws.eks.audit.requestObject.*` and `aws.eks.audit.responseObject.*` fields listed in the field reference are indexed and searchable; the rest of each API object is retained in `_source` but cannot be queried or aggregated. This keeps the field count bounded on clusters that use many custom resource definitions, where dynamically mapping arbitrary object bodies would otherwise exhaust the index field limit and cause indexing failures. To query an additional body field, add it to a `logs-aws.eks_audit@custom` component template.
 
@@ -252,13 +252,12 @@ Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ec
 | aws.cloudwatch.ingestion_time | Time the event was received by CloudWatch Logs. | date |
 | aws.cloudwatch.log_group | Name of the CloudWatch Logs log group from which the event was collected. | keyword |
 | aws.cloudwatch.log_stream | Name of the CloudWatch Logs log stream from which the event was collected. | keyword |
-| aws.eks.audit.annotations | Additional string-valued Kubernetes audit annotations dynamically indexed as keywords, with dots in annotation keys replaced by underscores. | object |
 | aws.eks.audit.annotations.authorization_k8s_io/decision | Kubernetes authorization decision for the request, such as allow or forbid. | keyword |
 | aws.eks.audit.annotations.authorization_k8s_io/reason | Reason reported by the Kubernetes authorizer for its decision. | text |
 | aws.eks.audit.annotations.pod-security_kubernetes_io/audit-violations | Pod Security admission violations reported in audit mode. | text |
 | aws.eks.audit.apiVersion | Kubernetes audit API version of the event. | keyword |
 | aws.eks.audit.auditID | Unique audit ID generated for the request. | keyword |
-| aws.eks.audit.impersonatedUser.extra | Additional information supplied for the impersonated user. Dots in keys are replaced with underscores. | object |
+| aws.eks.audit.impersonatedUser.extra | Additional information supplied for the impersonated user. Dots in keys are replaced with underscores. | flattened |
 | aws.eks.audit.impersonatedUser.groups | Groups to which the impersonated user belongs. | keyword |
 | aws.eks.audit.impersonatedUser.uid | Unique identifier of the impersonated user. | keyword |
 | aws.eks.audit.impersonatedUser.username | Name that identifies the impersonated user. | keyword |
@@ -374,7 +373,7 @@ Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ec
 | aws.eks.audit.sourceIPs | Source IP addresses from which the request originated, including intermediate proxies. | keyword |
 | aws.eks.audit.stage | Request-handling stage at which this audit event was generated. | keyword |
 | aws.eks.audit.stageTimestamp | Time when the request reached the audit stage recorded by this event. | date |
-| aws.eks.audit.user.extra | Additional information supplied by the authenticator for the authenticated user. Dots in keys are replaced with underscores. | object |
+| aws.eks.audit.user.extra | Additional information supplied by the authenticator for the authenticated user. Dots in keys are replaced with underscores. | flattened |
 | aws.eks.audit.user.groups | Groups to which the authenticated user belongs. | keyword |
 | aws.eks.audit.user.uid | Unique identifier of the authenticated user. | keyword |
 | aws.eks.audit.user.username | Name that identifies the authenticated user. | keyword |

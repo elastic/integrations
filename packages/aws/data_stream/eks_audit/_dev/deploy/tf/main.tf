@@ -52,7 +52,13 @@ resource "aws_cloudwatch_log_stream" "eks_audit" {
 }
 
 # CloudWatch discards events older than 14 days, so timestamps are taken at apply time.
-resource "time_static" "push_time" {}
+# The triggers force a fresh base timestamp for every test run and fixture change.
+resource "time_static" "push_time" {
+  triggers = {
+    run_id    = var.TEST_RUN_ID
+    logs_hash = filemd5("${path.module}/files/eks_audit.log")
+  }
+}
 
 resource "null_resource" "push_eks_audit_logs" {
   depends_on = [aws_cloudwatch_log_stream.eks_audit]
