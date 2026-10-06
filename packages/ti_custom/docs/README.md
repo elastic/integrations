@@ -73,9 +73,9 @@ Once the integration is running and pulling data, it automatically maps threat i
 
 ### Collecting indicators from IsMalicious
 
-[IsMalicious](https://ismalicious.com/api-docs) exposes STIX 2.1 indicator collections over TAXII 2.1. Use this package's native TAXII input; an additional vendor polling connector or custom CEL program is not required for standard indicator ingestion.
+[IsMalicious](https://ismalicious.com/api-docs) exposes STIX 2.1 indicator collections over TAXII 2.1. Use this package's native TAXII input. An additional vendor polling connector or custom CEL program is not required for standard indicator ingestion.
 
-1. Obtain feed access and the API key/secret pair from your IsMalicious account. Individual API-check access is different from feed access; TAXII feeds require a Pro or Enterprise subscription.
+1. Obtain feed access and the API key/secret pair from your IsMalicious account. Individual API-check access is different from feed access. TAXII feeds require a Pro or Enterprise subscription.
 2. Discover the API root at `https://api.ismalicious.com/taxii`, then list the collections at `https://api.ismalicious.com/taxii/api-root/collections`. Authenticate these requests with HTTP Basic: the API key as username and API secret as password. Select the actual readable collection ID returned to your account.
 3. Add the **Custom Threat Intelligence** integration in Fleet and enable the RESTful API stream. Configure:
 
@@ -91,14 +91,14 @@ Once the integration is running and pulling data, it automatically maps threat i
    | Content-Type header value | `application/taxii+json;version=2.1` |
 
    `<COLLECTION_ID>` is a placeholder, not a literal ID. For example, a readable `malicious-ips` collection has the objects URL `https://api.ismalicious.com/taxii/api-root/collections/malicious-ips/objects`. Confirm collection availability in authenticated discovery instead of assuming your account can read every collection. Configure a separate stream/instance for each collection you need.
-4. Choose the initial interval and polling interval according to collection size and your detection requirements. Keep pagination enabled and verify the agent is healthy. If a high-volume initial import exceeds the CEL execution limit, see [Maximum Pages Per Interval](#exceeding-maximum-number-of-cel-executions). Start with a bounded interval before expanding the import.
+4. Choose the initial interval and polling interval according to collection size and your detection requirements, and verify the agent is healthy. TAXII pagination automatically follows the server's `next` token. Optionally use **Limit** to set the maximum objects requested per page. If a high-volume initial import exceeds the CEL execution limit, see [Maximum Pages Per Interval](#exceeding-maximum-number-of-cel-executions). Start with a bounded interval before expanding the import.
 5. Validate the mapped indicator value/type, provider attribution and timestamps in the ingested events, and verify the latest-indicator transform runs. Use `logs-ti_custom_latest.indicator` for indicator match rules, rather than the source data stream that retains historical versions.
 
-Keep credentials out of URLs, exported policy examples and logs. The package's generic **API Key** option uses `Authorization` token authentication; it is not the same as IsMalicious's `X-API-KEY` header. Use the Basic pair above unless you intentionally configure a different supported authentication path.
+Keep credentials out of URLs, exported policy examples and logs. The package's generic **API Key** option uses `Authorization` token authentication. It is not the same as IsMalicious's `X-API-KEY` header. Use the Basic pair above unless you intentionally configure a different supported authentication path.
 
-This input consumes the STIX indicators, not the provider's `/check` reputation-response JSON. `confidence` in STIX is confidence, not a risk score. Do not manufacture confidence from custom provider risk fields or infer malicious detections by counting contextual source rows. Standard indicator fields are mapped by the existing STIX pipelines; unsupported extensions require a separately validated custom mapping.
+This input consumes the STIX indicators, not the provider's `/check` reputation-response JSON. `confidence` in STIX is confidence, not a risk score. Do not manufacture confidence from custom provider risk fields or infer malicious detections by counting contextual source rows. Standard indicator fields are mapped by the existing STIX pipelines. Unsupported extensions require a separately validated custom mapping.
 
-The package honors `revoked` and `valid_until` when those updates are supplied in the feed. A source silently removing an object does not by itself prove the previously ingested IOC has been revoked. Review the provider's withdrawal semantics and set an appropriate orphan-IOC expiration before using the data for automated actions. This configuration adds intelligence for matching and investigation; it does not define an automatic blocking policy.
+The package honors `revoked` and `valid_until` when those updates are supplied in the feed. A source silently removing an object does not by itself prove the previously ingested IOC has been revoked. Review the provider's withdrawal semantics and set an appropriate orphan-IOC expiration before using the data for automated actions. This configuration adds intelligence for matching and investigation. It does not define an automatic blocking policy.
 
 For HTTP 401/403, check the complete key/secret pair and feed access. For 429, reduce polling and retry after the provider's indicated delay. Inspect agent errors and ingestion gaps instead of treating a failed poll as an empty or clean collection.
 
