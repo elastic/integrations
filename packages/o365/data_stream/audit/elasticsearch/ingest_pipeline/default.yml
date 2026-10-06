@@ -49,8 +49,11 @@ processors:
   - script:
       tag: script_normalize_numbers
       description: |
-        Normalize fields from o365audit or CEL that need to be compared to
-        strings or indexed as keyword values without scientific notation.
+        Normalize numeric fields that are mapped as keyword, or that need to
+        be compared to strings, to integer strings without scientific
+        notation. The o365audit input delivers JSON numbers as doubles, which
+        may be rendered in scientific notation; the CEL input delivers them
+        as strings.
       if: ctx.o365audit != null
       lang: painless
       params:
@@ -63,14 +66,37 @@ processors:
           - InternalLogonType
           - LogonType
           - RunningTime
-          - FileSize
+          - UserType
+          - AzureActiveDirectoryEventType
+          - ListBaseType
+        list_fields:
+          Actor: Type
+          Target: Type
       source: |-
+        def normalize(def value) {
+          if (value instanceof Number) {
+            return ((Number)value).longValue().toString();
+          }
+          if (value instanceof String && (value.indexOf('e') >= 0 || value.indexOf('E') >= 0)) {
+            return new BigDecimal(value).toBigIntegerExact().toString();
+          }
+          return value;
+        }
         for (def field : params.fields) {
           def value = ctx.o365audit[field];
-          if (value instanceof Number) {
-            ctx.o365audit[field] = ((Number)value).longValue().toString();
-          } else if (value instanceof String && (value.indexOf('e') >= 0 || value.indexOf('E') >= 0)) {
-            ctx.o365audit[field] = new BigDecimal(value).toBigIntegerExact().toString();
+          if (value != null) {
+            ctx.o365audit[field] = normalize(value);
+          }
+        }
+        for (def entry : params.list_fields.entrySet()) {
+          def list = ctx.o365audit[entry.getKey()];
+          if (!(list instanceof List)) {
+            continue;
+          }
+          for (def item : list) {
+            if (item instanceof Map && item[entry.getValue()] != null) {
+              item[entry.getValue()] = normalize(item[entry.getValue()]);
+            }
           }
         }
   - rename:
@@ -2025,6 +2051,97 @@ processors:
       tag: rename_folders_exchange
       description: 'move generic Folders field to the O365 ExchangeAggregatedFolders field type'
       if: ctx.o365audit?.Folders != null && ctx.o365audit.RecordType == "50"
+  - script:
+      tag: script_convert_numbers
+      description: |
+        Convert numeric values that arrive as strings to numbers. The CEL
+        input delivers JSON numbers as strings so that no precision is lost;
+        the o365audit input delivers them as numbers. The listed fields are
+        either mapped as long, or are sent as numbers by the API but mapped
+        as keyword or flattened. A value that parses as a number becomes a
+        long, or a double if it is fractional or too large; other values are
+        left unchanged. A path applies to every element of any list along it,
+        and a final "*" covers every key of a map.
+      lang: painless
+      params:
+        fields:
+          - file.size
+          - o365audit.Actions.Entities.CountByDeliveryLocation.*
+          - o365audit.Actions.Entities.CountByProtectionStatus.*
+          - o365audit.Actions.Entities.CountByThreatType.*
+          - o365audit.Actions.Entities.MailCount
+          - o365audit.ExchangeAggregatedFolders.FolderItems.SizeInBytes
+          - o365audit.ExchangeAggregatedMessages.MessageItems.SizeInBytes
+          - o365audit.ExchangeMetaData.FileSize
+          - o365audit.ExchangeMetaData.RecipientCount
+          - o365audit.FileSize
+          - o365audit.FileSizeBytes
+          - o365audit.Item.SizeInBytes
+          - o365audit.Members.Role
+          - o365audit.OperationCount
+          - o365audit.PolicyDetails.Rules.ConditionsMatched.SensitiveInformation.Confidence
+          - o365audit.PolicyDetails.Rules.ConditionsMatched.SensitiveInformation.Count
+          - o365audit.PolicyDetails.Rules.ConditionsMatched.SensitiveInformation.UniqueCount
+          - o365audit.SensitivityLabelEventData.ActionSourceDetail
+          - o365audit.SensitivityLabelEventData.LabelEventType
+          - o365audit.SharePointMetaData.FileSize
+      source: |-
+        // Convert obj[key] in place if it is a numeric string.
+        void convert(def obj, def key) {
+          def v = obj[key];
+          if (!(v instanceof String)) {
+            return;
+          }
+          BigDecimal d;
+          try {
+            d = new BigDecimal(v.trim());
+          } catch (NumberFormatException e) {
+            return;
+          }
+          try {
+            obj[key] = d.longValueExact();
+          } catch (ArithmeticException e) {
+            obj[key] = d.doubleValue();
+          }
+        }
+        // Convert every value reachable from root through the dotted path.
+        void convertPath(def root, String path) {
+          def segs = path.splitOnToken('.');
+          def nodes = [root];
+          for (int i = 0; i < segs.length; i++) {
+            def seg = segs[i];
+            boolean last = i == segs.length - 1;
+            // Expand lists so the path applies to each element.
+            def maps = [];
+            for (def node : nodes) {
+              if (node instanceof List) {
+                for (def item : node) {
+                  if (item instanceof Map) {
+                    maps.add(item);
+                  }
+                }
+              } else if (node instanceof Map) {
+                maps.add(node);
+              }
+            }
+            def next = [];
+            for (def node : maps) {
+              if (seg == '*') {
+                for (def key : new ArrayList(node.keySet())) {
+                  convert(node, key);
+                }
+              } else if (last) {
+                convert(node, seg);
+              } else if (node[seg] != null) {
+                next.add(node[seg]);
+              }
+            }
+            nodes = next;
+          }
+        }
+        for (def path : params.fields) {
+          convertPath(ctx, path);
+        }
   - script:
       description: Handle _tmp.entities.ThreatDetectionMethods containing list of lists.
       lang: painless
