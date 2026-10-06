@@ -104,7 +104,7 @@ For help with Elastic ingest tools, check [Common problems](https://www.elastic.
 
 ### Throughput and ingestion delay
 
-The `event` data stream collects events sequentially: each request returns at most **3000 events**, and the next request needs the marker from the previous response, so requests cannot be issued in parallel. The maximum sustained collection rate is therefore bounded by:
+The `event` data stream collects events sequentially: each request returns at most **3000 events** (a limit of the Cato Networks API, see [Cato API - EventsFeed](https://knowledge.catonetworks.com/docs/cato-api-eventsfeed-large-scale-event-monitoring)), and the next request needs the marker from the previous response, so requests cannot be issued in parallel. The maximum sustained collection rate is therefore bounded by:
 
 `3000 events / (API response time + processing time)`
 
