@@ -352,22 +352,11 @@ processors:
               String group_id = ctx.confluence?.audit?.affected_objects[j]?.id;
               String target_user_id = null;
               if(ctx._config?.atlassian_cloud != null && group_name != null) {
-                  // Cloud renders groups as '<groupName>:<groupId>'
-                  // (https://community.developer.atlassian.com/t/adding-groupid-to-audit-logs/45177).
-                  // Split on the last ':' only when a 36-char UUID follows; checking length and
-                  // suffix first keeps the regex work bounded (avoids the Painless regex limit
-                  // that unanchored patterns can hit on long names).
-                  int sep = group_name.lastIndexOf(':');
-                  if (sep > 0 && group_name.length() - sep - 1 == 36) {
-                    String suffix = group_name.substring(sep + 1);
-                    if (suffix ==~ /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/) {
-                      group_name = group_name.substring(0, sep);
-                      group_id = suffix;
-                    }
-                  }
                   // Some Cloud membership events carry no group name, only
                   // '<groupId>; User: <accountId>' (observed, undocumented). Extract both IDs
-                  // and drop the name, which does not exist in the source.
+                  // and drop the name, which does not exist in the source. This runs before the
+                  // '<groupName>:<groupId>' split below because a legacy account ID of the form
+                  // '557058:<uuid>' also ends in ':<uuid>' and would otherwise be truncated.
                   int marker = group_name.indexOf('; User: ');
                   if (marker == 36) {
                     String gid = group_name.substring(0, 36);
@@ -376,6 +365,22 @@ processors:
                       group_id = gid;
                       group_name = null;
                       target_user_id = uid;
+                    }
+                  }
+                  // Cloud renders groups as '<groupName>:<groupId>'
+                  // (https://community.developer.atlassian.com/t/adding-groupid-to-audit-logs/45177).
+                  // Split on the last ':' only when a 36-char UUID follows; checking length and
+                  // suffix first keeps the regex work bounded (avoids the Painless regex limit
+                  // that unanchored patterns can hit on long names). Skipped when the
+                  // '; User: ' form above consumed the name.
+                  if (group_name != null) {
+                    int sep = group_name.lastIndexOf(':');
+                    if (sep > 0 && group_name.length() - sep - 1 == 36) {
+                      String suffix = group_name.substring(sep + 1);
+                      if (suffix ==~ /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/) {
+                        group_name = group_name.substring(0, sep);
+                        group_id = suffix;
+                      }
                     }
                   }
               }
