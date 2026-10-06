@@ -4,11 +4,11 @@
 
 The Claude Code integration collects [OpenTelemetry](https://opentelemetry.io/) log events and traces emitted by [Anthropic Claude Code](https://code.claude.com/), the AI coding agent. It provides typed field mappings, ingest pipelines for structured queries, security-focused dashboards for tool invocation auditing, cost monitoring, and permission analysis, and a traces overview dashboard for LLM usage, latency, and tool activity.
 
-Claude Code exports telemetry as OTLP (OpenTelemetry Protocol) logs or traces. Each log event represents an action in an agentic session: tool calls (shell commands, file operations, MCP tool invocations), API requests, user prompts, permission decisions, and lifecycle events. Trace spans connect interactions, LLM requests, and tool calls into one trace per user turn. Trace export is in beta.
+Claude Code exports telemetry as OTLP (OpenTelemetry Protocol) logs and, optionally, traces. Each log event represents an action in an agentic session: tool calls (shell commands, file operations, MCP tool invocations), API requests, user prompts, permission decisions, and lifecycle events. Trace spans connect interactions, LLM requests, and tool calls into one trace per user turn. Trace export is in beta.
 
 ### Compatibility
 
-This integration requires Claude Code CLI version 2.1.0 or later, which supports OTLP log export. Traces require a version that supports `CLAUDE_CODE_ENHANCED_TELEMETRY_BETA`.
+This integration requires Claude Code CLI version 2.1.0 or later, which supports OTLP log export. Traces require version 2.1.101 or later. Earlier versions emit beta trace spans but don't apply the [verbosity gates](#verbosity-gates) to them, so spans can include prompts and tool content even when the gates are off.
 
 ### How it works
 
@@ -216,8 +216,6 @@ Without the `transform` processors, data goes to `logs-generic.otel-*` and `trac
 
 After deploying, run a short Claude Code session with telemetry enabled and confirm events appear in the `logs-claude_code.events.otel-*` data stream. For example, in Kibana Discover, filter on `data_stream.dataset: claude_code.events.otel`. For traces, filter on `data_stream.dataset: claude_code.otel`.
 
-*Note: to use a namespace other than `default`, add `data_stream.namespace` to `OTEL_RESOURCE_ATTRIBUTES`.*
-
 ### Claude Code Desktop traces
 
 Claude Code Desktop ignores `OTEL_RESOURCE_ATTRIBUTES` ([open issue](https://github.com/anthropics/claude-code/issues/95269)) and reports `resource.attributes.service.name: claude-code-desktop`. When Desktop sends traces directly to Elasticsearch, its spans go to `traces-generic.otel-*`. Option B and Option C set the dataset for you. For Option A, the reroute pipeline in [Option A](#option-a-managed-otlp-motlp-recommended) moves Desktop spans to `traces-claude_code.otel-*` by `service.name`.
@@ -244,10 +242,6 @@ Tool parameters, tool input, and prompt text are gated by environment variables 
 
 Events with `event.kind: pipeline_error` and a `preserve_original_event` tag indicate the events ingest pipeline encountered an error (typically malformed JSON in `tool_parameters` or `tool_input`). The original event is preserved for inspection. Spans with `event.kind: pipeline_error` indicate the traces ingest pipeline encountered an error. The failure details are in `error.message`.
 
-## Performance and scaling
-
-Data volume grows with usage: each user turn produces several log events and spans. Verbosity gates and **Preserve original event** (events data stream only) increase document size. For many clients, use an [EDOT Collector](#option-c-edot-collector) gateway, which batches data and can be scaled horizontally.
-
 ## Reference
 
 ### Ingest pipelines
@@ -270,13 +264,13 @@ It also extracts:
 **Tool invocation auditing** — query all Bash commands executed by a user:
 
 ```
-gen_ai.tool.name: "Bash" AND event.action: "tool_result"
+claude_code.tool_name: "Bash" AND event.action: "tool_result"
 ```
 
 **Permission decision analysis** — find `user_permanent` auto-approvals (potential risk signal):
 
 ```
-event.action: "tool_decision" AND claude_code.events.source: "user_permanent"
+event.action: "tool_decision" AND claude_code.decision_source: "user_permanent"
 ```
 
 **Cost anomaly detection** — aggregate `cost_usd` per user per day to detect unusual spending patterns.
@@ -284,7 +278,7 @@ event.action: "tool_decision" AND claude_code.events.source: "user_permanent"
 **MCP server access monitoring** — track which MCP servers users connect to and which tools they invoke:
 
 ```
-event.action: "mcp_server_connection" OR (event.action: "tool_result" AND claude_code.events.mcp_server_name: *)
+event.action: "mcp_server_connection" OR (event.action: "tool_result" AND claude_code.tool_name: "mcp_tool")
 ```
 
 ### Logs reference
