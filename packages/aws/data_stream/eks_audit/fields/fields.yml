@@ -396,19 +396,20 @@
 - name: aws.eks.audit.stageTimestamp
   type: date
   description: Time when the request reached the audit stage recorded by this event.
-- name: aws.eks.audit.annotations.authorization_k8s_io/decision
-  type: keyword
-  description: Kubernetes authorization decision for the request, such as allow or forbid.
-- name: aws.eks.audit.annotations.authorization_k8s_io/reason
-  type: text
-  description: Reason reported by the Kubernetes authorizer for its decision.
-- name: aws.eks.audit.annotations.pod-security_kubernetes_io/audit-violations
-  type: text
-  description: Pod Security admission violations reported in audit mode.
 - name: aws.eks.audit.annotations
-  type: object
-  object_type: keyword
-  description: Additional string-valued Kubernetes audit annotations dynamically indexed as keywords, with dots in annotation keys replaced by underscores.
+  type: group
+  dynamic: false
+  description: Kubernetes audit annotations, with dots in annotation keys replaced by underscores. Only the fields listed here are indexed; other annotations are retained in `_source` but are not searchable. To query an additional annotation, add it to a `logs-aws.eks_audit@custom` component template.
+  fields:
+    - name: authorization_k8s_io/decision
+      type: keyword
+      description: Kubernetes authorization decision for the request, such as allow or forbid.
+    - name: authorization_k8s_io/reason
+      type: text
+      description: Reason reported by the Kubernetes authorizer for its decision.
+    - name: pod-security_kubernetes_io/audit-violations
+      type: text
+      description: Pod Security admission violations reported in audit mode.
 - name: aws.eks.audit.requestObject.subjects
   type: group
   description: Subjects bound to a role by the Kubernetes API request object.
