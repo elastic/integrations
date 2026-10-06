@@ -156,7 +156,7 @@ On self-managed and Elastic Cloud Hosted deployments this version of the package
 
 To keep data for a different period:
 
-- Self-managed and Elastic Cloud Hosted, for `logs-ti_opencti.indicator-*`: no package policy is attached, so the default `logs` policy applies. To give it its own retention, create an ILM policy and set `index.lifecycle.name` to it in the `logs-ti_opencti.indicator@custom` component template (Fleet keeps `@custom` templates across package upgrades). The change applies from the next rollover.
+- Self-managed and Elastic Cloud Hosted: no package policy is attached to `logs-ti_opencti.indicator-*`, so the default `logs` policy applies. To set a retention, create an ILM policy and add `index.lifecycle.name: <policy name>` to the `logs-ti_opencti.indicator@custom` component template. Fleet keeps `@custom` templates across package upgrades, and the change applies from the next rollover.
 - Serverless: set the retention on the data stream, for example `PUT _data_stream/logs-ti_opencti.indicator-default/_lifecycle` with the body `{"data_retention": "90d"}`. Replace `default` with your namespace.
 
 #### Example

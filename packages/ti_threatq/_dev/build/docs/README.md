@@ -51,8 +51,7 @@ On self-managed and Elastic Cloud Hosted deployments this version of the package
 
 To keep data for a different period:
 
-- Self-managed and Elastic Cloud Hosted: edit the ILM policy in Kibana under **Stack Management → Index Lifecycle Policies**, or with `PUT _ilm/policy/<policy name>`. A package upgrade reinstalls the package's ILM policies, so check your change after upgrading.
-- Self-managed and Elastic Cloud Hosted, for `logs-ti_threatq.threat-*`: no package policy is attached, so the default `logs` policy applies. To give it its own retention, set `index.lifecycle.name: logs-ti_threatq.threat-default_policy` to attach the installed policy (edit that policy afterwards if you want a different period) in the `logs-ti_threatq.threat@custom` component template (Fleet keeps `@custom` templates across package upgrades). The change applies from the next rollover.
+- Self-managed and Elastic Cloud Hosted: no package policy is attached to `logs-ti_threatq.threat-*`, so the default `logs` policy applies. To attach the policy, which the package installs as `logs-ti_threatq.threat-default_policy` but does not reference, add `index.lifecycle.name: logs-ti_threatq.threat-default_policy` to the `logs-ti_threatq.threat@custom` component template. Fleet keeps `@custom` templates across package upgrades, and the change applies from the next rollover. To use a different period, edit `logs-ti_threatq.threat-default_policy` after attaching it.
 - Serverless: set the retention on the data stream, for example `PUT _data_stream/logs-ti_threatq.threat-default/_lifecycle` with the body `{"data_retention": "90d"}`. Replace `default` with your namespace.
 
 {{fields "threat"}}
