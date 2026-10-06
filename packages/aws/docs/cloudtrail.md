@@ -237,6 +237,7 @@ Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ec
 | aws.cloudtrail.user_identity.invoked_by_delegate.account_id | The AWS account ID of the product provider that initiated the request. | keyword |
 | aws.cloudtrail.user_identity.on_behalf_of.identity_store_arn | The ARN of the IAM Identity Center identity store that the call was made on behalf of. | keyword |
 | aws.cloudtrail.user_identity.on_behalf_of.user_id | The ID of the IAM Identity Center user who the call was made on behalf of. | keyword |
+| aws.cloudtrail.user_identity.principal_id | The unique identifier of the principal that made the call, as reported by CloudTrail in `userIdentity.principalId`. For IAM users, the root user and assumed roles, `user.id` holds the IAM ARN instead. | keyword |
 | aws.cloudtrail.user_identity.session_context.assumed_root | The value is true for a temporary session when a management account or delegated administrator calls AWS STS AssumeRoot. | boolean |
 | aws.cloudtrail.user_identity.session_context.creation_date | The date and time when the temporary security credentials were issued. | date |
 | aws.cloudtrail.user_identity.session_context.ec2_role_delivery | The value is 1.0 if the credentials were provided by Amazon EC2 Instance Metadata Service Version 1 (IMDSv1). The value is 2.0 if the credentials were provided using the new IMDS scheme. | keyword |
@@ -268,6 +269,7 @@ Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ec
 | host.os.build | OS build information. | keyword |
 | host.os.codename | OS codename, if any. | keyword |
 | host.target.entity.id | Unique identifier for compute resources targeted by CloudTrail events. Includes EC2 instance IDs, EBS volume IDs, snapshot IDs, and AMI IDs. | keyword |
+| host.target.id | Bare EC2 instance ID (`i-...`) of the compute instance targeted by the event, matching the host id used by Cloud Asset Inventory. | keyword |
 | input.type | Input type | keyword |
 | log.offset | Log offset | long |
 | related.entity | A collection of all entity identifiers associated with the document.  If the document  contains multiple entities, identifiers for each will be included. Example identifiers include(but not limited to) cloud resource IDs, ARNs,  email addresses, and hostnames. | keyword |

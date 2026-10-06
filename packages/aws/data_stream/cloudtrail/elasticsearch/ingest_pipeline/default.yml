@@ -955,6 +955,27 @@ processors:
           }
           if (!hostTargets.isEmpty()) {
             field("host.target.entity.id").set(new ArrayList(hostTargets));
+
+            // host.target.id carries only the bare EC2 instance ID (i-...), which is the
+            // host.id Cloud Asset Inventory uses. ARN-form targets are reduced to that ID;
+            // anything that is not an EC2 instance is left out.
+            def hostTargetIds = new TreeSet();
+            for (def hostTarget : hostTargets) {
+              String hostTargetId = hostTarget.toString();
+              if (hostTargetId.startsWith("arn:")) {
+                def arnParts = hostTargetId.splitOnToken(":");
+                if (arnParts.length < 6 || arnParts[2] != "ec2" || !arnParts[5].startsWith("instance/")) {
+                  continue;
+                }
+                hostTargetId = arnParts[5].substring("instance/".length());
+              }
+              if (hostTargetId.startsWith("i-")) {
+                hostTargetIds.add(hostTargetId);
+              }
+            }
+            if (!hostTargetIds.isEmpty()) {
+              field("host.target.id").set(new ArrayList(hostTargetIds));
+            }
           }
           if (!serviceTargets.isEmpty()) {
             field("service.target.entity.id").set(new ArrayList(serviceTargets));
@@ -1049,6 +1070,12 @@ processors:
       target_field: user.id
       ignore_missing: true
       tag: rename_user_identity_principal_id_1f790b6f
+  - set:
+      tag: set_aws_cloudtrail_user_identity_principal_id_a453359d
+      field: aws.cloudtrail.user_identity.principal_id
+      copy_from: user.id
+      ignore_empty_value: true
+      if: ctx.user?.id != null
   - rename:
       tag: rename_json_userIdentity_arn_to_aws_cloudtrail_user_identity_arn_02745565
       field: json.userIdentity.arn
@@ -1182,6 +1209,27 @@ processors:
       field: json.userIdentity.sessionContext.sessionIssuer.accountId
       target_field: aws.cloudtrail.user_identity.session_context.session_issuer.account_id
       ignore_missing: true
+  # Use the IAM ARN as user.id for IAM users, the root user and assumed roles. This is the id
+  # Cloud Asset Inventory gives IAM users and roles, so the Entity Store resolves the same entity.
+  # For assumed roles the role ARN (not the per-session ARN) is used, so every session of a role
+  # maps to one entity. The raw principalId stays in aws.cloudtrail.user_identity.principal_id.
+  - set:
+      tag: set_user_id_from_iam_user_arn_c155d785
+      field: user.id
+      copy_from: aws.cloudtrail.user_identity.arn
+      ignore_empty_value: true
+      if: >-
+        (ctx.aws?.cloudtrail?.user_identity?.type == 'IAMUser' ||
+        ctx.aws?.cloudtrail?.user_identity?.type == 'Root') &&
+        ctx.aws?.cloudtrail?.user_identity?.arn != null
+  - set:
+      tag: set_user_id_from_assumed_role_arn_8aaeedbf
+      field: user.id
+      copy_from: aws.cloudtrail.user_identity.session_context.session_issuer.arn
+      ignore_empty_value: true
+      if: >-
+        ctx.aws?.cloudtrail?.user_identity?.type == 'AssumedRole' &&
+        ctx.aws?.cloudtrail?.user_identity?.session_context?.session_issuer?.arn != null
   - rename:
       tag: rename_json_sessionCredentialFromConsole_to_aws_cloudtrail_session_credential_from_console_6cdda950
       field: json.sessionCredentialFromConsole
@@ -2325,6 +2373,12 @@ processors:
       if: ctx.user?.email == null && ctx.user?.name != null && ctx.user.name.indexOf("@") > 0
   # Don't dissect the user email into <user.name>@<user.domain>
   # as the parts are meaningless on their own
+  - append:
+      tag: append_related_user_principal_id_1223a3cd
+      field: related.user
+      value: '{{{aws.cloudtrail.user_identity.principal_id}}}'
+      if: ctx.aws?.cloudtrail?.user_identity?.principal_id != null
+      allow_duplicates: false
   - append:
       tag: append_related_user_3b2f7fde
       field: related.user
