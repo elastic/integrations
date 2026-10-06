@@ -18,17 +18,16 @@ processors:
           - set(attributes["source.address"], cache["source.address"])
           - set(attributes["client.address"], cache["source.address"])
           - set(attributes["http.response.body.size"], cache["http.response.body.size"])
-          - set(attributes["http.version"], cache["http.version"])
           - set(attributes["network.protocol.name"], "http")
           - set(attributes["network.protocol.version"], cache["http.version"])
           - set(attributes["user_agent.original"], cache["user_agent.original"])
           - set(attributes["user.name"], cache["user.name"]) where cache["user.name"] != nil and cache["user.name"] != "-"
-          - set(attributes["http.request.header.referer"], cache["http.request.referrer"]) where cache["http.request.referrer"] != nil and cache["http.request.referrer"] != "-"
+          - set(attributes["http.request.header.referer"], [cache["http.request.referrer"]]) where cache["http.request.referrer"] != nil and cache["http.request.referrer"] != "-"
           - merge_maps(cache, UserAgent(cache["user_agent.original"]), "upsert") where cache["user_agent.original"] != nil
           - set(attributes["user_agent.name"], cache["user_agent.name"]) where cache["user_agent.name"] != nil
           - set(attributes["user_agent.version"], cache["user_agent.version"]) where cache["user_agent.version"] != nil
-          - set(attributes["os.name"], cache["os.name"]) where cache["os.name"] != nil
-          - set(attributes["os.version"], cache["os.version"]) where cache["os.version"] != nil
+          - set(attributes["user_agent.os.name"], cache["os.name"]) where cache["os.name"] != nil
+          - set(attributes["user_agent.os.version"], cache["os.version"]) where cache["os.version"] != nil
   resourcedetection/system:
     detectors: ["system"]
     system:

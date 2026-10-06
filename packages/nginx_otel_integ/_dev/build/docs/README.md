@@ -8,7 +8,7 @@ This integration collects Nginx telemetry through OpenTelemetry Collector receiv
 
 - **Metrics** (`nginxreceiver.otel`) — stub_status request count, accepted and handled connections, and current connections by state (active, reading, writing, waiting), scraped by the [nginxreceiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/nginxreceiver)
 - **Access logs** (`nginx.access.otel`) — HTTP access log lines tailed by the [filelogreceiver](https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/receiver/filelogreceiver) and parsed by a transform processor into fields such as `http.request.method`, `http.response.status_code`, `url.original`, `url.path`, `client.address`, `network.protocol.version`, and `user_agent.name`
-- **Error logs** (`nginx.error.otel`) — error log lines tailed by the filelogreceiver, with multiline support, parsed into `log.level`, `severity_text`, `process.pid`, `process.thread.id`, and request details from the message (`client.address`, `http.request.method`)
+- **Error logs** (`nginx.error.otel`) — error log lines tailed by the filelogreceiver, with multiline support, parsed into `severity_text`, `process.pid`, `process.thread.id`, and request details from the message (`client.address`, `http.request.method`)
 
 Metrics and logs are stored with the native OTel schema — no field renaming or custom mapping is applied.
 

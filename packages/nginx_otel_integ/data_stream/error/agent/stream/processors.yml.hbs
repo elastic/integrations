@@ -11,7 +11,6 @@ processors:
           - set(time, Time(cache["nginx.error.time"], "%Y/%m/%d %H:%M:%S"))
           - delete_key(cache, "nginx.error.time")
           - set(severity_text, cache["log.level"])
-          - set(attributes["log.level"], cache["log.level"])
           - set(attributes["process.pid"], cache["process.pid"])
           - set(attributes["process.thread.id"], cache["process.thread.id"])
           - set(attributes["nginx.error.connection_id"], cache["nginx.error.connection_id"]) where cache["nginx.error.connection_id"] != nil
@@ -31,7 +30,6 @@ processors:
           - set(attributes["url.original"], cache["url_original"]) where cache["url_original"] != nil and cache["url_original"] != ""
           - set(attributes["url.path"], Split(cache["url_original"], "?")[0]) where cache["url_original"] != nil and cache["url_original"] != ""
           - set(attributes["url.query"], Split(cache["url_original"], "?")[1]) where cache["url_original"] != nil and Len(Split(cache["url_original"], "?")) > 1
-          - set(attributes["http.version"], cache["http_version"]) where cache["http_version"] != nil and cache["http_version"] != ""
           - set(attributes["network.protocol.name"], "http") where cache["http_version"] != nil and cache["http_version"] != ""
           - set(attributes["network.protocol.version"], cache["http_version"]) where cache["http_version"] != nil and cache["http_version"] != ""
   resourcedetection/system:
