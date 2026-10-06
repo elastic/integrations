@@ -69,20 +69,11 @@ unbounded growth. This means data in these source indices will be deleted after
 **NOTE:** For large risklist downloads, adjust the timeout setting so that the
 Agent has enough time to download and process the risklist.
 
-## Agentless Enabled Integration
+## Elastic Managed enabled integration
 
-Agentless integrations allow you to collect data without having to manage
-Elastic Agent in your cloud. They make manual agent deployment unnecessary, so
-you can focus on your data instead of the agent that collects it. For more
-information, refer to [Agentless integrations][agentless_integrations] and the
-[Agentless integrations FAQ][agentless_faq].
+Elastic Managed integrations are only supported on Elastic Cloud Serverless and Elastic Cloud Hosted deployments. An Elastic Managed integration lets you ingest data from a cloud source while avoiding the orchestration, management, and maintenance associated with standard ingest infrastructure. Elastic runs the collector for you, so you can focus on your data instead of the infrastructure that collects it.
 
-Agentless deployments are only supported in Elastic Serverless and Elastic Cloud
-environments. This functionality is in beta and is subject to change. Beta
-features are not subject to the support SLA of official GA features.
-
-[agentless_integrations]: https://www.elastic.co/docs/solutions/security/get-started/agentless-integrations
-[agentless_faq]: https://www.elastic.co/docs/troubleshoot/security/agentless-integrations
+For more information, refer to [Elastic Managed integrations](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations) and the [Elastic Managed integrations FAQ](https://www.elastic.co/docs/manage-data/ingest/managed-integrations/managed-integrations-faq).
 
 ## Logs reference
 
