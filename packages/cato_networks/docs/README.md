@@ -102,6 +102,20 @@ For help with Elastic ingest tools, check [Common problems](https://www.elastic.
 
 - If you encounter rate limiting errors, consider decreasing the `Resource Rate Limit` parameter or increasing the `Interval` value.
 
+### Throughput and ingestion delay
+
+The `event` data stream collects events sequentially: each request returns at most **3000 events**, and the next request needs the marker from the previous response, so requests cannot be issued in parallel. The maximum sustained collection rate is therefore bounded by:
+
+`3000 events / (API response time + processing time)`
+
+For example, at about 1.4 seconds per request the integration can collect roughly 2,100 events per second. If your Cato Networks account produces events faster than that, the integration falls behind and the difference between `@timestamp` and `event.ingested` keeps growing, without any errors in Fleet or Elasticsearch. Slower API response times, for example during busy periods, lower this ceiling.
+
+- **`Maximum Pages Per Interval` (`max_executions`)**: while the integration is behind, it keeps requesting pages back to back, without waiting for the `Interval`, until it has made `max_executions` requests in a row (default `1000`, up to 3,000,000 events). It then pauses until the next `Interval`, and the Elastic Agent logs `reached maximum number of CEL executions`. When catching up on a large backlog, increase this value or decrease the `Interval` so the pause is shorter or never reached.
+- **Processors such as `drop_event`** run after events have been fetched. They reduce the volume indexed in Elasticsearch, but not the number of events fetched per second, so they do not reduce the delay.
+- **Elasticsearch and Elastic Agent output tuning** does not help when the bottleneck is retrieval from the Cato Networks API.
+
+A delay that keeps growing should be addressed promptly: the marker expires after 3 days (see [Limitation](#limitation)), after which events that were not yet collected are permanently lost.
+
 ## Limitation:
 
 - The EventsFeed API operates with a time-based data retrieval mechanism. On the initial API call, no data will be returned as it establishes a baseline marker. Subsequent requests will retrieve events that occurred between the current request and the previous one. Due to this behavior, data ingestion begins only after the first interval has elapsed, so it is expected to have a delay equal to the configured interval before seeing the first events in Elasticsearch.
