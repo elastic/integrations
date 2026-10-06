@@ -994,22 +994,22 @@ An example event for `tychon_pqc` looks as following:
 {
     "@timestamp": "2026-07-06T17:03:00.055Z",
     "agent": {
-        "ephemeral_id": "dad4ba4e-58df-48a9-b4bd-a39bb9558cf3",
-        "id": "ad725662-dd67-42f6-9170-11ab457e5186",
-        "name": "elastic-agent-12520",
+        "ephemeral_id": "28798aa2-e483-42a3-8867-cc691d10c3e9",
+        "id": "c00db012-1bb2-41df-b6ad-7bfb7aa92350",
+        "name": "elastic-agent-33498",
         "type": "filebeat",
         "version": "9.4.4"
     },
     "data_stream": {
         "dataset": "tychon_quantum_command.tychon_pqc",
-        "namespace": "50030",
+        "namespace": "72936",
         "type": "logs"
     },
     "ecs": {
         "version": "8.17.0"
     },
     "elastic_agent": {
-        "id": "ad725662-dd67-42f6-9170-11ab457e5186",
+        "id": "c00db012-1bb2-41df-b6ad-7bfb7aa92350",
         "snapshot": false,
         "version": "9.4.4"
     },
@@ -1019,7 +1019,7 @@ An example event for `tychon_pqc` looks as following:
             "process"
         ],
         "dataset": "tychon_quantum_command.tychon_pqc",
-        "ingested": "2026-09-22T18:50:48Z",
+        "ingested": "2026-09-17T19:52:57Z",
         "kind": "event",
         "module": "tychon_quantum_command",
         "timezone": "+00:00",
@@ -1032,7 +1032,7 @@ An example event for `tychon_pqc` looks as following:
         "containerized": true,
         "domain": "example.test",
         "hostname": [
-            "elastic-agent-12520",
+            "elastic-agent-33498",
             "test-host-01"
         ],
         "id": "00000000-0000-4000-8000-000000000002",
@@ -1041,10 +1041,10 @@ An example event for `tychon_pqc` looks as following:
             "172.19.0.5"
         ],
         "mac": [
-            "46-CA-E3-02-81-00",
-            "DE-2F-40-B4-E9-F4"
+            "AA-2F-F8-C6-75-9B",
+            "DE-8E-00-65-FC-7A"
         ],
-        "name": "elastic-agent-12520",
+        "name": "elastic-agent-33498",
         "os": {
             "kernel": "5.15.167.4-microsoft-standard-WSL2",
             "name": "Wolfi",
@@ -1060,7 +1060,7 @@ An example event for `tychon_pqc` looks as following:
         "file": {
             "device_id": "2080",
             "fingerprint": "c3bcc1408b1e5f41d97bb84c34c14a5ee739ac01cae8689818b4bd470b280280",
-            "inode": "467280",
+            "inode": "444175",
             "path": "/tmp/service_logs/tqc.ndjson"
         },
         "offset": 0
