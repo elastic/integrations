@@ -237,7 +237,6 @@ Refer to the following [document](https://www.elastic.co/guide/en/ecs/current/ec
 | aws.cloudtrail.user_identity.invoked_by_delegate.account_id | The AWS account ID of the product provider that initiated the request. | keyword |
 | aws.cloudtrail.user_identity.on_behalf_of.identity_store_arn | The ARN of the IAM Identity Center identity store that the call was made on behalf of. | keyword |
 | aws.cloudtrail.user_identity.on_behalf_of.user_id | The ID of the IAM Identity Center user who the call was made on behalf of. | keyword |
-| aws.cloudtrail.user_identity.principal_id | The unique identifier of the principal that made the call, as reported by CloudTrail in `userIdentity.principalId`. For IAM users, the root user and assumed roles, `user.id` holds the IAM ARN instead. | keyword |
 | aws.cloudtrail.user_identity.session_context.assumed_root | The value is true for a temporary session when a management account or delegated administrator calls AWS STS AssumeRoot. | boolean |
 | aws.cloudtrail.user_identity.session_context.creation_date | The date and time when the temporary security credentials were issued. | date |
 | aws.cloudtrail.user_identity.session_context.ec2_role_delivery | The value is 1.0 if the credentials were provided by Amazon EC2 Instance Metadata Service Version 1 (IMDSv1). The value is 2.0 if the credentials were provided using the new IMDS scheme. | keyword |
