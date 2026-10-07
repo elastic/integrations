@@ -24,13 +24,6 @@ resource.retry.wait_max: {{resource_retry_wait_max}}
 resource.rate_limit.limit: 1
 resource.rate_limit.burst: 1
 resource.url: {{url}}
-resource.headers:
-  Accept:
-    - application/json
-  Content-Type:
-    - application/json
-  User-Agent:
-    - elastic-snowflake/1.0
 state:
   token: {{token}}
   role: {{role}}
@@ -38,24 +31,25 @@ state:
   batch_size: {{batch_size}}
   initial_interval: {{initial_interval}}
   lag_time: {{lag_time}}
+  user_agent: Elastic-Snowflake/{{#if _meta.package.version}}{{_meta.package.version}}{{else}}unknown{{/if}}
   want_more: false
 redact:
   fields:
     - token
 program: |-
-  ((state.?want_more.orValue(false) && string(state.?cursor.handle.orValue("")) != "") ? "GET" : "POST").as(
+  ((state.?want_more.orValue(false) && state.?cursor.handle.orValue("") != "") ? "GET" : "POST").as(
     http_method,
     (
       (http_method == "GET") ?
         (
           (int(state.?cursor.next_partition.orValue(0)) > 0) ?
             (
-              state.url.trim_right("/") + "/api/v2/statements/" + string(state.cursor.handle) + "?" + {
+              state.url.trim_right("/") + "/api/v2/statements/" + state.cursor.handle + "?" + {
                 "partition": [string(int(state.cursor.next_partition))],
               }.format_query()
             )
           :
-            state.url.trim_right("/") + "/api/v2/statements/" + string(state.cursor.handle)
+            state.url.trim_right("/") + "/api/v2/statements/" + state.cursor.handle
         )
       :
         state.url.trim_right("/") + "/api/v2/statements?" + {
@@ -74,18 +68,24 @@ program: |-
               "X-Snowflake-Authorization-Token-Type": ["PROGRAMMATIC_ACCESS_TOKEN"],
               "Accept": ["application/json"],
               "Content-Type": ["application/json"],
+              "User-Agent": [state.user_agent],
             },
             ?"Body": (http_method == "POST") ?
               optional.of(
                 {
-                  "statement": "SELECT * FROM SNOWFLAKE.ACCOUNT_USAGE.SESSIONS " + "WHERE ACCESS_TIME > ? " + "ORDER BY ACCESS_TIME ASC, SESSION_ID ASC " + "LIMIT " + string(state.batch_size),
+                  "statement": "SELECT * FROM SNOWFLAKE.ACCOUNT_USAGE.SESSIONS " + "WHERE ACCESS_TIME " + (state.?cursor.continue.orValue(false) ? ">= ?" : "> ?") + " ORDER BY ACCESS_TIME ASC, SESSION_ID ASC " + "LIMIT " + string(state.batch_size),
                   "warehouse": state.warehouse,
                   "role": state.role,
                   "bindings": {
                     "1": {
                       "type": "TEXT",
                       "value": (state.?cursor.last_timestamp.orValue("") != "") ?
-                        (state.cursor.last_timestamp.parse_time("2006-01-02 15:04:05.000 -0700") - duration(state.lag_time)).format("2006-01-02 15:04:05.000 -0700")
+                        (
+                          state.?cursor.continue.orValue(false) ?
+                            state.cursor.last_timestamp
+                          :
+                            (state.cursor.last_timestamp.parse_time("2006-01-02 15:04:05.000 -0700") - duration(state.lag_time)).format("2006-01-02 15:04:05.000 -0700")
+                        )
                       :
                         (now - duration(state.initial_interval)).format("2006-01-02 15:04:05.000 -0700"),
                     },
@@ -116,7 +116,7 @@ program: |-
                 {
                   "events": [{"retry": true}],
                   "cursor": {
-                    ?"last_timestamp": (state.?cursor.last_timestamp.orValue("") != "") ? optional.of(string(state.cursor.last_timestamp)) : optional.none(),
+                    ?"last_timestamp": (state.?cursor.last_timestamp.orValue("") != "") ? optional.of(state.cursor.last_timestamp) : optional.none(),
                     "handle": string(body.statementHandle),
                     "next_partition": 0,
                   },
@@ -148,14 +148,14 @@ program: |-
                   :
                     int(state.?cursor.partition_count.orValue(0)),
                   "num_rows": int(body.?resultSetMetaData.numRows.orValue(state.?cursor.num_rows.orValue(0))),
-                  "handle": string(body.?statementHandle.orValue(string(state.?cursor.handle.orValue("")))),
+                  "handle": string(body.?statementHandle.orValue(state.?cursor.handle.orValue(""))),
                 }.as(result,
                   {
                     "events": (size(result.rows) > 0) ?
                       dyn(result.rows.map(row, {"message": result.names.zip(row).encode_json()}))
                     : (
                       int(state.?cursor.next_partition.orValue(0)) + 1 < result.partition_count ||
-                      int(result.num_rows) >= int(state.batch_size)
+                      result.num_rows >= int(state.batch_size)
                     ) ?
                       dyn([{"retry": true}])
                     :
@@ -168,7 +168,7 @@ program: |-
                           (size(row_timestamps) > 0) ?
                             (
                               (state.?cursor.last_timestamp.orValue("") != "") ?
-                                (row_timestamps + [string(state.cursor.last_timestamp)]).max()
+                                (row_timestamps + [state.cursor.last_timestamp]).max()
                               :
                                 row_timestamps.max()
                             )
@@ -177,6 +177,7 @@ program: |-
                         )
                       :
                         state.?cursor.last_timestamp.orValue(""),
+                      "continue": result.num_rows >= int(state.batch_size),
                     }.with(
                       (int(state.?cursor.next_partition.orValue(0)) + 1 < result.partition_count) ?
                         {
@@ -191,7 +192,7 @@ program: |-
                     ),
                     // want_more: remaining partitions, or another statement when LIMIT was filled
                     "want_more": int(state.?cursor.next_partition.orValue(0)) + 1 < result.partition_count ||
-                    int(result.num_rows) >= int(state.batch_size),
+                    result.num_rows >= int(state.batch_size),
                   }
                 )
             )
