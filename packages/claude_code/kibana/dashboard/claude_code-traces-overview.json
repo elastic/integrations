@@ -43,11 +43,12 @@
                         "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "traces-claude_code.otel-*-3877208ba26afe90d86660b827378fe9a353488bee60b3d6356033a17de671ee": {
+                                "traces-claude_code.otel-*-@timestamp": {
                                     "allowNoIndex": false,
-                                    "id": "traces-claude_code.otel-*-3877208ba26afe90d86660b827378fe9a353488bee60b3d6356033a17de671ee",
+                                    "id": "traces-claude_code.otel-*-@timestamp",
                                     "name": "traces-claude_code.otel-*",
                                     "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
                                     "title": "traces-claude_code.otel-*",
                                     "type": "esql"
                                 }
@@ -60,18 +61,19 @@
                                                 {
                                                     "columnId": "metric_accessor_metric",
                                                     "customLabel": true,
-                                                    "fieldName": "Total Count",
-                                                    "label": "Total Count",
+                                                    "fieldName": "LLM Request Count",
+                                                    "label": "LLM Request Count",
                                                     "meta": {
                                                         "type": "number"
                                                     }
                                                 }
                                             ],
                                             "ignoreGlobalFilters": false,
-                                            "index": "traces-claude_code.otel-*-3877208ba26afe90d86660b827378fe9a353488bee60b3d6356033a17de671ee",
+                                            "index": "traces-claude_code.otel-*-@timestamp",
                                             "query": {
-                                                "esql": "FROM traces-claude_code.otel-*\n| WHERE span.name == \"claude_code.llm_request\"\n| STATS `Total Count` = COUNT(*)"
-                                            }
+                                                "esql": "FROM traces-claude_code.otel-*\n| WHERE span.name == \"claude_code.llm_request\" AND @timestamp >= ?_tstart AND @timestamp < ?_tend\n| STATS `LLM Request Count` = COUNT(*)"
+                                            },
+                                            "timeField": "@timestamp"
                                         }
                                     }
                                 }
@@ -79,13 +81,13 @@
                             "filters": [],
                             "internalReferences": [
                                 {
-                                    "id": "traces-claude_code.otel-*-3877208ba26afe90d86660b827378fe9a353488bee60b3d6356033a17de671ee",
+                                    "id": "traces-claude_code.otel-*-@timestamp",
                                     "name": "indexpattern-datasource-layer-layer_0",
                                     "type": "index-pattern"
                                 }
                             ],
                             "query": {
-                                "esql": "FROM traces-claude_code.otel-*\n| WHERE span.name == \"claude_code.llm_request\"\n| STATS `Total Count` = COUNT(*)"
+                                "esql": "FROM traces-claude_code.otel-*\n| WHERE span.name == \"claude_code.llm_request\" AND @timestamp >= ?_tstart AND @timestamp < ?_tend\n| STATS `LLM Request Count` = COUNT(*)"
                             },
                             "visualization": {
                                 "density": "default",
@@ -138,7 +140,9 @@
                                             "columns": [
                                                 {
                                                     "columnId": "metric_accessor_metric",
-                                                    "fieldName": "Total Count",
+                                                    "customLabel": true,
+                                                    "fieldName": "Tool Execution Count",
+                                                    "label": "Tool Execution Count",
                                                     "meta": {
                                                         "type": "number"
                                                     }
@@ -147,7 +151,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "traces-claude_code.otel-*-@timestamp",
                                             "query": {
-                                                "esql": "FROM traces-claude_code.otel-*\n| WHERE span.name == \"claude_code.tool.execution\" AND @timestamp >= ?_tstart AND @timestamp < ?_tend\n| STATS `Total Count` = COUNT(*)"
+                                                "esql": "FROM traces-claude_code.otel-*\n| WHERE span.name == \"claude_code.tool.execution\" AND @timestamp >= ?_tstart AND @timestamp < ?_tend\n| STATS `Tool Execution Count` = COUNT(*)"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -163,7 +167,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "FROM traces-claude_code.otel-*\n| WHERE span.name == \"claude_code.tool.execution\" AND @timestamp >= ?_tstart AND @timestamp < ?_tend\n| STATS `Total Count` = COUNT(*)"
+                                "esql": "FROM traces-claude_code.otel-*\n| WHERE span.name == \"claude_code.tool.execution\" AND @timestamp >= ?_tstart AND @timestamp < ?_tend\n| STATS `Tool Execution Count` = COUNT(*)"
                             },
                             "visualization": {
                                 "density": "default",
@@ -199,11 +203,12 @@
                         "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "traces-claude_code.otel-*-fd5b8d69a792c2dbb1da05bcf9473c7fed642747d2b50db48eb85b1b9c5d4f44": {
+                                "traces-claude_code.otel-*-@timestamp": {
                                     "allowNoIndex": false,
-                                    "id": "traces-claude_code.otel-*-fd5b8d69a792c2dbb1da05bcf9473c7fed642747d2b50db48eb85b1b9c5d4f44",
+                                    "id": "traces-claude_code.otel-*-@timestamp",
                                     "name": "traces-claude_code.otel-*",
                                     "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
                                     "title": "traces-claude_code.otel-*",
                                     "type": "esql"
                                 }
@@ -224,10 +229,11 @@
                                                 }
                                             ],
                                             "ignoreGlobalFilters": false,
-                                            "index": "traces-claude_code.otel-*-fd5b8d69a792c2dbb1da05bcf9473c7fed642747d2b50db48eb85b1b9c5d4f44",
+                                            "index": "traces-claude_code.otel-*-@timestamp",
                                             "query": {
-                                                "esql": "FROM \"traces-claude_code.otel-*\"\n| STATS `Unique Users` = COUNT_DISTINCT(`user.email`)"
-                                            }
+                                                "esql": "FROM traces-claude_code.otel-*\n| WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend\n| STATS `Unique Users` = COUNT_DISTINCT(attributes.user.email)"
+                                            },
+                                            "timeField": "@timestamp"
                                         }
                                     }
                                 }
@@ -235,13 +241,13 @@
                             "filters": [],
                             "internalReferences": [
                                 {
-                                    "id": "traces-claude_code.otel-*-fd5b8d69a792c2dbb1da05bcf9473c7fed642747d2b50db48eb85b1b9c5d4f44",
+                                    "id": "traces-claude_code.otel-*-@timestamp",
                                     "name": "indexpattern-datasource-layer-layer_0",
                                     "type": "index-pattern"
                                 }
                             ],
                             "query": {
-                                "esql": "FROM \"traces-claude_code.otel-*\"\n| STATS `Unique Users` = COUNT_DISTINCT(`user.email`)"
+                                "esql": "FROM traces-claude_code.otel-*\n| WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend\n| STATS `Unique Users` = COUNT_DISTINCT(attributes.user.email)"
                             },
                             "visualization": {
                                 "density": "default",
@@ -313,7 +319,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "traces-claude_code.otel-*-@timestamp",
                                             "query": {
-                                                "esql": "FROM \"traces-claude_code.otel-*\"\n| WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend\n| STATS `Success rate percentage` = AVG(CASE(success == true, 100.0, success == false, 0.0, NULL))"
+                                                "esql": "FROM traces-claude_code.otel-*\n| WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend\n  AND span.name IN (\"claude_code.llm_request\", \"claude_code.tool.execution\")\n| STATS `Success rate percentage` = AVG(CASE(attributes.success == true, 100.0, attributes.success == false, 0.0, NULL))"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -329,7 +335,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "FROM \"traces-claude_code.otel-*\"\n| WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend\n| STATS `Success rate percentage` = AVG(CASE(success == true, 100.0, success == false, 0.0, NULL))"
+                                "esql": "FROM traces-claude_code.otel-*\n| WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend\n  AND span.name IN (\"claude_code.llm_request\", \"claude_code.tool.execution\")\n| STATS `Success rate percentage` = AVG(CASE(attributes.success == true, 100.0, attributes.success == false, 0.0, NULL))"
                             },
                             "visualization": {
                                 "applyColorTo": "value",
@@ -409,11 +415,12 @@
                         "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "traces-claude_code.otel-*-fb5aa37b68571f48d7e389d54607d1335e4001f202b3fa821d57624d4d974bfc": {
+                                "traces-claude_code.otel-*-@timestamp": {
                                     "allowNoIndex": false,
-                                    "id": "traces-claude_code.otel-*-fb5aa37b68571f48d7e389d54607d1335e4001f202b3fa821d57624d4d974bfc",
+                                    "id": "traces-claude_code.otel-*-@timestamp",
                                     "name": "traces-claude_code.otel-*",
                                     "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
                                     "title": "traces-claude_code.otel-*",
                                     "type": "esql"
                                 }
@@ -465,10 +472,11 @@
                                                 }
                                             ],
                                             "ignoreGlobalFilters": false,
-                                            "index": "traces-claude_code.otel-*-fb5aa37b68571f48d7e389d54607d1335e4001f202b3fa821d57624d4d974bfc",
+                                            "index": "traces-claude_code.otel-*-@timestamp",
                                             "query": {
-                                                "esql": "FROM traces-claude_code.otel-*\n| STATS `count of spans` = COUNT(), `average duration_ms` = AVG(duration_ms) BY `span.name`\n| SORT `count of spans` DESC\n| LIMIT 100"
-                                            }
+                                                "esql": "FROM traces-claude_code.otel-*\n| WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend\n| STATS `count of spans` = COUNT(), duration_ns = AVG(duration) BY `span.name`\n| EVAL `average duration_ms` = duration_ns / 1000000.0\n| KEEP `span.name`, `count of spans`, `average duration_ms`\n| SORT `count of spans` DESC\n| LIMIT 100"
+                                            },
+                                            "timeField": "@timestamp"
                                         }
                                     }
                                 }
@@ -476,13 +484,13 @@
                             "filters": [],
                             "internalReferences": [
                                 {
-                                    "id": "traces-claude_code.otel-*-fb5aa37b68571f48d7e389d54607d1335e4001f202b3fa821d57624d4d974bfc",
+                                    "id": "traces-claude_code.otel-*-@timestamp",
                                     "name": "indexpattern-datasource-layer-layer_0",
                                     "type": "index-pattern"
                                 }
                             ],
                             "query": {
-                                "esql": "FROM traces-claude_code.otel-*\n| STATS `count of spans` = COUNT(), `average duration_ms` = AVG(duration_ms) BY `span.name`\n| SORT `count of spans` DESC\n| LIMIT 100"
+                                "esql": "FROM traces-claude_code.otel-*\n| WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend\n| STATS `count of spans` = COUNT(), duration_ns = AVG(duration) BY `span.name`\n| EVAL `average duration_ms` = duration_ns / 1000000.0\n| KEEP `span.name`, `count of spans`, `average duration_ms`\n| SORT `count of spans` DESC\n| LIMIT 100"
                             },
                             "visualization": {
                                 "columns": [
@@ -584,7 +592,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "traces-claude_code.otel-*-@timestamp",
                                             "query": {
-                                                "esql": "FROM traces-claude_code.otel-*\n| WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend\n  AND attributes.span.type == \"llm_request\"\n| STATS input = SUM(attributes.input_tokens),\n        cache_read = SUM(attributes.cache_read_tokens),\n        cache_creation = SUM(attributes.cache_creation_tokens),\n        output = SUM(attributes.output_tokens)\n| EVAL `Total tokens` = input + cache_read + cache_creation + output\n| KEEP `Total tokens`"
+                                                "esql": "FROM traces-claude_code.otel-*\n| WHERE span.name == \"claude_code.llm_request\" AND @timestamp >= ?_tstart AND @timestamp < ?_tend\n| STATS input = SUM(attributes.input_tokens),\n        cache_read = SUM(attributes.cache_read_tokens),\n        cache_creation = SUM(attributes.cache_creation_tokens),\n        output = SUM(attributes.output_tokens)\n| EVAL `Total tokens` = input + cache_read + cache_creation + output\n| KEEP `Total tokens`"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -594,7 +602,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM traces-claude_code.otel-*\n| WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend\n  AND attributes.span.type == \"llm_request\"\n| STATS input = SUM(attributes.input_tokens),\n        cache_read = SUM(attributes.cache_read_tokens),\n        cache_creation = SUM(attributes.cache_creation_tokens),\n        output = SUM(attributes.output_tokens)\n| EVAL `Total tokens` = input + cache_read + cache_creation + output\n| KEEP `Total tokens`"
+                                "esql": "FROM traces-claude_code.otel-*\n| WHERE span.name == \"claude_code.llm_request\" AND @timestamp >= ?_tstart AND @timestamp < ?_tend\n| STATS input = SUM(attributes.input_tokens),\n        cache_read = SUM(attributes.cache_read_tokens),\n        cache_creation = SUM(attributes.cache_creation_tokens),\n        output = SUM(attributes.output_tokens)\n| EVAL `Total tokens` = input + cache_read + cache_creation + output\n| KEEP `Total tokens`"
                             },
                             "visualization": {
                                 "density": "default",
@@ -631,11 +639,12 @@
                         "references": [],
                         "state": {
                             "adHocDataViews": {
-                                "traces-claude_code.otel-*-1736dfdccbabe1d89a86fa69675a0947433fb34b4812360e44737202ea125a43": {
+                                "traces-claude_code.otel-*-@timestamp": {
                                     "allowNoIndex": false,
-                                    "id": "traces-claude_code.otel-*-1736dfdccbabe1d89a86fa69675a0947433fb34b4812360e44737202ea125a43",
+                                    "id": "traces-claude_code.otel-*-@timestamp",
                                     "name": "traces-claude_code.otel-*",
                                     "sourceFilters": [],
+                                    "timeFieldName": "@timestamp",
                                     "title": "traces-claude_code.otel-*",
                                     "type": "esql"
                                 }
@@ -667,10 +676,11 @@
                                                 }
                                             ],
                                             "ignoreGlobalFilters": false,
-                                            "index": "traces-claude_code.otel-*-1736dfdccbabe1d89a86fa69675a0947433fb34b4812360e44737202ea125a43",
+                                            "index": "traces-claude_code.otel-*-@timestamp",
                                             "query": {
-                                                "esql": "FROM traces-claude_code.otel-*\n| WHERE span.name == \"claude_code.llm_request\"\n| STATS `Average LLM Request Duration` = ROUND(AVG(duration_ms))"
-                                            }
+                                                "esql": "FROM traces-claude_code.otel-*\n| WHERE span.name == \"claude_code.llm_request\" AND @timestamp >= ?_tstart AND @timestamp < ?_tend\n| STATS `Average LLM Request Duration` = ROUND(AVG(attributes.duration_ms))"
+                                            },
+                                            "timeField": "@timestamp"
                                         }
                                     }
                                 }
@@ -678,13 +688,13 @@
                             "filters": [],
                             "internalReferences": [
                                 {
-                                    "id": "traces-claude_code.otel-*-1736dfdccbabe1d89a86fa69675a0947433fb34b4812360e44737202ea125a43",
+                                    "id": "traces-claude_code.otel-*-@timestamp",
                                     "name": "indexpattern-datasource-layer-layer_0",
                                     "type": "index-pattern"
                                 }
                             ],
                             "query": {
-                                "esql": "FROM traces-claude_code.otel-*\n| WHERE span.name == \"claude_code.llm_request\"\n| STATS `Average LLM Request Duration` = ROUND(AVG(duration_ms))"
+                                "esql": "FROM traces-claude_code.otel-*\n| WHERE span.name == \"claude_code.llm_request\" AND @timestamp >= ?_tstart AND @timestamp < ?_tend\n| STATS `Average LLM Request Duration` = ROUND(AVG(attributes.duration_ms))"
                             },
                             "visualization": {
                                 "density": "default",
@@ -921,7 +931,7 @@
                                             ],
                                             "index": "traces-claude_code.otel-*-@timestamp",
                                             "query": {
-                                                "esql": "FROM traces-claude_code.otel-*\n| WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend\n  AND attributes.span.type == \"llm_request\"\n| STATS input = SUM(attributes.input_tokens),\n        cache_read = SUM(attributes.cache_read_tokens),\n        cache_creation = SUM(attributes.cache_creation_tokens),\n        `Output tokens` = SUM(attributes.output_tokens)\n    BY bucket = BUCKET(@timestamp, 75, ?_tstart, ?_tend)\n| EVAL `Input tokens` = input + cache_read + cache_creation\n| KEEP bucket, `Input tokens`, `Output tokens`"
+                                                "esql": "FROM traces-claude_code.otel-*\n| WHERE span.name == \"claude_code.llm_request\" AND @timestamp >= ?_tstart AND @timestamp < ?_tend\n| STATS input = SUM(attributes.input_tokens),\n        cache_read = SUM(attributes.cache_read_tokens),\n        cache_creation = SUM(attributes.cache_creation_tokens),\n        `Output tokens` = SUM(attributes.output_tokens)\n    BY bucket = BUCKET(@timestamp, 75, ?_tstart, ?_tend)\n| EVAL `Input tokens` = input + cache_read + cache_creation\n| KEEP bucket, `Input tokens`, `Output tokens`"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -931,7 +941,7 @@
                             "filters": [],
                             "needsRefresh": false,
                             "query": {
-                                "esql": "FROM traces-claude_code.otel-*\n| WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend\n  AND attributes.span.type == \"llm_request\"\n| STATS input = SUM(attributes.input_tokens),\n        cache_read = SUM(attributes.cache_read_tokens),\n        cache_creation = SUM(attributes.cache_creation_tokens),\n        `Output tokens` = SUM(attributes.output_tokens)\n    BY bucket = BUCKET(@timestamp, 75, ?_tstart, ?_tend)\n| EVAL `Input tokens` = input + cache_read + cache_creation\n| KEEP bucket, `Input tokens`, `Output tokens`"
+                                "esql": "FROM traces-claude_code.otel-*\n| WHERE span.name == \"claude_code.llm_request\" AND @timestamp >= ?_tstart AND @timestamp < ?_tend\n| STATS input = SUM(attributes.input_tokens),\n        cache_read = SUM(attributes.cache_read_tokens),\n        cache_creation = SUM(attributes.cache_creation_tokens),\n        `Output tokens` = SUM(attributes.output_tokens)\n    BY bucket = BUCKET(@timestamp, 75, ?_tstart, ?_tend)\n| EVAL `Input tokens` = input + cache_read + cache_creation\n| KEEP bucket, `Input tokens`, `Output tokens`"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -1074,7 +1084,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "traces-claude_code.otel-*-@timestamp",
                                             "query": {
-                                                "esql": "FROM traces-claude_code.otel-*\n| WHERE span.name == \"claude_code.llm_request\" AND @timestamp >= ?_tstart AND @timestamp < ?_tend\n| STATS `Average Duration` = AVG(duration_ms) BY `Bucket` = BUCKET(@timestamp, 75, ?_tstart, ?_tend)"
+                                                "esql": "FROM traces-claude_code.otel-*\n| WHERE span.name == \"claude_code.llm_request\" AND @timestamp >= ?_tstart AND @timestamp < ?_tend\n| STATS `Average Duration` = AVG(attributes.duration_ms) BY `Bucket` = BUCKET(@timestamp, 75, ?_tstart, ?_tend)"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1090,7 +1100,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "FROM traces-claude_code.otel-*\n| WHERE span.name == \"claude_code.llm_request\" AND @timestamp >= ?_tstart AND @timestamp < ?_tend\n| STATS `Average Duration` = AVG(duration_ms) BY `Bucket` = BUCKET(@timestamp, 75, ?_tstart, ?_tend)"
+                                "esql": "FROM traces-claude_code.otel-*\n| WHERE span.name == \"claude_code.llm_request\" AND @timestamp >= ?_tstart AND @timestamp < ?_tend\n| STATS `Average Duration` = AVG(attributes.duration_ms) BY `Bucket` = BUCKET(@timestamp, 75, ?_tstart, ?_tend)"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -1207,7 +1217,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "traces-claude_code.otel-*-@timestamp",
                                             "query": {
-                                                "esql": "FROM traces-claude_code.otel-*\n| WHERE span.name == \"claude_code.llm_request\" AND @timestamp >= ?_tstart AND @timestamp < ?_tend\n| STATS `Request Count` = COUNT(*) BY `Model` = gen_ai.request.model\n| SORT `Request Count` DESC\n| LIMIT 10"
+                                                "esql": "FROM traces-claude_code.otel-*\n| WHERE span.name == \"claude_code.llm_request\" AND @timestamp >= ?_tstart AND @timestamp < ?_tend\n| STATS `Request Count` = COUNT(*) BY `Model` = attributes.gen_ai.request.model\n| SORT `Request Count` DESC\n| LIMIT 10"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1223,7 +1233,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "FROM traces-claude_code.otel-*\n| WHERE span.name == \"claude_code.llm_request\" AND @timestamp >= ?_tstart AND @timestamp < ?_tend\n| STATS `Request Count` = COUNT(*) BY `Model` = gen_ai.request.model\n| SORT `Request Count` DESC\n| LIMIT 10"
+                                "esql": "FROM traces-claude_code.otel-*\n| WHERE span.name == \"claude_code.llm_request\" AND @timestamp >= ?_tstart AND @timestamp < ?_tend\n| STATS `Request Count` = COUNT(*) BY `Model` = attributes.gen_ai.request.model\n| SORT `Request Count` DESC\n| LIMIT 10"
                             },
                             "visualization": {
                                 "layers": [
@@ -1322,7 +1332,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "traces-claude_code.otel-*-@timestamp",
                                             "query": {
-                                                "esql": "FROM traces-claude_code.otel-*\n| WHERE span.name == \"claude_code.llm_request\" AND @timestamp >= ?_tstart AND @timestamp < ?_tend\n| STATS `Count` = COUNT(*) BY `Stop Reason` = stop_reason\n| SORT `Count` DESC\n| LIMIT 10"
+                                                "esql": "FROM traces-claude_code.otel-*\n| WHERE span.name == \"claude_code.llm_request\" AND @timestamp >= ?_tstart AND @timestamp < ?_tend\n| STATS `Count` = COUNT(*) BY `Stop Reason` = attributes.stop_reason\n| SORT `Count` DESC\n| LIMIT 10"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1338,7 +1348,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "FROM traces-claude_code.otel-*\n| WHERE span.name == \"claude_code.llm_request\" AND @timestamp >= ?_tstart AND @timestamp < ?_tend\n| STATS `Count` = COUNT(*) BY `Stop Reason` = stop_reason\n| SORT `Count` DESC\n| LIMIT 10"
+                                "esql": "FROM traces-claude_code.otel-*\n| WHERE span.name == \"claude_code.llm_request\" AND @timestamp >= ?_tstart AND @timestamp < ?_tend\n| STATS `Count` = COUNT(*) BY `Stop Reason` = attributes.stop_reason\n| SORT `Count` DESC\n| LIMIT 10"
                             },
                             "visualization": {
                                 "layers": [
@@ -1448,7 +1458,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "traces-claude_code.otel-*-@timestamp",
                                             "query": {
-                                                "esql": "FROM traces-claude_code.otel-*\n| WHERE span.name == \"claude_code.llm_request\" AND @timestamp >= ?_tstart AND @timestamp < ?_tend\n| STATS `Average Duration` = AVG(duration) BY `Model` = gen_ai.request.model\n| SORT `Average Duration` DESC\n| LIMIT 10"
+                                                "esql": "FROM traces-claude_code.otel-*\n| WHERE span.name == \"claude_code.llm_request\" AND @timestamp >= ?_tstart AND @timestamp < ?_tend\n| STATS `Average Duration` = AVG(attributes.duration_ms) BY `Model` = attributes.gen_ai.request.model\n| SORT `Average Duration` DESC\n| LIMIT 10"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1464,7 +1474,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "FROM traces-claude_code.otel-*\n| WHERE span.name == \"claude_code.llm_request\" AND @timestamp >= ?_tstart AND @timestamp < ?_tend\n| STATS `Average Duration` = AVG(duration) BY `Model` = gen_ai.request.model\n| SORT `Average Duration` DESC\n| LIMIT 10"
+                                "esql": "FROM traces-claude_code.otel-*\n| WHERE span.name == \"claude_code.llm_request\" AND @timestamp >= ?_tstart AND @timestamp < ?_tend\n| STATS `Average Duration` = AVG(attributes.duration_ms) BY `Model` = attributes.gen_ai.request.model\n| SORT `Average Duration` DESC\n| LIMIT 10"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -1593,7 +1603,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "traces-claude_code.otel-*-@timestamp",
                                             "query": {
-                                                "esql": "FROM \"traces-claude_code.otel-*\"\n| WHERE span.name == \"claude_code.llm_request\" AND @timestamp >= ?_tstart AND @timestamp < ?_tend\n| STATS `Input Tokens` = SUM(input_tokens), `Output Tokens` = SUM(output_tokens) BY `Model` = gen_ai.request.model\n| SORT `Input Tokens` DESC\n| LIMIT 10"
+                                                "esql": "FROM traces-claude_code.otel-*\n| WHERE span.name == \"claude_code.llm_request\" AND @timestamp >= ?_tstart AND @timestamp < ?_tend\n| STATS input = SUM(attributes.input_tokens),\n        cache_read = SUM(attributes.cache_read_tokens),\n        cache_creation = SUM(attributes.cache_creation_tokens),\n        `Output Tokens` = SUM(attributes.output_tokens)\n    BY `Model` = attributes.gen_ai.request.model\n| EVAL `Input Tokens` = input + cache_read + cache_creation\n| KEEP `Model`, `Input Tokens`, `Output Tokens`\n| SORT `Input Tokens` DESC\n| LIMIT 10"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1609,7 +1619,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "FROM \"traces-claude_code.otel-*\"\n| WHERE span.name == \"claude_code.llm_request\" AND @timestamp >= ?_tstart AND @timestamp < ?_tend\n| STATS `Input Tokens` = SUM(input_tokens), `Output Tokens` = SUM(output_tokens) BY `Model` = gen_ai.request.model\n| SORT `Input Tokens` DESC\n| LIMIT 10"
+                                "esql": "FROM traces-claude_code.otel-*\n| WHERE span.name == \"claude_code.llm_request\" AND @timestamp >= ?_tstart AND @timestamp < ?_tend\n| STATS input = SUM(attributes.input_tokens),\n        cache_read = SUM(attributes.cache_read_tokens),\n        cache_creation = SUM(attributes.cache_creation_tokens),\n        `Output Tokens` = SUM(attributes.output_tokens)\n    BY `Model` = attributes.gen_ai.request.model\n| EVAL `Input Tokens` = input + cache_read + cache_creation\n| KEEP `Model`, `Input Tokens`, `Output Tokens`\n| SORT `Input Tokens` DESC\n| LIMIT 10"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -1732,7 +1742,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "traces-claude_code.otel-*-@timestamp",
                                             "query": {
-                                                "esql": "FROM traces-claude_code.otel-*\n| WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend AND tool_name != \"\"\n| STATS `Execution Count` = COUNT(*) BY `Tool Name` = tool_name\n| SORT `Execution Count` DESC\n| LIMIT 10"
+                                                "esql": "FROM traces-claude_code.otel-*\n| WHERE span.name == \"claude_code.tool\" AND @timestamp >= ?_tstart AND @timestamp < ?_tend\n  AND attributes.tool_name IS NOT NULL\n| STATS `Execution Count` = COUNT(*) BY `Tool Name` = attributes.tool_name\n| SORT `Execution Count` DESC\n| LIMIT 10"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1748,7 +1758,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "FROM traces-claude_code.otel-*\n| WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend AND tool_name != \"\"\n| STATS `Execution Count` = COUNT(*) BY `Tool Name` = tool_name\n| SORT `Execution Count` DESC\n| LIMIT 10"
+                                "esql": "FROM traces-claude_code.otel-*\n| WHERE span.name == \"claude_code.tool\" AND @timestamp >= ?_tstart AND @timestamp < ?_tend\n  AND attributes.tool_name IS NOT NULL\n| STATS `Execution Count` = COUNT(*) BY `Tool Name` = attributes.tool_name\n| SORT `Execution Count` DESC\n| LIMIT 10"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -1871,7 +1881,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "traces-claude_code.otel-*-@timestamp",
                                             "query": {
-                                                "esql": "FROM traces-claude_code.otel-*\n| WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend AND span.name == \"claude_code.tool.execution\"\n| STATS `Tool Success Rate` = (SUM(CASE(success == true, 1, 0)) * 100.0) / COUNT(*)"
+                                                "esql": "FROM traces-claude_code.otel-*\n| WHERE span.name == \"claude_code.tool.execution\" AND @timestamp >= ?_tstart AND @timestamp < ?_tend\n| STATS `Tool Success Rate` = (SUM(CASE(attributes.success == true, 1, 0)) * 100.0) / COUNT(*)"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -1887,7 +1897,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "FROM traces-claude_code.otel-*\n| WHERE @timestamp >= ?_tstart AND @timestamp < ?_tend AND span.name == \"claude_code.tool.execution\"\n| STATS `Tool Success Rate` = (SUM(CASE(success == true, 1, 0)) * 100.0) / COUNT(*)"
+                                "esql": "FROM traces-claude_code.otel-*\n| WHERE span.name == \"claude_code.tool.execution\" AND @timestamp >= ?_tstart AND @timestamp < ?_tend\n| STATS `Tool Success Rate` = (SUM(CASE(attributes.success == true, 1, 0)) * 100.0) / COUNT(*)"
                             },
                             "visualization": {
                                 "applyColorTo": "value",
@@ -2006,7 +2016,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "traces-claude_code.otel-*-@timestamp",
                                             "query": {
-                                                "esql": "FROM traces-claude_code.otel-*\n| WHERE span.name == \"claude_code.tool.execution\" AND @timestamp >= ?_tstart AND @timestamp < ?_tend\n| STATS `Average Tool Execution Duration` = AVG(duration_ms)"
+                                                "esql": "FROM traces-claude_code.otel-*\n| WHERE span.name == \"claude_code.tool.execution\" AND @timestamp >= ?_tstart AND @timestamp < ?_tend\n| STATS `Average Tool Execution Duration` = AVG(attributes.duration_ms)"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -2022,7 +2032,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "FROM traces-claude_code.otel-*\n| WHERE span.name == \"claude_code.tool.execution\" AND @timestamp >= ?_tstart AND @timestamp < ?_tend\n| STATS `Average Tool Execution Duration` = AVG(duration_ms)"
+                                "esql": "FROM traces-claude_code.otel-*\n| WHERE span.name == \"claude_code.tool.execution\" AND @timestamp >= ?_tstart AND @timestamp < ?_tend\n| STATS `Average Tool Execution Duration` = AVG(attributes.duration_ms)"
                             },
                             "visualization": {
                                 "density": "default",
@@ -2242,7 +2252,7 @@
                                             "ignoreGlobalFilters": false,
                                             "index": "traces-claude_code.otel-*-@timestamp",
                                             "query": {
-                                                "esql": "FROM traces-claude_code.otel-*\n| WHERE span.name == \"claude_code.tool\" AND tool_name IS NOT NULL AND @timestamp >= ?_tstart AND @timestamp < ?_tend\n| STATS `Average Duration` = AVG(duration_ms) BY `Tool Name` = tool_name\n| SORT `Average Duration` DESC\n| LIMIT 10"
+                                                "esql": "FROM traces-claude_code.otel-*\n| WHERE span.name == \"claude_code.tool\" AND @timestamp >= ?_tstart AND @timestamp < ?_tend\n  AND attributes.tool_name IS NOT NULL\n| STATS `Average Duration` = AVG(attributes.duration_ms) BY `Tool Name` = attributes.tool_name\n| SORT `Average Duration` DESC\n| LIMIT 10"
                                             },
                                             "timeField": "@timestamp"
                                         }
@@ -2258,7 +2268,7 @@
                                 }
                             ],
                             "query": {
-                                "esql": "FROM traces-claude_code.otel-*\n| WHERE span.name == \"claude_code.tool\" AND tool_name IS NOT NULL AND @timestamp >= ?_tstart AND @timestamp < ?_tend\n| STATS `Average Duration` = AVG(duration_ms) BY `Tool Name` = tool_name\n| SORT `Average Duration` DESC\n| LIMIT 10"
+                                "esql": "FROM traces-claude_code.otel-*\n| WHERE span.name == \"claude_code.tool\" AND @timestamp >= ?_tstart AND @timestamp < ?_tend\n  AND attributes.tool_name IS NOT NULL\n| STATS `Average Duration` = AVG(attributes.duration_ms) BY `Tool Name` = attributes.tool_name\n| SORT `Average Duration` DESC\n| LIMIT 10"
                             },
                             "visualization": {
                                 "axisTitlesVisibilitySettings": {
@@ -2320,11 +2330,11 @@
                                 "yLeftScale": "linear"
                             }
                         },
-                        "title": "Average Tool Execution Duration by Tool",
+                        "title": "Average Tool Duration by Tool (includes permission wait)",
                         "version": 2,
                         "visualizationType": "lnsXY"
                     },
-                    "title": "Average Tool Execution Duration by Tool"
+                    "title": "Average Tool Duration by Tool (includes permission wait)"
                 },
                 "gridData": {
                     "h": 10,

@@ -511,47 +511,82 @@ An example event for `traces` looks as following:
 
 ```json
 {
-    "@timestamp": "2026-10-01T21:58:40.112Z",
+    "@timestamp": "2026-10-07T17:19:12.905Z",
     "attributes": {
-        "duration_ms": 214,
-        "full_command": "ls -la /home/user/project",
-        "gen_ai.tool.call.id": "toolu_01ExampleToolUseId0001",
-        "organization.id": "00000000-0000-0000-0000-000000000001",
-        "session.id": "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
-        "span.type": "tool",
-        "terminal.type": "Apple_Terminal",
-        "tool_name": "Bash",
-        "tool_name_safe": "Bash",
-        "tool_use_id": "toolu_01ExampleToolUseId0001",
-        "user.account_id": "user_01ExampleAccountId00000",
-        "user.account_uuid": "00000000-1111-2222-3333-444444444444",
-        "user.email": "test@example.com",
-        "user.id": "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2"
+        "interaction": {
+            "duration_ms": 12545,
+            "sequence": 1
+        },
+        "organization": {
+            "id": "00000000-0000-0000-0000-000000000001"
+        },
+        "parent": {
+            "source": "none"
+        },
+        "queued_sends": 0,
+        "session": {
+            "id": "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"
+        },
+        "span": {
+            "type": "interaction"
+        },
+        "terminal": {
+            "type": "xterm-256color"
+        },
+        "user": {
+            "account_id": "user_01ExampleAccountId00000",
+            "account_uuid": "00000000-1111-2222-3333-444444444444",
+            "email": "test@example.com",
+            "id": "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2"
+        },
+        "user_prompt_length": 17
     },
     "data_stream": {
         "dataset": "claude_code.otel",
-        "namespace": "default",
+        "namespace": "44902",
         "type": "traces"
     },
-    "duration": 214000000,
+    "duration": 12545000000,
     "ecs": {
         "version": "9.3.0"
     },
     "event": {
+        "agent_id_status": "missing",
         "category": [
-            "process"
+            "session"
         ],
+        "dataset": "claude_code.otel",
+        "ingested": "2026-10-07T17:19:35Z",
         "kind": "event",
         "type": [
             "info"
         ]
     },
-    "kind": "Internal",
-    "name": "claude_code.tool",
-    "parent_span_id": "83b7ab7ee87e0c09",
-    "process": {
-        "command_line": "ls -la /home/user/project"
+    "host": {
+        "arch": "amd64",
+        "architecture": "amd64",
+        "os": {
+            "platform": "linux",
+            "version": "6.17.0-14-generic"
+        }
     },
+    "interaction": {
+        "duration_ms": 12545,
+        "sequence": 1
+    },
+    "kind": "Internal",
+    "name": "claude_code.interaction",
+    "organization": {
+        "id": "00000000-0000-0000-0000-000000000001"
+    },
+    "os": {
+        "type": "linux",
+        "version": "6.17.0-14-generic"
+    },
+    "parent": {
+        "source": "none"
+    },
+    "queued_sends": 0,
     "related": {
         "user": [
             "test@example.com",
@@ -560,19 +595,50 @@ An example event for `traces` looks as following:
     },
     "resource": {
         "attributes": {
-            "host.arch": "arm64",
-            "os.type": "darwin",
-            "os.version": "27.0.0",
-            "service.name": "claude-code",
-            "service.version": "2.1.274"
+            "host": {
+                "arch": "amd64"
+            },
+            "os": {
+                "type": "linux",
+                "version": "6.17.0-14-generic"
+            },
+            "service": {
+                "name": "claude-code",
+                "version": "2.1.175"
+            }
         }
     },
     "scope": {
         "name": "com.anthropic.claude_code.tracing",
         "version": "1.0.0"
     },
-    "span_id": "5a1e2b3c4d5e6f70",
-    "trace_id": "26cfcfdf49ccb1c13048a9c205eeeed1"
+    "service": {
+        "name": "claude-code",
+        "version": "2.1.175"
+    },
+    "session": {
+        "id": "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"
+    },
+    "span": {
+        "id": "4a33403362f74185",
+        "name": "claude_code.interaction",
+        "type": "interaction"
+    },
+    "span_id": "4a33403362f74185",
+    "terminal": {
+        "type": "xterm-256color"
+    },
+    "trace": {
+        "id": "84487adcee70a28b25f95b793b93b3fc"
+    },
+    "trace_id": "84487adcee70a28b25f95b793b93b3fc",
+    "user": {
+        "account_id": "user_01ExampleAccountId00000",
+        "account_uuid": "00000000-1111-2222-3333-444444444444",
+        "email": "test@example.com",
+        "id": "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2"
+    },
+    "user_prompt_length": 17
 }
 ```
 
